@@ -44,7 +44,15 @@ import Form.Error exposing (ErrorValue(..))
 import Http
 import Measurement.Model exposing (FloatInputConstraints)
 import NutritionActivity.Model exposing (NutritionActivity(..))
-import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..), PhysicalExamTask(..), PriorTreatmentTask(..), SymptomsTask(..))
+import Pages.AcuteIllnessActivity.Model
+    exposing
+        ( ExposureTask(..)
+        , LaboratoryTask(..)
+        , NextStepsTask(..)
+        , PhysicalExamTask(..)
+        , PriorTreatmentTask(..)
+        , SymptomsTask(..)
+        )
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Page exposing (..)
@@ -473,6 +481,7 @@ type TranslationId
     | NeckCPESign NeckCPESign
     | NegativeLabel
     | Next
+    | NextStepsTask NextStepsTask
     | No
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -1277,6 +1286,11 @@ translationSet trans =
 
                 AcuteIllnessExposure ->
                     { english = "Exposure / Travel History"
+                    , kinyarwanda = Nothing
+                    }
+
+                AcuteIllnessNextSteps ->
+                    { english = "Next Steps"
                     , kinyarwanda = Nothing
                     }
 
@@ -2877,16 +2891,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                LaboratoryMedicationDistribution ->
-                    { english = "Medication Distribution"
-                    , kinyarwanda = Nothing
-                    }
-
-                LaboratorySendToHC ->
-                    { english = "Send to Health Center"
-                    , kinyarwanda = Nothing
-                    }
-
         LastChecked ->
             { english = "Last checked"
             , kinyarwanda = Just "Isuzuma riheruka"
@@ -3393,6 +3397,18 @@ translationSet trans =
             { english = "Nexst"
             , kinyarwanda = Nothing
             }
+
+        NextStepsTask task ->
+            case task of
+                NextStepsMedicationDistribution ->
+                    { english = "Medication Distribution"
+                    , kinyarwanda = Nothing
+                    }
+
+                NextStepsSendToHC ->
+                    { english = "Send to Health Center"
+                    , kinyarwanda = Nothing
+                    }
 
         No ->
             { english = "No"

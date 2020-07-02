@@ -166,7 +166,7 @@ viewMainPageContent language currentDate id data diagnosis model =
 
         ( completedActivities, pendingActivities ) =
             getAllActivities
-                |> List.filter (expectActivity currentDate measurements suspectedCovid19)
+                |> List.filter (expectActivity currentDate data.person measurements diagnosis)
                 |> List.partition (activityCompleted measurements suspectedCovid19)
 
         pendingTabTitle =

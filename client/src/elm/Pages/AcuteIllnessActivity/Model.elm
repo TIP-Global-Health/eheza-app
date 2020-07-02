@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Model exposing (AcuteFindingsForm, ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, MedicationDistributionForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), PriorTreatmentData, PriorTreatmentTask(..), SendToHCForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentReviewForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptyPriorTreatmentData, emptySymptomsData, emptyTreatmentReviewForm)
+module Pages.AcuteIllnessActivity.Model exposing (AcuteFindingsForm, ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, MedicationDistributionForm, Model, Msg(..), NextStepsData, NextStepsTask(..), PhysicalExamData, PhysicalExamTask(..), PriorTreatmentData, PriorTreatmentTask(..), SendToHCForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentReviewForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyNextStepsData, emptyPhysicalExamData, emptyPriorTreatmentData, emptySymptomsData, emptyTreatmentReviewForm)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -35,12 +35,7 @@ type Msg
       -- LABORATORY Msgs
     | SetActiveLaboratoryTask LaboratoryTask
     | SetRapidTestResult String
-    | SetReferToHealthCenter Bool
-    | SetHandReferralForm Bool
-    | ToggleMedicationDistributionSign MedicationDistributionSign
     | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
-    | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC ))
-    | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution ))
       -- EXPOSURE Msgs
     | SetActiveExposureTask ExposureTask
     | SetCovid19Country Bool
@@ -62,6 +57,13 @@ type Msg
     | SetActivePriorTreatmentTask PriorTreatmentTask
     | SetTreatmentReviewBoolInput (Bool -> TreatmentReviewForm -> TreatmentReviewForm) Bool
     | SaveTreatmentReview PersonId (Maybe ( TreatmentReviewId, TreatmentReview ))
+      -- NEXT STEPS
+    | SetActiveNextStepsTask NextStepsTask
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | ToggleMedicationDistributionSign MedicationDistributionSign
+    | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC ))
+    | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution ))
 
 
 type alias Model =
@@ -70,6 +72,7 @@ type alias Model =
     , laboratoryData : LaboratoryData
     , exposureData : ExposureData
     , priorTreatmentData : PriorTreatmentData
+    , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe AcuteIllnessDiagnosis
     }
@@ -82,6 +85,7 @@ emptyModel =
     , laboratoryData = emptyLaboratoryData
     , exposureData = emptyExposureData
     , priorTreatmentData = emptyPriorTreatmentData
+    , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
     }
@@ -172,8 +176,6 @@ type alias AcuteFindingsForm =
 
 type alias LaboratoryData =
     { malariaTestingForm : MalariaTestingForm
-    , sendToHCForm : SendToHCForm
-    , medicationDistributionForm : MedicationDistributionForm
     , activeTask : LaboratoryTask
     }
 
@@ -181,31 +183,16 @@ type alias LaboratoryData =
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { malariaTestingForm = MalariaTestingForm Nothing
-    , sendToHCForm = SendToHCForm Nothing Nothing
-    , medicationDistributionForm = MedicationDistributionForm EverySet.empty
     , activeTask = LaboratoryMalariaTesting
     }
 
 
 type LaboratoryTask
     = LaboratoryMalariaTesting
-    | LaboratoryMedicationDistribution
-    | LaboratorySendToHC
 
 
 type alias MalariaTestingForm =
     { rapidTestResult : Maybe MalariaRapidTestResult
-    }
-
-
-type alias SendToHCForm =
-    { handReferralForm : Maybe Bool
-    , referToHealthCenter : Maybe Bool
-    }
-
-
-type alias MedicationDistributionForm =
-    { signs : EverySet MedicationDistributionSign
     }
 
 
@@ -305,4 +292,39 @@ emptyTreatmentReviewForm =
     , malariaTodayHelped = Nothing
     , malariaWithinPastMonth = Nothing
     , malariaWithinPastMonthHelped = Nothing
+    }
+
+
+
+-- NEXT STEPS
+
+
+type alias NextStepsData =
+    { sendToHCForm : SendToHCForm
+    , medicationDistributionForm : MedicationDistributionForm
+    , activeTask : Maybe NextStepsTask
+    }
+
+
+emptyNextStepsData : NextStepsData
+emptyNextStepsData =
+    { sendToHCForm = SendToHCForm Nothing Nothing
+    , medicationDistributionForm = MedicationDistributionForm EverySet.empty
+    , activeTask = Nothing
+    }
+
+
+type NextStepsTask
+    = NextStepsMedicationDistribution
+    | NextStepsSendToHC
+
+
+type alias SendToHCForm =
+    { handReferralForm : Maybe Bool
+    , referToHealthCenter : Maybe Bool
+    }
+
+
+type alias MedicationDistributionForm =
+    { signs : EverySet MedicationDistributionSign
     }

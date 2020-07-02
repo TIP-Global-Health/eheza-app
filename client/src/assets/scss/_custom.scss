@@ -1860,7 +1860,7 @@ input::placeholder {
   }
 }
 
-.icon-laboratory-medication-distribution {
+.icon-next-steps-medication-distribution {
   .active &:after {
     background-image: url(#{$img-path}icon-medication-distribution-white.svg), url(#{$img-path}icon-selected-circle.svg);
   }
@@ -1874,7 +1874,7 @@ input::placeholder {
   }
 }
 
-.icon-laboratory-send-to-hc {
+.icon-next-steps-send-to-hc {
   .active &:after {
     background-image: url(#{$img-path}icon-health-center-white.svg), url(#{$img-path}icon-selected-circle.svg);
   }

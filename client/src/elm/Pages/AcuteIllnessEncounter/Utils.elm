@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, covid19Diagnosed, expectActivity, exposureTasksCompleted, generateAssembledData, generatePreviousMeasurements, mandatoryActivitiesCompleted, resolveAcuteIllnessDiagnosis, resolveExposureTasks, resolveLaboratoryTasks)
+module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, ageDependentNextStep, bloodyDiarrheaAtSymptoms, coughAndNasalCongestionAtSymptoms, covid19Diagnosed, expectActivity, exposureTasksCompleted, feverAtPhysicalExam, feverAtSymptoms, feverRecorded, generateAssembledData, generatePreviousMeasurements, intractableVomitingAtSymptoms, malariaRapidTestResult, malarialDangerSignsPresent, mandatoryActivitiesCompleted, nonBloodyDiarrheaAtSymptoms, poorSuckAtSymptoms, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByLaboratoryResults, resolveExposureTasks, resolveNextStepByDiagnosis, resolveNextStepsTasks, resolveNonCovid19AcuteIllnessDiagnosis, respiratoryInfectionDangerSignsPresent, respiratoryRateElevatedForChild, symptomAppearsAtSymptomsDict)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -30,7 +30,7 @@ import Backend.Person.Utils exposing (ageInMonths)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..))
+import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..), NextStepsTask(..))
 import Pages.AcuteIllnessEncounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -142,8 +142,8 @@ resolveExposureTasks measurements isSuspected =
         |> List.filter expectTask
 
 
-resolveLaboratoryTasks : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> List LaboratoryTask
-resolveLaboratoryTasks currentDate person diagnosis =
+resolveNextStepsTasks : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> List NextStepsTask
+resolveNextStepsTasks currentDate person diagnosis =
     let
         ( ageMonth0To2, ageMonth2To60 ) =
             ageInMonths currentDate person
@@ -152,23 +152,20 @@ resolveLaboratoryTasks currentDate person diagnosis =
 
         expectTask task =
             case task of
-                LaboratoryMalariaTesting ->
-                    True
-
-                LaboratoryMedicationDistribution ->
+                NextStepsMedicationDistribution ->
                     (diagnosis == Just DiagnosisMalariaUncomplicated)
                         || (diagnosis == Just DiagnosisGastrointestinalInfectionUncomplicated)
                         || (diagnosis == Just DiagnosisSimpleColdAndCough)
                         || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonth2To60)
 
-                LaboratorySendToHC ->
+                NextStepsSendToHC ->
                     (diagnosis == Just DiagnosisMalariaComplicated)
                         || (diagnosis == Just DiagnosisGastrointestinalInfectionComplicated)
                         || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonth0To2)
                         || (diagnosis == Just DiagnosisRespiratoryInfectionComplicated)
                         || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
     in
-    [ LaboratoryMalariaTesting, LaboratoryMedicationDistribution, LaboratorySendToHC ]
+    [ NextStepsMedicationDistribution, NextStepsSendToHC ]
         |> List.filter expectTask
 
 
@@ -192,13 +189,17 @@ exposureTasksCompleted measurements isSuspected =
             )
 
 
-expectActivity : NominalDate -> AcuteIllnessMeasurements -> Bool -> AcuteIllnessActivity -> Bool
-expectActivity currentDate measurements covid19Suspected activity =
+expectActivity : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessActivity -> Bool
+expectActivity currentDate person measurements diagnosis activity =
     case activity of
         AcuteIllnessLaboratory ->
-            not covid19Suspected
+            (diagnosis /= Just DiagnosisCovid19)
                 && mandatoryActivitiesCompleted measurements
                 && feverRecorded measurements
+
+        AcuteIllnessNextSteps ->
+            resolveNextStepByDiagnosis currentDate person diagnosis
+                |> isJust
 
         _ ->
             True
@@ -235,6 +236,58 @@ mandatoryActivitiesCompleted : AcuteIllnessMeasurements -> Bool
 mandatoryActivitiesCompleted measurements =
     [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPhysicalExam ]
         |> List.all (activityCompleted measurements False)
+
+
+resolveNextStepByDiagnosis : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> Maybe NextStepsTask
+resolveNextStepByDiagnosis currentDate person maybeDiagnosis =
+    maybeDiagnosis
+        |> Maybe.andThen
+            (\diagnosis ->
+                case diagnosis of
+                    Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19 ->
+                        -- Todo
+                        Nothing
+
+                    Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated ->
+                        Just NextStepsMedicationDistribution
+
+                    Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaComplicated ->
+                        Just NextStepsSendToHC
+
+                    Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionUncomplicated ->
+                        Just NextStepsMedicationDistribution
+
+                    Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionComplicated ->
+                        Just NextStepsSendToHC
+
+                    Pages.AcuteIllnessEncounter.Model.DiagnosisSimpleColdAndCough ->
+                        ageDependentNextStep currentDate person
+
+                    Pages.AcuteIllnessEncounter.Model.DiagnosisRespiratoryInfectionUncomplicated ->
+                        ageDependentNextStep currentDate person
+
+                    Pages.AcuteIllnessEncounter.Model.DiagnosisRespiratoryInfectionComplicated ->
+                        Just NextStepsSendToHC
+
+                    Pages.AcuteIllnessEncounter.Model.DiagnosisFeverOfUnknownOrigin ->
+                        Just NextStepsSendToHC
+            )
+
+
+ageDependentNextStep : NominalDate -> Person -> Maybe NextStepsTask
+ageDependentNextStep currentDate person =
+    ageInMonths currentDate person
+        |> Maybe.andThen
+            (\ageMonths ->
+                if ageMonths < 2 then
+                    Just NextStepsSendToHC
+
+                else if ageMonths < 60 then
+                    Just NextStepsMedicationDistribution
+
+                else
+                    Nothing
+            )
 
 
 resolveAcuteIllnessDiagnosis : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis

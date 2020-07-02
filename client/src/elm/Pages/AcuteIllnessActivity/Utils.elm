@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Utils exposing (acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromAcuteFindingsValue, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromMedicationDistributionValue, fromSendToHCValue, fromTravelHistoryValue, fromTreatmentReviewValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, medicationDistributionFormWithDefault, naListTaskCompleted, naTaskCompleted, physicalExamTasksCompletedFromTotal, resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage, sendToHCFormWithDefault, signTaskCompleted, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toAcuteFindingsValue, toAcuteFindingsValueWithDefault, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toMedicationDistributionValue, toMedicationDistributionValueWithDefault, toSendToHCValue, toSendToHCValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
+module Pages.AcuteIllnessActivity.Utils exposing (acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromAcuteFindingsValue, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromMedicationDistributionValue, fromSendToHCValue, fromTravelHistoryValue, fromTreatmentReviewValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, medicationDistributionFormWithDefault, naListTaskCompleted, naTaskCompleted, nextStepsTasksCompletedFromTotal, physicalExamTasksCompletedFromTotal, resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage, sendToHCFormWithDefault, signTaskCompleted, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toAcuteFindingsValue, toAcuteFindingsValueWithDefault, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toMedicationDistributionValue, toMedicationDistributionValueWithDefault, toSendToHCValue, toSendToHCValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model
@@ -180,8 +180,8 @@ physicalExamTasksCompletedFromTotal measurements data task =
             )
 
 
-laboratoryTasksCompletedFromTotal : Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
-laboratoryTasksCompletedFromTotal diagnosis measurements data task =
+laboratoryTasksCompletedFromTotal : AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
+laboratoryTasksCompletedFromTotal measurements data task =
     case task of
         LaboratoryMalariaTesting ->
             let
@@ -192,52 +192,6 @@ laboratoryTasksCompletedFromTotal diagnosis measurements data task =
             in
             ( taskCompleted form.rapidTestResult
             , 1
-            )
-
-        LaboratoryMedicationDistribution ->
-            let
-                form =
-                    measurements.medicationDistribution
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
-            in
-            case diagnosis of
-                Just DiagnosisMalariaUncomplicated ->
-                    ( signTaskCompleted Coartem NoMedicationDistributionSigns form.signs
-                    , 1
-                    )
-
-                Just DiagnosisGastrointestinalInfectionUncomplicated ->
-                    ( signTaskCompleted ORS NoMedicationDistributionSigns form.signs
-                        + signTaskCompleted Zinc NoMedicationDistributionSigns form.signs
-                    , 2
-                    )
-
-                Just DiagnosisSimpleColdAndCough ->
-                    ( signTaskCompleted LemonJuiceOrHoney NoMedicationDistributionSigns form.signs
-                    , 1
-                    )
-
-                -- This is for child form 2 month old, to 5 years old.
-                Just DiagnosisRespiratoryInfectionUncomplicated ->
-                    ( signTaskCompleted Amoxicillin NoMedicationDistributionSigns form.signs
-                    , 1
-                    )
-
-                _ ->
-                    ( 0
-                    , 1
-                    )
-
-        LaboratorySendToHC ->
-            let
-                form =
-                    measurements.sendToHC
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> sendToHCFormWithDefault data.sendToHCForm
-            in
-            ( taskCompleted form.handReferralForm + taskCompleted form.handReferralForm
-            , 2
             )
 
 
@@ -387,6 +341,56 @@ treatmentTasksCompletedFromTotal measurements data task =
             in
             ( feverActive + malariaTodayActive + malariaWithinPastMonth
             , feverCompleted + malariaTodayCompleted + malariaWithinPastMonthCompleted
+            )
+
+
+nextStepsTasksCompletedFromTotal : Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal diagnosis measurements data task =
+    case task of
+        NextStepsMedicationDistribution ->
+            let
+                form =
+                    measurements.medicationDistribution
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+            in
+            case diagnosis of
+                Just DiagnosisMalariaUncomplicated ->
+                    ( signTaskCompleted Coartem NoMedicationDistributionSigns form.signs
+                    , 1
+                    )
+
+                Just DiagnosisGastrointestinalInfectionUncomplicated ->
+                    ( signTaskCompleted ORS NoMedicationDistributionSigns form.signs
+                        + signTaskCompleted Zinc NoMedicationDistributionSigns form.signs
+                    , 2
+                    )
+
+                Just DiagnosisSimpleColdAndCough ->
+                    ( signTaskCompleted LemonJuiceOrHoney NoMedicationDistributionSigns form.signs
+                    , 1
+                    )
+
+                -- This is for child form 2 month old, to 5 years old.
+                Just DiagnosisRespiratoryInfectionUncomplicated ->
+                    ( signTaskCompleted Amoxicillin NoMedicationDistributionSigns form.signs
+                    , 1
+                    )
+
+                _ ->
+                    ( 0
+                    , 1
+                    )
+
+        NextStepsSendToHC ->
+            let
+                form =
+                    measurements.sendToHC
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> sendToHCFormWithDefault data.sendToHCForm
+            in
+            ( taskCompleted form.handReferralForm + taskCompleted form.handReferralForm
+            , 2
             )
 
 

@@ -564,70 +564,6 @@ update currentDate id db msg model =
             , []
             )
 
-        SetReferToHealthCenter value ->
-            let
-                form =
-                    model.laboratoryData.sendToHCForm
-
-                updatedForm =
-                    { form | referToHealthCenter = Just value }
-
-                updatedData =
-                    model.laboratoryData
-                        |> (\data -> { data | sendToHCForm = updatedForm })
-            in
-            ( { model | laboratoryData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetHandReferralForm value ->
-            let
-                form =
-                    model.laboratoryData.sendToHCForm
-
-                updatedForm =
-                    { form | handReferralForm = Just value }
-
-                updatedData =
-                    model.laboratoryData
-                        |> (\data -> { data | sendToHCForm = updatedForm })
-            in
-            ( { model | laboratoryData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        ToggleMedicationDistributionSign sign ->
-            let
-                form =
-                    model.laboratoryData.medicationDistributionForm
-
-                updatedSigns =
-                    if EverySet.member sign form.signs then
-                        EverySet.remove sign form.signs
-                            |> ifEverySetEmpty NoMedicationDistributionSigns
-
-                    else
-                        case EverySet.toList form.signs of
-                            [ NoMedicationDistributionSigns ] ->
-                                EverySet.singleton sign
-
-                            _ ->
-                                EverySet.insert sign form.signs
-
-                updatedForm =
-                    { form | signs = updatedSigns }
-
-                updatedData =
-                    model.laboratoryData
-                        |> (\data -> { data | medicationDistributionForm = updatedForm })
-            in
-            ( { model | laboratoryData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SaveMalariaTesting personId saved ->
             let
                 measurementId =
@@ -643,58 +579,6 @@ update currentDate id db msg model =
                             []
                             (\value ->
                                 [ Backend.AcuteIllnessEncounter.Model.SaveMalariaTesting personId measurementId value
-                                    |> Backend.Model.MsgAcuteIllnessEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
-                                ]
-                            )
-            in
-            ( model
-            , Cmd.none
-            , appMsgs
-            )
-
-        SaveSendToHC personId saved ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    Maybe.map (Tuple.second >> .value) saved
-
-                appMsgs =
-                    model.laboratoryData.sendToHCForm
-                        |> toSendToHCValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                [ Backend.AcuteIllnessEncounter.Model.SaveSendToHC personId measurementId value
-                                    |> Backend.Model.MsgAcuteIllnessEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
-                                ]
-                            )
-            in
-            ( model
-            , Cmd.none
-            , appMsgs
-            )
-
-        SaveMedicationDistribution personId saved ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    Maybe.map (Tuple.second >> .value) saved
-
-                appMsgs =
-                    model.laboratoryData.medicationDistributionForm
-                        |> toMedicationDistributionValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                [ Backend.AcuteIllnessEncounter.Model.SaveMedicationDistribution personId measurementId value
                                     |> Backend.Model.MsgAcuteIllnessEncounter id
                                     |> App.Model.MsgIndexedDb
                                 , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
@@ -1154,6 +1038,133 @@ update currentDate id db msg model =
                             []
                             (\value ->
                                 [ Backend.AcuteIllnessEncounter.Model.SaveTreatmentReview personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetActiveNextStepsTask task ->
+            let
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReferToHealthCenter value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | referToHealthCenter = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHandReferralForm value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | handReferralForm = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleMedicationDistributionSign sign ->
+            let
+                form =
+                    model.nextStepsData.medicationDistributionForm
+
+                updatedSigns =
+                    if EverySet.member sign form.signs then
+                        EverySet.remove sign form.signs
+                            |> ifEverySetEmpty NoMedicationDistributionSigns
+
+                    else
+                        case EverySet.toList form.signs of
+                            [ NoMedicationDistributionSigns ] ->
+                                EverySet.singleton sign
+
+                            _ ->
+                                EverySet.insert sign form.signs
+
+                updatedForm =
+                    { form | signs = updatedSigns }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveSendToHC personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.nextStepsData.sendToHCForm
+                        |> toSendToHCValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.AcuteIllnessEncounter.Model.SaveSendToHC personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SaveMedicationDistribution personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.nextStepsData.medicationDistributionForm
+                        |> toMedicationDistributionValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.AcuteIllnessEncounter.Model.SaveMedicationDistribution personId measurementId value
                                     |> Backend.Model.MsgAcuteIllnessEncounter id
                                     |> App.Model.MsgIndexedDb
                                 , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
