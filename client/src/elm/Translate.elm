@@ -3384,7 +3384,7 @@ translationSet trans =
             }
 
         Next ->
-            { english = "Nexst"
+            { english = "Next"
             , kinyarwanda = Nothing
             }
 
