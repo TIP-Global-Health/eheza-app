@@ -751,6 +751,7 @@ type MedicationDistributionSign
     | Coartem
     | ORS
     | Zinc
+    | LemonJuiceOrHoney
     | NoMedicationDistributionSigns
 
 

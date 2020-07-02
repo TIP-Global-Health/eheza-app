@@ -1351,6 +1351,9 @@ decodeMedicationDistributionSign =
                     "zinc" ->
                         succeed Zinc
 
+                    "lemon-juice-or-honey" ->
+                        succeed LemonJuiceOrHoney
+
                     "none" ->
                         succeed NoMedicationDistributionSigns
 

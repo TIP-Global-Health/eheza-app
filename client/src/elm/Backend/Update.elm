@@ -19,8 +19,8 @@ import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMe
 import Backend.Model exposing (..)
 import Backend.NutritionEncounter.Model
 import Backend.NutritionEncounter.Update
-import Backend.Person.Model exposing (Initiator(..))
-import Backend.Person.Utils exposing (graduatingAgeInMonth)
+import Backend.Person.Model exposing (Initiator(..), Person)
+import Backend.Person.Utils exposing (ageInMonths, graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Update
@@ -722,6 +722,25 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             )
 
         HandleRevisions revisions ->
+            let
+                processRevisionAndDiagnose participantId encounterId =
+                    let
+                        person =
+                            Dict.get participantId model.people
+                                |> Maybe.withDefault NotAsked
+                                |> RemoteData.toMaybe
+
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map2 (generateSuspectedDiagnosisMsgs currentDate model newModel)
+                                encounterId
+                                person
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel, extraMsgs )
+            in
             case revisions of
                 -- Special handling for a single attendance revision, which means
                 -- there was a check in / check out in Attendance page.
@@ -772,128 +791,80 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     , []
                     )
 
-                -- When we see a suspected COVID 19 case, notify with a pop-up.
                 [ SymptomsGeneralRevision uuid data ] ->
                     let
-                        ( newModel, _ ) =
-                            List.foldl handleRevision ( model, False ) revisions
-
-                        extraMsgs =
-                            data.encounterId
-                                |> Maybe.map (generateSuspectedDiagnosisMsgs model newModel)
-                                |> Maybe.withDefault []
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
                     , extraMsgs
                     )
 
-                -- When we see a suspected COVID 19 case, notify with a pop-up.
                 [ SymptomsRespiratoryRevision uuid data ] ->
                     let
-                        ( newModel, _ ) =
-                            List.foldl handleRevision ( model, False ) revisions
-
-                        extraMsgs =
-                            data.encounterId
-                                |> Maybe.map (generateSuspectedDiagnosisMsgs model newModel)
-                                |> Maybe.withDefault []
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
                     , extraMsgs
                     )
 
-                -- When we see a suspected COVID 19 case, notify with a pop-up.
                 [ SymptomsGIRevision uuid data ] ->
                     let
-                        ( newModel, _ ) =
-                            List.foldl handleRevision ( model, False ) revisions
-
-                        extraMsgs =
-                            data.encounterId
-                                |> Maybe.map (generateSuspectedDiagnosisMsgs model newModel)
-                                |> Maybe.withDefault []
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
                     , extraMsgs
                     )
 
-                -- When we see a suspected COVID 19 case, notify with a pop-up.
                 [ TravelHistoryRevision uuid data ] ->
                     let
-                        ( newModel, _ ) =
-                            List.foldl handleRevision ( model, False ) revisions
-
-                        extraMsgs =
-                            data.encounterId
-                                |> Maybe.map (generateSuspectedDiagnosisMsgs model newModel)
-                                |> Maybe.withDefault []
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
                     , extraMsgs
                     )
 
-                -- When we see a suspected COVID 19 case, notify with a pop-up.
                 [ ExposureRevision uuid data ] ->
                     let
-                        ( newModel, _ ) =
-                            List.foldl handleRevision ( model, False ) revisions
-
-                        extraMsgs =
-                            data.encounterId
-                                |> Maybe.map (generateSuspectedDiagnosisMsgs model newModel)
-                                |> Maybe.withDefault []
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
                     , extraMsgs
                     )
 
-                -- When we see a suspected COVID 19 case, notify with a pop-up.
                 [ AcuteIllnessVitalsRevision uuid data ] ->
                     let
-                        ( newModel, _ ) =
-                            List.foldl handleRevision ( model, False ) revisions
-
-                        extraMsgs =
-                            data.encounterId
-                                |> Maybe.map (generateSuspectedDiagnosisMsgs model newModel)
-                                |> Maybe.withDefault []
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
                     , extraMsgs
                     )
 
-                -- When we see a suspected COVID 19 case, notify with a pop-up.
                 [ AcuteFindingsRevision uuid data ] ->
                     let
-                        ( newModel, _ ) =
-                            List.foldl handleRevision ( model, False ) revisions
-
-                        extraMsgs =
-                            data.encounterId
-                                |> Maybe.map (generateSuspectedDiagnosisMsgs model newModel)
-                                |> Maybe.withDefault []
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
                     , extraMsgs
                     )
 
-                -- When we see a suspected COVID 19 case, notify with a pop-up.
                 [ MalariaTestingRevision uuid data ] ->
                     let
-                        ( newModel, _ ) =
-                            List.foldl handleRevision ( model, False ) revisions
-
-                        extraMsgs =
-                            data.encounterId
-                                |> Maybe.map (generateSuspectedDiagnosisMsgs model newModel)
-                                |> Maybe.withDefault []
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -2053,20 +2024,20 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
 
-generateSuspectedDiagnosisMsgs : ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
-generateSuspectedDiagnosisMsgs before after id =
+generateSuspectedDiagnosisMsgs : NominalDate -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
+generateSuspectedDiagnosisMsgs currentDate before after id person =
     let
         diagnosisBeforeChange =
             Dict.get id before.acuteIllnessMeasurements
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
-                |> Maybe.andThen resolveAcuteIllnessDiagnosis
+                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person)
 
         diagnosisAfterChange =
             Dict.get id after.acuteIllnessMeasurements
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
-                |> Maybe.andThen resolveAcuteIllnessDiagnosis
+                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person)
 
         turnOffPreviousDiagnosisMsgs =
             diagnosisBeforeChange
@@ -2076,17 +2047,8 @@ generateSuspectedDiagnosisMsgs before after id =
                             Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19 ->
                                 covid19OffMsgs
 
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaComplicated ->
-                                []
-
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated ->
-                                []
-
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionComplicated ->
-                                []
-
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionUncomplicated ->
-                                []
+                            _ ->
+                                [ setLaboratoryTaskMsg Pages.AcuteIllnessActivity.Model.LaboratoryMalariaTesting ]
                     )
                 |> Maybe.withDefault []
 
@@ -2098,75 +2060,84 @@ generateSuspectedDiagnosisMsgs before after id =
                             Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19 ->
                                 covid19OnMsgs
 
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaComplicated ->
-                                malariaComplicatedOnMsgs
-
                             Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated ->
-                                malariaUncomplicatedOnMsgs
+                                prescribeMedicationMsgs newDiagnosis
 
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionComplicated ->
-                                gastrointestinalInfectionComplicatedOnMsgs
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaComplicated ->
+                                sendToHCMsgs newDiagnosis
 
                             Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionUncomplicated ->
-                                gastrointestinalInfectionUncomplicatedOnMsgs
+                                prescribeMedicationMsgs newDiagnosis
+
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionComplicated ->
+                                sendToHCMsgs newDiagnosis
+
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisSimpleColdAndCough ->
+                                respiratoryInfectionUncomplicatedMsgs newDiagnosis
+
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisRespiratoryInfectionUncomplicated ->
+                                respiratoryInfectionUncomplicatedMsgs newDiagnosis
+
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisRespiratoryInfectionComplicated ->
+                                sendToHCMsgs newDiagnosis
+
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisFeverOfUnknownOrigin ->
+                                sendToHCMsgs newDiagnosis
                     )
                 |> Maybe.withDefault []
 
         covid19OnMsgs =
             [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessExposure))
-            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19)
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
-                |> App.Model.MsgLoggedIn
-            , Pages.AcuteIllnessActivity.Model.SetActiveExposureTask Pages.AcuteIllnessActivity.Model.ExposureIsolation
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
-                |> App.Model.MsgLoggedIn
+            , triggerWarningPopupMsg Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19 AcuteIllnessExposure
+            , setExposureTaskMsg Pages.AcuteIllnessActivity.Model.ExposureIsolation
             ]
 
         covid19OffMsgs =
-            [ Pages.AcuteIllnessActivity.Model.SetActiveExposureTask Pages.AcuteIllnessActivity.Model.ExposureTravel
+            [ setExposureTaskMsg Pages.AcuteIllnessActivity.Model.ExposureTravel ]
+
+        prescribeMedicationMsgs diagnosis =
+            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
+            , triggerWarningPopupMsg diagnosis AcuteIllnessLaboratory
+            , setLaboratoryTaskMsg Pages.AcuteIllnessActivity.Model.LaboratoryMedicationDistribution
+            ]
+
+        sendToHCMsgs diagnosis =
+            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
+            , triggerWarningPopupMsg diagnosis AcuteIllnessLaboratory
+            , setLaboratoryTaskMsg Pages.AcuteIllnessActivity.Model.LaboratorySendToHC
+            ]
+
+        respiratoryInfectionUncomplicatedMsgs diagnosis =
+            ageInMonths currentDate person
+                |> Maybe.map
+                    (\ageMonths ->
+                        if ageMonths < 2 then
+                            sendToHCMsgs diagnosis
+
+                        else if ageMonths < 60 then
+                            prescribeMedicationMsgs diagnosis
+
+                        else
+                            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessPhysicalExam))
+                            , triggerWarningPopupMsg diagnosis AcuteIllnessPhysicalExam
+                            ]
+                    )
+                |> Maybe.withDefault []
+
+        triggerWarningPopupMsg diagnosis activity =
+            Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just diagnosis)
+                |> App.Model.MsgPageAcuteIllnessActivity id activity
+                |> App.Model.MsgLoggedIn
+
+        setExposureTaskMsg task =
+            Pages.AcuteIllnessActivity.Model.SetActiveExposureTask task
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
                 |> App.Model.MsgLoggedIn
-            ]
 
-        malariaComplicatedOnMsgs =
-            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
-            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaComplicated)
+        setLaboratoryTaskMsg task =
+            Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask task
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
                 |> App.Model.MsgLoggedIn
-            , Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratorySendToHC
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
-                |> App.Model.MsgLoggedIn
-            ]
-
-        malariaUncomplicatedOnMsgs =
-            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
-            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated)
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
-                |> App.Model.MsgLoggedIn
-            , Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratoryMedicationDistribution
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
-                |> App.Model.MsgLoggedIn
-            ]
-
-        gastrointestinalInfectionComplicatedOnMsgs =
-            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
-            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionComplicated)
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
-                |> App.Model.MsgLoggedIn
-            , Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratorySendToHC
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
-                |> App.Model.MsgLoggedIn
-            ]
-
-        gastrointestinalInfectionUncomplicatedOnMsgs =
-            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
-            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionUncomplicated)
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
-                |> App.Model.MsgLoggedIn
-            , Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratoryMedicationDistribution
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
-                |> App.Model.MsgLoggedIn
-            ]
     in
     if diagnosisBeforeChange /= diagnosisAfterChange then
         turnOffPreviousDiagnosisMsgs ++ turnOnNewDiagnosisMsgs

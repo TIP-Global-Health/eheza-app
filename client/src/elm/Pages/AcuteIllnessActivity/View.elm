@@ -88,7 +88,7 @@ viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllness
 viewContent language currentDate id activity model data =
     let
         diagnosis =
-            resolveAcuteIllnessDiagnosis data.measurements
+            resolveAcuteIllnessDiagnosis currentDate data.person data.measurements
     in
     (viewPersonDetailsWithAlert language currentDate data.person diagnosis model.showAlertsDialog SetAlertsDialogState
         :: viewActivity language currentDate id activity diagnosis data model
@@ -102,38 +102,37 @@ warningPopup language maybeDiagnosis setStateMsg =
         |> Maybe.map
             (\diagnosis ->
                 let
-                    content =
+                    infoHeading =
+                        [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
+
+                    warningHeading =
+                        [ img [ src "assets/images/exclamation-red.png" ] []
+                        , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
+                        ]
+
+                    ( heading, content, color ) =
                         case diagnosis of
                             DiagnosisCovid19 ->
-                                [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
-                                , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
-                                ]
+                                ( warningHeading
+                                , [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
+                                  , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
+                                  ]
+                                , "red"
+                                )
 
-                            DiagnosisMalariaComplicated ->
-                                []
-
-                            DiagnosisMalariaUncomplicated ->
-                                []
-
-                            DiagnosisGastrointestinalInfectionComplicated ->
-                                []
-
-                            DiagnosisGastrointestinalInfectionUncomplicated ->
-                                []
+                            _ ->
+                                ( infoHeading, [], "blue" )
                 in
-                div [ class "ui active modal warning-popup" ]
+                div [ class <| "ui active modal diagnosis-popup " ++ color ]
                     [ div [ class "content" ] <|
-                        [ div [ class "popup-heading-wrapper" ]
-                            [ img [ src "assets/images/exclamation-red.png" ] []
-                            , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
-                            ]
+                        [ div [ class "popup-heading-wrapper" ] heading
                         , div [ class "popup-title" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
                         ]
                             ++ content
                     , div
                         [ class "actions" ]
                         [ button
-                            [ class "ui primary fluid button"
+                            [ class <| "ui primary fluid button " ++ color
                             , onClick <| setStateMsg Nothing
                             ]
                             [ text <| translate language Translate.Continue ]
@@ -563,10 +562,10 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
             AcuteIllnessLaboratory
 
         diagnosis =
-            resolveAcuteIllnessDiagnosis measurements
+            resolveAcuteIllnessDiagnosis currentDate person measurements
 
         tasks =
-            resolveLaboratoryTasks diagnosis
+            resolveLaboratoryTasks currentDate person diagnosis
 
         viewTask task =
             let
@@ -850,6 +849,41 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                             Zinc
                             ToggleMedicationDistributionSign
                             "zinc-medication"
+                            Nothing
+                      ]
+                    )
+
+                Just DiagnosisSimpleColdAndCough ->
+                    ( div [ class "instructions simple-cough-and-cold" ]
+                        [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign LemonJuiceOrHoney) ]
+                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign LemonJuiceOrHoney)
+                      , viewEverySetInput
+                            language
+                            form.signs
+                            LemonJuiceOrHoney
+                            ToggleMedicationDistributionSign
+                            "lemon-juice-or-honey-medication"
+                            Nothing
+                      ]
+                    )
+
+                Just DiagnosisRespiratoryInfectionUncomplicated ->
+                    ( resolveAmoxicillinDosage currentDate person
+                        |> Maybe.map
+                            (\dosage ->
+                                div [ class "instructions respiratory-infection-uncomplicated" ]
+                                    [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Amoxicillin)
+                                    , viewTabletsPrescription dosage (Translate.ByMouthTwiceADayForXDays 5)
+                                    ]
+                            )
+                        |> Maybe.withDefault emptyNode
+                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Amoxicillin)
+                      , viewEverySetInput
+                            language
+                            form.signs
+                            Amoxicillin
+                            ToggleMedicationDistributionSign
+                            "amoxicillin-medication"
                             Nothing
                       ]
                     )

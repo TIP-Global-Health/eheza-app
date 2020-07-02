@@ -25,6 +25,8 @@ import Backend.Measurement.Model
         , TravelHistorySign(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInMonths)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
@@ -140,9 +142,14 @@ resolveExposureTasks measurements isSuspected =
         |> List.filter expectTask
 
 
-resolveLaboratoryTasks : Maybe AcuteIllnessDiagnosis -> List LaboratoryTask
-resolveLaboratoryTasks diagnosis =
+resolveLaboratoryTasks : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> List LaboratoryTask
+resolveLaboratoryTasks currentDate person diagnosis =
     let
+        ( ageMonth0To2, ageMonth2To60 ) =
+            ageInMonths currentDate person
+                |> Maybe.map (\ageMonths -> ( ageMonths < 2, ageMonths >= 2 && ageMonths < 60 ))
+                |> Maybe.withDefault ( False, False )
+
         expectTask task =
             case task of
                 LaboratoryMalariaTesting ->
@@ -151,10 +158,15 @@ resolveLaboratoryTasks diagnosis =
                 LaboratoryMedicationDistribution ->
                     (diagnosis == Just DiagnosisMalariaUncomplicated)
                         || (diagnosis == Just DiagnosisGastrointestinalInfectionUncomplicated)
+                        || (diagnosis == Just DiagnosisSimpleColdAndCough)
+                        || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonth2To60)
 
                 LaboratorySendToHC ->
                     (diagnosis == Just DiagnosisMalariaComplicated)
                         || (diagnosis == Just DiagnosisGastrointestinalInfectionComplicated)
+                        || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonth0To2)
+                        || (diagnosis == Just DiagnosisRespiratoryInfectionComplicated)
+                        || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
     in
     [ LaboratoryMalariaTesting, LaboratoryMedicationDistribution, LaboratorySendToHC ]
         |> List.filter expectTask
@@ -222,25 +234,35 @@ mandatoryActivitiesCompleted measurements =
         |> List.all (activityCompleted measurements False)
 
 
-resolveAcuteIllnessDiagnosis : AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveAcuteIllnessDiagnosis measurements =
+resolveAcuteIllnessDiagnosis : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveAcuteIllnessDiagnosis currentDate person measurements =
     -- First we check for Covid19.
     if covid19Diagnosed measurements then
         Just DiagnosisCovid19
 
     else
-        resolveNonCovid19AcuteIllnessDiagnosis measurements
+        resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements
 
 
-resolveNonCovid19AcuteIllnessDiagnosis : AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveNonCovid19AcuteIllnessDiagnosis measurements =
+resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
     if mandatoryActivitiesCompleted measurements then
         if feverRecorded measurements then
             resolveAcuteIllnessDiagnosisByLaboratoryResults measurements
 
+        else if poorSuckAtSymptoms measurements && respiratoryInfectionDangerSignsPresent measurements then
+            Just DiagnosisRespiratoryInfectionComplicated
+
         else if nonBloodyDiarrheaAtSymptoms measurements then
             Just DiagnosisGastrointestinalInfectionUncomplicated
+
+        else if coughAndNasalCongestionAtSymptoms measurements then
+            if respiratoryRateElevatedForChild currentDate person measurements then
+                Just DiagnosisRespiratoryInfectionUncomplicated
+
+            else
+                Just DiagnosisSimpleColdAndCough
 
         else
             Nothing
@@ -259,8 +281,11 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
                         if bloodyDiarrheaAtSymptoms measurements && intractableVomitingAtSymptoms measurements then
                             Just DiagnosisGastrointestinalInfectionComplicated
 
+                        else if respiratoryInfectionDangerSignsPresent measurements then
+                            Just DiagnosisRespiratoryInfectionComplicated
+
                         else
-                            Nothing
+                            Just DiagnosisFeverOfUnknownOrigin
 
                     RapidTestPositive ->
                         if malarialDangerSignsPresent measurements then
@@ -387,6 +412,30 @@ feverAtPhysicalExam measurements =
         |> Maybe.withDefault False
 
 
+respiratoryRateElevatedForChild : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
+respiratoryRateElevatedForChild currentDate person measurements =
+    Maybe.map2
+        (\measurement ageMonths ->
+            let
+                respiratoryRate =
+                    Tuple.second measurement
+                        |> .value
+                        |> .respiratoryRate
+            in
+            if ageMonths < 12 then
+                respiratoryRate >= 50
+
+            else if ageMonths < 60 then
+                respiratoryRate >= 40
+
+            else
+                False
+        )
+        measurements.vitals
+        (ageInMonths currentDate person)
+        |> Maybe.withDefault False
+
+
 bloodyDiarrheaAtSymptoms : AcuteIllnessMeasurements -> Bool
 bloodyDiarrheaAtSymptoms measurements =
     measurements.symptomsGI
@@ -405,6 +454,38 @@ intractableVomitingAtSymptoms : AcuteIllnessMeasurements -> Bool
 intractableVomitingAtSymptoms measurements =
     measurements.symptomsGI
         |> Maybe.map (Tuple.second >> .value >> .derivedSigns >> EverySet.member IntractableVomiting)
+        |> Maybe.withDefault False
+
+
+coughAndNasalCongestionAtSymptoms : AcuteIllnessMeasurements -> Bool
+coughAndNasalCongestionAtSymptoms measurements =
+    measurements.symptomsRespiratory
+        |> Maybe.map
+            (Tuple.second
+                >> .value
+                >> (\symptomsDict ->
+                        symptomAppearsAtSymptomsDict Cough symptomsDict && symptomAppearsAtSymptomsDict NasalCongestion symptomsDict
+                   )
+            )
+        |> Maybe.withDefault False
+
+
+poorSuckAtSymptoms : AcuteIllnessMeasurements -> Bool
+poorSuckAtSymptoms measurements =
+    Maybe.map2
+        (\symptomsGeneral acuteFindings ->
+            let
+                symptomsGeneralDict =
+                    Tuple.second symptomsGeneral |> .value
+
+                acuteFindingsValue =
+                    Tuple.second acuteFindings |> .value
+            in
+            symptomAppearsAtSymptomsDict PoorSuck symptomsGeneralDict
+                || EverySet.member AcuteFindingsPoorSuck acuteFindingsValue.signsGeneral
+        )
+        measurements.symptomsGeneral
+        measurements.acuteFindings
         |> Maybe.withDefault False
 
 
@@ -509,6 +590,56 @@ malarialDangerSignsPresent measurements =
         )
         measurements.symptomsGeneral
         measurements.symptomsGI
+        measurements.acuteFindings
+        |> Maybe.withDefault False
+
+
+respiratoryInfectionDangerSignsPresent : AcuteIllnessMeasurements -> Bool
+respiratoryInfectionDangerSignsPresent measurements =
+    Maybe.map3
+        (\symptomsGeneral symptomsRespiratory acuteFindings ->
+            let
+                symptomsGeneralDict =
+                    Tuple.second symptomsGeneral |> .value
+
+                symptomsRespiratoryDict =
+                    Tuple.second symptomsRespiratory |> .value
+
+                acuteFindingsValue =
+                    Tuple.second acuteFindings |> .value
+
+                lethargy =
+                    symptomAppearsAtSymptomsDict Lethargy symptomsGeneralDict
+                        || EverySet.member LethargicOrUnconscious acuteFindingsValue.signsGeneral
+
+                stridor =
+                    EverySet.member Stridor acuteFindingsValue.signsRespiratory
+
+                nasalFlaring =
+                    EverySet.member NasalFlaring acuteFindingsValue.signsRespiratory
+
+                severeWheezing =
+                    EverySet.member SevereWheezing acuteFindingsValue.signsRespiratory
+
+                subCostalRetractions =
+                    EverySet.member SubCostalRetractions acuteFindingsValue.signsRespiratory
+
+                stabbingChestPain =
+                    symptomAppearsAtSymptomsDict StabbingChestPain symptomsRespiratoryDict
+
+                shortnessOfBreath =
+                    symptomAppearsAtSymptomsDict ShortnessOfBreath symptomsRespiratoryDict
+            in
+            lethargy
+                || stridor
+                || nasalFlaring
+                || severeWheezing
+                || subCostalRetractions
+                || stabbingChestPain
+                || shortnessOfBreath
+        )
+        measurements.symptomsGeneral
+        measurements.symptomsRespiratory
         measurements.acuteFindings
         |> Maybe.withDefault False
 

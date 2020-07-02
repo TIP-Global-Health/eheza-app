@@ -880,6 +880,26 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisSimpleColdAndCough ->
+                    { english = "Simple Cold and Cough"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisRespiratoryInfectionComplicated ->
+                    { english = "Acute Respiratory Infection with Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisRespiratoryInfectionUncomplicated ->
+                    { english = "Suspected Acute Respiratory Infection without Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisFeverOfUnknownOrigin ->
+                    { english = "Fever of Unknown Origin"
+                    , kinyarwanda = Nothing
+                    }
+
         AcuteIllnessDiagnosisWarning diagnosis ->
             case diagnosis of
                 DiagnosisCovid19 ->
@@ -904,6 +924,26 @@ translationSet trans =
 
                 DiagnosisGastrointestinalInfectionUncomplicated ->
                     { english = "Suspected Gastrointestinal Infection without Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSimpleColdAndCough ->
+                    { english = "Simple Cold and Cough"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisRespiratoryInfectionComplicated ->
+                    { english = "Suspected Acute Respiratory Infection with Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisRespiratoryInfectionUncomplicated ->
+                    { english = "Suspected Acute Respiratory Infection without Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisFeverOfUnknownOrigin ->
+                    { english = "High Fever"
                     , kinyarwanda = Nothing
                     }
 
@@ -3135,6 +3175,11 @@ translationSet trans =
 
                 Zinc ->
                     { english = "Zinc"
+                    , kinyarwanda = Nothing
+                    }
+
+                LemonJuiceOrHoney ->
+                    { english = "Lemon Juice or Honey"
                     , kinyarwanda = Nothing
                     }
 

@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Utils exposing (acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromAcuteFindingsValue, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromMedicationDistributionValue, fromSendToHCValue, fromTravelHistoryValue, fromTreatmentReviewValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, medicationDistributionFormWithDefault, naListTaskCompleted, naTaskCompleted, physicalExamTasksCompletedFromTotal, resolveCoartemDosage, resolveORSDosage, resolveZincDosage, sendToHCFormWithDefault, signTaskCompleted, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toAcuteFindingsValue, toAcuteFindingsValueWithDefault, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toMedicationDistributionValue, toMedicationDistributionValueWithDefault, toSendToHCValue, toSendToHCValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
+module Pages.AcuteIllnessActivity.Utils exposing (acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromAcuteFindingsValue, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromMedicationDistributionValue, fromSendToHCValue, fromTravelHistoryValue, fromTreatmentReviewValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, medicationDistributionFormWithDefault, naListTaskCompleted, naTaskCompleted, physicalExamTasksCompletedFromTotal, resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage, sendToHCFormWithDefault, signTaskCompleted, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toAcuteFindingsValue, toAcuteFindingsValueWithDefault, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toMedicationDistributionValue, toMedicationDistributionValueWithDefault, toSendToHCValue, toSendToHCValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model
@@ -207,8 +207,27 @@ laboratoryTasksCompletedFromTotal diagnosis measurements data task =
                     , 1
                     )
 
+                Just DiagnosisGastrointestinalInfectionUncomplicated ->
+                    ( signTaskCompleted ORS NoMedicationDistributionSigns form.signs
+                        + signTaskCompleted Zinc NoMedicationDistributionSigns form.signs
+                    , 2
+                    )
+
+                Just DiagnosisSimpleColdAndCough ->
+                    ( signTaskCompleted LemonJuiceOrHoney NoMedicationDistributionSigns form.signs
+                    , 1
+                    )
+
+                -- This is for child form 2 month old, to 5 years old.
+                Just DiagnosisRespiratoryInfectionUncomplicated ->
+                    ( signTaskCompleted Amoxicillin NoMedicationDistributionSigns form.signs
+                    , 1
+                    )
+
                 _ ->
-                    ( 0, 1 )
+                    ( 0
+                    , 1
+                    )
 
         LaboratorySendToHC ->
             let
@@ -936,15 +955,36 @@ resolveZincDosage currentDate person =
     ageInMonths currentDate person
         |> Maybe.map
             (\months ->
-                let
-                    _ =
-                        Debug.log "months" months
-                in
                 if months < 6 then
                     "1"
 
                 else
                     "2"
+            )
+
+
+resolveAmoxicillinDosage : NominalDate -> Person -> Maybe String
+resolveAmoxicillinDosage currentDate person =
+    ageInMonths currentDate person
+        |> Maybe.andThen
+            (\months ->
+                if months < 2 then
+                    Nothing
+
+                else if months < 5 then
+                    Just "1"
+
+                else if months < 12 then
+                    Just "2"
+
+                else if months < 30 then
+                    Just "3"
+
+                else if months < 60 then
+                    Just "4"
+
+                else
+                    Nothing
             )
 
 

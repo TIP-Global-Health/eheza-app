@@ -55,3 +55,7 @@ type AcuteIllnessDiagnosis
     | DiagnosisMalariaUncomplicated
     | DiagnosisGastrointestinalInfectionComplicated
     | DiagnosisGastrointestinalInfectionUncomplicated
+    | DiagnosisSimpleColdAndCough
+    | DiagnosisRespiratoryInfectionComplicated
+    | DiagnosisRespiratoryInfectionUncomplicated
+    | DiagnosisFeverOfUnknownOrigin
