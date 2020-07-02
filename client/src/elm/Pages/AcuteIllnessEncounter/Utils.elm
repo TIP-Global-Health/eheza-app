@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, ageDependentNextStep, bloodyDiarrheaAtSymptoms, coughAndNasalCongestionAtSymptoms, covid19Diagnosed, expectActivity, feverAtPhysicalExam, feverAtSymptoms, feverRecorded, generateAssembledData, generatePreviousMeasurements, intractableVomitingAtSymptoms, malariaRapidTestResult, malarialDangerSignsPresent, mandatoryActivitiesCompleted, nonBloodyDiarrheaAtSymptoms, poorSuckAtSymptoms, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByLaboratoryResults, resolveNextStepByDiagnosis, resolveNextStepsTasks, resolveNonCovid19AcuteIllnessDiagnosis, respiratoryInfectionDangerSignsPresent, respiratoryRateElevatedForChild, symptomAppearsAtSymptomsDict)
+module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, ageDependentNextStep, bloodyDiarrheaAtSymptoms, coughAndNasalCongestionAtSymptoms, covid19Diagnosed, expectActivity, feverAtPhysicalExam, feverAtSymptoms, feverRecorded, generateAssembledData, generatePreviousMeasurements, intractableVomitingAtSymptoms, malariaRapidTestResult, malarialDangerSignsPresent, mandatoryActivitiesCompleted, nonBloodyDiarrheaAtSymptoms, poorSuckAtSymptoms, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByLaboratoryResults, resolveNextStepByDiagnosis, resolveNextStepsTasks, resolveNonCovid19AcuteIllnessDiagnosis, respiratoryInfectionDangerSignsPresent, respiratoryRateElevated, symptomAppearsAtSymptomsDict)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -293,7 +293,7 @@ resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements =
             Just DiagnosisGastrointestinalInfectionUncomplicated
 
         else if coughAndNasalCongestionAtSymptoms measurements then
-            if respiratoryRateElevatedForChild currentDate person measurements then
+            if respiratoryRateElevated currentDate person measurements then
                 Just DiagnosisRespiratoryInfectionUncomplicated
 
             else
@@ -447,8 +447,8 @@ feverAtPhysicalExam measurements =
         |> Maybe.withDefault False
 
 
-respiratoryRateElevatedForChild : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
-respiratoryRateElevatedForChild currentDate person measurements =
+respiratoryRateElevated : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
+respiratoryRateElevated currentDate person measurements =
     Maybe.map2
         (\measurement ageMonths ->
             let
@@ -463,8 +463,11 @@ respiratoryRateElevatedForChild currentDate person measurements =
             else if ageMonths < 60 then
                 respiratoryRate >= 40
 
+            else if ageMonths < 144 then
+                respiratoryRate >= 35
+
             else
-                False
+                respiratoryRate >= 30
         )
         measurements.vitals
         (ageInMonths currentDate person)
