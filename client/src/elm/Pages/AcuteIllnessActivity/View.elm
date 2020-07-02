@@ -21,7 +21,7 @@ import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AssembledData)
 import Pages.AcuteIllnessEncounter.Utils exposing (..)
-import Pages.AcuteIllnessEncounter.View exposing (viewPersonDetailsWithAlert)
+import Pages.AcuteIllnessEncounter.View exposing (viewPersonDetailsWithAlert, warningPopup)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
@@ -94,51 +94,6 @@ viewContent language currentDate id activity model data =
         :: viewActivity language currentDate id activity diagnosis data model
     )
         |> div [ class "ui unstackable items" ]
-
-
-warningPopup : Language -> Maybe AcuteIllnessDiagnosis -> (Maybe AcuteIllnessDiagnosis -> msg) -> Maybe (Html msg)
-warningPopup language maybeDiagnosis setStateMsg =
-    maybeDiagnosis
-        |> Maybe.map
-            (\diagnosis ->
-                let
-                    infoHeading =
-                        [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
-
-                    warningHeading =
-                        [ img [ src "assets/images/exclamation-red.png" ] []
-                        , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
-                        ]
-
-                    ( heading, content, color ) =
-                        case diagnosis of
-                            DiagnosisCovid19 ->
-                                ( warningHeading
-                                , [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
-                                  , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
-                                  ]
-                                , "red"
-                                )
-
-                            _ ->
-                                ( infoHeading, [], "blue" )
-                in
-                div [ class <| "ui active modal diagnosis-popup " ++ color ]
-                    [ div [ class "content" ] <|
-                        [ div [ class "popup-heading-wrapper" ] heading
-                        , div [ class "popup-title" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
-                        ]
-                            ++ content
-                    , div
-                        [ class "actions" ]
-                        [ button
-                            [ class <| "ui primary fluid button " ++ color
-                            , onClick <| setStateMsg Nothing
-                            ]
-                            [ text <| translate language Translate.Continue ]
-                        ]
-                    ]
-            )
 
 
 viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> AssembledData -> Model -> List (Html Msg)

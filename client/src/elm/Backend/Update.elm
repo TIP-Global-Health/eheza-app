@@ -2045,28 +2045,28 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
                     (\newDiagnosis ->
                         case resolveNextStepByDiagnosis currentDate person (Just newDiagnosis) of
                             Just nextStep ->
-                                [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
-                                , triggerWarningPopupMsg newDiagnosis AcuteIllnessNextSteps
-                                , setNextStepsTaskMsg nextStep
+                                [ -- Navigate to Acute Ilness NextSteps activty page.
+                                  App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
+                                , -- Focus on firs task on that page.
+                                  Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask nextStep
+                                    |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
+                                    |> App.Model.MsgLoggedIn
+                                , -- Show warning popup with new diagnosis.
+                                  Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just newDiagnosis)
+                                    |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
+                                    |> App.Model.MsgLoggedIn
                                 ]
 
                             Nothing ->
-                                -- Todo
-                                [--  App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
-                                 -- , triggerWarningPopupMsg newDiagnosis AcuteIllnessNextSteps
+                                [ -- Navigate to Acute Ilness encounter page.
+                                  App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
+                                , -- Show warning popup with new diagnosis.
+                                  Pages.AcuteIllnessEncounter.Model.SetWarningPopupState (Just newDiagnosis)
+                                    |> App.Model.MsgPageAcuteIllnessEncounter id
+                                    |> App.Model.MsgLoggedIn
                                 ]
                     )
                 |> Maybe.withDefault []
-
-        triggerWarningPopupMsg diagnosis activity =
-            Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just diagnosis)
-                |> App.Model.MsgPageAcuteIllnessActivity id activity
-                |> App.Model.MsgLoggedIn
-
-        setNextStepsTaskMsg task =
-            Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask task
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
-                |> App.Model.MsgLoggedIn
     in
     if diagnosisBeforeChange /= diagnosisAfterChange then
         turnOnNewDiagnosisMsgs
