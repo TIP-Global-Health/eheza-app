@@ -1804,34 +1804,6 @@ input::placeholder {
   }
 }
 
-.icon-exposure-isolation {
-  .active &:after {
-    background-image: url(#{$img-path}icon-isolation-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-isolation-white.svg), url(#{$img-path}icon-completed-circle.svg);
-  }
-
-  &:after {
-    background-image: url(#{$img-path}icon-isolation-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
-  }
-}
-
-.icon-exposure-contact-hc {
-  .active &:after {
-    background-image: url(#{$img-path}icon-contact-hc-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-contact-hc-white.svg), url(#{$img-path}icon-completed-circle.svg);
-  }
-
-  &:after {
-    background-image: url(#{$img-path}icon-contact-hc-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
-  }
-}
-
 .icon-treatment-review {
   .active &:after {
     background-image: url(#{$img-path}icon-treatment-white.svg), url(#{$img-path}icon-selected-circle.svg);
@@ -1857,6 +1829,34 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-acute-findings-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-next-steps-isolation {
+  .active &:after {
+    background-image: url(#{$img-path}icon-isolation-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-isolation-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-isolation-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-next-steps-contact-hc {
+  .active &:after {
+    background-image: url(#{$img-path}icon-contact-hc-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-contact-hc-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-contact-hc-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1887,7 +1887,6 @@ input::placeholder {
     background-image: url(#{$img-path}icon-health-center-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
-
 
 // Lists
 

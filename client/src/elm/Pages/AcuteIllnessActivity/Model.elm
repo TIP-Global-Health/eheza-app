@@ -43,26 +43,26 @@ type Msg
     | SetCovid19Symptoms Bool
     | SetSimilarSymptoms Bool
     | SaveExposure PersonId (Maybe ( ExposureId, Exposure )) (Maybe ExposureTask)
-    | SetPatientIsolated Bool
-    | SetHealthEducation Bool
-    | SetSignOnDoor Bool
-    | SetReasonForNotIsolating ReasonForNotIsolating
-    | SaveIsolation PersonId (Maybe ( IsolationId, Isolation )) (Maybe ExposureTask)
-    | SetContactedHC Bool
-    | SetHCRecommendation HCRecomendation
-    | SetResponsePeriod ResponsePeriod
-    | SetAmbulanceArrivalPeriod ResponsePeriod
-    | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe ExposureTask)
       -- PRIOR TREATMNENT
     | SetActivePriorTreatmentTask PriorTreatmentTask
     | SetTreatmentReviewBoolInput (Bool -> TreatmentReviewForm -> TreatmentReviewForm) Bool
     | SaveTreatmentReview PersonId (Maybe ( TreatmentReviewId, TreatmentReview ))
       -- NEXT STEPS
     | SetActiveNextStepsTask NextStepsTask
+    | SetPatientIsolated Bool
+    | SetHealthEducation Bool
+    | SetSignOnDoor Bool
+    | SetReasonForNotIsolating ReasonForNotIsolating
+    | SaveIsolation PersonId (Maybe ( IsolationId, Isolation )) (Maybe NextStepsTask)
+    | SetContactedHC Bool
+    | SetHCRecommendation HCRecomendation
+    | SetResponsePeriod ResponsePeriod
+    | SetAmbulanceArrivalPeriod ResponsePeriod
+    | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe NextStepsTask)
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
-    | ToggleMedicationDistributionSign MedicationDistributionSign
     | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC ))
+    | ToggleMedicationDistributionSign MedicationDistributionSign
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution ))
 
 
@@ -203,8 +203,6 @@ type alias MalariaTestingForm =
 type alias ExposureData =
     { travelHistoryForm : TravelHistoryForm
     , exposureForm : ExposureForm
-    , isolationForm : IsolationForm
-    , hcContactForm : HCContactForm
     , activeTask : ExposureTask
     }
 
@@ -213,8 +211,6 @@ emptyExposureData : ExposureData
 emptyExposureData =
     { travelHistoryForm = TravelHistoryForm Nothing
     , exposureForm = ExposureForm Nothing Nothing
-    , isolationForm = IsolationForm Nothing Nothing Nothing Nothing
-    , hcContactForm = HCContactForm Nothing Nothing Nothing Nothing
     , activeTask = ExposureTravel
     }
 
@@ -222,8 +218,6 @@ emptyExposureData =
 type ExposureTask
     = ExposureTravel
     | ExposureExposure
-    | ExposureIsolation
-    | ExposureContactHC
 
 
 type alias TravelHistoryForm =
@@ -234,22 +228,6 @@ type alias TravelHistoryForm =
 type alias ExposureForm =
     { covid19Symptoms : Maybe Bool
     , similarSymptoms : Maybe Bool
-    }
-
-
-type alias IsolationForm =
-    { patientIsolated : Maybe Bool
-    , signOnDoor : Maybe Bool
-    , healthEducation : Maybe Bool
-    , reasonsForNotIsolating : Maybe (List ReasonForNotIsolating)
-    }
-
-
-type alias HCContactForm =
-    { contactedHC : Maybe Bool
-    , recomendations : Maybe HCRecomendation
-    , responsePeriod : Maybe ResponsePeriod
-    , ambulanceArrivalPeriod : Maybe ResponsePeriod
     }
 
 
@@ -300,7 +278,9 @@ emptyTreatmentReviewForm =
 
 
 type alias NextStepsData =
-    { sendToHCForm : SendToHCForm
+    { isolationForm : IsolationForm
+    , hcContactForm : HCContactForm
+    , sendToHCForm : SendToHCForm
     , medicationDistributionForm : MedicationDistributionForm
     , activeTask : Maybe NextStepsTask
     }
@@ -308,15 +288,35 @@ type alias NextStepsData =
 
 emptyNextStepsData : NextStepsData
 emptyNextStepsData =
-    { sendToHCForm = SendToHCForm Nothing Nothing
+    { isolationForm = IsolationForm Nothing Nothing Nothing Nothing
+    , hcContactForm = HCContactForm Nothing Nothing Nothing Nothing
+    , sendToHCForm = SendToHCForm Nothing Nothing
     , medicationDistributionForm = MedicationDistributionForm EverySet.empty
     , activeTask = Nothing
     }
 
 
 type NextStepsTask
-    = NextStepsMedicationDistribution
+    = NextStepsIsolation
+    | NextStepsContactHC
+    | NextStepsMedicationDistribution
     | NextStepsSendToHC
+
+
+type alias IsolationForm =
+    { patientIsolated : Maybe Bool
+    , signOnDoor : Maybe Bool
+    , healthEducation : Maybe Bool
+    , reasonsForNotIsolating : Maybe (List ReasonForNotIsolating)
+    }
+
+
+type alias HCContactForm =
+    { contactedHC : Maybe Bool
+    , recomendations : Maybe HCRecomendation
+    , responsePeriod : Maybe ResponsePeriod
+    , ambulanceArrivalPeriod : Maybe ResponsePeriod
+    }
 
 
 type alias SendToHCForm =

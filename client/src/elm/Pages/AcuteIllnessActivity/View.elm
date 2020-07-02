@@ -164,7 +164,7 @@ viewActivity language currentDate id activity diagnosis data model =
             viewAcuteIllnessLaboratory language currentDate id ( personId, data.person, measurements ) model.laboratoryData
 
         AcuteIllnessExposure ->
-            viewAcuteIllnessExposure language currentDate id ( personId, measurements ) (diagnosis == Just DiagnosisCovid19) model.exposureData
+            viewAcuteIllnessExposure language currentDate id ( personId, measurements ) model.exposureData
 
         AcuteIllnessNextSteps ->
             viewAcuteIllnessNextSteps language currentDate id ( personId, data.person, measurements ) diagnosis model.nextStepsData
@@ -691,185 +691,14 @@ viewMalariaTestingForm language currentDate form =
         ]
 
 
-viewSendToHCForm : Language -> NominalDate -> SendToHCForm -> Html Msg
-viewSendToHCForm language currentDate form =
-    div [ class "ui form send-to-hc" ]
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            [ div [ class "header" ] [ text <| translate language Translate.CompleteHCReferralForm ]
-            , div [ class "header" ] [ text <| translate language Translate.SendPatientToHC ]
-            ]
-        , div [ class "ui grid" ]
-            [ div [ class "sixteen wide column" ]
-                [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion ]
-            ]
-        , viewBoolInput
-            language
-            form.referToHealthCenter
-            SetReferToHealthCenter
-            "refer-to-hc"
-            Nothing
-        , div [ class "ui grid" ]
-            [ div [ class "sixteen wide column" ]
-                [ viewQuestionLabel language Translate.HandedReferralFormQuestion ]
-            ]
-        , viewBoolInput
-            language
-            form.handReferralForm
-            SetHandReferralForm
-            "hand-referral-form"
-            Nothing
-        ]
-
-
-viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> MedicationDistributionForm -> Html Msg
-viewMedicationDistributionForm language currentDate person diagnosis form =
-    let
-        viewAdministeredMedicationLabel medicineTranslationId =
-            div [ class "header" ]
-                [ text <| translate language Translate.Administer
-                , text " "
-                , span [] [ text <| translate language medicineTranslationId ]
-                , text ":"
-                ]
-
-        viewAdministeredMedicationQuestion medicineTranslationId =
-            div [ class "ui grid" ]
-                [ div [ class "sixteen wide column" ]
-                    [ text <|
-                        translate language Translate.AdministeredMedicationQuestion
-                            ++ " "
-                            ++ translate language medicineTranslationId
-                            ++ " "
-                            ++ translate language Translate.ToThePatient
-                            ++ "?"
-                    ]
-                ]
-
-        viewTabletsPrescription dosage duration =
-            div [ class "prescription" ]
-                [ span [] [ text <| translate language (Translate.TabletSinglePlural dosage) ]
-                , text " "
-                , text <| translate language duration
-                , text "."
-                ]
-
-        viewOralSolutionPrescription dosage =
-            div [ class "prescription" ]
-                [ span [] [ text <| dosage ++ " " ++ translate language Translate.Glass ]
-                , text " "
-                , text <| translate language Translate.AfterEachLiquidStool
-                , text "."
-                ]
-
-        ( instructions, questions ) =
-            case diagnosis of
-                Just DiagnosisMalariaUncomplicated ->
-                    ( resolveCoartemDosage currentDate person
-                        |> Maybe.map
-                            (\dosage ->
-                                div [ class "instructions malaria-uncomplicated" ]
-                                    [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Coartem)
-                                    , viewTabletsPrescription dosage (Translate.ByMouthTwiceADayForXDays 3)
-                                    ]
-                            )
-                        |> Maybe.withDefault emptyNode
-                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Coartem)
-                      , viewEverySetInput
-                            language
-                            form.signs
-                            Coartem
-                            ToggleMedicationDistributionSign
-                            "coartem-medication"
-                            Nothing
-                      ]
-                    )
-
-                Just DiagnosisGastrointestinalInfectionUncomplicated ->
-                    ( Maybe.map2
-                        (\orsDosage zincDosage ->
-                            div [ class "instructions gastrointestinal-uncomplicated" ]
-                                [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign ORS)
-                                , viewOralSolutionPrescription orsDosage
-                                , viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Zinc)
-                                , viewTabletsPrescription zincDosage (Translate.ByMouthDaylyForXDays 10)
-                                ]
-                        )
-                        (resolveORSDosage currentDate person)
-                        (resolveZincDosage currentDate person)
-                        |> Maybe.withDefault emptyNode
-                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign ORS)
-                      , viewEverySetInput
-                            language
-                            form.signs
-                            ORS
-                            ToggleMedicationDistributionSign
-                            "ors-medication"
-                            Nothing
-                      , viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Zinc)
-                      , viewEverySetInput
-                            language
-                            form.signs
-                            Zinc
-                            ToggleMedicationDistributionSign
-                            "zinc-medication"
-                            Nothing
-                      ]
-                    )
-
-                Just DiagnosisSimpleColdAndCough ->
-                    ( div [ class "instructions simple-cough-and-cold" ]
-                        [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign LemonJuiceOrHoney) ]
-                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign LemonJuiceOrHoney)
-                      , viewEverySetInput
-                            language
-                            form.signs
-                            LemonJuiceOrHoney
-                            ToggleMedicationDistributionSign
-                            "lemon-juice-or-honey-medication"
-                            Nothing
-                      ]
-                    )
-
-                Just DiagnosisRespiratoryInfectionUncomplicated ->
-                    ( resolveAmoxicillinDosage currentDate person
-                        |> Maybe.map
-                            (\dosage ->
-                                div [ class "instructions respiratory-infection-uncomplicated" ]
-                                    [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Amoxicillin)
-                                    , viewTabletsPrescription dosage (Translate.ByMouthTwiceADayForXDays 5)
-                                    ]
-                            )
-                        |> Maybe.withDefault emptyNode
-                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Amoxicillin)
-                      , viewEverySetInput
-                            language
-                            form.signs
-                            Amoxicillin
-                            ToggleMedicationDistributionSign
-                            "amoxicillin-medication"
-                            Nothing
-                      ]
-                    )
-
-                _ ->
-                    ( emptyNode, [] )
-    in
-    div [ class "ui form medication-distribution" ] <|
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , instructions
-        ]
-            ++ questions
-
-
-viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> Bool -> ExposureData -> List (Html Msg)
-viewAcuteIllnessExposure language currentDate id ( personId, measurements ) suspectedCovid19 data =
+viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> ExposureData -> List (Html Msg)
+viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data =
     let
         activity =
             AcuteIllnessExposure
 
         tasks =
-            resolveExposureTasks measurements suspectedCovid19
+            [ ExposureTravel, ExposureExposure ]
 
         viewTask task =
             let
@@ -883,16 +712,6 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) susp
                         ExposureExposure ->
                             ( "exposure-exposure"
                             , isJust measurements.exposure
-                            )
-
-                        ExposureIsolation ->
-                            ( "exposure-isolation"
-                            , isJust measurements.isolation
-                            )
-
-                        ExposureContactHC ->
-                            ( "exposure-contact-hc"
-                            , isJust measurements.hcContact
                             )
 
                 isActive =
@@ -940,18 +759,6 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) susp
                         |> exposureFormWithDefault data.exposureForm
                         |> viewExposureForm language currentDate measurements
 
-                ExposureIsolation ->
-                    measurements.isolation
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> isolationFormWithDefault data.isolationForm
-                        |> viewIsolationForm language currentDate measurements
-
-                ExposureContactHC ->
-                    measurements.hcContact
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> hcContactFormWithDefault data.hcContactForm
-                        |> viewHCContactForm language currentDate measurements
-
         getNextTask currentTask =
             case data.activeTask of
                 ExposureTravel ->
@@ -961,16 +768,6 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) susp
 
                 ExposureExposure ->
                     [ ExposureTravel ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                ExposureIsolation ->
-                    [ ExposureContactHC ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                ExposureContactHC ->
-                    [ ExposureIsolation ]
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
@@ -986,12 +783,6 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) susp
 
                         ExposureExposure ->
                             SaveExposure personId measurements.exposure nextTask
-
-                        ExposureIsolation ->
-                            SaveIsolation personId measurements.isolation nextTask
-
-                        ExposureContactHC ->
-                            SaveHCContact personId measurements.hcContact nextTask
             in
             div [ class "actions exposure" ]
                 [ button
@@ -1066,161 +857,6 @@ viewExposureForm language currentDate measurements form =
             "similar-symptoms"
             Nothing
         ]
-
-
-viewIsolationForm : Language -> NominalDate -> AcuteIllnessMeasurements -> IsolationForm -> Html Msg
-viewIsolationForm language currentDate measurements form =
-    let
-        patientIsolatedInput =
-            [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewQuestionLabel language Translate.PatientIsolatedQuestion ]
-                , div [ class "four wide column" ]
-                    [-- viewConditionalAlert form.respiratoryRate
-                     --    [ [ (>) 12 ], [ (<) 30 ] ]
-                     --    [ [ (<=) 21, (>=) 30 ] ]
-                    ]
-                ]
-            , viewBoolInput
-                language
-                form.patientIsolated
-                SetPatientIsolated
-                "patient-isolated"
-                Nothing
-            ]
-
-        derivedInputs =
-            case form.patientIsolated of
-                Just True ->
-                    [ div [ class "ui grid" ]
-                        [ div [ class "twelve wide column" ]
-                            [ viewQuestionLabel language Translate.SignOnDoorPostedQuestion ]
-                        , div [ class "four wide column" ]
-                            [-- viewConditionalAlert form.respiratoryRate
-                             --    [ [ (>) 12 ], [ (<) 30 ] ]
-                             --    [ [ (<=) 21, (>=) 30 ] ]
-                            ]
-                        ]
-                    , viewBoolInput
-                        language
-                        form.signOnDoor
-                        SetSignOnDoor
-                        "sign-on-door"
-                        Nothing
-                    ]
-                        ++ healthEducationInput
-
-                Just False ->
-                    [ viewQuestionLabel language Translate.WhyNot
-                    , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-                    , viewCheckBoxMultipleSelectInput language
-                        [ NoSpace, TooIll, CanNotSeparateFromFamily, OtherReason ]
-                        []
-                        (form.reasonsForNotIsolating |> Maybe.withDefault [])
-                        Nothing
-                        SetReasonForNotIsolating
-                        Translate.ReasonForNotIsolating
-                    ]
-                        ++ healthEducationInput
-
-                Nothing ->
-                    []
-
-        healthEducationInput =
-            [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewQuestionLabel language Translate.HealthEducationProvidedQuestion ]
-                , div [ class "four wide column" ]
-                    [-- viewConditionalAlert form.respiratoryRate
-                     --    [ [ (>) 12 ], [ (<) 30 ] ]
-                     --    [ [ (<=) 21, (>=) 30 ] ]
-                    ]
-                ]
-            , viewBoolInput
-                language
-                form.healthEducation
-                SetHealthEducation
-                "health-education"
-                Nothing
-            ]
-    in
-    patientIsolatedInput
-        ++ derivedInputs
-        |> div [ class "ui form exposure isolation" ]
-
-
-viewHCContactForm : Language -> NominalDate -> AcuteIllnessMeasurements -> HCContactForm -> Html Msg
-viewHCContactForm language currentDate measurements form =
-    let
-        contactedHCInput =
-            [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewQuestionLabel language Translate.ContactedHCQuestion ]
-                , div [ class "four wide column" ]
-                    [-- viewConditionalAlert form.respiratoryRate
-                     --    [ [ (>) 12 ], [ (<) 30 ] ]
-                     --    [ [ (<=) 21, (>=) 30 ] ]
-                    ]
-                ]
-            , viewBoolInput
-                language
-                form.contactedHC
-                SetContactedHC
-                "contacted-hc"
-                Nothing
-            ]
-
-        derivedInputs =
-            case form.contactedHC of
-                Just True ->
-                    let
-                        hcRespnonseInput =
-                            [ viewQuestionLabel language Translate.HCResponseQuestion
-                            , viewCheckBoxSelectCustomInput language
-                                [ SendAmbulance, HomeIsolation, ComeToHealthCenter, ChwMonitoring ]
-                                []
-                                form.recomendations
-                                SetHCRecommendation
-                                (viewHCRecomendation language)
-                            ]
-
-                        hcRespnonsePerionInput =
-                            [ viewQuestionLabel language Translate.HCResponsePeriodQuestion
-                            , viewCheckBoxSelectInput language
-                                [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
-                                []
-                                form.responsePeriod
-                                SetResponsePeriod
-                                Translate.ResponsePeriod
-                            ]
-
-                        derivedInput =
-                            form.recomendations
-                                |> Maybe.map
-                                    (\recomendations ->
-                                        if recomendations == SendAmbulance then
-                                            [ viewQuestionLabel language Translate.AmbulancArrivalPeriodQuestion
-                                            , viewCheckBoxSelectInput language
-                                                [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
-                                                []
-                                                form.ambulanceArrivalPeriod
-                                                SetAmbulanceArrivalPeriod
-                                                Translate.ResponsePeriod
-                                            ]
-
-                                        else
-                                            []
-                                    )
-                                |> Maybe.withDefault []
-                    in
-                    hcRespnonseInput ++ hcRespnonsePerionInput ++ derivedInput
-
-                _ ->
-                    []
-    in
-    contactedHCInput
-        ++ derivedInputs
-        |> div [ class "ui form exposure hc-contact" ]
 
 
 viewHCRecomendation : Language -> HCRecomendation -> Html Msg
@@ -1491,6 +1127,16 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
             let
                 ( iconClass, isCompleted ) =
                     case task of
+                        NextStepsIsolation ->
+                            ( "next-steps-isolation"
+                            , isJust measurements.isolation
+                            )
+
+                        NextStepsContactHC ->
+                            ( "next-steps-contact-hc"
+                            , isJust measurements.hcContact
+                            )
+
                         NextStepsMedicationDistribution ->
                             ( "next-steps-medication-distribution"
                             , isJust measurements.medicationDistribution
@@ -1535,6 +1181,18 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
 
         viewForm =
             case activeTask of
+                Just NextStepsIsolation ->
+                    measurements.isolation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> isolationFormWithDefault data.isolationForm
+                        |> viewIsolationForm language currentDate measurements
+
+                Just NextStepsContactHC ->
+                    measurements.hcContact
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> hcContactFormWithDefault data.hcContactForm
+                        |> viewHCContactForm language currentDate measurements
+
                 Just NextStepsMedicationDistribution ->
                     measurements.medicationDistribution
                         |> Maybe.map (Tuple.second >> .value)
@@ -1552,28 +1210,45 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
 
         getNextTask currentTask =
             case currentTask of
-                -- Todo:
-                NextStepsMedicationDistribution ->
-                    []
+                NextStepsIsolation ->
+                    [ NextStepsContactHC ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
 
-                -- Todo:
+                NextStepsContactHC ->
+                    [ NextStepsIsolation ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                NextStepsMedicationDistribution ->
+                    Nothing
+
                 NextStepsSendToHC ->
-                    []
+                    Nothing
 
         actions =
             activeTask
                 |> Maybe.map
                     (\task ->
                         let
+                            nextTask =
+                                getNextTask task
+
                             saveMsg =
                                 case task of
+                                    NextStepsIsolation ->
+                                        SaveIsolation personId measurements.isolation nextTask
+
+                                    NextStepsContactHC ->
+                                        SaveHCContact personId measurements.hcContact nextTask
+
                                     NextStepsSendToHC ->
                                         SaveSendToHC personId measurements.sendToHC
 
                                     NextStepsMedicationDistribution ->
                                         SaveMedicationDistribution personId measurements.medicationDistribution
                         in
-                        div [ class "actions malaria-testing" ]
+                        div [ class "actions next-steps" ]
                             [ button
                                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                                 , onClick saveMsg
@@ -1595,3 +1270,329 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
             ]
         ]
     ]
+
+
+viewIsolationForm : Language -> NominalDate -> AcuteIllnessMeasurements -> IsolationForm -> Html Msg
+viewIsolationForm language currentDate measurements form =
+    let
+        patientIsolatedInput =
+            [ div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewQuestionLabel language Translate.PatientIsolatedQuestion ]
+                , div [ class "four wide column" ]
+                    [-- viewConditionalAlert form.respiratoryRate
+                     --    [ [ (>) 12 ], [ (<) 30 ] ]
+                     --    [ [ (<=) 21, (>=) 30 ] ]
+                    ]
+                ]
+            , viewBoolInput
+                language
+                form.patientIsolated
+                SetPatientIsolated
+                "patient-isolated"
+                Nothing
+            ]
+
+        derivedInputs =
+            case form.patientIsolated of
+                Just True ->
+                    [ div [ class "ui grid" ]
+                        [ div [ class "twelve wide column" ]
+                            [ viewQuestionLabel language Translate.SignOnDoorPostedQuestion ]
+                        , div [ class "four wide column" ]
+                            [-- viewConditionalAlert form.respiratoryRate
+                             --    [ [ (>) 12 ], [ (<) 30 ] ]
+                             --    [ [ (<=) 21, (>=) 30 ] ]
+                            ]
+                        ]
+                    , viewBoolInput
+                        language
+                        form.signOnDoor
+                        SetSignOnDoor
+                        "sign-on-door"
+                        Nothing
+                    ]
+                        ++ healthEducationInput
+
+                Just False ->
+                    [ viewQuestionLabel language Translate.WhyNot
+                    , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+                    , viewCheckBoxMultipleSelectInput language
+                        [ NoSpace, TooIll, CanNotSeparateFromFamily, OtherReason ]
+                        []
+                        (form.reasonsForNotIsolating |> Maybe.withDefault [])
+                        Nothing
+                        SetReasonForNotIsolating
+                        Translate.ReasonForNotIsolating
+                    ]
+                        ++ healthEducationInput
+
+                Nothing ->
+                    []
+
+        healthEducationInput =
+            [ div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewQuestionLabel language Translate.HealthEducationProvidedQuestion ]
+                , div [ class "four wide column" ]
+                    [-- viewConditionalAlert form.respiratoryRate
+                     --    [ [ (>) 12 ], [ (<) 30 ] ]
+                     --    [ [ (<=) 21, (>=) 30 ] ]
+                    ]
+                ]
+            , viewBoolInput
+                language
+                form.healthEducation
+                SetHealthEducation
+                "health-education"
+                Nothing
+            ]
+    in
+    patientIsolatedInput
+        ++ derivedInputs
+        |> div [ class "ui form exposure isolation" ]
+
+
+viewHCContactForm : Language -> NominalDate -> AcuteIllnessMeasurements -> HCContactForm -> Html Msg
+viewHCContactForm language currentDate measurements form =
+    let
+        contactedHCInput =
+            [ div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewQuestionLabel language Translate.ContactedHCQuestion ]
+                , div [ class "four wide column" ]
+                    [-- viewConditionalAlert form.respiratoryRate
+                     --    [ [ (>) 12 ], [ (<) 30 ] ]
+                     --    [ [ (<=) 21, (>=) 30 ] ]
+                    ]
+                ]
+            , viewBoolInput
+                language
+                form.contactedHC
+                SetContactedHC
+                "contacted-hc"
+                Nothing
+            ]
+
+        derivedInputs =
+            case form.contactedHC of
+                Just True ->
+                    let
+                        hcRespnonseInput =
+                            [ viewQuestionLabel language Translate.HCResponseQuestion
+                            , viewCheckBoxSelectCustomInput language
+                                [ SendAmbulance, HomeIsolation, ComeToHealthCenter, ChwMonitoring ]
+                                []
+                                form.recomendations
+                                SetHCRecommendation
+                                (viewHCRecomendation language)
+                            ]
+
+                        hcRespnonsePerionInput =
+                            [ viewQuestionLabel language Translate.HCResponsePeriodQuestion
+                            , viewCheckBoxSelectInput language
+                                [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
+                                []
+                                form.responsePeriod
+                                SetResponsePeriod
+                                Translate.ResponsePeriod
+                            ]
+
+                        derivedInput =
+                            form.recomendations
+                                |> Maybe.map
+                                    (\recomendations ->
+                                        if recomendations == SendAmbulance then
+                                            [ viewQuestionLabel language Translate.AmbulancArrivalPeriodQuestion
+                                            , viewCheckBoxSelectInput language
+                                                [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
+                                                []
+                                                form.ambulanceArrivalPeriod
+                                                SetAmbulanceArrivalPeriod
+                                                Translate.ResponsePeriod
+                                            ]
+
+                                        else
+                                            []
+                                    )
+                                |> Maybe.withDefault []
+                    in
+                    hcRespnonseInput ++ hcRespnonsePerionInput ++ derivedInput
+
+                _ ->
+                    []
+    in
+    contactedHCInput
+        ++ derivedInputs
+        |> div [ class "ui form exposure hc-contact" ]
+
+
+viewSendToHCForm : Language -> NominalDate -> SendToHCForm -> Html Msg
+viewSendToHCForm language currentDate form =
+    div [ class "ui form send-to-hc" ]
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ]
+            [ div [ class "header" ] [ text <| translate language Translate.CompleteHCReferralForm ]
+            , div [ class "header" ] [ text <| translate language Translate.SendPatientToHC ]
+            ]
+        , div [ class "ui grid" ]
+            [ div [ class "sixteen wide column" ]
+                [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion ]
+            ]
+        , viewBoolInput
+            language
+            form.referToHealthCenter
+            SetReferToHealthCenter
+            "refer-to-hc"
+            Nothing
+        , div [ class "ui grid" ]
+            [ div [ class "sixteen wide column" ]
+                [ viewQuestionLabel language Translate.HandedReferralFormQuestion ]
+            ]
+        , viewBoolInput
+            language
+            form.handReferralForm
+            SetHandReferralForm
+            "hand-referral-form"
+            Nothing
+        ]
+
+
+viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> MedicationDistributionForm -> Html Msg
+viewMedicationDistributionForm language currentDate person diagnosis form =
+    let
+        viewAdministeredMedicationLabel medicineTranslationId =
+            div [ class "header" ]
+                [ text <| translate language Translate.Administer
+                , text " "
+                , span [] [ text <| translate language medicineTranslationId ]
+                , text ":"
+                ]
+
+        viewAdministeredMedicationQuestion medicineTranslationId =
+            div [ class "ui grid" ]
+                [ div [ class "sixteen wide column" ]
+                    [ text <|
+                        translate language Translate.AdministeredMedicationQuestion
+                            ++ " "
+                            ++ translate language medicineTranslationId
+                            ++ " "
+                            ++ translate language Translate.ToThePatient
+                            ++ "?"
+                    ]
+                ]
+
+        viewTabletsPrescription dosage duration =
+            div [ class "prescription" ]
+                [ span [] [ text <| translate language (Translate.TabletSinglePlural dosage) ]
+                , text " "
+                , text <| translate language duration
+                , text "."
+                ]
+
+        viewOralSolutionPrescription dosage =
+            div [ class "prescription" ]
+                [ span [] [ text <| dosage ++ " " ++ translate language Translate.Glass ]
+                , text " "
+                , text <| translate language Translate.AfterEachLiquidStool
+                , text "."
+                ]
+
+        ( instructions, questions ) =
+            case diagnosis of
+                Just DiagnosisMalariaUncomplicated ->
+                    ( resolveCoartemDosage currentDate person
+                        |> Maybe.map
+                            (\dosage ->
+                                div [ class "instructions malaria-uncomplicated" ]
+                                    [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Coartem)
+                                    , viewTabletsPrescription dosage (Translate.ByMouthTwiceADayForXDays 3)
+                                    ]
+                            )
+                        |> Maybe.withDefault emptyNode
+                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Coartem)
+                      , viewEverySetInput
+                            language
+                            form.signs
+                            Coartem
+                            ToggleMedicationDistributionSign
+                            "coartem-medication"
+                            Nothing
+                      ]
+                    )
+
+                Just DiagnosisGastrointestinalInfectionUncomplicated ->
+                    ( Maybe.map2
+                        (\orsDosage zincDosage ->
+                            div [ class "instructions gastrointestinal-uncomplicated" ]
+                                [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign ORS)
+                                , viewOralSolutionPrescription orsDosage
+                                , viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Zinc)
+                                , viewTabletsPrescription zincDosage (Translate.ByMouthDaylyForXDays 10)
+                                ]
+                        )
+                        (resolveORSDosage currentDate person)
+                        (resolveZincDosage currentDate person)
+                        |> Maybe.withDefault emptyNode
+                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign ORS)
+                      , viewEverySetInput
+                            language
+                            form.signs
+                            ORS
+                            ToggleMedicationDistributionSign
+                            "ors-medication"
+                            Nothing
+                      , viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Zinc)
+                      , viewEverySetInput
+                            language
+                            form.signs
+                            Zinc
+                            ToggleMedicationDistributionSign
+                            "zinc-medication"
+                            Nothing
+                      ]
+                    )
+
+                Just DiagnosisSimpleColdAndCough ->
+                    ( div [ class "instructions simple-cough-and-cold" ]
+                        [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign LemonJuiceOrHoney) ]
+                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign LemonJuiceOrHoney)
+                      , viewEverySetInput
+                            language
+                            form.signs
+                            LemonJuiceOrHoney
+                            ToggleMedicationDistributionSign
+                            "lemon-juice-or-honey-medication"
+                            Nothing
+                      ]
+                    )
+
+                Just DiagnosisRespiratoryInfectionUncomplicated ->
+                    ( resolveAmoxicillinDosage currentDate person
+                        |> Maybe.map
+                            (\dosage ->
+                                div [ class "instructions respiratory-infection-uncomplicated" ]
+                                    [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Amoxicillin)
+                                    , viewTabletsPrescription dosage (Translate.ByMouthTwiceADayForXDays 5)
+                                    ]
+                            )
+                        |> Maybe.withDefault emptyNode
+                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Amoxicillin)
+                      , viewEverySetInput
+                            language
+                            form.signs
+                            Amoxicillin
+                            ToggleMedicationDistributionSign
+                            "amoxicillin-medication"
+                            Nothing
+                      ]
+                    )
+
+                _ ->
+                    ( emptyNode, [] )
+    in
+    div [ class "ui form medication-distribution" ] <|
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , instructions
+        ]
+            ++ questions

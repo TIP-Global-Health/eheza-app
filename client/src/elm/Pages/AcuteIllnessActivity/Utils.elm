@@ -220,66 +220,6 @@ exposureTasksCompletedFromTotal measurements data task =
             , 2
             )
 
-        ExposureIsolation ->
-            let
-                form =
-                    measurements.isolation
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> isolationFormWithDefault data.isolationForm
-
-                ( derivedActive, derivedCompleted ) =
-                    case form.patientIsolated of
-                        Just True ->
-                            ( 2, taskCompleted form.healthEducation + taskCompleted form.signOnDoor )
-
-                        Just False ->
-                            ( 2, taskCompleted form.healthEducation + naListTaskCompleted IsolationReasonNotApplicable form.reasonsForNotIsolating )
-
-                        Nothing ->
-                            ( 0, 0 )
-            in
-            ( taskCompleted form.patientIsolated + derivedCompleted
-            , 1 + derivedActive
-            )
-
-        ExposureContactHC ->
-            let
-                form =
-                    measurements.hcContact
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> hcContactFormWithDefault data.hcContactForm
-            in
-            form.contactedHC
-                |> Maybe.map
-                    (\contactedHC ->
-                        if contactedHC then
-                            let
-                                recomendationsCompleted =
-                                    naTaskCompleted HCRecomendationNotApplicable form.recomendations
-
-                                ( ambulanceActive, ambulanceCompleted ) =
-                                    form.recomendations
-                                        |> Maybe.map
-                                            (\recomendations ->
-                                                if recomendations == SendAmbulance then
-                                                    ( naTaskCompleted ResponsePeriodNotApplicable form.ambulanceArrivalPeriod
-                                                    , naTaskCompleted ResponsePeriodNotApplicable form.ambulanceArrivalPeriod
-                                                    )
-
-                                                else
-                                                    ( 0, 0 )
-                                            )
-                                        |> Maybe.withDefault ( 0, 0 )
-                            in
-                            ( 1 + recomendationsCompleted + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceCompleted
-                            , 2 + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceActive
-                            )
-
-                        else
-                            ( 1, 1 )
-                    )
-                |> Maybe.withDefault ( 0, 1 )
-
 
 treatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> PriorTreatmentData -> PriorTreatmentTask -> ( Int, Int )
 treatmentTasksCompletedFromTotal measurements data task =
@@ -347,6 +287,66 @@ treatmentTasksCompletedFromTotal measurements data task =
 nextStepsTasksCompletedFromTotal : Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
 nextStepsTasksCompletedFromTotal diagnosis measurements data task =
     case task of
+        NextStepsIsolation ->
+            let
+                form =
+                    measurements.isolation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> isolationFormWithDefault data.isolationForm
+
+                ( derivedActive, derivedCompleted ) =
+                    case form.patientIsolated of
+                        Just True ->
+                            ( 2, taskCompleted form.healthEducation + taskCompleted form.signOnDoor )
+
+                        Just False ->
+                            ( 2, taskCompleted form.healthEducation + naListTaskCompleted IsolationReasonNotApplicable form.reasonsForNotIsolating )
+
+                        Nothing ->
+                            ( 0, 0 )
+            in
+            ( taskCompleted form.patientIsolated + derivedCompleted
+            , 1 + derivedActive
+            )
+
+        NextStepsContactHC ->
+            let
+                form =
+                    measurements.hcContact
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> hcContactFormWithDefault data.hcContactForm
+            in
+            form.contactedHC
+                |> Maybe.map
+                    (\contactedHC ->
+                        if contactedHC then
+                            let
+                                recomendationsCompleted =
+                                    naTaskCompleted HCRecomendationNotApplicable form.recomendations
+
+                                ( ambulanceActive, ambulanceCompleted ) =
+                                    form.recomendations
+                                        |> Maybe.map
+                                            (\recomendations ->
+                                                if recomendations == SendAmbulance then
+                                                    ( naTaskCompleted ResponsePeriodNotApplicable form.ambulanceArrivalPeriod
+                                                    , naTaskCompleted ResponsePeriodNotApplicable form.ambulanceArrivalPeriod
+                                                    )
+
+                                                else
+                                                    ( 0, 0 )
+                                            )
+                                        |> Maybe.withDefault ( 0, 0 )
+                            in
+                            ( 1 + recomendationsCompleted + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceCompleted
+                            , 2 + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceActive
+                            )
+
+                        else
+                            ( 1, 1 )
+                    )
+                |> Maybe.withDefault ( 0, 1 )
+
         NextStepsMedicationDistribution ->
             let
                 form =

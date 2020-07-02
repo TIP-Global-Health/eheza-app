@@ -2202,16 +2202,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                ExposureIsolation ->
-                    { english = "Isolate Patient"
-                    , kinyarwanda = Nothing
-                    }
-
-                ExposureContactHC ->
-                    { english = "Contact Health Center"
-                    , kinyarwanda = Nothing
-                    }
-
         Failure ->
             { english = "Failure"
             , kinyarwanda = Nothing
@@ -3400,6 +3390,16 @@ translationSet trans =
 
         NextStepsTask task ->
             case task of
+                NextStepsIsolation ->
+                    { english = "Isolate Patient"
+                    , kinyarwanda = Nothing
+                    }
+
+                NextStepsContactHC ->
+                    { english = "Contact Health Center"
+                    , kinyarwanda = Nothing
+                    }
+
                 NextStepsMedicationDistribution ->
                     { english = "Medication Distribution"
                     , kinyarwanda = Nothing

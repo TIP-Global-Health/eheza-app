@@ -2039,19 +2039,6 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
                 |> RemoteData.toMaybe
                 |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person)
 
-        turnOffPreviousDiagnosisMsgs =
-            diagnosisBeforeChange
-                |> Maybe.map
-                    (\previousDiagnosis ->
-                        case previousDiagnosis of
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19 ->
-                                covid19OffMsgs
-
-                            _ ->
-                                []
-                    )
-                |> Maybe.withDefault []
-
         turnOnNewDiagnosisMsgs =
             diagnosisAfterChange
                 |> Maybe.map
@@ -2060,7 +2047,7 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
                             Just nextStep ->
                                 [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
                                 , triggerWarningPopupMsg newDiagnosis AcuteIllnessNextSteps
-                                , setLaboratoryTaskMsg nextStep
+                                , setNextStepsTaskMsg nextStep
                                 ]
 
                             Nothing ->
@@ -2071,62 +2058,18 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
                     )
                 |> Maybe.withDefault []
 
-        covid19OnMsgs =
-            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessExposure))
-            , triggerWarningPopupMsg Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19 AcuteIllnessExposure
-            , setExposureTaskMsg Pages.AcuteIllnessActivity.Model.ExposureIsolation
-            ]
-
-        covid19OffMsgs =
-            [ setExposureTaskMsg Pages.AcuteIllnessActivity.Model.ExposureTravel ]
-
-        prescribeMedicationMsgs diagnosis =
-            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
-            , triggerWarningPopupMsg diagnosis AcuteIllnessNextSteps
-            , setLaboratoryTaskMsg Pages.AcuteIllnessActivity.Model.NextStepsMedicationDistribution
-            ]
-
-        sendToHCMsgs diagnosis =
-            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
-            , triggerWarningPopupMsg diagnosis AcuteIllnessNextSteps
-            , setLaboratoryTaskMsg Pages.AcuteIllnessActivity.Model.NextStepsSendToHC
-            ]
-
-        respiratoryInfectionUncomplicatedMsgs diagnosis =
-            ageInMonths currentDate person
-                |> Maybe.map
-                    (\ageMonths ->
-                        if ageMonths < 2 then
-                            sendToHCMsgs diagnosis
-
-                        else if ageMonths < 60 then
-                            prescribeMedicationMsgs diagnosis
-
-                        else
-                            -- Todo
-                            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessPhysicalExam))
-                            , triggerWarningPopupMsg diagnosis AcuteIllnessPhysicalExam
-                            ]
-                    )
-                |> Maybe.withDefault []
-
         triggerWarningPopupMsg diagnosis activity =
             Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just diagnosis)
                 |> App.Model.MsgPageAcuteIllnessActivity id activity
                 |> App.Model.MsgLoggedIn
 
-        setExposureTaskMsg task =
-            Pages.AcuteIllnessActivity.Model.SetActiveExposureTask task
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
-                |> App.Model.MsgLoggedIn
-
-        setLaboratoryTaskMsg task =
+        setNextStepsTaskMsg task =
             Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask task
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
                 |> App.Model.MsgLoggedIn
     in
     if diagnosisBeforeChange /= diagnosisAfterChange then
-        turnOffPreviousDiagnosisMsgs ++ turnOnNewDiagnosisMsgs
+        turnOnNewDiagnosisMsgs
 
     else
         []

@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, ageDependentNextStep, bloodyDiarrheaAtSymptoms, coughAndNasalCongestionAtSymptoms, covid19Diagnosed, expectActivity, exposureTasksCompleted, feverAtPhysicalExam, feverAtSymptoms, feverRecorded, generateAssembledData, generatePreviousMeasurements, intractableVomitingAtSymptoms, malariaRapidTestResult, malarialDangerSignsPresent, mandatoryActivitiesCompleted, nonBloodyDiarrheaAtSymptoms, poorSuckAtSymptoms, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByLaboratoryResults, resolveExposureTasks, resolveNextStepByDiagnosis, resolveNextStepsTasks, resolveNonCovid19AcuteIllnessDiagnosis, respiratoryInfectionDangerSignsPresent, respiratoryRateElevatedForChild, symptomAppearsAtSymptomsDict)
+module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, ageDependentNextStep, bloodyDiarrheaAtSymptoms, coughAndNasalCongestionAtSymptoms, covid19Diagnosed, expectActivity, feverAtPhysicalExam, feverAtSymptoms, feverRecorded, generateAssembledData, generatePreviousMeasurements, intractableVomitingAtSymptoms, malariaRapidTestResult, malarialDangerSignsPresent, mandatoryActivitiesCompleted, nonBloodyDiarrheaAtSymptoms, poorSuckAtSymptoms, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByLaboratoryResults, resolveNextStepByDiagnosis, resolveNextStepsTasks, resolveNonCovid19AcuteIllnessDiagnosis, respiratoryInfectionDangerSignsPresent, respiratoryRateElevatedForChild, symptomAppearsAtSymptomsDict)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -106,42 +106,6 @@ generatePreviousMeasurements currentEncounterId participantId db =
             )
 
 
-resolveExposureTasks : AcuteIllnessMeasurements -> Bool -> List ExposureTask
-resolveExposureTasks measurements isSuspected =
-    let
-        expectTask task =
-            if isSuspected then
-                case task of
-                    ExposureTravel ->
-                        isJust measurements.travelHistory
-
-                    ExposureExposure ->
-                        isJust measurements.exposure
-
-                    ExposureIsolation ->
-                        True
-
-                    ExposureContactHC ->
-                        True
-
-            else
-                case task of
-                    ExposureTravel ->
-                        True
-
-                    ExposureExposure ->
-                        True
-
-                    ExposureIsolation ->
-                        False
-
-                    ExposureContactHC ->
-                        False
-    in
-    [ ExposureTravel, ExposureExposure, ExposureIsolation, ExposureContactHC ]
-        |> List.filter expectTask
-
-
 resolveNextStepsTasks : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> List NextStepsTask
 resolveNextStepsTasks currentDate person diagnosis =
     let
@@ -152,41 +116,28 @@ resolveNextStepsTasks currentDate person diagnosis =
 
         expectTask task =
             case task of
+                NextStepsIsolation ->
+                    diagnosis == Just DiagnosisCovid19
+
+                NextStepsContactHC ->
+                    diagnosis == Just DiagnosisCovid19
+
                 NextStepsMedicationDistribution ->
                     (diagnosis == Just DiagnosisMalariaUncomplicated)
                         || (diagnosis == Just DiagnosisGastrointestinalInfectionUncomplicated)
-                        || (diagnosis == Just DiagnosisSimpleColdAndCough)
+                        || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonth2To60)
                         || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonth2To60)
 
                 NextStepsSendToHC ->
                     (diagnosis == Just DiagnosisMalariaComplicated)
                         || (diagnosis == Just DiagnosisGastrointestinalInfectionComplicated)
+                        || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonth0To2)
                         || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonth0To2)
                         || (diagnosis == Just DiagnosisRespiratoryInfectionComplicated)
                         || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
     in
-    [ NextStepsMedicationDistribution, NextStepsSendToHC ]
+    [ NextStepsIsolation, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
         |> List.filter expectTask
-
-
-exposureTasksCompleted : AcuteIllnessMeasurements -> Bool -> Bool
-exposureTasksCompleted measurements isSuspected =
-    resolveExposureTasks measurements isSuspected
-        |> List.all
-            (\task ->
-                case task of
-                    ExposureTravel ->
-                        isJust measurements.travelHistory
-
-                    ExposureExposure ->
-                        isJust measurements.exposure
-
-                    ExposureIsolation ->
-                        isJust measurements.isolation
-
-                    ExposureContactHC ->
-                        isJust measurements.hcContact
-            )
 
 
 expectActivity : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessActivity -> Bool
@@ -205,8 +156,51 @@ expectActivity currentDate person measurements diagnosis activity =
             True
 
 
-activityCompleted : AcuteIllnessMeasurements -> Bool -> AcuteIllnessActivity -> Bool
-activityCompleted measurements isSuspected activity =
+activityCompleted : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessActivity -> Bool
+activityCompleted currentDate person measurements diagnosis activity =
+    case activity of
+        AcuteIllnessSymptoms ->
+            mandatoryActivityCompleted measurements AcuteIllnessSymptoms
+
+        AcuteIllnessPhysicalExam ->
+            mandatoryActivityCompleted measurements AcuteIllnessPhysicalExam
+
+        AcuteIllnessPriorTreatment ->
+            isJust measurements.treatmentReview
+
+        AcuteIllnessLaboratory ->
+            isJust measurements.malariaTesting
+
+        AcuteIllnessExposure ->
+            mandatoryActivityCompleted measurements AcuteIllnessExposure
+
+        AcuteIllnessNextSteps ->
+            case resolveNextStepsTasks currentDate person diagnosis of
+                [ NextStepsIsolation, NextStepsContactHC ] ->
+                    isJust measurements.isolation
+                        && isJust measurements.hcContact
+
+                [ NextStepsMedicationDistribution ] ->
+                    isJust measurements.medicationDistribution
+
+                [ NextStepsSendToHC ] ->
+                    isJust measurements.sendToHC
+
+                _ ->
+                    False
+
+
+{-| These are the activities that are mandatory, for us to come up with diagnosis.
+Covid19 diagnosis is special, therefore, we assume here that Covid19 is negative.
+-}
+mandatoryActivitiesCompleted : AcuteIllnessMeasurements -> Bool
+mandatoryActivitiesCompleted measurements =
+    [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPhysicalExam ]
+        |> List.all (mandatoryActivityCompleted measurements)
+
+
+mandatoryActivityCompleted : AcuteIllnessMeasurements -> AcuteIllnessActivity -> Bool
+mandatoryActivityCompleted measurements activity =
     case activity of
         AcuteIllnessSymptoms ->
             isJust measurements.symptomsGeneral
@@ -216,26 +210,12 @@ activityCompleted measurements isSuspected activity =
         AcuteIllnessPhysicalExam ->
             isJust measurements.vitals
 
-        AcuteIllnessPriorTreatment ->
-            isJust measurements.treatmentReview
-
-        AcuteIllnessLaboratory ->
-            isJust measurements.malariaTesting
-
         AcuteIllnessExposure ->
-            exposureTasksCompleted measurements isSuspected
+            isJust measurements.travelHistory
+                && isJust measurements.exposure
 
-        AcuteIllnessNextSteps ->
+        _ ->
             False
-
-
-{-| These are the activities that are mandatory, for us to come up with diagnosis.
-Covid19 diagnosis is special, therefore, we assume here that Covid19 is negative.
--}
-mandatoryActivitiesCompleted : AcuteIllnessMeasurements -> Bool
-mandatoryActivitiesCompleted measurements =
-    [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPhysicalExam ]
-        |> List.all (activityCompleted measurements False)
 
 
 resolveNextStepByDiagnosis : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> Maybe NextStepsTask
@@ -245,8 +225,7 @@ resolveNextStepByDiagnosis currentDate person maybeDiagnosis =
             (\diagnosis ->
                 case diagnosis of
                     Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19 ->
-                        -- Todo
-                        Nothing
+                        Just NextStepsIsolation
 
                     Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated ->
                         Just NextStepsMedicationDistribution
