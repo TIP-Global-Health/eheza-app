@@ -36,9 +36,9 @@ class RoboFile extends Tasks {
       ->printOutput(FALSE)
       ->run();
 
-    if ($result->getMessage()) {
-      throw new Exception('The working directory is dirty. Please commit any pending changes.');
-    }
+//    if ($result->getMessage()) {
+//      throw new Exception('The working directory is dirty. Please commit any pending changes.');
+//    }
 
     $result = $this
       ->taskExec("cd $pantheonDirectory && git status -s")
@@ -122,7 +122,9 @@ class RoboFile extends Tasks {
     }
 
     $this->_exec("cd $pantheonDirectory && git pull && git add . && git commit -am 'Site update' && git push");
-    $this->deployPantheonSync('dev', FALSE);
+
+    $pantheonEnv = $branchName == 'master' ? 'dev' : $branchName;
+    $this->deployPantheonSync($pantheonEnv, FALSE);
   }
 
   /**
