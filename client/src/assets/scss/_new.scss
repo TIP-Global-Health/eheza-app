@@ -578,8 +578,9 @@ div.page-encounter.prenatal {
     }
 }
 
-// Acute Illness Encounter page
-div.page-encounter.acute-illness {
+// Acute Illness pages
+div.page-encounter.acute-illness,
+div.page-activity.acute-illness {
 
     .item .content.person-details {
       padding-top: 0 !important;
@@ -591,7 +592,25 @@ div.page-encounter.acute-illness {
       .age-wrapper {
         margin-bottom: 5px;
       }
+
+      .disagnosis-wrapper {
+
+        .label {
+          float: left;
+          width: 24%;
+        }
+
+        .disagnosis {
+          float: left;
+          width: 75%;
+        }
+      }
     }
+}
+
+
+// Acute Illness Encounter page
+div.page-encounter.acute-illness {
 
     .ui.full.segment {
 
@@ -604,18 +623,6 @@ div.page-encounter.acute-illness {
 // Acute Illness Activity page
 div.page-activity.acute-illness {
 
-  .item .content.person-details {
-    padding-top: 0 !important;
-
-    h2 {
-      margin-bottom: 5px;
-    }
-
-    .age-wrapper {
-      margin-bottom: 5px;
-    }
-  }
-
   .ui.full.segment {
 
     .full.content {
@@ -626,10 +633,10 @@ div.page-activity.acute-illness {
       margin-bottom: 30px;
     }
 
-    .ui.form.medication-distribution {
+    .ui.form.medication-distribution,
+    .ui.form.send-to-hc {
 
       h2 {
-        margin-bottom: 20px;
         text-transform: uppercase;
       }
 
@@ -643,9 +650,10 @@ div.page-activity.acute-illness {
 
         .header {
           margin-bottom: 5px;
+          margin-top: 20px;
         }
 
-        .dosage {
+        .prescription {
           margin-left: 30px;
         }
       }
@@ -668,7 +676,7 @@ div.page-activity.acute-illness {
     .form-input.period {
       background: $color-white;
       border: 2px solid $color-light-gray;
-      margin-bottom: 0;
+      margin-ottom: 0;
       margin-top: -10px;
       padding: 5px;
       width: 100%;

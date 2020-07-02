@@ -1,28 +1,29 @@
-module Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, diffInYears, expectedAgeByPerson, graduatingAgeInMonth, initiatorFromUrlFragmemt, initiatorToUrlFragmemt, isAdult, isPersonAFertileWoman, isPersonAnAdult, resolveExpectedAge)
+module Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, expectedAgeByPerson, graduatingAgeInMonth, initiatorFromUrlFragmemt, initiatorToUrlFragmemt, isAdult, isPersonAFertileWoman, isPersonAnAdult, resolveExpectedAge)
 
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), Initiator(..), ParticipantDirectoryOperation(..), Person)
 import Date
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffMonths, diffYears)
 import Maybe.Extra exposing (isJust)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
 
 ageInYears : NominalDate -> Person -> Maybe Int
 ageInYears currentDate person =
-    diffInYears currentDate person.birthDate
+    person.birthDate
+        |> Maybe.map (\birthDate -> diffYears birthDate currentDate)
 
 
-diffInYears : NominalDate -> Maybe NominalDate -> Maybe Int
-diffInYears currentDate comparedDate =
-    Maybe.map (\compared -> Date.diff Date.Years compared currentDate) comparedDate
+ageInMonths : NominalDate -> Person -> Maybe Int
+ageInMonths currentDate person =
+    person.birthDate
+        |> Maybe.map (\birthDate -> diffMonths birthDate currentDate)
 
 
 isAdult : NominalDate -> Maybe NominalDate -> Maybe Bool
 isAdult currentDate maybeBirthDate =
     maybeBirthDate
-        |> diffInYears currentDate
-        |> Maybe.map ((<) 12)
+        |> Maybe.map (\birthDate -> diffYears birthDate currentDate |> (<) 12)
 
 
 isPersonAnAdult : NominalDate -> Person -> Maybe Bool
@@ -37,9 +38,7 @@ isPersonAFertileWoman currentDate person =
 
     else
         person.birthDate
-            |> diffInYears currentDate
-            |> Maybe.map
-                (\age -> age > 12 && age < 45)
+            |> Maybe.map (\birthDate -> diffYears birthDate currentDate |> (\age -> age > 12 && age < 45))
             |> Maybe.withDefault False
 
 

@@ -186,8 +186,8 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
             |> Maybe.map
                 (\disagnosis ->
                     p [ class "disagnosis-wrapper" ]
-                        [ span [ class "label upper" ] [ text <| translate language Translate.Diagnosis ++ ":" ]
-                        , span [] [ text <| translate language disagnosis ]
+                        [ div [ class "label upper" ] [ text <| translate language Translate.Diagnosis ++ ":" ]
+                        , div [ class "disagnosis" ] [ text <| translate language disagnosis ]
                         ]
                 )
             |> Maybe.withDefault emptyNode

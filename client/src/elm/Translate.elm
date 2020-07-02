@@ -197,6 +197,7 @@ type TranslationId
     | AdministeredMedicationQuestion
     | AddressInformation
     | Adherence Adherence
+    | AfterEachLiquidStool
     | AgeWord
     | Age Int Int
     | AgeDays Int
@@ -234,7 +235,8 @@ type TranslationId
     | BreastExamSign BreastExamSign
     | BreastExamQuestion
     | BrittleHair
-    | ByMouthTwiceADayFor3Days
+    | ByMouthDaylyForXDays Int
+    | ByMouthTwiceADayForXDays Int
     | Cancel
     | CardiacDisease
     | CaregiverName
@@ -258,6 +260,7 @@ type TranslationId
     | ClinicType ClinicType
     | Clinical
     | ClinicalProgressReport
+    | CompleteHCReferralForm
     | ContactedHCQuestion
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
@@ -362,6 +365,7 @@ type TranslationId
     | Gender Gender
     | GenderLabel
     | GestationalDiabetesPreviousPregnancy
+    | Glass
     | GoHome
     | GroupAssessment
     | Gravida
@@ -657,6 +661,7 @@ type TranslationId
     | GroupEncounterLoading
     | GroupEncounterUnauthorized
     | GroupEncounterUnauthorized2
+    | SendPatientToHC
     | ShowAll
     | StartEndDate
     | StartDate
@@ -669,7 +674,7 @@ type TranslationId
     | SubmitPairingCode
     | Success
     | SyncGeneral
-    | TabletSinglePlural Int
+    | TabletSinglePlural String
     | TakenCareOfBy
     | TasksCompleted Int Int
     | TelephoneNumber
@@ -865,6 +870,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisGastrointestinalInfectionComplicated ->
+                    { english = "Gastrointestinal Infection with Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGastrointestinalInfectionUncomplicated ->
+                    { english = "Gastrointestinal Infection without Complications"
+                    , kinyarwanda = Nothing
+                    }
+
         AcuteIllnessDiagnosisWarning diagnosis ->
             case diagnosis of
                 DiagnosisCovid19 ->
@@ -879,6 +894,16 @@ translationSet trans =
 
                 DiagnosisMalariaUncomplicated ->
                     { english = "Suspected Malaria without complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGastrointestinalInfectionComplicated ->
+                    { english = "Suspected Gastrointestinal Infection with Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGastrointestinalInfectionUncomplicated ->
+                    { english = "Suspected Gastrointestinal Infection without Complications"
                     , kinyarwanda = Nothing
                     }
 
@@ -930,6 +955,11 @@ translationSet trans =
         AddressInformation ->
             { english = "Address Information"
             , kinyarwanda = Just "Aho atuye/Aho abarizwa"
+            }
+
+        AfterEachLiquidStool ->
+            { english = "after each liquid stool"
+            , kinyarwanda = Nothing
             }
 
         AgeWord ->
@@ -1408,8 +1438,13 @@ translationSet trans =
             , kinyarwanda = Just "Gucurama no guhindura ibara ku misatsi"
             }
 
-        ByMouthTwiceADayFor3Days ->
-            { english = "by mouth twice per day x 3 days"
+        ByMouthDaylyForXDays days ->
+            { english = "by mouth daily x " ++ String.fromInt days ++ " days"
+            , kinyarwanda = Nothing
+            }
+
+        ByMouthTwiceADayForXDays days ->
+            { english = "by mouth twice per day x " ++ String.fromInt days ++ " days"
             , kinyarwanda = Nothing
             }
 
@@ -1597,6 +1632,11 @@ translationSet trans =
         ClinicalProgressReport ->
             { english = "Clinical Progress Report"
             , kinyarwanda = Just "Erekana raporo yibyavuye mu isuzuma"
+            }
+
+        CompleteHCReferralForm ->
+            { english = "Complete a health center referral form."
+            , kinyarwanda = Nothing
             }
 
         ContactedHCQuestion ->
@@ -2360,6 +2400,11 @@ translationSet trans =
         GestationalDiabetesPreviousPregnancy ->
             { english = "Gestational Diabetes in previous pregnancy"
             , kinyarwanda = Just "Ubushize yarwaye Diyabete itewe no gutwita"
+            }
+
+        Glass ->
+            { english = "Glass"
+            , kinyarwanda = Nothing
             }
 
         GoHome ->
@@ -4757,6 +4802,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        SendPatientToHC ->
+            { english = "Send patient to the health center."
+            , kinyarwanda = Nothing
+            }
+
         ShowAll ->
             { english = "Show All"
             , kinyarwanda = Just "Erekana amazina yose"
@@ -4808,13 +4858,13 @@ translationSet trans =
             }
 
         TabletSinglePlural value ->
-            if value == 1 then
+            if value == "1" then
                 { english = "1 tablet"
                 , kinyarwanda = Nothing
                 }
 
             else
-                { english = String.fromInt value ++ " tablets"
+                { english = value ++ " tablets"
                 , kinyarwanda = Nothing
                 }
 
