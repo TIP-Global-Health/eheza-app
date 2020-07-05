@@ -40,7 +40,7 @@ import Maybe.Extra exposing (isJust, unwrap)
 import Measurement.Model exposing (OutMsgMother(..))
 import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessEncounter.Model
-import Pages.AcuteIllnessEncounter.Utils exposing (resolveAcuteIllnessDiagnosis)
+import Pages.AcuteIllnessEncounter.Utils exposing (resolveAcuteIllnessDiagnosis, resolveNextStepByDiagnosis)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
@@ -2039,108 +2039,37 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
                 |> RemoteData.toMaybe
                 |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person)
 
-        turnOffPreviousDiagnosisMsgs =
-            diagnosisBeforeChange
-                |> Maybe.map
-                    (\previousDiagnosis ->
-                        case previousDiagnosis of
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19 ->
-                                covid19OffMsgs
-
-                            _ ->
-                                [ setLaboratoryTaskMsg Pages.AcuteIllnessActivity.Model.LaboratoryMalariaTesting ]
-                    )
-                |> Maybe.withDefault []
-
         turnOnNewDiagnosisMsgs =
             diagnosisAfterChange
                 |> Maybe.map
                     (\newDiagnosis ->
-                        case newDiagnosis of
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19 ->
-                                covid19OnMsgs
+                        case resolveNextStepByDiagnosis currentDate person (Just newDiagnosis) of
+                            Just nextStep ->
+                                [ -- Navigate to Acute Ilness NextSteps activty page.
+                                  App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
+                                , -- Focus on firs task on that page.
+                                  Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask nextStep
+                                    |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
+                                    |> App.Model.MsgLoggedIn
+                                , -- Show warning popup with new diagnosis.
+                                  Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just newDiagnosis)
+                                    |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
+                                    |> App.Model.MsgLoggedIn
+                                ]
 
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated ->
-                                prescribeMedicationMsgs newDiagnosis
-
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaComplicated ->
-                                sendToHCMsgs newDiagnosis
-
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionUncomplicated ->
-                                prescribeMedicationMsgs newDiagnosis
-
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionComplicated ->
-                                sendToHCMsgs newDiagnosis
-
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisSimpleColdAndCough ->
-                                respiratoryInfectionUncomplicatedMsgs newDiagnosis
-
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisRespiratoryInfectionUncomplicated ->
-                                respiratoryInfectionUncomplicatedMsgs newDiagnosis
-
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisRespiratoryInfectionComplicated ->
-                                sendToHCMsgs newDiagnosis
-
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisFeverOfUnknownOrigin ->
-                                sendToHCMsgs newDiagnosis
+                            Nothing ->
+                                [ -- Navigate to Acute Ilness encounter page.
+                                  App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
+                                , -- Show warning popup with new diagnosis.
+                                  Pages.AcuteIllnessEncounter.Model.SetWarningPopupState (Just newDiagnosis)
+                                    |> App.Model.MsgPageAcuteIllnessEncounter id
+                                    |> App.Model.MsgLoggedIn
+                                ]
                     )
                 |> Maybe.withDefault []
-
-        covid19OnMsgs =
-            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessExposure))
-            , triggerWarningPopupMsg Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19 AcuteIllnessExposure
-            , setExposureTaskMsg Pages.AcuteIllnessActivity.Model.ExposureIsolation
-            ]
-
-        covid19OffMsgs =
-            [ setExposureTaskMsg Pages.AcuteIllnessActivity.Model.ExposureTravel ]
-
-        prescribeMedicationMsgs diagnosis =
-            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
-            , triggerWarningPopupMsg diagnosis AcuteIllnessLaboratory
-            , setLaboratoryTaskMsg Pages.AcuteIllnessActivity.Model.LaboratoryMedicationDistribution
-            ]
-
-        sendToHCMsgs diagnosis =
-            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
-            , triggerWarningPopupMsg diagnosis AcuteIllnessLaboratory
-            , setLaboratoryTaskMsg Pages.AcuteIllnessActivity.Model.LaboratorySendToHC
-            ]
-
-        respiratoryInfectionUncomplicatedMsgs diagnosis =
-            ageInMonths currentDate person
-                |> Maybe.map
-                    (\ageMonths ->
-                        if ageMonths < 2 then
-                            sendToHCMsgs diagnosis
-
-                        else if ageMonths < 60 then
-                            prescribeMedicationMsgs diagnosis
-
-                        else
-                            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessPhysicalExam))
-                            , triggerWarningPopupMsg diagnosis AcuteIllnessPhysicalExam
-                            ]
-                    )
-                |> Maybe.withDefault []
-
-        triggerWarningPopupMsg diagnosis activity =
-            Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just diagnosis)
-                |> App.Model.MsgPageAcuteIllnessActivity id activity
-                |> App.Model.MsgLoggedIn
-
-        setExposureTaskMsg task =
-            Pages.AcuteIllnessActivity.Model.SetActiveExposureTask task
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
-                |> App.Model.MsgLoggedIn
-
-        setLaboratoryTaskMsg task =
-            Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask task
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
-                |> App.Model.MsgLoggedIn
     in
     if diagnosisBeforeChange /= diagnosisAfterChange then
-        turnOffPreviousDiagnosisMsgs ++ turnOnNewDiagnosisMsgs
+        turnOnNewDiagnosisMsgs
 
     else
         []

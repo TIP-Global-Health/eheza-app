@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.View exposing (view, viewPersonDetailsWithAlert)
+module Pages.AcuteIllnessEncounter.View exposing (view, viewPersonDetailsWithAlert, warningPopup)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
@@ -55,7 +55,56 @@ view language currentDate id db model =
         [ header
         , content
         , viewModal endEncounterDialog
+        , viewModal <|
+            warningPopup language
+                model.warningPopupState
+                SetWarningPopupState
         ]
+
+
+warningPopup : Language -> Maybe AcuteIllnessDiagnosis -> (Maybe AcuteIllnessDiagnosis -> msg) -> Maybe (Html msg)
+warningPopup language maybeDiagnosis setStateMsg =
+    maybeDiagnosis
+        |> Maybe.map
+            (\diagnosis ->
+                let
+                    infoHeading =
+                        [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
+
+                    warningHeading =
+                        [ img [ src "assets/images/exclamation-red.png" ] []
+                        , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
+                        ]
+
+                    ( heading, content, color ) =
+                        case diagnosis of
+                            DiagnosisCovid19 ->
+                                ( warningHeading
+                                , [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
+                                  , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
+                                  ]
+                                , "red"
+                                )
+
+                            _ ->
+                                ( infoHeading, [], "blue" )
+                in
+                div [ class <| "ui active modal diagnosis-popup " ++ color ]
+                    [ div [ class "content" ] <|
+                        [ div [ class "popup-heading-wrapper" ] heading
+                        , div [ class "popup-title" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
+                        ]
+                            ++ content
+                    , div
+                        [ class "actions" ]
+                        [ button
+                            [ class <| "ui primary fluid button " ++ color
+                            , onClick <| setStateMsg Nothing
+                            ]
+                            [ text <| translate language Translate.Continue ]
+                        ]
+                    ]
+            )
 
 
 viewHeader : Language -> AssembledData -> Html Msg
@@ -161,13 +210,10 @@ viewMainPageContent language currentDate id data diagnosis model =
         measurements =
             data.measurements
 
-        suspectedCovid19 =
-            diagnosis == Just DiagnosisCovid19
-
         ( completedActivities, pendingActivities ) =
             getAllActivities
-                |> List.filter (expectActivity currentDate measurements suspectedCovid19)
-                |> List.partition (activityCompleted measurements suspectedCovid19)
+                |> List.filter (expectActivity currentDate data.person measurements diagnosis)
+                |> List.partition (activityCompleted currentDate data.person measurements diagnosis)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
