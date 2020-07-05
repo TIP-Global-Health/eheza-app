@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Utils exposing (acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromAcuteFindingsValue, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromMedicationDistributionValue, fromSendToHCValue, fromTravelHistoryValue, fromTreatmentReviewValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, medicationDistributionFormWithDefault, naListTaskCompleted, naTaskCompleted, nextStepsTasksCompletedFromTotal, physicalExamTasksCompletedFromTotal, resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage, sendToHCFormWithDefault, signTaskCompleted, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toAcuteFindingsValue, toAcuteFindingsValueWithDefault, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toMedicationDistributionValue, toMedicationDistributionValueWithDefault, toSendToHCValue, toSendToHCValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
+module Pages.AcuteIllnessActivity.Utils exposing (acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromAcuteFindingsValue, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromMedicationDistributionValue, fromSendToHCValue, fromTravelHistoryValue, fromTreatmentReviewValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, medicationDistributionFormWithDefault, naListTaskCompleted, naTaskCompleted, nextStepsTasksCompletedFromTotal, physicalExamTasksCompletedFromTotal, resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage, sendToHCFormWithDefault, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toAcuteFindingsValue, toAcuteFindingsValueWithDefault, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toMedicationDistributionValue, toMedicationDistributionValueWithDefault, toSendToHCValue, toSendToHCValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model
@@ -356,31 +356,29 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
             in
             case diagnosis of
                 Just DiagnosisMalariaUncomplicated ->
-                    ( signTaskCompleted Coartem NoMedicationDistributionSigns form.signs
+                    ( taskCompleted form.coartem
                     , 1
                     )
 
                 Just DiagnosisGastrointestinalInfectionUncomplicated ->
-                    ( signTaskCompleted ORS NoMedicationDistributionSigns form.signs
-                        + signTaskCompleted Zinc NoMedicationDistributionSigns form.signs
+                    ( taskCompleted form.ors
+                        + taskCompleted form.zinc
                     , 2
                     )
 
                 Just DiagnosisSimpleColdAndCough ->
-                    ( signTaskCompleted LemonJuiceOrHoney NoMedicationDistributionSigns form.signs
+                    ( taskCompleted form.lemonJuiceOrHoney
                     , 1
                     )
 
                 -- This is for child form 2 month old, to 5 years old.
                 Just DiagnosisRespiratoryInfectionUncomplicated ->
-                    ( signTaskCompleted Amoxicillin NoMedicationDistributionSigns form.signs
+                    ( taskCompleted form.amoxicillin
                     , 1
                     )
 
                 _ ->
-                    ( 0
-                    , 1
-                    )
+                    ( 0, 1 )
 
         NextStepsSendToHC ->
             let
@@ -421,15 +419,6 @@ naListTaskCompleted na maybeList =
 
         _ ->
             taskCompleted maybeList
-
-
-signTaskCompleted : a -> a -> EverySet a -> Int
-signTaskCompleted sign noSigns set =
-    if EverySet.member sign set || EverySet.member noSigns set then
-        1
-
-    else
-        0
 
 
 symptomsGeneralFormWithDefault : SymptomsGeneralForm -> Maybe (Dict SymptomsGeneralSign Int) -> SymptomsGeneralForm
@@ -894,20 +883,27 @@ toSendToHCValue form =
 
 fromMedicationDistributionValue : Maybe (EverySet MedicationDistributionSign) -> MedicationDistributionForm
 fromMedicationDistributionValue saved =
-    saved
-        |> Maybe.map (\signs -> MedicationDistributionForm signs)
-        |> Maybe.withDefault (MedicationDistributionForm EverySet.empty)
+    { amoxicillin = Maybe.map (EverySet.member Amoxicillin) saved
+    , coartem = Maybe.map (EverySet.member Coartem) saved
+    , ors = Maybe.map (EverySet.member ORS) saved
+    , zinc = Maybe.map (EverySet.member Zinc) saved
+    , lemonJuiceOrHoney = Maybe.map (EverySet.member LemonJuiceOrHoney) saved
+    }
 
 
 medicationDistributionFormWithDefault : MedicationDistributionForm -> Maybe (EverySet MedicationDistributionSign) -> MedicationDistributionForm
 medicationDistributionFormWithDefault form saved =
-    if EverySet.isEmpty form.signs then
-        saved
-            |> Maybe.map MedicationDistributionForm
-            |> Maybe.withDefault form
-
-    else
-        form
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { amoxicillin = or form.amoxicillin (EverySet.member Amoxicillin value |> Just)
+                , coartem = or form.coartem (EverySet.member Coartem value |> Just)
+                , ors = or form.ors (EverySet.member ORS value |> Just)
+                , zinc = or form.zinc (EverySet.member Zinc value |> Just)
+                , lemonJuiceOrHoney = or form.lemonJuiceOrHoney (EverySet.member LemonJuiceOrHoney value |> Just)
+                }
+            )
 
 
 toMedicationDistributionValueWithDefault : Maybe (EverySet MedicationDistributionSign) -> MedicationDistributionForm -> Maybe (EverySet MedicationDistributionSign)
@@ -918,8 +914,14 @@ toMedicationDistributionValueWithDefault saved form =
 
 toMedicationDistributionValue : MedicationDistributionForm -> Maybe (EverySet MedicationDistributionSign)
 toMedicationDistributionValue form =
-    form.signs
-        |> (ifEverySetEmpty NoMedicationDistributionSigns >> Just)
+    [ ifNullableTrue Amoxicillin form.amoxicillin
+    , ifNullableTrue Coartem form.coartem
+    , ifNullableTrue ORS form.ors
+    , ifNullableTrue Zinc form.zinc
+    , ifNullableTrue LemonJuiceOrHoney form.lemonJuiceOrHoney
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationDistributionSigns)
 
 
 resolveCoartemDosage : NominalDate -> Person -> Maybe String

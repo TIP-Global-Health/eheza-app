@@ -62,7 +62,7 @@ type Msg
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC ))
-    | ToggleMedicationDistributionSign MedicationDistributionSign Bool
+    | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution ))
 
 
@@ -291,7 +291,7 @@ emptyNextStepsData =
     { isolationForm = IsolationForm Nothing Nothing Nothing Nothing
     , hcContactForm = HCContactForm Nothing Nothing Nothing Nothing
     , sendToHCForm = SendToHCForm Nothing Nothing
-    , medicationDistributionForm = MedicationDistributionForm EverySet.empty
+    , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing
     , activeTask = Nothing
     }
 
@@ -326,5 +326,9 @@ type alias SendToHCForm =
 
 
 type alias MedicationDistributionForm =
-    { signs : EverySet MedicationDistributionSign
+    { amoxicillin : Maybe Bool
+    , coartem : Maybe Bool
+    , ors : Maybe Bool
+    , zinc : Maybe Bool
+    , lemonJuiceOrHoney : Maybe Bool
     }

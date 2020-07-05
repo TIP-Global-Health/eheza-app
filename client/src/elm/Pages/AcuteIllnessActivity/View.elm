@@ -35,7 +35,6 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewCheckBoxValueInput
         , viewCustomLabel
-        , viewEverySetInput
         , viewLabel
         , viewMeasurementInput
         , viewPhotoThumbFromPhotoUrl
@@ -1460,6 +1459,10 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
         ( instructions, questions ) =
             case diagnosis of
                 Just DiagnosisMalariaUncomplicated ->
+                    let
+                        coartemUpdateFunc value form_ =
+                            { form_ | coartem = Just value }
+                    in
                     ( resolveCoartemDosage currentDate person
                         |> Maybe.map
                             (\dosage ->
@@ -1470,17 +1473,23 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                             )
                         |> Maybe.withDefault emptyNode
                     , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Coartem)
-                      , viewEverySetInput
+                      , viewBoolInput
                             language
-                            form.signs
-                            Coartem
-                            ToggleMedicationDistributionSign
+                            form.coartem
+                            (SetMedicationDistributionBoolInput coartemUpdateFunc)
                             "coartem-medication"
                             Nothing
                       ]
                     )
 
                 Just DiagnosisGastrointestinalInfectionUncomplicated ->
+                    let
+                        orsUpdateFunc value form_ =
+                            { form_ | ors = Just value }
+
+                        zincUpdateFunc value form_ =
+                            { form_ | zinc = Just value }
+                    in
                     ( Maybe.map2
                         (\orsDosage zincDosage ->
                             div [ class "instructions gastrointestinal-uncomplicated" ]
@@ -1494,39 +1503,44 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                         (resolveZincDosage currentDate person)
                         |> Maybe.withDefault emptyNode
                     , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign ORS)
-                      , viewEverySetInput
+                      , viewBoolInput
                             language
-                            form.signs
-                            ORS
-                            ToggleMedicationDistributionSign
+                            form.ors
+                            (SetMedicationDistributionBoolInput orsUpdateFunc)
                             "ors-medication"
                             Nothing
                       , viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Zinc)
-                      , viewEverySetInput
+                      , viewBoolInput
                             language
-                            form.signs
-                            Zinc
-                            ToggleMedicationDistributionSign
+                            form.zinc
+                            (SetMedicationDistributionBoolInput zincUpdateFunc)
                             "zinc-medication"
                             Nothing
                       ]
                     )
 
                 Just DiagnosisSimpleColdAndCough ->
+                    let
+                        lemonJuiceOrHoneyUpdateFunc value form_ =
+                            { form_ | lemonJuiceOrHoney = Just value }
+                    in
                     ( div [ class "instructions simple-cough-and-cold" ]
                         [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign LemonJuiceOrHoney) "icon-pills" ]
                     , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign LemonJuiceOrHoney)
-                      , viewEverySetInput
+                      , viewBoolInput
                             language
-                            form.signs
-                            LemonJuiceOrHoney
-                            ToggleMedicationDistributionSign
+                            form.lemonJuiceOrHoney
+                            (SetMedicationDistributionBoolInput lemonJuiceOrHoneyUpdateFunc)
                             "lemon-juice-or-honey-medication"
                             Nothing
                       ]
                     )
 
                 Just DiagnosisRespiratoryInfectionUncomplicated ->
+                    let
+                        amoxicillinUpdateFunc value form_ =
+                            { form_ | amoxicillin = Just value }
+                    in
                     ( resolveAmoxicillinDosage currentDate person
                         |> Maybe.map
                             (\dosage ->
@@ -1537,11 +1551,10 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                             )
                         |> Maybe.withDefault emptyNode
                     , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Amoxicillin)
-                      , viewEverySetInput
+                      , viewBoolInput
                             language
-                            form.signs
-                            Amoxicillin
-                            ToggleMedicationDistributionSign
+                            form.amoxicillin
+                            (SetMedicationDistributionBoolInput amoxicillinUpdateFunc)
                             "amoxicillin-medication"
                             Nothing
                       ]

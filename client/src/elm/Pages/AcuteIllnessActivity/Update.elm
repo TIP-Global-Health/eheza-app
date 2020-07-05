@@ -1120,31 +1120,13 @@ update currentDate id db msg model =
             , appMsgs
             )
 
-        ToggleMedicationDistributionSign sign add ->
+        SetMedicationDistributionBoolInput formUpdateFunc value ->
             let
-                form =
-                    model.nextStepsData.medicationDistributionForm
-
-                updatedSigns =
-                    if EverySet.isEmpty form.signs && not add then
-                        EverySet.singleton NoMedicationDistributionSigns
-
-                    else if EverySet.member sign form.signs then
-                        EverySet.remove sign form.signs
-                            |> ifEverySetEmpty NoMedicationDistributionSigns
-
-                    else
-                        case EverySet.toList form.signs of
-                            [ NoMedicationDistributionSigns ] ->
-                                EverySet.singleton sign
-
-                            _ ->
-                                EverySet.insert sign form.signs
-
-                updatedForm =
-                    { form | signs = updatedSigns }
-
                 updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.nextStepsData.medicationDistributionForm
+                    in
                     model.nextStepsData
                         |> (\data -> { data | medicationDistributionForm = updatedForm })
             in
