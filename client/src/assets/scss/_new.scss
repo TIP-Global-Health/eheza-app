@@ -662,10 +662,41 @@ div.page-activity.acute-illness {
         .header {
           margin-bottom: 5px;
           margin-top: 20px;
+
+          i {
+            display: inline-block;
+            vertical-align: middle;
+
+            &.icon-shuttle {
+              background: url(#{$img-path}icon-shuttle.svg) center center no-repeat;
+              background-size: 32px 50px;
+              height: 19px;
+              width: 50px;
+            }
+
+            &.icon-oral-solution {
+              background: url(#{$img-path}icon-oral-solution.svg) center center no-repeat;
+              background-size: 26px 32px;
+              height: 32px;
+              margin-right: 22px;
+              width: 32px;
+            }
+
+            &.icon-pills {
+              background: url(#{$img-path}icon-pills.svg) center center no-repeat;
+              background-size: 36px 50px;
+              height: 36px;
+              width: 50px;
+            }
+          }
+
+          &.secondary {
+            margin-left: 52px;
+          }
         }
 
         .prescription {
-          margin-left: 30px;
+          margin-left: 54px;
         }
       }
     }

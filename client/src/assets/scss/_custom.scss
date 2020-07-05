@@ -442,6 +442,11 @@ h3.ui.header {
   background-size: 78px 78px;
 }
 
+.icon-task-next-steps {
+  background-image: url(#{$img-path}icon-next-steps.svg);
+  background-size: 78px 78px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {
@@ -1804,34 +1809,6 @@ input::placeholder {
   }
 }
 
-.icon-exposure-isolation {
-  .active &:after {
-    background-image: url(#{$img-path}icon-isolation-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-isolation-white.svg), url(#{$img-path}icon-completed-circle.svg);
-  }
-
-  &:after {
-    background-image: url(#{$img-path}icon-isolation-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
-  }
-}
-
-.icon-exposure-contact-hc {
-  .active &:after {
-    background-image: url(#{$img-path}icon-contact-hc-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-contact-hc-white.svg), url(#{$img-path}icon-completed-circle.svg);
-  }
-
-  &:after {
-    background-image: url(#{$img-path}icon-contact-hc-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
-  }
-}
-
 .icon-treatment-review {
   .active &:after {
     background-image: url(#{$img-path}icon-treatment-white.svg), url(#{$img-path}icon-selected-circle.svg);
@@ -1860,7 +1837,35 @@ input::placeholder {
   }
 }
 
-.icon-laboratory-medication-distribution {
+.icon-next-steps-isolation {
+  .active &:after {
+    background-image: url(#{$img-path}icon-isolation-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-isolation-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-isolation-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-next-steps-contact-hc {
+  .active &:after {
+    background-image: url(#{$img-path}icon-contact-hc-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-contact-hc-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-contact-hc-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-next-steps-medication-distribution {
   .active &:after {
     background-image: url(#{$img-path}icon-medication-distribution-white.svg), url(#{$img-path}icon-selected-circle.svg);
   }
@@ -1874,7 +1879,7 @@ input::placeholder {
   }
 }
 
-.icon-laboratory-send-to-hc {
+.icon-next-steps-send-to-hc {
   .active &:after {
     background-image: url(#{$img-path}icon-health-center-white.svg), url(#{$img-path}icon-selected-circle.svg);
   }
@@ -1887,7 +1892,6 @@ input::placeholder {
     background-image: url(#{$img-path}icon-health-center-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
-
 
 // Lists
 

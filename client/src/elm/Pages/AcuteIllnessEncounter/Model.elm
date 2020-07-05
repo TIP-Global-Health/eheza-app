@@ -15,6 +15,7 @@ type alias Model =
     { selectedTab : Tab
     , showAlertsDialog : Bool
     , showEndEncounetrDialog : Bool
+    , warningPopupState : Maybe AcuteIllnessDiagnosis
     }
 
 
@@ -23,6 +24,7 @@ emptyModel =
     { selectedTab = Pending
     , showAlertsDialog = False
     , showEndEncounetrDialog = False
+    , warningPopupState = Nothing
     }
 
 
@@ -32,6 +34,7 @@ type Msg
     | SetAlertsDialogState Bool
     | SetEndEncounterDialogState Bool
     | SetSelectedTab Tab
+    | SetWarningPopupState (Maybe AcuteIllnessDiagnosis)
 
 
 type Tab
