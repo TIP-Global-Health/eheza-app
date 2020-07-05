@@ -1387,8 +1387,11 @@ viewSendToHCForm language currentDate form =
     div [ class "ui form send-to-hc" ]
         [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
         , div [ class "instructions" ]
-            [ div [ class "header" ] [ text <| translate language Translate.CompleteHCReferralForm ]
-            , div [ class "header" ] [ text <| translate language Translate.SendPatientToHC ]
+            [ div [ class "header" ]
+                [ i [ class "icon-shuttle" ] []
+                , text <| translate language Translate.CompleteHCReferralForm
+                ]
+            , div [ class "header secondary" ] [ text <| translate language Translate.SendPatientToHC ]
             ]
         , div [ class "ui grid" ]
             [ div [ class "sixteen wide column" ]
@@ -1416,9 +1419,10 @@ viewSendToHCForm language currentDate form =
 viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> MedicationDistributionForm -> Html Msg
 viewMedicationDistributionForm language currentDate person diagnosis form =
     let
-        viewAdministeredMedicationLabel medicineTranslationId =
+        viewAdministeredMedicationLabel medicineTranslationId iconClass =
             div [ class "header" ]
-                [ text <| translate language Translate.Administer
+                [ i [ class iconClass ] []
+                , text <| translate language Translate.Administer
                 , text " "
                 , span [] [ text <| translate language medicineTranslationId ]
                 , text ":"
@@ -1460,7 +1464,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                         |> Maybe.map
                             (\dosage ->
                                 div [ class "instructions malaria-uncomplicated" ]
-                                    [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Coartem)
+                                    [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Coartem) "icon-pills"
                                     , viewTabletsPrescription dosage (Translate.ByMouthTwiceADayForXDays 3)
                                     ]
                             )
@@ -1480,9 +1484,9 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                     ( Maybe.map2
                         (\orsDosage zincDosage ->
                             div [ class "instructions gastrointestinal-uncomplicated" ]
-                                [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign ORS)
+                                [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign ORS) "icon-oral-solution"
                                 , viewOralSolutionPrescription orsDosage
-                                , viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Zinc)
+                                , viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Zinc) "icon-pills"
                                 , viewTabletsPrescription zincDosage (Translate.ByMouthDaylyForXDays 10)
                                 ]
                         )
@@ -1510,7 +1514,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
 
                 Just DiagnosisSimpleColdAndCough ->
                     ( div [ class "instructions simple-cough-and-cold" ]
-                        [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign LemonJuiceOrHoney) ]
+                        [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign LemonJuiceOrHoney) "icon-pills" ]
                     , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign LemonJuiceOrHoney)
                       , viewEverySetInput
                             language
@@ -1527,7 +1531,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                         |> Maybe.map
                             (\dosage ->
                                 div [ class "instructions respiratory-infection-uncomplicated" ]
-                                    [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Amoxicillin)
+                                    [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Amoxicillin) "icon-pills"
                                     , viewTabletsPrescription dosage (Translate.ByMouthTwiceADayForXDays 5)
                                     ]
                             )
