@@ -755,7 +755,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             allEducationLevels
                 |> List.map
                     (\level ->
-                        ( Debug.toString (encodeEducationLevel level)
+                        ( String.fromInt (encodeEducationLevel level)
                         , translate language (Translate.LevelOfEducation level)
                         )
                     )
@@ -855,7 +855,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                 options =
                     emptyOption
                         :: (List.repeat 5 "."
-                                |> List.indexedMap (\index _ -> ( Debug.toString index, Debug.toString index ))
+                                |> List.indexedMap (\index _ -> ( String.fromInt index, String.fromInt index ))
                            )
             in
             viewSelectInput language Translate.NumberOfChildrenUnder5 options Backend.Person.Form.numberOfChildren "ten" "select-input" False personForm
@@ -904,8 +904,8 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             allUbudehes
                 |> List.map
                     (\ubudehe ->
-                        ( Debug.toString (encodeUbudehe ubudehe)
-                        , Debug.toString (encodeUbudehe ubudehe)
+                        ( String.fromInt (encodeUbudehe ubudehe)
+                        , String.fromInt (encodeUbudehe ubudehe)
                         )
                     )
                 |> (::) emptyOption
@@ -919,7 +919,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                 |> Dict.toList
                 |> List.map
                     (\( id, geoLocation ) ->
-                        ( Debug.toString <| fromEntityId id, geoLocation.name )
+                        ( String.fromInt <| fromEntityId id, geoLocation.name )
                     )
 
         filterGeoLocationDictByParent parentId dict =
