@@ -1143,6 +1143,9 @@ malariaRapidTestResultAsString sign =
         RapidTestPositive ->
             "positive"
 
+        RapidTestPositiveAndPregnant ->
+            "positive-and-pregnant"
+
         RapidTestNegative ->
             "negative"
 

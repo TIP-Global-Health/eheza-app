@@ -1287,6 +1287,9 @@ malariaRapidTestResultFromString result =
         "positive" ->
             Just RapidTestPositive
 
+        "positive-and-pregnant" ->
+            Just RapidTestPositiveAndPregnant
+
         "negative" ->
             Just RapidTestNegative
 
