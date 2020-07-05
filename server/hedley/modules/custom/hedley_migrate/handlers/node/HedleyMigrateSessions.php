@@ -27,6 +27,7 @@ class HedleyMigrateSessions extends HedleyMigrateBase {
     'id',
     'field_clinic',
     'field_scheduled_date',
+    'created',
   ];
 
   /**

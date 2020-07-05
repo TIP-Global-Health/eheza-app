@@ -28,6 +28,7 @@ class HedleyMigrateRelationships extends HedleyMigrateBase {
     'field_person',
     'field_related_by',
     'field_related_to',
+    'created',
   ];
 
   /**

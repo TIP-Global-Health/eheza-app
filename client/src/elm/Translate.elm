@@ -1127,7 +1127,7 @@ translationSet trans =
 
                 ChildActivity Activity.Model.Height ->
                     { english = "Height:"
-                    , kinyarwanda = Just "Uburere:"
+                    , kinyarwanda = Just "Uburebure:"
                     }
 
                 ChildActivity Activity.Model.Muac ->
@@ -5523,22 +5523,22 @@ translateChartPhrase phrase =
 
         HeightCm ->
             { english = "Height (cm)"
-            , kinyarwanda = Just "Uburere cm"
+            , kinyarwanda = Just "Uburebure cm"
             }
 
         HeightForAgeBoys ->
             { english = "Height-for-age BOYS"
-            , kinyarwanda = Just "Uburere ku myaka/ umuhungu"
+            , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
             }
 
         HeightForAgeGirls ->
             { english = "Height-for-age GIRLS"
-            , kinyarwanda = Just "Uburere ku myaka/ umukobwa"
+            , kinyarwanda = Just "Uburebure ku myaka/ umukobwa"
             }
 
         LengthCm ->
             { english = "Length (cm)"
-            , kinyarwanda = Just "Uburere cm"
+            , kinyarwanda = Just "Uburebure cm"
             }
 
         LengthForAgeBoys ->

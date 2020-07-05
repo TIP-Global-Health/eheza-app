@@ -24,6 +24,7 @@ class HedleyMigratePhotos extends HedleyMigrateMeasurementBase {
     'field_date_measured',
     'field_nurse',
     'field_session',
+    'created',
     'field_photo',
   ];
 
