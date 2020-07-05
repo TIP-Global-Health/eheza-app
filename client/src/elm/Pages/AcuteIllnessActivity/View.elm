@@ -447,15 +447,7 @@ viewVitalsForm language currentDate measurements form =
             Nothing
     in
     div [ class "ui form examination vitals" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.RespiratoryRate ]
-            , div [ class "four wide column" ]
-                [-- viewConditionalAlert form.respiratoryRate
-                 --    [ [ (>) 12 ], [ (<) 30 ] ]
-                 --    [ [ (<=) 21, (>=) 30 ] ]
-                ]
-            ]
+        [ viewLabel language Translate.RespiratoryRate
         , viewMeasurementInput
             language
             (Maybe.map toFloat form.respiratoryRate)
@@ -464,15 +456,7 @@ viewVitalsForm language currentDate measurements form =
             Translate.BpmUnit
         , viewPreviousMeasurement language respiratoryRatePreviousValue Translate.BpmUnit
         , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.BodyTemperature ]
-            , div [ class "four wide column" ]
-                [-- viewConditionalAlert form.bodyTemperature
-                 --     [ [ (>) 35 ], [ (<) 37.5 ] ]
-                 --     []
-                ]
-            ]
+        , viewLabel language Translate.BodyTemperature
         , viewMeasurementInput
             language
             form.bodyTemperature
@@ -650,10 +634,7 @@ viewMalariaTestingForm language currentDate person form =
                 []
     in
     div [ class "ui form laboratory malaria-testing" ] <|
-        [ div [ class "ui grid" ]
-            [ div [ class "sixteen wide column" ]
-                [ viewLabel language Translate.MalariaRapidDiagnosticTest ]
-            ]
+        [ viewLabel language Translate.MalariaRapidDiagnosticTest
         , resultInput
         ]
             ++ isPregnantInput
@@ -777,15 +758,7 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
 viewTravelHistoryForm : Language -> NominalDate -> AcuteIllnessMeasurements -> TravelHistoryForm -> Html Msg
 viewTravelHistoryForm language currentDate measurements form =
     div [ class "ui form exposure travel-history" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewQuestionLabel language Translate.TraveledToCOVID19CountryQuestion ]
-            , div [ class "four wide column" ]
-                [-- viewConditionalAlert form.respiratoryRate
-                 --    [ [ (>) 12 ], [ (<) 30 ] ]
-                 --    [ [ (<=) 21, (>=) 30 ] ]
-                ]
-            ]
+        [ viewQuestionLabel language Translate.TraveledToCOVID19CountryQuestion
         , viewBoolInput
             language
             form.covid19Country
@@ -798,10 +771,7 @@ viewTravelHistoryForm language currentDate measurements form =
 viewExposureForm : Language -> NominalDate -> AcuteIllnessMeasurements -> ExposureForm -> Html Msg
 viewExposureForm language currentDate measurements form =
     div [ class "ui form exposure" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "sixteen wide column" ]
-                [ viewQuestionLabel language Translate.ContactWithCOVID19SymptomsQuestion ]
-            ]
+        [ viewQuestionLabel language Translate.ContactWithCOVID19SymptomsQuestion
         , div [ class "question-helper" ] [ text <| translate language Translate.ContactWithCOVID19SymptomsHelper ++ "." ]
         , viewBoolInput
             language
@@ -809,15 +779,7 @@ viewExposureForm language currentDate measurements form =
             SetCovid19Symptoms
             "covid19-symptoms"
             Nothing
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewQuestionLabel language Translate.ContactWithSimilarSymptomsQuestion ]
-            , div [ class "four wide column" ]
-                [-- viewConditionalAlert form.respiratoryRate
-                 --    [ [ (>) 12 ], [ (<) 30 ] ]
-                 --    [ [ (<=) 21, (>=) 30 ] ]
-                ]
-            ]
+        , viewQuestionLabel language Translate.ContactWithSimilarSymptomsQuestion
         , viewBoolInput
             language
             form.similarSymptoms
@@ -994,10 +956,7 @@ viewTreatmentReviewForm language currentDate measurements form =
                     else
                         []
             in
-            [ div [ class "ui grid" ]
-                [ div [ class "sixteen wide column" ]
-                    [ viewQuestionLabel language Translate.MedicationForFeverPast6HoursQuestion ]
-                ]
+            [ viewQuestionLabel language Translate.MedicationForFeverPast6HoursQuestion
             , viewBoolInput
                 language
                 form.feverPast6Hours
@@ -1027,10 +986,7 @@ viewTreatmentReviewForm language currentDate measurements form =
                     else
                         []
             in
-            [ div [ class "ui grid" ]
-                [ div [ class "sixteen wide column" ]
-                    [ viewQuestionLabel language Translate.MedicationForMalariaWithinPastMonthQuestion ]
-                ]
+            [ viewQuestionLabel language Translate.MedicationForMalariaWithinPastMonthQuestion
             , viewBoolInput
                 language
                 form.malariaToday
@@ -1060,10 +1016,7 @@ viewTreatmentReviewForm language currentDate measurements form =
                     else
                         []
             in
-            [ div [ class "ui grid" ]
-                [ div [ class "sixteen wide column" ]
-                    [ viewQuestionLabel language Translate.MedicationForMalariaTodayQuestion ]
-                ]
+            [ viewQuestionLabel language Translate.MedicationForMalariaTodayQuestion
             , viewBoolInput
                 language
                 form.malariaWithinPastMonth
@@ -1244,15 +1197,7 @@ viewIsolationForm : Language -> NominalDate -> AcuteIllnessMeasurements -> Isola
 viewIsolationForm language currentDate measurements form =
     let
         patientIsolatedInput =
-            [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewQuestionLabel language Translate.PatientIsolatedQuestion ]
-                , div [ class "four wide column" ]
-                    [-- viewConditionalAlert form.respiratoryRate
-                     --    [ [ (>) 12 ], [ (<) 30 ] ]
-                     --    [ [ (<=) 21, (>=) 30 ] ]
-                    ]
-                ]
+            [ viewQuestionLabel language Translate.PatientIsolatedQuestion
             , viewBoolInput
                 language
                 form.patientIsolated
@@ -1264,15 +1209,7 @@ viewIsolationForm language currentDate measurements form =
         derivedInputs =
             case form.patientIsolated of
                 Just True ->
-                    [ div [ class "ui grid" ]
-                        [ div [ class "twelve wide column" ]
-                            [ viewQuestionLabel language Translate.SignOnDoorPostedQuestion ]
-                        , div [ class "four wide column" ]
-                            [-- viewConditionalAlert form.respiratoryRate
-                             --    [ [ (>) 12 ], [ (<) 30 ] ]
-                             --    [ [ (<=) 21, (>=) 30 ] ]
-                            ]
-                        ]
+                    [ viewQuestionLabel language Translate.SignOnDoorPostedQuestion
                     , viewBoolInput
                         language
                         form.signOnDoor
@@ -1299,15 +1236,7 @@ viewIsolationForm language currentDate measurements form =
                     []
 
         healthEducationInput =
-            [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewQuestionLabel language Translate.HealthEducationProvidedQuestion ]
-                , div [ class "four wide column" ]
-                    [-- viewConditionalAlert form.respiratoryRate
-                     --    [ [ (>) 12 ], [ (<) 30 ] ]
-                     --    [ [ (<=) 21, (>=) 30 ] ]
-                    ]
-                ]
+            [ viewQuestionLabel language Translate.HealthEducationProvidedQuestion
             , viewBoolInput
                 language
                 form.healthEducation
@@ -1325,15 +1254,7 @@ viewHCContactForm : Language -> NominalDate -> AcuteIllnessMeasurements -> HCCon
 viewHCContactForm language currentDate measurements form =
     let
         contactedHCInput =
-            [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewQuestionLabel language Translate.ContactedHCQuestion ]
-                , div [ class "four wide column" ]
-                    [-- viewConditionalAlert form.respiratoryRate
-                     --    [ [ (>) 12 ], [ (<) 30 ] ]
-                     --    [ [ (<=) 21, (>=) 30 ] ]
-                    ]
-                ]
+            [ viewQuestionLabel language Translate.ContactedHCQuestion
             , viewBoolInput
                 language
                 form.contactedHC
@@ -1406,20 +1327,14 @@ viewSendToHCForm language currentDate form =
                 ]
             , div [ class "header secondary" ] [ text <| translate language Translate.SendPatientToHC ]
             ]
-        , div [ class "ui grid" ]
-            [ div [ class "sixteen wide column" ]
-                [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion ]
-            ]
+        , viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
         , viewBoolInput
             language
             form.referToHealthCenter
             SetReferToHealthCenter
             "refer-to-hc"
             Nothing
-        , div [ class "ui grid" ]
-            [ div [ class "sixteen wide column" ]
-                [ viewQuestionLabel language Translate.HandedReferralFormQuestion ]
-            ]
+        , viewQuestionLabel language Translate.HandedReferralFormQuestion
         , viewBoolInput
             language
             form.handReferralForm
@@ -1442,16 +1357,14 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                 ]
 
         viewAdministeredMedicationQuestion medicineTranslationId =
-            div [ class "ui grid" ]
-                [ div [ class "sixteen wide column" ]
-                    [ text <|
-                        translate language Translate.AdministeredMedicationQuestion
-                            ++ " "
-                            ++ translate language medicineTranslationId
-                            ++ " "
-                            ++ translate language Translate.ToThePatient
-                            ++ "?"
-                    ]
+            div [ class "label" ]
+                [ text <|
+                    translate language Translate.AdministeredMedicationQuestion
+                        ++ " "
+                        ++ translate language medicineTranslationId
+                        ++ " "
+                        ++ translate language Translate.ToThePatient
+                        ++ "?"
                 ]
 
         viewTabletsPrescription dosage duration =
