@@ -24,6 +24,7 @@ class HedleyMigrateMuacs extends HedleyMigrateMeasurementBase {
     'field_date_measured',
     'field_nurse',
     'field_session',
+    'created',
     'field_muac',
   ];
 

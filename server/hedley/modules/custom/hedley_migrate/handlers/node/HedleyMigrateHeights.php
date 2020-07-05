@@ -24,6 +24,7 @@ class HedleyMigrateHeights extends HedleyMigrateMeasurementBase {
     'field_date_measured',
     'field_nurse',
     'field_session',
+    'created',
     'field_height',
     'field_zscore_age',
   ];
