@@ -637,6 +637,7 @@ type alias AcuteFindings =
 
 type MalariaRapidTestResult
     = RapidTestPositive
+    | RapidTestPositiveAndPregnant
     | RapidTestNegative
     | RapidTestIndeterminate
 

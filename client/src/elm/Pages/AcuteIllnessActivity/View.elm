@@ -9,6 +9,7 @@ import Backend.Measurement.Encoder exposing (malariaRapidTestResultAsString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (isPersonAFertileWoman)
 import EverySet
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -567,7 +568,7 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                     measurements.malariaTesting
                         |> Maybe.map (Tuple.second >> .value)
                         |> malariaTestingFormWithDefault data.malariaTestingForm
-                        |> viewMalariaTestingForm language currentDate
+                        |> viewMalariaTestingForm language currentDate person
 
         getNextTask currentTask =
             case currentTask of
@@ -603,8 +604,8 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
     ]
 
 
-viewMalariaTestingForm : Language -> NominalDate -> MalariaTestingForm -> Html Msg
-viewMalariaTestingForm language currentDate form =
+viewMalariaTestingForm : Language -> NominalDate -> Person -> MalariaTestingForm -> Html Msg
+viewMalariaTestingForm language currentDate person form =
     let
         emptyOption =
             if isNothing form.rapidTestResult then
@@ -630,19 +631,32 @@ viewMalariaTestingForm language currentDate form =
                             )
                    )
                 |> select [ onInput SetRapidTestResult, class "form-input rapid-test-result" ]
-    in
-    div [ class "ui form laboratory malaria-testing" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.MalariaRapidDiagnosticTest ]
-            , div [ class "four wide column" ]
-                [-- viewConditionalAlert form.respiratoryRate
-                 --    [ [ (>) 12 ], [ (<) 30 ] ]
-                 --    [ [ (<=) 21, (>=) 30 ] ]
+
+        testResultPositive =
+            form.rapidTestResult == Just RapidTestPositive || form.rapidTestResult == Just RapidTestPositiveAndPregnant
+
+        isPregnantInput =
+            if testResultPositive && isPersonAFertileWoman currentDate person then
+                [ viewQuestionLabel language Translate.CurrentlyPregnant
+                , viewBoolInput
+                    language
+                    form.isPregnant
+                    SetIsPregnant
+                    "is-pregnant"
+                    Nothing
                 ]
+
+            else
+                []
+    in
+    div [ class "ui form laboratory malaria-testing" ] <|
+        [ div [ class "ui grid" ]
+            [ div [ class "sixteen wide column" ]
+                [ viewLabel language Translate.MalariaRapidDiagnosticTest ]
             ]
         , resultInput
         ]
+            ++ isPregnantInput
 
 
 viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> ExposureData -> List (Html Msg)

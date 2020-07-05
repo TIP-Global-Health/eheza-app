@@ -879,6 +879,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisMalariaUncomplicatedAndPregnant ->
+                    { english = "Uncomplicated Malaria"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisGastrointestinalInfectionComplicated ->
                     { english = "Gastrointestinal Infection with Complications"
                     , kinyarwanda = Nothing
@@ -922,6 +927,11 @@ translationSet trans =
                     }
 
                 DiagnosisMalariaUncomplicated ->
+                    { english = "Suspected Malaria without complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaUncomplicatedAndPregnant ->
                     { english = "Suspected Malaria without complications"
                     , kinyarwanda = Nothing
                     }
@@ -3043,6 +3053,11 @@ translationSet trans =
 
                 RapidTestPositive ->
                     { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                RapidTestPositiveAndPregnant ->
+                    { english = "Positive and Pregnant"
                     , kinyarwanda = Nothing
                     }
 

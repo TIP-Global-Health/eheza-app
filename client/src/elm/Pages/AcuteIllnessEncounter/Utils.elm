@@ -130,6 +130,7 @@ resolveNextStepsTasks currentDate person diagnosis =
 
                 NextStepsSendToHC ->
                     (diagnosis == Just DiagnosisMalariaComplicated)
+                        || (diagnosis == Just DiagnosisMalariaUncomplicatedAndPregnant)
                         || (diagnosis == Just DiagnosisGastrointestinalInfectionComplicated)
                         || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonth0To2)
                         || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonth0To2)
@@ -230,6 +231,9 @@ resolveNextStepByDiagnosis currentDate person maybeDiagnosis =
                     Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated ->
                         Just NextStepsMedicationDistribution
 
+                    Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicatedAndPregnant ->
+                        Just NextStepsSendToHC
+
                     Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaComplicated ->
                         Just NextStepsSendToHC
 
@@ -328,6 +332,13 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
 
                         else
                             Just DiagnosisMalariaUncomplicated
+
+                    RapidTestPositiveAndPregnant ->
+                        if malarialDangerSignsPresent measurements then
+                            Just DiagnosisMalariaComplicated
+
+                        else
+                            Just DiagnosisMalariaUncomplicatedAndPregnant
 
                     RapidTestIndeterminate ->
                         Nothing

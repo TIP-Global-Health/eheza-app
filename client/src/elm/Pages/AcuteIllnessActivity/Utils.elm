@@ -582,8 +582,15 @@ toAcuteFindingsValue form =
 
 fromMalariaTestingValue : Maybe MalariaRapidTestResult -> MalariaTestingForm
 fromMalariaTestingValue saved =
-    { rapidTestResult = saved
-    }
+    if saved == Just RapidTestPositiveAndPregnant then
+        { rapidTestResult = Just RapidTestPositive
+        , isPregnant = Just True
+        }
+
+    else
+        { rapidTestResult = saved
+        , isPregnant = Just False
+        }
 
 
 malariaTestingFormWithDefault : MalariaTestingForm -> Maybe MalariaRapidTestResult -> MalariaTestingForm
@@ -592,7 +599,12 @@ malariaTestingFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { rapidTestResult = or form.rapidTestResult (Just value)
+                let
+                    formWithDefault =
+                        fromMalariaTestingValue saved
+                in
+                { rapidTestResult = or form.rapidTestResult formWithDefault.rapidTestResult
+                , isPregnant = or form.isPregnant formWithDefault.isPregnant
                 }
             )
 
@@ -600,6 +612,13 @@ malariaTestingFormWithDefault form saved =
 toMalariaTestingValueWithDefault : Maybe MalariaRapidTestResult -> MalariaTestingForm -> Maybe MalariaRapidTestResult
 toMalariaTestingValueWithDefault saved form =
     malariaTestingFormWithDefault form saved
+        |> (\form_ ->
+                if form_.rapidTestResult == Just RapidTestPositive && form_.isPregnant == Just True then
+                    { form_ | rapidTestResult = Just RapidTestPositiveAndPregnant }
+
+                else
+                    form_
+           )
         |> toMalariaTestingValue
 
 
