@@ -1837,12 +1837,35 @@ div.page-report.acute-illness {
 
       .pane-content {
         background: $color-white;
-        color: $color-red-alert;
         font-size: 22px;
         font-weight: bold;
         line-height: 32px;
         padding: 20px 0 20px 40px;
         text-transform: uppercase;
+      }
+    }
+
+    div.pane.assessment .pane-content {
+      color: $color-red-alert;
+    }
+
+    div.pane.physical-exam .ui.table {
+      color: $color-text;
+      margin: 0;
+      padding: 10px;
+      text-align: center;
+    }
+
+    div.pane.physical-exam .ui.table thead th {
+      background-color: $color-white;
+      color: $color-text;
+    }
+
+    div.pane.physical-exam .ui.table tbody td {
+      font-weight: 600;
+
+      &.alert {
+        color: $color-red-alert;
       }
     }
 

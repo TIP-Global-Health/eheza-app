@@ -251,6 +251,7 @@ type TranslationId
     | CaregiverNationalId
     | CentimeterShorthand
     | Celsius
+    | CelsiusAbbrev
     | Cell
     | ChartPhrase ChartPhrase
     | CheckAllThatApply
@@ -354,6 +355,8 @@ type TranslationId
     | FamilyPlanningInFutureQuestion
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
+    | FatherName
+    | FatherNationalId
     | FbfDistribution
     | FbfToReceive Activity Float
     | FetalHeartRate
@@ -361,8 +364,7 @@ type TranslationId
     | FetalPresentationLabel
     | FetalPresentation FetalPresentation
     | Fetch
-    | FatherName
-    | FatherNationalId
+    | Fever
     | FilterByName
     | FirstAntenatalVisit
     | FirstName
@@ -685,6 +687,7 @@ type TranslationId
     | SubmitPairingCode
     | Success
     | SyncGeneral
+    | Tachypnea
     | TabletSinglePlural String
     | TakenCareOfBy
     | TasksCompleted Int Int
@@ -1549,6 +1552,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        CelsiusAbbrev ->
+            { english = "C"
+            , kinyarwanda = Nothing
+            }
+
         ChartPhrase phrase ->
             translateChartPhrase phrase
 
@@ -1934,7 +1942,7 @@ translationSet trans =
                     , kinyarwanda = Just "Guhumeka nabi"
                     }
 
-                Fever ->
+                Backend.Measurement.Model.Fever ->
                     { english = "Fever"
                     , kinyarwanda = Just "Umuriro"
                     }
@@ -2403,6 +2411,11 @@ translationSet trans =
         Fetch ->
             { english = "Fetch"
             , kinyarwanda = Just "Gushakisha"
+            }
+
+        Fever ->
+            { english = "Fever"
+            , kinyarwanda = Just "Umuriro"
             }
 
         FilterByName ->
@@ -4943,6 +4956,11 @@ translationSet trans =
         SyncGeneral ->
             { english = "Sync Status (General)"
             , kinyarwanda = Just "Ibijyanye no guhuza amakuru yafashwe n'igikoresho cy'ikoranabuhanga n'abitse kuri seriveri"
+            }
+
+        Tachypnea ->
+            { english = "Tachypnea (fast resp. rate)"
+            , kinyarwanda = Nothing
             }
 
         TabletSinglePlural value ->

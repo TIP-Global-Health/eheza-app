@@ -10,7 +10,7 @@ import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffMonths)
+import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -153,10 +153,67 @@ viewAssessmentPane language currentDate diagnosis =
 viewPhysicalExamPane : Language -> NominalDate -> AcuteIllnessMeasurements -> Html Msg
 viewPhysicalExamPane language currentDate measurements =
     let
-        table =
-            []
+        viewBodyTemperatureCell maybeBodyTemperature =
+            maybeBodyTemperature
+                |> Maybe.map
+                    (\bodyTemperature_ ->
+                        if bodyTemperature_ < 37.5 then
+                            td [] [ text <| "(" ++ translate language Translate.Normal ++ ")" ]
+
+                        else
+                            td [ class "alert" ] [ text <| String.fromFloat bodyTemperature_ ++ " " ++ translate language Translate.CelsiusAbbrev ]
+                    )
+                |> Maybe.withDefault (td [] [])
+
+        viewRespiratoryRateCell maybeRespiratoryRate =
+            maybeRespiratoryRate
+                |> Maybe.map
+                    (\respiratoryRate_ ->
+                        if respiratoryRate_ < 20 then
+                            td [] [ text <| "(" ++ translate language Translate.Normal ++ ")" ]
+
+                        else
+                            td [ class "alert" ] [ text <| String.fromInt respiratoryRate_ ++ " " ++ translate language Translate.BpmUnit ]
+                    )
+                |> Maybe.withDefault (td [] [])
+
+        bodyTemperature =
+            measurements.vitals
+                |> Maybe.map (Tuple.second >> .value >> .bodyTemperature)
+
+        respiratoryRate =
+            measurements.vitals
+                |> Maybe.map (Tuple.second >> .value >> .respiratoryRate)
+
+        values =
+            [ ( currentDate, bodyTemperature, respiratoryRate ) ]
+
+        tableHead =
+            [ tr []
+                [ th [] []
+                , th [ class "uppercase" ]
+                    [ text <| translate language Translate.Fever ]
+                , th [ class "last" ]
+                    [ text <| translate language Translate.Tachypnea ]
+                ]
+            ]
+
+        tableBody =
+            values
+                |> List.map
+                    (\( date, maybeBodyTemperature, maybeRespiratoryRate ) ->
+                        tr []
+                            [ td [ class "first" ] [ formatDDMMYY date |> text ]
+                            , viewBodyTemperatureCell maybeBodyTemperature
+                            , viewRespiratoryRateCell maybeRespiratoryRate
+                            ]
+                    )
     in
-    div [ class "pane phusical-exam" ]
+    div [ class "pane physical-exam" ]
         [ viewItemHeading language Translate.PhysicalExam "blue"
-        , div [ class "pane-content" ] table
+        , table
+            [ class "ui celled table" ]
+            [ thead [] tableHead
+            , tbody [] tableBody
+            ]
         ]
