@@ -477,6 +477,7 @@ function hedley_acute_illness_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'positive' => 'Positive',
+        'positive-and-pregnant' => 'Positive and pregnant',
         'negative' => 'Negative',
         'indeterminate' => 'Indeterminate',
       ),

@@ -35,6 +35,7 @@ type Msg
       -- LABORATORY Msgs
     | SetActiveLaboratoryTask LaboratoryTask
     | SetRapidTestResult String
+    | SetIsPregnant Bool
     | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
       -- EXPOSURE Msgs
     | SetActiveExposureTask ExposureTask
@@ -182,7 +183,7 @@ type alias LaboratoryData =
 
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
-    { malariaTestingForm = MalariaTestingForm Nothing
+    { malariaTestingForm = MalariaTestingForm Nothing Nothing
     , activeTask = LaboratoryMalariaTesting
     }
 
@@ -193,6 +194,7 @@ type LaboratoryTask
 
 type alias MalariaTestingForm =
     { rapidTestResult : Maybe MalariaRapidTestResult
+    , isPregnant : Maybe Bool
     }
 
 

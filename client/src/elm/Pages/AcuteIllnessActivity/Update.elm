@@ -11,6 +11,7 @@ import Backend.Measurement.Model
         ( AcuteFindingsGeneralSign(..)
         , AcuteFindingsRespiratorySign(..)
         , HCRecomendation(..)
+        , MalariaRapidTestResult(..)
         , MedicationDistributionSign(..)
         , ReasonForNotIsolating(..)
         , ResponsePeriod(..)
@@ -554,6 +555,23 @@ update currentDate id db msg model =
 
                 updatedForm =
                     { form | rapidTestResult = malariaRapidTestResultFromString value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | malariaTestingForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetIsPregnant value ->
+            let
+                form =
+                    model.laboratoryData.malariaTestingForm
+
+                updatedForm =
+                    { form | isPregnant = Just value }
 
                 updatedData =
                     model.laboratoryData

@@ -644,6 +644,10 @@ div.page-activity.acute-illness {
       margin-bottom: 30px;
     }
 
+    .ui.form {
+      min-height: 210px;
+    }
+
     .ui.form.medication-distribution,
     .ui.form.send-to-hc {
 
@@ -794,7 +798,6 @@ div.page-activity.acute-illness {
       background: $color-white;
       border: 2px solid $color-light-gray;
       color: $color-text;
-      margin-bottom: 150px;
       padding: 5px;
       width: 60%;
     }
