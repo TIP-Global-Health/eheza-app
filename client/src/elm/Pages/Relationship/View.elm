@@ -171,7 +171,7 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
                     viewedRelationship == Just possible
 
                 inputId =
-                    "input-relationship-" ++ Debug.toString index
+                    "input-relationship-" ++ String.fromInt index
             in
             div
                 [ class "field" ]

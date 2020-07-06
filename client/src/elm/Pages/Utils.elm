@@ -252,7 +252,7 @@ viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslatio
     let
         currentValue =
             maybeCurrentValue
-                |> Maybe.map Debug.toString
+                |> Maybe.map String.fromFloat
                 |> Maybe.withDefault ""
 
         inputAttrs =
@@ -317,10 +317,10 @@ viewCheckBoxValueInputItem language data toggleMsg setMsg translateFunc sign =
                             |> List.map
                                 (\number ->
                                     option
-                                        [ value (Debug.toString number)
+                                        [ value (String.fromInt number)
                                         , selected (currentValue == Just number)
                                         ]
-                                        [ text (Debug.toString number) ]
+                                        [ text (String.fromInt number) ]
                                 )
                             |> select [ onInput (setMsg sign), class "form-input period" ]
                 in

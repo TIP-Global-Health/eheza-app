@@ -1032,8 +1032,8 @@ translationSet trans =
             }
 
         ActivitiesCompleted count ->
-            { english = "Completed (" ++ Debug.toString count ++ ")"
-            , kinyarwanda = Just <| "Ibyarangiye (" ++ Debug.toString count ++ ")"
+            { english = "Completed (" ++ String.fromInt count ++ ")"
+            , kinyarwanda = Just <| "Ibyarangiye (" ++ String.fromInt count ++ ")"
             }
 
         ActivitiesHelp activity ->
@@ -1265,8 +1265,8 @@ translationSet trans =
                     }
 
         ActivitiesToComplete count ->
-            { english = "To Do (" ++ Debug.toString count ++ ")"
-            , kinyarwanda = Just <| "Ibisabwa gukora (" ++ Debug.toString count ++ ")"
+            { english = "To Do (" ++ String.fromInt count ++ ")"
+            , kinyarwanda = Just <| "Ibisabwa gukora (" ++ String.fromInt count ++ ")"
             }
 
         ActivePage page ->
@@ -1308,38 +1308,38 @@ translationSet trans =
             translateAdherence adherence
 
         Age months days ->
-            { english = Debug.toString months ++ " months " ++ Debug.toString days ++ " days"
-            , kinyarwanda = Just <| Debug.toString months ++ " Amezi " ++ Debug.toString days ++ " iminsi"
+            { english = String.fromInt months ++ " months " ++ String.fromInt days ++ " days"
+            , kinyarwanda = Just <| String.fromInt months ++ " Amezi " ++ String.fromInt days ++ " iminsi"
             }
 
         AgeDays days ->
-            { english = Debug.toString days ++ " days"
-            , kinyarwanda = Just <| Debug.toString days ++ " Iminsi"
+            { english = String.fromInt days ++ " days"
+            , kinyarwanda = Just <| String.fromInt days ++ " Iminsi"
             }
 
         AgeMonthsWithoutDay months ->
-            { english = Debug.toString months ++ " month"
-            , kinyarwanda = Just <| Debug.toString months ++ " Ukwezi"
+            { english = String.fromInt months ++ " month"
+            , kinyarwanda = Just <| String.fromInt months ++ " Ukwezi"
             }
 
         AgeSingleBoth months days ->
-            { english = Debug.toString months ++ " month " ++ Debug.toString days ++ " day"
-            , kinyarwanda = Just <| Debug.toString months ++ " Ukwezi " ++ Debug.toString days ++ " Umunsi"
+            { english = String.fromInt months ++ " month " ++ String.fromInt days ++ " day"
+            , kinyarwanda = Just <| String.fromInt months ++ " Ukwezi " ++ String.fromInt days ++ " Umunsi"
             }
 
         AgeSingleMonth months days ->
-            { english = Debug.toString months ++ " month " ++ Debug.toString days ++ " days"
-            , kinyarwanda = Just <| Debug.toString months ++ " Ukwezi " ++ Debug.toString days ++ " Iminsi"
+            { english = String.fromInt months ++ " month " ++ String.fromInt days ++ " days"
+            , kinyarwanda = Just <| String.fromInt months ++ " Ukwezi " ++ String.fromInt days ++ " Iminsi"
             }
 
         AgeSingleDayWithMonth months days ->
-            { english = Debug.toString months ++ " months " ++ Debug.toString days ++ " day"
-            , kinyarwanda = Just <| Debug.toString months ++ " Amezi " ++ Debug.toString days ++ " Umunsi"
+            { english = String.fromInt months ++ " months " ++ String.fromInt days ++ " day"
+            , kinyarwanda = Just <| String.fromInt months ++ " Amezi " ++ String.fromInt days ++ " Umunsi"
             }
 
         AgeSingleDayWithoutMonth months days ->
-            { english = Debug.toString days ++ " day"
-            , kinyarwanda = Just <| Debug.toString days ++ " Umunsi"
+            { english = String.fromInt days ++ " day"
+            , kinyarwanda = Just <| String.fromInt days ++ " Umunsi"
             }
 
         And ->
@@ -1353,8 +1353,8 @@ translationSet trans =
             }
 
         AgeSingleMonthWithoutDay month ->
-            { english = Debug.toString month ++ " month"
-            , kinyarwanda = Just <| Debug.toString month ++ " Ukwezi"
+            { english = String.fromInt month ++ " month"
+            , kinyarwanda = Just <| String.fromInt month ++ " Ukwezi"
             }
 
         AppName ->
@@ -1363,7 +1363,7 @@ translationSet trans =
             }
 
         AllowedValuesRangeHelper constraints ->
-            { english = "Allowed values are between " ++ Debug.toString constraints.minVal ++ " and " ++ Debug.toString constraints.maxVal ++ "."
+            { english = "Allowed values are between " ++ String.fromFloat constraints.minVal ++ " and " ++ String.fromFloat constraints.maxVal ++ "."
             , kinyarwanda = Nothing
             }
 
@@ -1974,8 +1974,8 @@ translationSet trans =
                 }
 
             else
-                { english = Debug.toString value ++ " Days"
-                , kinyarwanda = Just <| Debug.toString value ++ " Iminsi"
+                { english = String.fromInt value ++ " Days"
+                , kinyarwanda = Just <| String.fromInt value ++ " Iminsi"
                 }
 
         DateOfBirth ->
@@ -2146,13 +2146,13 @@ translationSet trans =
             }
 
         MemoryQuota quota ->
-            { english = "Memory used " ++ Debug.toString (quota.usedJSHeapSize // (1024 * 1024)) ++ " MB of available " ++ Debug.toString (quota.jsHeapSizeLimit // (1024 * 1024)) ++ " MB"
-            , kinyarwanda = Just <| "Hamaze gukoreshwa umwanya wa memori (ushobora kubika amakuru igihe gito) ungana na MB" ++ Debug.toString (quota.usedJSHeapSize // (1024 * 1024)) ++ " kuri MB" ++ Debug.toString (quota.jsHeapSizeLimit // (1024 * 1024))
+            { english = "Memory used " ++ String.fromInt (quota.usedJSHeapSize // (1024 * 1024)) ++ " MB of available " ++ String.fromInt (quota.jsHeapSizeLimit // (1024 * 1024)) ++ " MB"
+            , kinyarwanda = Just <| "Hamaze gukoreshwa umwanya wa memori (ushobora kubika amakuru igihe gito) ungana na MB" ++ String.fromInt (quota.usedJSHeapSize // (1024 * 1024)) ++ " kuri MB" ++ String.fromInt (quota.jsHeapSizeLimit // (1024 * 1024))
             }
 
         StorageQuota quota ->
-            { english = "Storage used " ++ Debug.toString (quota.usage // (1024 * 1024)) ++ " MB of available " ++ Debug.toString (quota.quota // (1024 * 1024)) ++ " MB"
-            , kinyarwanda = Just <| "Hamaze gukoreshwa umwanya ungana na MB" ++ Debug.toString (quota.usage // (1024 * 1024)) ++ " umwanya wose ungana na MB" ++ Debug.toString (quota.quota // (1024 * 1024))
+            { english = "Storage used " ++ String.fromInt (quota.usage // (1024 * 1024)) ++ " MB of available " ++ String.fromInt (quota.quota // (1024 * 1024)) ++ " MB"
+            , kinyarwanda = Just <| "Hamaze gukoreshwa umwanya ungana na MB" ++ String.fromInt (quota.usage // (1024 * 1024)) ++ " umwanya wose ungana na MB" ++ String.fromInt (quota.quota // (1024 * 1024))
             }
 
         SubmitPairingCode ->
@@ -3099,13 +3099,13 @@ translationSet trans =
             }
 
         MeasurementGained amount ->
-            { english = "Gained " ++ Debug.toString amount
-            , kinyarwanda = Just <| "Kwiyongera " ++ Debug.toString amount
+            { english = "Gained " ++ String.fromFloat amount
+            , kinyarwanda = Just <| "Kwiyongera " ++ String.fromFloat amount
             }
 
         MeasurementLost amount ->
-            { english = "Lost " ++ Debug.toString amount
-            , kinyarwanda = Just <| "Kwiyongera " ++ Debug.toString amount
+            { english = "Lost " ++ String.fromFloat amount
+            , kinyarwanda = Just <| "Kwiyongera " ++ String.fromFloat amount
             }
 
         MedicalDiagnosis ->
@@ -3246,7 +3246,7 @@ translationSet trans =
                     "one minute ago"
 
                 else
-                    Debug.toString minutes ++ " minutes ago"
+                    String.fromInt minutes ++ " minutes ago"
             , kinyarwanda =
                 if minutes == 0 then
                     Just "Nonaha"
@@ -3255,7 +3255,7 @@ translationSet trans =
                     Just "Umunota umwe ushize"
 
                 else
-                    Just <| Debug.toString minutes ++ " hashize iminota micye"
+                    Just <| String.fromInt minutes ++ " hashize iminota micye"
             }
 
         ModeOfDelivery mode ->
@@ -4025,8 +4025,8 @@ translationSet trans =
                     }
 
         PreviousFloatMeasurement value ->
-            { english = "Previous measurement: " ++ Debug.toString value
-            , kinyarwanda = Just <| "Ibipimo by'ubushize: " ++ Debug.toString value
+            { english = "Previous measurement: " ++ String.fromFloat value
+            , kinyarwanda = Just <| "Ibipimo by'ubushize: " ++ String.fromFloat value
             }
 
         PreviousMeasurementNotFound ->
@@ -4229,8 +4229,8 @@ translationSet trans =
             }
 
         ReportRemaining remaining ->
-            { english = Debug.toString remaining ++ " remaning"
-            , kinyarwanda = Just <| Debug.toString remaining ++ " iyibutswa rya raporo"
+            { english = String.fromInt remaining ++ " remaning"
+            , kinyarwanda = Just <| String.fromInt remaining ++ " iyibutswa rya raporo"
             }
 
         ReportResultsOfSearch total ->
@@ -4241,8 +4241,8 @@ translationSet trans =
                     }
 
                 _ ->
-                    { english = "There are " ++ Debug.toString total ++ " participants that match your search."
-                    , kinyarwanda = Just <| "Hari abagenerwabikorwa " ++ Debug.toString total ++ " bahuye nuwo ushaka mu ishakiro"
+                    { english = "There are " ++ String.fromInt total ++ " participants that match your search."
+                    , kinyarwanda = Just <| "Hari abagenerwabikorwa " ++ String.fromInt total ++ " bahuye nuwo ushaka mu ishakiro"
                     }
 
         Reports ->
@@ -4256,8 +4256,8 @@ translationSet trans =
             }
 
         ReportCompleted { pending, completed } ->
-            { english = Debug.toString completed ++ " / " ++ Debug.toString (pending + completed) ++ " Completed"
-            , kinyarwanda = Just <| Debug.toString completed ++ " / " ++ Debug.toString (pending + completed) ++ " Raporo irarangiye"
+            { english = String.fromInt completed ++ " / " ++ String.fromInt (pending + completed) ++ " Completed"
+            , kinyarwanda = Just <| String.fromInt completed ++ " / " ++ String.fromInt (pending + completed) ++ " Raporo irarangiye"
             }
 
         ResolveMonth month ->
@@ -4314,8 +4314,8 @@ translationSet trans =
                         }
 
                     else
-                        { english = Debug.toString number ++ " previous C-sections"
-                        , kinyarwanda = Just <| Debug.toString number ++ " ubushize yarabazwe"
+                        { english = String.fromInt number ++ " previous C-sections"
+                        , kinyarwanda = Just <| String.fromInt number ++ " ubushize yarabazwe"
                         }
 
                 FactorCSectionInPreviousDelivery ->
@@ -4950,8 +4950,8 @@ translationSet trans =
             }
 
         TasksCompleted completed total ->
-            { english = Debug.toString completed ++ "/" ++ Debug.toString total ++ " Tasks Completed"
-            , kinyarwanda = Just <| Debug.toString completed ++ "/" ++ Debug.toString total ++ " Ibikorwa byarangiye"
+            { english = String.fromInt completed ++ "/" ++ String.fromInt total ++ " Tasks Completed"
+            , kinyarwanda = Just <| String.fromInt completed ++ "/" ++ String.fromInt total ++ " Ibikorwa byarangiye"
             }
 
         TelephoneNumber ->
@@ -5106,8 +5106,8 @@ translationSet trans =
                 }
 
             else
-                { english = Debug.toString value ++ " Weeks"
-                , kinyarwanda = Just <| Debug.toString value ++ " Ibyumweru"
+                { english = String.fromInt value ++ " Weeks"
+                , kinyarwanda = Just <| String.fromInt value ++ " Ibyumweru"
                 }
 
         Weight ->
@@ -5148,7 +5148,7 @@ translationSet trans =
             }
 
         YearsOld int ->
-            { english = Debug.toString int ++ " years old"
+            { english = String.fromInt int ++ " years old"
             , kinyarwanda = Nothing
             }
 
@@ -5587,8 +5587,8 @@ translateChartPhrase phrase =
             }
 
         YearsPlural value ->
-            { english = Debug.toString value ++ " years"
-            , kinyarwanda = Just <| "Imyaka " ++ Debug.toString value
+            { english = String.fromInt value ++ " years"
+            , kinyarwanda = Just <| "Imyaka " ++ String.fromInt value
             }
 
         ZScoreChartsAvailableAt ->
@@ -5818,7 +5818,7 @@ translateValidationError id =
             }
 
         LengthError correctLength ->
-            { english = "should contain " ++ Debug.toString correctLength ++ " characters"
+            { english = "should contain " ++ String.fromInt correctLength ++ " characters"
             , kinyarwanda = Nothing
             }
 
@@ -5907,32 +5907,32 @@ translateFormError error =
             }
 
         SmallerIntThan int ->
-            { english = "must be smaller than " ++ Debug.toString int
+            { english = "must be smaller than " ++ String.fromInt int
             , kinyarwanda = Nothing
             }
 
         GreaterIntThan int ->
-            { english = "must be larger than " ++ Debug.toString int
+            { english = "must be larger than " ++ String.fromInt int
             , kinyarwanda = Nothing
             }
 
         SmallerFloatThan float ->
-            { english = "must be smaller than " ++ Debug.toString float
+            { english = "must be smaller than " ++ String.fromFloat float
             , kinyarwanda = Nothing
             }
 
         GreaterFloatThan float ->
-            { english = "must be larger than " ++ Debug.toString float
+            { english = "must be larger than " ++ String.fromFloat float
             , kinyarwanda = Nothing
             }
 
         ShorterStringThan int ->
-            { english = "must have fewer than " ++ Debug.toString int ++ " characters"
+            { english = "must have fewer than " ++ String.fromInt int ++ " characters"
             , kinyarwanda = Nothing
             }
 
         LongerStringThan int ->
-            { english = "must have more than " ++ Debug.toString int ++ " characters"
+            { english = "must have more than " ++ String.fromInt int ++ " characters"
             , kinyarwanda = Nothing
             }
 

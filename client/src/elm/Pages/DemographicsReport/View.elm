@@ -164,7 +164,7 @@ viewFamilyInformationPane language currentDate db data =
 
         numberOfChildren =
             data.person.numberOfChildren
-                |> Maybe.map Debug.toString
+                |> Maybe.map String.fromInt
                 |> Maybe.withDefault ""
 
         children =
