@@ -15,8 +15,9 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra
-import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
-import Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData)
+import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis, AssembledData)
+import Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData, resolveAcuteIllnessDiagnosis)
+import Pages.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -46,33 +47,33 @@ view language currentDate id db =
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AssembledData -> Html Msg
 viewContent language currentDate id data =
     let
-        backIcon =
-            a
-                [ class "icon-back"
-                , onClick <| SetActivePage (UserPage (AcuteIllnessEncounterPage id))
-                ]
-                []
-
-        title =
-            h1
-                [ class "ui report header" ]
-                [ text <| translate language Translate.ProgressReport ]
-
-        subtitle =
-            p
-                [ class "date" ]
-                [ text <| translate language Translate.CurrentIllnessBegan
-                , text " - "
-                , text <| renderDate language currentDate
-                ]
+        diagnosis =
+            resolveAcuteIllnessDiagnosis currentDate data.person data.measurements
     in
     div [ class "page-report acute-illness" ]
         [ div
-            [ class "wrap-report" ]
-            [ backIcon
-            , title
-            , subtitle
+            [ class "ui report unstackable items" ]
+            [ viewHeader language currentDate id
             , viewPersonInfo language currentDate data.person data.measurements
+            , viewAssessmentPane language currentDate diagnosis
+            ]
+        ]
+
+
+viewHeader : Language -> NominalDate -> AcuteIllnessEncounterId -> Html Msg
+viewHeader language currentDate id =
+    div [ class "report-header" ]
+        [ a
+            [ class "icon-back"
+            , onClick <| SetActivePage (UserPage (AcuteIllnessEncounterPage id))
+            ]
+            []
+        , h1 [ class "ui report header" ]
+            [ text <| translate language Translate.ProgressReport ]
+        , p [ class "date" ]
+            [ text <| translate language Translate.CurrentIllnessBegan
+            , text " - "
+            , text <| renderDate language currentDate
             ]
         ]
 
@@ -121,17 +122,28 @@ viewPersonInfo language currentDate person measurements =
                 |> Maybe.withDefault emptyNode
     in
     div
-        [ class "ui report unstackable items" ]
-        [ div
-            [ class "item person-details" ]
-            [ div [ class "ui image" ]
-                [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width
-                ]
-            , div [ class "content" ]
-                [ h2 [ class "ui header" ]
-                    [ text person.name ]
-                , viewAge
-                , viewVillage
-                ]
+        [ class "item person-details" ]
+        [ div [ class "ui image" ]
+            [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width
             ]
+        , div [ class "content" ]
+            [ h2 [ class "ui header" ]
+                [ text person.name ]
+            , viewAge
+            , viewVillage
+            ]
+        ]
+
+
+viewAssessmentPane : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> Html Msg
+viewAssessmentPane language currentDate diagnosis =
+    let
+        assessment =
+            diagnosis
+                |> Maybe.map (Translate.AcuteIllnessDiagnosisWarning >> translate language >> text >> List.singleton)
+                |> Maybe.withDefault []
+    in
+    div [ class "pane assessment" ]
+        [ viewItemHeading language Translate.Assessment "blue"
+        , div [ class "pane-content" ] assessment
         ]

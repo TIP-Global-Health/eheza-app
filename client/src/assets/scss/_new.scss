@@ -1368,7 +1368,9 @@ div.page-clinical-progress-report {
       }
     }
 
-    .risk-factors, .medical-diagnosis, .obstetric-diagnosis {
+    .risk-factors,
+    .medical-diagnosis,
+    .obstetric-diagnosis {
       background: $color-white;
       margin-bottom: 20px;
 
@@ -1770,28 +1772,80 @@ div.page-report.acute-illness {
   background: $color-light-gray;
   padding: 20px;
 
-  .ui.report.header {
-    font-size: 30px;
-  }
-
-  .date {
-    font-size: 22px;
-  }
-
   .ui.report.unstackable.items {
 
-    .item.person-details .content {
+    .report-header {
+      background: $color-white;
+      border-top: 12px solid $color-primary;
+      color: $color-text;
+      padding: 20px 20px 0 25px;
 
-      h2 {
-        font-size: 27px;
-        font-weight: bold;
+      .icon-back {
+        width: 34px;
+        height: 27px;
+        display: block;
+        background: url(#{$img-path}icon-back-dark.svg);
+        position: absolute;
+        background-size: 34px 27px;
       }
 
-      p {
-        color: $color-text;
-        font-size: 20px;
-        margin-bottom: 0;
+      .ui.report.header {
+        font-size: 30px;
+      }
+
+      .date {
+        font-size: 22px;
+        text-align: center;
       }
     }
+
+    .item.person-details {
+      background: $color-white;
+      margin-top: 0;
+      padding: 30px;
+
+      .content {
+
+         h2 {
+           font-size: 27px;
+           font-weight: bold;
+         }
+
+         p {
+           color: $color-text;
+           font-size: 20px;
+           margin-bottom: 0;
+         }
+      }
+    }
+
+    div.pane {
+      background: $color-white;
+      margin-bottom: 20px;
+
+      .pane-heading {
+        color: $color-white;
+        font-size: 22px;
+        font-weight: bold;
+        padding: 10px 15px;
+        text-transform: uppercase;
+
+        &.blue {
+          background: $color-primary;
+        }
+      }
+
+      .pane-content {
+        background: $color-white;
+        color: $color-red-alert;
+        font-size: 22px;
+        font-weight: bold;
+        line-height: 32px;
+        padding: 20px 0 20px 40px;
+        text-transform: uppercase;
+      }
+    }
+
   }
+
 }
