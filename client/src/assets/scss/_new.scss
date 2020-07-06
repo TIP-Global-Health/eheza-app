@@ -1765,3 +1765,33 @@ div.page-participant.prenatal {
       }
     }
 }
+
+div.page-report.acute-illness {
+  background: $color-light-gray;
+  padding: 20px;
+
+  .ui.report.header {
+    font-size: 30px;
+  }
+
+  .date {
+    font-size: 22px;
+  }
+
+  .ui.report.unstackable.items {
+
+    .item.person-details .content {
+
+      h2 {
+        font-size: 27px;
+        font-weight: bold;
+      }
+
+      p {
+        color: $color-text;
+        font-size: 20px;
+        margin-bottom: 0;
+      }
+    }
+  }
+}
