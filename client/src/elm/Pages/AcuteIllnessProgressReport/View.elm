@@ -56,6 +56,7 @@ viewContent language currentDate id data =
             [ viewHeader language currentDate id
             , viewPersonInfo language currentDate data.person data.measurements
             , viewAssessmentPane language currentDate diagnosis
+            , viewPhysicalExamPane language currentDate data.measurements
             ]
         ]
 
@@ -146,4 +147,16 @@ viewAssessmentPane language currentDate diagnosis =
     div [ class "pane assessment" ]
         [ viewItemHeading language Translate.Assessment "blue"
         , div [ class "pane-content" ] assessment
+        ]
+
+
+viewPhysicalExamPane : Language -> NominalDate -> AcuteIllnessMeasurements -> Html Msg
+viewPhysicalExamPane language currentDate measurements =
+    let
+        table =
+            []
+    in
+    div [ class "pane phusical-exam" ]
+        [ viewItemHeading language Translate.PhysicalExam "blue"
+        , div [ class "pane-content" ] table
         ]

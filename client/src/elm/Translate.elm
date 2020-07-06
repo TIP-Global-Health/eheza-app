@@ -544,6 +544,7 @@ type TranslationId
     | PersistentStorage Bool
     | Person
     | PersonHasBeenSaved
+    | PhysicalExam
     | PhysicalExamTask PhysicalExamTask
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
@@ -3848,6 +3849,11 @@ translationSet trans =
         PersonHasBeenSaved ->
             { english = "Person has been saved"
             , kinyarwanda = Just "Amakuru kuri uyu muntu yabitswe"
+            }
+
+        PhysicalExam ->
+            { english = "Physical Exam"
+            , kinyarwanda = Nothing
             }
 
         PhysicalExamTask task ->
