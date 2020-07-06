@@ -275,6 +275,7 @@ type TranslationId
     | ContactWithSimilarSymptomsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
+    | CurrentIllnessBegan
     | CSectionScar CSectionScar
     | GroupNotFound
     | Group
@@ -1731,6 +1732,11 @@ translationSet trans =
         ConvulsionsPreviousDelivery ->
             { english = "Experienced convulsions in previous delivery"
             , kinyarwanda = Just "Ubushize yahinze umushyitsi abyara"
+            }
+
+        CurrentIllnessBegan ->
+            { english = "Current illness began"
+            , kinyarwanda = Nothing
             }
 
         CSectionScar scar ->
@@ -5431,6 +5437,11 @@ translateActivePage page =
 
                 AcuteIllnessActivityPage _ _ ->
                     { english = "Acute Illness Activity"
+                    , kinyarwanda = Nothing
+                    }
+
+                AcuteIllnessProgressReportPage _ ->
+                    { english = "Acute Illness Progress Report"
                     , kinyarwanda = Nothing
                     }
 

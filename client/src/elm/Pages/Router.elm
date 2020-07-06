@@ -185,6 +185,9 @@ pageToFragment current =
                 AcuteIllnessActivityPage id activity ->
                     Just <| "acute-illness-activity/" ++ fromEntityUuid id ++ "/" ++ AcuteIllnessActivity.Utils.encodeActivityAsString activity
 
+                AcuteIllnessProgressReportPage id ->
+                    Just <| "acute-illness-progress-report/" ++ fromEntityUuid id
+
 
 parser : Parser (Page -> c) c
 parser =
@@ -219,6 +222,7 @@ parser =
         , map (\id -> UserPage <| NutritionProgressReportPage id) (s "nutrition-progress-report" </> parseUuid)
         , map (\id -> UserPage <| AcuteIllnessEncounterPage id) (s "acute-illness-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| AcuteIllnessActivityPage id activity) (s "acute-illness-activity" </> parseUuid </> parseAcuteIllnessActivity)
+        , map (\id -> UserPage <| AcuteIllnessProgressReportPage id) (s "acute-illness-progress-report" </> parseUuid)
 
         -- `top` represents the page without any segements ... i.e. the root page.
         , map PinCodePage top
