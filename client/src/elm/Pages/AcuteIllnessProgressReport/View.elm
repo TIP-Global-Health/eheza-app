@@ -158,7 +158,7 @@ viewPhysicalExamPane language currentDate measurements =
                 |> Maybe.map
                     (\bodyTemperature_ ->
                         if bodyTemperature_ < 37.5 then
-                            td [] [ text <| "(" ++ translate language Translate.Normal ++ ")" ]
+                            td [] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
 
                         else
                             td [ class "alert" ] [ text <| String.fromFloat bodyTemperature_ ++ " " ++ translate language Translate.CelsiusAbbrev ]
@@ -170,7 +170,7 @@ viewPhysicalExamPane language currentDate measurements =
                 |> Maybe.map
                     (\respiratoryRate_ ->
                         if respiratoryRate_ < 20 then
-                            td [] [ text <| "(" ++ translate language Translate.Normal ++ ")" ]
+                            td [] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
 
                         else
                             td [ class "alert" ] [ text <| String.fromInt respiratoryRate_ ++ " " ++ translate language Translate.BpmUnit ]
