@@ -120,7 +120,7 @@ renderAgeMonthsDaysParts language birthDate now =
                         ++ " "
                         ++ translate language Translate.MonthAbbrev
     in
-    [ dayPart, monthPart ]
+    [ monthPart, dayPart ]
 
 
 renderAgeMonthsDaysAbbrev : Language -> NominalDate -> NominalDate -> String
