@@ -15,8 +15,9 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra
+import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis, AssembledData)
-import Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData, resolveAcuteIllnessDiagnosis)
+import Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData, resolveAcuteIllnessDiagnosis, resolveNextStepByDiagnosis)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData exposing (RemoteData(..))
@@ -58,7 +59,7 @@ viewContent language currentDate id data =
             , viewAssessmentPane language currentDate diagnosis
             , viewSymptomsPane language currentDate data.measurements
             , viewPhysicalExamPane language currentDate data.measurements
-            , viewActionsTakenPane language currentDate diagnosis data.measurements
+            , viewActionsTakenPane language currentDate diagnosis data
             ]
         ]
 
@@ -286,13 +287,45 @@ viewPhysicalExamPane language currentDate measurements =
         ]
 
 
-viewActionsTakenPane : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> Html Msg
-viewActionsTakenPane language currentDate diagnosis measurements =
+viewActionsTakenPane : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> AssembledData -> Html Msg
+viewActionsTakenPane language currentDate diagnosis data =
     let
         actions =
-            []
+            case resolveNextStepByDiagnosis currentDate data.person diagnosis of
+                Just NextStepsIsolation ->
+                    let
+                        contacedHC =
+                            data.measurements.hcContact
+                                |> Maybe.map
+                                    (Tuple.second
+                                        >> .value
+                                        >> .signs
+                                        >> EverySet.member ContactedHealthCenter
+                                    )
+                                |> Maybe.withDefault False
+
+                        patientIsolated =
+                            data.measurements.isolation
+                                |> Maybe.map
+                                    (Tuple.second
+                                        >> .value
+                                        >> .signs
+                                        >> EverySet.member PatientIsolated
+                                    )
+                                |> Maybe.withDefault False
+                    in
+                    []
+
+                Just NextStepsMedicationDistribution ->
+                    []
+
+                Just NextStepsSendToHC ->
+                    []
+
+                _ ->
+                    []
     in
     div [ class "pane actions-taken" ]
         [ viewItemHeading language Translate.ActionsTaken "blue"
-        , div [ class "pane-content" ] actions
+        , div [ class "pane-content" ] []
         ]
