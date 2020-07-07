@@ -180,6 +180,7 @@ type TranslationId
     | Abortions
     | AccompaniedByPartner
     | AccessDenied
+    | ActionsTaken
     | ActionsToTake
     | AcuteFindingsGeneralSign AcuteFindingsGeneralSign
     | AcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
@@ -803,6 +804,11 @@ translationSet trans =
         AccessDenied ->
             { english = "Access denied"
             , kinyarwanda = Just "Kwinjira ntibyemera"
+            }
+
+        ActionsTaken ->
+            { english = "Actions Taken"
+            , kinyarwanda = Nothing
             }
 
         ActionsToTake ->

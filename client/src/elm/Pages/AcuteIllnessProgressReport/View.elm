@@ -58,6 +58,7 @@ viewContent language currentDate id data =
             , viewAssessmentPane language currentDate diagnosis
             , viewSymptomsPane language currentDate data.measurements
             , viewPhysicalExamPane language currentDate data.measurements
+            , viewActionsTakenPane language currentDate diagnosis data.measurements
             ]
         ]
 
@@ -106,7 +107,7 @@ viewPersonInfo language currentDate person measurements =
                 |> Maybe.map
                     (\age ->
                         p []
-                            [ span [ class "label" ] [ text <| translate language Translate.AgeWord ++ ":" ]
+                            [ span [ class "label" ] [ text <| translate language Translate.AgeWord ++ ": " ]
                             , span [] [ text age ]
                             ]
                     )
@@ -282,4 +283,16 @@ viewPhysicalExamPane language currentDate measurements =
             [ thead [] tableHead
             , tbody [] tableBody
             ]
+        ]
+
+
+viewActionsTakenPane : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> Html Msg
+viewActionsTakenPane language currentDate diagnosis measurements =
+    let
+        actions =
+            []
+    in
+    div [ class "pane actions-taken" ]
+        [ viewItemHeading language Translate.ActionsTaken "blue"
+        , div [ class "pane-content" ] actions
         ]
