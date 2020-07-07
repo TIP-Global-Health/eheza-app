@@ -56,6 +56,7 @@ viewContent language currentDate id data =
             [ viewHeader language currentDate id
             , viewPersonInfo language currentDate data.person data.measurements
             , viewAssessmentPane language currentDate diagnosis
+            , viewSymptomsPane language currentDate data.measurements
             , viewPhysicalExamPane language currentDate data.measurements
             ]
         ]
@@ -147,6 +148,71 @@ viewAssessmentPane language currentDate diagnosis =
     div [ class "pane assessment" ]
         [ viewItemHeading language Translate.Assessment "blue"
         , div [ class "pane-content" ] assessment
+        ]
+
+
+viewSymptomsPane : Language -> NominalDate -> AcuteIllnessMeasurements -> Html Msg
+viewSymptomsPane language currentDate measurements =
+    let
+        symptomsDictToList dict =
+            Dict.toList dict
+                |> List.filterMap
+                    (\( symptom, count ) ->
+                        if count > 0 then
+                            Just symptom
+
+                        else
+                            Nothing
+                    )
+
+        symptomsGeneral =
+            measurements.symptomsGeneral
+                |> Maybe.map
+                    (Tuple.second
+                        >> .value
+                        >> symptomsDictToList
+                        >> List.map (\symptom -> li [ class "general" ] [ text <| translate language (Translate.SymptomsGeneralSign symptom) ])
+                    )
+                |> Maybe.withDefault []
+
+        symptomsRespiratory =
+            measurements.symptomsRespiratory
+                |> Maybe.map
+                    (Tuple.second
+                        >> .value
+                        >> symptomsDictToList
+                        >> List.map (\symptom -> li [ class "respiratory" ] [ text <| translate language (Translate.SymptomsRespiratorySign symptom) ])
+                    )
+                |> Maybe.withDefault []
+
+        symptomsGI =
+            measurements.symptomsGI
+                |> Maybe.map
+                    (Tuple.second
+                        >> .value
+                        >> .signs
+                        >> symptomsDictToList
+                        >> List.map (\symptom -> li [ class "gi" ] [ text <| translate language (Translate.SymptomsGISignAbbrev symptom) ])
+                    )
+                |> Maybe.withDefault []
+
+        values =
+            [ ( currentDate, symptomsGeneral ++ symptomsRespiratory ++ symptomsGI ) ]
+
+        symptomsTable =
+            values
+                |> List.map
+                    (\( date, symptoms ) ->
+                        div [ class "symptoms-table-row" ]
+                            [ div [ class "date" ] [ formatDDMMYY date |> text ]
+                            , ul [] symptoms
+                            ]
+                    )
+                |> div [ class "symptoms-table" ]
+    in
+    div [ class "pane symptoms" ]
+        [ viewItemHeading language Translate.Symptoms "blue"
+        , symptomsTable
         ]
 
 

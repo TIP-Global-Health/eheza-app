@@ -665,8 +665,10 @@ type TranslationId
     | SuspectedCovid19CaseAlertHelper
     | SuspectedCovid19CaseIsolate
     | SuspectedCovid19CaseContactHC
+    | Symptoms
     | SymptomsGeneralSign SymptomsGeneralSign
     | SymptomsGISign SymptomsGISign
+    | SymptomsGISignAbbrev SymptomsGISign
     | SymptomsRespiratorySign SymptomsRespiratorySign
     | SymptomsTask SymptomsTask
     | GroupEncounterClosed
@@ -4695,6 +4697,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Symptoms ->
+            { english = "Symptoms"
+            , kinyarwanda = Nothing
+            }
+
         SymptomsGeneralSign sign ->
             case sign of
                 BodyAches ->
@@ -4813,6 +4820,16 @@ translationSet trans =
                     { english = "None of the above"
                     , kinyarwanda = Nothing
                     }
+
+        SymptomsGISignAbbrev sign ->
+            case sign of
+                NonBloodyDiarrhea ->
+                    { english = "Non-Bloody Diarrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    translationSet (SymptomsGISign sign)
 
         SymptomsRespiratorySign sign ->
             case sign of

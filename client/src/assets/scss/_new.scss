@@ -1849,6 +1849,48 @@ div.page-report.acute-illness {
       color: $color-red-alert;
     }
 
+    div.pane.symptoms .symptoms-table .symptoms-table-row {
+      display: grid;
+      grid-gap: 20px;
+      grid-template-columns: 15% auto;
+    }
+
+    div.pane.symptoms .symptoms-table .symptoms-table-row .date {
+      color: $color-text;
+      font-weight: 600;
+      margin: auto 0 auto auto;
+    }
+
+    div.pane.symptoms .symptoms-table .symptoms-table-row ul {
+      display: inline-block;
+      list-style-type: none;
+      margin: 5px 0;
+      padding: 0;
+    }
+
+    div.pane.symptoms .symptoms-table .symptoms-table-row ul li {
+      border-radius: 10px;
+      color: $color-white;
+      float: left;
+      font-size: 16px;
+      font-weight: bold;
+      margin: 3px 5px;
+      padding: 0 10px;
+      text-transform: uppercase;
+
+      &.general {
+        background: $color-symptom-general;
+      }
+
+      &.respiratory {
+        background: $color-symptom-respiratory;
+      }
+
+      &.gi {
+        background: $color-symptom-gi;
+      }
+    }
+
     div.pane.physical-exam .ui.table {
       color: $color-text;
       margin: 0;
