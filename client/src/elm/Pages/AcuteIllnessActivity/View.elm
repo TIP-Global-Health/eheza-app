@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.View exposing (view)
+module Pages.AcuteIllnessActivity.View exposing (view, viewAdministeredMedicationLabel, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -45,6 +45,7 @@ import Pages.Utils
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
+import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -1321,11 +1322,8 @@ viewSendToHCForm language currentDate form =
     div [ class "ui form send-to-hc" ]
         [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
         , div [ class "instructions" ]
-            [ div [ class "header" ]
-                [ i [ class "icon-shuttle" ] []
-                , text <| translate language Translate.CompleteHCReferralForm
-                ]
-            , div [ class "header secondary" ] [ text <| translate language Translate.SendPatientToHC ]
+            [ viewSendToHCActionLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
+            , viewSendToHCActionLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
             ]
         , viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
         , viewBoolInput
@@ -1344,18 +1342,19 @@ viewSendToHCForm language currentDate form =
         ]
 
 
+viewSendToHCActionLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
+viewSendToHCActionLabel language actionTranslationId iconClass maybeDate =
+    div [ class "header" ] <|
+        [ i [ class iconClass ] []
+        , text <| translate language actionTranslationId
+        ]
+            ++ renderDatePart language maybeDate
+            ++ [ text "." ]
+
+
 viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> MedicationDistributionForm -> Html Msg
 viewMedicationDistributionForm language currentDate person diagnosis form =
     let
-        viewAdministeredMedicationLabel medicineTranslationId iconClass =
-            div [ class "header" ]
-                [ i [ class iconClass ] []
-                , text <| translate language Translate.Administer
-                , text " "
-                , span [] [ text <| translate language medicineTranslationId ]
-                , text ":"
-                ]
-
         viewAdministeredMedicationQuestion medicineTranslationId =
             div [ class "label" ]
                 [ text <|
@@ -1365,22 +1364,6 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                         ++ " "
                         ++ translate language Translate.ToThePatient
                         ++ "?"
-                ]
-
-        viewTabletsPrescription dosage duration =
-            div [ class "prescription" ]
-                [ span [] [ text <| translate language (Translate.TabletSinglePlural dosage) ]
-                , text " "
-                , text <| translate language duration
-                , text "."
-                ]
-
-        viewOralSolutionPrescription dosage =
-            div [ class "prescription" ]
-                [ span [] [ text <| dosage ++ " " ++ translate language Translate.Glass ]
-                , text " "
-                , text <| translate language Translate.AfterEachLiquidStool
-                , text "."
                 ]
 
         ( instructions, questions ) =
@@ -1394,8 +1377,8 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                         |> Maybe.map
                             (\dosage ->
                                 div [ class "instructions malaria-uncomplicated" ]
-                                    [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Coartem) "icon-pills"
-                                    , viewTabletsPrescription dosage (Translate.ByMouthTwiceADayForXDays 3)
+                                    [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign Coartem) "icon-pills" Nothing
+                                    , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 3)
                                     ]
                             )
                         |> Maybe.withDefault emptyNode
@@ -1420,10 +1403,10 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                     ( Maybe.map2
                         (\orsDosage zincDosage ->
                             div [ class "instructions gastrointestinal-uncomplicated" ]
-                                [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign ORS) "icon-oral-solution"
-                                , viewOralSolutionPrescription orsDosage
-                                , viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Zinc) "icon-pills"
-                                , viewTabletsPrescription zincDosage (Translate.ByMouthDaylyForXDays 10)
+                                [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign ORS) "icon-oral-solution" Nothing
+                                , viewOralSolutionPrescription language orsDosage
+                                , viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign Zinc) "icon-pills" Nothing
+                                , viewTabletsPrescription language zincDosage (Translate.ByMouthDaylyForXDays 10)
                                 ]
                         )
                         (resolveORSDosage currentDate person)
@@ -1452,7 +1435,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                             { form_ | lemonJuiceOrHoney = Just value }
                     in
                     ( div [ class "instructions simple-cough-and-cold" ]
-                        [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign LemonJuiceOrHoney) "icon-pills" ]
+                        [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign LemonJuiceOrHoney) "icon-pills" Nothing ]
                     , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign LemonJuiceOrHoney)
                       , viewBoolInput
                             language
@@ -1472,8 +1455,8 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                         |> Maybe.map
                             (\dosage ->
                                 div [ class "instructions respiratory-infection-uncomplicated" ]
-                                    [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Amoxicillin) "icon-pills"
-                                    , viewTabletsPrescription dosage (Translate.ByMouthTwiceADayForXDays 5)
+                                    [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign Amoxicillin) "icon-pills" Nothing
+                                    , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 5)
                                     ]
                             )
                         |> Maybe.withDefault emptyNode
@@ -1495,3 +1478,42 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
         , instructions
         ]
             ++ questions
+
+
+viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> Maybe NominalDate -> Html any
+viewAdministeredMedicationLabel language administerTranslationId medicineTranslationId iconClass maybeDate =
+    div [ class "header" ] <|
+        [ i [ class iconClass ] []
+        , text <| translate language administerTranslationId
+        , text " "
+        , span [ class "medicine" ] [ text <| translate language medicineTranslationId ]
+        ]
+            ++ renderDatePart language maybeDate
+            ++ [ text ":" ]
+
+
+viewTabletsPrescription : Language -> String -> TranslationId -> Html any
+viewTabletsPrescription language dosage duration =
+    div [ class "prescription" ]
+        [ span [] [ text <| translate language (Translate.TabletSinglePlural dosage) ]
+        , text " "
+        , text <| translate language duration
+        , text "."
+        ]
+
+
+viewOralSolutionPrescription : Language -> String -> Html any
+viewOralSolutionPrescription language dosage =
+    div [ class "prescription" ]
+        [ span [] [ text <| dosage ++ " " ++ translate language Translate.Glass ]
+        , text " "
+        , text <| translate language Translate.AfterEachLiquidStool
+        , text "."
+        ]
+
+
+renderDatePart : Language -> Maybe NominalDate -> List (Html any)
+renderDatePart language maybeDate =
+    maybeDate
+        |> Maybe.map (\date -> [ span [ class "date" ] [ text <| " (" ++ renderDate language date ++ ")" ] ])
+        |> Maybe.withDefault []

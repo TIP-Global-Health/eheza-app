@@ -632,6 +632,79 @@ div.page-encounter.acute-illness {
     }
 }
 
+@mixin next-steps {
+
+  .instructions {
+    font-weight: bold;
+    margin-bottom: 30px;
+
+    span.medicine {
+      color: $color-light-blue;
+    }
+
+    span.date {
+      font-style: italic;
+    }
+
+    .header {
+      margin-bottom: 5px;
+      margin-top: 20px;
+
+      i {
+        display: inline-block;
+        vertical-align: middle;
+
+        &.icon-phone {
+          background: url(#{$img-path}icon-phone.svg) center center no-repeat;
+          background-size: 30px 30px;
+          height: 30px;
+          width: 50px;
+        }
+
+        &.icon-patient-in-bed {
+          background: url(#{$img-path}icon-patient-in-bed.svg) center center no-repeat;
+          background-size: 30px 30px;
+          height: 30px;
+          width: 52px;
+        }
+
+        &.icon-forms {
+          background: url(#{$img-path}icon-forms-blue.svg) center center no-repeat;
+          background-size: 45px 50px;
+          height: 35px;
+          width: 50px;
+        }
+
+        &.icon-shuttle {
+          background: url(#{$img-path}icon-shuttle.svg) center center no-repeat;
+          background-size: 32px 50px;
+          height: 19px;
+          width: 50px;
+        }
+
+        &.icon-oral-solution {
+          background: url(#{$img-path}icon-oral-solution.svg) center center no-repeat;
+          background-size: 26px 32px;
+          height: 32px;
+          margin-right: 22px;
+          width: 32px;
+        }
+
+        &.icon-pills {
+          background: url(#{$img-path}icon-pills.svg) center center no-repeat;
+          background-size: 36px 50px;
+          height: 36px;
+          width: 50px;
+        }
+      }
+    }
+
+    .prescription {
+      margin-left: 54px;
+    }
+  }
+}
+
 // Acute Illness Activity page
 div.page-activity.acute-illness {
 
@@ -656,54 +729,7 @@ div.page-activity.acute-illness {
         text-transform: uppercase;
       }
 
-      .instructions {
-        font-weight: bold;
-        margin-bottom: 30px;
-
-        span {
-          color: $color-light-blue;
-        }
-
-        .header {
-          margin-bottom: 5px;
-          margin-top: 20px;
-
-          i {
-            display: inline-block;
-            vertical-align: middle;
-
-            &.icon-shuttle {
-              background: url(#{$img-path}icon-shuttle.svg) center center no-repeat;
-              background-size: 32px 50px;
-              height: 19px;
-              width: 50px;
-            }
-
-            &.icon-oral-solution {
-              background: url(#{$img-path}icon-oral-solution.svg) center center no-repeat;
-              background-size: 26px 32px;
-              height: 32px;
-              margin-right: 22px;
-              width: 32px;
-            }
-
-            &.icon-pills {
-              background: url(#{$img-path}icon-pills.svg) center center no-repeat;
-              background-size: 36px 50px;
-              height: 36px;
-              width: 50px;
-            }
-          }
-
-          &.secondary {
-            margin-left: 52px;
-          }
-        }
-
-        .prescription {
-          margin-left: 54px;
-        }
-      }
+      @include next-steps;
     }
 
     .label {
@@ -1911,6 +1937,14 @@ div.page-report.acute-illness {
       }
     }
 
+    div.pane.actions-taken {
+      @include next-steps;
+    }
+
+    div.pane.actions-taken .instructions {
+      color: $color-text;
+      padding: 20px;
+    }
   }
 
 }

@@ -203,6 +203,7 @@ type TranslationId
     | AddToGroup
     | Admin
     | Administer
+    | Administered
     | AdministeredMedicationQuestion
     | AddressInformation
     | Adherence Adherence
@@ -271,6 +272,8 @@ type TranslationId
     | Clinical
     | ClinicalProgressReport
     | CompleteHCReferralForm
+    | CompletedHCReferralForm
+    | ContactedHC
     | ContactedHCQuestion
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
@@ -422,6 +425,7 @@ type TranslationId
     | InitialResultsDisplay InitialResultsDisplay
     | IntractableVomitingQuestion
     | IsCurrentlyBreastfeeding
+    | IsolatedAtHome
     | KilogramShorthand
     | KilogramsPerMonth
     | LaboratoryTask LaboratoryTask
@@ -678,6 +682,7 @@ type TranslationId
     | GroupEncounterUnauthorized
     | GroupEncounterUnauthorized2
     | SendPatientToHC
+    | SentPatientToHC
     | ShowAll
     | StartEndDate
     | StartDate
@@ -1016,6 +1021,11 @@ translationSet trans =
 
         Administer ->
             { english = "Administer"
+            , kinyarwanda = Nothing
+            }
+
+        Administered ->
+            { english = "Administered"
             , kinyarwanda = Nothing
             }
 
@@ -1717,7 +1727,17 @@ translationSet trans =
             }
 
         CompleteHCReferralForm ->
-            { english = "Complete a health center referral form."
+            { english = "Complete a health center referral form"
+            , kinyarwanda = Nothing
+            }
+
+        CompletedHCReferralForm ->
+            { english = "Completed health center referral form"
+            , kinyarwanda = Nothing
+            }
+
+        ContactedHC ->
+            { english = "Contacted Health Center"
             , kinyarwanda = Nothing
             }
 
@@ -2899,6 +2919,11 @@ translationSet trans =
 
         IsCurrentlyBreastfeeding ->
             { english = "Is the mother currently breastfeeding her infant"
+            , kinyarwanda = Nothing
+            }
+
+        IsolatedAtHome ->
+            { english = "Isolated at home"
             , kinyarwanda = Nothing
             }
 
@@ -4927,7 +4952,12 @@ translationSet trans =
             }
 
         SendPatientToHC ->
-            { english = "Send patient to the health center."
+            { english = "Send patient to the health center"
+            , kinyarwanda = Nothing
+            }
+
+        SentPatientToHC ->
+            { english = "Sent patient to the health center"
             , kinyarwanda = Nothing
             }
 
