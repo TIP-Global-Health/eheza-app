@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, ageDependentNextStep, bloodyDiarrheaAtSymptoms, coughAndNasalCongestionAtSymptoms, covid19Diagnosed, expectActivity, feverAtPhysicalExam, feverAtSymptoms, feverRecorded, generateAssembledData, generatePreviousMeasurements, intractableVomitingAtSymptoms, malariaRapidTestResult, malarialDangerSignsPresent, mandatoryActivitiesCompleted, nonBloodyDiarrheaAtSymptoms, poorSuckAtSymptoms, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByLaboratoryResults, resolveNextStepByDiagnosis, resolveNextStepsTasks, resolveNonCovid19AcuteIllnessDiagnosis, respiratoryInfectionDangerSignsPresent, respiratoryRateElevated, symptomAppearsAtSymptomsDict)
+module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, ageDependentARINextStep, bloodyDiarrheaAtSymptoms, coughAndNasalCongestionAtSymptoms, covid19Diagnosed, expectActivity, feverAtPhysicalExam, feverAtSymptoms, feverRecorded, generateAssembledData, generatePreviousMeasurements, intractableVomitingAtSymptoms, malariaRapidTestResult, malarialDangerSignsPresent, mandatoryActivitiesCompleted, nonBloodyDiarrheaAtSymptoms, poorSuckAtSymptoms, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByLaboratoryResults, resolveNextStepByDiagnosis, resolveNextStepsTasks, resolveNonCovid19AcuteIllnessDiagnosis, respiratoryInfectionDangerSignsPresent, respiratoryRateElevated, symptomAppearsAtSymptomsDict)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -109,10 +109,10 @@ generatePreviousMeasurements currentEncounterId participantId db =
 resolveNextStepsTasks : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> List NextStepsTask
 resolveNextStepsTasks currentDate person diagnosis =
     let
-        ( ageMonth0To2, ageMonth2To60 ) =
+        ( ageMonths0To2, ageMonths0To6, ageMonths2To60 ) =
             ageInMonths currentDate person
-                |> Maybe.map (\ageMonths -> ( ageMonths < 2, ageMonths >= 2 && ageMonths < 60 ))
-                |> Maybe.withDefault ( False, False )
+                |> Maybe.map (\ageMonthss -> ( ageMonthss < 2, ageMonthss < 6, ageMonthss >= 2 && ageMonthss < 60 ))
+                |> Maybe.withDefault ( False, False, False )
 
         expectTask task =
             case task of
@@ -125,15 +125,16 @@ resolveNextStepsTasks currentDate person diagnosis =
                 NextStepsMedicationDistribution ->
                     (diagnosis == Just DiagnosisMalariaUncomplicated)
                         || (diagnosis == Just DiagnosisGastrointestinalInfectionUncomplicated)
-                        || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonth2To60)
-                        || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonth2To60)
+                        || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths2To60)
+                        || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths2To60)
 
                 NextStepsSendToHC ->
-                    (diagnosis == Just DiagnosisMalariaComplicated)
+                    (diagnosis == Just DiagnosisMalariaUncomplicated && ageMonths0To6)
+                        || (diagnosis == Just DiagnosisMalariaComplicated)
                         || (diagnosis == Just DiagnosisMalariaUncomplicatedAndPregnant)
                         || (diagnosis == Just DiagnosisGastrointestinalInfectionComplicated)
-                        || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonth0To2)
-                        || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonth0To2)
+                        || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths0To2)
+                        || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths0To2)
                         || (diagnosis == Just DiagnosisRespiratoryInfectionComplicated)
                         || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
     in
@@ -229,7 +230,7 @@ resolveNextStepByDiagnosis currentDate person maybeDiagnosis =
                         Just NextStepsIsolation
 
                     Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated ->
-                        Just NextStepsMedicationDistribution
+                        ageDependentUncomplicatedMalariaNextStep currentDate person
 
                     Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicatedAndPregnant ->
                         Just NextStepsSendToHC
@@ -244,10 +245,10 @@ resolveNextStepByDiagnosis currentDate person maybeDiagnosis =
                         Just NextStepsSendToHC
 
                     Pages.AcuteIllnessEncounter.Model.DiagnosisSimpleColdAndCough ->
-                        ageDependentNextStep currentDate person
+                        ageDependentARINextStep currentDate person
 
                     Pages.AcuteIllnessEncounter.Model.DiagnosisRespiratoryInfectionUncomplicated ->
-                        ageDependentNextStep currentDate person
+                        ageDependentARINextStep currentDate person
 
                     Pages.AcuteIllnessEncounter.Model.DiagnosisRespiratoryInfectionComplicated ->
                         Just NextStepsSendToHC
@@ -257,8 +258,21 @@ resolveNextStepByDiagnosis currentDate person maybeDiagnosis =
             )
 
 
-ageDependentNextStep : NominalDate -> Person -> Maybe NextStepsTask
-ageDependentNextStep currentDate person =
+ageDependentUncomplicatedMalariaNextStep : NominalDate -> Person -> Maybe NextStepsTask
+ageDependentUncomplicatedMalariaNextStep currentDate person =
+    ageInMonths currentDate person
+        |> Maybe.andThen
+            (\ageMonths ->
+                if ageMonths < 6 then
+                    Just NextStepsSendToHC
+
+                else
+                    Just NextStepsMedicationDistribution
+            )
+
+
+ageDependentARINextStep : NominalDate -> Person -> Maybe NextStepsTask
+ageDependentARINextStep currentDate person =
     ageInMonths currentDate person
         |> Maybe.andThen
             (\ageMonths ->
