@@ -1,3 +1,76 @@
+@mixin next-steps {
+
+  .instructions {
+    font-weight: bold;
+    margin-bottom: 30px;
+
+    span.medicine {
+      color: $color-light-blue;
+    }
+
+    span.date {
+      font-style: italic;
+    }
+
+    .header {
+      margin-bottom: 5px;
+      margin-top: 20px;
+
+      i {
+        display: inline-block;
+        vertical-align: middle;
+
+        &.icon-phone {
+          background: url(#{$img-path}icon-phone.svg) center center no-repeat;
+          background-size: 30px 30px;
+          height: 30px;
+          width: 50px;
+        }
+
+        &.icon-patient-in-bed {
+          background: url(#{$img-path}icon-patient-in-bed.svg) center center no-repeat;
+          background-size: 30px 30px;
+          height: 30px;
+          width: 52px;
+        }
+
+        &.icon-forms {
+          background: url(#{$img-path}icon-forms-blue.svg) center center no-repeat;
+          background-size: 45px 50px;
+          height: 35px;
+          width: 50px;
+        }
+
+        &.icon-shuttle {
+          background: url(#{$img-path}icon-shuttle.svg) center center no-repeat;
+          background-size: 32px 50px;
+          height: 19px;
+          width: 50px;
+        }
+
+        &.icon-oral-solution {
+          background: url(#{$img-path}icon-oral-solution.svg) center center no-repeat;
+          background-size: 26px 32px;
+          height: 32px;
+          margin-right: 22px;
+          width: 32px;
+        }
+
+        &.icon-pills {
+          background: url(#{$img-path}icon-pills.svg) center center no-repeat;
+          background-size: 36px 50px;
+          height: 36px;
+          width: 50px;
+        }
+      }
+    }
+
+    .prescription {
+      margin-left: 54px;
+    }
+  }
+}
+
 // We design for a minimum width of 800px.
 html,
 body {
@@ -630,79 +703,6 @@ div.page-encounter.acute-illness {
         min-height: 430px;
       }
     }
-}
-
-@mixin next-steps {
-
-  .instructions {
-    font-weight: bold;
-    margin-bottom: 30px;
-
-    span.medicine {
-      color: $color-light-blue;
-    }
-
-    span.date {
-      font-style: italic;
-    }
-
-    .header {
-      margin-bottom: 5px;
-      margin-top: 20px;
-
-      i {
-        display: inline-block;
-        vertical-align: middle;
-
-        &.icon-phone {
-          background: url(#{$img-path}icon-phone.svg) center center no-repeat;
-          background-size: 30px 30px;
-          height: 30px;
-          width: 50px;
-        }
-
-        &.icon-patient-in-bed {
-          background: url(#{$img-path}icon-patient-in-bed.svg) center center no-repeat;
-          background-size: 30px 30px;
-          height: 30px;
-          width: 52px;
-        }
-
-        &.icon-forms {
-          background: url(#{$img-path}icon-forms-blue.svg) center center no-repeat;
-          background-size: 45px 50px;
-          height: 35px;
-          width: 50px;
-        }
-
-        &.icon-shuttle {
-          background: url(#{$img-path}icon-shuttle.svg) center center no-repeat;
-          background-size: 32px 50px;
-          height: 19px;
-          width: 50px;
-        }
-
-        &.icon-oral-solution {
-          background: url(#{$img-path}icon-oral-solution.svg) center center no-repeat;
-          background-size: 26px 32px;
-          height: 32px;
-          margin-right: 22px;
-          width: 32px;
-        }
-
-        &.icon-pills {
-          background: url(#{$img-path}icon-pills.svg) center center no-repeat;
-          background-size: 36px 50px;
-          height: 36px;
-          width: 50px;
-        }
-      }
-    }
-
-    .prescription {
-      margin-left: 54px;
-    }
-  }
 }
 
 // Acute Illness Activity page
@@ -1796,6 +1796,7 @@ div.page-participant.prenatal {
 
 div.page-report.acute-illness {
   background: $color-light-gray;
+  height: 100%;
   padding: 20px;
 
   .ui.report.unstackable.items {
