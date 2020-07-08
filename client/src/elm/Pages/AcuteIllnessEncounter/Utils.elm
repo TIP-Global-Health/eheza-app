@@ -123,7 +123,7 @@ resolveNextStepsTasks currentDate person diagnosis =
                     diagnosis == Just DiagnosisCovid19
 
                 NextStepsMedicationDistribution ->
-                    (diagnosis == Just DiagnosisMalariaUncomplicated)
+                    (diagnosis == Just DiagnosisMalariaUncomplicated && not ageMonths0To6)
                         || (diagnosis == Just DiagnosisGastrointestinalInfectionUncomplicated)
                         || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths2To60)
                         || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths2To60)
