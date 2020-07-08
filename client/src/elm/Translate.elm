@@ -905,7 +905,7 @@ translationSet trans =
                     }
 
                 DiagnosisRespiratoryInfectionUncomplicated ->
-                    { english = "Suspected Acute Respiratory Infection without Complications"
+                    { english = "Acute Respiratory Infection without Complications"
                     , kinyarwanda = Nothing
                     }
 
@@ -922,27 +922,27 @@ translationSet trans =
                     }
 
                 DiagnosisMalariaComplicated ->
-                    { english = "Suspected Malaria with complications"
+                    { english = "Suspected Malaria (with complications)"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisMalariaUncomplicated ->
-                    { english = "Suspected Malaria without complications"
+                    { english = "Suspected Malaria (without complications)"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisMalariaUncomplicatedAndPregnant ->
-                    { english = "Suspected Malaria without complications"
+                    { english = "Suspected Malaria (without complications)"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisGastrointestinalInfectionComplicated ->
-                    { english = "Suspected Gastrointestinal Infection with Complications"
+                    { english = "Suspected Gastrointestinal Infection (with Complications)"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisGastrointestinalInfectionUncomplicated ->
-                    { english = "Suspected Gastrointestinal Infection without Complications"
+                    { english = "Suspected Gastrointestinal Infection (without Complications)"
                     , kinyarwanda = Nothing
                     }
 
@@ -952,12 +952,12 @@ translationSet trans =
                     }
 
                 DiagnosisRespiratoryInfectionComplicated ->
-                    { english = "Suspected Acute Respiratory Infection with Complications"
+                    { english = "Suspected Acute Respiratory Infection (with Complications)"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisRespiratoryInfectionUncomplicated ->
-                    { english = "Suspected Acute Respiratory Infection without Complications"
+                    { english = "Suspected Acute Respiratory Infection (without Complications)"
                     , kinyarwanda = Nothing
                     }
 
