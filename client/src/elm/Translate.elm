@@ -3066,6 +3066,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                RapidTestUnableToRun ->
+                    { english = "Unable to run"
+                    , kinyarwanda = Nothing
+                    }
+
         MaritalStatusLabel ->
             { english = "Marital Status"
             , kinyarwanda = Just "Irangamimerere"

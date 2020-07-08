@@ -640,6 +640,7 @@ type MalariaRapidTestResult
     | RapidTestPositiveAndPregnant
     | RapidTestNegative
     | RapidTestIndeterminate
+    | RapidTestUnableToRun
 
 
 type alias MalariaTesting =

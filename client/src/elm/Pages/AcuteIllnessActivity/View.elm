@@ -629,7 +629,7 @@ viewMalariaTestingForm language currentDate person form =
 
         resultInput =
             emptyOption
-                :: ([ RapidTestNegative, RapidTestPositive, RapidTestIndeterminate ]
+                :: ([ RapidTestNegative, RapidTestPositive, RapidTestIndeterminate, RapidTestUnableToRun ]
                         |> List.map
                             (\result ->
                                 option

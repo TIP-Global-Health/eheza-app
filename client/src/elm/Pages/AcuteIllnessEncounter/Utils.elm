@@ -342,6 +342,9 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
 
                     RapidTestIndeterminate ->
                         Nothing
+
+                    RapidTestUnableToRun ->
+                        Nothing
             )
 
 
