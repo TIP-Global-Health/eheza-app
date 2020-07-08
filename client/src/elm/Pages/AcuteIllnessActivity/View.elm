@@ -937,19 +937,31 @@ viewTreatmentReviewForm : Language -> NominalDate -> AcuteIllnessMeasurements ->
 viewTreatmentReviewForm language currentDate measurements form =
     let
         feverPast6HoursUpdateFunc value form_ =
-            { form_ | feverPast6Hours = Just value }
+            if value then
+                { form_ | feverPast6Hours = Just True }
+
+            else
+                { form_ | feverPast6Hours = Just False, feverPast6HoursHelped = Nothing }
 
         feverPast6HoursHelpedUpdateFunc value form_ =
             { form_ | feverPast6HoursHelped = Just value }
 
         malariaTodayUpdateFunc value form_ =
-            { form_ | malariaToday = Just value }
+            if value then
+                { form_ | malariaToday = Just True }
+
+            else
+                { form_ | malariaToday = Just False, malariaTodayHelped = Nothing }
 
         malariaTodayHelpedUpdateFunc value form_ =
             { form_ | malariaTodayHelped = Just value }
 
         malariaWithinPastMonthUpdateFunc value form_ =
-            { form_ | malariaWithinPastMonth = Just value }
+            if value then
+                { form_ | malariaWithinPastMonth = Just True }
+
+            else
+                { form_ | malariaWithinPastMonth = Just False, malariaWithinPastMonthHelped = Nothing }
 
         malariaWithinPastMonthHelpedUpdateFunc value form_ =
             { form_ | malariaWithinPastMonthHelped = Just value }
