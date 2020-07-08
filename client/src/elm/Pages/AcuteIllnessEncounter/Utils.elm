@@ -331,7 +331,7 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
             (\testResult ->
                 case testResult of
                     RapidTestNegative ->
-                        if bloodyDiarrheaAtSymptoms measurements && intractableVomitingAtSymptoms measurements then
+                        if bloodyDiarrheaAtSymptoms measurements || intractableVomitingAtSymptoms measurements then
                             Just DiagnosisGastrointestinalInfectionComplicated
 
                         else if respiratoryInfectionDangerSignsPresent measurements then
