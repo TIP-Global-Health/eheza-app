@@ -3173,7 +3173,7 @@ translationSet trans =
         MedicationDistributionSign sign ->
             case sign of
                 Amoxicillin ->
-                    { english = "Amoxicillin"
+                    { english = "Amoxicillin (125mg)"
                     , kinyarwanda = Nothing
                     }
 
