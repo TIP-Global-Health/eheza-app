@@ -1414,7 +1414,7 @@ translationSet trans =
 
         BeginNewEncounter ->
             { english = "Begin a New Encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Tangira igikorwa gishya"
             }
 
         BloodPressure ->
@@ -2015,7 +2015,7 @@ translationSet trans =
 
         Device ->
             { english = "Device"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igikoresho"
             }
 
         DeviceNotAuthorized ->
@@ -2844,7 +2844,7 @@ translationSet trans =
 
                 NutritionEncounter ->
                     { english = "Child Nutrition"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imirire y'umwana"
                     }
 
         IndividualEncounterTypes ->
