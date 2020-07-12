@@ -962,7 +962,7 @@ translationSet trans =
                     }
 
                 DiagnosisFeverOfUnknownOrigin ->
-                    { english = "High Fever"
+                    { english = "Fever of Unknown Origin"
                     , kinyarwanda = Nothing
                     }
 
