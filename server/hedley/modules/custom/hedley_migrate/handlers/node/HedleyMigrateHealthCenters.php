@@ -27,6 +27,7 @@ class HedleyMigrateHealthCenters extends HedleyMigrateBase {
     'id',
     'title_field',
     'field_catchment_area',
+    'created',
   ];
 
   /**

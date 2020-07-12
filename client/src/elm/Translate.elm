@@ -225,6 +225,7 @@ type TranslationId
     | AddChild
     | AddFamilyMember
     | AddFamilyMemberFor String
+    | AddNewParticipant
     | AddParentOrCaregiver
     | AddToGroup
     | Admin
@@ -779,6 +780,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        AddNewParticipant ->
+            { english = "Add new participant"
+            , kinyarwanda = Nothing
+            }
+
         AddParentOrCaregiver ->
             { english = "Add Parent or Caregiver"
             , kinyarwanda = Just "Ongeraho umubyeyi cyangwa umurezi"
@@ -905,7 +911,7 @@ translationSet trans =
 
                 ChildActivity Activity.Model.Height ->
                     { english = "Height:"
-                    , kinyarwanda = Just "Uburere:"
+                    , kinyarwanda = Just "Uburebure:"
                     }
 
                 ChildActivity Activity.Model.Muac ->
@@ -4398,16 +4404,6 @@ translateActivePage page =
                     , kinyarwanda = Just "Itsinda"
                     }
 
-                DashboardPage dashboardPage ->
-                    { english = "Dashboards"
-                    , kinyarwanda = Nothing
-                    }
-
-                MyAccountPage ->
-                    { english = "My Account"
-                    , kinyarwanda = Just "Compte"
-                    }
-
                 ClinicalProgressReportPage _ ->
                     { english = "Clinical Progress Report"
                     , kinyarwanda = Just "Erekana raporo yibyavuye mu isuzuma"
@@ -4415,6 +4411,11 @@ translateActivePage page =
 
                 CreatePersonPage _ _ ->
                     { english = "Create Person"
+                    , kinyarwanda = Nothing
+                    }
+
+                DashboardPage dashboardPage ->
+                    { english = "Dashboards"
                     , kinyarwanda = Nothing
                     }
 
@@ -4428,12 +4429,17 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                PersonPage id ->
+                MyAccountPage ->
+                    { english = "My Account"
+                    , kinyarwanda = Just "Compte"
+                    }
+
+                PersonPage _ _ ->
                     { english = "Person"
                     , kinyarwanda = Nothing
                     }
 
-                PersonsPage _ ->
+                PersonsPage _ _ ->
                     { english = "Participant Directory"
                     , kinyarwanda = Just "Ububiko bw'amakuru y'umurwayi"
                     }
@@ -4460,7 +4466,7 @@ translateActivePage page =
                             , kinyarwanda = Nothing
                             }
 
-                RelationshipPage _ _ ->
+                RelationshipPage _ _ _ ->
                     { english = "Relationship"
                     , kinyarwanda = Nothing
                     }
@@ -4631,22 +4637,22 @@ translateChartPhrase phrase =
 
         HeightCm ->
             { english = "Height (cm)"
-            , kinyarwanda = Just "Uburere cm"
+            , kinyarwanda = Just "Uburebure cm"
             }
 
         HeightForAgeBoys ->
             { english = "Height-for-age BOYS"
-            , kinyarwanda = Just "Uburere ku myaka/ umuhungu"
+            , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
             }
 
         HeightForAgeGirls ->
             { english = "Height-for-age GIRLS"
-            , kinyarwanda = Just "Uburere ku myaka/ umukobwa"
+            , kinyarwanda = Just "Uburebure ku myaka/ umukobwa"
             }
 
         LengthCm ->
             { english = "Length (cm)"
-            , kinyarwanda = Just "Uburere cm"
+            , kinyarwanda = Just "Uburebure cm"
             }
 
         LengthForAgeBoys ->

@@ -7,13 +7,20 @@ set -e
 # Define the root.
 cd ${0%/*}/..
 ROOT=$(pwd)
-cd $ROOT
+cd "$ROOT" || exit 1
 
 # Load the configuration file.
-source $ROOT/config.sh
+if [[ -f "$ROOT/config.sh" ]];
+then
+  source "$ROOT"/config.sh
+else
+  # Minimal defaults to be able to build (but no installation).
+  export PROFILE_NAME="hedley"
+  export PROFILE_TITLE="Hedley"
+fi
 
 # Load the colors
-source $ROOT/scripts/helper-colors.sh
+source "$ROOT"/scripts/helper-colors.sh
 
 
 
@@ -23,7 +30,7 @@ source $ROOT/scripts/helper-colors.sh
 # Build the profile itself.
 (
   cd $PROFILE_NAME
-  $DRUSH make --no-core --contrib-destination drupal-org.make .
+  $DRUSH make --no-core --contrib-destination "$ROOT/$PROFILE_NAME/drupal-org.make" .
 
   # Cleanup profile folder
   if [ -d ./1 ]; then
@@ -50,7 +57,7 @@ source $ROOT/scripts/helper-colors.sh
   rm -Rf www || true
 
   # Build core.
-  $DRUSH make $PROFILE_NAME/drupal-org-core.make www
+  $DRUSH make "$ROOT/$PROFILE_NAME/drupal-org-core.make" www
 
   # Restore the sites directory.
   if [ -d sites-backup ] || [ -L sites-backup ]; then
@@ -63,5 +70,7 @@ source $ROOT/scripts/helper-colors.sh
   # Move the profile in place.
   echo
   echo -e "${LBLUE}> Create symbolic link to the $PROFILE_NAME profile${RESTORE}"
-  ln -s ../../$PROFILE_NAME www/profiles/$PROFILE_NAME
+  cd "$ROOT"/www/profiles
+  ln -s ../../"$PROFILE_NAME" "$PROFILE_NAME"
+  cd "$ROOT"
 )

@@ -13,17 +13,36 @@ if (!drupal_is_cli()) {
   return;
 }
 
+// For sample db: Rukura, Rwankuba, Test.
+$health_centers_data = [
+  7091 => ['anonymize' => TRUE],
+  7092 => ['anonymize' => TRUE],
+  28589 => ['anonymize' => FALSE],
+];
+
+// In case we need to pull real files, make sure
+// that destination directory is writable.
+foreach ($health_centers_data as $health_center_data) {
+  if (!$health_center_data['anonymize']) {
+    $destination = drupal_get_path('module', 'hedley_migrate') . '/images';
+    if (!is_writable($destination)) {
+      drush_print("Destination folder for images $destination is not writable.");
+      drush_print('Please run export again after fixing this problem.');
+      exit;
+    }
+    break;
+  }
+}
+
 drush_print('Starting export!');
 
 $faker = hedley_faker_create();
-
-// For sample db: Rukura, Rwankuba, Test.
-$health_centers_ids = [7091, 7092, 28589];
-
+$health_centers_ids = array_keys($health_centers_data);
 $catchment_areas = [
   [
     'id',
     'title',
+    'created',
   ],
 ];
 $health_centers = [
@@ -31,6 +50,7 @@ $health_centers = [
     'id',
     'title',
     'field_catchment_area',
+    'created',
   ],
 ];
 $villages = [
@@ -42,6 +62,7 @@ $villages = [
     'field_cell',
     'field_village',
     'field_health_center',
+    'created',
   ],
 ];
 $groups = [
@@ -50,6 +71,7 @@ $groups = [
     'title',
     'field_group_type',
     'field_health_center',
+    'created',
   ],
 ];
 $nurses = [
@@ -60,6 +82,7 @@ $nurses = [
     'field_health_centers',
     'field_villages',
     'field_pin_code',
+    'created',
   ],
 ];
 $group_encounters = [
@@ -67,6 +90,7 @@ $group_encounters = [
     'id',
     'field_clinic',
     'field_scheduled_date',
+    'created',
   ],
 ];
 $participants = [
@@ -77,6 +101,7 @@ $participants = [
     'field_adult_activities',
     'field_expected',
     'field_clinic',
+    'created',
   ],
 ];
 $people = [
@@ -104,6 +129,7 @@ $people = [
     'field_photo',
     'field_national_id_number',
     'field_phone_number',
+    'created',
   ],
 ];
 $relationships = [
@@ -112,6 +138,7 @@ $relationships = [
     'field_person',
     'field_related_by',
     'field_related_to',
+    'created',
   ],
 ];
 $measurements_fields = [
@@ -120,6 +147,7 @@ $measurements_fields = [
   'field_date_measured',
   'field_nurse',
   'field_session',
+  'created',
 ];
 $measurements = [
   'attendance' => [array_merge($measurements_fields, ['field_attended'])],
@@ -152,6 +180,15 @@ $measurements = [
   'photo' => [array_merge($measurements_fields, ['field_photo'])],
 ];
 
+$male_first_names = hedley_migrate_male_first_names();
+$female_first_names = hedley_migrate_female_first_names();
+$second_names = hedley_migrate_second_names();
+$total_male_first_names = count($male_first_names);
+$total_female_first_names = count($female_first_names);
+$total_second_names = count($second_names);
+$total_males = 0;
+$total_females = 0;
+
 $catchment_area_ids = [];
 foreach ($health_centers_ids as $health_center_id) {
   $node = node_load($health_center_id);
@@ -169,6 +206,7 @@ foreach ($health_centers_ids as $health_center_id) {
     $wrapper->getIdentifier(),
     str_replace(',', ' ', $wrapper->label()),
     $catchment_area_id,
+    $node->created,
   ];
 
   if (!in_array($catchment_area_id, $catchment_area_ids)) {
@@ -176,6 +214,7 @@ foreach ($health_centers_ids as $health_center_id) {
     $catchment_areas[] = [
       $wrapper->getIdentifier(),
       str_replace(',', ' ', $wrapper->label()),
+      $wrapper->created->raw(),
     ];
     $catchment_area_ids[] = $catchment_area_id;
   }
@@ -191,6 +230,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $wrapper->field_cell->value(),
       $wrapper->field_village->value(),
       $wrapper->field_health_center->getIdentifier(),
+      $wrapper->created->raw(),
     ];
   }
 
@@ -211,6 +251,7 @@ foreach ($health_centers_ids as $health_center_id) {
       str_replace(',', ' ', $wrapper->label()),
       $group_type,
       $wrapper->field_health_center->getIdentifier(),
+      $wrapper->created->raw(),
     ];
   }
   $groups_ids = array_values($groups_ids);
@@ -243,6 +284,7 @@ foreach ($health_centers_ids as $health_center_id) {
       implode('|', array_values($hc_ids)),
       implode('|', array_values($villages_ids)),
       $wrapper->field_pin_code->value(),
+      $wrapper->created->raw(),
     ];
   }
 
@@ -253,6 +295,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $wrapper->getIdentifier(),
       $wrapper->field_clinic->getIdentifier(),
       hedley_migrate_export_date_field($wrapper->field_scheduled_date->value(), TRUE),
+      $wrapper->created->raw(),
     ];
   }
 
@@ -270,6 +313,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $wrapper->field_adult_activities->value(),
       hedley_migrate_export_date_field($wrapper->field_expected->value()),
       $wrapper->field_clinic->getIdentifier(),
+      $wrapper->created->raw(),
     ];
   }
 
@@ -278,11 +322,40 @@ foreach ($health_centers_ids as $health_center_id) {
   foreach ($people_ids as $person_id) {
     $wrapper = entity_metadata_wrapper('node', $person_id);
     $gender = $wrapper->field_gender->value();
-    $first_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
-    $second_name = $faker->lastName;
-    $photo = rand(1, 5) . ".jpg";
-    $national_id = '1199270' . $faker->numberBetween(100000000, 199999999);
-    $phone_number = '0' . $faker->numberBetween(700000000, 799999999);
+    $birth_date = $wrapper->field_birth_date->value();
+
+    if ($health_centers_data[$health_center_id]['anonymize']) {
+      if ($gender == 'male') {
+        $total_males++;
+        $first_name_id = ($total_males - 1) % $total_male_first_names;
+        $second_name_id = (($total_males - 1) / $total_male_first_names) % $total_second_names;
+        $first_name = $male_first_names[$first_name_id];
+        $second_name = $second_names[$second_name_id];
+      }
+      else {
+        $total_females++;
+        $first_name_id = ($total_females - 1) % $total_female_first_names;
+        $second_name_id = (($total_females - 1) / $total_female_first_names) % $total_second_names;
+        $first_name = $female_first_names[$first_name_id];
+        $second_name = $second_names[$second_name_id];
+      }
+
+      $national_id = '1199270' . $faker->numberBetween(100000000, 199999999);
+      $phone_number = '0' . $faker->numberBetween(700000000, 799999999);
+      $photo = hedley_migrate_allocate_photo_for_person($gender, $birth_date);
+    }
+    else {
+      $first_name = trim($wrapper->field_first_name->value());
+      $second_name = trim($wrapper->field_second_name->value());
+      if (empty($first_name) && empty($second_name)) {
+        $second_name = $wrapper->label();
+      }
+
+      $national_id = $wrapper->field_national_id_number->value();
+      $phone_number = $wrapper->field_phone_number->value();
+      $image = $wrapper->field_photo->value();
+      $photo = empty($image) ? '' : hedley_migrate_export_real_image($image['fid'], $image['filename']);
+    }
 
     $people[$person_id] = [
       $person_id,
@@ -290,7 +363,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $first_name,
       $second_name,
       $gender,
-      date('Y-m-d', $wrapper->field_birth_date->value()),
+      date('Y-m-d', $birth_date),
       $wrapper->field_health_center->getIdentifier(),
       $wrapper->field_birth_date_estimated->value(),
       $wrapper->field_hmis_number->value(),
@@ -308,6 +381,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $photo,
       $national_id,
       $phone_number,
+      $wrapper->created->raw(),
     ];
   }
 
@@ -320,6 +394,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $wrapper->field_person->getIdentifier(),
       $wrapper->field_related_by->value(),
       $wrapper->field_related_to->getIdentifier(),
+      $wrapper->created->raw(),
     ];
   }
 
@@ -334,6 +409,7 @@ foreach ($health_centers_ids as $health_center_id) {
         date('Y-m-d', $wrapper->field_date_measured->value()),
         $wrapper->field_nurse->getIdentifier(),
         $wrapper->field_session->getIdentifier(),
+        $wrapper->created->raw(),
       ];
 
       switch ($type) {
@@ -375,8 +451,16 @@ foreach ($health_centers_ids as $health_center_id) {
           break;
 
         case 'photo':
-          $id = rand(1, 5);
-          $type_based_values = ["$id.jpg"];
+          if ($health_centers_data[$health_center_id]['anonymize']) {
+            $gender = $wrapper->field_person->field_gender->value();
+            $birth_date = $wrapper->field_person->field_birth_date->value();
+            $photo = hedley_migrate_allocate_photo_for_person($gender, $birth_date);
+          }
+          else {
+            $image = $wrapper->field_photo->value();
+            $photo = empty($image) ? '' : hedley_migrate_export_real_image($image['fid'], $image['filename']);
+          }
+          $type_based_values = [$photo];
           break;
 
         default:

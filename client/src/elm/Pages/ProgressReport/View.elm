@@ -8,6 +8,7 @@ import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, map
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (generatePreviousMeasurementsForChild)
 import Backend.Person.Model exposing (Gender(..), Person)
+import Backend.Person.Utils exposing (graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getMyMother)
@@ -435,7 +436,7 @@ viewFoundChild language currentDate zscores ( childId, child ) individualChildMe
             -- With exception of Sortwathe, children graduate from all
             -- groups at the age of 26 month. Therefore, we will show
             -- 0-2 graph for all children that are less than 26 month old.
-            if childAgeInMonths < 26 then
+            if childAgeInMonths < graduatingAgeInMonth then
                 div
                     [ class "image-report" ]
                     [ ZScore.View.viewMarkers

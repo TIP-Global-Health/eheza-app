@@ -100,15 +100,15 @@ fetch model =
             Pages.DemographicsReport.Fetch.fetch prenatalEncounterId model.indexedDb
                 |> List.map MsgIndexedDb
 
-        UserPage (PersonPage id) ->
-            Pages.Person.Fetch.fetch id model.indexedDb
+        UserPage (PersonPage id initiator) ->
+            Pages.Person.Fetch.fetch id initiator model.indexedDb
                 |> List.map MsgIndexedDb
 
-        UserPage (PersonsPage relation) ->
+        UserPage (PersonsPage relation initiator) ->
             getLoggedInData model
                 |> Maybe.map
                     (\( _, loggedIn ) ->
-                        Pages.People.Fetch.fetch relation loggedIn.personsPage
+                        Pages.People.Fetch.fetch relation initiator loggedIn.personsPage
                             |> List.map MsgIndexedDb
                     )
                 |> Maybe.withDefault []
@@ -140,7 +140,7 @@ fetch model =
                     )
                 |> Maybe.withDefault []
 
-        UserPage (RelationshipPage id1 id2) ->
+        UserPage (RelationshipPage id1 id2 _) ->
             Pages.Relationship.Fetch.fetch id1 id2 model.indexedDb
                 |> List.map MsgIndexedDb
 

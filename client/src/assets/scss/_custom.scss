@@ -32,7 +32,7 @@ a {
 
 .wrap-alt,
 .wrap-alt-2 {
-  height: 100%;
+  height: 95%;
 
   .ui.full.segment {
     > .full.content {
@@ -73,11 +73,6 @@ a {
 .wrap-cards {
   padding: 2.5rem 3rem;
 }
-
-.wrap-list {
-  padding: 2.5rem 3rem 3rem 3rem;
-}
-
 
 // Segments
 
@@ -1778,20 +1773,43 @@ input::placeholder {
 
 .page-attendance {
 
-  .toggle-initial-display {
-    line-height: 50px;
+  .ui.full.segment {
+    display: flex;
+    flex-direction: column;
+    overflow-y: hidden;
 
-    .toggle-text {
-      color: $color-primary;
-      font-weight: bold;
-      margin-left: 10px;
+    .toggle-initial-display {
+      line-height: 50px;
+      margin-bottom: 10px;
+
+      .toggle-text {
+        color: $color-primary;
+        font-weight: bold;
+        margin-left: 10px;
+      }
+    }
+
+    .search-middle {
+      flex: 1 1 auto;
+      overflow: hidden;
+
+      .ui.middle.aligned.divided.list {
+        height: 100%;
+        overflow-y: auto;
+
+        .item .content .description {
+          font-size: 1.3rem;
+          padding-left: 1rem;
+        }
+      }
+
+    }
+
+    .search-bottom {
+      padding-top: 10px;
     }
   }
 
-  .ui.middle.aligned.divided.list .item .content .description {
-    font-size: 1.3rem;
-    padding-left: 1rem;
-  }
 }
 
 // Date Selector

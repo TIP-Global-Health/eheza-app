@@ -16,6 +16,8 @@ cd ${0%/*}
 ROOT=$(pwd)
 cd $ROOT
 
+export NATIVE_INSTALL=1
+
 # Load the colors.
 source $ROOT/scripts/helper-colors.sh
 

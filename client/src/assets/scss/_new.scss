@@ -33,6 +33,10 @@ div.page {
   flex-direction: column;
 }
 
+div.container {
+  height: 100%;
+}
+
 // This is for the content below the language switcher, which should
 // grow to fill the available height.
 div.page-content {
