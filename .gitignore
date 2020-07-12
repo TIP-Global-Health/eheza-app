@@ -45,4 +45,8 @@ Thumbs.db
 
 # Travis #
 # ########
-gdrive-service-account.json
+deployment-robot-key
+
+# Composer #
+############
+vendor

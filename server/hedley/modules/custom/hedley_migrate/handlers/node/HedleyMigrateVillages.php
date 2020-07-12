@@ -31,6 +31,7 @@ class HedleyMigrateVillages extends HedleyMigrateBase {
     'field_cell',
     'field_village',
     'field_health_center',
+    'created',
   ];
 
   /**

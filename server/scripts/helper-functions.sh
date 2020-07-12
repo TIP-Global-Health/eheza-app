@@ -168,7 +168,11 @@ function delete_www_content {
 ##
 function drupal_make {
   echo -e "${LBLUE}> Run the build script (scripts/build)${RESTORE}"
-  bash "$ROOT"/scripts/build
+  if [ ! "$NATIVE_INSTALL" ]; then
+    ddev . "cd .. && scripts/build"
+  else
+    bash "$ROOT"/scripts/build
+  fi
   echo
 }
 
@@ -358,7 +362,7 @@ function symlink_externals {
   if [ ${#SYMLINKS[@]} -eq 0 ]; then
     echo "No directories or files to symlink."
     echo
-    return 1
+    return 0
   fi
 
   # Loop trough the symlinks configuration.

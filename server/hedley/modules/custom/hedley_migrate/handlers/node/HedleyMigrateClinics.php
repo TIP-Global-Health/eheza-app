@@ -28,6 +28,7 @@ class HedleyMigrateClinics extends HedleyMigrateBase {
     'title',
     'field_group_type',
     'field_health_center',
+    'created',
   ];
 
   /**
