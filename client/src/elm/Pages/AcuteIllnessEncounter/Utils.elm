@@ -211,6 +211,7 @@ mandatoryActivityCompleted measurements activity =
 
         AcuteIllnessPhysicalExam ->
             isJust measurements.vitals
+                && isJust measurements.acuteFindings
 
         AcuteIllnessExposure ->
             isJust measurements.travelHistory
