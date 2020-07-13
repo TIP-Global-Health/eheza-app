@@ -93,10 +93,10 @@ viewMainPage language currentDate stats model =
                 [ viewTotalEncounters language stats.totalEncounters
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language (Translate.Dashboard Translate.TotalBeneficiaries) FilterBeneficiariesChart stats.totalBeneficiaries model.currentBeneficiariesChartsFilter
+                [ viewMonthlyChart language currentDate (Translate.Dashboard Translate.TotalBeneficiaries) FilterBeneficiariesChart stats.totalBeneficiaries model.currentBeneficiariesChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language (Translate.Dashboard Translate.IncidenceOf) FilterBeneficiariesIncidenceChart stats.totalBeneficiariesIncidence model.currentBeneficiariesIncidenceChartsFilter
+                [ viewMonthlyChart language currentDate (Translate.Dashboard Translate.IncidenceOf) FilterBeneficiariesIncidenceChart stats.totalBeneficiariesIncidence model.currentBeneficiariesIncidenceChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewDashboardPagesLinks language
@@ -826,13 +826,21 @@ viewDonutChart language stats =
             ]
 
 
-viewMonthlyChart : Language -> TranslationId -> FilterType -> Dict Int TotalBeneficiaries -> FilterCharts -> Html Msg
-viewMonthlyChart language title filterType data currentFilter =
+viewMonthlyChart : Language -> NominalDate -> TranslationId -> FilterType -> Dict Int TotalBeneficiaries -> FilterCharts -> Html Msg
+viewMonthlyChart language currentDate title filterType data currentFilter =
     let
-        chartList =
+        currentMonth =
+            Date.month currentDate
+                |> Date.monthToNumber
+
+        ( thisYear, lastYear ) =
             data
                 |> Dict.toList
-                |> List.sortWith (\t1 t2 -> compare (Tuple.first t1) (Tuple.first t2))
+                |> List.sortBy Tuple.first
+                |> List.Extra.splitAt currentMonth
+
+        orderedData =
+            (lastYear ++ thisYear)
                 |> Dict.fromList
 
         chartData =
@@ -856,7 +864,7 @@ viewMonthlyChart language title filterType data currentFilter =
                             Dict.insert month totalBeneficiaries.muac accum
                 )
                 Dict.empty
-                chartList
+                orderedData
                 |> Dict.toList
 
         yScaleMaxList =
