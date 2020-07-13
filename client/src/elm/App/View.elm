@@ -18,6 +18,7 @@ import Pages.AcuteIllnessActivity.View
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.View
 import Pages.AcuteIllnessParticipant.View
+import Pages.AcuteIllnessProgressReport.View
 import Pages.Clinical.View
 import Pages.ClinicalProgressReport.View
 import Pages.Clinics.View
@@ -414,6 +415,10 @@ viewUserPage page model configured =
                         Pages.AcuteIllnessActivity.View.view model.language currentDate id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity)
                             |> flexPageWrapper model
+
+                    AcuteIllnessProgressReportPage encounterId ->
+                        Pages.AcuteIllnessProgressReport.View.view model.language currentDate encounterId model.indexedDb
+                            |> oldPageWrapper model
 
             else
                 Pages.PinCode.View.view model.language

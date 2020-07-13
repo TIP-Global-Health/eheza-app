@@ -8,6 +8,7 @@ import Gizra.NominalDate exposing (fromLocalDateTime)
 import Pages.AcuteIllnessActivity.Fetch
 import Pages.AcuteIllnessEncounter.Fetch
 import Pages.AcuteIllnessParticipant.Fetch
+import Pages.AcuteIllnessProgressReport.Fetch
 import Pages.Clinical.Fetch
 import Pages.ClinicalProgressReport.Fetch
 import Pages.Clinics.Fetch
@@ -184,6 +185,10 @@ fetch model =
 
         UserPage (NutritionProgressReportPage nutritionEncounterId) ->
             Pages.NutritionProgressReport.Fetch.fetch nutritionEncounterId model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (AcuteIllnessProgressReportPage id) ->
+            Pages.AcuteIllnessProgressReport.Fetch.fetch id model.indexedDb
                 |> List.map MsgIndexedDb
 
 

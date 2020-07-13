@@ -158,6 +158,7 @@ type UserPage
     | AcuteIllnessParticipantPage PersonId
     | AcuteIllnessEncounterPage AcuteIllnessEncounterId -- acute illness activities index
     | AcuteIllnessActivityPage AcuteIllnessEncounterId AcuteIllnessActivity -- record acute illness activity
+    | AcuteIllnessProgressReportPage AcuteIllnessEncounterId -- acute illness progress report
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

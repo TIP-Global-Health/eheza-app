@@ -40,6 +40,7 @@ type Msg
 type Tab
     = Completed
     | Pending
+    | Reports
 
 
 type alias AssembledData =

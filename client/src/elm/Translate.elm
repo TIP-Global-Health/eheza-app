@@ -180,6 +180,7 @@ type TranslationId
     | Abortions
     | AccompaniedByPartner
     | AccessDenied
+    | ActionsTaken
     | ActionsToTake
     | AcuteFindingsGeneralSign AcuteFindingsGeneralSign
     | AcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
@@ -202,6 +203,7 @@ type TranslationId
     | AddToGroup
     | Admin
     | Administer
+    | Administered
     | AdministeredMedicationQuestion
     | AddressInformation
     | Adherence Adherence
@@ -251,6 +253,7 @@ type TranslationId
     | CaregiverNationalId
     | CentimeterShorthand
     | Celsius
+    | CelsiusAbbrev
     | Cell
     | ChartPhrase ChartPhrase
     | CheckAllThatApply
@@ -269,12 +272,15 @@ type TranslationId
     | Clinical
     | ClinicalProgressReport
     | CompleteHCReferralForm
+    | CompletedHCReferralForm
+    | ContactedHC
     | ContactedHCQuestion
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
     | ContactWithSimilarSymptomsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
+    | CurrentIllnessBegan
     | CSectionScar CSectionScar
     | GroupNotFound
     | Group
@@ -353,6 +359,8 @@ type TranslationId
     | FamilyPlanningInFutureQuestion
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
+    | FatherName
+    | FatherNationalId
     | FbfDistribution
     | FbfToReceive Activity Float
     | FetalHeartRate
@@ -360,8 +368,7 @@ type TranslationId
     | FetalPresentationLabel
     | FetalPresentation FetalPresentation
     | Fetch
-    | FatherName
-    | FatherNationalId
+    | Fever
     | FilterByName
     | FirstAntenatalVisit
     | FirstName
@@ -418,6 +425,7 @@ type TranslationId
     | InitialResultsDisplay InitialResultsDisplay
     | IntractableVomitingQuestion
     | IsCurrentlyBreastfeeding
+    | IsolatedAtHome
     | KilogramShorthand
     | KilogramsPerMonth
     | LaboratoryTask LaboratoryTask
@@ -543,6 +551,7 @@ type TranslationId
     | PersistentStorage Bool
     | Person
     | PersonHasBeenSaved
+    | PhysicalExam
     | PhysicalExamTask PhysicalExamTask
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
@@ -661,8 +670,10 @@ type TranslationId
     | SuspectedCovid19CaseAlertHelper
     | SuspectedCovid19CaseIsolate
     | SuspectedCovid19CaseContactHC
+    | Symptoms
     | SymptomsGeneralSign SymptomsGeneralSign
     | SymptomsGISign SymptomsGISign
+    | SymptomsGISignAbbrev SymptomsGISign
     | SymptomsRespiratorySign SymptomsRespiratorySign
     | SymptomsTask SymptomsTask
     | GroupEncounterClosed
@@ -671,6 +682,7 @@ type TranslationId
     | GroupEncounterUnauthorized
     | GroupEncounterUnauthorized2
     | SendPatientToHC
+    | SentPatientToHC
     | ShowAll
     | StartEndDate
     | StartDate
@@ -683,6 +695,7 @@ type TranslationId
     | SubmitPairingCode
     | Success
     | SyncGeneral
+    | Tachypnea
     | TabletSinglePlural String
     | TakenCareOfBy
     | TasksCompleted Int Int
@@ -796,6 +809,11 @@ translationSet trans =
         AccessDenied ->
             { english = "Access denied"
             , kinyarwanda = Just "Kwinjira ntibyemera"
+            }
+
+        ActionsTaken ->
+            { english = "Actions Taken"
+            , kinyarwanda = Nothing
             }
 
         ActionsToTake ->
@@ -1004,6 +1022,11 @@ translationSet trans =
         Administer ->
             { english = "Administer"
             , kinyarwanda = Just "Tanga umuti"
+            }
+
+        Administered ->
+            { english = "Administered"
+            , kinyarwanda = Nothing
             }
 
         AdministeredMedicationQuestion ->
@@ -1547,6 +1570,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        CelsiusAbbrev ->
+            { english = "C"
+            , kinyarwanda = Nothing
+            }
+
         ChartPhrase phrase ->
             translateChartPhrase phrase
 
@@ -1699,8 +1727,18 @@ translationSet trans =
             }
 
         CompleteHCReferralForm ->
-            { english = "Complete a health center referral form."
+            { english = "Complete a health center referral form"
             , kinyarwanda = Just "Uzuza urupapuro rwo kohereza umurwayi ku kigo Nderabuzima."
+            }
+
+        CompletedHCReferralForm ->
+            { english = "Completed health center referral form"
+            , kinyarwanda = Nothing
+            }
+
+        ContactedHC ->
+            { english = "Contacted Health Center"
+            , kinyarwanda = Nothing
             }
 
         ContactedHCQuestion ->
@@ -1731,6 +1769,11 @@ translationSet trans =
         ConvulsionsPreviousDelivery ->
             { english = "Experienced convulsions in previous delivery"
             , kinyarwanda = Just "Ubushize yahinze umushyitsi abyara"
+            }
+
+        CurrentIllnessBegan ->
+            { english = "Current illness began"
+            , kinyarwanda = Nothing
             }
 
         CSectionScar scar ->
@@ -1927,7 +1970,7 @@ translationSet trans =
                     , kinyarwanda = Just "Guhumeka nabi"
                     }
 
-                Fever ->
+                Backend.Measurement.Model.Fever ->
                     { english = "Fever"
                     , kinyarwanda = Just "Umuriro"
                     }
@@ -2396,6 +2439,11 @@ translationSet trans =
         Fetch ->
             { english = "Fetch"
             , kinyarwanda = Just "Gushakisha"
+            }
+
+        Fever ->
+            { english = "Fever"
+            , kinyarwanda = Just "Umuriro"
             }
 
         FilterByName ->
@@ -2871,6 +2919,11 @@ translationSet trans =
 
         IsCurrentlyBreastfeeding ->
             { english = "Is the mother currently breastfeeding her infant"
+            , kinyarwanda = Nothing
+            }
+
+        IsolatedAtHome ->
+            { english = "Isolated at home"
             , kinyarwanda = Nothing
             }
 
@@ -3844,6 +3897,11 @@ translationSet trans =
             , kinyarwanda = Just "Amakuru kuri uyu muntu yabitswe"
             }
 
+        PhysicalExam ->
+            { english = "Physical Exam"
+            , kinyarwanda = Nothing
+            }
+
         PhysicalExamTask task ->
             case task of
                 PhysicalExamVitals ->
@@ -4670,6 +4728,11 @@ translationSet trans =
             , kinyarwanda = Just "Menyesha ikigo nderabuzima ako kanya "
             }
 
+        Symptoms ->
+            { english = "Symptoms"
+            , kinyarwanda = Nothing
+            }
+
         SymptomsGeneralSign sign ->
             case sign of
                 BodyAches ->
@@ -4789,6 +4852,16 @@ translationSet trans =
                     , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
                     }
 
+        SymptomsGISignAbbrev sign ->
+            case sign of
+                NonBloodyDiarrhea ->
+                    { english = "Non-Bloody Diarrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    translationSet (SymptomsGISign sign)
+
         SymptomsRespiratorySign sign ->
             case sign of
                 BloodInSputum ->
@@ -4879,8 +4952,13 @@ translationSet trans =
             }
 
         SendPatientToHC ->
-            { english = "Send patient to the health center."
+            { english = "Send patient to the health center"
             , kinyarwanda = Just "Ohereza umurwayi ku kigo nderabuzima"
+            }
+
+        SentPatientToHC ->
+            { english = "Sent patient to the health center"
+            , kinyarwanda = Nothing
             }
 
         ShowAll ->
@@ -4931,6 +5009,11 @@ translationSet trans =
         SyncGeneral ->
             { english = "Sync Status (General)"
             , kinyarwanda = Just "Ibijyanye no guhuza amakuru yafashwe n'igikoresho cy'ikoranabuhanga n'abitse kuri seriveri"
+            }
+
+        Tachypnea ->
+            { english = "Tachypnea (fast resp. rate)"
+            , kinyarwanda = Nothing
             }
 
         TabletSinglePlural value ->
@@ -5432,6 +5515,11 @@ translateActivePage page =
                 AcuteIllnessActivityPage _ _ ->
                     { english = "Acute Illness Activity"
                     , kinyarwanda = Just "Igikorwa cyo kuvura uburwayi butunguranye"
+                    }
+
+                AcuteIllnessProgressReportPage _ ->
+                    { english = "Acute Illness Progress Report"
+                    , kinyarwanda = Nothing
                     }
 
 
