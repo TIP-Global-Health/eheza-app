@@ -535,13 +535,13 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
           }
         }
 
-        $period = hedley_stats_get_range_for_period($period_name);
+        $period = hedley_stats_get_period($period_name, FALSE);
 
         // Check if patient has missed the session. This can happen
         // only if session has started before patient has graduated the program.
         if ($session_start_date < $pmtct_graduate_date) {
           // Check if the person (patient) has any measurements.
-          $measurements = hedley_activity_get_measurements_by_period($child_id, $measurements_types, $period, 1);
+          $measurements = hedley_activity_get_person_measurements_by_period($child_id, $measurements_types, $period, 1);
           if (empty($measurements)) {
             // This person missed the session because they don't have any
             // measurements found for that session on this date so we add it to
@@ -1105,20 +1105,14 @@ function hedley_stats_get_measurements_query_grouped_by_person($health_center_id
 }
 
 /**
- * Get base query for stats.
+ * Base query for stats - pulls measurements in given period for Health Center.
  *
  * @param int $health_center_id
  *   The Health center node ID.
  * @param string|array $node_type
- *   The node type to query - Can be an array of types.
+ *   Either single measurement type or an array of types.
  * @param string $period
- *   The period to calculate. Be default it is for one year, as on the client
- *   side we could filter out items, if requested to show smaller periods of
- *   time.
- * @param string $date_field
- *   The field name to check the period condition against.
- * @param bool $measurements
- *   The queried nodes are measurements.
+ *   The period during which measurement was taken.
  *
  * @return \SelectQuery
  *   THe query object.
@@ -1129,16 +1123,19 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period) {
   $query = db_select('node', 'node');
   $query->fields('node', ['nid', 'created', 'type']);
 
+  // All measurement nodes store their creation date
+  // under 'field_date_measured'.
   $date_field = 'field_date_measured';
   hedley_stats_join_field_to_query($query, 'node', $date_field);
   $date_field_name = $date_field . '.' . $date_field . '_value';
 
-  // All measurement nodes have the Health center info under `shards` field.
-  // We use it because we only pull measurements.
-  $health_center_field_name = 'field_shards';
+  // All measurement nodes have the Health center info under `field_shards`.
+  $health_center_field = 'field_shards';
   // Filter by health center.
-  hedley_stats_join_field_to_query($query, 'node', $health_center_field_name);
-  $query->condition($health_center_field_name . '.' . $health_center_field_name . '_target_id', $health_center_id);
+  hedley_stats_join_field_to_query($query, 'node', $health_center_field);
+  $health_center_field_name = $health_center_field . '.' . $health_center_field . '_target_id';
+
+  $query->condition($health_center_field_name, $health_center_id);
 
   $date = hedley_stats_get_period($period, FALSE);
   $query->condition($date_field_name, [
@@ -1150,8 +1147,6 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period) {
   $query
     ->condition('type', $node_type, $node_type_operator)
     ->condition('status', NODE_PUBLISHED);
-
-
 
   return $query;
 }
@@ -1169,13 +1164,9 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period) {
  *   The date period.
  */
 function hedley_stats_get_period($period, $as_timestamp = TRUE) {
-  // We set now as one day in the future just to make sure we get everything
-  // on sync (Same day measurements were not synced) and it doesn't matter in
-  // any case.
-  $now = strtotime("+1 day");
-  $range = hedley_stats_get_range_for_period($period, $now);
+  $range = hedley_stats_get_range_for_period($period);
 
-  $db_date_field_format = 'Y-m-d h:i:s';
+  $db_date_field_format = 'Y-m-d 00:00:00';
   $date = [
     'start' => date($db_date_field_format, $range['start']),
     'end' => date($db_date_field_format, $range['end']),
@@ -1194,53 +1185,49 @@ function hedley_stats_get_period($period, $as_timestamp = TRUE) {
  *
  * @param string $period
  *   The name of the period.
- * @param int|bool $now
- *   A date that will represent current date.
- *   If not provided, assigned to current date.
  *
  * @return array
  *   The start and the end of the period timestamps.
  */
-function hedley_stats_get_range_for_period($period, $now = FALSE) {
-  if (empty($now)) {
-    $now = time();
-  }
+function hedley_stats_get_range_for_period($period) {
+  $now = time();
+  $one_day = 24 * 3600;
 
   switch ($period) {
     case HEDLEY_STATS_PERIOD_THIS_MONTH:
       return [
         'start' => strtotime("first day of this month"),
-        'end' => $now,
+        'end' => $now + $one_day,
       ];
 
     case HEDLEY_STATS_PERIOD_LAST_MONTH:
       return [
         'start' => strtotime("first day of previous month"),
-        'end' => strtotime("last day of previous month"),
+        'end' => strtotime("last day of previous month") + $one_day,
       ];
 
     case HEDLEY_STATS_PERIOD_TWO_MONTHS_AGO:
       return [
         'start' => strtotime("first day of -2 months"),
-        'end' => strtotime("last day of -2 months"),
+        'end' => strtotime("last day of -2 months") + $one_day,
       ];
 
     case HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS:
       return [
         'start' => strtotime("first day of -2 months"),
-        'end' => $now,
+        'end' => $now + $one_day,
       ];
 
     case HEDLEY_STATS_PERIOD_ONE_YEAR:
       return [
-        'start' => strtotime("-1 year"),
-        'end' => $now,
+        'start' => strtotime("last day of -1 year") + $one_day,
+        'end' => $now + $one_day,
       ];
 
     case HEDLEY_STATS_PERIOD_LAST_YEAR:
       return [
-        'start' => strtotime("-2 years"),
-        'end' => strtotime("-1 year"),
+        'start' => strtotime("last day of -2 years") + $one_day,
+        'end' => strtotime("last day of -1 year") + $one_day,
       ];
   }
 }
