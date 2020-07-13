@@ -33,7 +33,7 @@ decodeEmptyArrayAsEmptyDict =
                     succeed Dict.empty
 
                 else
-                    fail <| "Expected an empty array, not an array with length: " ++ Debug.toString length
+                    fail <| "Expected an empty array, not an array with length: " ++ String.fromInt length
             )
 
 
@@ -52,7 +52,7 @@ decodeNullAsEmptyArray =
                         succeed []
 
                     Just res ->
-                        fail <| "Expected Null, not an array with length: " ++ (Debug.toString <| List.length res)
+                        fail <| "Expected Null, not an array with length: " ++ (String.fromInt <| List.length res)
             )
 
 
