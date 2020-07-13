@@ -922,7 +922,7 @@ translationSet trans =
                     }
 
                 DiagnosisMalariaComplicated ->
-                    { english = "Suspected Malaria( with Complications)"
+                    { english = "Suspected Malaria (with Complications)"
                     , kinyarwanda = Just "Aracyekwaho Malariya y'igikatu"
                     }
 
