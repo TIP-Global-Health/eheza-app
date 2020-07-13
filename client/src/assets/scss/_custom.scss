@@ -203,8 +203,8 @@ h1.ui.header {
   text-transform: uppercase;
   text-align: center;
   margin: 0 !important; //margin: 0 0 30px 0 !important; //override default negative margin; top margin 50px;
-  padding: 0 30px;
-  color: #fff;
+  padding: 0 30px 0 70px;
+  color: $color-white;
 }
 
 h2.ui.header,

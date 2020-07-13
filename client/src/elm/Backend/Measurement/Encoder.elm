@@ -1152,6 +1152,9 @@ malariaRapidTestResultAsString sign =
         RapidTestIndeterminate ->
             "indeterminate"
 
+        RapidTestUnableToRun ->
+            "unable-to-run"
+
 
 encodeSendToHC : SendToHC -> List ( String, Value )
 encodeSendToHC =

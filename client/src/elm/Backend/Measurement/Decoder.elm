@@ -1296,6 +1296,9 @@ malariaRapidTestResultFromString result =
         "indeterminate" ->
             Just RapidTestIndeterminate
 
+        "unable-to-run" ->
+            Just RapidTestUnableToRun
+
         _ ->
             Nothing
 

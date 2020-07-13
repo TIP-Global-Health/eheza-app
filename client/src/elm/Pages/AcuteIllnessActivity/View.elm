@@ -54,13 +54,19 @@ view language currentDate id activity db model =
     let
         data =
             generateAssembledData id db
-
-        content =
-            viewWebData language (viewContent language currentDate id activity model) identity data
     in
-    div [ class "page-activity acute-illness" ] <|
-        [ viewHeader language id activity
-        , viewWebData language (viewContent language currentDate id activity model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate id activity model) identity data
+
+
+viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id activity model data =
+    let
+        diagnosis =
+            resolveAcuteIllnessDiagnosis currentDate data.person data.measurements
+    in
+    div [ class "page-activity acute-illness" ]
+        [ viewHeader language id activity diagnosis
+        , viewContent language currentDate id activity model data
         , viewModal <|
             warningPopup language
                 model.warningPopupState
@@ -68,13 +74,32 @@ view language currentDate id activity db model =
         ]
 
 
-viewHeader : Language -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Html Msg
-viewHeader language id activity =
+viewHeader : Language -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> Html Msg
+viewHeader language id activity diagnosis =
+    let
+        title =
+            case activity of
+                AcuteIllnessNextSteps ->
+                    let
+                        prefix =
+                            diagnosis
+                                |> Maybe.map
+                                    (Translate.AcuteIllnessDiagnosis
+                                        >> translate language
+                                        >> (\diagnosisTitle -> diagnosisTitle ++ ": ")
+                                    )
+                                |> Maybe.withDefault ""
+                    in
+                    prefix ++ translate language (Translate.AcuteIllnessActivityTitle activity)
+
+                _ ->
+                    translate language <| Translate.AcuteIllnessActivityTitle activity
+    in
     div
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language <| Translate.AcuteIllnessActivityTitle activity ]
+            [ text title ]
         , a
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
@@ -605,7 +630,7 @@ viewMalariaTestingForm language currentDate person form =
 
         resultInput =
             emptyOption
-                :: ([ RapidTestNegative, RapidTestPositive, RapidTestIndeterminate ]
+                :: ([ RapidTestNegative, RapidTestPositive, RapidTestIndeterminate, RapidTestUnableToRun ]
                         |> List.map
                             (\result ->
                                 option
@@ -913,19 +938,31 @@ viewTreatmentReviewForm : Language -> NominalDate -> AcuteIllnessMeasurements ->
 viewTreatmentReviewForm language currentDate measurements form =
     let
         feverPast6HoursUpdateFunc value form_ =
-            { form_ | feverPast6Hours = Just value }
+            if value then
+                { form_ | feverPast6Hours = Just True }
+
+            else
+                { form_ | feverPast6Hours = Just False, feverPast6HoursHelped = Nothing }
 
         feverPast6HoursHelpedUpdateFunc value form_ =
             { form_ | feverPast6HoursHelped = Just value }
 
         malariaTodayUpdateFunc value form_ =
-            { form_ | malariaToday = Just value }
+            if value then
+                { form_ | malariaToday = Just True }
+
+            else
+                { form_ | malariaToday = Just False, malariaTodayHelped = Nothing }
 
         malariaTodayHelpedUpdateFunc value form_ =
             { form_ | malariaTodayHelped = Just value }
 
         malariaWithinPastMonthUpdateFunc value form_ =
-            { form_ | malariaWithinPastMonth = Just value }
+            if value then
+                { form_ | malariaWithinPastMonth = Just True }
+
+            else
+                { form_ | malariaWithinPastMonth = Just False, malariaWithinPastMonthHelped = Nothing }
 
         malariaWithinPastMonthHelpedUpdateFunc value form_ =
             { form_ | malariaWithinPastMonthHelped = Just value }

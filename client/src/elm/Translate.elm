@@ -923,7 +923,7 @@ translationSet trans =
                     }
 
                 DiagnosisRespiratoryInfectionUncomplicated ->
-                    { english = "Suspected Acute Respiratory Infection without Complications"
+                    { english = "Acute Respiratory Infection without Complications"
                     , kinyarwanda = Just "Indwara y'ubuhumekero yoroheje"
                     }
 
@@ -940,27 +940,27 @@ translationSet trans =
                     }
 
                 DiagnosisMalariaComplicated ->
-                    { english = "Suspected Malaria with complications"
+                    { english = "Suspected Malaria (with Complications)"
                     , kinyarwanda = Just "Aracyekwaho Malariya y'igikatu"
                     }
 
                 DiagnosisMalariaUncomplicated ->
-                    { english = "Suspected Malaria without complications"
+                    { english = "Suspected Malaria (without Complications)"
                     , kinyarwanda = Just "Aracyekwaho Malariya yoroheje"
                     }
 
                 DiagnosisMalariaUncomplicatedAndPregnant ->
-                    { english = "Suspected Malaria without complications"
+                    { english = "Suspected Malaria (without Complications)"
                     , kinyarwanda = Just "Aracyekwaho Malariya yoroheje"
                     }
 
                 DiagnosisGastrointestinalInfectionComplicated ->
-                    { english = "Suspected Gastrointestinal Infection with Complications"
+                    { english = "Suspected Gastrointestinal Infection (with Complications)"
                     , kinyarwanda = Just "Aracyekwaho indwara yo mu nda ikabije"
                     }
 
                 DiagnosisGastrointestinalInfectionUncomplicated ->
-                    { english = "Suspected Gastrointestinal Infection without Complications"
+                    { english = "Suspected Gastrointestinal Infection (without Complications)"
                     , kinyarwanda = Just "Aracyekwaho indwara yo mu nda yoroheje"
                     }
 
@@ -970,18 +970,18 @@ translationSet trans =
                     }
 
                 DiagnosisRespiratoryInfectionComplicated ->
-                    { english = "Suspected Acute Respiratory Infection with Complications"
+                    { english = "Suspected Acute Respiratory Infection (with Complications)"
                     , kinyarwanda = Just "Aracyekwaho indwara y'ubuhumekero ikabije"
                     }
 
                 DiagnosisRespiratoryInfectionUncomplicated ->
-                    { english = "Suspected Acute Respiratory Infection without Complications"
+                    { english = "Suspected Acute Respiratory Infection (without Complications)"
                     , kinyarwanda = Just "Aracyekwaho indwara y'ubuhumekero yoroheje"
                     }
 
                 DiagnosisFeverOfUnknownOrigin ->
-                    { english = "High Fever"
-                    , kinyarwanda = Just "Umuriro mwinshi"
+                    { english = "Fever of Unknown Origin"
+                    , kinyarwanda = Just "Umuriro utazi icyawuteye"
                     }
 
         AddChild ->
@@ -3119,6 +3119,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ntibisobanutse"
                     }
 
+                RapidTestUnableToRun ->
+                    { english = "Unable to run"
+                    , kinyarwanda = Nothing
+                    }
+
         MaritalStatusLabel ->
             { english = "Marital Status"
             , kinyarwanda = Just "Irangamimerere"
@@ -3221,8 +3226,8 @@ translationSet trans =
         MedicationDistributionSign sign ->
             case sign of
                 Amoxicillin ->
-                    { english = "Amoxicillin"
-                    , kinyarwanda = Just "Amoxicilline"
+                    { english = "Amoxicillin (125mg)"
+                    , kinyarwanda = Just "Amoxicillin (125mg)"
                     }
 
                 Coartem ->
