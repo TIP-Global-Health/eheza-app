@@ -389,7 +389,7 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
     return $cache_data;
   }
 
-  $query = hedley_stats_get_base_query($health_center_id, 'height', $period, 'field_date_measured', TRUE);
+  $query = hedley_stats_get_base_query($health_center_id, 'height', $period);
 
   // Join `Z-score age`.
   hedley_stats_join_field_to_query($query, 'node', 'field_zscore_age');
@@ -693,8 +693,8 @@ function hedley_stats_get_total_encounters($health_center_id) {
     'last_year' => 0,
     'this_year' => 0,
   ];
-  $queries['last_year'] = hedley_stats_get_base_query($health_center_id, 'attendance', HEDLEY_STATS_PERIOD_LAST_YEAR, 'field_date_measured');
-  $queries['this_year'] = hedley_stats_get_base_query($health_center_id, 'attendance', HEDLEY_STATS_PERIOD_ONE_YEAR, 'field_date_measured');
+  $queries['last_year'] = hedley_stats_get_base_query($health_center_id, 'attendance', HEDLEY_STATS_PERIOD_LAST_YEAR);
+  $queries['this_year'] = hedley_stats_get_base_query($health_center_id, 'attendance', HEDLEY_STATS_PERIOD_ONE_YEAR);
 
   foreach ($queries as $key => $query) {
     // Get the group type.
@@ -1051,14 +1051,12 @@ function hedley_stats_get_measurements_query_grouped_by_person($health_center_id
 
   // We start from attendance for this year and last year and we get
   // measurements by the session (Encounter) ID.
-  $query = hedley_stats_get_base_query($health_center_id, array_keys($node_types), $period, 'field_date_measured', TRUE);
+  $query = hedley_stats_get_base_query($health_center_id, array_keys($node_types), $period);
 
   // Get the group type.
   hedley_stats_join_field_to_query($query, 'node', 'field_session');
   hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
   hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
-  // Only FBF groups.
-  $query->condition('field_group_type.field_group_type_value', 'fbf');
 
   // Get the person.
   hedley_stats_join_field_to_query($query, 'node', 'field_person');
@@ -1127,25 +1125,22 @@ function hedley_stats_get_measurements_query_grouped_by_person($health_center_id
  *
  * @throws \Exception
  */
-function hedley_stats_get_base_query($health_center_id, $node_type, $period, $date_field = 'created', $measurements = FALSE) {
+function hedley_stats_get_base_query($health_center_id, $node_type, $period) {
   $query = db_select('node', 'node');
   $query->fields('node', ['nid', 'created', 'type']);
 
-  // Date condition, could be the node's created property or any other field can
-  // be accepted as well, here's the logic to handle that.
-  if ($date_field != 'created') {
-    // We need to include the date field in the query if it's not the default
-    // one.
-    hedley_stats_join_field_to_query($query, 'node', $date_field);
-    $date_field_name = $date_field . '.' . $date_field . '_value';
-    $as_timestamp = FALSE;
-  }
-  else {
-    $date_field_name = 'created';
-    $as_timestamp = TRUE;
-  }
+  $date_field = 'field_date_measured';
+  hedley_stats_join_field_to_query($query, 'node', $date_field);
+  $date_field_name = $date_field . '.' . $date_field . '_value';
 
-  $date = hedley_stats_get_period($period, $as_timestamp);
+  // All measurement nodes have the Health center info under `shards` field.
+  // We use it because we only pull measurements.
+  $health_center_field_name = 'field_shards';
+  // Filter by health center.
+  hedley_stats_join_field_to_query($query, 'node', $health_center_field_name);
+  $query->condition($health_center_field_name . '.' . $health_center_field_name . '_target_id', $health_center_id);
+
+  $date = hedley_stats_get_period($period, FALSE);
   $query->condition($date_field_name, [
     $date['start'],
     $date['end'],
@@ -1156,23 +1151,7 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period, $da
     ->condition('type', $node_type, $node_type_operator)
     ->condition('status', NODE_PUBLISHED);
 
-  $health_center_field_name = 'field_health_center';
 
-  // Some node types have the Health center info under `Shards` field.
-  if (!is_array($node_type)) {
-    if (field_info_instance('node', 'field_shards', $node_type)) {
-      $health_center_field_name = 'field_shards';
-    }
-  }
-
-  // All measurement nodes have the Health center info under `Shards` field.
-  if ($measurements) {
-    $health_center_field_name = 'field_shards';
-  }
-
-  // Filter by health center.
-  hedley_stats_join_field_to_query($query, 'node', $health_center_field_name);
-  $query->condition($health_center_field_name . '.' . $health_center_field_name . '_target_id', $health_center_id);
 
   return $query;
 }
