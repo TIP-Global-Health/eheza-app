@@ -137,6 +137,12 @@ viewCaseManagementPage language currentDate stats model =
                 )
                 []
                 stats.caseManagement
+                -- Filter people, so that participant has at least one occurance of Moderate or Sever nutrition.
+                |> List.filter
+                    (\item ->
+                        Dict.values item.nutrition
+                            |> List.any (.class >> (\value -> value == Backend.Dashboard.Model.Severe || value == Backend.Dashboard.Model.Moderate))
+                    )
                 -- List table by person's name but turn it to lowercase for the comparision so it's truly sorted, this
                 -- will not effect the display.
                 |> List.sortWith (\p1 p2 -> compare (String.toLower p1.name) (String.toLower p2.name))
