@@ -32,7 +32,6 @@ module Pages.PrenatalActivity.Model exposing
     , emptyObstetricFormFirstStep
     , emptyObstetricFormSecondStep
     , encodeLmpRange
-    , tasksBarId
     )
 
 import Backend.Entities exposing (..)
@@ -570,8 +569,3 @@ type alias PrenatalPhotoData =
 emptyPrenatalPhotoData : PrenatalPhotoData
 emptyPrenatalPhotoData =
     { url = Nothing }
-
-
-tasksBarId : String
-tasksBarId =
-    "tasks-bar"

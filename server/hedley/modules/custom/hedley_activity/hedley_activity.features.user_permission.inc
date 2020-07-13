@@ -37,7 +37,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'create child_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -100,7 +99,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'create last_menstrual_period content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -131,7 +129,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'create mother_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -887,7 +884,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit any child_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -950,7 +946,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit any last_menstrual_period content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -981,7 +976,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit any mother_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1197,7 +1191,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit own child_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1260,7 +1253,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit own last_menstrual_period content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1291,7 +1283,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit own mother_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',

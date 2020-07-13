@@ -145,6 +145,7 @@ function hedley_schedule_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
+        'acute-illness' => 'Acute Illness',
         'antenatal' => 'Antenatal',
         'inmmunization' => 'Inmmunization',
         'nutrition' => 'Nutrition',

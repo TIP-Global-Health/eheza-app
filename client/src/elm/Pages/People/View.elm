@@ -5,7 +5,7 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
-import Backend.Person.Utils exposing (ageInYears, graduatingAgeInMonth, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, graduatingAgeInMonth, isPersonAnAdult)
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -292,15 +292,7 @@ viewParticipant : Language -> NominalDate -> Initiator -> Maybe PersonId -> Mode
 viewParticipant language currentDate initiator relation db id person =
     let
         typeForThumbnail =
-            case isPersonAnAdult currentDate person of
-                Just True ->
-                    "mother"
-
-                Just False ->
-                    "child"
-
-                Nothing ->
-                    "mother"
+            defaultIconForPerson currentDate person
 
         nextPage =
             case relation of

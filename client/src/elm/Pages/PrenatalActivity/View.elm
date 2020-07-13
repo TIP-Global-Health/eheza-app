@@ -27,8 +27,10 @@ import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
 import Pages.Utils
     exposing
-        ( taskCompleted
+        ( isTaskCompleted
+        , taskCompleted
         , taskListCompleted
+        , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
@@ -55,7 +57,7 @@ view language currentDate id activity db model =
         content =
             viewWebData language (viewContent language currentDate activity model) identity data
     in
-    div [ class "page-prenatal-activity" ] <|
+    div [ class "page-activity prenatal" ] <|
         [ viewHeader language id activity
         , content
         ]
@@ -236,7 +238,7 @@ viewHistoryContent language currentDate assembled data_ =
             in
             div [ class "column" ]
                 [ a attributes
-                    [ span [ class <| "icon-history-task icon-" ++ iconClass ] []
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.HistoryTask task)
                     ]
                 ]
@@ -489,7 +491,7 @@ viewExaminationContent language currentDate assembled data =
             in
             div [ class <| "column " ++ iconClass ]
                 [ a attributes
-                    [ span [ class <| "icon-examination-task icon-" ++ iconClass ] []
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.ExaminationTask task)
                     ]
                 ]
@@ -770,7 +772,7 @@ viewPatientProvisionsContent language currentDate assembled data =
             in
             div [ class "column" ]
                 [ a attributes
-                    [ span [ class <| "icon-patient-provisions-task icon-" ++ iconClass ] []
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.PatientProvisionsTask task)
                     ]
                 ]

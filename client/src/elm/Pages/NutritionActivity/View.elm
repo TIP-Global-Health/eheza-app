@@ -24,8 +24,8 @@ import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
 import Pages.NutritionEncounter.Utils exposing (generateAssembledData)
-import Pages.NutritionEncounter.View exposing (viewChildDetails)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
 import Pages.Utils exposing (taskCompleted, viewCheckBoxMultipleSelectInput, viewCustomLabel, viewLabel, viewMeasurementInput, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
@@ -41,7 +41,7 @@ view language currentDate zscores id activity isChw db model =
         data =
             generateAssembledData id db
     in
-    div [ class "page-nutrition-activity" ] <|
+    div [ class "page-activity nutrition" ] <|
         [ viewHeader language id activity
         , viewWebData language (viewContent language currentDate zscores id activity isChw db model) identity data
         ]
@@ -66,7 +66,7 @@ viewHeader language id activity =
 
 viewContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate zscores id activity isChw db model assembled =
-    (viewChildDetails language currentDate assembled.person
+    ((viewPersonDetails language currentDate assembled.person Nothing |> div [ class "item" ])
         :: viewActivity language currentDate zscores id activity isChw assembled db model
     )
         |> div [ class "ui unstackable items" ]

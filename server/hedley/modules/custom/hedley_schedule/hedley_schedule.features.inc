@@ -19,6 +19,14 @@ function hedley_schedule_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function hedley_schedule_node_info() {
   $items = array(
+    'acute_illness_encounter' => array(
+      'name' => t('Acute Illness Encounter'),
+      'base' => 'node_content',
+      'description' => t('Tracks a visit by a person in which acute illness activities are performed.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'clinic' => array(
       'name' => t('Group'),
       'base' => 'node_content',

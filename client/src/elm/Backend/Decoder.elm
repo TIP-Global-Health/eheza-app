@@ -1,5 +1,6 @@
 module Backend.Decoder exposing (decodeRevision)
 
+import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessEncounter)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
@@ -27,6 +28,15 @@ decodeRevision =
                 -- Some of these aren't implemented yet, because they need
                 -- to be converted from ID to UUID references first.
                 case s of
+                    "acute_findings" ->
+                        decodeWithUuid AcuteFindingsRevision decodeAcuteFindings
+
+                    "acute_illness_encounter" ->
+                        decodeWithUuid AcuteIllnessEncounterRevision decodeAcuteIllnessEncounter
+
+                    "acute_illness_vitals" ->
+                        decodeWithUuid AcuteIllnessVitalsRevision decodeAcuteIllnessVitals
+
                     "attendance" ->
                         decodeWithUuid AttendanceRevision decodeAttendance
 
@@ -57,8 +67,14 @@ decodeRevision =
                     "danger_signs" ->
                         decodeWithUuid DangerSignsRevision decodeDangerSigns
 
+                    "exposure" ->
+                        decodeWithUuid ExposureRevision decodeExposure
+
                     "family_planning" ->
                         decodeWithUuid FamilyPlanningRevision decodeFamilyPlanning
+
+                    "hc_contact" ->
+                        decodeWithUuid HCContactRevision decodeHCContact
 
                     "health_center" ->
                         decodeWithUuid HealthCenterRevision decodeHealthCenter
@@ -66,17 +82,29 @@ decodeRevision =
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight
 
+                    "individual_participant" ->
+                        decodeWithUuid IndividualEncounterParticipantRevision decodeIndividualEncounterParticipant
+
+                    "isolation" ->
+                        decodeWithUuid IsolationRevision decodeIsolation
+
                     "lactation" ->
                         decodeWithUuid LactationRevision decodeLactation
 
                     "last_menstrual_period" ->
                         decodeWithUuid LastMenstrualPeriodRevision decodeLastMenstrualPeriod
 
+                    "malaria_testing" ->
+                        decodeWithUuid MalariaTestingRevision decodeMalariaTesting
+
                     "medical_history" ->
                         decodeWithUuid MedicalHistoryRevision decodeMedicalHistory
 
                     "medication" ->
                         decodeWithUuid MedicationRevision decodeMedication
+
+                    "medication_distribution" ->
+                        decodeWithUuid MedicationDistributionRevision decodeMedicationDistribution
 
                     "mother_fbf" ->
                         decodeWithUuid MotherFbfRevision decodeFbf
@@ -129,9 +157,6 @@ decodeRevision =
                     "photo" ->
                         decodeWithUuid PhotoRevision decodePhoto
 
-                    "village" ->
-                        decodeWithUuid VillageRevision decodeVillage
-
                     "pmtct_participant" ->
                         decodeWithUuid PmtctParticipantRevision decodePmtctParticipant
 
@@ -144,9 +169,6 @@ decodeRevision =
                     "prenatal_nutrition" ->
                         decodeWithUuid PrenatalNutritionRevision decodePrenatalNutrition
 
-                    "individual_participant" ->
-                        decodeWithUuid IndividualEncounterParticipantRevision decodeIndividualEncounterParticipant
-
                     "prenatal_photo" ->
                         decodeWithUuid PrenatalPhotoRevision decodePrenatalPhoto
 
@@ -156,11 +178,32 @@ decodeRevision =
                     "resource" ->
                         decodeWithUuid ResourceRevision decodeResource
 
+                    "send_to_hc" ->
+                        decodeWithUuid SendToHCRevision decodeSendToHC
+
                     "session" ->
                         decodeWithUuid SessionRevision decodeSession
 
                     "social_history" ->
                         decodeWithUuid SocialHistoryRevision decodeSocialHistory
+
+                    "symptoms_general" ->
+                        decodeWithUuid SymptomsGeneralRevision decodeSymptomsGeneral
+
+                    "symptoms_respiratory" ->
+                        decodeWithUuid SymptomsRespiratoryRevision decodeSymptomsRespiratory
+
+                    "symptoms_gi" ->
+                        decodeWithUuid SymptomsGIRevision decodeSymptomsGI
+
+                    "travel_history" ->
+                        decodeWithUuid TravelHistoryRevision decodeTravelHistory
+
+                    "treatment_history" ->
+                        decodeWithUuid TreatmentReviewRevision decodeTreatmentReview
+
+                    "village" ->
+                        decodeWithUuid VillageRevision decodeVillage
 
                     "vitals" ->
                         decodeWithUuid VitalsRevision decodeVitals

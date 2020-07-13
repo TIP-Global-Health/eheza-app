@@ -583,3 +583,12 @@ function hedley_update_7026() {
 
   variable_set('mail_system', array('default-system' => 'SmtpMailSystem'));
 }
+
+/**
+ * Enable hedley_acute_illness module.
+ */
+function hedley_update_7027() {
+  $modules = ['hedley_acute_illness'];
+  module_enable($modules);
+}
+

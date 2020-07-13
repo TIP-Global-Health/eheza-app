@@ -30,29 +30,35 @@ const HEDLEY_RESTFUL_ALL_DEVICES = [
  * we sync to just some devices.
  */
 const HEDLEY_RESTFUL_SHARDED = [
-  // Get synced into 'nodes' table at IndexedDB:
   'clinic' => 'clinics',
   'person' => 'people',
   'pmtct_participant' => 'pmtct-participants',
   'individual_participant' => 'individual-participants',
   'prenatal_encounter' => 'prenatal-encounters',
   'nutrition_encounter' => 'nutrition-encounters',
+  'acute_illness_encounter' => 'acute-illness-encounters',
   'relationship' => 'relationships',
   'session' => 'sessions',
-
-  // Get synced into 'shards' table at IndexedDB:
+  // Measurements.
+  'acute_findings' => 'acute-findings',
+  'acute_illness_vitals' => 'acute-illness-vitals',
   'attendance' => 'attendances',
   'breast_exam' => 'breast-exams',
   'child_fbf' => 'child-fbfs',
   'counseling_session' => 'counseling-sessions',
   'core_physical_exam' => 'core-physical-exams',
   'danger_signs' => 'danger-signs',
+  'exposure' => 'exposures',
   'family_planning' => 'family-plannings',
+  'hc_contact' => 'hc-contacts',
   'height' => 'heights',
+  'isolation' => 'isolations',
   'lactation' => 'lactations',
   'last_menstrual_period' => 'last-menstrual-periods',
+  'malaria_testing' => 'malaria-testings',
   'medical_history' => 'medical-histories',
   'medication' => 'medications',
+  'medication_distribution' => 'medication-distributions',
   'mother_fbf' => 'mother-fbfs',
   'muac' => 'muacs',
   'nutrition' => 'nutritions',
@@ -71,6 +77,12 @@ const HEDLEY_RESTFUL_SHARDED = [
   'social_history' => 'social-histories',
   'photo' => 'photos',
   'prenatal_photo' => 'prenatal-photos',
+  'send_to_hc' => 'send-to-hcs',
+  'symptoms_general' => 'symptoms-general',
+  'symptoms_gi' => 'symptoms-gi',
+  'symptoms_respiratory' => 'symptoms-respiratory',
+  'travel_history' => 'travel-histories',
+  'treatment_history' => 'treatment-histories',
   'vitals' => 'vitals',
   'weight' => 'weights',
 ];

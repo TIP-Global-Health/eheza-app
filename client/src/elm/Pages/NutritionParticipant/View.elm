@@ -24,16 +24,16 @@ import Utils.WebData exposing (viewWebData)
 view : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
 view language currentDate selectedHealthCenter id db =
     let
-        prenatalSessions =
+        sessions =
             Dict.get id db.individualParticipantsByPerson
                 |> Maybe.withDefault NotAsked
     in
     div
-        [ class "wrap wrap-alt-2 page-prenatal-participant" ]
+        [ class "wrap wrap-alt-2 page-participant nutrition" ]
         [ viewHeader language id
         , div
             [ class "ui full segment" ]
-            [ viewWebData language (viewNutritionActions language currentDate selectedHealthCenter id db) identity prenatalSessions
+            [ viewWebData language (viewActions language currentDate selectedHealthCenter id db) identity sessions
             ]
         ]
 
@@ -62,12 +62,12 @@ viewHeader language id =
         ]
 
 
-viewNutritionActions : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
-viewNutritionActions language currentDate selectedHealthCenter id db nutritionSessions =
+viewActions : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
+viewActions language currentDate selectedHealthCenter id db sessions =
     let
         -- Person nutrition session.
         maybeSessionId =
-            nutritionSessions
+            sessions
                 |> Dict.toList
                 |> List.filter
                     (\( sessionId, session ) ->
@@ -79,7 +79,7 @@ viewNutritionActions language currentDate selectedHealthCenter id db nutritionSe
         -- Resolve active encounter for person. There should not be more than one.
         -- We also want to know if there's an encounter that was completed today,
         -- (started and ended on the same day), as we do not want to allow creating new encounter
-        -- at same day previous one has ended.
+        -- at same day, previous one has ended.
         ( maybeActiveEncounterId, encounterWasCompletedToday ) =
             maybeSessionId
                 |> Maybe.map

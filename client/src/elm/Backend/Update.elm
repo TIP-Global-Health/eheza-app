@@ -2,8 +2,11 @@ module Backend.Update exposing (updateIndexedDb)
 
 import Activity.Model exposing (SummaryByActivity, SummaryByParticipant)
 import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
+import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import App.Model
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model
+import Backend.AcuteIllnessEncounter.Update
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
@@ -16,8 +19,8 @@ import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMe
 import Backend.Model exposing (..)
 import Backend.NutritionEncounter.Model
 import Backend.NutritionEncounter.Update
-import Backend.Person.Model exposing (Initiator(..))
-import Backend.Person.Utils exposing (graduatingAgeInMonth)
+import Backend.Person.Model exposing (Initiator(..), Person)
+import Backend.Person.Utils exposing (ageInMonths, graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Update
@@ -27,7 +30,7 @@ import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
-import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, nodesUuid)
+import Backend.Utils exposing (mapAcuteIllnessMeasurements, mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, nodesUuid)
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -35,6 +38,9 @@ import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, unwrap)
 import Measurement.Model exposing (OutMsgMother(..))
+import Pages.AcuteIllnessActivity.Model
+import Pages.AcuteIllnessEncounter.Model
+import Pages.AcuteIllnessEncounter.Utils exposing (resolveAcuteIllnessDiagnosis, resolveNextStepByDiagnosis)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
@@ -362,6 +368,19 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             , []
             )
 
+        FetchAcuteIllnessEncountersForParticipant id ->
+            ( { model | acuteIllnessEncountersByParticipant = Dict.insert id Loading model.acuteIllnessEncountersByParticipant }
+            , sw.select acuteIllnessEncounterEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedAcuteIllnessEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedAcuteIllnessEncountersForParticipant id data ->
+            ( { model | acuteIllnessEncountersByParticipant = Dict.insert id data model.acuteIllnessEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
         FetchPrenatalMeasurements id ->
             ( { model | prenatalMeasurements = Dict.insert id Loading model.prenatalMeasurements }
             , sw.get prenatalMeasurementsEndpoint id
@@ -384,6 +403,19 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
         HandleFetchedNutritionMeasurements id data ->
             ( { model | nutritionMeasurements = Dict.insert id data model.nutritionMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchAcuteIllnessMeasurements id ->
+            ( { model | acuteIllnessMeasurements = Dict.insert id Loading model.acuteIllnessMeasurements }
+            , sw.get acuteIllnessMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedAcuteIllnessMeasurements id)
+            , []
+            )
+
+        HandleFetchedAcuteIllnessMeasurements id data ->
+            ( { model | acuteIllnessMeasurements = Dict.insert id data model.acuteIllnessMeasurements }
             , Cmd.none
             , []
             )
@@ -613,6 +645,19 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             , []
             )
 
+        FetchAcuteIllnessEncounter id ->
+            ( { model | acuteIllnessEncounters = Dict.insert id Loading model.acuteIllnessEncounters }
+            , sw.get acuteIllnessEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedAcuteIllnessEncounter id)
+            , []
+            )
+
+        HandleFetchedAcuteIllnessEncounter id data ->
+            ( { model | acuteIllnessEncounters = Dict.insert id data model.acuteIllnessEncounters }
+            , Cmd.none
+            , []
+            )
+
         FetchIndividualEncounterParticipant id ->
             ( { model | individualParticipants = Dict.insert id Loading model.individualParticipants }
             , sw.get individualEncounterParticipantEndpoint id
@@ -677,6 +722,25 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             )
 
         HandleRevisions revisions ->
+            let
+                processRevisionAndDiagnose participantId encounterId =
+                    let
+                        person =
+                            Dict.get participantId model.people
+                                |> Maybe.withDefault NotAsked
+                                |> RemoteData.toMaybe
+
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map2 (generateSuspectedDiagnosisMsgs currentDate model newModel)
+                                encounterId
+                                person
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel, extraMsgs )
+            in
             case revisions of
                 -- Special handling for a single attendance revision, which means
                 -- there was a check in / check out in Attendance page.
@@ -725,6 +789,120 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     ( withRecalc
                     , Cmd.none
                     , []
+                    )
+
+                [ SymptomsGeneralRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ SymptomsRespiratoryRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ SymptomsGIRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TravelHistoryRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ExposureRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ AcuteIllnessVitalsRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ AcuteFindingsRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ MalariaTestingRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                -- When we see that needed data for suspected COVID 19 case was collected,
+                -- view a pop-up suggesting to end the encounter.
+                [ IsolationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateEndAcuteIllnessEncounterMsgs newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                -- When we see that needed data for suspected COVID 19 case was collected,
+                -- view a pop-up suggesting to end the encounter.
+                [ HCContactRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateEndAcuteIllnessEncounterMsgs newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
                     )
 
                 _ ->
@@ -819,6 +997,25 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             in
             ( { model | nutritionEncounterRequests = Dict.insert encounterId subModel model.nutritionEncounterRequests }
             , Cmd.map (MsgNutritionEncounter encounterId) subCmd
+            , []
+            )
+
+        MsgAcuteIllnessEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.acuteIllnessEncounters
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.acuteIllnessEncounterRequests
+                        |> Maybe.withDefault Backend.AcuteIllnessEncounter.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.AcuteIllnessEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+            in
+            ( { model | acuteIllnessEncounterRequests = Dict.insert encounterId subModel model.acuteIllnessEncounterRequests }
+            , Cmd.map (MsgAcuteIllnessEncounter encounterId) subCmd
             , []
             )
 
@@ -1081,6 +1278,9 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                                             IndividualEncounterOrigin encounterType ->
                                                 case encounterType of
+                                                    AcuteIllnessEncounter ->
+                                                        AcuteIllnessParticipantPage personId
+
                                                     AntenatalEncounter ->
                                                         PrenatalParticipantPage personId
 
@@ -1201,6 +1401,12 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     RemoteData.map
                         (\( sessionId, _ ) ->
                             case encounterType of
+                                AcuteIllnessEncounter ->
+                                    [ Backend.AcuteIllnessEncounter.Model.AcuteIllnessEncounter sessionId currentDate Nothing healthCenterId
+                                        |> Backend.Model.PostAcuteIllnessEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
                                 AntenatalEncounter ->
                                     [ Backend.PrenatalEncounter.Model.PrenatalEncounter sessionId currentDate Nothing healthCenterId
                                         |> Backend.Model.PostPrenatalEncounter
@@ -1266,6 +1472,27 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                 |> RemoteData.withDefault []
             )
 
+        PostAcuteIllnessEncounter acuteIllnessEncounter ->
+            ( { model | postAcuteIllnessEncounter = Dict.insert acuteIllnessEncounter.participant Loading model.postAcuteIllnessEncounter }
+            , sw.post acuteIllnessEncounterEndpoint acuteIllnessEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedAcuteIllnessEncounter acuteIllnessEncounter.participant)
+            , []
+            )
+
+        HandlePostedAcuteIllnessEncounter participantId data ->
+            ( { model | postAcuteIllnessEncounter = Dict.insert participantId data model.postAcuteIllnessEncounter }
+            , Cmd.none
+            , RemoteData.map
+                (\( acuteIllnessEncounterId, _ ) ->
+                    [ App.Model.SetActivePage <|
+                        UserPage <|
+                            Pages.Page.AcuteIllnessEncounterPage acuteIllnessEncounterId
+                    ]
+                )
+                data
+                |> RemoteData.withDefault []
+            )
+
 
 {-| The extra return value indicates whether we need to recalculate our
 successful EditableSessions. Ideally, we would handle this in a more
@@ -1274,6 +1501,37 @@ nuanced way.
 handleRevision : Revision -> ( ModelIndexedDb, Bool ) -> ( ModelIndexedDb, Bool )
 handleRevision revision (( model, recalc ) as noChange) =
     case revision of
+        AcuteFindingsRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | acuteFindings = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        AcuteIllnessEncounterRevision uuid data ->
+            let
+                acuteIllnessEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.acuteIllnessEncounters
+
+                acuteIllnessEncountersByParticipant =
+                    Dict.remove data.participant model.acuteIllnessEncountersByParticipant
+            in
+            ( { model
+                | acuteIllnessEncounters = acuteIllnessEncounters
+                , acuteIllnessEncountersByParticipant = acuteIllnessEncountersByParticipant
+              }
+            , recalc
+            )
+
+        AcuteIllnessVitalsRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         AttendanceRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
@@ -1353,6 +1611,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        ExposureRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | exposure = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         FamilyPlanningRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
@@ -1361,12 +1627,12 @@ handleRevision revision (( model, recalc ) as noChange) =
             , True
             )
 
-        LactationRevision uuid data ->
-            ( mapMotherMeasurements
-                data.participantId
-                (\measurements -> { measurements | lactations = Dict.insert uuid data measurements.lactations })
+        HCContactRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hcContact = Just ( uuid, data ) })
                 model
-            , True
+            , recalc
             )
 
         HealthCenterRevision uuid data ->
@@ -1386,10 +1652,49 @@ handleRevision revision (( model, recalc ) as noChange) =
             , True
             )
 
+        IsolationRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | isolation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        IndividualEncounterParticipantRevision uuid data ->
+            let
+                individualParticipants =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.individualParticipants
+
+                individualParticipantsByPerson =
+                    Dict.remove data.person model.individualParticipantsByPerson
+            in
+            ( { model
+                | individualParticipants = individualParticipants
+                , individualParticipantsByPerson = individualParticipantsByPerson
+              }
+            , recalc
+            )
+
+        LactationRevision uuid data ->
+            ( mapMotherMeasurements
+                data.participantId
+                (\measurements -> { measurements | lactations = Dict.insert uuid data measurements.lactations })
+                model
+            , True
+            )
+
         LastMenstrualPeriodRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | lastMenstrualPeriod = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        MalariaTestingRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | malariaTesting = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -1406,6 +1711,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | medication = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        MedicationDistributionRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medicationDistribution = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -1558,21 +1871,6 @@ handleRevision revision (( model, recalc ) as noChange) =
             , True
             )
 
-        IndividualEncounterParticipantRevision uuid data ->
-            let
-                individualParticipants =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.individualParticipants
-
-                individualParticipantsByPerson =
-                    Dict.remove data.person model.individualParticipantsByPerson
-            in
-            ( { model
-                | individualParticipants = individualParticipants
-                , individualParticipantsByPerson = individualParticipantsByPerson
-              }
-            , recalc
-            )
-
         PrenatalEncounterRevision uuid data ->
             let
                 prenatalEncounters =
@@ -1625,6 +1923,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        SendToHCRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | sendToHC = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         SessionRevision uuid data ->
             let
                 -- First, remove the session from all clinics (it might
@@ -1648,6 +1954,46 @@ handleRevision revision (( model, recalc ) as noChange) =
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | socialHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        SymptomsGeneralRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomsGeneral = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        SymptomsGIRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomsGI = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        SymptomsRespiratoryRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomsRespiratory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        TravelHistoryRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | travelHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        TreatmentReviewRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | treatmentReview = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -1676,6 +2022,77 @@ handleRevision revision (( model, recalc ) as noChange) =
                 model
             , True
             )
+
+
+generateSuspectedDiagnosisMsgs : NominalDate -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
+generateSuspectedDiagnosisMsgs currentDate before after id person =
+    let
+        diagnosisBeforeChange =
+            Dict.get id before.acuteIllnessMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person)
+
+        diagnosisAfterChange =
+            Dict.get id after.acuteIllnessMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person)
+
+        turnOnNewDiagnosisMsgs =
+            diagnosisAfterChange
+                |> Maybe.map
+                    (\newDiagnosis ->
+                        case resolveNextStepByDiagnosis currentDate person (Just newDiagnosis) of
+                            Just nextStep ->
+                                [ -- Navigate to Acute Ilness NextSteps activty page.
+                                  App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
+                                , -- Focus on firs task on that page.
+                                  Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask nextStep
+                                    |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
+                                    |> App.Model.MsgLoggedIn
+                                , -- Show warning popup with new diagnosis.
+                                  Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just newDiagnosis)
+                                    |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
+                                    |> App.Model.MsgLoggedIn
+                                ]
+
+                            Nothing ->
+                                [ -- Navigate to Acute Ilness encounter page.
+                                  App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
+                                , -- Show warning popup with new diagnosis.
+                                  Pages.AcuteIllnessEncounter.Model.SetWarningPopupState (Just newDiagnosis)
+                                    |> App.Model.MsgPageAcuteIllnessEncounter id
+                                    |> App.Model.MsgLoggedIn
+                                ]
+                    )
+                |> Maybe.withDefault []
+    in
+    if diagnosisBeforeChange /= diagnosisAfterChange then
+        turnOnNewDiagnosisMsgs
+
+    else
+        []
+
+
+generateEndAcuteIllnessEncounterMsgs : ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
+generateEndAcuteIllnessEncounterMsgs db id =
+    Dict.get id db.acuteIllnessMeasurements
+        |> Maybe.withDefault NotAsked
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\measurements ->
+                if isJust measurements.isolation && isJust measurements.hcContact then
+                    [ App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
+                    , Pages.AcuteIllnessEncounter.Model.SetEndEncounterDialogState True
+                        |> App.Model.MsgPageAcuteIllnessEncounter id
+                        |> App.Model.MsgLoggedIn
+                    ]
+
+                else
+                    []
+            )
+        |> Maybe.withDefault []
 
 
 {-| Construct an EditableSession from our data, if we have all the needed data.

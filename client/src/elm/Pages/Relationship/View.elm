@@ -5,7 +5,7 @@ import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Initiator(..), Person)
-import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, Relationship)
 import Backend.Session.Utils exposing (getSession)
@@ -171,7 +171,7 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
                     viewedRelationship == Just possible
 
                 inputId =
-                    "input-relationship-" ++ Debug.toString index
+                    "input-relationship-" ++ String.fromInt index
             in
             div
                 [ class "field" ]
@@ -368,15 +368,7 @@ viewParticipant : Language -> NominalDate -> PersonId -> Person -> Html Msg
 viewParticipant language currentDate id person =
     let
         typeForThumbnail =
-            case isPersonAnAdult currentDate person of
-                Just True ->
-                    "mother"
-
-                Just False ->
-                    "child"
-
-                Nothing ->
-                    "mother"
+            defaultIconForPerson currentDate person
 
         content =
             div [ class "content" ]
