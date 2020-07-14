@@ -33,10 +33,9 @@ encodeCounselingTiming timing =
             string "exit"
 
 
-encodeCounselingSchedule : CounselingSchedule -> Value
+encodeCounselingSchedule : CounselingSchedule -> List ( String, Value )
 encodeCounselingSchedule schedule =
-    object
-        [ ( "timing", encodeCounselingTiming schedule.timing )
-        , ( "topics", list encodeEntityUuid schedule.topics )
-        , ( "type", string "counseling_schedule" )
-        ]
+    [ ( "timing", encodeCounselingTiming schedule.timing )
+    , ( "topics", list encodeEntityUuid schedule.topics )
+    , ( "type", string "counseling_schedule" )
+    ]

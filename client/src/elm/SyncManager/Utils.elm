@@ -489,153 +489,157 @@ getSyncSpeedForSubscriptions model =
             syncCycle
 
 
+encode encoder identifier =
+    object <| encoder identifier.entity ++ [ ( "uuid", Json.Encode.string identifier.uuid ) ]
+
+
 encodeBackendGeneralEntity : BackendGeneralEntity -> Value
 encodeBackendGeneralEntity backendGeneralEntity =
     case backendGeneralEntity of
         BackendGeneralCatchmentArea identifier ->
-            Backend.HealthCenter.Encoder.encodeCatchmentArea identifier.entity
+            encode Backend.HealthCenter.Encoder.encodeCatchmentArea identifier
 
         BackendGeneralCounselingSchedule identifier ->
-            Backend.Counseling.Encoder.encodeCounselingSchedule identifier.entity
+            encode Backend.Counseling.Encoder.encodeCounselingSchedule identifier
 
         BackendGeneralCounselingTopic identifier ->
-            (object << Backend.Counseling.Encoder.encodeCounselingTopic) identifier.entity
+            encode Backend.Counseling.Encoder.encodeCounselingTopic identifier
 
         BackendGeneralHealthCenter identifier ->
-            Backend.HealthCenter.Encoder.encodeHealthCenter identifier.entity
+            encode Backend.HealthCenter.Encoder.encodeHealthCenter identifier
 
         BackendGeneralNurse identifier ->
-            (object << Backend.Nurse.Encoder.encodeNurse) identifier.entity
+            encode Backend.Nurse.Encoder.encodeNurse identifier
 
         BackendGeneralParticipantForm identifier ->
-            (object << Backend.ParticipantConsent.Encoder.encodeParticipantForm) identifier.entity
+            encode Backend.ParticipantConsent.Encoder.encodeParticipantForm identifier
 
         BackendGeneralVillage identifier ->
-            (object << Backend.Village.Encoder.encodeVillage) identifier.entity
+            encode Backend.Village.Encoder.encodeVillage identifier
 
 
 encodeBackendAuthorityEntity : BackendAuthorityEntity -> Value
 encodeBackendAuthorityEntity entity =
     case entity of
         BackendAuthorityAttendance identifier ->
-            (object << Backend.Measurement.Encoder.encodeAttendance) identifier.entity
+            encode Backend.Measurement.Encoder.encodeAttendance identifier
 
         BackendAuthorityBreastExam identifier ->
-            (object << Backend.Measurement.Encoder.encodeBreastExam) identifier.entity
+            encode Backend.Measurement.Encoder.encodeBreastExam identifier
 
         BackendAuthorityClinic identifier ->
-            (object << Backend.Clinic.Encoder.encodeClinic) identifier.entity
+            encode Backend.Clinic.Encoder.encodeClinic identifier
 
         BackendAuthorityChildFbf identifier ->
-            (object << Backend.Measurement.Encoder.encodeFbf) identifier.entity
+            encode Backend.Measurement.Encoder.encodeFbf identifier
 
         BackendAuthorityCounselingSession identifier ->
-            (object << Backend.Measurement.Encoder.encodeCounselingSession) identifier.entity
+            encode Backend.Measurement.Encoder.encodeCounselingSession identifier
 
         BackendAuthorityCorePhysicalExam identifier ->
-            (object << Backend.Measurement.Encoder.encodeCorePhysicalExam) identifier.entity
+            encode Backend.Measurement.Encoder.encodeCorePhysicalExam identifier
 
         BackendAuthorityDangerSigns identifier ->
-            (object << Backend.Measurement.Encoder.encodeDangerSigns) identifier.entity
+            encode Backend.Measurement.Encoder.encodeDangerSigns identifier
 
         BackendAuthorityFamilyPlanning identifier ->
-            (object << Backend.Measurement.Encoder.encodeFamilyPlanning) identifier.entity
+            encode Backend.Measurement.Encoder.encodeFamilyPlanning identifier
 
         BackendAuthorityHeight identifier ->
-            (object << Backend.Measurement.Encoder.encodeHeight) identifier.entity
+            encode Backend.Measurement.Encoder.encodeHeight identifier
 
         BackendAuthorityIndividualParticipant identifier ->
-            Backend.IndividualEncounterParticipant.Encoder.encodeIndividualEncounterParticipant identifier.entity
+            encode Backend.IndividualEncounterParticipant.Encoder.encodeIndividualEncounterParticipant identifier
 
         BackendAuthorityLactation identifier ->
-            (object << Backend.Measurement.Encoder.encodeLactation) identifier.entity
+            encode Backend.Measurement.Encoder.encodeLactation identifier
 
         BackendAuthorityLastMenstrualPeriod identifier ->
-            (object << Backend.Measurement.Encoder.encodeLastMenstrualPeriod) identifier.entity
+            encode Backend.Measurement.Encoder.encodeLastMenstrualPeriod identifier
 
         BackendAuthorityMedicalHistory identifier ->
-            (object << Backend.Measurement.Encoder.encodeMedicalHistory) identifier.entity
+            encode Backend.Measurement.Encoder.encodeMedicalHistory identifier
 
         BackendAuthorityMedication identifier ->
-            (object << Backend.Measurement.Encoder.encodeMedication) identifier.entity
+            encode Backend.Measurement.Encoder.encodeMedication identifier
 
         BackendAuthorityMotherFbf identifier ->
-            (object << Backend.Measurement.Encoder.encodeFbf) identifier.entity
+            encode Backend.Measurement.Encoder.encodeFbf identifier
 
         BackendAuthorityMuac identifier ->
-            (object << Backend.Measurement.Encoder.encodeMuac) identifier.entity
+            encode Backend.Measurement.Encoder.encodeMuac identifier
 
         BackendAuthorityNutrition identifier ->
-            (object << Backend.Measurement.Encoder.encodeNutrition) identifier.entity
+            encode Backend.Measurement.Encoder.encodeNutrition identifier
 
         BackendAuthorityNutritionEncounter identifier ->
-            (object << Backend.NutritionEncounter.Encoder.encodeNutritionEncounter) identifier.entity
+            encode Backend.NutritionEncounter.Encoder.encodeNutritionEncounter identifier
 
         BackendAuthorityNutritionHeight identifier ->
-            (object << Backend.Measurement.Encoder.encodeNutritionHeight) identifier.entity
+            encode Backend.Measurement.Encoder.encodeNutritionHeight identifier
 
         BackendAuthorityNutritionMuac identifier ->
-            (object << Backend.Measurement.Encoder.encodeNutritionMuac) identifier.entity
+            encode Backend.Measurement.Encoder.encodeNutritionMuac identifier
 
         BackendAuthorityNutritionNutrition identifier ->
-            (object << Backend.Measurement.Encoder.encodeNutritionNutrition) identifier.entity
+            encode Backend.Measurement.Encoder.encodeNutritionNutrition identifier
 
         BackendAuthorityNutritionPhoto identifier ->
-            (object << Backend.Measurement.Encoder.encodeNutritionPhoto) identifier.entity
+            encode Backend.Measurement.Encoder.encodeNutritionPhoto identifier
 
         BackendAuthorityNutritionWeight identifier ->
-            (object << Backend.Measurement.Encoder.encodeNutritionWeight) identifier.entity
+            encode Backend.Measurement.Encoder.encodeNutritionWeight identifier
 
         BackendAuthorityObstetricHistory identifier ->
-            (object << Backend.Measurement.Encoder.encodeObstetricHistory) identifier.entity
+            encode Backend.Measurement.Encoder.encodeObstetricHistory identifier
 
         BackendAuthorityObstetricHistoryStep2 identifier ->
-            (object << Backend.Measurement.Encoder.encodeObstetricHistoryStep2) identifier.entity
+            encode Backend.Measurement.Encoder.encodeObstetricHistoryStep2 identifier
 
         BackendAuthorityObstetricalExam identifier ->
-            (object << Backend.Measurement.Encoder.encodeObstetricalExam) identifier.entity
+            encode Backend.Measurement.Encoder.encodeObstetricalExam identifier
 
         BackendAuthorityParticipantConsent identifier ->
-            (object << Backend.Measurement.Encoder.encodeParticipantConsent) identifier.entity
+            encode Backend.Measurement.Encoder.encodeParticipantConsent identifier
 
         BackendAuthorityPerson identifier ->
-            (object << Backend.Person.Encoder.encodePerson) identifier.entity
+            encode Backend.Person.Encoder.encodePerson identifier
 
         BackendAuthorityPhoto identifier ->
-            (object << Backend.Measurement.Encoder.encodePhoto) identifier.entity
+            encode Backend.Measurement.Encoder.encodePhoto identifier
 
         BackendAuthorityPrenatalPhoto identifier ->
-            (object << Backend.Measurement.Encoder.encodePrenatalPhoto) identifier.entity
+            encode Backend.Measurement.Encoder.encodePrenatalPhoto identifier
 
         BackendAuthorityPmtctParticipant identifier ->
-            Backend.PmtctParticipant.Encoder.encodePmtctParticipant identifier.entity
+            encode Backend.PmtctParticipant.Encoder.encodePmtctParticipant identifier
 
         BackendAuthorityPrenatalFamilyPlanning identifier ->
-            (object << Backend.Measurement.Encoder.encodePrenatalFamilyPlanning) identifier.entity
+            encode Backend.Measurement.Encoder.encodePrenatalFamilyPlanning identifier
 
         BackendAuthorityPrenatalNutrition identifier ->
-            (object << Backend.Measurement.Encoder.encodePrenatalNutrition) identifier.entity
+            encode Backend.Measurement.Encoder.encodePrenatalNutrition identifier
 
         BackendAuthorityPrenatalEncounter identifier ->
-            (object << Backend.PrenatalEncounter.Encoder.encodePrenatalEncounter) identifier.entity
+            encode Backend.PrenatalEncounter.Encoder.encodePrenatalEncounter identifier
 
         BackendAuthorityRelationship identifier ->
-            Backend.Relationship.Encoder.encodeRelationship identifier.entity
+            encode Backend.Relationship.Encoder.encodeRelationship identifier
 
         BackendAuthorityResource identifier ->
-            (object << Backend.Measurement.Encoder.encodeResource) identifier.entity
+            encode Backend.Measurement.Encoder.encodeResource identifier
 
         BackendAuthoritySession identifier ->
-            (object << Backend.Session.Encoder.encodeSession) identifier.entity
+            encode Backend.Session.Encoder.encodeSession identifier
 
         BackendAuthoritySocialHistory identifier ->
-            (object << Backend.Measurement.Encoder.encodeSocialHistory) identifier.entity
+            encode Backend.Measurement.Encoder.encodeSocialHistory identifier
 
         BackendAuthorityVitals identifier ->
-            (object << Backend.Measurement.Encoder.encodeVitals) identifier.entity
+            encode Backend.Measurement.Encoder.encodeVitals identifier
 
         BackendAuthorityWeight identifier ->
-            (object << Backend.Measurement.Encoder.encodeWeight) identifier.entity
+            encode Backend.Measurement.Encoder.encodeWeight identifier
 
 
 getDataToSendGeneral : BackendGeneralEntity -> List String -> List String

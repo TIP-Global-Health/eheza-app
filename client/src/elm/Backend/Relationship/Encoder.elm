@@ -7,14 +7,13 @@ import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
 
 
-encodeRelationship : Relationship -> Value
+encodeRelationship : Relationship -> List ( String, Value )
 encodeRelationship data =
-    object
-        [ encodePersonField data.person
-        , encodeRelatedToField data.relatedTo
-        , encodeRelatedByField data.relatedBy
-        , ( "shard", maybe encodeEntityUuid data.shard )
-        ]
+    [ encodePersonField data.person
+    , encodeRelatedToField data.relatedTo
+    , encodeRelatedByField data.relatedBy
+    , ( "shard", maybe encodeEntityUuid data.shard )
+    ]
 
 
 encodeRelationshipChanges : { old : Relationship, new : Relationship } -> List ( String, Value )

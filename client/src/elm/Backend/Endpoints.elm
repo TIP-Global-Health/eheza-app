@@ -84,7 +84,7 @@ encodePersonParams params =
 relationshipEndpoint : ReadWriteEndPoint Error RelationshipId Relationship Relationship RelationshipParams
 relationshipEndpoint =
     swEndpoint "nodes/relationship" decodeRelationship
-        |> withValueEncoder encodeRelationship
+        |> withValueEncoder (object << encodeRelationship)
         |> withParamsEncoder encodeRelationshipParams
 
 
@@ -203,7 +203,7 @@ participantConsentEndpoint =
 counselingScheduleEndpoint : ReadWriteEndPoint Error CounselingScheduleId CounselingSchedule CounselingSchedule ()
 counselingScheduleEndpoint =
     swEndpoint "nodes/counseling_schedule" decodeCounselingSchedule
-        |> withValueEncoder encodeCounselingSchedule
+        |> withValueEncoder (object << encodeCounselingSchedule)
 
 
 counselingTopicEndpoint : ReadWriteEndPoint Error CounselingTopicId CounselingTopic CounselingTopic ()
@@ -311,7 +311,7 @@ encodePmtctParticipantParams params =
 pmtctParticipantEndpoint : ReadWriteEndPoint Error PmtctParticipantId PmtctParticipant PmtctParticipant PmtctParticipantParams
 pmtctParticipantEndpoint =
     swEndpoint "nodes/pmtct_participant" decodePmtctParticipant
-        |> withValueEncoder encodePmtctParticipant
+        |> withValueEncoder (object << encodePmtctParticipant)
         |> withParamsEncoder encodePmtctParticipantParams
 
 
@@ -349,7 +349,7 @@ encodeIndividualEncounterParams params =
 individualEncounterParticipantEndpoint : ReadWriteEndPoint Error IndividualEncounterParticipantId IndividualEncounterParticipant IndividualEncounterParticipant (Maybe PersonId)
 individualEncounterParticipantEndpoint =
     swEndpoint "nodes/individual_participant" decodeIndividualEncounterParticipant
-        |> withValueEncoder encodeIndividualEncounterParticipant
+        |> withValueEncoder (object << encodeIndividualEncounterParticipant)
         |> withParamsEncoder encodeIndividualEncounterParticipantParams
 
 

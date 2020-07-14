@@ -13,20 +13,19 @@ import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
 
 
-encodeIndividualEncounterParticipant : IndividualEncounterParticipant -> Value
+encodeIndividualEncounterParticipant : IndividualEncounterParticipant -> List ( String, Value )
 encodeIndividualEncounterParticipant data =
-    object
-        [ ( "person", encodeEntityUuid data.person )
-        , ( "encounter_type", encodeIndividualEncounterType data.encounterType )
-        , ( "expected"
-          , object
-                [ ( "value", encodeYYYYMMDD data.startDate )
-                , ( "value2", maybe encodeYYYYMMDD data.endDate )
-                ]
-          )
-        , ( "shard", maybe encodeEntityUuid data.shard )
-        , ( "type", string "individual_participant" )
-        ]
+    [ ( "person", encodeEntityUuid data.person )
+    , ( "encounter_type", encodeIndividualEncounterType data.encounterType )
+    , ( "expected"
+      , object
+            [ ( "value", encodeYYYYMMDD data.startDate )
+            , ( "value2", maybe encodeYYYYMMDD data.endDate )
+            ]
+      )
+    , ( "shard", maybe encodeEntityUuid data.shard )
+    , ( "type", string "individual_participant" )
+    ]
 
 
 encodeIndividualEncounterType : IndividualEncounterType -> Value
