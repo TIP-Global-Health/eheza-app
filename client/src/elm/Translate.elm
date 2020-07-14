@@ -1737,7 +1737,7 @@ translationSet trans =
             }
 
         ContactedHC ->
-            { english = "Contacted Health Center"
+            { english = "Contacted health center"
             , kinyarwanda = Nothing
             }
 
