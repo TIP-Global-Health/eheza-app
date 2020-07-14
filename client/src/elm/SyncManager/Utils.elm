@@ -489,6 +489,7 @@ getSyncSpeedForSubscriptions model =
             syncCycle
 
 
+encode : (a -> List ( String, Value )) -> BackendEntity a -> Value
 encode encoder identifier =
     object <| encoder identifier.entity ++ [ ( "uuid", Json.Encode.string identifier.uuid ) ]
 
