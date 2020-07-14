@@ -5089,7 +5089,7 @@ translationSet trans =
 
         TraveledToCOVID19CountryQuestion ->
             { english = "Have you traveled to any country or district in Rwanda known to have COVID-19 in the past 14 days"
-            , kinyarwanda = Just "Waba waragiye mu gihugu kirimo ubwandu bwa Covid-19 mu minsi 14 ishize"
+            , kinyarwanda = Just "Waba waragiye mu gihugu kirimo ubwandu bwa COVID-19 mu minsi 14 ishize"
             }
 
         PriorTreatmentTask task ->
