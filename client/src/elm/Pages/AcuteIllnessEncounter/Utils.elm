@@ -305,7 +305,10 @@ resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements =
         if feverRecorded measurements then
             resolveAcuteIllnessDiagnosisByLaboratoryResults measurements
 
-        else if poorSuckAtSymptoms measurements && respiratoryInfectionDangerSignsPresent measurements then
+        else if
+            (poorSuckAtSymptoms measurements || lethargyAtSymptoms measurements)
+                && respiratoryInfectionDangerSignsPresent measurements
+        then
             Just DiagnosisRespiratoryInfectionComplicated
 
         else if nonBloodyDiarrheaAtSymptoms measurements then
@@ -556,6 +559,25 @@ poorSuckAtSymptoms measurements =
         |> Maybe.withDefault False
 
 
+lethargyAtSymptoms : AcuteIllnessMeasurements -> Bool
+lethargyAtSymptoms measurements =
+    Maybe.map2
+        (\symptomsGeneral acuteFindings ->
+            let
+                symptomsGeneralDict =
+                    Tuple.second symptomsGeneral |> .value
+
+                acuteFindingsValue =
+                    Tuple.second acuteFindings |> .value
+            in
+            symptomAppearsAtSymptomsDict Lethargy symptomsGeneralDict
+                || EverySet.member LethargicOrUnconscious acuteFindingsValue.signsGeneral
+        )
+        measurements.symptomsGeneral
+        measurements.acuteFindings
+        |> Maybe.withDefault False
+
+
 malariaRapidTestResult : AcuteIllnessMeasurements -> Maybe MalariaRapidTestResult
 malariaRapidTestResult measurements =
     measurements.malariaTesting
@@ -663,21 +685,14 @@ malarialDangerSignsPresent measurements =
 
 respiratoryInfectionDangerSignsPresent : AcuteIllnessMeasurements -> Bool
 respiratoryInfectionDangerSignsPresent measurements =
-    Maybe.map3
-        (\symptomsGeneral symptomsRespiratory acuteFindings ->
+    Maybe.map2
+        (\symptomsRespiratory acuteFindings ->
             let
-                symptomsGeneralDict =
-                    Tuple.second symptomsGeneral |> .value
-
                 symptomsRespiratoryDict =
                     Tuple.second symptomsRespiratory |> .value
 
                 acuteFindingsValue =
                     Tuple.second acuteFindings |> .value
-
-                lethargy =
-                    symptomAppearsAtSymptomsDict Lethargy symptomsGeneralDict
-                        || EverySet.member LethargicOrUnconscious acuteFindingsValue.signsGeneral
 
                 stridor =
                     EverySet.member Stridor acuteFindingsValue.signsRespiratory
@@ -697,15 +712,13 @@ respiratoryInfectionDangerSignsPresent measurements =
                 shortnessOfBreath =
                     symptomAppearsAtSymptomsDict ShortnessOfBreath symptomsRespiratoryDict
             in
-            lethargy
-                || stridor
+            stridor
                 || nasalFlaring
                 || severeWheezing
                 || subCostalRetractions
                 || stabbingChestPain
                 || shortnessOfBreath
         )
-        measurements.symptomsGeneral
         measurements.symptomsRespiratory
         measurements.acuteFindings
         |> Maybe.withDefault False
