@@ -636,7 +636,6 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
   switch (type) {
     case 'General':
       table = dbSync.nodeChanges;
-      photoUploadTable = dbSync.generalPhotoUploadChanges;
       break;
 
     case 'Authority':
@@ -667,7 +666,9 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
   await table.bulkDelete(localIds);
 
   // Delete also from the photoUploadChanges table.
-  await photoUploadTable.bulkDelete(localIds);
+  if (type == 'Authority') {
+    await photoUploadTable.bulkDelete(localIds);
+  }
 
   // Delete photo from cache storage.
   // Note that this is not a safe delete. That is, there could be a case where

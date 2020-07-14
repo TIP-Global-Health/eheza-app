@@ -19,7 +19,7 @@
 
     // As we defined Dexie's store in app.js, it seems we cannot do it here.
     // Instead, we re-define the table properties, which seems to make it work.
-    var db = await dbSync.open()
+    var db = await dbSync.open();
     db.tables.forEach(function(table) {
         dbSync[table.name] = table;
     });
@@ -166,7 +166,7 @@
                     // tables that may be altered due to a change. In this case
                     // We want to allow adding pending upload photos.
                     // See for example dbSync.nodeChanges.hook().
-                    return db.transaction('rw', table, dbSync.nodeChanges, dbSync.shardChanges, dbSync.generalPhotoUploadChanges, dbSync.authorityPhotoUploadChanges, function() {
+                    return db.transaction('rw', table, dbSync.nodeChanges, dbSync.shardChanges,  dbSync.authorityPhotoUploadChanges, function() {
                         return table.put(json).catch(databaseError).then(function () {
                             var body = JSON.stringify({
                                 data: [json]
@@ -197,7 +197,7 @@
                     // tables that may be altered due to a change. In this case
                     // We want to allow adding pending upload photos.
                     // See for example dbSync.nodeChanges.hook().
-                    return db.transaction('rw', table, dbSync.nodeChanges, dbSync.shardChanges, dbSync.generalPhotoUploadChanges, dbSync.authorityPhotoUploadChanges, function() {
+                    return db.transaction('rw', table, dbSync.nodeChanges, dbSync.shardChanges,  dbSync.authorityPhotoUploadChanges, function() {
 
                         return table.update(uuid, json).catch(databaseError).then(function () {
                             return table.get(uuid).catch(databaseError).then(function (node) {
@@ -284,7 +284,7 @@
                             // tables that may be altered due to a change. In this case
                             // We want to allow adding pending upload photos.
                             // See for example dbSync.nodeChanges.hook().
-                            return db.transaction('rw', table, dbSync.nodeChanges, dbSync.shardChanges, dbSync.generalPhotoUploadChanges, dbSync.authorityPhotoUploadChanges, function() {
+                            return db.transaction('rw', table, dbSync.nodeChanges, dbSync.shardChanges, dbSync.authorityPhotoUploadChanges, function() {
 
                                 return table.put(json).catch(databaseError).then(function () {
                                 var body = JSON.stringify({
