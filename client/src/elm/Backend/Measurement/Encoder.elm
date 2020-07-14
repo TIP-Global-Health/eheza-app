@@ -1,6 +1,6 @@
-module Backend.Measurement.Encoder exposing (encodeAbdomenCPESign, encodeAttendance, encodeAttendanceValue, encodeBreastExam, encodeBreastExamSign, encodeBreastExamValue, encodeCSectionReason, encodeCSectionScar, encodeCorePhysicalExam, encodeCorePhysicalExamValue, encodeCounselingSession, encodeCounselingSessionValue, encodeDangerSign, encodeDangerSigns, encodeDangerSignsValue, encodeDistributionNotice, encodeDistributionNoticeAsString, encodeEverySet, encodeEyesCPESign, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeFbf, encodeFbfValue, encodeFetalPresentation, encodeGroupMeasurement, encodeHairHeadCPESign, encodeHandsCPESign, encodeHeartCPESign, encodeHeight, encodeHeightInCm, encodeHeightValue, encodeLactation, encodeLactationSign, encodeLactationValue, encodeLastMenstrualPeriod, encodeLastMenstrualPeriodValue, encodeLegsCPESign, encodeLungsCPESign, encodeMeasurement, encodeMedicalHistory, encodeMedicalHistorySign, encodeMedicalHistoryValue, encodeMedication, encodeMedicationSign, encodeMedicationValue, encodeMuac, encodeMuacInCm, encodeMuacValue, encodeNeckCPESign, encodeNutrition, encodeNutritionHeight, encodeNutritionMeasurement, encodeNutritionMuac, encodeNutritionNutrition, encodeNutritionPhoto, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeNutritionWeight, encodeObstetricHistory, encodeObstetricHistorySign, encodeObstetricHistoryStep2, encodeObstetricHistoryStep2Value, encodeObstetricHistoryValue, encodeObstetricalExam, encodeObstetricalExamValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodePrenatalFamilyPlanning, encodePrenatalMeasurement, encodePrenatalNutrition, encodePrenatalNutritionValue, encodePrenatalPhoto, encodePreviousDeliveryPeriod, encodePreviousDeliverySign, encodeResource, encodeResourceSign, encodeResourceValue, encodeSocialHistory, encodeSocialHistoryHivTestingResult, encodeSocialHistorySign, encodeSocialHistoryValue, encodeVitals, encodeVitalsValue, encodeWeight, encodeWeightInKg, encodeWeightValue, socialHistoryHivTestingResultToString)
+module Backend.Measurement.Encoder exposing (encodeAbdomenCPESign, encodeAcuteFindings, encodeAcuteFindingsGeneralSign, encodeAcuteFindingsRespiratorySign, encodeAcuteFindingsValue, encodeAcuteIllnessMeasurement, encodeAcuteIllnessVitals, encodeAcuteIllnessVitalsValue, encodeAttendance, encodeAttendanceValue, encodeBreastExam, encodeBreastExamSign, encodeBreastExamValue, encodeCSectionReason, encodeCSectionScar, encodeCorePhysicalExam, encodeCorePhysicalExamValue, encodeCounselingSession, encodeCounselingSessionValue, encodeDangerSign, encodeDangerSigns, encodeDangerSignsValue, encodeDistributionNotice, encodeDistributionNoticeAsString, encodeEverySet, encodeExposure, encodeExposureSign, encodeExposureValue, encodeEyesCPESign, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeFbf, encodeFbfValue, encodeFetalPresentation, encodeGroupMeasurement, encodeHCContact, encodeHCContactSign, encodeHCContactValue, encodeHCRecomendation, encodeHairHeadCPESign, encodeHandsCPESign, encodeHeartCPESign, encodeHeight, encodeHeightInCm, encodeHeightValue, encodeIsolation, encodeIsolationSign, encodeIsolationValue, encodeLactation, encodeLactationSign, encodeLactationValue, encodeLastMenstrualPeriod, encodeLastMenstrualPeriodValue, encodeLegsCPESign, encodeLungsCPESign, encodeMalariaRapidTestResult, encodeMalariaTesting, encodeMalariaTestingValue, encodeMeasurement, encodeMedicalHistory, encodeMedicalHistorySign, encodeMedicalHistoryValue, encodeMedication, encodeMedicationDistribution, encodeMedicationDistributionValue, encodeMedicationSign, encodeMedicationValue, encodeMuac, encodeMuacInCm, encodeMuacValue, encodeNeckCPESign, encodeNutrition, encodeNutritionHeight, encodeNutritionMeasurement, encodeNutritionMuac, encodeNutritionNutrition, encodeNutritionPhoto, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeNutritionWeight, encodeObstetricHistory, encodeObstetricHistorySign, encodeObstetricHistoryStep2, encodeObstetricHistoryStep2Value, encodeObstetricHistoryValue, encodeObstetricalExam, encodeObstetricalExamValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodePrenatalFamilyPlanning, encodePrenatalMeasurement, encodePrenatalNutrition, encodePrenatalNutritionValue, encodePrenatalPhoto, encodePreviousDeliveryPeriod, encodePreviousDeliverySign, encodeReasonForNotIsolating, encodeResource, encodeResourceSign, encodeResourceValue, encodeResponsePeriod, encodeSendToHC, encodeSendToHCValue, encodeSocialHistory, encodeSocialHistoryHivTestingResult, encodeSocialHistorySign, encodeSocialHistoryValue, encodeSymptomsGI, encodeSymptomsGIDerivedSigns, encodeSymptomsGIValue, encodeSymptomsGeneral, encodeSymptomsGeneralValue, encodeSymptomsRespiratory, encodeSymptomsRespiratoryValue, encodeTravelHistory, encodeTravelHistorySign, encodeTravelHistoryValue, encodeTreatmentReview, encodeTreatmentReviewSign, encodeTreatmentReviewValue, encodeVitals, encodeVitalsValue, encodeWeight, encodeWeightInKg, encodeWeightValue, encondeMedicationDistributionSign, encondeSendToHCSign, malariaRapidTestResultAsString, socialHistoryHivTestingResultToString)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
@@ -154,11 +154,6 @@ encodeFamilyPlanning =
     encodeGroupMeasurement encodeFamilyPlanningValue
 
 
-encodeGroupMeasurement : (value -> List ( String, Value )) -> GroupMeasurement value -> List ( String, Value )
-encodeGroupMeasurement =
-    encodeMeasurement "session"
-
-
 encodeLactationValue : EverySet LactationSign -> List ( String, Value )
 encodeLactationValue signs =
     [ ( "lactation_signs"
@@ -173,14 +168,24 @@ encodeLactation =
     encodeGroupMeasurement encodeLactationValue
 
 
-encodeNutritionMeasurement : (value -> List ( String, Value )) -> NutritionMeasurement value -> List ( String, Value )
-encodeNutritionMeasurement =
-    encodeMeasurement "nutrition_encounter"
+encodeGroupMeasurement : (value -> List ( String, Value )) -> GroupMeasurement value -> List ( String, Value )
+encodeGroupMeasurement =
+    encodeMeasurement "session"
 
 
 encodePrenatalMeasurement : (value -> List ( String, Value )) -> PrenatalMeasurement value -> List ( String, Value )
 encodePrenatalMeasurement =
     encodeMeasurement "prenatal_encounter"
+
+
+encodeNutritionMeasurement : (value -> List ( String, Value )) -> NutritionMeasurement value -> List ( String, Value )
+encodeNutritionMeasurement =
+    encodeMeasurement "nutrition_encounter"
+
+
+encodeAcuteIllnessMeasurement : (value -> List ( String, Value )) -> AcuteIllnessMeasurement value -> List ( String, Value )
+encodeAcuteIllnessMeasurement =
+    encodeMeasurement "acute_illness_encounter"
 
 
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
@@ -896,3 +901,509 @@ encodeVitalsValue value =
     , ( "respiratory_rate", int value.respiratoryRate )
     , ( "body_temperature", float value.bodyTemperature )
     ]
+
+
+encodeSymptomsGeneral : SymptomsGeneral -> List ( String, Value )
+encodeSymptomsGeneral =
+    encodeAcuteIllnessMeasurement encodeSymptomsGeneralValue
+
+
+encodeSymptomsGeneralValue : Dict SymptomsGeneralSign Int -> List ( String, Value )
+encodeSymptomsGeneralValue signs =
+    let
+        fever =
+            Dict.get SymptomGeneralFever signs |> Maybe.withDefault 0
+
+        chills =
+            Dict.get Chills signs |> Maybe.withDefault 0
+
+        nightSweats =
+            Dict.get NightSweats signs |> Maybe.withDefault 0
+
+        bodyAches =
+            Dict.get BodyAches signs |> Maybe.withDefault 0
+
+        headache =
+            Dict.get Headache signs |> Maybe.withDefault 0
+
+        lethargy =
+            Dict.get Lethargy signs |> Maybe.withDefault 0
+
+        poorSuck =
+            Dict.get PoorSuck signs |> Maybe.withDefault 0
+
+        unableToDrink =
+            Dict.get UnableToDrink signs |> Maybe.withDefault 0
+
+        unableToEat =
+            Dict.get UnableToEat signs |> Maybe.withDefault 0
+
+        increasedThirst =
+            Dict.get IncreasedThirst signs |> Maybe.withDefault 0
+
+        dryMouth =
+            Dict.get DryMouth signs |> Maybe.withDefault 0
+
+        severeWeakness =
+            Dict.get SevereWeakness signs |> Maybe.withDefault 0
+
+        yellowEyes =
+            Dict.get YellowEyes signs |> Maybe.withDefault 0
+
+        cokeColoredUrine =
+            Dict.get CokeColoredUrine signs |> Maybe.withDefault 0
+
+        convulsions =
+            Dict.get SymptomsGeneralConvulsions signs |> Maybe.withDefault 0
+
+        spontaneousBleeding =
+            Dict.get SpontaneousBleeding signs |> Maybe.withDefault 0
+    in
+    [ ( "fever_period", int fever )
+    , ( "chills_period", int chills )
+    , ( "night_sweats_period", int nightSweats )
+    , ( "body_aches_period", int bodyAches )
+    , ( "headache_period", int headache )
+    , ( "coke_colored_urine_period", int cokeColoredUrine )
+    , ( "convulsions_period", int convulsions )
+    , ( "dry_mouth_period", int dryMouth )
+    , ( "increased_thirst_period", int increasedThirst )
+    , ( "lethargy_period", int lethargy )
+    , ( "poor_suck_period", int poorSuck )
+    , ( "severe_weakness_period", int severeWeakness )
+    , ( "spontaneos_bleeding_period", int spontaneousBleeding )
+    , ( "unable_to_drink_period", int unableToDrink )
+    , ( "unable_to_eat_period", int unableToEat )
+    , ( "yellow_eyes_period", int yellowEyes )
+    ]
+
+
+encodeSymptomsRespiratory : SymptomsRespiratory -> List ( String, Value )
+encodeSymptomsRespiratory =
+    encodeAcuteIllnessMeasurement encodeSymptomsRespiratoryValue
+
+
+encodeSymptomsRespiratoryValue : Dict SymptomsRespiratorySign Int -> List ( String, Value )
+encodeSymptomsRespiratoryValue signs =
+    let
+        cough =
+            Dict.get Cough signs |> Maybe.withDefault 0
+
+        shortnessOfBreath =
+            Dict.get ShortnessOfBreath signs |> Maybe.withDefault 0
+
+        nasalCongestion =
+            Dict.get NasalCongestion signs |> Maybe.withDefault 0
+
+        bloodInSputum =
+            Dict.get BloodInSputum signs |> Maybe.withDefault 0
+
+        soreThroat =
+            Dict.get SoreThroat signs |> Maybe.withDefault 0
+
+        stabbingChestPain =
+            Dict.get StabbingChestPain signs |> Maybe.withDefault 0
+    in
+    [ ( "cough_period", int cough )
+    , ( "shortness_of_breath_period", int shortnessOfBreath )
+    , ( "nasal_congestion_period", int nasalCongestion )
+    , ( "blood_in_sputum_period", int bloodInSputum )
+    , ( "sore_throat_period", int soreThroat )
+    , ( "stabbing_chest_pain_period", int stabbingChestPain )
+    ]
+
+
+encodeSymptomsGI : SymptomsGI -> List ( String, Value )
+encodeSymptomsGI =
+    encodeAcuteIllnessMeasurement encodeSymptomsGIValue
+
+
+encodeSymptomsGIValue : SymptomsGIValue -> List ( String, Value )
+encodeSymptomsGIValue value =
+    let
+        bloodyDiarrhea =
+            Dict.get BloodyDiarrhea value.signs |> Maybe.withDefault 0
+
+        nonBloodyDiarrhea =
+            Dict.get NonBloodyDiarrhea value.signs |> Maybe.withDefault 0
+
+        nausea =
+            Dict.get Nausea value.signs |> Maybe.withDefault 0
+
+        vomiting =
+            Dict.get Vomiting value.signs |> Maybe.withDefault 0
+
+        abdominalPain =
+            Dict.get SymptomGIAbdominalPain value.signs |> Maybe.withDefault 0
+    in
+    [ ( "bloody_diarrhea_period", int bloodyDiarrhea )
+    , ( "non_bloody_diarrhea_period", int nonBloodyDiarrhea )
+    , ( "nausea_period", int nausea )
+    , ( "vomiting_period", int vomiting )
+    , ( "abdominal_pain_period", int abdominalPain )
+    , ( "symptoms_gi_derived_signs", encodeEverySet encodeSymptomsGIDerivedSigns value.derivedSigns )
+    ]
+
+
+encodeSymptomsGIDerivedSigns : SymptomsGIDerivedSign -> Value
+encodeSymptomsGIDerivedSigns sign =
+    string <|
+        case sign of
+            IntractableVomiting ->
+                "intractable-vomiting"
+
+            NoSymptomsGIDerived ->
+                "none"
+
+
+encodeAcuteIllnessVitals : AcuteIllnessVitals -> List ( String, Value )
+encodeAcuteIllnessVitals =
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessVitalsValue
+
+
+encodeAcuteIllnessVitalsValue : AcuteIllnessVitalsValue -> List ( String, Value )
+encodeAcuteIllnessVitalsValue value =
+    [ ( "respiratory_rate", int value.respiratoryRate )
+    , ( "body_temperature", float value.bodyTemperature )
+    ]
+
+
+encodeAcuteFindings : AcuteFindings -> List ( String, Value )
+encodeAcuteFindings =
+    encodeAcuteIllnessMeasurement encodeAcuteFindingsValue
+
+
+encodeAcuteFindingsValue : AcuteFindingsValue -> List ( String, Value )
+encodeAcuteFindingsValue value =
+    [ ( "findings_signs_general", encodeEverySet encodeAcuteFindingsGeneralSign value.signsGeneral )
+    , ( "findings_signs_respiratory", encodeEverySet encodeAcuteFindingsRespiratorySign value.signsRespiratory )
+    ]
+
+
+encodeAcuteFindingsGeneralSign : AcuteFindingsGeneralSign -> Value
+encodeAcuteFindingsGeneralSign sign =
+    string <|
+        case sign of
+            LethargicOrUnconscious ->
+                "lethargic-or-unconscious"
+
+            AcuteFindingsPoorSuck ->
+                "poor-suck"
+
+            SunkenEyes ->
+                "sunken-eyes"
+
+            PoorSkinTurgor ->
+                "poor-skin-turgor"
+
+            Jaundice ->
+                "jaundice"
+
+            NoAcuteFindingsGeneralSigns ->
+                "none"
+
+
+encodeAcuteFindingsRespiratorySign : AcuteFindingsRespiratorySign -> Value
+encodeAcuteFindingsRespiratorySign sign =
+    string <|
+        case sign of
+            Stridor ->
+                "stridor"
+
+            NasalFlaring ->
+                "nasal-flaring"
+
+            SevereWheezing ->
+                "severe-wheezing"
+
+            SubCostalRetractions ->
+                "sub-costal-retractions"
+
+            NoAcuteFindingsRespiratorySigns ->
+                "none"
+
+
+encodeMalariaTesting : MalariaTesting -> List ( String, Value )
+encodeMalariaTesting =
+    encodeAcuteIllnessMeasurement encodeMalariaTestingValue
+
+
+encodeMalariaTestingValue : MalariaRapidTestResult -> List ( String, Value )
+encodeMalariaTestingValue value =
+    [ ( "malaria_rapid_test", encodeMalariaRapidTestResult value ) ]
+
+
+encodeMalariaRapidTestResult : MalariaRapidTestResult -> Value
+encodeMalariaRapidTestResult =
+    malariaRapidTestResultAsString >> string
+
+
+malariaRapidTestResultAsString : MalariaRapidTestResult -> String
+malariaRapidTestResultAsString sign =
+    case sign of
+        RapidTestPositive ->
+            "positive"
+
+        RapidTestPositiveAndPregnant ->
+            "positive-and-pregnant"
+
+        RapidTestNegative ->
+            "negative"
+
+        RapidTestIndeterminate ->
+            "indeterminate"
+
+        RapidTestUnableToRun ->
+            "unable-to-run"
+
+
+encodeSendToHC : SendToHC -> List ( String, Value )
+encodeSendToHC =
+    encodeAcuteIllnessMeasurement encodeSendToHCValue
+
+
+encodeSendToHCValue : EverySet SendToHCSign -> List ( String, Value )
+encodeSendToHCValue value =
+    [ ( "send_to_hc", encodeEverySet encondeSendToHCSign value ) ]
+
+
+encondeSendToHCSign : SendToHCSign -> Value
+encondeSendToHCSign sign =
+    string <|
+        case sign of
+            HandReferrerForm ->
+                "referral-form"
+
+            ReferToHealthCenter ->
+                "refer-to-hc"
+
+            NoSendToHCSigns ->
+                "none"
+
+
+encodeMedicationDistribution : MedicationDistribution -> List ( String, Value )
+encodeMedicationDistribution =
+    encodeAcuteIllnessMeasurement encodeMedicationDistributionValue
+
+
+encodeMedicationDistributionValue : EverySet MedicationDistributionSign -> List ( String, Value )
+encodeMedicationDistributionValue value =
+    [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value ) ]
+
+
+encondeMedicationDistributionSign : MedicationDistributionSign -> Value
+encondeMedicationDistributionSign sign =
+    string <|
+        case sign of
+            Amoxicillin ->
+                "amoxicillin"
+
+            Coartem ->
+                "coartem"
+
+            ORS ->
+                "ors"
+
+            Zinc ->
+                "zinc"
+
+            LemonJuiceOrHoney ->
+                "lemon-juice-or-honey"
+
+            NoMedicationDistributionSigns ->
+                "none"
+
+
+encodeTravelHistory : TravelHistory -> List ( String, Value )
+encodeTravelHistory =
+    encodeAcuteIllnessMeasurement encodeTravelHistoryValue
+
+
+encodeTravelHistoryValue : EverySet TravelHistorySign -> List ( String, Value )
+encodeTravelHistoryValue value =
+    [ ( "travel_history", encodeEverySet encodeTravelHistorySign value ) ]
+
+
+encodeTravelHistorySign : TravelHistorySign -> Value
+encodeTravelHistorySign sign =
+    string <|
+        case sign of
+            COVID19Country ->
+                "covid19-country"
+
+            NoTravelHistorySigns ->
+                "none"
+
+
+encodeTreatmentReview : TreatmentReview -> List ( String, Value )
+encodeTreatmentReview =
+    encodeAcuteIllnessMeasurement encodeTreatmentReviewValue
+
+
+encodeTreatmentReviewValue : EverySet TreatmentReviewSign -> List ( String, Value )
+encodeTreatmentReviewValue value =
+    [ ( "treatment_history", encodeEverySet encodeTreatmentReviewSign value ) ]
+
+
+encodeTreatmentReviewSign : TreatmentReviewSign -> Value
+encodeTreatmentReviewSign sign =
+    string <|
+        case sign of
+            FeverPast6Hours ->
+                "fever-past-six-hours"
+
+            FeverPast6HoursHelped ->
+                "fever-past-six-hours-helped"
+
+            MalariaToday ->
+                "malaria-today"
+
+            MalariaTodayHelped ->
+                "malaria-today-helped"
+
+            MalariaWithinPastMonth ->
+                "malaria-past-month"
+
+            MalariaWithinPastMonthHelped ->
+                "malaria-past-month-helped"
+
+            NoTreatmentReviewSigns ->
+                "none"
+
+
+encodeExposure : Exposure -> List ( String, Value )
+encodeExposure =
+    encodeAcuteIllnessMeasurement encodeExposureValue
+
+
+encodeExposureValue : EverySet ExposureSign -> List ( String, Value )
+encodeExposureValue value =
+    [ ( "exposure", encodeEverySet encodeExposureSign value ) ]
+
+
+encodeExposureSign : ExposureSign -> Value
+encodeExposureSign sign =
+    string <|
+        case sign of
+            COVID19Symptoms ->
+                "covid19-symptioms"
+
+            SimilarSymptoms ->
+                "similar-symptoms"
+
+            NoExposureSigns ->
+                "none"
+
+
+encodeIsolation : Isolation -> List ( String, Value )
+encodeIsolation =
+    encodeAcuteIllnessMeasurement encodeIsolationValue
+
+
+encodeIsolationValue : IsolationValue -> List ( String, Value )
+encodeIsolationValue value =
+    [ ( "isolation", encodeEverySet encodeIsolationSign value.signs )
+    , ( "reason_for_not_isolating", encodeEverySet encodeReasonForNotIsolating value.reasonsForNotIsolating )
+    ]
+
+
+encodeIsolationSign : IsolationSign -> Value
+encodeIsolationSign sign =
+    string <|
+        case sign of
+            PatientIsolated ->
+                "patient-isolated"
+
+            SignOnDoor ->
+                "sign-on-door"
+
+            HealthEducation ->
+                "health-education"
+
+            NoIsolationSigns ->
+                "none"
+
+
+encodeReasonForNotIsolating : ReasonForNotIsolating -> Value
+encodeReasonForNotIsolating reason =
+    string <|
+        case reason of
+            NoSpace ->
+                "no-space"
+
+            TooIll ->
+                "too-ill"
+
+            CanNotSeparateFromFamily ->
+                "can-not-separate"
+
+            OtherReason ->
+                "other"
+
+            IsolationReasonNotApplicable ->
+                "n-a"
+
+
+encodeHCContact : HCContact -> List ( String, Value )
+encodeHCContact =
+    encodeAcuteIllnessMeasurement encodeHCContactValue
+
+
+encodeHCContactValue : HCContactValue -> List ( String, Value )
+encodeHCContactValue value =
+    [ ( "hc_contact", encodeEverySet encodeHCContactSign value.signs )
+    , ( "hc_recommendation", encodeEverySet encodeHCRecomendation value.recomendations )
+    , ( "hc_response_time", encodeEverySet encodeResponsePeriod value.responsePeriod )
+    , ( "ambulance_arrival_time", encodeEverySet encodeResponsePeriod value.ambulanceArrivalPeriod )
+    ]
+
+
+encodeHCContactSign : HCContactSign -> Value
+encodeHCContactSign sign =
+    string <|
+        case sign of
+            ContactedHealthCenter ->
+                "contact-hc"
+
+            NoHCContactSigns ->
+                "none"
+
+
+encodeHCRecomendation : HCRecomendation -> Value
+encodeHCRecomendation recomendation =
+    string <|
+        case recomendation of
+            SendAmbulance ->
+                "send-ambulance"
+
+            HomeIsolation ->
+                "home-isolation"
+
+            ComeToHealthCenter ->
+                "come-to-hc"
+
+            ChwMonitoring ->
+                "chw-monitoring"
+
+            HCRecomendationNotApplicable ->
+                "n-a"
+
+
+encodeResponsePeriod : ResponsePeriod -> Value
+encodeResponsePeriod period =
+    string <|
+        case period of
+            LessThan30Min ->
+                "less-than-30m"
+
+            Between30min1Hour ->
+                "30m-1h"
+
+            Between1Hour2Hour ->
+                "1h-2h"
+
+            Between2Hour1Day ->
+                "2h-1d"
+
+            ResponsePeriodNotApplicable ->
+                "n-a"

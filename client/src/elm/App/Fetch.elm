@@ -5,6 +5,10 @@ import App.Utils exposing (getLoggedInData)
 import Backend.Fetch
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
+import Pages.AcuteIllnessActivity.Fetch
+import Pages.AcuteIllnessEncounter.Fetch
+import Pages.AcuteIllnessParticipant.Fetch
+import Pages.AcuteIllnessProgressReport.Fetch
 import Pages.Clinical.Fetch
 import Pages.ClinicalProgressReport.Fetch
 import Pages.Clinics.Fetch
@@ -121,6 +125,15 @@ fetch model =
                     )
                 |> Maybe.withDefault []
 
+        UserPage (AcuteIllnessParticipantPage personId) ->
+            getLoggedInData model
+                |> Maybe.map
+                    (\( _, loggedIn ) ->
+                        Pages.AcuteIllnessParticipant.Fetch.fetch personId model.indexedDb
+                            |> List.map MsgIndexedDb
+                    )
+                |> Maybe.withDefault []
+
         UserPage (IndividualEncounterParticipantsPage encounterType) ->
             getLoggedInData model
                 |> Maybe.map
@@ -158,12 +171,24 @@ fetch model =
             Pages.NutritionEncounter.Fetch.fetch id model.indexedDb
                 |> List.map MsgIndexedDb
 
-        UserPage (NutritionActivityPage nutritionEncounterId _) ->
-            Pages.NutritionActivity.Fetch.fetch nutritionEncounterId model.indexedDb
+        UserPage (NutritionActivityPage id _) ->
+            Pages.NutritionActivity.Fetch.fetch id model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (AcuteIllnessEncounterPage id) ->
+            Pages.AcuteIllnessEncounter.Fetch.fetch id model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (AcuteIllnessActivityPage id _) ->
+            Pages.AcuteIllnessActivity.Fetch.fetch id model.indexedDb
                 |> List.map MsgIndexedDb
 
         UserPage (NutritionProgressReportPage nutritionEncounterId) ->
             Pages.NutritionProgressReport.Fetch.fetch nutritionEncounterId model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (AcuteIllnessProgressReportPage id) ->
+            Pages.AcuteIllnessProgressReport.Fetch.fetch id model.indexedDb
                 |> List.map MsgIndexedDb
 
 

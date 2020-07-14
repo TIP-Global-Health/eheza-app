@@ -1,4 +1,4 @@
-module Pages.NutritionActivity.Utils exposing (fromHeightValue, fromMuacValue, fromNutritionValue, fromWeightValue, heightFormWithDefault, ifEmpty, muacFormWithDefault, nutritionFormWithDefault, resolvePreviousIndividualValue, toHeightValue, toHeightValueWithDefault, toMuacValue, toMuacValueWithDefault, toNutritionValue, toNutritionValueWithDefault, toWeightValue, toWeightValueWithDefault, weightFormWithDefault)
+module Pages.NutritionActivity.Utils exposing (fromHeightValue, fromMuacValue, fromNutritionValue, fromWeightValue, heightFormWithDefault, muacFormWithDefault, nutritionFormWithDefault, resolvePreviousIndividualValue, toHeightValue, toHeightValueWithDefault, toMuacValue, toMuacValueWithDefault, toNutritionValue, toNutritionValueWithDefault, toWeightValue, toWeightValueWithDefault, weightFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), HeightInCm(..), MuacInCm(..), NutritionMeasurement, NutritionMeasurements, WeightInKg(..))
@@ -7,15 +7,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (or, unwrap)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
-
-
-ifEmpty : a -> EverySet a -> EverySet a
-ifEmpty value set =
-    if EverySet.isEmpty set then
-        EverySet.singleton value
-
-    else
-        set
+import Pages.Utils exposing (ifEverySetEmpty)
 
 
 resolvePreviousIndividualValue : AssembledData -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a )) -> (a -> b) -> Maybe ( NominalDate, b )
@@ -112,7 +104,7 @@ toNutritionValueWithDefault saved form =
 
 toNutritionValue : NutritionForm -> Maybe (EverySet ChildNutritionSign)
 toNutritionValue form =
-    Maybe.map (EverySet.fromList >> ifEmpty NormalChildNutrition) form.signs
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NormalChildNutrition) form.signs
 
 
 fromWeightValue : Maybe WeightInKg -> WeightForm

@@ -132,6 +132,10 @@ dbSync.version(10).stores({
 });
 
 dbSync.version(11).stores({
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
+});
+
+dbSync.version(12).stores({
   // Add `isSynced` and `uuid` indices so we would have an indication to when we
   // can delete local changes. Only after we download from the backend, we'd
   // want to delete the records.
@@ -179,7 +183,7 @@ dbSync.version(11).stores({
  *
  * @type {number}
  */
-const dbVersion = 10;
+const dbVersion = 12;
 
 /**
  * Return saved authorities.

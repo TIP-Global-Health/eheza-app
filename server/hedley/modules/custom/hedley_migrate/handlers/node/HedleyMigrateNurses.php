@@ -30,6 +30,7 @@ class HedleyMigrateNurses extends HedleyMigrateBase {
     'field_health_centers',
     'field_villages',
     'field_pin_code',
+    'created',
   ];
 
   /**

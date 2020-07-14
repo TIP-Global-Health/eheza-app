@@ -29,6 +29,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (calculateEDD)
+import Pages.Utils exposing (tasksBarId)
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
 

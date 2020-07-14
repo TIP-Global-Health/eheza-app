@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains \HedleyRestfulNutritionEncounters.
+ * Contains \HedleyRestfulIndividualEncounter.
  */
 
 /**
- * Class HedleyRestfulNutritionEncounters.
+ * Class HedleyRestfulIndividualEncounter.
  */
-class HedleyRestfulNutritionEncounters extends HedleyRestfulSyncBase {
+class HedleyRestfulIndividualEncounter extends HedleyRestfulSyncBase {
 
   /**
    * {@inheritdoc}

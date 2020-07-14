@@ -1,70 +1,8 @@
-module Backend.Endpoints exposing
-    ( NurseParams
-    , PersonParams
-    , PmtctParticipantParams(..)
-    , RelationshipParams
-    , SessionParams(..)
-    , attendanceEndpoint
-    , breastExamEndpoint
-    , childFbfEndpoint
-    , childMeasurementListEndpoint
-    , clinicEndpoint
-    , corePhysicalExamEndpoint
-    , counselingScheduleEndpoint
-    , counselingSessionEndpoint
-    , counselingTopicEndpoint
-    , dangerSignsEndpoint
-    , encodeIndividualEncounterParams
-    , encodeIndividualEncounterParticipantParams
-    , encodeNurseParams
-    , encodePersonParams
-    , encodePmtctParticipantParams
-    , encodeRelationshipParams
-    , encodeSessionParams
-    , familyPlanningEndpoint
-    , fbfEndpoint
-    , healthCenterEndpoint
-    , heightEndpoint
-    , individualEncounterParticipantEndpoint
-    , lactationEndpoint
-    , lastMenstrualPeriodEndpoint
-    , medicalHistoryEndpoint
-    , medicationEndpoint
-    , motherFbfEndpoint
-    , motherMeasurementListEndpoint
-    , muacEndpoint
-    , nurseEndpoint
-    , nutritionEncounterEndpoint
-    , nutritionEndpoint
-    , nutritionHeightEndpoint
-    , nutritionMeasurementsEndpoint
-    , nutritionMuacEndpoint
-    , nutritionNutritionEndpoint
-    , nutritionPhotoEndpoint
-    , nutritionWeightEndpoint
-    , obstetricHistoryEndpoint
-    , obstetricHistoryStep2Endpoint
-    , obstetricalExamEndpoint
-    , participantConsentEndpoint
-    , participantFormEndpoint
-    , personEndpoint
-    , photoEndpoint
-    , pmtctParticipantEndpoint
-    , prenatalEncounterEndpoint
-    , prenatalFamilyPlanningEndpoint
-    , prenatalMeasurementsEndpoint
-    , prenatalNutritionEndpoint
-    , prenatalPhotoEndpoint
-    , relationshipEndpoint
-    , resourceEndpoint
-    , sessionEndpoint
-    , socialHistoryEndpoint
-    , swEndpoint
-    , villageEndpoint
-    , vitalsEndpoint
-    , weightEndpoint
-    )
+module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), acuteFindingsEndpoint, acuteIllnessEncounterEndpoint, acuteIllnessMeasurementsEndpoint, acuteIllnessVitalsEndpoint, attendanceEndpoint, breastExamEndpoint, childFbfEndpoint, childMeasurementListEndpoint, clinicEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, dangerSignsEndpoint, encodeIndividualEncounterParams, encodeIndividualEncounterParticipantParams, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, exposureEndpoint, familyPlanningEndpoint, fbfEndpoint, hcContactEndpoint, healthCenterEndpoint, heightEndpoint, individualEncounterParticipantEndpoint, isolationEndpoint, lactationEndpoint, lastMenstrualPeriodEndpoint, malariaTestingEndpoint, medicalHistoryEndpoint, medicationDistributionEndpoint, medicationEndpoint, motherFbfEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEncounterEndpoint, nutritionEndpoint, nutritionHeightEndpoint, nutritionMeasurementsEndpoint, nutritionMuacEndpoint, nutritionNutritionEndpoint, nutritionPhotoEndpoint, nutritionWeightEndpoint, obstetricHistoryEndpoint, obstetricHistoryStep2Endpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalMeasurementsEndpoint, prenatalNutritionEndpoint, prenatalPhotoEndpoint, relationshipEndpoint, resourceEndpoint, sendToHCEndpoint, sessionEndpoint, socialHistoryEndpoint, swEndpoint, symptomsGIEndpoint, symptomsGeneralEndpoint, symptomsRespiratoryEndpoint, travelHistoryEndpoint, treatmentReviewEndpoint, villageEndpoint, vitalsEndpoint, weightEndpoint)
 
+import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
@@ -318,6 +256,11 @@ nutritionMeasurementsEndpoint =
     swEndpoint "nodes/nutrition-measurements" decodeNutritionMeasurements
 
 
+acuteIllnessMeasurementsEndpoint : ReadOnlyEndPoint Error AcuteIllnessEncounterId AcuteIllnessMeasurements ()
+acuteIllnessMeasurementsEndpoint =
+    swEndpoint "nodes/acute-illness-measurements" decodeAcuteIllnessMeasurements
+
+
 {-| Type-safe params ... how nice!
 -}
 type SessionParams
@@ -383,6 +326,13 @@ nutritionEncounterEndpoint : ReadWriteEndPoint Error NutritionEncounterId Nutrit
 nutritionEncounterEndpoint =
     swEndpoint "nodes/nutrition_encounter" decodeNutritionEncounter
         |> withValueEncoder (object << encodeNutritionEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
+
+
+acuteIllnessEncounterEndpoint : ReadWriteEndPoint Error AcuteIllnessEncounterId AcuteIllnessEncounter AcuteIllnessEncounter (Maybe IndividualEncounterParticipantId)
+acuteIllnessEncounterEndpoint =
+    swEndpoint "nodes/acute_illness_encounter" decodeAcuteIllnessEncounter
+        |> withValueEncoder (object << encodeAcuteIllnessEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
@@ -525,3 +475,81 @@ nutritionWeightEndpoint : ReadWriteEndPoint Error NutritionWeightId NutritionWei
 nutritionWeightEndpoint =
     swEndpoint "nodes/nutrition_weight" decodeNutritionWeight
         |> withValueEncoder (object << encodeNutritionWeight)
+
+
+symptomsGeneralEndpoint : ReadWriteEndPoint Error SymptomsGeneralId SymptomsGeneral SymptomsGeneral ()
+symptomsGeneralEndpoint =
+    swEndpoint "nodes/symptoms_general" decodeSymptomsGeneral
+        |> withValueEncoder (object << encodeSymptomsGeneral)
+
+
+symptomsRespiratoryEndpoint : ReadWriteEndPoint Error SymptomsRespiratoryId SymptomsRespiratory SymptomsRespiratory ()
+symptomsRespiratoryEndpoint =
+    swEndpoint "nodes/symptoms_respiratory" decodeSymptomsRespiratory
+        |> withValueEncoder (object << encodeSymptomsRespiratory)
+
+
+symptomsGIEndpoint : ReadWriteEndPoint Error SymptomsGIId SymptomsGI SymptomsGI ()
+symptomsGIEndpoint =
+    swEndpoint "nodes/symptoms_gi" decodeSymptomsGI
+        |> withValueEncoder (object << encodeSymptomsGI)
+
+
+acuteIllnessVitalsEndpoint : ReadWriteEndPoint Error AcuteIllnessVitalsId AcuteIllnessVitals AcuteIllnessVitals ()
+acuteIllnessVitalsEndpoint =
+    swEndpoint "nodes/acute_illness_vitals" decodeAcuteIllnessVitals
+        |> withValueEncoder (object << encodeAcuteIllnessVitals)
+
+
+acuteFindingsEndpoint : ReadWriteEndPoint Error AcuteFindingsId AcuteFindings AcuteFindings ()
+acuteFindingsEndpoint =
+    swEndpoint "nodes/acute_findings" decodeAcuteFindings
+        |> withValueEncoder (object << encodeAcuteFindings)
+
+
+malariaTestingEndpoint : ReadWriteEndPoint Error MalariaTestingId MalariaTesting MalariaTesting ()
+malariaTestingEndpoint =
+    swEndpoint "nodes/malaria_testing" decodeMalariaTesting
+        |> withValueEncoder (object << encodeMalariaTesting)
+
+
+sendToHCEndpoint : ReadWriteEndPoint Error SendToHCId SendToHC SendToHC ()
+sendToHCEndpoint =
+    swEndpoint "nodes/send_to_hc" decodeSendToHC
+        |> withValueEncoder (object << encodeSendToHC)
+
+
+medicationDistributionEndpoint : ReadWriteEndPoint Error MedicationDistributionId MedicationDistribution MedicationDistribution ()
+medicationDistributionEndpoint =
+    swEndpoint "nodes/medication_distribution" decodeMedicationDistribution
+        |> withValueEncoder (object << encodeMedicationDistribution)
+
+
+travelHistoryEndpoint : ReadWriteEndPoint Error TravelHistoryId TravelHistory TravelHistory ()
+travelHistoryEndpoint =
+    swEndpoint "nodes/travel_history" decodeTravelHistory
+        |> withValueEncoder (object << encodeTravelHistory)
+
+
+treatmentReviewEndpoint : ReadWriteEndPoint Error TreatmentReviewId TreatmentReview TreatmentReview ()
+treatmentReviewEndpoint =
+    swEndpoint "nodes/treatment_history" decodeTreatmentReview
+        |> withValueEncoder (object << encodeTreatmentReview)
+
+
+exposureEndpoint : ReadWriteEndPoint Error ExposureId Exposure Exposure ()
+exposureEndpoint =
+    swEndpoint "nodes/exposure" decodeExposure
+        |> withValueEncoder (object << encodeExposure)
+
+
+isolationEndpoint : ReadWriteEndPoint Error IsolationId Isolation Isolation ()
+isolationEndpoint =
+    swEndpoint "nodes/isolation" decodeIsolation
+        |> withValueEncoder (object << encodeIsolation)
+
+
+hcContactEndpoint : ReadWriteEndPoint Error HCContactId HCContact HCContact ()
+hcContactEndpoint =
+    swEndpoint "nodes/hc_contact" decodeHCContact
+        |> withValueEncoder (object << encodeHCContact)

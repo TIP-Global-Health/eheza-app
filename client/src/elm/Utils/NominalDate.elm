@@ -106,7 +106,7 @@ renderAgeMonthsDaysParts language birthDate now =
 
             else
                 Just <|
-                    Debug.toString days
+                    String.fromInt days
                         ++ " "
                         ++ translate language Translate.DaysAbbrev
 
@@ -116,11 +116,11 @@ renderAgeMonthsDaysParts language birthDate now =
 
             else
                 Just <|
-                    Debug.toString months
+                    String.fromInt months
                         ++ " "
                         ++ translate language Translate.MonthAbbrev
     in
-    [ dayPart, monthPart ]
+    [ monthPart, dayPart ]
 
 
 renderAgeMonthsDaysAbbrev : Language -> NominalDate -> NominalDate -> String
@@ -160,7 +160,7 @@ renderDate language date =
     )
         ++ " "
         ++ month
-        ++ " "
+        ++ ", "
         ++ String.fromInt year
 
 

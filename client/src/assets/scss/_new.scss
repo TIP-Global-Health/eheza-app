@@ -1,3 +1,76 @@
+@mixin next-steps {
+
+  .instructions {
+    font-weight: bold;
+    margin-bottom: 30px;
+
+    span.medicine {
+      color: $color-light-blue;
+    }
+
+    span.date {
+      font-style: italic;
+    }
+
+    .header {
+      margin-bottom: 5px;
+      margin-top: 20px;
+
+      i {
+        display: inline-block;
+        vertical-align: middle;
+
+        &.icon-phone {
+          background: url(#{$img-path}icon-phone.svg) center center no-repeat;
+          background-size: 30px 30px;
+          height: 30px;
+          width: 50px;
+        }
+
+        &.icon-patient-in-bed {
+          background: url(#{$img-path}icon-patient-in-bed.svg) center center no-repeat;
+          background-size: 30px 30px;
+          height: 30px;
+          width: 52px;
+        }
+
+        &.icon-forms {
+          background: url(#{$img-path}icon-forms-blue.svg) center center no-repeat;
+          background-size: 45px 50px;
+          height: 35px;
+          width: 50px;
+        }
+
+        &.icon-shuttle {
+          background: url(#{$img-path}icon-shuttle.svg) center center no-repeat;
+          background-size: 32px 50px;
+          height: 19px;
+          width: 50px;
+        }
+
+        &.icon-oral-solution {
+          background: url(#{$img-path}icon-oral-solution.svg) center center no-repeat;
+          background-size: 26px 32px;
+          height: 32px;
+          margin-right: 22px;
+          width: 32px;
+        }
+
+        &.icon-pills {
+          background: url(#{$img-path}icon-pills.svg) center center no-repeat;
+          background-size: 36px 50px;
+          height: 36px;
+          width: 50px;
+        }
+      }
+    }
+
+    .prescription {
+      margin-left: 54px;
+    }
+  }
+}
+
 // We design for a minimum width of 800px.
 html,
 body {
@@ -439,10 +512,8 @@ div.page-activity {
 }
 
 // Common for Prenatal Encounter and Prenatal Activity pages
-div.page-prenatal-activity,
-div.page-nutrition-activity,
-div.page-prenatal-encounter,
-div.page-nutrition-encounter,
+div.page-encounter,
+div.page-activity,
 div.page-pregnancy-outcome {
     display: flex;
     flex-direction: column;
@@ -455,6 +526,10 @@ div.page-pregnancy-outcome {
       .label {
         font-weight: bold;
         padding-right: 10px;
+
+        &.upper {
+          text-transform: uppercase;
+        }
       }
     }
 
@@ -487,8 +562,23 @@ div.page-pregnancy-outcome {
 
 }
 
-div.page-nutrition-activity,
-div.page-prenatal-activity {
+// Common for Encounter pages
+div.page-encounter {
+
+    .ui.full.segment {
+
+      .full.content {
+
+        .card .content p {
+          text-align: center;
+          white-space: unset;
+        }
+      }
+    }
+}
+
+//Common for Activity pages
+div.page-activity {
 
     .ui.task.segment {
 
@@ -537,17 +627,11 @@ div.page-prenatal-activity {
 }
 
 // Prenatal Encounter and Nutrition Encounter pages
-div.page-nutrition-encounter,
-div.page-prenatal-encounter {
+div.page-encounter.nutrition,
+div.page-encounter.prenatal,
+div.page-encounter.acute-illness {
 
     .ui.full.segment {
-
-      .full.content {
-
-        .card .content p {
-          white-space: unset;
-        }
-      }
 
       .reports-wrapper {
 
@@ -575,9 +659,233 @@ div.page-prenatal-encounter {
     }
 }
 
+// Acute Illness pages
+div.page-encounter.acute-illness,
+div.page-activity.acute-illness {
+
+    .item .content.person-details {
+      padding-top: 0 !important;
+
+      h2 {
+        margin-bottom: 5px;
+      }
+
+      .age-wrapper {
+        margin-bottom: 5px;
+      }
+
+      .diagnosis-wrapper {
+
+        .label {
+          float: left;
+          width: 24%;
+        }
+
+        .diagnosis {
+          float: left;
+          width: 75%;
+        }
+
+        &.covid-19 {
+
+          .label {
+            width: 26%;
+          }
+
+          .diagnosis {
+            width: 73%;
+          }
+        }
+      }
+    }
+}
+
+
+// Acute Illness Encounter page
+div.page-encounter.acute-illness {
+
+    .ui.full.segment {
+
+      .full.content {
+        min-height: 430px;
+      }
+    }
+}
+
+// Acute Illness Activity page
+div.page-activity.acute-illness {
+
+  .ui.full.segment {
+
+    .full.content {
+      min-height: 210px;
+    }
+
+    .symptoms-form.gi .symptoms {
+      margin-bottom: 30px;
+    }
+
+    .ui.form {
+      min-height: 210px;
+    }
+
+    .ui.form.medication-distribution,
+    .ui.form.send-to-hc {
+
+      h2 {
+        text-transform: uppercase;
+      }
+
+      @include next-steps;
+    }
+
+    .label {
+      margin-bottom: 5px;
+    }
+
+    .helper {
+      font-style: italic;
+      margin-bottom: 20px;
+    }
+
+    .question-helper {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .form-input.period {
+      background: $color-white;
+      border: 2px solid $color-light-gray;
+      margin-bottom: 0;
+      margin-top: -10px;
+      padding: 5px;
+      width: 100%;
+    }
+
+    .form-input.measurement {
+      margin-bottom: 10px;
+
+      .unit {
+        float: left;
+        font-weight: 700;
+        margin-left: 20px;
+        margin-top: 10px;
+        width: 35%;
+      }
+
+      input {
+        background-color: $color-white;
+        border: 2px solid $color-gray-border;
+        float: left;
+        width: 60%;
+      }
+
+      &.disabled input{
+        pointer-events: none;
+      }
+    }
+
+    .form-input.yes-no {
+      margin-left: 25px;
+      padding-bottom: 15px;
+
+      label {
+        font-size: 25px;
+        margin-left: 10px;
+      }
+
+      label:before {
+        background-color: transparent;
+        border: 2px solid $color-gray-border;
+        border-radius: 13px;
+        content: " ";
+        display: inline-block;
+        height: 26px;
+        margin-right: 10px;
+        position: relative;
+        top: 5px;
+        width: 26px;
+      }
+
+      input[type=radio] {
+        display: none;
+      }
+
+      input[type=radio]:checked + label:after {
+        background: $color-text;
+        border-radius: 7px;
+        content: " ";
+        display: block;
+        height: 14px;
+        left: 30px;
+        position: absolute;
+        top: 25px;
+        width: 14px;
+      }
+
+      &.derived {
+        margin-left: 70px;
+      }
+    }
+
+    .form-input.rapid-test-result {
+      background: $color-white;
+      border: 2px solid $color-light-gray;
+      color: $color-text;
+      padding: 5px;
+      width: 60%;
+    }
+
+    .checkbox-select-input {
+      padding-bottom: 15px;
+
+      .ui.checkbox.activity {
+        margin-bottom: 10px;
+
+        label {
+          font-size: 24px;
+
+          span {
+            margin: 7px;
+
+            &.strong {
+              font-weight: 600;
+            }
+          }
+
+          &:before {
+            height: 24px;
+            width: 24px;
+          }
+        }
+      }
+    }
+
+    .previous-value {
+      display: inline-block;
+      font-size: 18px;
+      width: 100%;
+    }
+
+    .separator {
+      margin: 30px 0;
+      width: 100%;
+    }
+
+    .days-present {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .checkbox.activity {
+      margin-bottom: 12px;
+    }
+  }
+}
+
 // Prenatal Activity page
-div.page-prenatal-activity,
-div.page-nutrition-activity {
+div.page-activity.prenatal,
+div.page-activity.nutrition {
 
     .ui.full.segment {
 
@@ -716,8 +1024,16 @@ div.page-nutrition-activity {
         .ui.checkbox.activity {
           margin-bottom: 10px;
 
-          label {
+          .label {
             font-size: 24px;
+
+            span {
+              margin: 7px;
+
+              &.strong {
+                font-weight: 600;
+              }
+            }
 
             &:before {
               height: 24px;
@@ -1085,7 +1401,9 @@ div.page-clinical-progress-report {
       }
     }
 
-    .risk-factors, .medical-diagnosis, .obstetric-diagnosis {
+    .risk-factors,
+    .medical-diagnosis,
+    .obstetric-diagnosis {
       background: $color-white;
       margin-bottom: 20px;
 
@@ -1407,7 +1725,7 @@ div.page-encounter-types {
     }
 }
 
-div.page-prenatal-participants {
+div.page-participants {
 
   div.search-wrapper {
       flex: 1 1 auto;
@@ -1433,7 +1751,9 @@ div.page-prenatal-participants {
   }
 }
 
-div.page-prenatal-participant {
+div.page-participant.acute-illness,
+div.page-participant.nutrition,
+div.page-participant.prenatal {
     padding-bottom: 35px;
 
     p {
@@ -1479,4 +1799,160 @@ div.page-prenatal-participant {
         transform: rotate(180deg);
       }
     }
+}
+
+div.page-report.acute-illness {
+  background: $color-light-gray;
+  height: 100%;
+  padding: 20px;
+
+  .ui.report.unstackable.items {
+
+    .report-header {
+      background: $color-white;
+      border-top: 9px solid $color-primary;
+      color: $color-text;
+      padding: 20px 20px 0 25px;
+
+      .icon-back {
+        width: 34px;
+        height: 27px;
+        display: block;
+        background: url(#{$img-path}icon-back-dark.svg);
+        position: absolute;
+        background-size: 34px 27px;
+      }
+
+      .ui.report.header {
+        font-size: 30px;
+      }
+
+      .date {
+        font-size: 22px;
+        text-align: center;
+      }
+    }
+
+    .item.person-details {
+      background: $color-white;
+      margin-top: 0;
+      padding: 30px;
+
+      .content {
+
+         h2 {
+           font-size: 27px;
+           font-weight: bold;
+         }
+
+         p {
+           color: $color-text;
+           font-size: 20px;
+           margin-bottom: 0;
+         }
+      }
+    }
+
+    div.pane {
+      background: $color-white;
+      margin-bottom: 20px;
+
+      .pane-heading {
+        color: $color-white;
+        font-size: 22px;
+        font-weight: bold;
+        padding: 10px 15px;
+        text-transform: uppercase;
+
+        &.blue {
+          background: $color-primary;
+        }
+      }
+
+      .pane-content {
+        background: $color-white;
+        font-size: 22px;
+        font-weight: bold;
+        line-height: 32px;
+        padding: 20px 0 20px 40px;
+        text-transform: uppercase;
+      }
+    }
+
+    div.pane.assessment .pane-content {
+      color: $color-red-alert;
+    }
+
+    div.pane.symptoms .symptoms-table .symptoms-table-row {
+      display: grid;
+      grid-gap: 20px;
+      grid-template-columns: 15% auto;
+    }
+
+    div.pane.symptoms .symptoms-table .symptoms-table-row .date {
+      color: $color-text;
+      font-weight: 600;
+      margin: auto 0 auto auto;
+    }
+
+    div.pane.symptoms .symptoms-table .symptoms-table-row ul {
+      display: inline-block;
+      list-style-type: none;
+      margin: 5px 0;
+      padding: 0;
+    }
+
+    div.pane.symptoms .symptoms-table .symptoms-table-row ul li {
+      border-radius: 10px;
+      color: $color-white;
+      float: left;
+      font-size: 16px;
+      font-weight: bold;
+      margin: 3px 5px;
+      padding: 0 10px;
+      text-transform: uppercase;
+
+      &.general {
+        background: $color-symptom-general;
+      }
+
+      &.respiratory {
+        background: $color-symptom-respiratory;
+      }
+
+      &.gi {
+        background: $color-symptom-gi;
+      }
+    }
+
+    div.pane.physical-exam .ui.table {
+      color: $color-text;
+      margin: 0;
+      padding: 10px;
+      text-align: center;
+    }
+
+    div.pane.physical-exam .ui.table thead th {
+      background-color: $color-white;
+      color: $color-text;
+    }
+
+    div.pane.physical-exam .ui.table tbody td {
+      font-weight: 600;
+
+      &.alert {
+        color: $color-red-alert;
+      }
+    }
+
+    div.pane.actions-taken {
+      @include next-steps;
+    }
+
+    div.pane.actions-taken .instructions {
+      color: $color-text;
+      padding: 20px;
+    }
+  }
+
 }

@@ -240,7 +240,7 @@ viewFoundMother language currentDate isChw ( motherId, mother ) ( sessionId, ses
             getChildren motherId session.offlineSession
                 |> List.indexedMap
                     (\index ( _, child ) ->
-                        text <| translate language Translate.Baby ++ " " ++ Debug.toString (index + 1) ++ ": " ++ child.name
+                        text <| translate language Translate.Baby ++ " " ++ String.fromInt (index + 1) ++ ": " ++ child.name
                     )
                 |> List.intersperse break
 
@@ -484,7 +484,7 @@ viewFamilyLinks config language participantId ( sessionId, session ) =
                     [ span [ class "icon-baby" ] []
                     , span
                         [ class "count" ]
-                        [ text <| Debug.toString (index + 1) ]
+                        [ text <| String.fromInt (index + 1) ]
                     ]
                 ]
 

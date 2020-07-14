@@ -31,6 +31,9 @@ var nodesUuid = '78cf21d1-b3f4-496a-b312-d8ae73041f09';
 // General entities), or SyncManager.Model.BackendAuthorityEntity (for Authority
 // entities).
 var tableForType = {
+    acute_findings: 'shards',
+    acute_illness_encounter: 'shards',
+    acute_illness_vitals: 'shards',
     attendance: 'shards',
     breast_exam: 'shards',
     catchment_area: 'nodes',
@@ -41,14 +44,19 @@ var tableForType = {
     counseling_topic: 'nodes',
     core_physical_exam: 'shards',
     danger_signs: 'shards',
+    exposure: 'shards',
     family_planning: 'shards',
+    hc_contact: 'shards',
     health_center: 'nodes',
     height: 'shards',
     individual_participant: 'shards',
+    isolation: 'shards',
     lactation: 'shards',
     last_menstrual_period: 'shards',
+    malaria_testing: 'shards',
     medical_history: 'shards',
     medication: 'shards',
+    medication_distribution: 'shards',
     mother_fbf: 'shards',
     muac: 'shards',
     nurse: 'nodes',
@@ -73,9 +81,15 @@ var tableForType = {
     prenatal_encounter: 'shards',
     relationship: 'shards',
     resource: 'shards',
+    send_to_hc: 'shards',
     session: 'shards',
     social_history: 'shards',
     syncmetadata: 'syncMetadata',
+    symptoms_general: 'shards',
+    symptoms_gi: 'shards',
+    symptoms_respiratory: 'shards',
+    travel_history: 'shards',
+    treatment_history: 'shards',
     village: 'nodes',
     vitals: 'shards',
     weight: 'shards'
@@ -87,4 +101,3 @@ var tableForType = {
  * in a follow up.
  */
 function sendSyncData () {}
-

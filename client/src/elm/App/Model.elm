@@ -1,5 +1,6 @@
 module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, Model, Msg(..), MsgLoggedIn(..), StorageQuota, SubModelReturn, Version, emptyLoggedInModel, emptyModel)
 
+import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model
@@ -13,6 +14,8 @@ import Http
 import Json.Encode exposing (Value)
 import List.Zipper as Zipper
 import NutritionActivity.Model exposing (NutritionActivity)
+import Pages.AcuteIllnessActivity.Model
+import Pages.AcuteIllnessEncounter.Model
 import Pages.Clinics.Model
 import Pages.Device.Model
 import Pages.IndividualEncounterParticipants.Model
@@ -186,6 +189,8 @@ type alias LoggedInModel =
     , sessionPages : Dict SessionId Pages.Session.Model.Model
     , nutritionEncounterPages : Dict NutritionEncounterId Pages.NutritionEncounter.Model.Model
     , nutritionActivityPages : Dict ( NutritionEncounterId, NutritionActivity ) Pages.NutritionActivity.Model.Model
+    , acuteIllnessEncounterPages : Dict AcuteIllnessEncounterId Pages.AcuteIllnessEncounter.Model.Model
+    , acuteIllnessActivityPages : Dict ( AcuteIllnessEncounterId, AcuteIllnessActivity ) Pages.AcuteIllnessActivity.Model.Model
     }
 
 
@@ -204,6 +209,8 @@ emptyLoggedInModel nurse =
     , sessionPages = Dict.empty
     , nutritionEncounterPages = Dict.empty
     , nutritionActivityPages = Dict.empty
+    , acuteIllnessEncounterPages = Dict.empty
+    , acuteIllnessActivityPages = Dict.empty
     }
 
 
@@ -257,9 +264,11 @@ type MsgLoggedIn
     | MsgPageSession SessionId Pages.Session.Model.Msg
     | MsgPagePrenatalEncounter PrenatalEncounterId Pages.PrenatalEncounter.Model.Msg
     | MsgPageNutritionEncounter NutritionEncounterId Pages.NutritionEncounter.Model.Msg
+    | MsgPageAcuteIllnessEncounter AcuteIllnessEncounterId Pages.AcuteIllnessEncounter.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.PrenatalActivity.Model.Msg
     | MsgPageNutritionActivity NutritionEncounterId NutritionActivity Pages.NutritionActivity.Model.Msg
     | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
+    | MsgPageAcuteIllnessActivity AcuteIllnessEncounterId AcuteIllnessActivity Pages.AcuteIllnessActivity.Model.Msg
 
 
 type alias Flags =
