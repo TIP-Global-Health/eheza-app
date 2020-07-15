@@ -82,16 +82,24 @@ view model =
 -}
 flexPageWrapper : Model -> Html Msg -> Html Msg
 flexPageWrapper model html =
-    div [ class "page container" ]
-        [ viewLanguageSwitcherAndVersion model
+    let
+        syncManager =
+            if model.activePage == DevicePage then
+                [ Error.View.view model.language model.errors
+                , Html.map MsgSyncManager (SyncManager.View.view model.language model.configuration model.indexedDb model.syncManager)
+                ]
 
-        -- @todo: Move to sync page only.
-        , Error.View.view model.language model.errors
-        , Html.map MsgSyncManager (SyncManager.View.view model.language model.configuration model.indexedDb model.syncManager)
-        , div
-            [ class "page-content" ]
-            [ html ]
-        ]
+            else
+                []
+
+        content =
+            div
+                [ class "page-content" ]
+                [ html ]
+    in
+    div [ class "page container" ] <|
+        (viewLanguageSwitcherAndVersion model :: syncManager)
+            ++ [ content ]
 
 
 {-| Given some HTML, wrap it the old way.
