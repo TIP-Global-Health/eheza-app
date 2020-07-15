@@ -936,7 +936,7 @@ translationSet trans =
             case diagnosis of
                 DiagnosisCovid19 ->
                     { english = "Suspected COVID-19 case"
-                    , kinyarwanda = Just "Aracyekwaho indwara ya Covid-19"
+                    , kinyarwanda = Just "Aracyekwaho indwara ya COVID-19"
                     }
 
                 DiagnosisMalariaComplicated ->
@@ -1737,7 +1737,7 @@ translationSet trans =
             }
 
         ContactedHC ->
-            { english = "Contacted Health Center"
+            { english = "Contacted health center"
             , kinyarwanda = Nothing
             }
 
@@ -5088,8 +5088,8 @@ translationSet trans =
             }
 
         TraveledToCOVID19CountryQuestion ->
-            { english = "Have you traveled to any country or district in Rwanda known to have Covid-19 in the past 14 days"
-            , kinyarwanda = Just "Waba waragiye mu gihugu kirimo ubwandu bwa Covid 19 mu minsi 14 ishize"
+            { english = "Have you traveled to any country or district in Rwanda known to have COVID-19 in the past 14 days"
+            , kinyarwanda = Just "Waba waragiye mu gihugu kirimo ubwandu bwa COVID-19 mu minsi 14 ishize"
             }
 
         PriorTreatmentTask task ->
