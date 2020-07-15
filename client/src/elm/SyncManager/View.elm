@@ -29,6 +29,7 @@ import SyncManager.Model
         , SyncCycle(..)
         , SyncStatus(..)
         )
+import SyncManager.Utils exposing (getSyncedHealthCenters)
 import Translate exposing (Language, translate)
 import Url
 import Utils.Html exposing (spinner)
@@ -562,13 +563,7 @@ viewHealthCentersForSync language db model =
     let
         -- The Health centers that are synced.
         selectedHealthCentersUuid =
-            case model.revisionIdPerAuthorityZipper of
-                Just zipper ->
-                    Zipper.toList zipper
-                        |> List.map (\row -> row.uuid)
-
-                Nothing ->
-                    []
+            getSyncedHealthCenters model
     in
     case db.healthCenters of
         RemoteData.Success healthCenters ->

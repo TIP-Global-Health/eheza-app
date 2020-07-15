@@ -13,6 +13,7 @@ encodeRelationship data =
     , encodeRelatedToField data.relatedTo
     , encodeRelatedByField data.relatedBy
     , ( "shard", maybe encodeEntityUuid data.shard )
+    , ( "type", string "relationship" )
     ]
 
 

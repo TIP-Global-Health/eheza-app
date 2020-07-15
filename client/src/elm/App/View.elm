@@ -248,7 +248,14 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     ClinicsPage clinicId ->
-                        Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) healthCenterId clinicId loggedInModel.clinicsPage model.indexedDb
+                        Pages.Clinics.View.view model.language
+                            currentDate
+                            (Tuple.second loggedInModel.nurse)
+                            healthCenterId
+                            clinicId
+                            loggedInModel.clinicsPage
+                            model.indexedDb
+                            model.syncManager
                             |> Html.map (MsgLoggedIn << MsgPageClinics)
                             |> flexPageWrapper model
 

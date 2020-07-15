@@ -31,7 +31,9 @@ encodeNutritionHeight =
 
 encodeHeightValue : HeightInCm -> List ( String, Value )
 encodeHeightValue (HeightInCm height) =
-    [ ( "height", float height ) ]
+    [ ( "height", float height )
+    , ( "type", string "height" )
+    ]
 
 
 encodeMuac : Muac -> List ( String, Value )
@@ -46,7 +48,9 @@ encodeNutritionMuac =
 
 encodeMuacValue : MuacInCm -> List ( String, Value )
 encodeMuacValue (MuacInCm muac) =
-    [ ( "muac", float muac ) ]
+    [ ( "muac", float muac )
+    , ( "type", string "muac" )
+    ]
 
 
 encodeWeight : Weight -> List ( String, Value )
@@ -61,7 +65,9 @@ encodeNutritionWeight =
 
 encodeWeightValue : WeightInKg -> List ( String, Value )
 encodeWeightValue (WeightInKg weight) =
-    [ ( "weight", float weight ) ]
+    [ ( "weight", float weight )
+    , ( "type", string "weight" )
+    ]
 
 
 encodePhoto : Photo -> List ( String, Value )
@@ -69,19 +75,34 @@ encodePhoto =
     encodeGroupMeasurement encodePhotoUrl
 
 
+encodePhotoUrl : PhotoUrl -> List ( String, Value )
+encodePhotoUrl (PhotoUrl url) =
+    [ ( "photo", string url )
+    , ( "type", string "photo" )
+    ]
+
+
 encodeNutritionPhoto : NutritionPhoto -> List ( String, Value )
 encodeNutritionPhoto =
-    encodeNutritionMeasurement encodePhotoUrl
+    encodeNutritionMeasurement encodeNutritionPhotoUrl
+
+
+encodeNutritionPhotoUrl : PhotoUrl -> List ( String, Value )
+encodeNutritionPhotoUrl (PhotoUrl url) =
+    [ ( "photo", string url )
+    , ( "type", string "nutrition_photo" )
+    ]
 
 
 encodePrenatalPhoto : PrenatalPhoto -> List ( String, Value )
 encodePrenatalPhoto =
-    encodePrenatalMeasurement encodePhotoUrl
+    encodePrenatalMeasurement encodePrenatalPhotoUrl
 
 
-encodePhotoUrl : PhotoUrl -> List ( String, Value )
-encodePhotoUrl (PhotoUrl url) =
+encodePrenatalPhotoUrl : PhotoUrl -> List ( String, Value )
+encodePrenatalPhotoUrl (PhotoUrl url) =
     [ ( "photo", string url )
+    , ( "type", string "prenatal_photo" )
     ]
 
 
@@ -92,21 +113,28 @@ encodeNutrition =
 
 encodeNutritionValue : EverySet ChildNutritionSign -> List ( String, Value )
 encodeNutritionValue nutritions =
-    [ ( "nutrition_signs"
-      , encodeEverySet encodeNutritionSign nutritions
-      )
+    [ ( "nutrition_signs", encodeEverySet encodeNutritionSign nutritions )
+    , ( "type", string "nutrition" )
     ]
 
 
 encodeNutritionNutrition : NutritionNutrition -> List ( String, Value )
 encodeNutritionNutrition =
-    encodeNutritionMeasurement encodeNutritionValue
+    encodeNutritionMeasurement encodeNutritionNutritionValue
+
+
+encodeNutritionNutritionValue : EverySet ChildNutritionSign -> List ( String, Value )
+encodeNutritionNutritionValue nutritions =
+    [ ( "nutrition_signs", encodeEverySet encodeNutritionSign nutritions )
+    , ( "type", string "nutrition_nutrition" )
+    ]
 
 
 encodeParticipantConsentValue : ParticipantConsentValue -> List ( String, Value )
 encodeParticipantConsentValue consent =
     [ ( "language", encodeLanguage consent.language )
     , ( "participant_form", encodeEntityUuid consent.formId )
+    , ( "type", string "participant_consent" )
     ]
 
 
@@ -122,18 +150,17 @@ encodeCounselingSession =
 
 encodeCounselingSessionValue : ( CounselingTiming, EverySet CounselingTopicId ) -> List ( String, Value )
 encodeCounselingSessionValue ( timing, topics ) =
-    [ ( "topics"
-      , encodeEverySet encodeEntityUuid topics
-      )
-    , ( "timing"
-      , encodeCounselingTiming timing
-      )
+    [ ( "topics", encodeEverySet encodeEntityUuid topics )
+    , ( "timing", encodeCounselingTiming timing )
+    , ( "type", string "counseling_session" )
     ]
 
 
 encodeAttendanceValue : Bool -> List ( String, Value )
 encodeAttendanceValue attended =
-    [ ( "attended", bool attended ) ]
+    [ ( "attended", bool attended )
+    , ( "type", string "attendance" )
+    ]
 
 
 encodeAttendance : Attendance -> List ( String, Value )
@@ -143,9 +170,8 @@ encodeAttendance =
 
 encodeFamilyPlanningValue : EverySet FamilyPlanningSign -> List ( String, Value )
 encodeFamilyPlanningValue familyPlannings =
-    [ ( "family_planning_signs"
-      , encodeEverySet encodeFamilyPlanningSign familyPlannings
-      )
+    [ ( "family_planning_signs", encodeEverySet encodeFamilyPlanningSign familyPlannings )
+    , ( "type", string "family_planning" )
     ]
 
 
@@ -160,6 +186,7 @@ encodeLactationValue signs =
       , EverySet.toList signs
             |> list encodeLactationSign
       )
+    , ( "type", string "lactation" )
     ]
 
 
@@ -313,6 +340,7 @@ encodeBreastExamValue : BreastExamValue -> List ( String, Value )
 encodeBreastExamValue value =
     [ ( "breast", encodeEverySet encodeBreastExamSign value.exam )
     , ( "breast_self_exam", bool value.selfGuidance )
+    , ( "type", string "breast_eaxam" )
     ]
 
 
@@ -453,6 +481,7 @@ encodeCorePhysicalExamValue value =
     , ( "abdomen", encodeEverySet encodeAbdomenCPESign value.abdomen )
     , ( "hands", encodeEverySet encodeHandsCPESign value.hands )
     , ( "legs", encodeEverySet encodeLegsCPESign value.legs )
+    , ( "type", string "core_physical_exam" )
     ]
 
 
@@ -492,7 +521,9 @@ encodeDangerSign sign =
 
 encodeDangerSignsValue : EverySet DangerSign -> List ( String, Value )
 encodeDangerSignsValue value =
-    [ ( "danger_signs", encodeEverySet encodeDangerSign value ) ]
+    [ ( "danger_signs", encodeEverySet encodeDangerSign value )
+    , ( "type", string "danger_signs" )
+    ]
 
 
 encodeDangerSigns : DangerSigns -> List ( String, Value )
@@ -509,6 +540,7 @@ encodeLastMenstrualPeriodValue : LastMenstrualPeriodValue -> List ( String, Valu
 encodeLastMenstrualPeriodValue value =
     [ ( "last_menstrual_period", Gizra.NominalDate.encodeYYYYMMDD value.date )
     , ( "confident", bool value.confident )
+    , ( "type", string "last_menstrual_period" )
     ]
 
 
@@ -560,7 +592,9 @@ encodeMedicalHistory =
 
 encodeMedicalHistoryValue : EverySet MedicalHistorySign -> List ( String, Value )
 encodeMedicalHistoryValue value =
-    [ ( "medical_history", encodeEverySet encodeMedicalHistorySign value ) ]
+    [ ( "medical_history", encodeEverySet encodeMedicalHistorySign value )
+    , ( "type", string "medical_history" )
+    ]
 
 
 encodeMedicationSign : MedicationSign -> Value
@@ -591,6 +625,7 @@ encodeFbfValue : FbfValue -> List ( String, Value )
 encodeFbfValue value =
     [ ( "distributed_amount", float value.distributedAmount )
     , ( "distribution_notice", encodeDistributionNotice value.distributionNotice )
+    , ( "type", string "fbf" )
     ]
 
 
@@ -614,7 +649,9 @@ encodeDistributionNoticeAsString notice =
 
 encodeMedicationValue : EverySet MedicationSign -> List ( String, Value )
 encodeMedicationValue value =
-    [ ( "medication", encodeEverySet encodeMedicationSign value ) ]
+    [ ( "medication", encodeEverySet encodeMedicationSign value )
+    , ( "type", string "medication" )
+    ]
 
 
 encodeFetalPresentation : FetalPresentation -> Value
@@ -659,6 +696,7 @@ encodeObstetricalExamValue value =
     , ( "fetal_movement", bool value.fetalMovement )
     , ( "fetal_heart_rate", int value.fetalHeartRate )
     , ( "c_section_scar", encodeCSectionScar value.cSectionScar )
+    , ( "type", string "obstetrical_exam" )
     ]
 
 
@@ -681,6 +719,7 @@ encodeObstetricHistoryValue value =
     , ( "stillbirths_preterm", int value.stillbirthsPreTerm )
     , ( "abortions", int value.abortions )
     , ( "live_children", int value.liveChildren )
+    , ( "type", string "obstetric_history" )
     ]
 
 
@@ -799,6 +838,7 @@ encodeObstetricHistoryStep2Value value =
     , ( "obstetric_history", encodeEverySet encodeObstetricHistorySign value.obstetricHistory )
     , ( "previous_delivery", encodeEverySet encodePreviousDeliverySign value.previousDelivery )
     , ( "previous_delivery_period", encodeEverySet encodePreviousDeliveryPeriod value.previousDeliveryPeriod )
+    , ( "type", string "obstetric_history_step2" )
     ]
 
 
@@ -817,6 +857,7 @@ encodePrenatalNutritionValue value =
     [ ( "height", encodeHeightInCm value.height )
     , ( "weight", encodeWeightInKg value.weight )
     , ( "muac", encodeMuacInCm value.muac )
+    , ( "type", string "prenatal_nutrition" )
     ]
 
 
@@ -838,7 +879,9 @@ encodeResource =
 
 encodeResourceValue : EverySet ResourceSign -> List ( String, Value )
 encodeResourceValue value =
-    [ ( "resources", encodeEverySet encodeResourceSign value ) ]
+    [ ( "resources", encodeEverySet encodeResourceSign value )
+    , ( "type", string "resources" )
+    ]
 
 
 encodeSocialHistorySign : SocialHistorySign -> Value
@@ -885,6 +928,7 @@ encodeSocialHistoryValue : SocialHistoryValue -> List ( String, Value )
 encodeSocialHistoryValue value =
     [ ( "social_history", encodeEverySet encodeSocialHistorySign value.socialHistory )
     , ( "partner_hiv_testing", encodeSocialHistoryHivTestingResult value.hivTestingResult )
+    , ( "type", string "social_history" )
     ]
 
 
@@ -900,6 +944,7 @@ encodeVitalsValue value =
     , ( "heart_rate", int value.heartRate )
     , ( "respiratory_rate", int value.respiratoryRate )
     , ( "body_temperature", float value.bodyTemperature )
+    , ( "type", string "vitals" )
     ]
 
 
@@ -975,6 +1020,7 @@ encodeSymptomsGeneralValue signs =
     , ( "unable_to_drink_period", int unableToDrink )
     , ( "unable_to_eat_period", int unableToEat )
     , ( "yellow_eyes_period", int yellowEyes )
+    , ( "type", string "symptioms_general" )
     ]
 
 
@@ -1010,6 +1056,7 @@ encodeSymptomsRespiratoryValue signs =
     , ( "blood_in_sputum_period", int bloodInSputum )
     , ( "sore_throat_period", int soreThroat )
     , ( "stabbing_chest_pain_period", int stabbingChestPain )
+    , ( "type", string "symptioms_respiratory" )
     ]
 
 
@@ -1042,6 +1089,7 @@ encodeSymptomsGIValue value =
     , ( "vomiting_period", int vomiting )
     , ( "abdominal_pain_period", int abdominalPain )
     , ( "symptoms_gi_derived_signs", encodeEverySet encodeSymptomsGIDerivedSigns value.derivedSigns )
+    , ( "type", string "symptioms_gi" )
     ]
 
 
@@ -1065,6 +1113,7 @@ encodeAcuteIllnessVitalsValue : AcuteIllnessVitalsValue -> List ( String, Value 
 encodeAcuteIllnessVitalsValue value =
     [ ( "respiratory_rate", int value.respiratoryRate )
     , ( "body_temperature", float value.bodyTemperature )
+    , ( "type", string "acute_illness_vitals" )
     ]
 
 
@@ -1077,6 +1126,7 @@ encodeAcuteFindingsValue : AcuteFindingsValue -> List ( String, Value )
 encodeAcuteFindingsValue value =
     [ ( "findings_signs_general", encodeEverySet encodeAcuteFindingsGeneralSign value.signsGeneral )
     , ( "findings_signs_respiratory", encodeEverySet encodeAcuteFindingsRespiratorySign value.signsRespiratory )
+    , ( "type", string "acute_findings" )
     ]
 
 
@@ -1130,7 +1180,9 @@ encodeMalariaTesting =
 
 encodeMalariaTestingValue : MalariaRapidTestResult -> List ( String, Value )
 encodeMalariaTestingValue value =
-    [ ( "malaria_rapid_test", encodeMalariaRapidTestResult value ) ]
+    [ ( "malaria_rapid_test", encodeMalariaRapidTestResult value )
+    , ( "type", string "malaria_testing" )
+    ]
 
 
 encodeMalariaRapidTestResult : MalariaRapidTestResult -> Value
@@ -1164,7 +1216,9 @@ encodeSendToHC =
 
 encodeSendToHCValue : EverySet SendToHCSign -> List ( String, Value )
 encodeSendToHCValue value =
-    [ ( "send_to_hc", encodeEverySet encondeSendToHCSign value ) ]
+    [ ( "send_to_hc", encodeEverySet encondeSendToHCSign value )
+    , ( "type", string "send_to_hc" )
+    ]
 
 
 encondeSendToHCSign : SendToHCSign -> Value
@@ -1188,7 +1242,9 @@ encodeMedicationDistribution =
 
 encodeMedicationDistributionValue : EverySet MedicationDistributionSign -> List ( String, Value )
 encodeMedicationDistributionValue value =
-    [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value ) ]
+    [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value )
+    , ( "type", string "medication_distribution" )
+    ]
 
 
 encondeMedicationDistributionSign : MedicationDistributionSign -> Value
@@ -1221,7 +1277,9 @@ encodeTravelHistory =
 
 encodeTravelHistoryValue : EverySet TravelHistorySign -> List ( String, Value )
 encodeTravelHistoryValue value =
-    [ ( "travel_history", encodeEverySet encodeTravelHistorySign value ) ]
+    [ ( "travel_history", encodeEverySet encodeTravelHistorySign value )
+    , ( "type", string "travel_history" )
+    ]
 
 
 encodeTravelHistorySign : TravelHistorySign -> Value
@@ -1242,7 +1300,9 @@ encodeTreatmentReview =
 
 encodeTreatmentReviewValue : EverySet TreatmentReviewSign -> List ( String, Value )
 encodeTreatmentReviewValue value =
-    [ ( "treatment_history", encodeEverySet encodeTreatmentReviewSign value ) ]
+    [ ( "treatment_history", encodeEverySet encodeTreatmentReviewSign value )
+    , ( "type", string "treatment_history" )
+    ]
 
 
 encodeTreatmentReviewSign : TreatmentReviewSign -> Value
@@ -1278,7 +1338,9 @@ encodeExposure =
 
 encodeExposureValue : EverySet ExposureSign -> List ( String, Value )
 encodeExposureValue value =
-    [ ( "exposure", encodeEverySet encodeExposureSign value ) ]
+    [ ( "exposure", encodeEverySet encodeExposureSign value )
+    , ( "type", string "exposure" )
+    ]
 
 
 encodeExposureSign : ExposureSign -> Value
@@ -1304,6 +1366,7 @@ encodeIsolationValue : IsolationValue -> List ( String, Value )
 encodeIsolationValue value =
     [ ( "isolation", encodeEverySet encodeIsolationSign value.signs )
     , ( "reason_for_not_isolating", encodeEverySet encodeReasonForNotIsolating value.reasonsForNotIsolating )
+    , ( "type", string "isolation" )
     ]
 
 
@@ -1355,6 +1418,7 @@ encodeHCContactValue value =
     , ( "hc_recommendation", encodeEverySet encodeHCRecomendation value.recomendations )
     , ( "hc_response_time", encodeEverySet encodeResponsePeriod value.responsePeriod )
     , ( "ambulance_arrival_time", encodeEverySet encodeResponsePeriod value.ambulanceArrivalPeriod )
+    , ( "type", string "hc_contact" )
     ]
 
 

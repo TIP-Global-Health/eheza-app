@@ -9,6 +9,8 @@ encodeClinic : Clinic -> List ( String, Value )
 encodeClinic clinic =
     [ ( "label", string clinic.name )
     , ( "health_center", encodeEntityUuid clinic.healthCenterId )
+    , ( "group_type", encodeClinicType clinic.clinicType )
+    , ( "type", string "clinic" )
     ]
 
 

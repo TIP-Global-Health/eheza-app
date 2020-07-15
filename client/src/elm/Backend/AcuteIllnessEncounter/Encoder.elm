@@ -19,4 +19,5 @@ encodeAcuteIllnessEncounter session =
       )
     , ( "individual_participant", encodeEntityUuid session.participant )
     , ( "shard", maybe encodeEntityUuid session.shard )
+    , ( "type", string "acute_illness_encounter" )
     ]

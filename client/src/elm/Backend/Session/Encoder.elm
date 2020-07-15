@@ -20,4 +20,5 @@ encodeSession session =
       )
     , ( "clinic", encodeEntityUuid session.clinicId )
     , ( "clinic_type", encodeClinicType session.clinicType )
+    , ( "type", string "session" )
     ]

@@ -8,6 +8,7 @@ module SyncManager.Utils exposing
     , getDataToSendGeneral
     , getPhotoFromBackendAuthorityEntity
     , getSyncSpeedForSubscriptions
+    , getSyncedHealthCenters
     )
 
 import Backend.Clinic.Encoder
@@ -673,3 +674,10 @@ getDataToSendAuthority entity accum =
         |> Json.Encode.encode 0
     )
         :: accum
+
+
+getSyncedHealthCenters : Model -> List String
+getSyncedHealthCenters model =
+    model.revisionIdPerAuthorityZipper
+        |> Maybe.map (Zipper.toList >> List.map .uuid)
+        |> Maybe.withDefault []

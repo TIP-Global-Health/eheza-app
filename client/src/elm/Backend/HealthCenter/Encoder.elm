@@ -9,8 +9,6 @@ encodeHealthCenter : HealthCenter -> List ( String, Value )
 encodeHealthCenter healthCenter =
     [ ( "catchment_area", encodeEntityUuid healthCenter.catchmentAreaId )
     , ( "label", string healthCenter.name )
-
-    -- @todo: Is there a problem with adding type?
     , ( "type", string "health_center" )
     ]
 
