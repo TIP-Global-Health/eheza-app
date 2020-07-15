@@ -223,23 +223,26 @@
       }
 
       .content {
-        overflow-x: scroll;
+        overflow-x: hidden;
         overflow-y: visible;
         width: 100%;
 
         .very.basic.table {
           width: 100%;
-          margin-left: 407px;
+
+          th, td {
+            border: 0 none;
+            line-height: 24px;
+            width: 90px;
+          }
 
           th {
-            font-size: 16px;
-            line-height: 24px;
-            border: 0 none;
             border-bottom: 1px solid $color-text;
             color: $color-text;
-            text-transform: uppercase;
+            font-size: 16px;
             padding: 0 3px;
             text-align: center;
+            text-transform: uppercase;
 
             &.name {
               height: 25px;
@@ -249,8 +252,6 @@
 
           td {
             font-size: 20px;
-            line-height: 24px;
-            border: 0 none;
             padding: 8px 10px;
 
             &.name {
@@ -260,12 +261,11 @@
             }
 
             span {
+              border-radius: 6px;
+              color: $color-white;
+              display: block;
               padding: 2px 5px;
               text-align: center;
-              display: block;
-              border-radius: 6px;
-              color: white;
-              width: 70px;
             }
 
             &.neutral {
@@ -300,10 +300,10 @@
           // Create the table's vertical scroll.
           th.name,
           td.name {
-            position: absolute;
+            background-color: $color-white;
             left: 25px;
-            width: 410px;
-            background-color: white;
+            position: absolute;
+            width: 407px;
             word-break: break-all;
           }
         }

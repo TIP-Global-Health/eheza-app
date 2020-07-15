@@ -119,29 +119,55 @@ viewStatsPage language currentDate stats model healthCenterId db =
 viewCaseManagementPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
 viewCaseManagementPage language currentDate stats model =
     let
+        currentMonth =
+            Date.month currentDate
+                |> Date.monthToNumber
+
+        withinThreePreviousMonths monthNumber =
+            case currentMonth of
+                1 ->
+                    monthNumber > 9
+
+                2 ->
+                    monthNumber > 10 || monthNumber == 1
+
+                3 ->
+                    monthNumber == 12 || monthNumber == 1 || monthNumber == 2
+
+                _ ->
+                    monthNumber < currentMonth && monthNumber >= (currentMonth - 3)
+
+        filterForCaseManagementTableFunc caseNutrition =
+            caseNutrition
+                |> Dict.toList
+                |> List.filter (Tuple.first >> withinThreePreviousMonths)
+                |> List.sortBy Tuple.first
+                |> List.reverse
+
+        -- We want data for 3 previous months, where's there's at least
+        -- one entry is non-normal or missed.
         tableData =
             List.foldl
                 (\person accum ->
                     case model.currentCaseManagementFilter of
                         Stunting ->
-                            { name = person.name, nutrition = person.nutrition.stunting } :: accum
+                            { name = person.name, nutrition = filterForCaseManagementTableFunc person.nutrition.stunting } :: accum
 
                         Underweight ->
-                            { name = person.name, nutrition = person.nutrition.underweight } :: accum
+                            { name = person.name, nutrition = filterForCaseManagementTableFunc person.nutrition.underweight } :: accum
 
                         Wasting ->
-                            { name = person.name, nutrition = person.nutrition.wasting } :: accum
+                            { name = person.name, nutrition = filterForCaseManagementTableFunc person.nutrition.wasting } :: accum
 
                         MUAC ->
-                            { name = person.name, nutrition = person.nutrition.muac } :: accum
+                            { name = person.name, nutrition = filterForCaseManagementTableFunc person.nutrition.muac } :: accum
                 )
                 []
                 stats.caseManagement
-                -- Filter people, so that participant has at least one occurance of Moderate or Sever nutrition.
                 |> List.filter
-                    (\item ->
-                        Dict.values item.nutrition
-                            |> List.any (.class >> (\value -> value == Backend.Dashboard.Model.Severe || value == Backend.Dashboard.Model.Moderate))
+                    (.nutrition
+                        >> List.all (Tuple.second >> .class >> (==) Backend.Dashboard.Model.Good)
+                        >> not
                     )
                 -- List table by person's name but turn it to lowercase for the comparision so it's truly sorted, this
                 -- will not effect the display.
@@ -163,30 +189,21 @@ viewCaseManagementPage language currentDate stats model =
         ]
 
 
-viewCaseManagementTable : Language -> NominalDate -> Model -> List { name : String, nutrition : Dict Int NutritionValue } -> Html Msg
+viewCaseManagementTable : Language -> NominalDate -> Model -> List { name : String, nutrition : List ( Int, NutritionValue ) } -> Html Msg
 viewCaseManagementTable language currentDate model tableData =
     let
-        currentMonth =
-            Date.month currentDate
-                |> Date.monthToNumber
-
-        currentYearYY =
-            yearYYNumber currentDate
-
-        previousYearYY =
-            currentYearYY - 1
-
-        ( thisYear, lastYear ) =
-            List.Extra.splitAt currentMonth allMonths
-
-        lastYearLabels =
-            List.map (\month -> Translate.ResolveMonthYY month previousYearYY True) lastYear
-
-        thisYearLabels =
-            List.map (\month -> Translate.ResolveMonthYY month currentYearYY True) thisYear
-
         monthLabels =
-            lastYearLabels ++ thisYearLabels
+            tableData
+                |> List.head
+                |> Maybe.map
+                    (.nutrition
+                        >> List.map
+                            (Tuple.first
+                                >> Date.numberToMonth
+                                >> Translate.ResolveMonth True
+                            )
+                    )
+                |> Maybe.withDefault []
     in
     table [ class "ui very basic collapsing celled table" ]
         [ thead []
@@ -196,25 +213,15 @@ viewCaseManagementTable language currentDate model tableData =
                 )
             ]
         , tbody []
-            (List.map (viewCaseManagementTableRow currentMonth) tableData)
+            (List.map viewCaseManagementTableRow tableData)
         ]
 
 
-viewCaseManagementTableRow : Int -> { name : String, nutrition : Dict Int NutritionValue } -> Html Msg
-viewCaseManagementTableRow currentMonth rowData =
-    let
-        ( thisYear, lastYear ) =
-            rowData.nutrition
-                |> Dict.toList
-                |> List.sortBy Tuple.first
-                |> List.Extra.splitAt currentMonth
-
-        rowList =
-            lastYear ++ thisYear
-    in
+viewCaseManagementTableRow : { name : String, nutrition : List ( Int, NutritionValue ) } -> Html Msg
+viewCaseManagementTableRow rowData =
     tr []
         (td [ class "name" ] [ text rowData.name ]
-            :: List.map viewMonthCell rowList
+            :: List.map viewMonthCell rowData.nutrition
         )
 
 

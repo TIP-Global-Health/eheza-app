@@ -293,7 +293,7 @@ viewPatientProgressPane language currentDate data =
                                 [ text <|
                                     (Date.day eddDate |> Debug.toString)
                                         ++ " "
-                                        ++ translate language (Translate.ResolveMonth (Date.month eddDate) False)
+                                        ++ translate language (Translate.ResolveMonth False (Date.month eddDate))
                                 ]
                             ]
                         , fetalHeartRateDate

@@ -145,7 +145,7 @@ renderDate language date =
             Date.day date
 
         month =
-            translate language <| Translate.ResolveMonth (Date.month date) False
+            translate language <| Translate.ResolveMonth False (Date.month date)
 
         year =
             Date.year date

@@ -586,8 +586,8 @@ type TranslationId
     | Reports
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
-    | ResolveMonth Month Bool
-    | ResolveMonthYY Month Int Bool
+    | ResolveMonth Bool Month
+    | ResolveMonthYY Int Bool Month
     | RespiratoryRate
     | Retry
     | RhNegative
@@ -3654,10 +3654,10 @@ translationSet trans =
             , kinyarwanda = Just <| Debug.toString completed ++ " / " ++ Debug.toString (pending + completed) ++ " Raporo irarangiye"
             }
 
-        ResolveMonth month short ->
+        ResolveMonth short month ->
             translateMonth month short
 
-        ResolveMonthYY month year short ->
+        ResolveMonthYY year short month ->
             translateMonthYY month year short
 
         RespiratoryRate ->
