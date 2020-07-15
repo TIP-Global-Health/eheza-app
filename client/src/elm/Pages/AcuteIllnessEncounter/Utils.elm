@@ -31,6 +31,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
 import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..), NextStepsTask(..))
+import Pages.AcuteIllnessActivity.Utils exposing (symptomsGeneralDangerSigns)
 import Pages.AcuteIllnessEncounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -369,40 +370,18 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
 covid19Diagnosed : AcuteIllnessMeasurements -> Bool
 covid19Diagnosed measurements =
     let
-        contactedPeopleWithSymptoms =
-            measurements.exposure
-                |> Maybe.map
-                    (Tuple.second
-                        >> .value
-                        >> EverySet.member COVID19Symptoms
-                    )
-                |> Maybe.withDefault False
-
-        calculateSymptoms measurement_ getSetFunc defaults =
+        calculateSymptoms measurement_ getSetFunc exclusions =
             measurement_
                 |> Maybe.map
-                    (\measurement ->
-                        let
-                            set =
-                                Tuple.second measurement |> getSetFunc
-
-                            setSize =
-                                Dict.size set
-                        in
-                        case setSize of
-                            1 ->
-                                if List.any (\default -> Dict.member default set) defaults then
-                                    0
-
-                                else
-                                    1
-
-                            _ ->
-                                setSize
+                    (Tuple.second
+                        >> getSetFunc
+                        >> Dict.keys
+                        >> List.filter (\sign -> List.member sign exclusions |> not)
+                        >> List.length
                     )
                 |> Maybe.withDefault 0
 
-        calculateSigns measurement_ default =
+        calculateSigns measurement_ exclusion =
             measurement_
                 |> Maybe.map
                     (\measurement ->
@@ -415,7 +394,7 @@ covid19Diagnosed measurements =
                         in
                         case setSize of
                             1 ->
-                                if EverySet.member default set then
+                                if EverySet.member exclusion set then
                                     0
 
                                 else
@@ -426,29 +405,29 @@ covid19Diagnosed measurements =
                     )
                 |> Maybe.withDefault 0
 
+        excludesGeneral =
+            [ SymptomGeneralFever, NoSymptomsGeneral ] ++ symptomsGeneralDangerSigns
+
         totalSymptoms =
-            calculateSymptoms measurements.symptomsGeneral .value [ NoSymptomsGeneral, SymptomGeneralFever ]
-                + calculateSymptoms measurements.symptomsRespiratory .value [ NoSymptomsRespiratory ]
+            calculateSymptoms measurements.symptomsGeneral .value excludesGeneral
+                + calculateSymptoms measurements.symptomsRespiratory .value [ StabbingChestPain, NoSymptomsRespiratory ]
                 + calculateSymptoms measurements.symptomsGI (.value >> .signs) [ NoSymptomsGI ]
 
         totalSigns =
             calculateSigns measurements.travelHistory NoTravelHistorySigns
                 + calculateSigns measurements.exposure NoExposureSigns
 
-        feverSymptoms =
-            feverAtSymptoms measurements
+        rdtDoneAndNegative =
+            malariaRapidTestResult measurements == Just RapidTestNegative
 
-        feverToday =
-            feverAtPhysicalExam measurements
+        _ =
+            Debug.log "totalSigns" totalSigns
 
-        rdtResult =
-            malariaRapidTestResult measurements
-
-        gotFever =
-            feverSymptoms
-                || (feverToday && rdtResult == Just RapidTestNegative)
+        _ =
+            Debug.log "totalSymptoms" totalSymptoms
     in
-    contactedPeopleWithSymptoms || (totalSigns > 0 && (gotFever || totalSymptoms > 1))
+    (totalSigns > 0 && totalSymptoms > 1)
+        || (rdtDoneAndNegative && (totalSigns > 0 || totalSymptoms > 1))
 
 
 feverRecorded : AcuteIllnessMeasurements -> Bool
