@@ -1803,7 +1803,7 @@ div.page-participant.prenatal {
 
 div.page-report.acute-illness {
   background: $color-light-gray;
-  height: 100%;
+  height: fit-content;
   padding: 20px;
 
   .ui.report.unstackable.items {
