@@ -158,57 +158,92 @@ viewAssessmentPane language currentDate diagnosis =
 viewSymptomsPane : Language -> NominalDate -> AcuteIllnessMeasurements -> Html Msg
 viewSymptomsPane language currentDate measurements =
     let
-        symptomsDictToList dict =
+        symptomsMaxDuration getFunc measurement =
+            measurement
+                |> Maybe.andThen (Tuple.second >> getFunc >> Dict.values >> List.maximum)
+                |> Maybe.withDefault 1
+
+        maxDuration =
+            List.maximum
+                [ symptomsMaxDuration .value measurements.symptomsGeneral
+                , symptomsMaxDuration .value measurements.symptomsRespiratory
+                , symptomsMaxDuration (.value >> .signs) measurements.symptomsGI
+                ]
+                |> Maybe.withDefault 1
+
+        filterSymptoms symptomDuration exclusion dict =
             Dict.toList dict
                 |> List.filterMap
                     (\( symptom, count ) ->
-                        if count > 0 then
+                        if symptom /= exclusion && count > symptomDuration then
                             Just symptom
 
                         else
                             Nothing
                     )
 
-        symptomsGeneral =
+        symptomsGeneral duration =
             measurements.symptomsGeneral
                 |> Maybe.map
                     (Tuple.second
                         >> .value
-                        >> symptomsDictToList
+                        >> filterSymptoms duration NoSymptomsGeneral
                         >> List.map (\symptom -> li [ class "general" ] [ text <| translate language (Translate.SymptomsGeneralSign symptom) ])
                     )
                 |> Maybe.withDefault []
 
-        symptomsRespiratory =
+        symptomsRespiratory duration =
             measurements.symptomsRespiratory
                 |> Maybe.map
                     (Tuple.second
                         >> .value
-                        >> symptomsDictToList
+                        >> filterSymptoms duration NoSymptomsRespiratory
                         >> List.map (\symptom -> li [ class "respiratory" ] [ text <| translate language (Translate.SymptomsRespiratorySign symptom) ])
                     )
                 |> Maybe.withDefault []
 
-        symptomsGI =
+        symptomsGI duration =
             measurements.symptomsGI
                 |> Maybe.map
-                    (Tuple.second
-                        >> .value
-                        >> .signs
-                        >> symptomsDictToList
-                        >> List.map (\symptom -> li [ class "gi" ] [ text <| translate language (Translate.SymptomsGISignAbbrev symptom) ])
+                    (\measurement ->
+                        Tuple.second measurement
+                            |> .value
+                            |> .signs
+                            |> filterSymptoms duration NoSymptomsGI
+                            |> List.map
+                                (\symptom ->
+                                    let
+                                        translation =
+                                            if symptom == Vomiting then
+                                                Tuple.second measurement
+                                                    |> .value
+                                                    |> .derivedSigns
+                                                    |> EverySet.member IntractableVomiting
+                                                    |> Translate.IntractableVomiting
+
+                                            else
+                                                Translate.SymptomsGISignAbbrev symptom
+                                    in
+                                    li [ class "gi" ] [ text <| translate language translation ]
+                                )
                     )
                 |> Maybe.withDefault []
 
         values =
-            [ ( currentDate, symptomsGeneral ++ symptomsRespiratory ++ symptomsGI ) ]
+            List.repeat maxDuration currentDate
+                |> List.indexedMap
+                    (\index date ->
+                        ( Date.add Date.Days (-1 * index) date |> formatDDMMYY
+                        , symptomsGeneral index ++ symptomsRespiratory index ++ symptomsGI index
+                        )
+                    )
 
         symptomsTable =
             values
                 |> List.map
                     (\( date, symptoms ) ->
                         div [ class "symptoms-table-row" ]
-                            [ div [ class "date" ] [ formatDDMMYY date |> text ]
+                            [ div [ class "date" ] [ text date ]
                             , ul [] symptoms
                             ]
                     )

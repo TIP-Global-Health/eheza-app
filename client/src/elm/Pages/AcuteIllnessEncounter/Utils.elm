@@ -419,12 +419,6 @@ covid19Diagnosed measurements =
 
         rdtDoneAndNegative =
             malariaRapidTestResult measurements == Just RapidTestNegative
-
-        _ =
-            Debug.log "totalSigns" totalSigns
-
-        _ =
-            Debug.log "totalSymptoms" totalSymptoms
     in
     (totalSigns > 0 && totalSymptoms > 1)
         || (rdtDoneAndNegative && (totalSigns > 0 || totalSymptoms > 1))
