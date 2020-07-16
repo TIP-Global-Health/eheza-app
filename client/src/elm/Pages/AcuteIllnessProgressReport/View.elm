@@ -192,11 +192,26 @@ viewSymptomsPane language currentDate measurements =
         symptomsGI =
             measurements.symptomsGI
                 |> Maybe.map
-                    (Tuple.second
-                        >> .value
-                        >> .signs
-                        >> symptomsDictToList
-                        >> List.map (\symptom -> li [ class "gi" ] [ text <| translate language (Translate.SymptomsGISignAbbrev symptom) ])
+                    (\measurement ->
+                        Tuple.second measurement
+                            |> .value
+                            |> .signs
+                            |> symptomsDictToList
+                            |> List.map
+                                (\symptom ->
+                                    if symptom == Vomiting then
+                                        let
+                                            isIntractable =
+                                                Tuple.second measurement
+                                                    |> .value
+                                                    |> .derivedSigns
+                                                    |> EverySet.member IntractableVomiting
+                                        in
+                                        li [ class "gi" ] [ text <| translate language (Translate.IntractableVomiting isIntractable) ]
+
+                                    else
+                                        li [ class "gi" ] [ text <| translate language (Translate.SymptomsGISignAbbrev symptom) ]
+                                )
                     )
                 |> Maybe.withDefault []
 

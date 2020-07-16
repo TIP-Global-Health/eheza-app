@@ -423,6 +423,7 @@ type TranslationId
     | IndividualEncounterType IndividualEncounterType
     | IndividualEncounterTypes
     | InitialResultsDisplay InitialResultsDisplay
+    | IntractableVomiting Bool
     | IntractableVomitingQuestion
     | IsCurrentlyBreastfeeding
     | IsolatedAtHome
@@ -2911,6 +2912,17 @@ translationSet trans =
                     { english = "Hide all mothers / caregivers"
                     , kinyarwanda = Just "Hisha ababyeyi bose / abarezi"
                     }
+
+        IntractableVomiting isIntractable ->
+            if isIntractable then
+                { english = "Intractable Vomiting"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "Non-intractable Vomiting"
+                , kinyarwanda = Nothing
+                }
 
         IntractableVomitingQuestion ->
             { english = "Is Vomiting Intractable"
