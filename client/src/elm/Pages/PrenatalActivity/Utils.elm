@@ -299,9 +299,11 @@ toMedicationValue form =
 fromObstetricalExamValue : Maybe ObstetricalExamValue -> ObstetricalExamForm
 fromObstetricalExamValue saved =
     { fundalHeight = Maybe.map (.fundalHeight >> (\(HeightInCm cm) -> cm)) saved
+    , fundalHeightDirty = False
     , fetalPresentation = Maybe.map .fetalPresentation saved
     , fetalMovement = Maybe.map .fetalMovement saved
     , fetalHeartRate = Maybe.map .fetalHeartRate saved
+    , fetalHeartRateDirty = False
     , cSectionScar = Maybe.map .cSectionScar saved
     }
 
@@ -312,10 +314,12 @@ obstetricalExamFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { fundalHeight = or form.fundalHeight (value.fundalHeight |> (\(HeightInCm cm) -> cm) |> Just)
+                { fundalHeight = valueConsideringIsDirtyField form.fundalHeightDirty form.fundalHeight (value.fundalHeight |> (\(HeightInCm cm) -> cm))
+                , fundalHeightDirty = form.fundalHeightDirty
                 , fetalPresentation = or form.fetalPresentation (Just value.fetalPresentation)
                 , fetalMovement = or form.fetalMovement (Just value.fetalMovement)
-                , fetalHeartRate = or form.fetalHeartRate (Just value.fetalHeartRate)
+                , fetalHeartRate = valueConsideringIsDirtyField form.fetalHeartRateDirty form.fetalHeartRate value.fetalHeartRate
+                , fetalHeartRateDirty = form.fetalHeartRateDirty
                 , cSectionScar = or form.cSectionScar (Just value.cSectionScar)
                 }
             )
@@ -489,8 +493,11 @@ toFamilyPlanningValue form =
 fromPrenatalNutritionValue : Maybe PrenatalNutritionValue -> NutritionAssessmentForm
 fromPrenatalNutritionValue saved =
     { height = Maybe.map (.height >> (\(HeightInCm cm) -> cm)) saved
+    , heightDirty = False
     , weight = Maybe.map (.weight >> (\(WeightInKg kg) -> kg)) saved
+    , weightDirty = False
     , muac = Maybe.map (.muac >> (\(MuacInCm cm) -> cm)) saved
+    , muacDirty = False
     }
 
 
@@ -500,9 +507,12 @@ prenatalNutritionFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { height = or form.height (value.height |> (\(HeightInCm cm) -> cm) |> Just)
-                , weight = or form.weight (value.weight |> (\(WeightInKg kg) -> kg) |> Just)
-                , muac = or form.muac (value.muac |> (\(MuacInCm cm) -> cm) |> Just)
+                { height = valueConsideringIsDirtyField form.heightDirty form.height (value.height |> (\(HeightInCm cm) -> cm))
+                , heightDirty = form.heightDirty
+                , weight = valueConsideringIsDirtyField form.weightDirty form.weight (value.weight |> (\(WeightInKg kg) -> kg))
+                , weightDirty = form.weightDirty
+                , muac = valueConsideringIsDirtyField form.muacDirty form.muac (value.muac |> (\(MuacInCm cm) -> cm))
+                , muacDirty = form.muacDirty
                 }
             )
 
@@ -594,10 +604,15 @@ toSocialHistoryValue form =
 fromVitalsValue : Maybe VitalsValue -> VitalsForm
 fromVitalsValue saved =
     { sysBloodPressure = Maybe.map .sys saved
+    , sysBloodPressureDirty = False
     , diaBloodPressure = Maybe.map .dia saved
+    , diaBloodPressureDirty = False
     , heartRate = Maybe.map .heartRate saved
+    , heartRateDirty = False
     , respiratoryRate = Maybe.map .respiratoryRate saved
+    , respiratoryRateDirty = False
     , bodyTemperature = Maybe.map .bodyTemperature saved
+    , bodyTemperatureDirty = False
     }
 
 
@@ -607,11 +622,16 @@ vitalsFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { sysBloodPressure = or form.sysBloodPressure (Just value.sys)
-                , diaBloodPressure = or form.diaBloodPressure (Just value.dia)
-                , heartRate = or form.heartRate (Just value.heartRate)
-                , respiratoryRate = or form.respiratoryRate (Just value.respiratoryRate)
-                , bodyTemperature = or form.bodyTemperature (Just value.bodyTemperature)
+                { sysBloodPressure = valueConsideringIsDirtyField form.sysBloodPressureDirty form.sysBloodPressure value.sys
+                , sysBloodPressureDirty = form.sysBloodPressureDirty
+                , diaBloodPressure = valueConsideringIsDirtyField form.diaBloodPressureDirty form.diaBloodPressure value.dia
+                , diaBloodPressureDirty = form.diaBloodPressureDirty
+                , heartRate = valueConsideringIsDirtyField form.heartRateDirty form.heartRate value.heartRate
+                , heartRateDirty = form.heartRateDirty
+                , respiratoryRate = valueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
+                , respiratoryRateDirty = form.respiratoryRateDirty
+                , bodyTemperature = valueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
+                , bodyTemperatureDirty = form.bodyTemperatureDirty
                 }
             )
 
