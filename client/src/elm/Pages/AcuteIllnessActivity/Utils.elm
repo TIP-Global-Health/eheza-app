@@ -35,7 +35,7 @@ import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Pages.PrenatalActivity.Utils exposing (ifNullableTrue, ifTrue)
-import Pages.Utils exposing (ifEverySetEmpty, taskCompleted)
+import Pages.Utils exposing (ifEverySetEmpty, taskCompleted, valueConsideringIsDirtyField)
 
 
 symptomsGeneralDangerSigns : List SymptomsGeneralSign
@@ -518,7 +518,9 @@ toSymptomsGIValueWithDefault saved form =
 fromVitalsValue : Maybe AcuteIllnessVitalsValue -> VitalsForm
 fromVitalsValue saved =
     { respiratoryRate = Maybe.map .respiratoryRate saved
+    , respiratoryRateDirty = False
     , bodyTemperature = Maybe.map .bodyTemperature saved
+    , bodyTemperatureDirty = False
     }
 
 
@@ -528,8 +530,10 @@ vitalsFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { respiratoryRate = or form.respiratoryRate (Just value.respiratoryRate)
-                , bodyTemperature = or form.bodyTemperature (Just value.bodyTemperature)
+                { respiratoryRate = valueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
+                , respiratoryRateDirty = form.respiratoryRateDirty
+                , bodyTemperature = valueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
+                , bodyTemperatureDirty = form.bodyTemperatureDirty
                 }
             )
 

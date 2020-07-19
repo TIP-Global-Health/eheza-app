@@ -148,7 +148,7 @@ type alias PhysicalExamData =
 
 emptyPhysicalExamData : PhysicalExamData
 emptyPhysicalExamData =
-    { vitalsForm = VitalsForm Nothing Nothing
+    { vitalsForm = VitalsForm Nothing False Nothing False
     , acuteFindingsForm = AcuteFindingsForm Nothing Nothing
     , activeTask = PhysicalExamVitals
     }
@@ -161,7 +161,9 @@ type PhysicalExamTask
 
 type alias VitalsForm =
     { respiratoryRate : Maybe Int
+    , respiratoryRateDirty : Bool
     , bodyTemperature : Maybe Float
+    , bodyTemperatureDirty : Bool
     }
 
 
