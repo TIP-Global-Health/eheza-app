@@ -261,7 +261,6 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
   $query->fields('node', ['type', 'nid', 'created']);
   $query->condition('node.type', 'pmtct_participant');
   $query->condition('node.status', NODE_PUBLISHED);
-  $query->condition('node.created', [$date['start'], $date['end']], 'BETWEEN');
 
   $field_names = [
     'field_person',
@@ -274,6 +273,13 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
   }
 
   $query->condition('field_clinic.field_clinic_target_id', $fbf_clinics);
+
+  hedley_restful_join_field_to_query($query, 'node', 'field_expected', FALSE, NULL, NULL, TRUE);
+
+  $date = hedley_stats_get_period($period, FALSE);
+  // We want to get all participants that graduate within, or after
+  // defined period.
+  $query->condition('field_expected.field_expected_value2', $date['start'], '>');
 
   $result = $query
     ->execute()
@@ -293,12 +299,17 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
     $row->mother_name = $adult_wrapper->label();
     $row->phone_number = $adult_wrapper->field_phone_number->value();
 
+    $graduation_date = date_format(date_create($row->field_expected_field_expected_value2), 'Y-m-d');
+    $row->graduation_date = $graduation_date;
+
     // Remove unused data, to save bandwidth.
     unset($row->nid);
     unset($row->type);
     unset($row->field_person);
     unset($row->field_adult);
     unset($row->field_clinic);
+    unset($row->field_expected);
+    unset($row->field_expected_field_expected_value2);
   }
 
   // Store in cache.
