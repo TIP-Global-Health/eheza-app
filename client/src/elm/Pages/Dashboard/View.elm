@@ -261,11 +261,12 @@ viewGoodNutrition language maybeNutrition =
         Just nutrition ->
             let
                 percentageThisYear =
-                    calculatePercentage nutrition.all.thisYear nutrition.good.thisYear
+                    (toFloat nutrition.good.thisYear / toFloat nutrition.all.thisYear)
+                        * 100
                         |> round
 
                 percentageLastYear =
-                    calculatePercentage nutrition.all.lastYear nutrition.good.lastYear
+                    calculatePercentage nutrition.good.thisYear nutrition.good.lastYear
                         |> round
 
                 percentageDiff =
@@ -278,7 +279,7 @@ viewGoodNutrition language maybeNutrition =
                     , value = percentageThisYear
                     , valueSeverity = Neutral
                     , valueIsPercentage = True
-                    , previousPercentage = percentageDiff
+                    , previousPercentage = percentageLastYear
                     , previousPercentageLabel = OneYear
                     , newCases = Nothing
                     }

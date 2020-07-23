@@ -19,17 +19,6 @@ import Translate exposing (Language, TranslationId, translate)
 
 {-| Calculate percentage.
 -}
-calculatePercentage2 : Int -> Int -> Float
-calculatePercentage2 total unique =
-    -- Avoid dividing by zero and getting "NaN", just return 0.
-    -- Besides, if the total is 0, then we don't need to calculate anything here.
-    if total == 0 then
-        0
-
-    else
-        100 + (toFloat total / toFloat unique) * 100
-
-
 calculatePercentage : Int -> Int -> Float
 calculatePercentage now before =
     -- Avoid dividing by zero and getting "NaN", just return 0.
