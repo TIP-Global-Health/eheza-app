@@ -49,10 +49,17 @@ update msg subPage model =
         SetActivePage page ->
             let
                 newPeriod =
-                    if page == UserPage (DashboardPage StatsPage) then
-                        ThisMonth
+                    case page of
+                        UserPage (DashboardPage MainPage) ->
+                            OneYear
 
-                    else
-                        OneYear
+                        UserPage (DashboardPage StatsPage) ->
+                            ThisMonth
+
+                        UserPage (DashboardPage CaseManagementPage) ->
+                            ThreeMonthsAgo
+
+                        _ ->
+                            OneYear
             in
             ( { model | latestPage = subPage, period = newPeriod }, Cmd.none, [ App.Model.SetActivePage page ] )

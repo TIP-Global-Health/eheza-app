@@ -14,6 +14,7 @@ module Pages.Dashboard.Model exposing
     , filterCharts
     , filterGenders
     , filterPeriods
+    , filterPeriodsForCaseManagementPage
     , filterPeriodsForStatsPage
     )
 
@@ -43,6 +44,12 @@ type BeneficiariesTableLabels
 filterPeriods : List FilterPeriod
 filterPeriods =
     [ OneYear ]
+
+
+filterPeriodsForCaseManagementPage : List FilterPeriod
+filterPeriodsForCaseManagementPage =
+    [ ThreeMonthsAgo
+    ]
 
 
 filterPeriodsForStatsPage : List FilterPeriod

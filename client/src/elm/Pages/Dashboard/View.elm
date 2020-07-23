@@ -183,7 +183,7 @@ viewCaseManagementPage language currentDate stats model =
                 |> List.sortWith (\p1 p2 -> compare (String.toLower p1.name) (String.toLower p2.name))
     in
     div [ class "dashboard case" ]
-        [ viewPeriodFilter language model filterPeriods
+        [ viewPeriodFilter language model filterPeriodsForCaseManagementPage
         , div [ class "ui segment blue" ]
             [ div [ class "case-management" ]
                 [ div [ class "header" ]
@@ -455,9 +455,6 @@ viewMiscCards language currentDate stats monthBeforeStats =
         totalNewBeneficiaries =
             stats.childrenBeneficiaries
                 |> List.length
-
-        _ =
-            Debug.log "totalNewBeneficiaries" totalNewBeneficiaries
 
         totalNewBeneficiariesBefore =
             monthBeforeStats.childrenBeneficiaries
