@@ -37,6 +37,7 @@ type BeneficiariesTableLabels
     = New
     | Missed
     | Malnourished
+    | Total
 
 
 filterPeriods : List FilterPeriod

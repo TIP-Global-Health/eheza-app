@@ -66,6 +66,7 @@ type alias ChildrenBeneficiariesStats =
     , name : String
     , motherName : String
     , phoneNumber : Maybe String
+    , graduationDate : NominalDate
     }
 
 

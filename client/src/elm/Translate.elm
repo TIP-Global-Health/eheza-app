@@ -4736,6 +4736,11 @@ translateDashboard trans =
                     , kinyarwanda = Nothing
                     }
 
+                Total ->
+                    { english = "Total beneficiaries in program"
+                    , kinyarwanda = Nothing
+                    }
+
         BeneficiariesTableLabel ->
             { english = "Grouped by age (Months)"
             , kinyarwanda = Nothing

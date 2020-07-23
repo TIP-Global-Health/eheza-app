@@ -41,8 +41,6 @@ view language page currentDate healthCenterId model db =
         stats =
             Dict.get healthCenterId db.computedDashboard
                 |> Maybe.withDefault Backend.Dashboard.Model.emptyModel
-                -- Filter by period.
-                |> filterStatsByPeriod currentDate model
 
         ( pageView, goBackPage ) =
             case page of
@@ -83,20 +81,24 @@ view language page currentDate healthCenterId model db =
 
 viewMainPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
 viewMainPage language currentDate stats model =
+    let
+        currentPeriodStats =
+            filterStatsByPeriod currentDate model stats
+    in
     div [ class "dashboard main" ]
         [ viewPeriodFilter language model filterPeriods
         , div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
-                [ viewGoodNutrition language stats.maybeGoodNutrition
+                [ viewGoodNutrition language currentPeriodStats.maybeGoodNutrition
                 ]
             , div [ class "eight wide column" ]
-                [ viewTotalEncounters language stats.totalEncounters
+                [ viewTotalEncounters language currentPeriodStats.totalEncounters
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language currentDate (Translate.Dashboard Translate.TotalBeneficiaries) FilterBeneficiariesChart stats.totalBeneficiaries model.currentBeneficiariesChartsFilter
+                [ viewMonthlyChart language currentDate (Translate.Dashboard Translate.TotalBeneficiaries) FilterBeneficiariesChart currentPeriodStats.totalBeneficiaries model.currentBeneficiariesChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language currentDate (Translate.Dashboard Translate.IncidenceOf) FilterBeneficiariesIncidenceChart stats.totalBeneficiariesIncidence model.currentBeneficiariesIncidenceChartsFilter
+                [ viewMonthlyChart language currentDate (Translate.Dashboard Translate.IncidenceOf) FilterBeneficiariesIncidenceChart currentPeriodStats.totalBeneficiariesIncidence model.currentBeneficiariesIncidenceChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewDashboardPagesLinks language
@@ -107,11 +109,15 @@ viewMainPage language currentDate stats model =
 
 viewStatsPage : Language -> NominalDate -> DashboardStats -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg
 viewStatsPage language currentDate stats model healthCenterId db =
+    let
+        currentPeriodStats =
+            filterStatsByPeriod currentDate model stats
+    in
     div [ class "dashboard stats" ]
         [ viewPeriodFilter language model filterPeriodsForStatsPage
-        , viewAllStatsCards language stats currentDate model healthCenterId db
-        , viewBeneficiariesTable language currentDate stats model
-        , viewFamilyPlanning language stats
+        , viewAllStatsCards language stats currentPeriodStats currentDate model healthCenterId db
+        , viewBeneficiariesTable language currentDate stats currentPeriodStats model
+        , viewFamilyPlanning language currentPeriodStats
         , viewStatsTableModal language model
         ]
 
@@ -119,6 +125,9 @@ viewStatsPage language currentDate stats model healthCenterId db =
 viewCaseManagementPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
 viewCaseManagementPage language currentDate stats model =
     let
+        currentPeriodStats =
+            filterStatsByPeriod currentDate model stats
+
         currentMonth =
             Date.month currentDate
                 |> Date.monthToNumber
@@ -163,7 +172,7 @@ viewCaseManagementPage language currentDate stats model =
                             { name = person.name, nutrition = filterForCaseManagementTableFunc person.nutrition.muac } :: accum
                 )
                 []
-                stats.caseManagement
+                currentPeriodStats.caseManagement
                 |> List.filter
                     (.nutrition
                         >> List.all (Tuple.second >> .class >> (==) Backend.Dashboard.Model.Good)
@@ -312,8 +321,8 @@ viewTotalEncounters language encounters =
     viewCard language statsCard
 
 
-viewAllStatsCards : Language -> DashboardStats -> NominalDate -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg
-viewAllStatsCards language stats currentDate model healthCenterId db =
+viewAllStatsCards : Language -> DashboardStats -> DashboardStats -> NominalDate -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg
+viewAllStatsCards language stats currentPeriodStats currentDate model healthCenterId db =
     let
         modelWithLastMonth =
             if model.period == ThisMonth then
@@ -323,14 +332,11 @@ viewAllStatsCards language stats currentDate model healthCenterId db =
                 { model | period = ThreeMonthsAgo }
 
         monthBeforeStats =
-            Dict.get healthCenterId db.computedDashboard
-                |> Maybe.withDefault Backend.Dashboard.Model.emptyModel
-                -- Filter by period.
-                |> filterStatsByPeriod currentDate modelWithLastMonth
+            filterStatsByPeriod currentDate modelWithLastMonth stats
     in
     div [ class "ui equal width grid" ]
-        [ viewMalnourishedCards language stats monthBeforeStats
-        , viewMiscCards language currentDate stats monthBeforeStats
+        [ viewMalnourishedCards language currentPeriodStats monthBeforeStats
+        , viewMiscCards language currentDate currentPeriodStats monthBeforeStats
         ]
 
 
@@ -449,6 +455,9 @@ viewMiscCards language currentDate stats monthBeforeStats =
         totalNewBeneficiaries =
             stats.childrenBeneficiaries
                 |> List.length
+
+        _ =
+            Debug.log "totalNewBeneficiaries" totalNewBeneficiaries
 
         totalNewBeneficiariesBefore =
             monthBeforeStats.childrenBeneficiaries
@@ -653,32 +662,67 @@ viewBeneficiariesGenderFilter language model =
         (List.map renderButton filterGenders)
 
 
-viewBeneficiariesTable : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
-viewBeneficiariesTable language currentDate stats model =
+viewBeneficiariesTable : Language -> NominalDate -> DashboardStats -> DashboardStats -> Model -> Html Msg
+viewBeneficiariesTable language currentDate stats currentPeriodStats model =
     let
-        statsFilteredByGender =
-            stats
-                |> filterStatsByGender currentDate model
+        currentPeriodStatsFilteredByGender =
+            filterStatsByGender currentDate model currentPeriodStats
 
-        filterStatsByAgeDo func =
+        currentPeriodParticipantsStatsFilteredByGender =
+            filterStatsByGender currentDate model currentPeriodParticipantsStats
+
+        currentPeriodParticipantsStats =
+            case model.period of
+                ThisMonth ->
+                    stats
+
+                -- @todo
+                _ ->
+                    stats
+
+        filterByAge filterFunc statsToFilter =
             filterStatsByAge
                 currentDate
-                func
-                statsFilteredByGender
+                filterFunc
+                statsToFilter
 
-        stats0_5 =
-            filterStatsByAgeDo (\{ months } -> months <= 5)
+        filter0_5 statsToFilter =
+            filterByAge (\{ months } -> months <= 5) statsToFilter
 
-        stats6_8 =
-            filterStatsByAgeDo (\{ months } -> months >= 6 && months <= 8)
+        filter6_8 statsToFilter =
+            filterByAge (\{ months } -> months >= 6 && months <= 8) statsToFilter
 
-        stats9_11 =
-            filterStatsByAgeDo (\{ months } -> months >= 9 && months <= 11)
+        filter9_11 statsToFilter =
+            filterByAge (\{ months } -> months >= 9 && months <= 11) statsToFilter
 
-        stats12_23 =
-            filterStatsByAgeDo (\{ months } -> months >= 12)
+        filter12_25 statsToFilter =
+            filterByAge (\{ months } -> months >= 12) statsToFilter
 
-        getNewBeneficiariesCount stats_ =
+        currentPeriodStats0_5 =
+            filter0_5 currentPeriodStatsFilteredByGender
+
+        currentPeriodStats6_8 =
+            filter6_8 currentPeriodStatsFilteredByGender
+
+        currentPeriodStats9_11 =
+            filter9_11 currentPeriodStatsFilteredByGender
+
+        currentPeriodStats12_25 =
+            filter12_25 currentPeriodStatsFilteredByGender
+
+        currentPeriodParticipantsStats0_5 =
+            filter0_5 currentPeriodParticipantsStatsFilteredByGender
+
+        currentPeriodParticipantsStats6_8 =
+            filter6_8 currentPeriodParticipantsStatsFilteredByGender
+
+        currentPeriodParticipantsStats9_11 =
+            filter9_11 currentPeriodParticipantsStatsFilteredByGender
+
+        currentPeriodParticipantsStats12_25 =
+            filter12_25 currentPeriodParticipantsStatsFilteredByGender
+
+        getBeneficiariesCount stats_ =
             stats_.childrenBeneficiaries
                 |> List.length
                 |> String.fromInt
@@ -712,25 +756,32 @@ viewBeneficiariesTable language currentDate stats model =
                     ]
                 , tbody []
                     [ tr []
+                        [ td [ class "label" ] [ translateText language <| Translate.Dashboard <| Translate.BeneficiariesTableColumnLabel Total ]
+                        , td [] [ text <| getBeneficiariesCount currentPeriodParticipantsStats0_5 ]
+                        , td [] [ text <| getBeneficiariesCount currentPeriodParticipantsStats6_8 ]
+                        , td [] [ text <| getBeneficiariesCount currentPeriodParticipantsStats9_11 ]
+                        , td [] [ text <| getBeneficiariesCount currentPeriodParticipantsStats12_25 ]
+                        ]
+                    , tr []
                         [ td [ class "label" ] [ translateText language <| Translate.Dashboard <| Translate.BeneficiariesTableColumnLabel New ]
-                        , td [] [ text <| getNewBeneficiariesCount stats0_5 ]
-                        , td [] [ text <| getNewBeneficiariesCount stats6_8 ]
-                        , td [] [ text <| getNewBeneficiariesCount stats9_11 ]
-                        , td [] [ text <| getNewBeneficiariesCount stats12_23 ]
+                        , td [] [ text <| getBeneficiariesCount currentPeriodStats0_5 ]
+                        , td [] [ text <| getBeneficiariesCount currentPeriodStats6_8 ]
+                        , td [] [ text <| getBeneficiariesCount currentPeriodStats9_11 ]
+                        , td [] [ text <| getBeneficiariesCount currentPeriodStats12_25 ]
                         ]
                     , tr []
                         [ td [ class "label" ] [ translateText language <| Translate.Dashboard <| Translate.BeneficiariesTableColumnLabel Missed ]
-                        , td [] [ text <| getMissedSessionBeneficiariesCount stats0_5 ]
-                        , td [] [ text <| getMissedSessionBeneficiariesCount stats6_8 ]
-                        , td [] [ text <| getMissedSessionBeneficiariesCount stats9_11 ]
-                        , td [] [ text <| getMissedSessionBeneficiariesCount stats12_23 ]
+                        , td [] [ text <| getMissedSessionBeneficiariesCount currentPeriodStats0_5 ]
+                        , td [] [ text <| getMissedSessionBeneficiariesCount currentPeriodStats6_8 ]
+                        , td [] [ text <| getMissedSessionBeneficiariesCount currentPeriodStats9_11 ]
+                        , td [] [ text <| getMissedSessionBeneficiariesCount currentPeriodStats12_25 ]
                         ]
                     , tr []
                         [ td [ class "label" ] [ translateText language <| Translate.Dashboard <| Translate.BeneficiariesTableColumnLabel Malnourished ]
-                        , td [] [ text <| getTotalMalnourishedCount stats0_5 ]
-                        , td [] [ text <| getTotalMalnourishedCount stats6_8 ]
-                        , td [] [ text <| getTotalMalnourishedCount stats9_11 ]
-                        , td [] [ text <| getTotalMalnourishedCount stats12_23 ]
+                        , td [] [ text <| getTotalMalnourishedCount currentPeriodStats0_5 ]
+                        , td [] [ text <| getTotalMalnourishedCount currentPeriodStats6_8 ]
+                        , td [] [ text <| getTotalMalnourishedCount currentPeriodStats9_11 ]
+                        , td [] [ text <| getTotalMalnourishedCount currentPeriodStats12_25 ]
                         ]
                     ]
                 ]

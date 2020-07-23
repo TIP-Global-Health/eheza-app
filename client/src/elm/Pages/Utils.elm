@@ -17,8 +17,6 @@ import Time exposing (Month(..))
 import Translate exposing (Language, TranslationId, translate)
 
 
-{-| Calculate percentage.
--}
 calculatePercentage : Int -> Int -> Float
 calculatePercentage now before =
     -- Avoid dividing by zero and getting "NaN", just return 0.

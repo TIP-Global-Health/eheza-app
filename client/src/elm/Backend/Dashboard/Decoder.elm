@@ -125,6 +125,7 @@ decodePeopleStats =
         |> required "name" string
         |> required "mother_name" string
         |> optional "phone_number" (nullable string) Nothing
+        |> required "graduation_date" decodeYYYYMMDD
 
 
 decodeParticipantStats : Decoder ParticipantStats
