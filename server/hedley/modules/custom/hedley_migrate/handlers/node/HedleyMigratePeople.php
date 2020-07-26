@@ -47,6 +47,7 @@ class HedleyMigratePeople extends HedleyMigrateBase {
     'field_photo',
     'field_national_id_number',
     'field_phone_number',
+    'created',
   ];
 
   /**

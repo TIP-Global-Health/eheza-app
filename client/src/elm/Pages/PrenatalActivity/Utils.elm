@@ -1,4 +1,4 @@
-module Pages.PrenatalActivity.Utils exposing (breastExamFormWithDefault, calculateBmi, corePhysicalExamFormWithDefault, dangerSignsFormWithDefault, examinationTasksCompletedFromTotal, familyPlanningFormWithDefault, fromBreastExamValue, fromCorePhysicalExamValue, fromDangerSignsValue, fromFamilyPlanningValue, fromLastMenstrualPeriodValue, fromMedicalHistoryValue, fromMedicationValue, fromObstetricHistoryValue, fromObstetricalExamValue, fromPrenatalNutritionValue, fromResourceValue, fromSocialHistoryValue, fromVitalsValue, historyTasksCompletedFromTotal, ifEmpty, ifNullableTrue, ifTrue, isTaskCompleted, lastMenstrualPeriodFormWithDefault, medicalHistoryFormWithDefault, medicationFormWithDefault, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, patientProvisionsTasksCompletedFromTotal, prenatalNutritionFormWithDefault, resolvePreviousValue, resourceFormWithDefault, socialHistoryFormWithDefault, toBreastExamValue, toBreastExamValueWithDefault, toCorePhysicalExamValue, toCorePhysicalExamValueWithDefault, toDangerSignsValue, toDangerSignsValueWithDefault, toEverySet, toFamilyPlanningValue, toFamilyPlanningValueWithDefault, toLastMenstrualPeriodValue, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValue, toMedicalHistoryValueWithDefault, toMedicationValue, toMedicationValueWithDefault, toObstetricHistoryStep2Value, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValue, toObstetricalExamValueWithDefault, toPrenatalNutritionValue, toPrenatalNutritionValueWithDefault, toResourceValue, toResourceValueWithDefault, toSocialHistoryValue, toSocialHistoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, vitalsFormWithDefault)
+module Pages.PrenatalActivity.Utils exposing (breastExamFormWithDefault, calculateBmi, corePhysicalExamFormWithDefault, dangerSignsFormWithDefault, examinationTasksCompletedFromTotal, familyPlanningFormWithDefault, fromBreastExamValue, fromCorePhysicalExamValue, fromDangerSignsValue, fromFamilyPlanningValue, fromLastMenstrualPeriodValue, fromMedicalHistoryValue, fromMedicationValue, fromObstetricHistoryValue, fromObstetricalExamValue, fromPrenatalNutritionValue, fromResourceValue, fromSocialHistoryValue, fromVitalsValue, historyTasksCompletedFromTotal, ifNullableTrue, ifTrue, lastMenstrualPeriodFormWithDefault, medicalHistoryFormWithDefault, medicationFormWithDefault, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, patientProvisionsTasksCompletedFromTotal, prenatalNutritionFormWithDefault, resolvePreviousValue, resourceFormWithDefault, socialHistoryFormWithDefault, toBreastExamValue, toBreastExamValueWithDefault, toCorePhysicalExamValue, toCorePhysicalExamValueWithDefault, toDangerSignsValue, toDangerSignsValueWithDefault, toEverySet, toFamilyPlanningValue, toFamilyPlanningValueWithDefault, toLastMenstrualPeriodValue, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValue, toMedicalHistoryValueWithDefault, toMedicationValue, toMedicationValueWithDefault, toObstetricHistoryStep2Value, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValue, toObstetricalExamValueWithDefault, toPrenatalNutritionValue, toPrenatalNutritionValueWithDefault, toResourceValue, toResourceValueWithDefault, toSocialHistoryValue, toSocialHistoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, vitalsFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -8,7 +8,7 @@ import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (getMotherHeightMeasurement)
-import Pages.Utils exposing (taskCompleted, taskListCompleted)
+import Pages.Utils exposing (ifEverySetEmpty, taskCompleted, taskListCompleted, valueConsideringIsDirtyField)
 
 
 {-| This is a convenience for cases where the form values ought to be redefined
@@ -36,15 +36,6 @@ ifNullableTrue : a -> Maybe Bool -> Maybe (EverySet a)
 ifNullableTrue value maybeCondition =
     Maybe.map (ifTrue value >> Just) maybeCondition
         |> Maybe.withDefault (Just EverySet.empty)
-
-
-ifEmpty : a -> EverySet a -> EverySet a
-ifEmpty value set =
-    if EverySet.isEmpty set then
-        EverySet.singleton value
-
-    else
-        set
 
 
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
@@ -268,7 +259,7 @@ toMedicalHistoryValue form =
     , Maybe.map (ifTrue MentalHealthHistory) form.mentalHealthHistory
     ]
         |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoMedicalHistorySigns)
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicalHistorySigns)
 
 
 fromMedicationValue : Maybe (EverySet MedicationSign) -> MedicationForm
@@ -302,15 +293,17 @@ toMedicationValue form =
     , ifNullableTrue DewormingPill form.receivedDewormingPill
     ]
         |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoMedication)
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedication)
 
 
 fromObstetricalExamValue : Maybe ObstetricalExamValue -> ObstetricalExamForm
 fromObstetricalExamValue saved =
     { fundalHeight = Maybe.map (.fundalHeight >> (\(HeightInCm cm) -> cm)) saved
+    , fundalHeightDirty = False
     , fetalPresentation = Maybe.map .fetalPresentation saved
     , fetalMovement = Maybe.map .fetalMovement saved
     , fetalHeartRate = Maybe.map .fetalHeartRate saved
+    , fetalHeartRateDirty = False
     , cSectionScar = Maybe.map .cSectionScar saved
     }
 
@@ -321,10 +314,12 @@ obstetricalExamFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { fundalHeight = or form.fundalHeight (value.fundalHeight |> (\(HeightInCm cm) -> cm) |> Just)
+                { fundalHeight = valueConsideringIsDirtyField form.fundalHeightDirty form.fundalHeight (value.fundalHeight |> (\(HeightInCm cm) -> cm))
+                , fundalHeightDirty = form.fundalHeightDirty
                 , fetalPresentation = or form.fetalPresentation (Just value.fetalPresentation)
                 , fetalMovement = or form.fetalMovement (Just value.fetalMovement)
-                , fetalHeartRate = or form.fetalHeartRate (Just value.fetalHeartRate)
+                , fetalHeartRate = valueConsideringIsDirtyField form.fetalHeartRateDirty form.fetalHeartRate value.fetalHeartRate
+                , fetalHeartRateDirty = form.fetalHeartRateDirty
                 , cSectionScar = or form.cSectionScar (Just value.cSectionScar)
                 }
             )
@@ -369,61 +364,18 @@ obstetricHistoryFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                let
-                    termPregnancyValue =
-                        if form.termPregnancyDirty then
-                            form.termPregnancy
-
-                        else
-                            or form.termPregnancy (Just value.termPregnancy)
-
-                    preTermPregnancyValue =
-                        if form.preTermPregnancyDirty then
-                            form.preTermPregnancy
-
-                        else
-                            or form.preTermPregnancy (Just value.preTermPregnancy)
-
-                    stillbirthsAtTermValue =
-                        if form.stillbirthsAtTermDirty then
-                            form.stillbirthsAtTerm
-
-                        else
-                            or form.stillbirthsAtTerm (Just value.stillbirthsAtTerm)
-
-                    stillbirthsPreTermValue =
-                        if form.stillbirthsPreTermDirty then
-                            form.stillbirthsPreTerm
-
-                        else
-                            or form.stillbirthsPreTerm (Just value.stillbirthsPreTerm)
-
-                    abortionsValue =
-                        if form.abortionsDirty then
-                            form.abortions
-
-                        else
-                            or form.abortions (Just value.abortions)
-
-                    liveChildrenValue =
-                        if form.liveChildrenDirty then
-                            form.liveChildren
-
-                        else
-                            or form.liveChildren (Just value.liveChildren)
-                in
                 { currentlyPregnant = or form.currentlyPregnant (Just value.currentlyPregnant)
-                , termPregnancy = termPregnancyValue
+                , termPregnancy = valueConsideringIsDirtyField form.termPregnancyDirty form.termPregnancy value.termPregnancy
                 , termPregnancyDirty = form.termPregnancyDirty
-                , preTermPregnancy = preTermPregnancyValue
+                , preTermPregnancy = valueConsideringIsDirtyField form.preTermPregnancyDirty form.preTermPregnancy value.preTermPregnancy
                 , preTermPregnancyDirty = form.preTermPregnancyDirty
-                , stillbirthsAtTerm = stillbirthsAtTermValue
+                , stillbirthsAtTerm = valueConsideringIsDirtyField form.stillbirthsAtTermDirty form.stillbirthsAtTerm value.stillbirthsAtTerm
                 , stillbirthsAtTermDirty = form.stillbirthsAtTermDirty
-                , stillbirthsPreTerm = stillbirthsPreTermValue
+                , stillbirthsPreTerm = valueConsideringIsDirtyField form.stillbirthsPreTermDirty form.stillbirthsPreTerm value.stillbirthsPreTerm
                 , stillbirthsPreTermDirty = form.stillbirthsPreTermDirty
-                , abortions = abortionsValue
+                , abortions = valueConsideringIsDirtyField form.abortionsDirty form.abortions value.abortions
                 , abortionsDirty = form.abortionsDirty
-                , liveChildren = liveChildrenValue
+                , liveChildren = valueConsideringIsDirtyField form.liveChildrenDirty form.liveChildren value.liveChildren
                 , liveChildrenDirty = form.liveChildrenDirty
                 }
             )
@@ -452,15 +404,7 @@ obstetricHistoryStep2FormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                let
-                    cSectionsValue =
-                        if form.cSectionsDirty then
-                            form.cSections
-
-                        else
-                            or form.cSections (Just value.cSections)
-                in
-                { cSections = cSectionsValue
+                { cSections = valueConsideringIsDirtyField form.cSectionsDirty form.cSections value.cSections
                 , cSectionsDirty = form.cSectionsDirty
                 , cSectionInPreviousDelivery = or form.cSectionInPreviousDelivery (EverySet.member CSectionInPreviousDelivery value.previousDelivery |> Just)
                 , cSectionReason = or form.cSectionReason (value.cSectionReason |> EverySet.toList |> List.head)
@@ -500,7 +444,7 @@ toObstetricHistoryStep2Value form =
             , Maybe.map (ifTrue ConvulsionsAndUnconsciousPreviousDelivery) form.convulsionsAndUnconsciousPreviousDelivery
             ]
                 |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoPreviousDeliverySign)
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPreviousDeliverySign)
 
         obstetricHistorySet =
             [ Maybe.map (ifTrue SuccessiveAbortions) form.successiveAbortions
@@ -511,7 +455,7 @@ toObstetricHistoryStep2Value form =
             , Maybe.map (ifTrue RhNegative) form.rhNegative
             ]
                 |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoObstetricHistorySign)
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoObstetricHistorySign)
     in
     Maybe.map ObstetricHistoryStep2Value form.cSections
         |> andMap (Maybe.map EverySet.singleton form.cSectionReason)
@@ -543,14 +487,17 @@ toFamilyPlanningValueWithDefault saved form =
 
 toFamilyPlanningValue : FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign)
 toFamilyPlanningValue form =
-    Maybe.map (EverySet.fromList >> ifEmpty NoFamilyPlanning) form.signs
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoFamilyPlanning) form.signs
 
 
 fromPrenatalNutritionValue : Maybe PrenatalNutritionValue -> NutritionAssessmentForm
 fromPrenatalNutritionValue saved =
     { height = Maybe.map (.height >> (\(HeightInCm cm) -> cm)) saved
+    , heightDirty = False
     , weight = Maybe.map (.weight >> (\(WeightInKg kg) -> kg)) saved
+    , weightDirty = False
     , muac = Maybe.map (.muac >> (\(MuacInCm cm) -> cm)) saved
+    , muacDirty = False
     }
 
 
@@ -560,9 +507,12 @@ prenatalNutritionFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { height = or form.height (value.height |> (\(HeightInCm cm) -> cm) |> Just)
-                , weight = or form.weight (value.weight |> (\(WeightInKg kg) -> kg) |> Just)
-                , muac = or form.muac (value.muac |> (\(MuacInCm cm) -> cm) |> Just)
+                { height = valueConsideringIsDirtyField form.heightDirty form.height (value.height |> (\(HeightInCm cm) -> cm))
+                , heightDirty = form.heightDirty
+                , weight = valueConsideringIsDirtyField form.weightDirty form.weight (value.weight |> (\(WeightInKg kg) -> kg))
+                , weightDirty = form.weightDirty
+                , muac = valueConsideringIsDirtyField form.muacDirty form.muac (value.muac |> (\(MuacInCm cm) -> cm))
+                , muacDirty = form.muacDirty
                 }
             )
 
@@ -645,7 +595,7 @@ toSocialHistoryValue form =
             , ifNullableTrue PartnerHivCounseling form.partnerReceivedCounseling
             ]
                 |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoSocialHistorySign)
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSocialHistorySign)
     in
     Maybe.map SocialHistoryValue socialHistory
         |> andMap form.partnerTestingResult
@@ -654,10 +604,15 @@ toSocialHistoryValue form =
 fromVitalsValue : Maybe VitalsValue -> VitalsForm
 fromVitalsValue saved =
     { sysBloodPressure = Maybe.map .sys saved
+    , sysBloodPressureDirty = False
     , diaBloodPressure = Maybe.map .dia saved
+    , diaBloodPressureDirty = False
     , heartRate = Maybe.map .heartRate saved
+    , heartRateDirty = False
     , respiratoryRate = Maybe.map .respiratoryRate saved
+    , respiratoryRateDirty = False
     , bodyTemperature = Maybe.map .bodyTemperature saved
+    , bodyTemperatureDirty = False
     }
 
 
@@ -667,11 +622,16 @@ vitalsFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { sysBloodPressure = or form.sysBloodPressure (Just value.sys)
-                , diaBloodPressure = or form.diaBloodPressure (Just value.dia)
-                , heartRate = or form.heartRate (Just value.heartRate)
-                , respiratoryRate = or form.respiratoryRate (Just value.respiratoryRate)
-                , bodyTemperature = or form.bodyTemperature (Just value.bodyTemperature)
+                { sysBloodPressure = valueConsideringIsDirtyField form.sysBloodPressureDirty form.sysBloodPressure value.sys
+                , sysBloodPressureDirty = form.sysBloodPressureDirty
+                , diaBloodPressure = valueConsideringIsDirtyField form.diaBloodPressureDirty form.diaBloodPressure value.dia
+                , diaBloodPressureDirty = form.diaBloodPressureDirty
+                , heartRate = valueConsideringIsDirtyField form.heartRateDirty form.heartRate value.heartRate
+                , heartRateDirty = form.heartRateDirty
+                , respiratoryRate = valueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
+                , respiratoryRateDirty = form.respiratoryRateDirty
+                , bodyTemperature = valueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
+                , bodyTemperatureDirty = form.bodyTemperatureDirty
                 }
             )
 
@@ -1005,10 +965,3 @@ patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestio
             ( taskCompleted form.receivedMosquitoNet
             , 1
             )
-
-
-isTaskCompleted : Dict t ( Int, Int ) -> t -> Bool
-isTaskCompleted dict task =
-    Dict.get task dict
-        |> Maybe.map (\( completed, total ) -> completed == total)
-        |> Maybe.withDefault False

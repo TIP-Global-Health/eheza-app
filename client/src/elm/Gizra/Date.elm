@@ -41,7 +41,7 @@ formatDDMMYY delimiter date =
     -- parameter, so that you end up with a function that always use that
     -- delimiter, and takes a date. So, it's convenient to make the delimiter
     -- the first argument.
-    (Date.day date |> Debug.toString |> addLeadingZero) ++ delimiter ++ monthMM date ++ delimiter ++ yearYY date
+    (Date.day date |> String.fromInt |> addLeadingZero) ++ delimiter ++ monthMM date ++ delimiter ++ yearYY date
 
 
 {-| Format a data using the supplied delimiter.
@@ -62,17 +62,17 @@ formatDDMMYY delimiter date =
 formatDDMMYYhhmm : String -> Date -> String
 formatDDMMYYhhmm delimiter date =
     -- See comment above re: argument order.
-    formatDDMMYY delimiter date ++ " " ++ (hour date |> Debug.toString |> addLeadingZero) ++ ":" ++ (minute date |> Debug.toString |> addLeadingZero)
+    formatDDMMYY delimiter date ++ " " ++ (hour date |> String.fromInt |> addLeadingZero) ++ ":" ++ (minute date |> String.fromInt |> addLeadingZero)
 
 
 monthMM : Date -> String
 monthMM =
-    month >> monthToNumber >> Debug.toString >> addLeadingZero
+    month >> monthToNumber >> String.fromInt >> addLeadingZero
 
 
 yearYY : Date -> String
 yearYY date =
-    modBy 100 (year date) |> Debug.toString |> addLeadingZero
+    modBy 100 (year date) |> String.fromInt |> addLeadingZero
 
 
 {-| A list of all the months, in the traditional order.

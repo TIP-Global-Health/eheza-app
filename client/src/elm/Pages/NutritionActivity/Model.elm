@@ -46,12 +46,13 @@ type alias MuacData =
 
 emptyMuacData : MuacData
 emptyMuacData =
-    { form = MuacForm Nothing
+    { form = MuacForm Nothing False
     }
 
 
 type alias MuacForm =
     { muac : Maybe Float
+    , muacDirty : Bool
     }
 
 
@@ -62,12 +63,13 @@ type alias HeightData =
 
 emptyHeightData : HeightData
 emptyHeightData =
-    { form = HeightForm Nothing
+    { form = HeightForm Nothing False
     }
 
 
 type alias HeightForm =
     { height : Maybe Float
+    , heightDirty : Bool
     }
 
 
@@ -110,10 +112,11 @@ type alias WeightData =
 
 emptyWeightData : WeightData
 emptyWeightData =
-    { form = WeightForm Nothing
+    { form = WeightForm Nothing False
     }
 
 
 type alias WeightForm =
     { weight : Maybe Float
+    , weightDirty : Bool
     }

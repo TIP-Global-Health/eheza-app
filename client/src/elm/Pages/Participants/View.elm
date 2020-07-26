@@ -15,7 +15,7 @@ import Html.Events exposing (onClick)
 import LocalData
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
-import Pages.Utils exposing (backFromSessionPage, filterDependentNoResultsMessage, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
+import Pages.Utils exposing (..)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
 
@@ -119,32 +119,7 @@ view language nurse ( sessionId, session ) model =
         endSessionDialog =
             if model.showEndSessionDialog then
                 Just <|
-                    div [ class "ui tiny active modal" ]
-                        [ div
-                            [ class "header" ]
-                            [ text <| translate language Trans.AreYouSure ]
-                        , div
-                            [ class "content" ]
-                            [ p []
-                                [ text <| translate language Trans.OnceYouEndYourGroupEncounter ]
-                            ]
-                        , div
-                            [ class "actions" ]
-                            [ div
-                                [ class "two ui buttons" ]
-                                [ button
-                                    [ class "ui fluid button"
-                                    , onClick <| ShowEndSessionDialog False
-                                    ]
-                                    [ text <| translate language Trans.Cancel ]
-                                , button
-                                    [ class "ui primary fluid button"
-                                    , onClick CloseSession
-                                    ]
-                                    [ text <| translate language Trans.Continue ]
-                                ]
-                            ]
-                        ]
+                    viewEndEncounterDialog language Trans.AreYouSure Trans.OnceYouEndYourGroupEncounter CloseSession (ShowEndSessionDialog False)
 
             else
                 Nothing

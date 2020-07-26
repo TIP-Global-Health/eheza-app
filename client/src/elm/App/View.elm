@@ -13,6 +13,12 @@ import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
+import Pages.AcuteIllnessActivity.Model
+import Pages.AcuteIllnessActivity.View
+import Pages.AcuteIllnessEncounter.Model
+import Pages.AcuteIllnessEncounter.View
+import Pages.AcuteIllnessParticipant.View
+import Pages.AcuteIllnessProgressReport.View
 import Pages.Clinical.View
 import Pages.ClinicalProgressReport.View
 import Pages.Clinics.View
@@ -280,6 +286,10 @@ viewUserPage page model configured =
                         Pages.NutritionParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
                             |> flexPageWrapper model
 
+                    AcuteIllnessParticipantPage id ->
+                        Pages.AcuteIllnessParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
+                            |> flexPageWrapper model
+
                     IndividualEncounterParticipantsPage encounterType ->
                         Pages.IndividualEncounterParticipants.View.view model.language
                             currentDate
@@ -384,6 +394,30 @@ viewUserPage page model configured =
 
                     NutritionProgressReportPage encounterId ->
                         Pages.NutritionProgressReport.View.view model.language currentDate model.zscores encounterId model.indexedDb
+                            |> oldPageWrapper model
+
+                    AcuteIllnessEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.acuteIllnessEncounterPages
+                                    |> Maybe.withDefault Pages.AcuteIllnessEncounter.Model.emptyModel
+                        in
+                        Pages.AcuteIllnessEncounter.View.view model.language currentDate id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessEncounter id)
+                            |> flexPageWrapper model
+
+                    AcuteIllnessActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.acuteIllnessActivityPages
+                                    |> Maybe.withDefault Pages.AcuteIllnessActivity.Model.emptyModel
+                        in
+                        Pages.AcuteIllnessActivity.View.view model.language currentDate id activity model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity)
+                            |> flexPageWrapper model
+
+                    AcuteIllnessProgressReportPage encounterId ->
+                        Pages.AcuteIllnessProgressReport.View.view model.language currentDate encounterId model.indexedDb
                             |> oldPageWrapper model
 
             else

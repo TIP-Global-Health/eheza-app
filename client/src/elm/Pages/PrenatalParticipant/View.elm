@@ -29,7 +29,7 @@ view language currentDate selectedHealthCenter id db =
                 |> Maybe.withDefault NotAsked
     in
     div
-        [ class "wrap wrap-alt-2 page-prenatal-participant" ]
+        [ class "wrap wrap-alt-2 page-participant prenatal" ]
         [ viewHeader language id
         , div
             [ class "ui full segment" ]
@@ -106,7 +106,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id db prenatalSess
                     )
                 |> Maybe.withDefault ( Nothing, 0, False )
 
-        -- Wither first prenatal encounter for person is in process.
+        -- Whether first prenatal encounter for person is in process.
         -- This is True when there's only one encounter, and it's active.
         firstEncounterInProcess =
             maybeSessionId
