@@ -83,7 +83,7 @@ viewMainPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
 viewMainPage language currentDate stats model =
     let
         currentPeriodStats =
-            filterStatsByPeriod currentDate model stats
+            filterStatsWithinPeriod currentDate model stats
     in
     div [ class "dashboard main" ]
         [ viewPeriodFilter language model filterPeriods
@@ -111,7 +111,7 @@ viewStatsPage : Language -> NominalDate -> DashboardStats -> Model -> HealthCent
 viewStatsPage language currentDate stats model healthCenterId db =
     let
         currentPeriodStats =
-            filterStatsByPeriod currentDate model stats
+            filterStatsWithinPeriod currentDate model stats
     in
     div [ class "dashboard stats" ]
         [ viewPeriodFilter language model filterPeriodsForStatsPage
@@ -126,7 +126,7 @@ viewCaseManagementPage : Language -> NominalDate -> DashboardStats -> Model -> H
 viewCaseManagementPage language currentDate stats model =
     let
         currentPeriodStats =
-            filterStatsByPeriod currentDate model stats
+            filterStatsWithinPeriod currentDate model stats
 
         currentMonth =
             Date.month currentDate
@@ -332,7 +332,7 @@ viewAllStatsCards language stats currentPeriodStats currentDate model healthCent
                 { model | period = ThreeMonthsAgo }
 
         monthBeforeStats =
-            filterStatsByPeriod currentDate modelWithLastMonth stats
+            filterStatsWithinPeriod currentDate modelWithLastMonth stats
     in
     div [ class "ui equal width grid" ]
         [ viewMalnourishedCards language currentPeriodStats monthBeforeStats
@@ -673,9 +673,8 @@ viewBeneficiariesTable language currentDate stats currentPeriodStats model =
                 ThisMonth ->
                     stats
 
-                -- @todo
                 _ ->
-                    stats
+                    filterStatsOutsidePeriod currentDate model stats
 
         filterByAge filterFunc statsToFilter =
             filterStatsByAge
@@ -1151,10 +1150,24 @@ filterStatsByAge currentDate func stats =
     }
 
 
+filterStatsWithinPeriod : NominalDate -> Model -> DashboardStats -> DashboardStats
+filterStatsWithinPeriod currentDate model stats =
+    filterStatsByPeriod isBetween currentDate model stats
+
+
+filterStatsOutsidePeriod : NominalDate -> Model -> DashboardStats -> DashboardStats
+filterStatsOutsidePeriod currentDate model stats =
+    let
+        outside start end date =
+            isBetween start end date |> not
+    in
+    filterStatsByPeriod outside currentDate model stats
+
+
 {-| Filter stats to match the selected period.
 -}
-filterStatsByPeriod : NominalDate -> Model -> DashboardStats -> DashboardStats
-filterStatsByPeriod currentDate model stats =
+filterStatsByPeriod : (NominalDate -> NominalDate -> NominalDate -> Bool) -> NominalDate -> Model -> DashboardStats -> DashboardStats
+filterStatsByPeriod fiterFunc currentDate model stats =
     let
         ( startDate, endDate ) =
             case model.period of
@@ -1188,7 +1201,7 @@ filterStatsByPeriod currentDate model stats =
                     )
 
         filterPartial =
-            isBetween startDate endDate
+            fiterFunc startDate endDate
 
         childrenBeneficiariesUpdated =
             stats.childrenBeneficiaries
