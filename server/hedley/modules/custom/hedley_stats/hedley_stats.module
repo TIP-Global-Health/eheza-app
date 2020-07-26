@@ -739,7 +739,7 @@ function hedley_stats_get_total_encounters($health_center_id) {
 function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center_id, $period)) {
-//    return $cache_data;
+    return $cache_data;
   }
 
   // Set the data for each month.
@@ -790,7 +790,7 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
         $month = date('n', $date_as_timestamp);
 
         // If measurement was taken over a year ago,
-        // we set it at month 0. It's used to calculate the changes
+        // we set it at month 13. It's used to calculate the changes
         // that took place at first month of one year period.
         if ($date_as_timestamp < strtotime("last day of -1 year") + $one_day) {
           $month = '13';
@@ -895,8 +895,8 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
  *   The Health center node ID.
  * @param string $period
  *   The period to query.
- * @param string $created
- *   Optional; Adds the created filter to the person, must be a timestamp.
+ * @param bool $extend
+ *   Optional; If True, data goes back one more month for 'one year' period.
  *
  * @return array
  *   The queried measurements results.
@@ -968,6 +968,8 @@ function hedley_stats_get_measurements_query_grouped_by_person($health_center_id
  *   Either single measurement type or an array of types.
  * @param string $period
  *   The period during which measurement was taken.
+ * @param bool $extend
+ *   Optional; If True, data goes back one more month for 'one year' period.
  *
  * @return \SelectQuery
  *   THe query object.
@@ -1011,9 +1013,8 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period, $ex
  *
  * @param string $period
  *   The period to calculate.
- * @param bool $as_timestamp
- *   Determine if date should be returned as string or timestamp. Defaults to
- *   TRUE.
+ * @param bool $extend
+ *   Optional; If True, data goes back one more month for 'one year' period.
  *
  * @return false|array
  *   The date period.
@@ -1035,6 +1036,8 @@ function hedley_stats_get_period($period, $extend = FALSE) {
  *
  * @param string $period
  *   The name of the period.
+ * @param bool $extend
+ *   Optional; If True, data goes back one more month for 'one year' period.
  *
  * @return array
  *   The start and the end of the period timestamps.
@@ -1042,7 +1045,6 @@ function hedley_stats_get_period($period, $extend = FALSE) {
 function hedley_stats_get_range_for_period($period, $extend = FALSE) {
   $now = time();
   $one_day = 24 * 3600;
-  $one_month = 31 * $one_day;
 
   switch ($period) {
     case HEDLEY_STATS_PERIOD_THIS_MONTH:
@@ -1078,7 +1080,7 @@ function hedley_stats_get_range_for_period($period, $extend = FALSE) {
       }
 
       return [
-        'start' => $extend ? $start - $one_month : $start,
+        'start' => $start,
         'end' => $now + $one_day,
       ];
 
