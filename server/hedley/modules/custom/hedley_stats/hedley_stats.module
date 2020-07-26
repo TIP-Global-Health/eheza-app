@@ -256,8 +256,6 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
     return $cache_data;
   }
 
-  $date = hedley_stats_get_period($period, TRUE);
-
   $query = db_select('node', 'node');
   $query->fields('node', ['type', 'nid', 'created']);
   $query->condition('node.type', 'pmtct_participant');
