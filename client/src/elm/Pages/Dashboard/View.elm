@@ -1,7 +1,21 @@
 module Pages.Dashboard.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, DashboardStats, GoodNutrition, Nutrition, NutritionValue, ParticipantStats, Periods, TotalBeneficiaries)
+import Backend.Dashboard.Model
+    exposing
+        ( CaseManagement
+        , CaseNutrition
+        , CaseNutritionTotal
+        , DashboardStats
+        , GoodNutrition
+        , Nutrition
+        , NutritionValue
+        , ParticipantStats
+        , Periods
+        , TotalBeneficiaries
+        , emptyNutrition
+        , emptyTotalBeneficiaries
+        )
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
@@ -38,27 +52,21 @@ import Utils.Html exposing (spinner, viewModal)
 view : Language -> DashboardPage -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
 view language page currentDate healthCenterId model db =
     let
-        stats =
+        ( content, goBackPage ) =
             Dict.get healthCenterId db.computedDashboard
-                |> Maybe.withDefault Backend.Dashboard.Model.emptyModel
+                |> Maybe.map
+                    (\stats ->
+                        case page of
+                            MainPage ->
+                                ( viewMainPage language currentDate stats model, PinCodePage )
 
-        ( pageView, goBackPage ) =
-            case page of
-                MainPage ->
-                    case stats.maybeGoodNutrition of
-                        Nothing ->
-                            -- Add loading only here because it's the only page reachable from an outside link before
-                            -- fetching the stats.
-                            ( spinner, PinCodePage )
+                            StatsPage ->
+                                ( viewStatsPage language currentDate stats model healthCenterId db, UserPage <| DashboardPage MainPage )
 
-                        _ ->
-                            ( viewMainPage language currentDate stats model, PinCodePage )
-
-                StatsPage ->
-                    ( viewStatsPage language currentDate stats model healthCenterId db, UserPage <| DashboardPage MainPage )
-
-                CaseManagementPage ->
-                    ( viewCaseManagementPage language currentDate stats model, UserPage <| DashboardPage model.latestPage )
+                            CaseManagementPage ->
+                                ( viewCaseManagementPage language currentDate stats model, UserPage <| DashboardPage model.latestPage )
+                    )
+                |> Maybe.withDefault ( spinner, PinCodePage )
 
         header =
             div
@@ -75,7 +83,7 @@ view language page currentDate healthCenterId model db =
     div
         [ class "wrap" ]
         [ header
-        , pageView
+        , content
         ]
 
 
@@ -84,6 +92,21 @@ viewMainPage language currentDate stats model =
     let
         currentPeriodStats =
             filterStatsWithinPeriod currentDate model stats
+
+        emptyTotalBeneficiariesDict =
+            List.repeat 12 emptyTotalBeneficiaries
+                |> List.indexedMap (\index empty -> ( index + 1, empty ))
+                |> Dict.fromList
+
+        totalsGraphData =
+            stats.caseManagement
+                |> List.map (.nutrition >> generateCaseNutritionTotals)
+                |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
+
+        newCasesGraphData =
+            stats.caseManagement
+                |> List.map (.nutrition >> generateCaseNutritionNewCases currentDate)
+                |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
     in
     div [ class "dashboard main" ]
         [ viewPeriodFilter language model filterPeriods
@@ -95,16 +118,149 @@ viewMainPage language currentDate stats model =
                 [ viewTotalEncounters language currentPeriodStats.totalEncounters
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language currentDate (Translate.Dashboard Translate.TotalBeneficiaries) FilterBeneficiariesChart currentPeriodStats.totalBeneficiaries model.currentBeneficiariesChartsFilter
+                [ viewMonthlyChart language currentDate (Translate.Dashboard Translate.TotalBeneficiaries) FilterBeneficiariesChart totalsGraphData model.currentBeneficiariesChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language currentDate (Translate.Dashboard Translate.IncidenceOf) FilterBeneficiariesIncidenceChart currentPeriodStats.totalBeneficiariesIncidence model.currentBeneficiariesIncidenceChartsFilter
+                [ viewMonthlyChart language currentDate (Translate.Dashboard Translate.IncidenceOf) FilterBeneficiariesIncidenceChart newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewDashboardPagesLinks language
                 ]
             ]
         ]
+
+
+accumCaseNutritionTotals : CaseNutritionTotal -> Dict Int TotalBeneficiaries -> Dict Int TotalBeneficiaries
+accumCaseNutritionTotals totals dict =
+    Dict.toList dict
+        |> List.map
+            (\( key, accum ) ->
+                let
+                    stunting =
+                        Dict.get key totals.stunting
+                            |> Maybe.map
+                                (\totalsStunting ->
+                                    Nutrition (totalsStunting.severeNutrition + accum.stunting.severeNutrition) (totalsStunting.moderateNutrition + accum.stunting.moderateNutrition)
+                                )
+                            |> Maybe.withDefault accum.stunting
+
+                    underweight =
+                        Dict.get key totals.underweight
+                            |> Maybe.map
+                                (\totalsUnderweight ->
+                                    Nutrition (totalsUnderweight.severeNutrition + accum.underweight.severeNutrition) (totalsUnderweight.moderateNutrition + accum.underweight.moderateNutrition)
+                                )
+                            |> Maybe.withDefault accum.underweight
+
+                    wasting =
+                        Dict.get key totals.wasting
+                            |> Maybe.map
+                                (\totalsWasting ->
+                                    Nutrition (totalsWasting.severeNutrition + accum.wasting.severeNutrition) (totalsWasting.moderateNutrition + accum.wasting.moderateNutrition)
+                                )
+                            |> Maybe.withDefault accum.wasting
+
+                    muac =
+                        Dict.get key totals.muac
+                            |> Maybe.map
+                                (\totalsMuac ->
+                                    Nutrition (totalsMuac.severeNutrition + accum.muac.severeNutrition) (totalsMuac.moderateNutrition + accum.muac.moderateNutrition)
+                                )
+                            |> Maybe.withDefault accum.muac
+                in
+                ( key, TotalBeneficiaries stunting underweight wasting muac )
+            )
+        |> Dict.fromList
+
+
+generateCaseNutritionTotals : CaseNutrition -> CaseNutritionTotal
+generateCaseNutritionTotals caseNutrition =
+    let
+        generateTotals nutrition =
+            Dict.toList nutrition
+                |> List.filterMap
+                    (\( month, nutritionValue ) ->
+                        if month == 13 then
+                            Nothing
+
+                        else
+                            case nutritionValue.class of
+                                Backend.Dashboard.Model.Moderate ->
+                                    Just ( month, Backend.Dashboard.Model.Nutrition 0 1 )
+
+                                Backend.Dashboard.Model.Severe ->
+                                    Just ( month, Backend.Dashboard.Model.Nutrition 1 0 )
+
+                                _ ->
+                                    Just ( month, Backend.Dashboard.Model.Nutrition 0 0 )
+                    )
+                |> Dict.fromList
+    in
+    { stunting = generateTotals caseNutrition.stunting
+    , underweight = generateTotals caseNutrition.underweight
+    , wasting = generateTotals caseNutrition.wasting
+    , muac = generateTotals caseNutrition.muac
+    }
+
+
+generateCaseNutritionNewCases : NominalDate -> CaseNutrition -> CaseNutritionTotal
+generateCaseNutritionNewCases currentDate caseNutrition =
+    let
+        currentMonth =
+            Date.month currentDate
+                |> Date.monthToNumber
+
+        generateTotals nutrition =
+            let
+                sorted =
+                    Dict.toList nutrition
+                        |> List.sortBy Tuple.first
+
+                oneBeforeFirst =
+                    List.reverse sorted
+                        |> List.head
+
+                ( thisYear, lastYear ) =
+                    List.take 12 sorted
+                        |> List.Extra.splitAt currentMonth
+
+                yearData =
+                    lastYear ++ thisYear
+
+                yearDataShiftedLeft =
+                    oneBeforeFirst
+                        |> Maybe.map (\beforeFirst -> beforeFirst :: List.take 11 yearData)
+                        |> Maybe.withDefault yearData
+            in
+            List.map2
+                (\( month, nutritionValue ) ( _, previousNutritionValue ) ->
+                    case nutritionValue.class of
+                        Backend.Dashboard.Model.Moderate ->
+                            if previousNutritionValue.class == Backend.Dashboard.Model.Moderate then
+                                ( month, Backend.Dashboard.Model.Nutrition 0 1 )
+
+                            else
+                                ( month, Backend.Dashboard.Model.Nutrition 0 0 )
+
+                        Backend.Dashboard.Model.Severe ->
+                            if previousNutritionValue.class == Backend.Dashboard.Model.Severe then
+                                ( month, Backend.Dashboard.Model.Nutrition 1 0 )
+
+                            else
+                                ( month, Backend.Dashboard.Model.Nutrition 0 0 )
+
+                        _ ->
+                            ( month, Backend.Dashboard.Model.Nutrition 0 0 )
+                )
+                yearData
+                yearDataShiftedLeft
+                |> Dict.fromList
+    in
+    { stunting = generateTotals caseNutrition.stunting
+    , underweight = generateTotals caseNutrition.underweight
+    , wasting = generateTotals caseNutrition.wasting
+    , muac = generateTotals caseNutrition.muac
+    }
 
 
 viewStatsPage : Language -> NominalDate -> DashboardStats -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg

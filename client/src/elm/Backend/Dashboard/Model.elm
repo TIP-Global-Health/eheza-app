@@ -1,4 +1,22 @@
-module Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, NutritionStatus(..), NutritionValue, ParticipantStats, Periods, TotalBeneficiaries, emptyModel)
+module Backend.Dashboard.Model exposing
+    ( CaseManagement
+    , CaseNutrition
+    , CaseNutritionTotal
+    , ChildrenBeneficiariesStats
+    , DashboardStats
+    , FamilyPlanningStats
+    , GoodNutrition
+    , MalnourishedStats
+    , Nutrition
+    , NutritionStatus(..)
+    , NutritionValue
+    , ParticipantStats
+    , Periods
+    , TotalBeneficiaries
+    , emptyModel
+    , emptyNutrition
+    , emptyTotalBeneficiaries
+    )
 
 {-| The stats for the dashboard.
 -}
@@ -24,8 +42,6 @@ type alias DashboardStats =
     , maybeGoodNutrition : Maybe GoodNutrition
     , malnourished : List MalnourishedStats
     , missedSessions : List ParticipantStats
-    , totalBeneficiaries : Dict Int TotalBeneficiaries
-    , totalBeneficiariesIncidence : Dict Int TotalBeneficiaries
     , totalEncounters : Periods
     }
 
@@ -39,8 +55,6 @@ emptyModel =
     , maybeGoodNutrition = Nothing
     , malnourished = []
     , missedSessions = []
-    , totalBeneficiaries = Dict.empty
-    , totalBeneficiariesIncidence = Dict.empty
     , totalEncounters = Periods 0 0
     }
 
@@ -56,6 +70,14 @@ type alias CaseNutrition =
     , underweight : Dict Int NutritionValue
     , wasting : Dict Int NutritionValue
     , muac : Dict Int NutritionValue
+    }
+
+
+type alias CaseNutritionTotal =
+    { stunting : Dict Int Nutrition
+    , underweight : Dict Int Nutrition
+    , wasting : Dict Int Nutrition
+    , muac : Dict Int Nutrition
     }
 
 
@@ -113,6 +135,11 @@ type alias Nutrition =
     }
 
 
+emptyNutrition : Nutrition
+emptyNutrition =
+    Nutrition 0 0
+
+
 type alias NutritionValue =
     { class : NutritionStatus
     , value : String
@@ -124,6 +151,15 @@ type alias TotalBeneficiaries =
     , underweight : Nutrition
     , wasting : Nutrition
     , muac : Nutrition
+    }
+
+
+emptyTotalBeneficiaries : TotalBeneficiaries
+emptyTotalBeneficiaries =
+    { stunting = emptyNutrition
+    , underweight = emptyNutrition
+    , wasting = emptyNutrition
+    , muac = emptyNutrition
     }
 
 

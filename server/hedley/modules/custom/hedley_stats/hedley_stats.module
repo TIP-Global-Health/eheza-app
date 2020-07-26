@@ -22,16 +22,12 @@ define('HEDLEY_STATS_GOOD', 'good_nutrition');
 // Cache IDs.
 define('HEDLEY_STATS_SYNC_STATS_CACHE', 'sync_stats_general');
 define('HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON', 'sync_measurements_query_grouped_by_person');
-define('HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON_INCIDENCE', 'sync_measurements_query_grouped_by_person_incidence');
 define('HEDLEY_STATS_SYNC_SESSION_ATTENDANCE', 'sync_session_attendance_stats');
 define('HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES', 'sync_children_beneficiaries_stats');
 define('HEDLEY_STATS_SYNC_FAMILY_PLANNING', 'sync_family_planning_stats');
 define('HEDLEY_STATS_SYNC_MALNOURISHED_BENEFICIARIES', 'sync_malnourished_beneficiaries_stats');
 define('HEDLEY_STATS_SYNC_GOOD_NUTRITION', 'sync_good_nutrition_stats');
 define('HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS', 'sync_total_encounters_stats');
-// Also graphs names.
-define('HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_GRAPH', 'sync_total_beneficiaries_stats');
-define('HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_INCIDENCE_GRAPH', 'sync_total_beneficiaries_incidence_stats');
 define('HEDLEY_STATS_SYNC_CASE_MANAGEMENT', 'sync_case_management_stats');
 
 // Cache methods.
@@ -90,11 +86,8 @@ function hedley_stats_node_presave($node) {
       else {
         // Clear cache for all the periods.
         hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON, $health_center->nid, $period);
-        hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON_INCIDENCE, $health_center->nid, $period);
         hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES, $health_center->nid, $period);
         hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_MALNOURISHED_BENEFICIARIES, $health_center->nid, $period);
-        hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_GRAPH, $health_center->nid, $period);
-        hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_INCIDENCE_GRAPH, $health_center->nid, $period);
         hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center->nid, $period);
       }
     }
@@ -194,8 +187,6 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
         'family_planning' => [],
         'malnourished_beneficiaries' => [],
         'missed_sessions' => [],
-        'total_beneficiaries' => NULL,
-        'total_beneficiaries_incidence' => NULL,
         'total_encounters' => NULL,
       ];
     }
@@ -213,8 +204,6 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
       'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS),
       'malnourished_beneficiaries' => hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS),
       'missed_sessions' => $missed_sessions,
-      'total_beneficiaries' => hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_id, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_GRAPH),
-      'total_beneficiaries_incidence' => hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_id, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_INCIDENCE_GRAPH),
       'total_encounters' => hedley_stats_get_total_encounters($health_center_id),
     ];
 
@@ -275,7 +264,7 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
 
   hedley_restful_join_field_to_query($query, 'node', 'field_expected', FALSE, NULL, NULL, TRUE);
 
-  $date = hedley_stats_get_period($period, FALSE);
+  $date = hedley_stats_get_period($period);
   // We want to get all participants that graduate within, or after
   // defined period.
   $query->condition('field_expected.field_expected_value2', $date['start'], '>');
@@ -545,7 +534,7 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
           }
         }
 
-        $period = hedley_stats_get_period($period_name, FALSE);
+        $period = hedley_stats_get_period($period_name);
 
         // Check if patient has missed the session. This can happen
         // only if session has started before patient has graduated the program.
@@ -731,149 +720,6 @@ function hedley_stats_get_total_encounters($health_center_id) {
 }
 
 /**
- * Get the FBF beneficiaries graphs data.
- *
- * The data is for the "total beneficiaries" graph which is divided by
- * months for the past year and each month has four types:
- * (Stunting, Underweight, Wasting, MUAC).
- *
- * @param int $health_center_id
- *   The health center node ID.
- * @param string $graph_name
- *   The name of the wanted graph, check supported graph names in constants.
- * @param string $period
- *   Optional; The period for the data, defaults to one year.
- *
- * @return array
- *   The nutrition per month data array.
- *
- * @throws \Exception
- */
-function hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_id, $graph_name, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
-  // Return the cache if exists.
-  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, $graph_name, $health_center_id, $period)) {
-    return $cache_data;
-  }
-
-  $nutrition_per_month = [
-    'stunting' => [
-      HEDLEY_STATS_SEVERE => 0,
-      HEDLEY_STATS_MODERATE => 0,
-    ],
-    'underweight' => [
-      HEDLEY_STATS_SEVERE => 0,
-      HEDLEY_STATS_MODERATE => 0,
-    ],
-    'wasting' => [
-      HEDLEY_STATS_SEVERE => 0,
-      HEDLEY_STATS_MODERATE => 0,
-    ],
-    'muac' => [
-      HEDLEY_STATS_SEVERE => 0,
-      HEDLEY_STATS_MODERATE => 0,
-    ],
-  ];
-
-  $data_per_month = [
-    1 => $nutrition_per_month,
-    2 => $nutrition_per_month,
-    3 => $nutrition_per_month,
-    4 => $nutrition_per_month,
-    5 => $nutrition_per_month,
-    6 => $nutrition_per_month,
-    7 => $nutrition_per_month,
-    8 => $nutrition_per_month,
-    9 => $nutrition_per_month,
-    10 => $nutrition_per_month,
-    11 => $nutrition_per_month,
-    12 => $nutrition_per_month,
-  ];
-
-  $created_filter = NULL;
-  if ($graph_name == HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_INCIDENCE_GRAPH) {
-    // For the incidence graph, add a filter for people who were created in the
-    // same period as the filter, those are the "new" people to the system.
-    $created_filter = hedley_stats_get_period($period, TRUE);
-  }
-  $people = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period, $created_filter['start']);
-
-  if (empty($people)) {
-    return $data_per_month;
-  }
-
-  $nutrition_signs = hedley_stats_nutrition_signs();
-
-  // Assign the measurements per month for the last year by the measurement
-  // date.
-  foreach ($people as $person) {
-    foreach ($person as $type => $measurement) {
-
-      // We are interested only with the nutrition signs that match the
-      // current type.
-      $current_nutrition_signs = $nutrition_signs[$type];
-
-      foreach ($measurement as $date => $values) {
-        // Get the date of the measurement in order to distribute them by
-        // months.
-        $month = date('n', strtotime($date));
-
-        foreach ($values as $field_name => $value) {
-
-          // Go through all the measurements for this person.
-          switch ($type) {
-            case 'height':
-              if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
-                $data_per_month[$month]['stunting'][HEDLEY_STATS_SEVERE]++;
-              }
-              elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
-                $data_per_month[$month]['stunting'][HEDLEY_STATS_MODERATE]++;
-              }
-
-              break;
-
-            case 'weight':
-              if ($field_name == 'field_zscore_age') {
-                if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
-                  $data_per_month[$month]['underweight'][HEDLEY_STATS_SEVERE]++;
-                }
-                elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
-                  $data_per_month[$month]['underweight'][HEDLEY_STATS_MODERATE]++;
-                }
-              }
-
-              if ($field_name == 'field_zscore_length') {
-                if ($value <= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE]) {
-                  $data_per_month[$month]['wasting'][HEDLEY_STATS_SEVERE]++;
-                }
-                elseif ($value >= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_MODERATE]) {
-                  $data_per_month[$month]['wasting'][HEDLEY_STATS_MODERATE]++;
-                }
-              }
-
-              break;
-
-            case 'muac':
-              if ($value <= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE]) {
-                $data_per_month[$month]['muac'][HEDLEY_STATS_SEVERE]++;
-              }
-              elseif ($value >= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_muac'][HEDLEY_STATS_MODERATE]) {
-                $data_per_month[$month]['muac'][HEDLEY_STATS_MODERATE]++;
-              }
-
-              break;
-          }
-        }
-      }
-    }
-  }
-
-  // Set the cache.
-  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, $graph_name, $health_center_id, $period, $data_per_month);
-
-  return $data_per_month;
-}
-
-/**
  * Get the "Case Management" data.
  *
  * The data is for the "Case Management" table which is divided by
@@ -893,12 +739,12 @@ function hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_id, $grap
 function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center_id, $period)) {
-    return $cache_data;
+//    return $cache_data;
   }
 
   // Set the data for each month.
   $data_per_month = [];
-  for ($i = 1; $i <= 12; $i++) {
+  for ($i = 1; $i <= 13; $i++) {
     $data_per_month[$i] = [
       'class' => 'neutral',
       'value' => 'X',
@@ -913,7 +759,7 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
     'muac' => $data_per_month,
   ];
 
-  $people_data = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period);
+  $people_data = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period, TRUE);
 
   if (empty($people_data)) {
     return [];
@@ -936,10 +782,19 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
       // current type.
       $current_nutrition_signs = $nutrition_signs[$type];
 
+      $one_day = 24 * 60 * 60;
       foreach ($measurement as $date => $values) {
         // Get the date of the measurement in order to distribute them by
         // months.
-        $month = date('n', strtotime($date));
+        $date_as_timestamp = strtotime($date);
+        $month = date('n', $date_as_timestamp);
+
+        // If measurement was taken over a year ago,
+        // we set it at month 0. It's used to calculate the changes
+        // that took place at first month of one year period.
+        if ($date_as_timestamp < strtotime("last day of -1 year") + $one_day) {
+          $month = '13';
+        };
 
         foreach ($values as $field_name => $value) {
           // Some z-scores will not be present, when not all measurements
@@ -1048,8 +903,8 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
  *
  * @throws \Exception
  */
-function hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period, $created = NULL) {
-  $cache_name = $created ? HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON_INCIDENCE : HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON;
+function hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period, $extend = FALSE) {
+  $cache_name = HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON;
 
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, $cache_name, $health_center_id, $period)) {
@@ -1061,7 +916,7 @@ function hedley_stats_get_measurements_query_grouped_by_person($health_center_id
 
   // We start from attendance for this year and last year and we get
   // measurements by the session (Encounter) ID.
-  $query = hedley_stats_get_base_query($health_center_id, array_keys($node_types), $period);
+  $query = hedley_stats_get_base_query($health_center_id, array_keys($node_types), $period, $extend);
 
   // Get the group type.
   hedley_stats_join_field_to_query($query, 'node', 'field_session');
@@ -1090,16 +945,6 @@ function hedley_stats_get_measurements_query_grouped_by_person($health_center_id
   // Group measurements by person.
   $people = [];
   foreach ($result as $measurement) {
-    if ($created) {
-      $person_wrapper = entity_metadata_wrapper('node', $measurement->field_person);
-      $birthday = !empty($person_wrapper->field_birth_date->value()) ? $person_wrapper->field_birth_date->value() : NULL;
-      if ($person_wrapper->created->value() < $created || !$birthday || $birthday < strtotime("-24 months")) {
-        // Don't include people who were created before the specified period or
-        // they don't have a birthday or they are older than 2 years.
-        continue;
-      }
-    }
-
     // Get fields for current node type.
     $measurement_fields = $node_types[$measurement->type];
 
@@ -1129,7 +974,7 @@ function hedley_stats_get_measurements_query_grouped_by_person($health_center_id
  *
  * @throws \Exception
  */
-function hedley_stats_get_base_query($health_center_id, $node_type, $period) {
+function hedley_stats_get_base_query($health_center_id, $node_type, $period, $extend = FALSE) {
   $query = db_select('node', 'node');
   $query->fields('node', ['nid', 'created', 'type']);
 
@@ -1147,7 +992,7 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period) {
 
   $query->condition($health_center_field_name, $health_center_id);
 
-  $date = hedley_stats_get_period($period, FALSE);
+  $date = hedley_stats_get_period($period, $extend);
   $query->condition($date_field_name, [
     $date['start'],
     $date['end'],
@@ -1173,7 +1018,7 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period) {
  * @return false|array
  *   The date period.
  */
-function hedley_stats_get_period($period, $as_timestamp = TRUE) {
+function hedley_stats_get_period($period, $extend = FALSE) {
   $range = hedley_stats_get_range_for_period($period);
 
   $db_date_field_format = 'Y-m-d 00:00:00';
@@ -1181,11 +1026,6 @@ function hedley_stats_get_period($period, $as_timestamp = TRUE) {
     'start' => date($db_date_field_format, $range['start']),
     'end' => date($db_date_field_format, $range['end']),
   ];
-
-  if ($as_timestamp) {
-    $date['start'] = strtotime($date['start']);
-    $date['end'] = strtotime($date['end']);
-  }
 
   return $date;
 }
@@ -1199,9 +1039,10 @@ function hedley_stats_get_period($period, $as_timestamp = TRUE) {
  * @return array
  *   The start and the end of the period timestamps.
  */
-function hedley_stats_get_range_for_period($period) {
+function hedley_stats_get_range_for_period($period, $extend = FALSE) {
   $now = time();
   $one_day = 24 * 3600;
+  $one_month = 31 * $one_day;
 
   switch ($period) {
     case HEDLEY_STATS_PERIOD_THIS_MONTH:
@@ -1229,8 +1070,15 @@ function hedley_stats_get_range_for_period($period) {
       ];
 
     case HEDLEY_STATS_PERIOD_ONE_YEAR:
+      $start = strtotime("last day of -1 year") + $one_day;
+      if ($extend) {
+        $current_month = date('n');
+        $current_year = date('Y');
+        $start = $start - $one_day * cal_days_in_month(CAL_GREGORIAN, $current_month, $current_year);
+      }
+
       return [
-        'start' => strtotime("last day of -1 year") + $one_day,
+        'start' => $extend ? $start - $one_month : $start,
         'end' => $now + $one_day,
       ];
 
@@ -1422,7 +1270,7 @@ function hedley_stats_get_pmtct_participants_by_clinic($clinic_id, $range = 100)
  *   Node IDs if they exist or empty array if no nodes exist.
  */
 function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR, $range = 100) {
-  $dates = hedley_stats_get_period($period, FALSE);
+  $dates = hedley_stats_get_period($period);
 
   $query = new EntityFieldQuery();
   $query

@@ -15,28 +15,14 @@ decodeDashboardStats : Decoder DashboardStats
 decodeDashboardStats =
     succeed DashboardStats
         |> required "case_management" (list decodeCaseManagement)
+        -- |> hardcoded []
         |> required "children_beneficiaries" (list decodePeopleStats)
         |> required "completed_program" (list decodeParticipantStats)
         |> required "family_planning" (list decodeFamilyPlanningStats)
         |> optional "good_nutrition" (nullable decodeGoodNutrition) Nothing
         |> required "malnourished_beneficiaries" (list decodeMalnourishedStats)
         |> required "missed_sessions" (list decodeParticipantStats)
-        |> optional "total_beneficiaries" decodeTotalBeneficiariesDict Dict.empty
-        |> optional "total_beneficiaries_incidence" decodeTotalBeneficiariesDict Dict.empty
         |> required "total_encounters" decodePeriods
-
-
-decodeTotalBeneficiariesDict : Decoder (Dict Int TotalBeneficiaries)
-decodeTotalBeneficiariesDict =
-    dict decodeTotalBeneficiaries
-        |> andThen
-            (\dict ->
-                LegacyDict.toList dict
-                    |> List.map
-                        (\( k, v ) -> ( Maybe.withDefault 1 (String.toInt k), v ))
-                    |> Dict.fromList
-                    |> succeed
-            )
 
 
 decodeCaseManagement : Decoder CaseManagement
@@ -62,7 +48,9 @@ decodeNutritionValueDict =
             (\dict ->
                 LegacyDict.toList dict
                     |> List.map
-                        (\( k, v ) -> ( Maybe.withDefault 1 (String.toInt k), v ))
+                        (\( k, v ) ->
+                            ( Maybe.withDefault 1 (String.toInt k), v )
+                        )
                     |> Dict.fromList
                     |> succeed
             )
@@ -98,15 +86,6 @@ decodeNutritionStatus =
                             s
                                 ++ " is not a recognized nutrition status."
             )
-
-
-decodeTotalBeneficiaries : Decoder TotalBeneficiaries
-decodeTotalBeneficiaries =
-    succeed TotalBeneficiaries
-        |> required "stunting" decodeBeneficiaries
-        |> required "underweight" decodeBeneficiaries
-        |> required "wasting" decodeBeneficiaries
-        |> required "muac" decodeBeneficiaries
 
 
 decodeBeneficiaries : Decoder Nutrition
