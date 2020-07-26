@@ -1592,19 +1592,19 @@ viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html 
 viewVitalsForm language currentDate assembled form =
     let
         sysBloodPressureUpdateFunc value form_ =
-            { form_ | sysBloodPressure = value }
+            { form_ | sysBloodPressure = value, sysBloodPressureDirty = True }
 
         diaBloodPressureUpdateFunc value form_ =
-            { form_ | diaBloodPressure = value }
+            { form_ | diaBloodPressure = value, diaBloodPressureDirty = True }
 
         heartRateUpdateFunc value form_ =
-            { form_ | heartRate = value }
+            { form_ | heartRate = value, heartRateDirty = True }
 
         respiratoryRateUpdateFunc value form_ =
-            { form_ | respiratoryRate = value }
+            { form_ | respiratoryRate = value, respiratoryRateDirty = True }
 
         bodyTemperatureUpdateFunc value form_ =
-            { form_ | bodyTemperature = value }
+            { form_ | bodyTemperature = value, bodyTemperatureDirty = True }
 
         sysBloodPressurePreviousValue =
             resolvePreviousValue assembled .vitals .sys
@@ -1719,16 +1719,16 @@ viewNutritionAssessmentForm : Language -> NominalDate -> AssembledData -> Nutrit
 viewNutritionAssessmentForm language currentDate assembled form hideHeightInput =
     let
         heightUpdateFunc value form_ =
-            { form_ | height = value }
+            { form_ | height = value, heightDirty = True }
 
         weightUpdateFunc value form_ =
-            { form_ | weight = value }
+            { form_ | weight = value, weightDirty = True }
 
         bmiUpdateFunc value form_ =
             form_
 
         muacUpdateFunc value form_ =
-            { form_ | muac = value }
+            { form_ | muac = value, muacDirty = True }
 
         heightPreviousValue =
             resolvePreviousValue assembled .nutrition .height
@@ -2043,10 +2043,10 @@ viewObstetricalExamForm language currentDate assembled form =
                     }
 
         fundalHeightUpdateFunc value form_ =
-            { form_ | fundalHeight = value }
+            { form_ | fundalHeight = value, fundalHeightDirty = True }
 
         fetalHeartRateUpdateFunc value form_ =
-            { form_ | fetalHeartRate = value }
+            { form_ | fetalHeartRate = value, fetalHeartRateDirty = True }
 
         fetalMovementUpdateFunc value form_ =
             { form_ | fetalMovement = Just value }

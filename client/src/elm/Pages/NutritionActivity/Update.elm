@@ -32,7 +32,7 @@ update currentDate id db msg model =
                         updatedForm =
                             model.heightData.form
                                 |> (\form ->
-                                        { form | height = String.toFloat string }
+                                        { form | height = String.toFloat string, heightDirty = True }
                                    )
                     in
                     model.heightData
@@ -76,7 +76,7 @@ update currentDate id db msg model =
                         updatedForm =
                             model.muacData.form
                                 |> (\form ->
-                                        { form | muac = String.toFloat string }
+                                        { form | muac = String.toFloat string, muacDirty = True }
                                    )
                     in
                     model.muacData
@@ -226,7 +226,7 @@ update currentDate id db msg model =
                         updatedForm =
                             model.weightData.form
                                 |> (\form ->
-                                        { form | weight = String.toFloat string }
+                                        { form | weight = String.toFloat string, weightDirty = True }
                                    )
                     in
                     model.weightData

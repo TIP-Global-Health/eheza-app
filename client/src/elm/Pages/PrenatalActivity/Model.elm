@@ -424,35 +424,51 @@ type ExaminationTask
 
 type alias VitalsForm =
     { sysBloodPressure : Maybe Float
+    , sysBloodPressureDirty : Bool
     , diaBloodPressure : Maybe Float
+    , diaBloodPressureDirty : Bool
     , heartRate : Maybe Int
+    , heartRateDirty : Bool
     , respiratoryRate : Maybe Int
+    , respiratoryRateDirty : Bool
     , bodyTemperature : Maybe Float
+    , bodyTemperatureDirty : Bool
     }
 
 
 emptyVitalsForm : VitalsForm
 emptyVitalsForm =
     { sysBloodPressure = Nothing
+    , sysBloodPressureDirty = False
     , diaBloodPressure = Nothing
+    , diaBloodPressureDirty = False
     , heartRate = Nothing
+    , heartRateDirty = False
     , respiratoryRate = Nothing
+    , respiratoryRateDirty = False
     , bodyTemperature = Nothing
+    , bodyTemperatureDirty = False
     }
 
 
 type alias NutritionAssessmentForm =
     { height : Maybe Float
+    , heightDirty : Bool
     , weight : Maybe Float
+    , weightDirty : Bool
     , muac : Maybe Float
+    , muacDirty : Bool
     }
 
 
 emptyNutritionAssessmentForm : NutritionAssessmentForm
 emptyNutritionAssessmentForm =
     { height = Nothing
+    , heightDirty = False
     , weight = Nothing
+    , weightDirty = False
     , muac = Nothing
+    , muacDirty = False
     }
 
 
@@ -486,9 +502,11 @@ emptyCorePhysicalExamForm =
 
 type alias ObstetricalExamForm =
     { fundalHeight : Maybe Float
+    , fundalHeightDirty : Bool
     , fetalPresentation : Maybe FetalPresentation
     , fetalMovement : Maybe Bool
     , fetalHeartRate : Maybe Int
+    , fetalHeartRateDirty : Bool
     , cSectionScar : Maybe CSectionScar
     }
 
@@ -496,9 +514,11 @@ type alias ObstetricalExamForm =
 emptyObstetricalExamForm : ObstetricalExamForm
 emptyObstetricalExamForm =
     { fundalHeight = Nothing
+    , fundalHeightDirty = False
     , fetalPresentation = Nothing
     , fetalMovement = Nothing
     , fetalHeartRate = Nothing
+    , fetalHeartRateDirty = False
     , cSectionScar = Nothing
     }
 

@@ -337,7 +337,7 @@ update currentDate id db msg model =
                     model.physicalExamData.vitalsForm
 
                 updatedForm =
-                    { form | respiratoryRate = String.toInt value }
+                    { form | respiratoryRate = String.toInt value, respiratoryRateDirty = True }
 
                 updatedData =
                     model.physicalExamData
@@ -354,7 +354,7 @@ update currentDate id db msg model =
                     model.physicalExamData.vitalsForm
 
                 updatedForm =
-                    { form | bodyTemperature = String.toFloat value }
+                    { form | bodyTemperature = String.toFloat value, bodyTemperatureDirty = True }
 
                 updatedData =
                     model.physicalExamData

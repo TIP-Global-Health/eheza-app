@@ -1,4 +1,4 @@
-module Pages.Utils exposing (backFromSessionPage, filterDependentNoResultsMessage, ifEverySetEmpty, isTaskCompleted, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, tasksBarId, viewBoolInput, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxSelectInputItem, viewCheckBoxValueInput, viewCheckBoxValueInputItem, viewCheckBoxValueInputNone, viewCustomLabel, viewEndEncounterDialog, viewLabel, viewMeasurementInput, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement, viewQuestionLabel)
+module Pages.Utils exposing (backFromSessionPage, filterDependentNoResultsMessage, ifEverySetEmpty, isTaskCompleted, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, tasksBarId, valueConsideringIsDirtyField, viewBoolInput, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxSelectInputItem, viewCheckBoxValueInput, viewCheckBoxValueInputItem, viewCheckBoxValueInputNone, viewCustomLabel, viewEndEncounterDialog, viewLabel, viewMeasurementInput, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement, viewQuestionLabel)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PersonId)
@@ -13,7 +13,7 @@ import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust, or, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Translate exposing (Language, TranslationId, translate)
 
@@ -436,6 +436,15 @@ ifEverySetEmpty value set =
 
     else
         set
+
+
+valueConsideringIsDirtyField : Bool -> Maybe a -> a -> Maybe a
+valueConsideringIsDirtyField isDirty formVariant valueVariant =
+    if isDirty then
+        formVariant
+
+    else
+        or formVariant (Just valueVariant)
 
 
 {-| Show a photo thumbnail.
