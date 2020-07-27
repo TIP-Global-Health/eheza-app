@@ -1076,7 +1076,7 @@ function hedley_stats_get_range_for_period($period, $extend = FALSE) {
       if ($extend) {
         $current_month = date('n');
         $current_year = date('Y');
-        $start = $start - $one_day * cal_days_in_month(CAL_GREGORIAN, $current_month, $current_year);
+        $start = $start - $one_day * hedley_stats_calculate_days_in_month($current_year - 1, $current_month);
       }
 
       return [
@@ -1329,4 +1329,23 @@ function hedley_stats_handle_cache($method, $cache_name, $health_center_id, $per
       }
       break;
   }
+}
+
+
+/**
+ * Returns number of days in given month of given year.
+ *
+ * @param int $year
+ *   The year.
+ * @param int $month
+ *   The month.
+ *
+ * @see: https://stackoverflow.com/questions/9240891/
+ *       cal-days-in-month-function-is-not-working#answer-9240933.
+ *
+ * @return int
+ *   Number of days in given month of given year
+ */
+function hedley_stats_calculate_days_in_month($year, $month) {
+  return (int) date('t', mktime(0, 0, 0, $month, 1, $year));
 }
