@@ -1331,7 +1331,6 @@ function hedley_stats_handle_cache($method, $cache_name, $health_center_id, $per
   }
 }
 
-
 /**
  * Returns number of days in given month of given year.
  *
