@@ -8,6 +8,7 @@ module Pages.Dashboard.Model exposing
     , FilterPeriod(..)
     , FilterType(..)
     , Model
+    , MonthlyChartType(..)
     , Msg(..)
     , StatsCard
     , emptyModel
@@ -161,6 +162,11 @@ type FilterType
     = FilterBeneficiariesChart
     | FilterBeneficiariesIncidenceChart
     | FilterCaseManagement
+
+
+type MonthlyChartType
+    = MonthlyChartTotals
+    | MonthlyChartIncidence
 
 
 type Msg

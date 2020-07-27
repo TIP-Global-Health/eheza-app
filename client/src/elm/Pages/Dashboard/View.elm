@@ -24,7 +24,7 @@ import Color exposing (Color)
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
 import Debug exposing (toString)
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, allMonths, isDiffTruthy, yearYYNumber)
+import Gizra.NominalDate exposing (NominalDate, allMonths, formatYYYYMMDD, isDiffTruthy, yearYYNumber)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, src)
 import Html.Events exposing (onClick)
@@ -93,6 +93,9 @@ viewMainPage language currentDate stats model =
         currentPeriodStats =
             filterStatsWithinPeriod currentDate model stats
 
+        totalBeneficiariesMonthlyDuringPastYear =
+            generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats
+
         emptyTotalBeneficiariesDict =
             List.repeat 12 emptyTotalBeneficiaries
                 |> List.indexedMap (\index empty -> ( index + 1, empty ))
@@ -102,11 +105,13 @@ viewMainPage language currentDate stats model =
             stats.caseManagement
                 |> List.map (.nutrition >> generateCaseNutritionTotals)
                 |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
+                |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
 
         newCasesGraphData =
             stats.caseManagement
                 |> List.map (.nutrition >> generateCaseNutritionNewCases currentDate)
                 |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
+                |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
     in
     div [ class "dashboard main" ]
         [ viewPeriodFilter language model filterPeriods
@@ -118,16 +123,89 @@ viewMainPage language currentDate stats model =
                 [ viewTotalEncounters language currentPeriodStats.totalEncounters
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language currentDate (Translate.Dashboard Translate.TotalBeneficiaries) FilterBeneficiariesChart totalsGraphData model.currentBeneficiariesChartsFilter
+                [ viewMonthlyChart language currentDate MonthlyChartTotals FilterBeneficiariesChart totalsGraphData model.currentBeneficiariesChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language currentDate (Translate.Dashboard Translate.IncidenceOf) FilterBeneficiariesIncidenceChart newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
+                [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewDashboardPagesLinks language
                 ]
             ]
         ]
+
+
+applyTotalBeneficiariesDenomination : Dict Int Int -> Dict Int TotalBeneficiaries -> Dict Int TotalBeneficiaries
+applyTotalBeneficiariesDenomination beneficiariesPerMonthsDict totalBeneficiariesDict =
+    let
+        applyDenomination number denominator =
+            ceiling (100 * toFloat number / toFloat denominator)
+    in
+    totalBeneficiariesDict
+        |> Dict.map
+            (\month totalBeneficiaries ->
+                Dict.get month beneficiariesPerMonthsDict
+                    |> Maybe.map
+                        (\total ->
+                            { stunting =
+                                Nutrition (applyDenomination totalBeneficiaries.stunting.severeNutrition total)
+                                    (applyDenomination totalBeneficiaries.stunting.moderateNutrition total)
+                            , underweight =
+                                Nutrition (applyDenomination totalBeneficiaries.underweight.severeNutrition total)
+                                    (applyDenomination totalBeneficiaries.underweight.moderateNutrition total)
+                            , wasting =
+                                Nutrition (applyDenomination totalBeneficiaries.wasting.severeNutrition total)
+                                    (applyDenomination totalBeneficiaries.wasting.moderateNutrition total)
+                            , muac =
+                                Nutrition (applyDenomination totalBeneficiaries.muac.severeNutrition total)
+                                    (applyDenomination totalBeneficiaries.muac.moderateNutrition total)
+                            }
+                        )
+                    |> Maybe.withDefault totalBeneficiaries
+            )
+
+
+generateTotalBeneficiariesMonthlyDuringPastYear : NominalDate -> DashboardStats -> Dict Int Int
+generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats =
+    let
+        currentMonth =
+            Date.month currentDate
+                |> Date.monthToNumber
+
+        ( thisYear, lastYear ) =
+            List.repeat 12 0
+                |> List.indexedMap (\index _ -> index + 1)
+                |> List.Extra.splitAt currentMonth
+
+        orderedList =
+            (lastYear ++ thisYear)
+                |> List.reverse
+                |> List.indexedMap
+                    (\index month ->
+                        let
+                            maxJoinDate =
+                                Date.add Months (-1 * index) currentDate
+                                    |> Date.ceiling Date.Month
+                                    |> Date.add Days -1
+
+                            minGraduationDate =
+                                Date.add Months (-1 * index) currentDate
+                                    |> Date.floor Date.Month
+
+                            totalBeneficiaries =
+                                stats.childrenBeneficiaries
+                                    |> List.filter
+                                        (\child ->
+                                            (Date.compare child.memberSince maxJoinDate == LT)
+                                                && (Date.compare minGraduationDate child.graduationDate == LT)
+                                        )
+                                    |> List.length
+                        in
+                        ( month, totalBeneficiaries )
+                    )
+                |> Dict.fromList
+    in
+    orderedList
 
 
 accumCaseNutritionTotals : CaseNutritionTotal -> Dict Int TotalBeneficiaries -> Dict Int TotalBeneficiaries
@@ -818,19 +896,54 @@ viewBeneficiariesGenderFilter language model =
 viewBeneficiariesTable : Language -> NominalDate -> DashboardStats -> DashboardStats -> Model -> Html Msg
 viewBeneficiariesTable language currentDate stats currentPeriodStats model =
     let
-        currentPeriodStatsFilteredByGender =
-            filterStatsByGender currentDate model currentPeriodStats
-
-        currentPeriodParticipantsStatsFilteredByGender =
-            filterStatsByGender currentDate model currentPeriodParticipantsStats
-
-        currentPeriodParticipantsStats =
+        currentPeriodTotalBeneficiaries =
             case model.period of
                 ThisMonth ->
-                    stats
+                    let
+                        minGraduationDate =
+                            Date.floor Date.Month currentDate
+                    in
+                    stats.childrenBeneficiaries
+                        |> List.filter (\child -> Date.compare minGraduationDate child.graduationDate == LT)
+
+                LastMonth ->
+                    let
+                        maxJoinDate =
+                            Date.add Months -1 currentDate
+                                |> Date.ceiling Date.Month
+                                |> Date.add Days -1
+
+                        minGraduationDate =
+                            Date.add Months -1 currentDate
+                                |> Date.floor Date.Month
+                    in
+                    stats.childrenBeneficiaries
+                        |> List.filter
+                            (\child ->
+                                (Date.compare child.memberSince maxJoinDate == LT)
+                                    && (Date.compare minGraduationDate child.graduationDate == LT)
+                            )
 
                 _ ->
-                    filterStatsOutsidePeriod currentDate model stats
+                    []
+
+        currentPeriodTotalBeneficiariesByGender =
+            applyGenderFilter model currentPeriodTotalBeneficiaries
+
+        currentPeriodTotalBeneficiaries0_5 =
+            applyAgeFilter currentDate filter0_5Func currentPeriodTotalBeneficiariesByGender
+
+        currentPeriodTotalBeneficiaries6_8 =
+            applyAgeFilter currentDate filter6_8Func currentPeriodTotalBeneficiariesByGender
+
+        currentPeriodTotalBeneficiaries9_11 =
+            applyAgeFilter currentDate filter9_11Func currentPeriodTotalBeneficiariesByGender
+
+        currentPeriodTotalBeneficiaries12_25 =
+            applyAgeFilter currentDate filter12_25Func currentPeriodTotalBeneficiariesByGender
+
+        currentPeriodStatsFilteredByGender =
+            filterStatsByGender currentDate model currentPeriodStats
 
         filterByAge filterFunc statsToFilter =
             filterStatsByAge
@@ -838,55 +951,41 @@ viewBeneficiariesTable language currentDate stats currentPeriodStats model =
                 filterFunc
                 statsToFilter
 
-        filter0_5 statsToFilter =
-            filterByAge (\{ months } -> months <= 5) statsToFilter
-
-        filter6_8 statsToFilter =
-            filterByAge (\{ months } -> months >= 6 && months <= 8) statsToFilter
-
-        filter9_11 statsToFilter =
-            filterByAge (\{ months } -> months >= 9 && months <= 11) statsToFilter
-
-        filter12_25 statsToFilter =
-            filterByAge (\{ months } -> months >= 12) statsToFilter
-
         currentPeriodStats0_5 =
-            filter0_5 currentPeriodStatsFilteredByGender
+            filterByAge filter0_5Func currentPeriodStatsFilteredByGender
 
         currentPeriodStats6_8 =
-            filter6_8 currentPeriodStatsFilteredByGender
+            filterByAge filter6_8Func currentPeriodStatsFilteredByGender
 
         currentPeriodStats9_11 =
-            filter9_11 currentPeriodStatsFilteredByGender
+            filterByAge filter9_11Func currentPeriodStatsFilteredByGender
 
         currentPeriodStats12_25 =
-            filter12_25 currentPeriodStatsFilteredByGender
+            filterByAge filter12_25Func currentPeriodStatsFilteredByGender
 
-        currentPeriodParticipantsStats0_5 =
-            filter0_5 currentPeriodParticipantsStatsFilteredByGender
+        filter0_5Func =
+            \{ months } -> months <= 5
 
-        currentPeriodParticipantsStats6_8 =
-            filter6_8 currentPeriodParticipantsStatsFilteredByGender
+        filter6_8Func =
+            \{ months } -> months >= 6 && months <= 8
 
-        currentPeriodParticipantsStats9_11 =
-            filter9_11 currentPeriodParticipantsStatsFilteredByGender
+        filter9_11Func =
+            \{ months } -> months >= 9 && months <= 11
 
-        currentPeriodParticipantsStats12_25 =
-            filter12_25 currentPeriodParticipantsStatsFilteredByGender
+        filter12_25Func =
+            \{ months } -> months >= 12
 
         getBeneficiariesCount stats_ =
-            stats_.childrenBeneficiaries
-                |> List.length
-                |> String.fromInt
+            lengthAsString stats_.childrenBeneficiaries
 
         getMissedSessionBeneficiariesCount stats_ =
-            stats_.missedSessions
-                |> List.length
-                |> String.fromInt
+            lengthAsString stats_.missedSessions
 
         getTotalMalnourishedCount stats_ =
-            stats_.malnourished
-                |> List.length
+            lengthAsString stats_.malnourished
+
+        lengthAsString list =
+            List.length list
                 |> String.fromInt
     in
     div [ class "ui blue segment fbf-beneficiaries" ]
@@ -909,10 +1008,10 @@ viewBeneficiariesTable language currentDate stats currentPeriodStats model =
                 , tbody []
                     [ tr []
                         [ td [ class "label" ] [ translateText language <| Translate.Dashboard <| Translate.BeneficiariesTableColumnLabel Total ]
-                        , td [] [ text <| getBeneficiariesCount currentPeriodParticipantsStats0_5 ]
-                        , td [] [ text <| getBeneficiariesCount currentPeriodParticipantsStats6_8 ]
-                        , td [] [ text <| getBeneficiariesCount currentPeriodParticipantsStats9_11 ]
-                        , td [] [ text <| getBeneficiariesCount currentPeriodParticipantsStats12_25 ]
+                        , td [] [ text <| lengthAsString currentPeriodTotalBeneficiaries0_5 ]
+                        , td [] [ text <| lengthAsString currentPeriodTotalBeneficiaries6_8 ]
+                        , td [] [ text <| lengthAsString currentPeriodTotalBeneficiaries9_11 ]
+                        , td [] [ text <| lengthAsString currentPeriodTotalBeneficiaries12_25 ]
                         ]
                     , tr []
                         [ td [ class "label" ] [ translateText language <| Translate.Dashboard <| Translate.BeneficiariesTableColumnLabel New ]
@@ -1043,8 +1142,8 @@ viewDonutChart language stats =
             ]
 
 
-viewMonthlyChart : Language -> NominalDate -> TranslationId -> FilterType -> Dict Int TotalBeneficiaries -> FilterCharts -> Html Msg
-viewMonthlyChart language currentDate title filterType data currentFilter =
+viewMonthlyChart : Language -> NominalDate -> MonthlyChartType -> FilterType -> Dict Int TotalBeneficiaries -> FilterCharts -> Html Msg
+viewMonthlyChart language currentDate chartType filterType data currentFilter =
     let
         currentMonth =
             Date.month currentDate
@@ -1059,6 +1158,17 @@ viewMonthlyChart language currentDate title filterType data currentFilter =
         orderedData =
             (lastYear ++ thisYear)
                 |> Dict.fromList
+
+        caption =
+            case chartType of
+                MonthlyChartTotals ->
+                    div [ class "title left floated column" ] [ text <| translate language (Translate.Dashboard Translate.TotalBeneficiaries) ++ " " ++ toString currentFilter ++ " (%)" ]
+
+                MonthlyChartIncidence ->
+                    div [ class "title left floated column" ]
+                        [ div [] [ text <| translate language (Translate.Dashboard Translate.IncidenceOf) ++ " " ++ toString currentFilter ++ " (%)" ]
+                        , div [ class "helper" ] [ text "(New cases per month)" ]
+                        ]
 
         chartData =
             Dict.foldl
@@ -1125,7 +1235,7 @@ viewMonthlyChart language currentDate title filterType data currentFilter =
     in
     div [ class "ui segment blue dashboards-monthly-chart" ]
         [ div [ class "header" ]
-            [ h3 [ class "title left floated column" ] [ text <| translate language title ++ " " ++ toString currentFilter ]
+            [ caption
             , div [ class "filters" ]
                 (List.map (viewFilters filterType currentFilter) filterCharts)
             ]
@@ -1283,20 +1393,16 @@ filterStatsByAge : NominalDate -> ({ months : Int, days : Int } -> Bool) -> Dash
 filterStatsByAge currentDate func stats =
     let
         childrenBeneficiaries =
-            stats.childrenBeneficiaries
-                |> List.filter (\row -> isDiffTruthy row.birthDate currentDate func)
+            applyAgeFilter currentDate func stats.childrenBeneficiaries
 
         completedPrograms =
-            stats.completedPrograms
-                |> List.filter (\row -> isDiffTruthy row.birthDate currentDate func)
+            applyAgeFilter currentDate func stats.completedPrograms
 
         missedSessions =
-            stats.missedSessions
-                |> List.filter (\row -> isDiffTruthy row.birthDate currentDate func)
+            applyAgeFilter currentDate func stats.missedSessions
 
         malnourished =
-            stats.malnourished
-                |> List.filter (\row -> isDiffTruthy row.birthDate currentDate func)
+            applyAgeFilter currentDate func stats.malnourished
     in
     { stats
         | childrenBeneficiaries = childrenBeneficiaries
@@ -1304,6 +1410,11 @@ filterStatsByAge currentDate func stats =
         , missedSessions = missedSessions
         , malnourished = malnourished
     }
+
+
+applyAgeFilter : NominalDate -> ({ months : Int, days : Int } -> Bool) -> List { a | birthDate : NominalDate } -> List { a | birthDate : NominalDate }
+applyAgeFilter currentDate func list =
+    List.filter (\item -> isDiffTruthy item.birthDate currentDate func) list
 
 
 filterStatsWithinPeriod : NominalDate -> Model -> DashboardStats -> DashboardStats
@@ -1392,29 +1503,29 @@ filterStatsByPeriod fiterFunc currentDate model stats =
 -}
 filterStatsByGender : NominalDate -> Model -> DashboardStats -> DashboardStats
 filterStatsByGender currentDate model stats =
-    let
-        -- Filter by gender
-        filterByGender statsList =
-            statsList
-                |> List.filter
-                    (\personStats ->
-                        case ( personStats.gender, model.beneficiariesGender ) of
-                            ( Backend.Person.Model.Male, Pages.Dashboard.Model.Boys ) ->
-                                True
-
-                            ( Backend.Person.Model.Female, Pages.Dashboard.Model.Girls ) ->
-                                True
-
-                            _ ->
-                                False
-                    )
-    in
     { stats
-        | childrenBeneficiaries = filterByGender stats.childrenBeneficiaries
-        , completedPrograms = filterByGender stats.completedPrograms
-        , missedSessions = filterByGender stats.missedSessions
-        , malnourished = filterByGender stats.malnourished
+        | childrenBeneficiaries = applyGenderFilter model stats.childrenBeneficiaries
+        , completedPrograms = applyGenderFilter model stats.completedPrograms
+        , missedSessions = applyGenderFilter model stats.missedSessions
+        , malnourished = applyGenderFilter model stats.malnourished
     }
+
+
+applyGenderFilter : Model -> List { a | gender : Backend.Person.Model.Gender } -> List { a | gender : Backend.Person.Model.Gender }
+applyGenderFilter model list =
+    List.filter
+        (\item ->
+            case ( item.gender, model.beneficiariesGender ) of
+                ( Backend.Person.Model.Male, Pages.Dashboard.Model.Boys ) ->
+                    True
+
+                ( Backend.Person.Model.Female, Pages.Dashboard.Model.Girls ) ->
+                    True
+
+                _ ->
+                    False
+        )
+        list
 
 
 getFamilyPlanningSignsCounter : DashboardStats -> FamilyPlanningSignsCounter
