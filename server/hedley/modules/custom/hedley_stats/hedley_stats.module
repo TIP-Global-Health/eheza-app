@@ -1020,7 +1020,7 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period, $ex
  *   The date period.
  */
 function hedley_stats_get_period($period, $extend = FALSE) {
-  $range = hedley_stats_get_range_for_period($period);
+  $range = hedley_stats_get_range_for_period($period, $extend);
 
   $db_date_field_format = 'Y-m-d 00:00:00';
   $date = [
