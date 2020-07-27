@@ -198,7 +198,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
       // UUID of the health center.
       'uuid' => $wrapper->field_uuid->value(),
       'case_management' => hedley_stats_get_case_management($health_center_id),
-      'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, $fbf_clinics, HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS),
+      'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, $fbf_clinics, HEDLEY_STATS_PERIOD_ONE_YEAR),
       'completed_program' => $completed_program,
       'good_nutrition' => hedley_stats_get_good_nutrition($health_center_id),
       'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS),
