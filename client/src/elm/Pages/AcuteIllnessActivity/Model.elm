@@ -42,7 +42,6 @@ type Msg
     | SetCovid19Country Bool
     | SaveTravelHistory PersonId (Maybe ( TravelHistoryId, TravelHistory )) (Maybe ExposureTask)
     | SetCovid19Symptoms Bool
-    | SetSimilarSymptoms Bool
     | SaveExposure PersonId (Maybe ( ExposureId, Exposure )) (Maybe ExposureTask)
       -- PRIOR TREATMNENT
     | SetActivePriorTreatmentTask PriorTreatmentTask
@@ -214,7 +213,7 @@ type alias ExposureData =
 emptyExposureData : ExposureData
 emptyExposureData =
     { travelHistoryForm = TravelHistoryForm Nothing
-    , exposureForm = ExposureForm Nothing Nothing
+    , exposureForm = ExposureForm Nothing
     , activeTask = ExposureTravel
     }
 
@@ -231,7 +230,6 @@ type alias TravelHistoryForm =
 
 type alias ExposureForm =
     { covid19Symptoms : Maybe Bool
-    , similarSymptoms : Maybe Bool
     }
 
 

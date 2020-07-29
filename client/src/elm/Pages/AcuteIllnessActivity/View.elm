@@ -805,13 +805,6 @@ viewExposureForm language currentDate measurements form =
             SetCovid19Symptoms
             "covid19-symptoms"
             Nothing
-        , viewQuestionLabel language Translate.ContactWithSimilarSymptomsQuestion
-        , viewBoolInput
-            language
-            form.similarSymptoms
-            SetSimilarSymptoms
-            "similar-symptoms"
-            Nothing
         ]
 
 

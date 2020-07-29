@@ -672,7 +672,6 @@ type alias TreatmentReview =
 
 type ExposureSign
     = COVID19Symptoms
-    | SimilarSymptoms
     | NoExposureSigns
 
 

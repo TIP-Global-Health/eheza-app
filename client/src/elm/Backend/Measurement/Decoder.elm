@@ -1453,9 +1453,6 @@ decodeExposureSign =
                     "covid19-symptioms" ->
                         succeed COVID19Symptoms
 
-                    "similar-symptoms" ->
-                        succeed SimilarSymptoms
-
                     "none" ->
                         succeed NoExposureSigns
 

@@ -1287,9 +1287,6 @@ encodeExposureSign sign =
             COVID19Symptoms ->
                 "covid19-symptioms"
 
-            SimilarSymptoms ->
-                "similar-symptoms"
-
             NoExposureSigns ->
                 "none"
 

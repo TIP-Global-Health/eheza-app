@@ -222,8 +222,8 @@ exposureTasksCompletedFromTotal measurements data task =
                         |> Maybe.map (Tuple.second >> .value)
                         |> exposureFormWithDefault data.exposureForm
             in
-            ( taskCompleted form.covid19Symptoms + taskCompleted form.similarSymptoms
-            , 2
+            ( taskCompleted form.covid19Symptoms
+            , 1
             )
 
 
@@ -662,8 +662,7 @@ toTravelHistoryValueWithDefault saved form =
 
 toTravelHistoryValue : TravelHistoryForm -> Maybe (EverySet TravelHistorySign)
 toTravelHistoryValue form =
-    [ Maybe.map (ifTrue COVID19Country) form.covid19Country
-    ]
+    [ Maybe.map (ifTrue COVID19Country) form.covid19Country ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTravelHistorySigns)
 
@@ -671,7 +670,6 @@ toTravelHistoryValue form =
 fromExposureValue : Maybe (EverySet ExposureSign) -> ExposureForm
 fromExposureValue saved =
     { covid19Symptoms = Maybe.map (EverySet.member COVID19Symptoms) saved
-    , similarSymptoms = Maybe.map (EverySet.member SimilarSymptoms) saved
     }
 
 
@@ -682,7 +680,6 @@ exposureFormWithDefault form saved =
             form
             (\value ->
                 { covid19Symptoms = or form.covid19Symptoms (EverySet.member COVID19Symptoms value |> Just)
-                , similarSymptoms = or form.similarSymptoms (EverySet.member SimilarSymptoms value |> Just)
                 }
             )
 
@@ -695,9 +692,7 @@ toExposureValueWithDefault saved form =
 
 toExposureValue : ExposureForm -> Maybe (EverySet ExposureSign)
 toExposureValue form =
-    [ Maybe.map (ifTrue COVID19Symptoms) form.covid19Symptoms
-    , Maybe.map (ifTrue SimilarSymptoms) form.similarSymptoms
-    ]
+    [ Maybe.map (ifTrue COVID19Symptoms) form.covid19Symptoms ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoExposureSigns)
 

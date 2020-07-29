@@ -691,23 +691,6 @@ update currentDate id db msg model =
             , []
             )
 
-        SetSimilarSymptoms value ->
-            let
-                form =
-                    model.exposureData.exposureForm
-
-                updatedForm =
-                    { form | similarSymptoms = Just value }
-
-                updatedData =
-                    model.exposureData
-                        |> (\data -> { data | exposureForm = updatedForm })
-            in
-            ( { model | exposureData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SaveExposure personId saved nextTask_ ->
             let
                 measurementId =

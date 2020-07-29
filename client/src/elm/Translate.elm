@@ -277,7 +277,6 @@ type TranslationId
     | ContactedHCQuestion
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
-    | ContactWithSimilarSymptomsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
     | CurrentIllnessBegan
@@ -1755,11 +1754,6 @@ translationSet trans =
         ContactWithCOVID19SymptomsQuestion ->
             { english = "Have you had contacts with others who exhibit symptoms or have been exposed to COVID-19"
             , kinyarwanda = Just "Waba warigeze uhura n'abantu bagaragaje ibimenyetso bya covid-19 cyangwa n'abari bafite ibyago byo kuyandura"
-            }
-
-        ContactWithSimilarSymptomsQuestion ->
-            { english = "Have you had contacts with others who have similar symptoms to you"
-            , kinyarwanda = Just "Waba warigeze uhura n'abandi bantu bafite ibimenyetso nk'ibyawe?"
             }
 
         ConvulsionsAndUnconsciousPreviousDelivery ->
