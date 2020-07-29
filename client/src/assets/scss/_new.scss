@@ -1796,7 +1796,7 @@ div.page-participant.prenatal {
 
 div.page-report.acute-illness {
   background: $color-light-gray;
-  height: fit-content;
+  min-height: 1400px;
   padding: 20px;
 
   .ui.report.unstackable.items {
@@ -1940,6 +1940,7 @@ div.page-report.acute-illness {
 
     div.pane.actions-taken {
       @include next-steps;
+      margin-bottom: 0;
     }
 
     div.pane.actions-taken .instructions {

@@ -14,7 +14,7 @@ import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra
+import Maybe.Extra exposing (isNothing)
 import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
@@ -146,12 +146,12 @@ viewAssessmentPane language currentDate diagnosis =
     let
         assessment =
             diagnosis
-                |> Maybe.map (Translate.AcuteIllnessDiagnosisWarning >> translate language >> text >> List.singleton)
-                |> Maybe.withDefault []
+                |> Maybe.map (Translate.AcuteIllnessDiagnosisWarning >> translate language >> text >> List.singleton >> div [ class "pane-content" ])
+                |> Maybe.withDefault emptyNode
     in
     div [ class "pane assessment" ]
         [ viewItemHeading language Translate.Assessment "blue"
-        , div [ class "pane-content" ] assessment
+        , assessment
         ]
 
 
@@ -240,6 +240,7 @@ viewSymptomsPane language currentDate measurements =
 
         symptomsTable =
             values
+                |> List.filter (Tuple.second >> List.isEmpty >> not)
                 |> List.map
                     (\( date, symptoms ) ->
                         div [ class "symptoms-table-row" ]
@@ -314,22 +315,23 @@ viewPhysicalExamPane language currentDate measurements =
                             ]
                     )
     in
-    div [ class "pane physical-exam" ]
-        [ viewItemHeading language Translate.PhysicalExam "blue"
-        , table
-            [ class "ui celled table" ]
-            [ thead [] tableHead
-            , tbody [] tableBody
+    if isNothing bodyTemperature && isNothing respiratoryRate then
+        emptyNode
+
+    else
+        div [ class "pane physical-exam" ]
+            [ viewItemHeading language Translate.PhysicalExam "blue"
+            , table
+                [ class "ui celled table" ]
+                [ thead [] tableHead
+                , tbody [] tableBody
+                ]
             ]
-        ]
 
 
 viewActionsTakenPane : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> AssembledData -> Html Msg
 viewActionsTakenPane language currentDate diagnosis data =
     let
-        emptyPane =
-            div [ class "pane-content" ] []
-
         actionsTaken =
             case resolveNextStepByDiagnosis currentDate data.person diagnosis of
                 Just NextStepsIsolation ->
@@ -373,7 +375,7 @@ viewActionsTakenPane language currentDate diagnosis data =
                             (contacedHCAction ++ patientIsolatedAction)
 
                     else
-                        emptyPane
+                        emptyNode
 
                 Just NextStepsMedicationDistribution ->
                     let
@@ -396,10 +398,10 @@ viewActionsTakenPane language currentDate diagnosis data =
                                                 , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 3)
                                                 ]
                                         )
-                                    |> Maybe.withDefault emptyPane
+                                    |> Maybe.withDefault emptyNode
 
                             else
-                                emptyPane
+                                emptyNode
 
                         Just DiagnosisGastrointestinalInfectionUncomplicated ->
                             let
@@ -444,7 +446,7 @@ viewActionsTakenPane language currentDate diagnosis data =
                                     (orsAction ++ zincAction)
 
                             else
-                                emptyPane
+                                emptyNode
 
                         Just DiagnosisSimpleColdAndCough ->
                             div [ class "instructions simple-cough-and-cold" ]
@@ -465,13 +467,13 @@ viewActionsTakenPane language currentDate diagnosis data =
                                                 , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 5)
                                                 ]
                                         )
-                                    |> Maybe.withDefault emptyPane
+                                    |> Maybe.withDefault emptyNode
 
                             else
-                                emptyPane
+                                emptyNode
 
                         _ ->
-                            emptyPane
+                            emptyNode
 
                 Just NextStepsSendToHC ->
                     let
@@ -505,10 +507,10 @@ viewActionsTakenPane language currentDate diagnosis data =
                             (completedFormAction ++ sentToHCAction)
 
                     else
-                        emptyPane
+                        emptyNode
 
                 _ ->
-                    emptyPane
+                    emptyNode
     in
     div [ class "pane actions-taken" ]
         [ viewItemHeading language Translate.ActionsTaken "blue"
