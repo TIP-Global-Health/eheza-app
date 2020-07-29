@@ -1304,14 +1304,28 @@ viewFilters filterType currentChartFilter filter =
 
 viewFamilyPlanningChartLegend : Language -> List ( FamilyPlanningSign, Int ) -> Html Msg
 viewFamilyPlanningChartLegend language signs =
+    let
+        totalSigns =
+            signs
+                |> List.map Tuple.second
+                |> List.foldl (+) 0
+                |> toFloat
+    in
     div [ class "legend" ]
         (List.map
-            (\( sign, _ ) ->
+            (\( sign, usage ) ->
+                let
+                    label =
+                        translate language <| Translate.FamilyPlanningSignLabel sign
+
+                    percentage =
+                        round (100 * toFloat usage / totalSigns)
+                in
                 div [ class "legend-item" ]
                     [ svg [ Svg.Attributes.width "12", Svg.Attributes.height "12", viewBox 0 0 100 100 ]
                         [ Svg.circle [ cx "50", cy "50", r "40", fill <| Fill <| familyPlanningSignToColor sign ] []
                         ]
-                    , span [] [ translateText language <| Translate.FamilyPlanningSignLabel sign ]
+                    , span [] [ text <| label ++ " (" ++ toString percentage ++ "%)" ]
                     ]
             )
             signs
