@@ -1320,12 +1320,20 @@ viewFamilyPlanningChartLegend language signs =
 
                     percentage =
                         round (100 * toFloat usage / totalSigns)
+
+                    -- We want to prevent displaying 0% in case there was usage.
+                    normalizedPercentage =
+                        if usage > 0 && percentage == 0 then
+                            "1"
+
+                        else
+                            toString percentage
                 in
                 div [ class "legend-item" ]
                     [ svg [ Svg.Attributes.width "12", Svg.Attributes.height "12", viewBox 0 0 100 100 ]
                         [ Svg.circle [ cx "50", cy "50", r "40", fill <| Fill <| familyPlanningSignToColor sign ] []
                         ]
-                    , span [] [ text <| label ++ " (" ++ toString percentage ++ "%)" ]
+                    , span [] [ text <| label ++ " (" ++ normalizedPercentage ++ "%)" ]
                     ]
             )
             signs
