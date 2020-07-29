@@ -2564,7 +2564,7 @@ translationSet trans =
                     }
 
                 ComeToHealthCenter ->
-                    { english = "advised patient to come to the health center for further evaluation"
+                    { english = "advised patient to go to the health center for further evaluation"
                     , kinyarwanda = Just "wagiriye inama umurwayi yo kujjya gukoresha isuzuma ryimbitse"
                     }
 
