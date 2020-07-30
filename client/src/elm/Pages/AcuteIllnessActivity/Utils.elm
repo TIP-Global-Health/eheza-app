@@ -61,6 +61,7 @@ allSymptomsGeneralSigns =
       , NightSweats
       , BodyAches
       , Headache
+      , LossOfSmell
       ]
         ++ symptomsGeneralDangerSigns
     , NoSymptomsGeneral

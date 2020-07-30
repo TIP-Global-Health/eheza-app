@@ -459,6 +459,21 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_loss_of_smell_period'.
+  $field_bases['field_loss_of_smell_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_loss_of_smell_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   // Exported field_base: 'field_malaria_rapid_test'.
   $field_bases['field_malaria_rapid_test'] = array(
     'active' => 1,

@@ -2774,7 +2774,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 20,
+      'weight' => 21,
     ),
   );
 
@@ -2913,7 +2913,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 15,
+      'weight' => 16,
     ),
   );
 
@@ -2959,7 +2959,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 16,
+      'weight' => 17,
     ),
   );
 
@@ -3015,7 +3015,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 18,
+      'weight' => 19,
     ),
   );
 
@@ -3061,7 +3061,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 12,
+      'weight' => 13,
     ),
   );
 
@@ -3200,7 +3200,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 11,
+      'weight' => 12,
     ),
   );
 
@@ -3233,6 +3233,53 @@ function hedley_acute_illness_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_lethargy_period',
     'label' => 'Lethargy Period',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-symptoms_general-field_loss_of_smell_period'.
+  $field_instances['node-symptoms_general-field_loss_of_smell_period'] = array(
+    'bundle' => 'symptoms_general',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 22,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_loss_of_smell_period',
+    'label' => 'Loss of Smell Period',
     'required' => 0,
     'settings' => array(
       'max' => '',
@@ -3336,7 +3383,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 19,
+      'weight' => 20,
     ),
   );
 
@@ -3426,7 +3473,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 8,
+      'weight' => 9,
     ),
   );
 
@@ -3473,7 +3520,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 13,
+      'weight' => 14,
     ),
   );
 
@@ -3517,7 +3564,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 22,
+      'weight' => 23,
     ),
   );
 
@@ -3564,7 +3611,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 17,
+      'weight' => 18,
     ),
   );
 
@@ -3611,7 +3658,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 9,
+      'weight' => 10,
     ),
   );
 
@@ -3658,7 +3705,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 10,
+      'weight' => 11,
     ),
   );
 
@@ -3698,7 +3745,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 21,
+      'weight' => 22,
     ),
   );
 
@@ -3744,7 +3791,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 14,
+      'weight' => 15,
     ),
   );
 
@@ -5490,6 +5537,7 @@ function hedley_acute_illness_field_default_field_instances() {
   t('Increased Thirst Period');
   t('Isolation');
   t('Lethargy Period');
+  t('Loss of Smell Period');
   t('Malaria Rapid Test');
   t('Nasal Congestion Period');
   t('Nausea Period');

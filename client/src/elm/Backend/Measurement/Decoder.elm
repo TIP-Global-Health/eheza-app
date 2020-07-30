@@ -1055,6 +1055,7 @@ decodeSymptomsGeneral =
         |> required "night_sweats_period" decodeInt
         |> required "body_aches_period" decodeInt
         |> required "headache_period" decodeInt
+        |> required "loss_of_smell_period" decodeInt
         |> required "lethargy_period" decodeInt
         |> required "poor_suck_period" decodeInt
         |> required "unable_to_drink_period" decodeInt
@@ -1072,11 +1073,12 @@ decodeSymptomsGeneral =
 
 symptomsGeneralToDict : SymptomsGeneralValue -> Dict SymptomsGeneralSign Int
 symptomsGeneralToDict value =
-    [ ( SymptomGeneralFever, value.feverPeriod )
-    , ( Chills, value.chillsPeriod )
-    , ( NightSweats, value.nightSweatsPeriod )
-    , ( BodyAches, value.bodyAchesPeriod )
-    , ( Headache, value.headachePeriod )
+    [ ( SymptomGeneralFever, value.fever )
+    , ( Chills, value.chills )
+    , ( NightSweats, value.nightSweats )
+    , ( BodyAches, value.bodyAches )
+    , ( Headache, value.headache )
+    , ( LossOfSmell, value.lossOfSmell )
     , ( Lethargy, value.lethargy )
     , ( PoorSuck, value.poorSuck )
     , ( UnableToDrink, value.unableToDrink )

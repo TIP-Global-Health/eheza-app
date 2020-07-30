@@ -4766,6 +4766,11 @@ translationSet trans =
                     , kinyarwanda = Just "Kubabara umutwe"
                     }
 
+                LossOfSmell ->
+                    { english = "Loss of Smell"
+                    , kinyarwanda = Nothing
+                    }
+
                 NightSweats ->
                     { english = "Night Sweats"
                     , kinyarwanda = Just "Kubira ibyuya nijoro"

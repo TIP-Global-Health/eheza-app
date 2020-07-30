@@ -521,6 +521,7 @@ type SymptomsGeneralSign
     | Chills
     | SymptomGeneralFever
     | Headache
+    | LossOfSmell
     | NightSweats
     | Lethargy
     | PoorSuck
@@ -537,11 +538,12 @@ type SymptomsGeneralSign
 
 
 type alias SymptomsGeneralValue =
-    { feverPeriod : Int
-    , chillsPeriod : Int
-    , nightSweatsPeriod : Int
-    , bodyAchesPeriod : Int
-    , headachePeriod : Int
+    { fever : Int
+    , chills : Int
+    , nightSweats : Int
+    , bodyAches : Int
+    , headache : Int
+    , lossOfSmell : Int
     , lethargy : Int
     , poorSuck : Int
     , unableToDrink : Int
