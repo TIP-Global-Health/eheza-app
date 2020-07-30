@@ -237,14 +237,29 @@ viewSymptomsPane language currentDate measurements =
                         , symptomsGeneral index ++ symptomsRespiratory index ++ symptomsGI index
                         )
                     )
+                |> List.filter (Tuple.second >> List.isEmpty >> not)
+
+        totalValues =
+            List.length values
 
         symptomsTable =
             values
-                |> List.filter (Tuple.second >> List.isEmpty >> not)
-                |> List.map
-                    (\( date, symptoms ) ->
+                |> List.indexedMap
+                    (\index ( date, symptoms ) ->
+                        let
+                            timeline =
+                                if index == 0 then
+                                    viewTimeLineTop (totalValues == 1)
+
+                                else if index == totalValues - 1 then
+                                    viewTimeLineBottom
+
+                                else
+                                    viewTimeLineMiddle
+                        in
                         div [ class "symptoms-table-row" ]
                             [ div [ class "date" ] [ text date ]
+                            , div [ class "timeline" ] timeline
                             , ul [] symptoms
                             ]
                     )
@@ -254,6 +269,40 @@ viewSymptomsPane language currentDate measurements =
         [ viewItemHeading language Translate.Symptoms "blue"
         , symptomsTable
         ]
+
+
+viewTimeLineTop : Bool -> List (Html any)
+viewTimeLineTop isSingle =
+    [ div [ class "line half" ] []
+    , div
+        [ classList
+            [ ( "line half", True )
+            , ( "blue", not isSingle )
+            ]
+        ]
+        [ img [ src "assets/images/icon-blue-ball.svg" ]
+            []
+        ]
+    ]
+
+
+viewTimeLineMiddle : List (Html any)
+viewTimeLineMiddle =
+    [ div [ class "line blue" ]
+        [ img [ src "assets/images/icon-blue-circle.png" ]
+            []
+        ]
+    ]
+
+
+viewTimeLineBottom : List (Html any)
+viewTimeLineBottom =
+    [ div [ class "line half blue" ] []
+    , div [ class "line half" ]
+        [ img [ src "assets/images/icon-blue-circle.png" ]
+            []
+        ]
+    ]
 
 
 viewPhysicalExamPane : Language -> NominalDate -> AcuteIllnessMeasurements -> Html Msg
