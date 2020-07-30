@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.View exposing (view, viewAdministeredMedicationLabel, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
+module Pages.AcuteIllnessActivity.View exposing (view, viewAdministeredMedicationLabel, viewHCRecomendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -808,7 +808,7 @@ viewExposureForm language currentDate measurements form =
         ]
 
 
-viewHCRecomendation : Language -> HCRecomendation -> Html Msg
+viewHCRecomendation : Language -> HCRecomendation -> Html any
 viewHCRecomendation language recomendation =
     let
         riskLevel =
@@ -1308,7 +1308,7 @@ viewHCContactForm language currentDate measurements form =
                                 (viewHCRecomendation language)
                             ]
 
-                        hcRespnonsePerionInput =
+                        hcRespnonsePeriodInput =
                             [ viewQuestionLabel language Translate.HCResponsePeriodQuestion
                             , viewCheckBoxSelectInput language
                                 [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
@@ -1337,7 +1337,7 @@ viewHCContactForm language currentDate measurements form =
                                     )
                                 |> Maybe.withDefault []
                     in
-                    hcRespnonseInput ++ hcRespnonsePerionInput ++ derivedInput
+                    hcRespnonseInput ++ hcRespnonsePeriodInput ++ derivedInput
 
                 _ ->
                     []

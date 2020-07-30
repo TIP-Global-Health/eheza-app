@@ -71,6 +71,26 @@
   }
 }
 
+@mixin recomendation-label {
+
+  label {
+    font-size: 24px;
+
+    span {
+      margin: 7px;
+
+      &.strong {
+        font-weight: 600;
+      }
+    }
+
+    &:before {
+      height: 24px;
+      width: 24px;
+    }
+  }
+}
+
 // We design for a minimum width of 800px.
 html,
 body {
@@ -835,22 +855,7 @@ div.page-activity.acute-illness {
       .ui.checkbox.activity {
         margin-bottom: 10px;
 
-        label {
-          font-size: 24px;
-
-          span {
-            margin: 7px;
-
-            &.strong {
-              font-weight: 600;
-            }
-          }
-
-          &:before {
-            height: 24px;
-            width: 24px;
-          }
-        }
+        @include recomendation-label;
       }
     }
 
@@ -1946,6 +1951,17 @@ div.page-report.acute-illness {
     div.pane.actions-taken .instructions {
       color: $color-text;
       padding: 20px;
+
+      .recomendation {
+        font-weight: normal;
+        margin-left: 52px;
+
+        @include recomendation-label;
+
+        > span {
+          margin-left: -5px;
+        }
+      }
     }
   }
 

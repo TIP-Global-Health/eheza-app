@@ -17,7 +17,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isNothing)
 import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
-import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
+import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecomendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AssembledData)
 import Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData, resolveAcuteIllnessDiagnosis, resolveNextStepByDiagnosis)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
@@ -336,6 +336,10 @@ viewActionsTakenPane language currentDate diagnosis data =
             case resolveNextStepByDiagnosis currentDate data.person diagnosis of
                 Just NextStepsIsolation ->
                     let
+                        contacedHCValue =
+                            data.measurements.hcContact
+                                |> Maybe.map (Tuple.second >> .value)
+
                         contacedHC =
                             data.measurements.hcContact
                                 |> Maybe.map
@@ -347,11 +351,25 @@ viewActionsTakenPane language currentDate diagnosis data =
                                 |> Maybe.withDefault False
 
                         contacedHCAction =
-                            if contacedHC then
-                                [ viewSendToHCActionLabel language Translate.ContactedHC "icon-phone" (Just currentDate) ]
+                            contacedHCValue
+                                |> Maybe.map
+                                    (\value ->
+                                        if EverySet.member ContactedHealthCenter value.signs then
+                                            let
+                                                recomendation =
+                                                    value.recomendations
+                                                        |> EverySet.toList
+                                                        |> List.head
+                                                        |> Maybe.withDefault HCRecomendationNotApplicable
+                                            in
+                                            [ viewSendToHCActionLabel language Translate.ContactedHC "icon-phone" (Just currentDate)
+                                            , viewHCRecomendationActionTaken language recomendation
+                                            ]
 
-                            else
-                                []
+                                        else
+                                            []
+                                    )
+                                |> Maybe.withDefault []
 
                         patientIsolated =
                             data.measurements.isolation
@@ -516,3 +534,15 @@ viewActionsTakenPane language currentDate diagnosis data =
         [ viewItemHeading language Translate.ActionsTaken "blue"
         , actionsTaken
         ]
+
+
+viewHCRecomendationActionTaken : Language -> HCRecomendation -> Html any
+viewHCRecomendationActionTaken language recomendation =
+    if recomendation == HCRecomendationNotApplicable then
+        emptyNode
+
+    else
+        div [ class "recomendation" ]
+            [ viewHCRecomendation language recomendation
+            , span [] [ text "." ]
+            ]
