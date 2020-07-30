@@ -429,16 +429,20 @@ naListTaskCompleted na maybeList =
 
 symptomsGeneralFormWithDefault : SymptomsGeneralForm -> Maybe (Dict SymptomsGeneralSign Int) -> SymptomsGeneralForm
 symptomsGeneralFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                if Dict.isEmpty form.signs then
-                    SymptomsGeneralForm value
+    if form.signsDirty then
+        form
 
-                else
-                    form
-            )
+    else
+        saved
+            |> unwrap
+                form
+                (\value ->
+                    if Dict.isEmpty form.signs then
+                        SymptomsGeneralForm value False
+
+                    else
+                        form
+                )
 
 
 toSymptomsGeneralValueWithDefault : Maybe (Dict SymptomsGeneralSign Int) -> SymptomsGeneralForm -> Dict SymptomsGeneralSign Int
@@ -449,16 +453,20 @@ toSymptomsGeneralValueWithDefault saved form =
 
 symptomsRespiratoryFormWithDefault : SymptomsRespiratoryForm -> Maybe (Dict SymptomsRespiratorySign Int) -> SymptomsRespiratoryForm
 symptomsRespiratoryFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                if Dict.isEmpty form.signs then
-                    SymptomsRespiratoryForm value
+    if form.signsDirty then
+        form
 
-                else
-                    form
-            )
+    else
+        saved
+            |> unwrap
+                form
+                (\value ->
+                    if Dict.isEmpty form.signs then
+                        SymptomsRespiratoryForm value False
+
+                    else
+                        form
+                )
 
 
 toSymptomsRespiratoryValueWithDefault : Maybe (Dict SymptomsRespiratorySign Int) -> SymptomsRespiratoryForm -> Dict SymptomsRespiratorySign Int
@@ -475,14 +483,20 @@ symptomsGIFormWithDefault form saved =
             (\value ->
                 let
                     signs =
-                        if Dict.isEmpty form.signs then
+                        if form.signsDirty then
+                            form.signs
+
+                        else if Dict.isEmpty form.signs then
                             value.signs
 
                         else
                             form.signs
 
                     intractableVomiting =
-                        if isJust form.intractableVomiting then
+                        if form.intractableVomitingDirty then
+                            form.intractableVomiting
+
+                        else if isJust form.intractableVomiting then
                             form.intractableVomiting
 
                         else if EverySet.member IntractableVomiting value.derivedSigns then
@@ -492,7 +506,9 @@ symptomsGIFormWithDefault form saved =
                             Just False
                 in
                 { signs = signs
+                , signsDirty = form.signsDirty
                 , intractableVomiting = intractableVomiting
+                , intractableVomitingDirty = form.intractableVomitingDirty
                 }
             )
 

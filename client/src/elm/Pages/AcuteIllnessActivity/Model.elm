@@ -105,9 +105,9 @@ type alias SymptomsData =
 
 emptySymptomsData : SymptomsData
 emptySymptomsData =
-    { symptomsGeneralForm = SymptomsGeneralForm Dict.empty
-    , symptomsRespiratoryForm = SymptomsRespiratoryForm Dict.empty
-    , symptomsGIForm = SymptomsGIForm Dict.empty Nothing
+    { symptomsGeneralForm = SymptomsGeneralForm Dict.empty False
+    , symptomsRespiratoryForm = SymptomsRespiratoryForm Dict.empty False
+    , symptomsGIForm = SymptomsGIForm Dict.empty False Nothing False
     , activeTask = SymptomsGeneral
     }
 
@@ -120,17 +120,21 @@ type SymptomsTask
 
 type alias SymptomsGeneralForm =
     { signs : Dict SymptomsGeneralSign Int
+    , signsDirty : Bool
     }
 
 
 type alias SymptomsRespiratoryForm =
     { signs : Dict SymptomsRespiratorySign Int
+    , signsDirty : Bool
     }
 
 
 type alias SymptomsGIForm =
     { signs : Dict SymptomsGISign Int
+    , signsDirty : Bool
     , intractableVomiting : Maybe Bool
+    , intractableVomitingDirty : Bool
     }
 
 
