@@ -228,7 +228,7 @@ viewMainPageContent language currentDate id data diagnosis model =
             div [ class "ui tabular menu" ]
                 [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
-                , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetSelectedTab Reports)
+                , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetActivePage (UserPage (AcuteIllnessProgressReportPage id)))
                 ]
 
         viewCard activity =
