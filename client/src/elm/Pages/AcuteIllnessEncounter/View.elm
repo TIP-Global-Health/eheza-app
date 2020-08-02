@@ -293,6 +293,17 @@ viewMainPageContent language currentDate id data diagnosis model =
             if diagnosis == Just DiagnosisCovid19 then
                 isJust measurements.isolation && isJust measurements.hcContact
 
+            else if isJust diagnosis then
+                case pendingActivities of
+                    [] ->
+                        True
+
+                    [ AcuteIllnessPriorTreatment ] ->
+                        True
+
+                    _ ->
+                        False
+
             else
                 List.isEmpty pendingActivities
 
