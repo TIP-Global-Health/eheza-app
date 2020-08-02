@@ -1,6 +1,6 @@
 module Pages.AcuteIllnessProgressReport.View exposing (view)
 
-import App.Model exposing (Msg(..))
+import AcuteIllnessActivity.Utils exposing (getAllActivities)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -19,14 +19,17 @@ import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecomendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AssembledData)
-import Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData, resolveAcuteIllnessDiagnosis, resolveNextStepByDiagnosis)
+import Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, expectActivity, generateAssembledData, resolveAcuteIllnessDiagnosis, resolveNextStepByDiagnosis)
+import Pages.AcuteIllnessEncounter.View exposing (viewEndEncounterButton)
+import Pages.AcuteIllnessProgressReport.Model exposing (..)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Utils exposing (viewEndEncounterDialog)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Model exposing (Language(..))
-import Utils.Html exposing (thumbnailImage)
+import Utils.Html exposing (thumbnailImage, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderDate)
 import Utils.WebData exposing (viewWebData)
 
@@ -38,20 +41,37 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> AcuteIllnessEncounterId -> ModelIndexedDb -> Html Msg
-view language currentDate id db =
+view : Language -> NominalDate -> AcuteIllnessEncounterId -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id db model =
     let
         data =
             generateAssembledData id db
     in
-    viewWebData language (viewContent language currentDate id) identity data
+    viewWebData language (viewContent language currentDate id model) identity data
 
 
-viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AssembledData -> Html Msg
-viewContent language currentDate id data =
+viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> AssembledData -> Html Msg
+viewContent language currentDate id model data =
     let
         diagnosis =
             resolveAcuteIllnessDiagnosis currentDate data.person data.measurements
+
+        ( _, pendingActivities ) =
+            getAllActivities
+                |> List.filter (expectActivity currentDate data.person data.measurements diagnosis)
+                |> List.partition (activityCompleted currentDate data.person data.measurements diagnosis)
+
+        endEncounterDialog =
+            if model.showEndEncounetrDialog then
+                Just <|
+                    viewEndEncounterDialog language
+                        Translate.EndEncounterQuestion
+                        Translate.OnceYouEndTheEncounter
+                        (CloseEncounter id)
+                        (SetEndEncounterDialogState False)
+
+            else
+                Nothing
     in
     div [ class "page-report acute-illness" ]
         [ div
@@ -62,7 +82,9 @@ viewContent language currentDate id data =
             , viewSymptomsPane language currentDate data.measurements
             , viewPhysicalExamPane language currentDate data.measurements
             , viewActionsTakenPane language currentDate diagnosis data
+            , viewEndEncounterButton language data.measurements pendingActivities diagnosis SetEndEncounterDialogState
             ]
+        , viewModal endEncounterDialog
         ]
 
 

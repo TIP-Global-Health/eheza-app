@@ -1801,7 +1801,6 @@ div.page-participant.prenatal {
 
 div.page-report.acute-illness {
   background: $color-light-gray;
-  min-height: 1400px;
   padding: 20px;
 
   .ui.report.unstackable.items {
@@ -1975,11 +1974,11 @@ div.page-report.acute-illness {
 
     div.pane.actions-taken {
       @include next-steps;
-      margin-bottom: 0;
     }
 
     div.pane.actions-taken .instructions {
       color: $color-text;
+      margin-bottom: 0;
       padding: 20px;
 
       .recomendation {
@@ -1992,6 +1991,10 @@ div.page-report.acute-illness {
           margin-left: -5px;
         }
       }
+    }
+
+    div.actions {
+      margin: 0
     }
   }
 

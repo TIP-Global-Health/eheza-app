@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.View exposing (view, viewPersonDetailsWithAlert, warningPopup)
+module Pages.AcuteIllnessEncounter.View exposing (view, viewEndEncounterButton, viewPersonDetailsWithAlert, warningPopup)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
@@ -289,6 +289,20 @@ viewMainPageContent language currentDate id data diagnosis model =
                         ]
                     ]
 
+        content =
+            div [ class "ui full segment" ]
+                [ innerContent
+                , viewEndEncounterButton language measurements pendingActivities diagnosis SetEndEncounterDialogState
+                ]
+    in
+    [ tabs
+    , content
+    ]
+
+
+viewEndEncounterButton : Language -> AcuteIllnessMeasurements -> List AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> (Bool -> msg) -> Html msg
+viewEndEncounterButton language measurements pendingActivities diagnosis setDialogStateMsgs =
+    let
         allowEndEcounter =
             if diagnosis == Just DiagnosisCovid19 then
                 isJust measurements.isolation && isJust measurements.hcContact
@@ -307,25 +321,17 @@ viewMainPageContent language currentDate id data diagnosis model =
             else
                 List.isEmpty pendingActivities
 
-        endEcounterButtonAttributes =
+        attributes =
             if allowEndEcounter then
                 [ class "ui fluid primary button"
-                , onClick <| SetEndEncounterDialogState True
+                , onClick <| setDialogStateMsgs True
                 ]
 
             else
                 [ class "ui fluid primary button disabled" ]
-
-        content =
-            div [ class "ui full segment" ]
-                [ innerContent
-                , div [ class "actions" ]
-                    [ button
-                        endEcounterButtonAttributes
-                        [ text <| translate language Translate.EndEncounter ]
-                    ]
-                ]
     in
-    [ tabs
-    , content
-    ]
+    div [ class "actions" ]
+        [ button
+            attributes
+            [ text <| translate language Translate.EndEncounter ]
+        ]
