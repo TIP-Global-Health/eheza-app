@@ -923,7 +923,7 @@ translationSet trans =
                     }
 
                 DiagnosisRespiratoryInfectionUncomplicated ->
-                    { english = "Acute Respiratory Infection without Complications"
+                    { english = "Uncomplicated Pneumonia"
                     , kinyarwanda = Just "Indwara y'ubuhumekero yoroheje"
                     }
 
@@ -975,7 +975,7 @@ translationSet trans =
                     }
 
                 DiagnosisRespiratoryInfectionUncomplicated ->
-                    { english = "Suspected Acute Respiratory Infection (without Complications)"
+                    { english = "Suspected Uncomplicated Pneumonia"
                     , kinyarwanda = Just "Aracyekwaho indwara y'ubuhumekero yoroheje"
                     }
 
