@@ -1,6 +1,5 @@
 module Pages.AcuteIllnessProgressReport.View exposing (view)
 
-import AcuteIllnessActivity.Utils exposing (getAllActivities)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -19,8 +18,8 @@ import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecomendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AssembledData)
-import Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, expectActivity, generateAssembledData, resolveAcuteIllnessDiagnosis, resolveNextStepByDiagnosis)
-import Pages.AcuteIllnessEncounter.View exposing (viewEndEncounterButton)
+import Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData, resolveAcuteIllnessDiagnosis, resolveNextStepByDiagnosis)
+import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
 import Pages.AcuteIllnessProgressReport.Model exposing (..)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -57,9 +56,7 @@ viewContent language currentDate id model data =
             resolveAcuteIllnessDiagnosis currentDate data.person data.measurements
 
         ( _, pendingActivities ) =
-            getAllActivities
-                |> List.filter (expectActivity currentDate data.person data.measurements diagnosis)
-                |> List.partition (activityCompleted currentDate data.person data.measurements diagnosis)
+            splitActivities currentDate data diagnosis
 
         endEncounterDialog =
             if model.showEndEncounetrDialog then

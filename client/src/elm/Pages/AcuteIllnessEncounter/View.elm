@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.View exposing (view, viewEndEncounterButton, viewPersonDetailsWithAlert, warningPopup)
+module Pages.AcuteIllnessEncounter.View exposing (splitActivities, view, viewEndEncounterButton, viewPersonDetailsWithAlert, warningPopup)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
@@ -211,9 +211,7 @@ viewMainPageContent language currentDate id data diagnosis model =
             data.measurements
 
         ( completedActivities, pendingActivities ) =
-            getAllActivities
-                |> List.filter (expectActivity currentDate data.person measurements diagnosis)
-                |> List.partition (activityCompleted currentDate data.person measurements diagnosis)
+            splitActivities currentDate data diagnosis
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -298,6 +296,13 @@ viewMainPageContent language currentDate id data diagnosis model =
     [ tabs
     , content
     ]
+
+
+splitActivities : NominalDate -> AssembledData -> Maybe AcuteIllnessDiagnosis -> ( List AcuteIllnessActivity, List AcuteIllnessActivity )
+splitActivities currentDate data diagnosis =
+    getAllActivities
+        |> List.filter (expectActivity currentDate data.person data.measurements diagnosis)
+        |> List.partition (activityCompleted currentDate data.person data.measurements diagnosis)
 
 
 viewEndEncounterButton : Language -> AcuteIllnessMeasurements -> List AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> (Bool -> msg) -> Html msg
