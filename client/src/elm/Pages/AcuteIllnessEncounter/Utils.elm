@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, ageDependentARINextStep, bloodyDiarrheaAtSymptoms, coughAndNasalCongestionAtSymptoms, covid19Diagnosed, expectActivity, feverAtPhysicalExam, feverAtSymptoms, feverRecorded, generateAssembledData, generatePreviousMeasurements, intractableVomitingAtSymptoms, malariaRapidTestResult, malarialDangerSignsPresent, mandatoryActivitiesCompleted, nonBloodyDiarrheaAtSymptoms, poorSuckAtSymptoms, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByLaboratoryResults, resolveNextStepByDiagnosis, resolveNextStepsTasks, resolveNonCovid19AcuteIllnessDiagnosis, respiratoryInfectionDangerSignsPresent, respiratoryRateElevated, symptomAppearsAtSymptomsDict)
+module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, ageDependentARINextStep, bloodyDiarrheaAtSymptoms, covid19Diagnosed, expectActivity, feverAtPhysicalExam, feverAtSymptoms, feverRecorded, generateAssembledData, generatePreviousMeasurements, intractableVomitingAtSymptoms, malariaRapidTestResult, malarialDangerSignsPresent, mandatoryActivitiesCompleted, nonBloodyDiarrheaAtSymptoms, poorSuckAtSymptoms, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByLaboratoryResults, resolveNextStepByDiagnosis, resolveNextStepsTasks, resolveNonCovid19AcuteIllnessDiagnosis, respiratoryInfectionDangerSignsPresent, respiratoryRateElevated, symptomAppearsAtSymptomsDict)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -299,6 +299,59 @@ resolveAcuteIllnessDiagnosis currentDate person measurements =
         resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements
 
 
+covid19Diagnosed : AcuteIllnessMeasurements -> Bool
+covid19Diagnosed measurements =
+    let
+        countSigns measurement_ exclusion =
+            measurement_
+                |> Maybe.map
+                    (\measurement ->
+                        let
+                            set =
+                                Tuple.second measurement |> .value
+
+                            setSize =
+                                EverySet.size set
+                        in
+                        case setSize of
+                            1 ->
+                                if EverySet.member exclusion set then
+                                    0
+
+                                else
+                                    1
+
+                            _ ->
+                                setSize
+                    )
+                |> Maybe.withDefault 0
+
+        excludesGeneral =
+            [ SymptomGeneralFever, NoSymptomsGeneral ] ++ symptomsGeneralDangerSigns
+
+        generalSymptomsCount =
+            countSymptoms measurements.symptomsGeneral .value excludesGeneral
+
+        respiratorySymptomsCount =
+            countRespiratorySymptoms measurements
+
+        giSymptomsCount =
+            countSymptoms measurements.symptomsGI (.value >> .signs) [ NoSymptomsGI ]
+
+        totalSymptoms =
+            generalSymptomsCount + respiratorySymptomsCount + giSymptomsCount
+
+        totalSigns =
+            countSigns measurements.travelHistory NoTravelHistorySigns
+                + countSigns measurements.exposure NoExposureSigns
+
+        rdtDoneAndNegative =
+            malariaRapidTestResult measurements == Just RapidTestNegative
+    in
+    (totalSigns > 0 && totalSymptoms > 1)
+        || (rdtDoneAndNegative && (totalSigns > 0 || totalSymptoms > 1))
+
+
 resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
 resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
@@ -315,7 +368,7 @@ resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements =
         else if nonBloodyDiarrheaAtSymptoms measurements then
             Just DiagnosisGastrointestinalInfectionUncomplicated
 
-        else if coughAndNasalCongestionAtSymptoms measurements then
+        else if respiratoryInfectionSymptomsPresent measurements then
             if respiratoryRateElevated currentDate person measurements then
                 Just DiagnosisRespiratoryInfectionUncomplicated
 
@@ -367,61 +420,22 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
             )
 
 
-covid19Diagnosed : AcuteIllnessMeasurements -> Bool
-covid19Diagnosed measurements =
-    let
-        calculateSymptoms measurement_ getSetFunc exclusions =
-            measurement_
-                |> Maybe.map
-                    (Tuple.second
-                        >> getSetFunc
-                        >> Dict.keys
-                        >> List.filter (\sign -> List.member sign exclusions |> not)
-                        >> List.length
-                    )
-                |> Maybe.withDefault 0
+countSymptoms : Maybe ( id, m ) -> (m -> Dict k v) -> List k -> Int
+countSymptoms measurement geSymptomsListFunc exclusions =
+    measurement
+        |> Maybe.map
+            (Tuple.second
+                >> geSymptomsListFunc
+                >> Dict.keys
+                >> List.filter (\sign -> List.member sign exclusions |> not)
+                >> List.length
+            )
+        |> Maybe.withDefault 0
 
-        calculateSigns measurement_ exclusion =
-            measurement_
-                |> Maybe.map
-                    (\measurement ->
-                        let
-                            set =
-                                Tuple.second measurement |> .value
 
-                            setSize =
-                                EverySet.size set
-                        in
-                        case setSize of
-                            1 ->
-                                if EverySet.member exclusion set then
-                                    0
-
-                                else
-                                    1
-
-                            _ ->
-                                setSize
-                    )
-                |> Maybe.withDefault 0
-
-        excludesGeneral =
-            [ SymptomGeneralFever, NoSymptomsGeneral ] ++ symptomsGeneralDangerSigns
-
-        totalSymptoms =
-            calculateSymptoms measurements.symptomsGeneral .value excludesGeneral
-                + calculateSymptoms measurements.symptomsRespiratory .value [ StabbingChestPain, NoSymptomsRespiratory ]
-                + calculateSymptoms measurements.symptomsGI (.value >> .signs) [ NoSymptomsGI ]
-
-        totalSigns =
-            calculateSigns measurements.travelHistory NoTravelHistorySigns
-                + calculateSigns measurements.exposure NoExposureSigns
-
-        rdtDoneAndNegative =
-            malariaRapidTestResult measurements == Just RapidTestNegative
-    in
-    (totalSigns > 0 && totalSymptoms > 1)
-        || (rdtDoneAndNegative && (totalSigns > 0 || totalSymptoms > 1))
+countRespiratorySymptoms : AcuteIllnessMeasurements -> Int
+countRespiratorySymptoms measurements =
+    countSymptoms measurements.symptomsRespiratory .value [ StabbingChestPain, NoSymptomsRespiratory ]
 
 
 feverRecorded : AcuteIllnessMeasurements -> Bool
@@ -497,19 +511,6 @@ intractableVomitingAtSymptoms : AcuteIllnessMeasurements -> Bool
 intractableVomitingAtSymptoms measurements =
     measurements.symptomsGI
         |> Maybe.map (Tuple.second >> .value >> .derivedSigns >> EverySet.member IntractableVomiting)
-        |> Maybe.withDefault False
-
-
-coughAndNasalCongestionAtSymptoms : AcuteIllnessMeasurements -> Bool
-coughAndNasalCongestionAtSymptoms measurements =
-    measurements.symptomsRespiratory
-        |> Maybe.map
-            (Tuple.second
-                >> .value
-                >> (\symptomsDict ->
-                        symptomAppearsAtSymptomsDict Cough symptomsDict && symptomAppearsAtSymptomsDict NasalCongestion symptomsDict
-                   )
-            )
         |> Maybe.withDefault False
 
 
@@ -654,6 +655,11 @@ malarialDangerSignsPresent measurements =
         measurements.symptomsGI
         measurements.acuteFindings
         |> Maybe.withDefault False
+
+
+respiratoryInfectionSymptomsPresent : AcuteIllnessMeasurements -> Bool
+respiratoryInfectionSymptomsPresent measurements =
+    countRespiratorySymptoms measurements > 0
 
 
 respiratoryInfectionDangerSignsPresent : AcuteIllnessMeasurements -> Bool
