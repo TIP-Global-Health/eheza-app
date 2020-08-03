@@ -315,10 +315,10 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                 trimmed =
                     String.trim name
             in
-            -- We'll limit the search to 100 each for now ... basically,
+            -- We'll limit the search to 500 each for now ... basically,
             -- just to avoid truly pathological cases.
             ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
-            , sw.selectRange personEndpoint { nameContains = Just trimmed } 0 (Just 100)
+            , sw.selectRange personEndpoint { nameContains = Just trimmed } 0 (Just 500)
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
             , []
             )
