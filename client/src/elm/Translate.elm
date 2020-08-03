@@ -924,7 +924,7 @@ translationSet trans =
 
                 DiagnosisRespiratoryInfectionUncomplicated ->
                     { english = "Uncomplicated Pneumonia"
-                    , kinyarwanda = Just "Indwara y'ubuhumekero yoroheje"
+                    , kinyarwanda = Just "Umusonga woroheje"
                     }
 
                 DiagnosisFeverOfUnknownOrigin ->
@@ -976,7 +976,7 @@ translationSet trans =
 
                 DiagnosisRespiratoryInfectionUncomplicated ->
                     { english = "Suspected Uncomplicated Pneumonia"
-                    , kinyarwanda = Just "Aracyekwaho indwara y'ubuhumekero yoroheje"
+                    , kinyarwanda = Just "Aracyekwaho umusonga woroheje"
                     }
 
                 DiagnosisFeverOfUnknownOrigin ->
@@ -2559,7 +2559,7 @@ translationSet trans =
 
                 ComeToHealthCenter ->
                     { english = "advised patient to go to the health center for further evaluation"
-                    , kinyarwanda = Just "wagiriye inama umurwayi yo kujjya gukoresha isuzuma ryimbitse"
+                    , kinyarwanda = Just "kimugira inama yo kujya ku kigo nderabuzima gukoresha isuzuma ryimbitse"
                     }
 
                 ChwMonitoring ->
@@ -4768,7 +4768,7 @@ translationSet trans =
 
                 LossOfSmell ->
                     { english = "Loss of Smell"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kudahumekerwa"
                     }
 
                 NightSweats ->
