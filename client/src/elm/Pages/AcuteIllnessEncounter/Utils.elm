@@ -341,15 +341,25 @@ covid19Diagnosed measurements =
         totalSymptoms =
             generalSymptomsCount + respiratorySymptomsCount + giSymptomsCount
 
+        symptomsIndicateCovid =
+            if giSymptomsCount > 0 then
+                respiratorySymptomsCount > 0
+
+            else
+                totalSymptoms > 1
+
         totalSigns =
             countSigns measurements.travelHistory NoTravelHistorySigns
                 + countSigns measurements.exposure NoExposureSigns
 
+        signsIndicateCovid =
+            totalSigns > 0
+
         rdtDoneAndNegative =
             malariaRapidTestResult measurements == Just RapidTestNegative
     in
-    (totalSigns > 0 && totalSymptoms > 1)
-        || (rdtDoneAndNegative && (totalSigns > 0 || totalSymptoms > 1))
+    (signsIndicateCovid && symptomsIndicateCovid)
+        || (rdtDoneAndNegative && (signsIndicateCovid || symptomsIndicateCovid))
 
 
 resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
