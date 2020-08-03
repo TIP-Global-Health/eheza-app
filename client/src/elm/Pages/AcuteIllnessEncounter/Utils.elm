@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, ageDependentARINextStep, bloodyDiarrheaAtSymptoms, covid19Diagnosed, expectActivity, feverAtPhysicalExam, feverAtSymptoms, feverRecorded, generateAssembledData, generatePreviousMeasurements, intractableVomitingAtSymptoms, malariaRapidTestResult, malarialDangerSignsPresent, mandatoryActivitiesCompleted, nonBloodyDiarrheaAtSymptoms, poorSuckAtSymptoms, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByLaboratoryResults, resolveNextStepByDiagnosis, resolveNextStepsTasks, resolveNonCovid19AcuteIllnessDiagnosis, respiratoryInfectionDangerSignsPresent, respiratoryRateElevated, symptomAppearsAtSymptomsDict)
+module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, ageDependentARINextStep, covid19Diagnosed, expectActivity, feverAtPhysicalExam, feverAtSymptoms, feverRecorded, generateAssembledData, generatePreviousMeasurements, malariaRapidTestResult, malarialDangerSignsPresent, mandatoryActivitiesCompleted, nonBloodyDiarrheaAtSymptoms, poorSuckAtSymptoms, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByLaboratoryResults, resolveNextStepByDiagnosis, resolveNextStepsTasks, resolveNonCovid19AcuteIllnessDiagnosis, respiratoryInfectionDangerSignsPresent, respiratoryRateElevated, symptomAppearsAtSymptomsDict)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -333,10 +333,10 @@ covid19Diagnosed measurements =
             countSymptoms measurements.symptomsGeneral .value excludesGeneral
 
         respiratorySymptomsCount =
-            countRespiratorySymptoms measurements
+            countRespiratorySymptoms measurements [ StabbingChestPain ]
 
         giSymptomsCount =
-            countSymptoms measurements.symptomsGI (.value >> .signs) [ NoSymptomsGI ]
+            countGISymptoms measurements []
 
         totalSymptoms =
             generalSymptomsCount + respiratorySymptomsCount + giSymptomsCount
@@ -358,8 +358,7 @@ covid19Diagnosed measurements =
         rdtDoneAndNegative =
             malariaRapidTestResult measurements == Just RapidTestNegative
     in
-    (signsIndicateCovid && symptomsIndicateCovid)
-        || (rdtDoneAndNegative && (signsIndicateCovid || symptomsIndicateCovid))
+    signsIndicateCovid && (symptomsIndicateCovid || rdtDoneAndNegative)
 
 
 resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
@@ -369,14 +368,11 @@ resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements =
         if feverRecorded measurements then
             resolveAcuteIllnessDiagnosisByLaboratoryResults measurements
 
-        else if
-            (poorSuckAtSymptoms measurements || lethargyAtSymptoms measurements)
-                && respiratoryInfectionDangerSignsPresent measurements
-        then
+        else if respiratoryInfectionDangerSignsPresent measurements then
             Just DiagnosisRespiratoryInfectionComplicated
 
-        else if nonBloodyDiarrheaAtSymptoms measurements then
-            Just DiagnosisGastrointestinalInfectionUncomplicated
+        else if gastrointestinalInfectionDangerSignsPresent measurements then
+            Just DiagnosisGastrointestinalInfectionComplicated
 
         else if respiratoryInfectionSymptomsPresent measurements then
             if respiratoryRateElevated currentDate person measurements then
@@ -384,6 +380,11 @@ resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements =
 
             else
                 Just DiagnosisSimpleColdAndCough
+
+        else if nonBloodyDiarrheaAtSymptoms measurements then
+            -- Non Bloody Diarrhea is the only GI symptom that is diagnosed as Uncomplicated.
+            -- All others are considered to be Complicates, and diagnosed earlier.
+            Just DiagnosisGastrointestinalInfectionUncomplicated
 
         else
             Nothing
@@ -399,11 +400,11 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
             (\testResult ->
                 case testResult of
                     RapidTestNegative ->
-                        if bloodyDiarrheaAtSymptoms measurements || intractableVomitingAtSymptoms measurements then
-                            Just DiagnosisGastrointestinalInfectionComplicated
-
-                        else if respiratoryInfectionDangerSignsPresent measurements then
+                        if respiratoryInfectionDangerSignsPresent measurements then
                             Just DiagnosisRespiratoryInfectionComplicated
+
+                        else if gastrointestinalInfectionDangerSignsPresent measurements then
+                            Just DiagnosisGastrointestinalInfectionComplicated
 
                         else
                             Just DiagnosisFeverOfUnknownOrigin
@@ -423,10 +424,10 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
                             Just DiagnosisMalariaUncomplicatedAndPregnant
 
                     RapidTestIndeterminate ->
-                        Nothing
+                        Just DiagnosisFeverOfUnknownOrigin
 
                     RapidTestUnableToRun ->
-                        Nothing
+                        Just DiagnosisFeverOfUnknownOrigin
             )
 
 
@@ -443,9 +444,14 @@ countSymptoms measurement geSymptomsListFunc exclusions =
         |> Maybe.withDefault 0
 
 
-countRespiratorySymptoms : AcuteIllnessMeasurements -> Int
-countRespiratorySymptoms measurements =
-    countSymptoms measurements.symptomsRespiratory .value [ StabbingChestPain, NoSymptomsRespiratory ]
+countRespiratorySymptoms : AcuteIllnessMeasurements -> List SymptomsRespiratorySign -> Int
+countRespiratorySymptoms measurements exclusions =
+    countSymptoms measurements.symptomsRespiratory .value (NoSymptomsRespiratory :: exclusions)
+
+
+countGISymptoms : AcuteIllnessMeasurements -> List SymptomsGISign -> Int
+countGISymptoms measurements exclusions =
+    countSymptoms measurements.symptomsGI (.value >> .signs) (NoSymptomsGI :: exclusions)
 
 
 feverRecorded : AcuteIllnessMeasurements -> Bool
@@ -503,24 +509,10 @@ respiratoryRateElevated currentDate person measurements =
         |> Maybe.withDefault False
 
 
-bloodyDiarrheaAtSymptoms : AcuteIllnessMeasurements -> Bool
-bloodyDiarrheaAtSymptoms measurements =
-    measurements.symptomsGI
-        |> Maybe.map (Tuple.second >> .value >> .signs >> symptomAppearsAtSymptomsDict BloodyDiarrhea)
-        |> Maybe.withDefault False
-
-
 nonBloodyDiarrheaAtSymptoms : AcuteIllnessMeasurements -> Bool
 nonBloodyDiarrheaAtSymptoms measurements =
     measurements.symptomsGI
         |> Maybe.map (Tuple.second >> .value >> .signs >> symptomAppearsAtSymptomsDict NonBloodyDiarrhea)
-        |> Maybe.withDefault False
-
-
-intractableVomitingAtSymptoms : AcuteIllnessMeasurements -> Bool
-intractableVomitingAtSymptoms measurements =
-    measurements.symptomsGI
-        |> Maybe.map (Tuple.second >> .value >> .derivedSigns >> EverySet.member IntractableVomiting)
         |> Maybe.withDefault False
 
 
@@ -669,7 +661,7 @@ malarialDangerSignsPresent measurements =
 
 respiratoryInfectionSymptomsPresent : AcuteIllnessMeasurements -> Bool
 respiratoryInfectionSymptomsPresent measurements =
-    countRespiratorySymptoms measurements > 0
+    countRespiratorySymptoms measurements [ ShortnessOfBreath, StabbingChestPain ] > 0
 
 
 respiratoryInfectionDangerSignsPresent : AcuteIllnessMeasurements -> Bool
@@ -711,6 +703,11 @@ respiratoryInfectionDangerSignsPresent measurements =
         measurements.symptomsRespiratory
         measurements.acuteFindings
         |> Maybe.withDefault False
+
+
+gastrointestinalInfectionDangerSignsPresent : AcuteIllnessMeasurements -> Bool
+gastrointestinalInfectionDangerSignsPresent measurements =
+    countGISymptoms measurements [ NonBloodyDiarrhea ] > 0
 
 
 symptomAppearsAtSymptomsDict : a -> Dict a Int -> Bool
