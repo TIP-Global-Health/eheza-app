@@ -277,7 +277,6 @@ type TranslationId
     | ContactedHCQuestion
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
-    | ContactWithSimilarSymptomsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
     | CurrentIllnessBegan
@@ -924,8 +923,8 @@ translationSet trans =
                     }
 
                 DiagnosisRespiratoryInfectionUncomplicated ->
-                    { english = "Acute Respiratory Infection without Complications"
-                    , kinyarwanda = Just "Indwara y'ubuhumekero yoroheje"
+                    { english = "Uncomplicated Pneumonia"
+                    , kinyarwanda = Just "Umusonga woroheje"
                     }
 
                 DiagnosisFeverOfUnknownOrigin ->
@@ -976,8 +975,8 @@ translationSet trans =
                     }
 
                 DiagnosisRespiratoryInfectionUncomplicated ->
-                    { english = "Suspected Acute Respiratory Infection (without Complications)"
-                    , kinyarwanda = Just "Aracyekwaho indwara y'ubuhumekero yoroheje"
+                    { english = "Suspected Uncomplicated Pneumonia"
+                    , kinyarwanda = Just "Aracyekwaho umusonga woroheje"
                     }
 
                 DiagnosisFeverOfUnknownOrigin ->
@@ -1755,11 +1754,6 @@ translationSet trans =
         ContactWithCOVID19SymptomsQuestion ->
             { english = "Have you had contacts with others who exhibit symptoms or have been exposed to COVID-19"
             , kinyarwanda = Just "Waba warigeze uhura n'abantu bagaragaje ibimenyetso bya covid-19 cyangwa n'abari bafite ibyago byo kuyandura"
-            }
-
-        ContactWithSimilarSymptomsQuestion ->
-            { english = "Have you had contacts with others who have similar symptoms to you"
-            , kinyarwanda = Just "Waba warigeze uhura n'abandi bantu bafite ibimenyetso nk'ibyawe?"
             }
 
         ConvulsionsAndUnconsciousPreviousDelivery ->
@@ -2564,8 +2558,8 @@ translationSet trans =
                     }
 
                 ComeToHealthCenter ->
-                    { english = "advised patient to come to the health center for further evaluation"
-                    , kinyarwanda = Just "wagiriye inama umurwayi yo kujjya gukoresha isuzuma ryimbitse"
+                    { english = "advised patient to go to the health center for further evaluation"
+                    , kinyarwanda = Just "kimugira inama yo kujya ku kigo nderabuzima gukoresha isuzuma ryimbitse"
                     }
 
                 ChwMonitoring ->
@@ -4770,6 +4764,11 @@ translationSet trans =
                 Headache ->
                     { english = "Headache"
                     , kinyarwanda = Just "Kubabara umutwe"
+                    }
+
+                LossOfSmell ->
+                    { english = "Loss of Smell"
+                    , kinyarwanda = Just "Kudahumekerwa"
                     }
 
                 NightSweats ->

@@ -71,6 +71,26 @@
   }
 }
 
+@mixin recomendation-label {
+
+  label {
+    font-size: 24px;
+
+    span {
+      margin: 7px;
+
+      &.strong {
+        font-weight: 600;
+      }
+    }
+
+    &:before {
+      height: 24px;
+      width: 24px;
+    }
+  }
+}
+
 // We design for a minimum width of 800px.
 html,
 body {
@@ -835,22 +855,7 @@ div.page-activity.acute-illness {
       .ui.checkbox.activity {
         margin-bottom: 10px;
 
-        label {
-          font-size: 24px;
-
-          span {
-            margin: 7px;
-
-            &.strong {
-              font-weight: 600;
-            }
-          }
-
-          &:before {
-            height: 24px;
-            width: 24px;
-          }
-        }
+        @include recomendation-label;
       }
     }
 
@@ -1796,7 +1801,6 @@ div.page-participant.prenatal {
 
 div.page-report.acute-illness {
   background: $color-light-gray;
-  height: fit-content;
   padding: 20px;
 
   .ui.report.unstackable.items {
@@ -1879,13 +1883,43 @@ div.page-report.acute-illness {
     div.pane.symptoms .symptoms-table .symptoms-table-row {
       display: grid;
       grid-gap: 20px;
-      grid-template-columns: 15% auto;
+      grid-template-columns: 15% 5px auto;
     }
 
     div.pane.symptoms .symptoms-table .symptoms-table-row .date {
       color: $color-text;
       font-weight: 600;
       margin: auto 0 auto auto;
+    }
+
+    div.pane.symptoms .symptoms-table .symptoms-table-row .timeline {
+      height: 100%;
+
+      .line {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        justify-content: center;
+
+        img {
+          margin-left: -6px;
+          width: 12px;
+        }
+
+        &.half {
+          height: 50%;
+          justify-content: start;
+
+          img {
+            margin-top: -7px;
+          }
+        }
+
+        &.blue {
+          border-left: 1px solid $color-lighter-blue;
+        }
+      }
     }
 
     div.pane.symptoms .symptoms-table .symptoms-table-row ul {
@@ -1944,7 +1978,23 @@ div.page-report.acute-illness {
 
     div.pane.actions-taken .instructions {
       color: $color-text;
+      margin-bottom: 0;
       padding: 20px;
+
+      .recomendation {
+        font-weight: normal;
+        margin-left: 52px;
+
+        @include recomendation-label;
+
+        > span {
+          margin-left: -5px;
+        }
+      }
+    }
+
+    div.actions {
+      margin: 0
     }
   }
 

@@ -19,6 +19,7 @@ class HedleyRestfulSymptomsGeneral extends HedleyRestfulAcuteIllnessActivityBase
     'field_night_sweats_period',
     'field_body_aches_period',
     'field_headache_period',
+    'field_loss_of_smell_period',
     'field_coke_colored_urine_period',
     'field_convulsions_period',
     'field_dry_mouth_period',

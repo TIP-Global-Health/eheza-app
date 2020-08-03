@@ -226,7 +226,6 @@ function hedley_acute_illness_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'covid19-symptioms' => 'Others with COVID19 symptoms',
-        'similar-symptoms' => 'Others with symptoms similar to patient',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',
@@ -452,6 +451,21 @@ function hedley_acute_illness_field_default_field_bases() {
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_lethargy_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_loss_of_smell_period'.
+  $field_bases['field_loss_of_smell_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_loss_of_smell_period',
     'indexes' => array(),
     'locked' => 0,
     'module' => 'number',

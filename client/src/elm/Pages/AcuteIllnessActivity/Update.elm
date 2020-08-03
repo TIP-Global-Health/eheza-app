@@ -90,7 +90,7 @@ update currentDate id db msg model =
                     toggleSymptomsSign SymptomsGeneral sign NoSymptomsGeneral symptomsGeneralForm.signs
 
                 updatedForm =
-                    { symptomsGeneralForm | signs = updatedSigns }
+                    { symptomsGeneralForm | signs = updatedSigns, signsDirty = True }
 
                 updatedData =
                     model.symptomsData
@@ -107,7 +107,7 @@ update currentDate id db msg model =
                     toggleSymptomsSign SymptomsGI sign NoSymptomsGI symptomsGIForm.signs
 
                 updatedForm =
-                    { symptomsGIForm | signs = updatedSigns }
+                    { symptomsGIForm | signs = updatedSigns, signsDirty = True }
 
                 updatedData =
                     model.symptomsData
@@ -124,7 +124,7 @@ update currentDate id db msg model =
                     toggleSymptomsSign SymptomsRespiratory sign NoSymptomsRespiratory symptomsRespiratoryForm.signs
 
                 updatedForm =
-                    { symptomsRespiratoryForm | signs = updatedSigns }
+                    { symptomsRespiratoryForm | signs = updatedSigns, signsDirty = True }
 
                 updatedData =
                     model.symptomsData
@@ -195,7 +195,7 @@ update currentDate id db msg model =
         SetSymptomsGIIntractableVomiting value ->
             let
                 updatedForm =
-                    { symptomsGIForm | intractableVomiting = Just value }
+                    { symptomsGIForm | intractableVomiting = Just value, intractableVomitingDirty = True }
 
                 updatedData =
                     model.symptomsData
@@ -681,23 +681,6 @@ update currentDate id db msg model =
 
                 updatedForm =
                     { form | covid19Symptoms = Just value }
-
-                updatedData =
-                    model.exposureData
-                        |> (\data -> { data | exposureForm = updatedForm })
-            in
-            ( { model | exposureData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetSimilarSymptoms value ->
-            let
-                form =
-                    model.exposureData.exposureForm
-
-                updatedForm =
-                    { form | similarSymptoms = Just value }
 
                 updatedData =
                     model.exposureData
