@@ -49,8 +49,7 @@ filterPeriodsForMainPage =
 
 filterPeriodsForCaseManagementPage : List FilterPeriod
 filterPeriodsForCaseManagementPage =
-    [ ThreeMonthsAgo
-    ]
+    []
 
 
 filterPeriodsForStatsPage : List FilterPeriod
