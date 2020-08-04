@@ -225,7 +225,7 @@ function hedley_acute_illness_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'covid19-symptioms' => 'Others with COVID19 symptoms',
+        'covid19-symptoms' => 'Others with COVID19 symptoms',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',

@@ -1064,7 +1064,7 @@ encodeSymptomsGeneralValue signs =
     , ( "unable_to_drink_period", int unableToDrink )
     , ( "unable_to_eat_period", int unableToEat )
     , ( "yellow_eyes_period", int yellowEyes )
-    , ( "type", string "symptioms_general" )
+    , ( "type", string "symptoms_general" )
     ]
 
 
@@ -1100,7 +1100,7 @@ encodeSymptomsRespiratoryValue signs =
     , ( "blood_in_sputum_period", int bloodInSputum )
     , ( "sore_throat_period", int soreThroat )
     , ( "stabbing_chest_pain_period", int stabbingChestPain )
-    , ( "type", string "symptioms_respiratory" )
+    , ( "type", string "symptoms_respiratory" )
     ]
 
 
@@ -1133,7 +1133,7 @@ encodeSymptomsGIValue value =
     , ( "vomiting_period", int vomiting )
     , ( "abdominal_pain_period", int abdominalPain )
     , ( "symptoms_gi_derived_signs", encodeEverySet encodeSymptomsGIDerivedSigns value.derivedSigns )
-    , ( "type", string "symptioms_gi" )
+    , ( "type", string "symptoms_gi" )
     ]
 
 
@@ -1392,7 +1392,7 @@ encodeExposureSign sign =
     string <|
         case sign of
             COVID19Symptoms ->
-                "covid19-symptioms"
+                "covid19-symptoms"
 
             NoExposureSigns ->
                 "none"
