@@ -11,6 +11,7 @@ module SyncManager.Utils exposing
     , getSyncedHealthCenters
     )
 
+import Backend.AcuteIllnessEncounter.Encoder
 import Backend.Clinic.Encoder
 import Backend.Counseling.Encoder
 import Backend.HealthCenter.Encoder
@@ -263,6 +264,15 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
             }
     in
     case backendAuthorityEntity of
+        BackendAuthorityAcuteFindings identifier ->
+            getIdentifier identifier "acute_findings"
+
+        BackendAuthorityAcuteIllnessEncounter identifier ->
+            getIdentifier identifier "acute_illness_encounter"
+
+        BackendAuthorityAcuteIllnessVitals identifier ->
+            getIdentifier identifier "acute_illness_vitals"
+
         BackendAuthorityAttendance identifier ->
             getIdentifier identifier "attendance"
 
@@ -284,8 +294,14 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityDangerSigns identifier ->
             getIdentifier identifier "danger_signs"
 
+        BackendAuthorityExposure identifier ->
+            getIdentifier identifier "exposure"
+
         BackendAuthorityFamilyPlanning identifier ->
             getIdentifier identifier "family_planning"
+
+        BackendAuthorityHCContact identifier ->
+            getIdentifier identifier "hc_contact"
 
         BackendAuthorityHeight identifier ->
             getIdentifier identifier "height"
@@ -293,17 +309,26 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityIndividualParticipant identifier ->
             getIdentifier identifier "individual_participant"
 
+        BackendAuthorityIsolation identifier ->
+            getIdentifier identifier "isolation"
+
         BackendAuthorityLactation identifier ->
             getIdentifier identifier "lactation"
 
         BackendAuthorityLastMenstrualPeriod identifier ->
             getIdentifier identifier "last_menstrual_period"
 
+        BackendAuthorityMalariaTesting identifier ->
+            getIdentifier identifier "malaria_testing"
+
         BackendAuthorityMedicalHistory identifier ->
             getIdentifier identifier "medical_history"
 
         BackendAuthorityMedication identifier ->
             getIdentifier identifier "medication"
+
+        BackendAuthorityMedicationDistribution identifier ->
+            getIdentifier identifier "medication_distribution"
 
         BackendAuthorityMotherFbf identifier ->
             getIdentifier identifier "mother_fbf"
@@ -371,11 +396,29 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityResource identifier ->
             getIdentifier identifier "resource"
 
+        BackendAuthoritySendToHC identifier ->
+            getIdentifier identifier "send_to_hc"
+
         BackendAuthoritySession identifier ->
             getIdentifier identifier "session"
 
         BackendAuthoritySocialHistory identifier ->
             getIdentifier identifier "social_history"
+
+        BackendAuthoritySymptomsGeneral identifier ->
+            getIdentifier identifier "symptoms_general"
+
+        BackendAuthoritySymptomsGI identifier ->
+            getIdentifier identifier "symptoms_gi"
+
+        BackendAuthoritySymptomsRespiratory identifier ->
+            getIdentifier identifier "symptoms_respiratory"
+
+        BackendAuthorityTravelHistory identifier ->
+            getIdentifier identifier "travel_history"
+
+        BackendAuthorityTreatmentReview identifier ->
+            getIdentifier identifier "treatment_history"
 
         BackendAuthorityWeight identifier ->
             getIdentifier identifier "weight"
@@ -523,6 +566,15 @@ encodeBackendGeneralEntity backendGeneralEntity =
 encodeBackendAuthorityEntity : BackendAuthorityEntity -> Value
 encodeBackendAuthorityEntity entity =
     case entity of
+        BackendAuthorityAcuteFindings identifier ->
+            encode Backend.Measurement.Encoder.encodeAcuteFindings identifier
+
+        BackendAuthorityAcuteIllnessEncounter identifier ->
+            encode Backend.AcuteIllnessEncounter.Encoder.encodeAcuteIllnessEncounter identifier
+
+        BackendAuthorityAcuteIllnessVitals identifier ->
+            encode Backend.Measurement.Encoder.encodeAcuteIllnessVitals identifier
+
         BackendAuthorityAttendance identifier ->
             encode Backend.Measurement.Encoder.encodeAttendance identifier
 
@@ -544,8 +596,14 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityDangerSigns identifier ->
             encode Backend.Measurement.Encoder.encodeDangerSigns identifier
 
+        BackendAuthorityExposure identifier ->
+            encode Backend.Measurement.Encoder.encodeExposure identifier
+
         BackendAuthorityFamilyPlanning identifier ->
             encode Backend.Measurement.Encoder.encodeFamilyPlanning identifier
+
+        BackendAuthorityHCContact identifier ->
+            encode Backend.Measurement.Encoder.encodeHCContact identifier
 
         BackendAuthorityHeight identifier ->
             encode Backend.Measurement.Encoder.encodeHeight identifier
@@ -553,8 +611,14 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityIndividualParticipant identifier ->
             encode Backend.IndividualEncounterParticipant.Encoder.encodeIndividualEncounterParticipant identifier
 
+        BackendAuthorityIsolation identifier ->
+            encode Backend.Measurement.Encoder.encodeIsolation identifier
+
         BackendAuthorityLactation identifier ->
             encode Backend.Measurement.Encoder.encodeLactation identifier
+
+        BackendAuthorityMalariaTesting identifier ->
+            encode Backend.Measurement.Encoder.encodeMalariaTesting identifier
 
         BackendAuthorityLastMenstrualPeriod identifier ->
             encode Backend.Measurement.Encoder.encodeLastMenstrualPeriod identifier
@@ -564,6 +628,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityMedication identifier ->
             encode Backend.Measurement.Encoder.encodeMedication identifier
+
+        BackendAuthorityMedicationDistribution identifier ->
+            encode Backend.Measurement.Encoder.encodeMedicationDistribution identifier
 
         BackendAuthorityMotherFbf identifier ->
             encode Backend.Measurement.Encoder.encodeFbf identifier
@@ -634,8 +701,26 @@ encodeBackendAuthorityEntity entity =
         BackendAuthoritySession identifier ->
             encode Backend.Session.Encoder.encodeSession identifier
 
+        BackendAuthoritySendToHC identifier ->
+            encode Backend.Measurement.Encoder.encodeSendToHC identifier
+
         BackendAuthoritySocialHistory identifier ->
             encode Backend.Measurement.Encoder.encodeSocialHistory identifier
+
+        BackendAuthoritySymptomsGeneral identifier ->
+            encode Backend.Measurement.Encoder.encodeSymptomsGeneral identifier
+
+        BackendAuthoritySymptomsGI identifier ->
+            encode Backend.Measurement.Encoder.encodeSymptomsGI identifier
+
+        BackendAuthoritySymptomsRespiratory identifier ->
+            encode Backend.Measurement.Encoder.encodeSymptomsRespiratory identifier
+
+        BackendAuthorityTravelHistory identifier ->
+            encode Backend.Measurement.Encoder.encodeTravelHistory identifier
+
+        BackendAuthorityTreatmentReview identifier ->
+            encode Backend.Measurement.Encoder.encodeTreatmentReview identifier
 
         BackendAuthorityVitals identifier ->
             encode Backend.Measurement.Encoder.encodeVitals identifier

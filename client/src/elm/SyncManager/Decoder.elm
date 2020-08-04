@@ -5,6 +5,7 @@ module SyncManager.Decoder exposing
     )
 
 import AssocList as Dict
+import Backend.AcuteIllnessEncounter.Decoder
 import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
 import Backend.HealthCenter.Decoder
@@ -313,6 +314,21 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                                 )
                 in
                 case type_ of
+                    "acute_findings" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteFindings
+                            BackendAuthorityAcuteFindings
+
+                    "acute_illness_encounter" ->
+                        doDecode
+                            Backend.AcuteIllnessEncounter.Decoder.decodeAcuteIllnessEncounter
+                            BackendAuthorityAcuteIllnessEncounter
+
+                    "acute_illness_vitals" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteIllnessVitals
+                            BackendAuthorityAcuteIllnessVitals
+
                     "attendance" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeAttendance
@@ -348,10 +364,20 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeDangerSigns
                             BackendAuthorityDangerSigns
 
+                    "exposure" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeExposure
+                            BackendAuthorityExposure
+
                     "family_planning" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeFamilyPlanning
                             BackendAuthorityFamilyPlanning
+
+                    "hc_contact" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHCContact
+                            BackendAuthorityHCContact
 
                     "height" ->
                         doDecode
@@ -363,6 +389,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.IndividualEncounterParticipant.Decoder.decodeIndividualEncounterParticipant
                             BackendAuthorityIndividualParticipant
 
+                    "isolation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeIsolation
+                            BackendAuthorityIsolation
+
                     "lactation" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeLactation
@@ -373,6 +404,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeLastMenstrualPeriod
                             BackendAuthorityLastMenstrualPeriod
 
+                    "malaria_testing" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeMalariaTesting
+                            BackendAuthorityMalariaTesting
+
                     "medical_history" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeMedicalHistory
@@ -382,6 +418,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeMedication
                             BackendAuthorityMedication
+
+                    "medication_distribution" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeMedicationDistribution
+                            BackendAuthorityMedicationDistribution
 
                     "mother_fbf" ->
                         doDecode
@@ -491,6 +532,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeResource
                             BackendAuthorityResource
 
+                    "send_to_hc" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeSendToHC
+                            BackendAuthoritySendToHC
+
                     "session" ->
                         doDecode
                             Backend.Session.Decoder.decodeSession
@@ -500,6 +546,31 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeSocialHistory
                             BackendAuthoritySocialHistory
+
+                    "symptoms_general" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeSymptomsGeneral
+                            BackendAuthoritySymptomsGeneral
+
+                    "symptoms_gi" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeSymptomsGI
+                            BackendAuthoritySymptomsGI
+
+                    "symptoms_respiratory" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeSymptomsRespiratory
+                            BackendAuthoritySymptomsRespiratory
+
+                    "travel_history" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTravelHistory
+                            BackendAuthorityTravelHistory
+
+                    "treatment_history" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTreatmentReview
+                            BackendAuthorityTreatmentReview
 
                     "vitals" ->
                         doDecode

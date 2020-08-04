@@ -384,6 +384,15 @@ viewAuthorityEntity backendAuthorityEntity =
     in
     li []
         [ case backendAuthorityEntity of
+            BackendAuthorityAcuteFindings identifier ->
+                viewMeasurement identifier "Acute Findings"
+
+            BackendAuthorityAcuteIllnessEncounter identifier ->
+                text ("Acute Illness Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
+            BackendAuthorityAcuteIllnessVitals identifier ->
+                viewMeasurement identifier "AcuteI llness Vitals"
+
             BackendAuthorityAttendance identifier ->
                 viewMeasurement identifier "Attendance"
 
@@ -405,8 +414,14 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityDangerSigns identifier ->
                 viewMeasurement identifier "Danger Signs"
 
+            BackendAuthorityExposure identifier ->
+                viewMeasurement identifier "Exposure"
+
             BackendAuthorityFamilyPlanning identifier ->
                 viewMeasurement identifier "Family Planning"
+
+            BackendAuthorityHCContact identifier ->
+                viewMeasurement identifier "HC Contact"
 
             BackendAuthorityHeight identifier ->
                 viewMeasurement identifier "Height"
@@ -414,8 +429,14 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityIndividualParticipant identifier ->
                 text <| "Individual Participant for person ID " ++ fromEntityUuid identifier.entity.person
 
+            BackendAuthorityIsolation identifier ->
+                viewMeasurement identifier "Isolation"
+
             BackendAuthorityLactation identifier ->
                 viewMeasurement identifier "Lactation"
+
+            BackendAuthorityMalariaTesting identifier ->
+                viewMeasurement identifier "Malaria Testing"
 
             BackendAuthorityLastMenstrualPeriod identifier ->
                 viewMeasurement identifier "Menstrual Period"
@@ -425,6 +446,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityMedication identifier ->
                 viewMeasurement identifier "Medication"
+
+            BackendAuthorityMedicationDistribution identifier ->
+                viewMeasurement identifier "Medication Distribution"
 
             BackendAuthorityMotherFbf identifier ->
                 viewMeasurement identifier "Mother Fbf"
@@ -492,11 +516,29 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityResource identifier ->
                 viewMeasurement identifier "Resource"
 
+            BackendAuthoritySendToHC identifier ->
+                viewMeasurement identifier "Send to HC"
+
             BackendAuthoritySession identifier ->
                 text <| "Session for Clinic ID " ++ fromEntityUuid identifier.entity.clinicId
 
             BackendAuthoritySocialHistory identifier ->
                 viewMeasurement identifier "Social History"
+
+            BackendAuthoritySymptomsGeneral identifier ->
+                viewMeasurement identifier "SymptomsGeneral"
+
+            BackendAuthoritySymptomsGI identifier ->
+                viewMeasurement identifier "SymptomsGI"
+
+            BackendAuthoritySymptomsRespiratory identifier ->
+                viewMeasurement identifier "SymptomsRespiratory"
+
+            BackendAuthorityTravelHistory identifier ->
+                viewMeasurement identifier "TravelHistory"
+
+            BackendAuthorityTreatmentReview identifier ->
+                viewMeasurement identifier "TreatmentReview"
 
             BackendAuthorityVitals identifier ->
                 viewMeasurement identifier "Vitals"
