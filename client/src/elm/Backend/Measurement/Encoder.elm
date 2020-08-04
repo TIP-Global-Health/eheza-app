@@ -175,6 +175,13 @@ encodeFamilyPlanningValue familyPlannings =
     ]
 
 
+encodePrenatalFamilyPlanningValue : EverySet FamilyPlanningSign -> List ( String, Value )
+encodePrenatalFamilyPlanningValue familyPlannings =
+    [ ( "family_planning_signs", encodeEverySet encodeFamilyPlanningSign familyPlannings )
+    , ( "type", string "prenatal_family_planning" )
+    ]
+
+
 encodeFamilyPlanning : FamilyPlanning -> List ( String, Value )
 encodeFamilyPlanning =
     encodeGroupMeasurement encodeFamilyPlanningValue
@@ -340,7 +347,7 @@ encodeBreastExamValue : BreastExamValue -> List ( String, Value )
 encodeBreastExamValue value =
     [ ( "breast", encodeEverySet encodeBreastExamSign value.exam )
     , ( "breast_self_exam", bool value.selfGuidance )
-    , ( "type", string "breast_eaxam" )
+    , ( "type", string "breast_exam" )
     ]
 
 
@@ -844,7 +851,7 @@ encodeObstetricHistoryStep2Value value =
 
 encodePrenatalFamilyPlanning : PrenatalFamilyPlanning -> List ( String, Value )
 encodePrenatalFamilyPlanning =
-    encodePrenatalMeasurement encodeFamilyPlanningValue
+    encodePrenatalMeasurement encodePrenatalFamilyPlanningValue
 
 
 encodePrenatalNutrition : PrenatalNutrition -> List ( String, Value )
@@ -880,7 +887,7 @@ encodeResource =
 encodeResourceValue : EverySet ResourceSign -> List ( String, Value )
 encodeResourceValue value =
     [ ( "resources", encodeEverySet encodeResourceSign value )
-    , ( "type", string "resources" )
+    , ( "type", string "resource" )
     ]
 
 

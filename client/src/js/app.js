@@ -356,7 +356,7 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
       break;
 
     default:
-      throw info.table +" is an unknown table type.";
+      throw info.table + " is an unknown table type.";
   }
 
   table.bulkPut(entities)
