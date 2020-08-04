@@ -12,6 +12,10 @@ encodeClinic clinic =
     , ( "group_type", encodeClinicType clinic.clinicType )
     , ( "type", string "clinic" )
     ]
+        ++ (clinic.villageId
+                |> Maybe.map (\uuid -> [ ( "village", encodeEntityUuid uuid ) ])
+                |> Maybe.withDefault []
+           )
 
 
 encodeClinicType : ClinicType -> Value
