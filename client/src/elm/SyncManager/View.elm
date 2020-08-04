@@ -478,13 +478,13 @@ viewAuthorityEntity backendAuthorityEntity =
                 viewMeasurement identifier "Nutrition Weight"
 
             BackendAuthorityObstetricHistory identifier ->
-                viewMeasurement identifier "ObstetricHistory"
+                viewMeasurement identifier "Obstetric History"
 
             BackendAuthorityObstetricHistoryStep2 identifier ->
                 viewMeasurement identifier "Obstetric History Step 2"
 
             BackendAuthorityObstetricalExam identifier ->
-                viewMeasurement identifier "ObstetricalExam"
+                viewMeasurement identifier "Obstetrical Exam"
 
             BackendAuthorityParticipantConsent identifier ->
                 viewMeasurement identifier "Participant Consent"
@@ -496,7 +496,7 @@ viewAuthorityEntity backendAuthorityEntity =
                 viewMeasurement identifier "Photo"
 
             BackendAuthorityPrenatalPhoto identifier ->
-                viewMeasurement identifier "Photo"
+                viewMeasurement identifier "Prenatal Photo"
 
             BackendAuthorityPmtctParticipant identifier ->
                 text <| "Pmtct Participant for child ID " ++ fromEntityUuid identifier.entity.child
@@ -526,19 +526,19 @@ viewAuthorityEntity backendAuthorityEntity =
                 viewMeasurement identifier "Social History"
 
             BackendAuthoritySymptomsGeneral identifier ->
-                viewMeasurement identifier "SymptomsGeneral"
+                viewMeasurement identifier "Symptoms General"
 
             BackendAuthoritySymptomsGI identifier ->
-                viewMeasurement identifier "SymptomsGI"
+                viewMeasurement identifier "Symptoms GI"
 
             BackendAuthoritySymptomsRespiratory identifier ->
-                viewMeasurement identifier "SymptomsRespiratory"
+                viewMeasurement identifier "Symptoms Respiratory"
 
             BackendAuthorityTravelHistory identifier ->
-                viewMeasurement identifier "TravelHistory"
+                viewMeasurement identifier "Travel History"
 
             BackendAuthorityTreatmentReview identifier ->
-                viewMeasurement identifier "TreatmentReview"
+                viewMeasurement identifier "Treatment Review"
 
             BackendAuthorityVitals identifier ->
                 viewMeasurement identifier "Vitals"

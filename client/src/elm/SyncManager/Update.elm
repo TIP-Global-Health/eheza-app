@@ -94,7 +94,7 @@ update currentDate dbVersion device msg model =
                                             []
                                         |> List.reverse
                             in
-                            sendSyncedDataToIndexDb { table = "Authority", data = dataToSend }
+                            sendSyncedDataToIndexDb { table = "Authority", data = dataToSend, shard = currentZipper.uuid }
 
                         Nothing ->
                             Cmd.none
@@ -127,7 +127,7 @@ update currentDate dbVersion device msg model =
                                 Cmd.none
 
                             else
-                                sendSyncedDataToIndexDb { table = "DeferredPhotos", data = dataToSend }
+                                sendSyncedDataToIndexDb { table = "DeferredPhotos", data = dataToSend, shard = currentZipper.uuid }
 
                         Nothing ->
                             Cmd.none
@@ -341,7 +341,7 @@ update currentDate dbVersion device msg model =
                                 Cmd.none
 
                             else
-                                sendSyncedDataToIndexDb { table = "General", data = dataToSend }
+                                sendSyncedDataToIndexDb { table = "General", data = dataToSend, shard = "" }
 
                         Nothing ->
                             Cmd.none
@@ -1189,7 +1189,7 @@ subscriptions model =
 
 {-| Send to JS data we have synced, e.g. `person`, `health center`, etc.
 -}
-port sendSyncedDataToIndexDb : { table : String, data : List String } -> Cmd msg
+port sendSyncedDataToIndexDb : { table : String, data : List String, shard : String } -> Cmd msg
 
 
 {-| Send to JS the last revision ID used to download General.

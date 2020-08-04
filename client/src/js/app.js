@@ -334,6 +334,10 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
     entity.uuid = rowObject.uuid;
     entity.vid = rowObject.vid;
 
+    if (info.table != 'General') {
+      entity.shard = info.shard;
+    }
+
     entities.push(entity);
   })
 
