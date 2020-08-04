@@ -384,7 +384,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                                 |> toCmd (RemoteData.fromResult >> HandleSavedFamilyPlanning)
 
                         Just id ->
-                            encodeFamilyPlanningValue value
+                            encodePrenatalFamilyPlanningValue value
                                 |> List.append
                                     [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
                                     , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
