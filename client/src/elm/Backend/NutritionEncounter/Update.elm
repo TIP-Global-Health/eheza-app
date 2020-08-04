@@ -61,7 +61,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                                 |> toCmd (RemoteData.fromResult >> HandleSavedHeight)
 
                         Just id ->
-                            encodeHeightValue value
+                            encodeNutritionHeightValue value
                                 |> List.append
                                     [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
                                     , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
@@ -97,7 +97,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                                 |> toCmd (RemoteData.fromResult >> HandleSavedMuac)
 
                         Just id ->
-                            encodeMuacValue value
+                            encodeNutritionMuacValue value
                                 |> List.append
                                     [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
                                     , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
@@ -205,7 +205,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                                 |> toCmd (RemoteData.fromResult >> HandleSavedWeight)
 
                         Just id ->
-                            encodeWeightValue value
+                            encodeNutritionWeightValue value
                                 |> List.append
                                     [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
                                     , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )

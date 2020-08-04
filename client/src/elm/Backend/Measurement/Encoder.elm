@@ -1,4 +1,4 @@
-module Backend.Measurement.Encoder exposing (encodeAbdomenCPESign, encodeAcuteFindings, encodeAcuteFindingsGeneralSign, encodeAcuteFindingsRespiratorySign, encodeAcuteFindingsValue, encodeAcuteIllnessMeasurement, encodeAcuteIllnessVitals, encodeAcuteIllnessVitalsValue, encodeAttendance, encodeAttendanceValue, encodeBreastExam, encodeBreastExamSign, encodeBreastExamValue, encodeCSectionReason, encodeCSectionScar, encodeCorePhysicalExam, encodeCorePhysicalExamValue, encodeCounselingSession, encodeCounselingSessionValue, encodeDangerSign, encodeDangerSigns, encodeDangerSignsValue, encodeDistributionNotice, encodeDistributionNoticeAsString, encodeEverySet, encodeExposure, encodeExposureSign, encodeExposureValue, encodeEyesCPESign, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeFamilyPlanningValueWithType, encodeFbf, encodeFbfValue, encodeFetalPresentation, encodeGroupMeasurement, encodeHCContact, encodeHCContactSign, encodeHCContactValue, encodeHCRecomendation, encodeHairHeadCPESign, encodeHandsCPESign, encodeHeartCPESign, encodeHeight, encodeHeightInCm, encodeHeightValue, encodeIsolation, encodeIsolationSign, encodeIsolationValue, encodeLactation, encodeLactationSign, encodeLactationValue, encodeLastMenstrualPeriod, encodeLastMenstrualPeriodValue, encodeLegsCPESign, encodeLungsCPESign, encodeMalariaRapidTestResult, encodeMalariaTesting, encodeMalariaTestingValue, encodeMeasurement, encodeMedicalHistory, encodeMedicalHistorySign, encodeMedicalHistoryValue, encodeMedication, encodeMedicationDistribution, encodeMedicationDistributionValue, encodeMedicationSign, encodeMedicationValue, encodeMuac, encodeMuacInCm, encodeMuacValue, encodeNeckCPESign, encodeNutrition, encodeNutritionHeight, encodeNutritionMeasurement, encodeNutritionMuac, encodeNutritionNutrition, encodeNutritionNutritionValue, encodeNutritionPhoto, encodeNutritionPhotoUrl, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeNutritionWeight, encodeObstetricHistory, encodeObstetricHistorySign, encodeObstetricHistoryStep2, encodeObstetricHistoryStep2Value, encodeObstetricHistoryValue, encodeObstetricalExam, encodeObstetricalExamValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodePrenatalFamilyPlanning, encodePrenatalFamilyPlanningValue, encodePrenatalMeasurement, encodePrenatalNutrition, encodePrenatalNutritionValue, encodePrenatalPhoto, encodePrenatalPhotoUrl, encodePreviousDeliveryPeriod, encodePreviousDeliverySign, encodeReasonForNotIsolating, encodeResource, encodeResourceSign, encodeResourceValue, encodeResponsePeriod, encodeSendToHC, encodeSendToHCValue, encodeSocialHistory, encodeSocialHistoryHivTestingResult, encodeSocialHistorySign, encodeSocialHistoryValue, encodeSymptomsGI, encodeSymptomsGIDerivedSigns, encodeSymptomsGIValue, encodeSymptomsGeneral, encodeSymptomsGeneralValue, encodeSymptomsRespiratory, encodeSymptomsRespiratoryValue, encodeTravelHistory, encodeTravelHistorySign, encodeTravelHistoryValue, encodeTreatmentReview, encodeTreatmentReviewSign, encodeTreatmentReviewValue, encodeVitals, encodeVitalsValue, encodeWeight, encodeWeightInKg, encodeWeightValue, encondeMedicationDistributionSign, encondeSendToHCSign, malariaRapidTestResultAsString, socialHistoryHivTestingResultToString)
+module Backend.Measurement.Encoder exposing (encodeAbdomenCPESign, encodeAcuteFindings, encodeAcuteFindingsGeneralSign, encodeAcuteFindingsRespiratorySign, encodeAcuteFindingsValue, encodeAcuteIllnessMeasurement, encodeAcuteIllnessVitals, encodeAcuteIllnessVitalsValue, encodeAttendance, encodeAttendanceValue, encodeBreastExam, encodeBreastExamSign, encodeBreastExamValue, encodeCSectionReason, encodeCSectionScar, encodeCorePhysicalExam, encodeCorePhysicalExamValue, encodeCounselingSession, encodeCounselingSessionValue, encodeDangerSign, encodeDangerSigns, encodeDangerSignsValue, encodeDistributionNotice, encodeDistributionNoticeAsString, encodeEverySet, encodeExposure, encodeExposureSign, encodeExposureValue, encodeEyesCPESign, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeFamilyPlanningValueWithType, encodeFbf, encodeFbfValue, encodeFetalPresentation, encodeGroupMeasurement, encodeHCContact, encodeHCContactSign, encodeHCContactValue, encodeHCRecomendation, encodeHairHeadCPESign, encodeHandsCPESign, encodeHeartCPESign, encodeHeight, encodeHeightInCm, encodeHeightValue, encodeHeightValueWithType, encodeIsolation, encodeIsolationSign, encodeIsolationValue, encodeLactation, encodeLactationSign, encodeLactationValue, encodeLastMenstrualPeriod, encodeLastMenstrualPeriodValue, encodeLegsCPESign, encodeLungsCPESign, encodeMalariaRapidTestResult, encodeMalariaTesting, encodeMalariaTestingValue, encodeMeasurement, encodeMedicalHistory, encodeMedicalHistorySign, encodeMedicalHistoryValue, encodeMedication, encodeMedicationDistribution, encodeMedicationDistributionValue, encodeMedicationSign, encodeMedicationValue, encodeMuac, encodeMuacInCm, encodeMuacValue, encodeMuacValueWithType, encodeNeckCPESign, encodeNutrition, encodeNutritionHeight, encodeNutritionHeightValue, encodeNutritionMeasurement, encodeNutritionMuac, encodeNutritionMuacValue, encodeNutritionNutrition, encodeNutritionNutritionValue, encodeNutritionPhoto, encodeNutritionPhotoUrl, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeNutritionWeight, encodeNutritionWeightValue, encodeObstetricHistory, encodeObstetricHistorySign, encodeObstetricHistoryStep2, encodeObstetricHistoryStep2Value, encodeObstetricHistoryValue, encodeObstetricalExam, encodeObstetricalExamValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodePrenatalFamilyPlanning, encodePrenatalFamilyPlanningValue, encodePrenatalMeasurement, encodePrenatalNutrition, encodePrenatalNutritionValue, encodePrenatalPhoto, encodePrenatalPhotoUrl, encodePreviousDeliveryPeriod, encodePreviousDeliverySign, encodeReasonForNotIsolating, encodeResource, encodeResourceSign, encodeResourceValue, encodeResponsePeriod, encodeSendToHC, encodeSendToHCValue, encodeSocialHistory, encodeSocialHistoryHivTestingResult, encodeSocialHistorySign, encodeSocialHistoryValue, encodeSymptomsGI, encodeSymptomsGIDerivedSigns, encodeSymptomsGIValue, encodeSymptomsGeneral, encodeSymptomsGeneralValue, encodeSymptomsRespiratory, encodeSymptomsRespiratoryValue, encodeTravelHistory, encodeTravelHistorySign, encodeTravelHistoryValue, encodeTreatmentReview, encodeTreatmentReviewSign, encodeTreatmentReviewValue, encodeVitals, encodeVitalsValue, encodeWeight, encodeWeightInKg, encodeWeightValue, encodeWeightValueWithType, encondeMedicationDistributionSign, encondeSendToHCSign, malariaRapidTestResultAsString, socialHistoryHivTestingResultToString)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
@@ -26,13 +26,23 @@ encodeHeight =
 
 encodeNutritionHeight : NutritionHeight -> List ( String, Value )
 encodeNutritionHeight =
-    encodeNutritionMeasurement encodeHeightValue
+    encodeNutritionMeasurement encodeNutritionHeightValue
 
 
 encodeHeightValue : HeightInCm -> List ( String, Value )
-encodeHeightValue (HeightInCm height) =
+encodeHeightValue height =
+    encodeHeightValueWithType "height" height
+
+
+encodeNutritionHeightValue : HeightInCm -> List ( String, Value )
+encodeNutritionHeightValue height =
+    encodeHeightValueWithType "nutrition_height" height
+
+
+encodeHeightValueWithType : String -> HeightInCm -> List ( String, Value )
+encodeHeightValueWithType type_ (HeightInCm height) =
     [ ( "height", float height )
-    , ( "type", string "height" )
+    , ( "type", string type_ )
     ]
 
 
@@ -43,13 +53,23 @@ encodeMuac =
 
 encodeNutritionMuac : NutritionMuac -> List ( String, Value )
 encodeNutritionMuac =
-    encodeNutritionMeasurement encodeMuacValue
+    encodeNutritionMeasurement encodeNutritionMuacValue
 
 
 encodeMuacValue : MuacInCm -> List ( String, Value )
-encodeMuacValue (MuacInCm muac) =
+encodeMuacValue muac =
+    encodeMuacValueWithType "muac" muac
+
+
+encodeNutritionMuacValue : MuacInCm -> List ( String, Value )
+encodeNutritionMuacValue muac =
+    encodeMuacValueWithType "nutrition_muac" muac
+
+
+encodeMuacValueWithType : String -> MuacInCm -> List ( String, Value )
+encodeMuacValueWithType type_ (MuacInCm muac) =
     [ ( "muac", float muac )
-    , ( "type", string "muac" )
+    , ( "type", string type_ )
     ]
 
 
@@ -60,13 +80,23 @@ encodeWeight =
 
 encodeNutritionWeight : NutritionWeight -> List ( String, Value )
 encodeNutritionWeight =
-    encodeNutritionMeasurement encodeWeightValue
+    encodeNutritionMeasurement encodeNutritionWeightValue
 
 
 encodeWeightValue : WeightInKg -> List ( String, Value )
-encodeWeightValue (WeightInKg weight) =
+encodeWeightValue weight =
+    encodeWeightValueWithType "weight" weight
+
+
+encodeNutritionWeightValue : WeightInKg -> List ( String, Value )
+encodeNutritionWeightValue weight =
+    encodeWeightValueWithType "nutrition_weight" weight
+
+
+encodeWeightValueWithType : String -> WeightInKg -> List ( String, Value )
+encodeWeightValueWithType type_ (WeightInKg weight) =
     [ ( "weight", float weight )
-    , ( "type", string "weight" )
+    , ( "type", string type_ )
     ]
 
 
