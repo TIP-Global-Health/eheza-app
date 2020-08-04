@@ -62,6 +62,7 @@
         'increased_thirst_period',
         'lethargy_period',
         'live_children',
+        'loss_of_smell_period',
         'nasal_congestion_period',
         'nausea_period',
         'night_sweats_period',

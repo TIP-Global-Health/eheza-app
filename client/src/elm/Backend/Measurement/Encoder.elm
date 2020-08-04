@@ -971,6 +971,9 @@ encodeSymptomsGeneralValue signs =
         headache =
             Dict.get Headache signs |> Maybe.withDefault 0
 
+        lossOfSmell =
+            Dict.get LossOfSmell signs |> Maybe.withDefault 0
+
         lethargy =
             Dict.get Lethargy signs |> Maybe.withDefault 0
 
@@ -1009,6 +1012,7 @@ encodeSymptomsGeneralValue signs =
     , ( "night_sweats_period", int nightSweats )
     , ( "body_aches_period", int bodyAches )
     , ( "headache_period", int headache )
+    , ( "loss_of_smell_period", int lossOfSmell )
     , ( "coke_colored_urine_period", int cokeColoredUrine )
     , ( "convulsions_period", int convulsions )
     , ( "dry_mouth_period", int dryMouth )
@@ -1349,9 +1353,6 @@ encodeExposureSign sign =
         case sign of
             COVID19Symptoms ->
                 "covid19-symptioms"
-
-            SimilarSymptoms ->
-                "similar-symptoms"
 
             NoExposureSigns ->
                 "none"

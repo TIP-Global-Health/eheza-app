@@ -1,6 +1,5 @@
 module Pages.AcuteIllnessProgressReport.View exposing (view)
 
-import App.Model exposing (Msg(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -14,19 +13,22 @@ import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra
+import Maybe.Extra exposing (isNothing)
 import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
-import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
+import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecomendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AssembledData)
 import Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData, resolveAcuteIllnessDiagnosis, resolveNextStepByDiagnosis)
+import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
+import Pages.AcuteIllnessProgressReport.Model exposing (..)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Utils exposing (viewEndEncounterDialog)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Model exposing (Language(..))
-import Utils.Html exposing (thumbnailImage)
+import Utils.Html exposing (thumbnailImage, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderDate)
 import Utils.WebData exposing (viewWebData)
 
@@ -38,20 +40,35 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> AcuteIllnessEncounterId -> ModelIndexedDb -> Html Msg
-view language currentDate id db =
+view : Language -> NominalDate -> AcuteIllnessEncounterId -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id db model =
     let
         data =
             generateAssembledData id db
     in
-    viewWebData language (viewContent language currentDate id) identity data
+    viewWebData language (viewContent language currentDate id model) identity data
 
 
-viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AssembledData -> Html Msg
-viewContent language currentDate id data =
+viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> AssembledData -> Html Msg
+viewContent language currentDate id model data =
     let
         diagnosis =
             resolveAcuteIllnessDiagnosis currentDate data.person data.measurements
+
+        ( _, pendingActivities ) =
+            splitActivities currentDate data diagnosis
+
+        endEncounterDialog =
+            if model.showEndEncounetrDialog then
+                Just <|
+                    viewEndEncounterDialog language
+                        Translate.EndEncounterQuestion
+                        Translate.OnceYouEndTheEncounter
+                        (CloseEncounter id)
+                        (SetEndEncounterDialogState False)
+
+            else
+                Nothing
     in
     div [ class "page-report acute-illness" ]
         [ div
@@ -62,7 +79,9 @@ viewContent language currentDate id data =
             , viewSymptomsPane language currentDate data.measurements
             , viewPhysicalExamPane language currentDate data.measurements
             , viewActionsTakenPane language currentDate diagnosis data
+            , viewEndEncounterButton language data.measurements pendingActivities diagnosis SetEndEncounterDialogState
             ]
+        , viewModal endEncounterDialog
         ]
 
 
@@ -146,69 +165,120 @@ viewAssessmentPane language currentDate diagnosis =
     let
         assessment =
             diagnosis
-                |> Maybe.map (Translate.AcuteIllnessDiagnosisWarning >> translate language >> text >> List.singleton)
-                |> Maybe.withDefault []
+                |> Maybe.map (Translate.AcuteIllnessDiagnosisWarning >> translate language >> text >> List.singleton >> div [ class "pane-content" ])
+                |> Maybe.withDefault emptyNode
     in
     div [ class "pane assessment" ]
         [ viewItemHeading language Translate.Assessment "blue"
-        , div [ class "pane-content" ] assessment
+        , assessment
         ]
 
 
 viewSymptomsPane : Language -> NominalDate -> AcuteIllnessMeasurements -> Html Msg
 viewSymptomsPane language currentDate measurements =
     let
-        symptomsDictToList dict =
+        symptomsMaxDuration getFunc measurement =
+            measurement
+                |> Maybe.andThen (Tuple.second >> getFunc >> Dict.values >> List.maximum)
+                |> Maybe.withDefault 1
+
+        maxDuration =
+            List.maximum
+                [ symptomsMaxDuration .value measurements.symptomsGeneral
+                , symptomsMaxDuration .value measurements.symptomsRespiratory
+                , symptomsMaxDuration (.value >> .signs) measurements.symptomsGI
+                ]
+                |> Maybe.withDefault 1
+
+        filterSymptoms symptomDuration exclusion dict =
             Dict.toList dict
                 |> List.filterMap
                     (\( symptom, count ) ->
-                        if count > 0 then
+                        if symptom /= exclusion && count > symptomDuration then
                             Just symptom
 
                         else
                             Nothing
                     )
 
-        symptomsGeneral =
+        symptomsGeneral duration =
             measurements.symptomsGeneral
                 |> Maybe.map
                     (Tuple.second
                         >> .value
-                        >> symptomsDictToList
+                        >> filterSymptoms duration NoSymptomsGeneral
                         >> List.map (\symptom -> li [ class "general" ] [ text <| translate language (Translate.SymptomsGeneralSign symptom) ])
                     )
                 |> Maybe.withDefault []
 
-        symptomsRespiratory =
+        symptomsRespiratory duration =
             measurements.symptomsRespiratory
                 |> Maybe.map
                     (Tuple.second
                         >> .value
-                        >> symptomsDictToList
+                        >> filterSymptoms duration NoSymptomsRespiratory
                         >> List.map (\symptom -> li [ class "respiratory" ] [ text <| translate language (Translate.SymptomsRespiratorySign symptom) ])
                     )
                 |> Maybe.withDefault []
 
-        symptomsGI =
+        symptomsGI duration =
             measurements.symptomsGI
                 |> Maybe.map
-                    (Tuple.second
-                        >> .value
-                        >> .signs
-                        >> symptomsDictToList
-                        >> List.map (\symptom -> li [ class "gi" ] [ text <| translate language (Translate.SymptomsGISignAbbrev symptom) ])
+                    (\measurement ->
+                        Tuple.second measurement
+                            |> .value
+                            |> .signs
+                            |> filterSymptoms duration NoSymptomsGI
+                            |> List.map
+                                (\symptom ->
+                                    let
+                                        translation =
+                                            if symptom == Vomiting then
+                                                Tuple.second measurement
+                                                    |> .value
+                                                    |> .derivedSigns
+                                                    |> EverySet.member IntractableVomiting
+                                                    |> Translate.IntractableVomiting
+
+                                            else
+                                                Translate.SymptomsGISignAbbrev symptom
+                                    in
+                                    li [ class "gi" ] [ text <| translate language translation ]
+                                )
                     )
                 |> Maybe.withDefault []
 
         values =
-            [ ( currentDate, symptomsGeneral ++ symptomsRespiratory ++ symptomsGI ) ]
+            List.repeat maxDuration currentDate
+                |> List.indexedMap
+                    (\index date ->
+                        ( Date.add Date.Days (-1 * index) date |> formatDDMMYY
+                        , symptomsGeneral index ++ symptomsRespiratory index ++ symptomsGI index
+                        )
+                    )
+                |> List.filter (Tuple.second >> List.isEmpty >> not)
+
+        totalValues =
+            List.length values
 
         symptomsTable =
             values
-                |> List.map
-                    (\( date, symptoms ) ->
+                |> List.indexedMap
+                    (\index ( date, symptoms ) ->
+                        let
+                            timeline =
+                                if index == 0 then
+                                    viewTimeLineTop (totalValues == 1)
+
+                                else if index == totalValues - 1 then
+                                    viewTimeLineBottom
+
+                                else
+                                    viewTimeLineMiddle
+                        in
                         div [ class "symptoms-table-row" ]
-                            [ div [ class "date" ] [ formatDDMMYY date |> text ]
+                            [ div [ class "date" ] [ text date ]
+                            , div [ class "timeline" ] timeline
                             , ul [] symptoms
                             ]
                     )
@@ -218,6 +288,40 @@ viewSymptomsPane language currentDate measurements =
         [ viewItemHeading language Translate.Symptoms "blue"
         , symptomsTable
         ]
+
+
+viewTimeLineTop : Bool -> List (Html any)
+viewTimeLineTop isSingle =
+    [ div [ class "line half" ] []
+    , div
+        [ classList
+            [ ( "line half", True )
+            , ( "blue", not isSingle )
+            ]
+        ]
+        [ img [ src "assets/images/icon-blue-ball.svg" ]
+            []
+        ]
+    ]
+
+
+viewTimeLineMiddle : List (Html any)
+viewTimeLineMiddle =
+    [ div [ class "line blue" ]
+        [ img [ src "assets/images/icon-blue-circle.png" ]
+            []
+        ]
+    ]
+
+
+viewTimeLineBottom : List (Html any)
+viewTimeLineBottom =
+    [ div [ class "line half blue" ] []
+    , div [ class "line half" ]
+        [ img [ src "assets/images/icon-blue-circle.png" ]
+            []
+        ]
+    ]
 
 
 viewPhysicalExamPane : Language -> NominalDate -> AcuteIllnessMeasurements -> Html Msg
@@ -279,26 +383,31 @@ viewPhysicalExamPane language currentDate measurements =
                             ]
                     )
     in
-    div [ class "pane physical-exam" ]
-        [ viewItemHeading language Translate.PhysicalExam "blue"
-        , table
-            [ class "ui celled table" ]
-            [ thead [] tableHead
-            , tbody [] tableBody
+    if isNothing bodyTemperature && isNothing respiratoryRate then
+        emptyNode
+
+    else
+        div [ class "pane physical-exam" ]
+            [ viewItemHeading language Translate.PhysicalExam "blue"
+            , table
+                [ class "ui celled table" ]
+                [ thead [] tableHead
+                , tbody [] tableBody
+                ]
             ]
-        ]
 
 
 viewActionsTakenPane : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> AssembledData -> Html Msg
 viewActionsTakenPane language currentDate diagnosis data =
     let
-        emptyPane =
-            div [ class "pane-content" ] []
-
         actionsTaken =
             case resolveNextStepByDiagnosis currentDate data.person diagnosis of
                 Just NextStepsIsolation ->
                     let
+                        contacedHCValue =
+                            data.measurements.hcContact
+                                |> Maybe.map (Tuple.second >> .value)
+
                         contacedHC =
                             data.measurements.hcContact
                                 |> Maybe.map
@@ -310,11 +419,25 @@ viewActionsTakenPane language currentDate diagnosis data =
                                 |> Maybe.withDefault False
 
                         contacedHCAction =
-                            if contacedHC then
-                                [ viewSendToHCActionLabel language Translate.ContactedHC "icon-phone" (Just currentDate) ]
+                            contacedHCValue
+                                |> Maybe.map
+                                    (\value ->
+                                        if EverySet.member ContactedHealthCenter value.signs then
+                                            let
+                                                recomendation =
+                                                    value.recomendations
+                                                        |> EverySet.toList
+                                                        |> List.head
+                                                        |> Maybe.withDefault HCRecomendationNotApplicable
+                                            in
+                                            [ viewSendToHCActionLabel language Translate.ContactedHC "icon-phone" (Just currentDate)
+                                            , viewHCRecomendationActionTaken language recomendation
+                                            ]
 
-                            else
-                                []
+                                        else
+                                            []
+                                    )
+                                |> Maybe.withDefault []
 
                         patientIsolated =
                             data.measurements.isolation
@@ -338,7 +461,7 @@ viewActionsTakenPane language currentDate diagnosis data =
                             (contacedHCAction ++ patientIsolatedAction)
 
                     else
-                        emptyPane
+                        emptyNode
 
                 Just NextStepsMedicationDistribution ->
                     let
@@ -361,10 +484,10 @@ viewActionsTakenPane language currentDate diagnosis data =
                                                 , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 3)
                                                 ]
                                         )
-                                    |> Maybe.withDefault emptyPane
+                                    |> Maybe.withDefault emptyNode
 
                             else
-                                emptyPane
+                                emptyNode
 
                         Just DiagnosisGastrointestinalInfectionUncomplicated ->
                             let
@@ -409,7 +532,7 @@ viewActionsTakenPane language currentDate diagnosis data =
                                     (orsAction ++ zincAction)
 
                             else
-                                emptyPane
+                                emptyNode
 
                         Just DiagnosisSimpleColdAndCough ->
                             div [ class "instructions simple-cough-and-cold" ]
@@ -430,13 +553,13 @@ viewActionsTakenPane language currentDate diagnosis data =
                                                 , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 5)
                                                 ]
                                         )
-                                    |> Maybe.withDefault emptyPane
+                                    |> Maybe.withDefault emptyNode
 
                             else
-                                emptyPane
+                                emptyNode
 
                         _ ->
-                            emptyPane
+                            emptyNode
 
                 Just NextStepsSendToHC ->
                     let
@@ -470,12 +593,24 @@ viewActionsTakenPane language currentDate diagnosis data =
                             (completedFormAction ++ sentToHCAction)
 
                     else
-                        emptyPane
+                        emptyNode
 
                 _ ->
-                    emptyPane
+                    emptyNode
     in
     div [ class "pane actions-taken" ]
         [ viewItemHeading language Translate.ActionsTaken "blue"
         , actionsTaken
         ]
+
+
+viewHCRecomendationActionTaken : Language -> HCRecomendation -> Html any
+viewHCRecomendationActionTaken language recomendation =
+    if recomendation == HCRecomendationNotApplicable then
+        emptyNode
+
+    else
+        div [ class "recomendation" ]
+            [ viewHCRecomendation language recomendation
+            , span [] [ text "." ]
+            ]

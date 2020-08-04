@@ -35,7 +35,7 @@ import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Pages.PrenatalActivity.Utils exposing (ifNullableTrue, ifTrue)
-import Pages.Utils exposing (ifEverySetEmpty, taskCompleted)
+import Pages.Utils exposing (ifEverySetEmpty, taskCompleted, valueConsideringIsDirtyField)
 
 
 symptomsGeneralDangerSigns : List SymptomsGeneralSign
@@ -61,6 +61,7 @@ allSymptomsGeneralSigns =
       , NightSweats
       , BodyAches
       , Headache
+      , LossOfSmell
       ]
         ++ symptomsGeneralDangerSigns
     , NoSymptomsGeneral
@@ -222,8 +223,8 @@ exposureTasksCompletedFromTotal measurements data task =
                         |> Maybe.map (Tuple.second >> .value)
                         |> exposureFormWithDefault data.exposureForm
             in
-            ( taskCompleted form.covid19Symptoms + taskCompleted form.similarSymptoms
-            , 2
+            ( taskCompleted form.covid19Symptoms
+            , 1
             )
 
 
@@ -429,16 +430,20 @@ naListTaskCompleted na maybeList =
 
 symptomsGeneralFormWithDefault : SymptomsGeneralForm -> Maybe (Dict SymptomsGeneralSign Int) -> SymptomsGeneralForm
 symptomsGeneralFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                if Dict.isEmpty form.signs then
-                    SymptomsGeneralForm value
+    if form.signsDirty then
+        form
 
-                else
-                    form
-            )
+    else
+        saved
+            |> unwrap
+                form
+                (\value ->
+                    if Dict.isEmpty form.signs then
+                        SymptomsGeneralForm value False
+
+                    else
+                        form
+                )
 
 
 toSymptomsGeneralValueWithDefault : Maybe (Dict SymptomsGeneralSign Int) -> SymptomsGeneralForm -> Dict SymptomsGeneralSign Int
@@ -449,16 +454,20 @@ toSymptomsGeneralValueWithDefault saved form =
 
 symptomsRespiratoryFormWithDefault : SymptomsRespiratoryForm -> Maybe (Dict SymptomsRespiratorySign Int) -> SymptomsRespiratoryForm
 symptomsRespiratoryFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                if Dict.isEmpty form.signs then
-                    SymptomsRespiratoryForm value
+    if form.signsDirty then
+        form
 
-                else
-                    form
-            )
+    else
+        saved
+            |> unwrap
+                form
+                (\value ->
+                    if Dict.isEmpty form.signs then
+                        SymptomsRespiratoryForm value False
+
+                    else
+                        form
+                )
 
 
 toSymptomsRespiratoryValueWithDefault : Maybe (Dict SymptomsRespiratorySign Int) -> SymptomsRespiratoryForm -> Dict SymptomsRespiratorySign Int
@@ -475,14 +484,20 @@ symptomsGIFormWithDefault form saved =
             (\value ->
                 let
                     signs =
-                        if Dict.isEmpty form.signs then
+                        if form.signsDirty then
+                            form.signs
+
+                        else if Dict.isEmpty form.signs then
                             value.signs
 
                         else
                             form.signs
 
                     intractableVomiting =
-                        if isJust form.intractableVomiting then
+                        if form.intractableVomitingDirty then
+                            form.intractableVomiting
+
+                        else if isJust form.intractableVomiting then
                             form.intractableVomiting
 
                         else if EverySet.member IntractableVomiting value.derivedSigns then
@@ -492,7 +507,9 @@ symptomsGIFormWithDefault form saved =
                             Just False
                 in
                 { signs = signs
+                , signsDirty = form.signsDirty
                 , intractableVomiting = intractableVomiting
+                , intractableVomitingDirty = form.intractableVomitingDirty
                 }
             )
 
@@ -518,7 +535,9 @@ toSymptomsGIValueWithDefault saved form =
 fromVitalsValue : Maybe AcuteIllnessVitalsValue -> VitalsForm
 fromVitalsValue saved =
     { respiratoryRate = Maybe.map .respiratoryRate saved
+    , respiratoryRateDirty = False
     , bodyTemperature = Maybe.map .bodyTemperature saved
+    , bodyTemperatureDirty = False
     }
 
 
@@ -528,8 +547,10 @@ vitalsFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { respiratoryRate = or form.respiratoryRate (Just value.respiratoryRate)
-                , bodyTemperature = or form.bodyTemperature (Just value.bodyTemperature)
+                { respiratoryRate = valueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
+                , respiratoryRateDirty = form.respiratoryRateDirty
+                , bodyTemperature = valueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
+                , bodyTemperatureDirty = form.bodyTemperatureDirty
                 }
             )
 
@@ -658,8 +679,7 @@ toTravelHistoryValueWithDefault saved form =
 
 toTravelHistoryValue : TravelHistoryForm -> Maybe (EverySet TravelHistorySign)
 toTravelHistoryValue form =
-    [ Maybe.map (ifTrue COVID19Country) form.covid19Country
-    ]
+    [ Maybe.map (ifTrue COVID19Country) form.covid19Country ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTravelHistorySigns)
 
@@ -667,7 +687,6 @@ toTravelHistoryValue form =
 fromExposureValue : Maybe (EverySet ExposureSign) -> ExposureForm
 fromExposureValue saved =
     { covid19Symptoms = Maybe.map (EverySet.member COVID19Symptoms) saved
-    , similarSymptoms = Maybe.map (EverySet.member SimilarSymptoms) saved
     }
 
 
@@ -678,7 +697,6 @@ exposureFormWithDefault form saved =
             form
             (\value ->
                 { covid19Symptoms = or form.covid19Symptoms (EverySet.member COVID19Symptoms value |> Just)
-                , similarSymptoms = or form.similarSymptoms (EverySet.member SimilarSymptoms value |> Just)
                 }
             )
 
@@ -691,9 +709,7 @@ toExposureValueWithDefault saved form =
 
 toExposureValue : ExposureForm -> Maybe (EverySet ExposureSign)
 toExposureValue form =
-    [ Maybe.map (ifTrue COVID19Symptoms) form.covid19Symptoms
-    , Maybe.map (ifTrue SimilarSymptoms) form.similarSymptoms
-    ]
+    [ Maybe.map (ifTrue COVID19Symptoms) form.covid19Symptoms ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoExposureSigns)
 

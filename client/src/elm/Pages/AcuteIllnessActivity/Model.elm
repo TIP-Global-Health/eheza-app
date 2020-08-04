@@ -42,7 +42,6 @@ type Msg
     | SetCovid19Country Bool
     | SaveTravelHistory PersonId (Maybe ( TravelHistoryId, TravelHistory )) (Maybe ExposureTask)
     | SetCovid19Symptoms Bool
-    | SetSimilarSymptoms Bool
     | SaveExposure PersonId (Maybe ( ExposureId, Exposure )) (Maybe ExposureTask)
       -- PRIOR TREATMNENT
     | SetActivePriorTreatmentTask PriorTreatmentTask
@@ -106,9 +105,9 @@ type alias SymptomsData =
 
 emptySymptomsData : SymptomsData
 emptySymptomsData =
-    { symptomsGeneralForm = SymptomsGeneralForm Dict.empty
-    , symptomsRespiratoryForm = SymptomsRespiratoryForm Dict.empty
-    , symptomsGIForm = SymptomsGIForm Dict.empty Nothing
+    { symptomsGeneralForm = SymptomsGeneralForm Dict.empty False
+    , symptomsRespiratoryForm = SymptomsRespiratoryForm Dict.empty False
+    , symptomsGIForm = SymptomsGIForm Dict.empty False Nothing False
     , activeTask = SymptomsGeneral
     }
 
@@ -121,17 +120,21 @@ type SymptomsTask
 
 type alias SymptomsGeneralForm =
     { signs : Dict SymptomsGeneralSign Int
+    , signsDirty : Bool
     }
 
 
 type alias SymptomsRespiratoryForm =
     { signs : Dict SymptomsRespiratorySign Int
+    , signsDirty : Bool
     }
 
 
 type alias SymptomsGIForm =
     { signs : Dict SymptomsGISign Int
+    , signsDirty : Bool
     , intractableVomiting : Maybe Bool
+    , intractableVomitingDirty : Bool
     }
 
 
@@ -148,7 +151,7 @@ type alias PhysicalExamData =
 
 emptyPhysicalExamData : PhysicalExamData
 emptyPhysicalExamData =
-    { vitalsForm = VitalsForm Nothing Nothing
+    { vitalsForm = VitalsForm Nothing False Nothing False
     , acuteFindingsForm = AcuteFindingsForm Nothing Nothing
     , activeTask = PhysicalExamVitals
     }
@@ -161,7 +164,9 @@ type PhysicalExamTask
 
 type alias VitalsForm =
     { respiratoryRate : Maybe Int
+    , respiratoryRateDirty : Bool
     , bodyTemperature : Maybe Float
+    , bodyTemperatureDirty : Bool
     }
 
 
@@ -212,7 +217,7 @@ type alias ExposureData =
 emptyExposureData : ExposureData
 emptyExposureData =
     { travelHistoryForm = TravelHistoryForm Nothing
-    , exposureForm = ExposureForm Nothing Nothing
+    , exposureForm = ExposureForm Nothing
     , activeTask = ExposureTravel
     }
 
@@ -229,7 +234,6 @@ type alias TravelHistoryForm =
 
 type alias ExposureForm =
     { covid19Symptoms : Maybe Bool
-    , similarSymptoms : Maybe Bool
     }
 
 

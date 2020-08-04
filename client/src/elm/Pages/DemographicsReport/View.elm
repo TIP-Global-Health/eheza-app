@@ -247,7 +247,7 @@ viewContactInformationPane language currentDate db data =
         ]
 
 
-viewItemHeading : Language -> TranslationId -> String -> Html Msg
+viewItemHeading : Language -> TranslationId -> String -> Html any
 viewItemHeading language label color =
     div [ class <| "pane-heading " ++ color ]
         [ text <| translate language label ]

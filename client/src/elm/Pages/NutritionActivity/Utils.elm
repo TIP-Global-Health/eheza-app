@@ -7,7 +7,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (or, unwrap)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
-import Pages.Utils exposing (ifEverySetEmpty)
+import Pages.Utils exposing (ifEverySetEmpty, valueConsideringIsDirtyField)
 
 
 resolvePreviousIndividualValue : AssembledData -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a )) -> (a -> b) -> Maybe ( NominalDate, b )
@@ -28,6 +28,7 @@ resolvePreviousIndividualValue assembled measurementFunc valueFunc =
 fromMuacValue : Maybe MuacInCm -> MuacForm
 fromMuacValue saved =
     { muac = Maybe.map (\(MuacInCm cm) -> cm) saved
+    , muacDirty = False
     }
 
 
@@ -37,7 +38,8 @@ muacFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { muac = or form.muac (value |> (\(MuacInCm cm) -> cm) |> Just)
+                { muac = valueConsideringIsDirtyField form.muacDirty form.muac (value |> (\(MuacInCm cm) -> cm))
+                , muacDirty = form.muacDirty
                 }
             )
 
@@ -56,6 +58,7 @@ toMuacValue form =
 fromHeightValue : Maybe HeightInCm -> HeightForm
 fromHeightValue saved =
     { height = Maybe.map (\(HeightInCm cm) -> cm) saved
+    , heightDirty = False
     }
 
 
@@ -65,7 +68,8 @@ heightFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { height = or form.height (value |> (\(HeightInCm cm) -> cm) |> Just)
+                { height = valueConsideringIsDirtyField form.heightDirty form.height (value |> (\(HeightInCm cm) -> cm))
+                , heightDirty = form.heightDirty
                 }
             )
 
@@ -110,6 +114,7 @@ toNutritionValue form =
 fromWeightValue : Maybe WeightInKg -> WeightForm
 fromWeightValue saved =
     { weight = Maybe.map (\(WeightInKg cm) -> cm) saved
+    , weightDirty = False
     }
 
 
@@ -119,7 +124,8 @@ weightFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { weight = or form.weight (value |> (\(WeightInKg cm) -> cm) |> Just)
+                { weight = valueConsideringIsDirtyField form.weightDirty form.weight (value |> (\(WeightInKg cm) -> cm))
+                , weightDirty = form.weightDirty
                 }
             )
 
