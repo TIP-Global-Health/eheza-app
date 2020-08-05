@@ -830,7 +830,7 @@ function makeCustomEvent(eventName, detail) {
 
 // Pass along messages from the service worker
 navigator.serviceWorker.addEventListener('message', function(event) {
-  // elmApp.ports.serviceWorkerIn.send(event.data);
+    elmApp.ports.serviceWorkerIn.send(event.data);
 });
 
 navigator.serviceWorker.addEventListener('controllerchange', function() {

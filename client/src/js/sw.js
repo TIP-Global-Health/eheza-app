@@ -95,6 +95,22 @@ var tableForType = {
     weight: 'shards'
 };
 
+function sendRevisions (revisions) {
+    var message = {
+        tag: 'NewRevisions',
+        data: revisions
+    };
+
+    return self.clients.matchAll().then(function (clients) {
+
+        clients.forEach(function (client) {
+            client.postMessage(message);
+        });
+
+        return Promise.resolve();
+    });
+}
+
 /**
  * @DEPRECATED
  * Kept here for now, to avoid deleting from other places, which should happen
