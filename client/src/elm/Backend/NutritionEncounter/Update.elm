@@ -82,26 +82,26 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveMuac personId valueId value ->
             let
+                measurement =
+                    { participantId = personId
+                    , dateMeasured = currentDate
+                    , encounterId = Just encounterId
+                    , nurse = nurseId
+                    , healthCenter = healthCenterId
+                    , value = value
+                    }
+
                 cmd =
                     case valueId of
                         Nothing ->
-                            { participantId = personId
-                            , dateMeasured = currentDate
-                            , encounterId = Just encounterId
-                            , nurse = nurseId
-                            , healthCenter = healthCenterId
-                            , value = value
-                            }
+                            measurement
                                 |> sw.post nutritionMuacEndpoint
                                 |> withoutDecoder
                                 |> toCmd (RemoteData.fromResult >> HandleSavedMuac)
 
                         Just id ->
-                            encodeNutritionMuacValue value
-                                |> List.append
-                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
-                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
-                                    ]
+                            measurement
+                                |> encodeNutritionMuac
                                 |> object
                                 |> sw.patchAny nutritionMuacEndpoint id
                                 |> withoutDecoder
