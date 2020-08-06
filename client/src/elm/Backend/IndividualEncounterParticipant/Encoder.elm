@@ -23,6 +23,10 @@ encodeIndividualEncounterParticipant data =
             , ( "value2", maybe encodeYYYYMMDD data.endDate )
             ]
       )
+    , ( "expected_date_concluded", maybe encodeYYYYMMDD data.eddDate )
+    , ( "date_concluded", maybe encodeYYYYMMDD data.dateConcluded )
+    , ( "outcome", maybe encodePregnancyOutcome data.outcome )
+    , ( "outcome_location", maybe encodeDeliveryLocation data.deliveryLocation )
     , ( "shard", maybe encodeEntityUuid data.shard )
     , ( "type", string "individual_participant" )
     ]
@@ -36,19 +40,6 @@ encodeIndividualEncounterType type_ =
 encodePregnancyOutcome : PregnancyOutcome -> Value
 encodePregnancyOutcome outcome =
     pregnancyOutcomeToString outcome |> string
-
-
-encodeDeliveryLocation : Bool -> Value
-encodeDeliveryLocation isFacilityDelivery =
-    let
-        location =
-            if isFacilityDelivery then
-                "facility"
-
-            else
-                "home"
-    in
-    string location
 
 
 pregnancyOutcomeToString : PregnancyOutcome -> String
@@ -68,3 +59,18 @@ pregnancyOutcomeToString outcome =
 
         OutcomeAbortions ->
             "abortions"
+
+
+encodeDeliveryLocation : DeliveryLocation -> Value
+encodeDeliveryLocation location =
+    deliveryLocationToString location |> string
+
+
+deliveryLocationToString : DeliveryLocation -> String
+deliveryLocationToString location =
+    case location of
+        FacilityDelivery ->
+            "facility"
+
+        HomeDelivery ->
+            "home"

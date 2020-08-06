@@ -152,6 +152,9 @@ viewActions language currentDate selectedHealthCenter id db sessions =
                             currentDate
                             Nothing
                             Nothing
+                            Nothing
+                            Nothing
+                            Nothing
                             (Just selectedHealthCenter)
                             |> Backend.Model.PostIndividualSession
                             |> App.Model.MsgIndexedDb

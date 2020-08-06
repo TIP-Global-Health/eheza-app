@@ -150,7 +150,15 @@ viewPrenatalActions language currentDate selectedHealthCenter id db prenatalSess
                         )
                     -- If prenatal session does not exist, create it.
                     |> Maybe.withDefault
-                        [ IndividualEncounterParticipant id AntenatalEncounter currentDate Nothing Nothing (Just selectedHealthCenter)
+                        [ IndividualEncounterParticipant id
+                            Backend.IndividualEncounterParticipant.Model.AntenatalEncounter
+                            currentDate
+                            Nothing
+                            Nothing
+                            Nothing
+                            Nothing
+                            Nothing
+                            (Just selectedHealthCenter)
                             |> Backend.Model.PostIndividualSession
                             |> App.Model.MsgIndexedDb
                             |> onClick

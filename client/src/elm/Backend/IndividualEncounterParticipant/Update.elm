@@ -20,18 +20,18 @@ update participantId maybeParticipant currentDate msg model =
             maybeParticipant
                 |> unwrap ( model, Cmd.none )
                     (\participant ->
+                        let
+                            deliveryLocation =
+                                if isFacilityDelivery then
+                                    FacilityDelivery
+
+                                else
+                                    HomeDelivery
+                        in
                         ( { model | closePrenatalSession = Loading }
-                        , object
-                            [ ( "expected"
-                              , object
-                                    [ ( "value", encodeYYYYMMDD participant.startDate )
-                                    , ( "value2", encodeYYYYMMDD currentDate )
-                                    ]
-                              )
-                            , ( "date_concluded", encodeYYYYMMDD pregnancyConcludedDate )
-                            , ( "outcome", encodePregnancyOutcome pregnancyOutcome )
-                            , ( "outcome_location", encodeDeliveryLocation isFacilityDelivery )
-                            ]
+                        , { participant | dateConcluded = Just pregnancyConcludedDate, outcome = Just pregnancyOutcome, deliveryLocation = Just deliveryLocation }
+                            |> encodeIndividualEncounterParticipant
+                            |> object
                             |> sw.patchAny individualEncounterParticipantEndpoint participantId
                             |> withoutDecoder
                             |> toCmd (RemoteData.fromResult >> HandleClosedPrenatalSession)
@@ -48,9 +48,9 @@ update participantId maybeParticipant currentDate msg model =
                 |> unwrap ( model, Cmd.none )
                     (\participant ->
                         ( { model | setEddDate = Loading }
-                        , object
-                            [ ( "expected_date_concluded", encodeYYYYMMDD eddDate )
-                            ]
+                        , { participant | eddDate = Just eddDate }
+                            |> encodeIndividualEncounterParticipant
+                            |> object
                             |> sw.patchAny individualEncounterParticipantEndpoint participantId
                             |> withoutDecoder
                             |> toCmd (RemoteData.fromResult >> HandleSetEddDate)

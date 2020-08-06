@@ -1,5 +1,6 @@
 module Backend.IndividualEncounterParticipant.Model exposing
-    ( IndividualEncounterParticipant
+    ( DeliveryLocation(..)
+    , IndividualEncounterParticipant
     , IndividualEncounterType(..)
     , Model
     , Msg(..)
@@ -20,6 +21,9 @@ type alias IndividualEncounterParticipant =
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , eddDate : Maybe NominalDate
+    , dateConcluded : Maybe NominalDate
+    , outcome : Maybe PregnancyOutcome
+    , deliveryLocation : Maybe DeliveryLocation
     , shard : Maybe HealthCenterId
     }
 
@@ -49,6 +53,11 @@ type IndividualEncounterType
     | AntenatalEncounter
     | InmmunizationEncounter
     | NutritionEncounter
+
+
+type DeliveryLocation
+    = FacilityDelivery
+    | HomeDelivery
 
 
 type PregnancyOutcome
