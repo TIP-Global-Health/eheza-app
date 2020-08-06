@@ -1,9 +1,11 @@
 module Backend.AcuteIllnessEncounter.Update exposing (update)
 
+import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Model exposing (..)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (..)
+import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (object)
 import Json.Encode.Extra
@@ -14,24 +16,15 @@ import Restful.Endpoint exposing (applyBackendUrl, encodeEntityUuid, toCmd, with
 
 update : Maybe NurseId -> Maybe HealthCenterId -> AcuteIllnessEncounterId -> Maybe AcuteIllnessEncounter -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
 update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
-    let
-        sw =
-            applyBackendUrl "/sw"
-    in
     case msg of
         CloseAcuteIllnessEncounter ->
             maybeEncounter
                 |> unwrap ( model, Cmd.none )
                     (\encounter ->
                         ( { model | closeAcuteIllnessEncounter = Loading }
-                        , object
-                            [ ( "scheduled_date"
-                              , object
-                                    [ ( "value", encodeYYYYMMDD encounter.startDate )
-                                    , ( "value2", encodeYYYYMMDD currentDate )
-                                    ]
-                              )
-                            ]
+                        , { encounter | endDate = Just currentDate }
+                            |> encodeAcuteIllnessEncounter
+                            |> object
                             |> sw.patchAny acuteIllnessEncounterEndpoint encounterId
                             |> withoutDecoder
                             |> toCmd (RemoteData.fromResult >> HandleClosedAcuteIllnessEncounter)
@@ -44,34 +37,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         SaveSymptomsGeneral personId valueId value ->
-            let
-                cmd =
-                    case valueId of
-                        Nothing ->
-                            { participantId = personId
-                            , dateMeasured = currentDate
-                            , encounterId = Just encounterId
-                            , nurse = nurseId
-                            , healthCenter = healthCenterId
-                            , value = value
-                            }
-                                |> sw.post symptomsGeneralEndpoint
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedSymptomsGeneral)
-
-                        Just id ->
-                            encodeSymptomsGeneralValue value
-                                |> List.append
-                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
-                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
-                                    ]
-                                |> object
-                                |> sw.patchAny symptomsGeneralEndpoint id
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedSymptomsGeneral)
-            in
             ( { model | saveSymptomsGeneral = Loading }
-            , cmd
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeSymptomsGeneral symptomsGeneralEndpoint HandleSavedSymptomsGeneral
             )
 
         HandleSavedSymptomsGeneral data ->
@@ -80,34 +47,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         SaveSymptomsRespiratory personId valueId value ->
-            let
-                cmd =
-                    case valueId of
-                        Nothing ->
-                            { participantId = personId
-                            , dateMeasured = currentDate
-                            , encounterId = Just encounterId
-                            , nurse = nurseId
-                            , healthCenter = healthCenterId
-                            , value = value
-                            }
-                                |> sw.post symptomsRespiratoryEndpoint
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedSymptomsRespiratory)
-
-                        Just id ->
-                            encodeSymptomsRespiratoryValue value
-                                |> List.append
-                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
-                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
-                                    ]
-                                |> object
-                                |> sw.patchAny symptomsRespiratoryEndpoint id
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedSymptomsRespiratory)
-            in
             ( { model | saveSymptomsRespiratory = Loading }
-            , cmd
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeSymptomsRespiratory symptomsRespiratoryEndpoint HandleSavedSymptomsRespiratory
             )
 
         HandleSavedSymptomsRespiratory data ->
@@ -116,34 +57,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         SaveSymptomsGI personId valueId value ->
-            let
-                cmd =
-                    case valueId of
-                        Nothing ->
-                            { participantId = personId
-                            , dateMeasured = currentDate
-                            , encounterId = Just encounterId
-                            , nurse = nurseId
-                            , healthCenter = healthCenterId
-                            , value = value
-                            }
-                                |> sw.post symptomsGIEndpoint
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedSymptomsGI)
-
-                        Just id ->
-                            encodeSymptomsGIValue value
-                                |> List.append
-                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
-                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
-                                    ]
-                                |> object
-                                |> sw.patchAny symptomsGIEndpoint id
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedSymptomsGI)
-            in
             ( { model | saveSymptomsGI = Loading }
-            , cmd
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeSymptomsGI symptomsGIEndpoint HandleSavedSymptomsGI
             )
 
         HandleSavedSymptomsGI data ->
@@ -152,34 +67,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         SaveVitals personId valueId value ->
-            let
-                cmd =
-                    case valueId of
-                        Nothing ->
-                            { participantId = personId
-                            , dateMeasured = currentDate
-                            , encounterId = Just encounterId
-                            , nurse = nurseId
-                            , healthCenter = healthCenterId
-                            , value = value
-                            }
-                                |> sw.post acuteIllnessVitalsEndpoint
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedVitals)
-
-                        Just id ->
-                            encodeAcuteIllnessVitalsValue value
-                                |> List.append
-                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
-                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
-                                    ]
-                                |> object
-                                |> sw.patchAny acuteIllnessVitalsEndpoint id
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedVitals)
-            in
             ( { model | saveVitals = Loading }
-            , cmd
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeAcuteIllnessVitals acuteIllnessVitalsEndpoint HandleSavedVitals
             )
 
         HandleSavedVitals data ->
@@ -188,34 +77,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         SaveAcuteFindings personId valueId value ->
-            let
-                cmd =
-                    case valueId of
-                        Nothing ->
-                            { participantId = personId
-                            , dateMeasured = currentDate
-                            , encounterId = Just encounterId
-                            , nurse = nurseId
-                            , healthCenter = healthCenterId
-                            , value = value
-                            }
-                                |> sw.post acuteFindingsEndpoint
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedAcuteFindings)
-
-                        Just id ->
-                            encodeAcuteFindingsValue value
-                                |> List.append
-                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
-                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
-                                    ]
-                                |> object
-                                |> sw.patchAny acuteFindingsEndpoint id
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedVitals)
-            in
             ( { model | saveAcuteFindings = Loading }
-            , cmd
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeAcuteFindings acuteFindingsEndpoint HandleSavedAcuteFindings
             )
 
         HandleSavedAcuteFindings data ->
@@ -224,34 +87,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         SaveMalariaTesting personId valueId value ->
-            let
-                cmd =
-                    case valueId of
-                        Nothing ->
-                            { participantId = personId
-                            , dateMeasured = currentDate
-                            , encounterId = Just encounterId
-                            , nurse = nurseId
-                            , healthCenter = healthCenterId
-                            , value = value
-                            }
-                                |> sw.post malariaTestingEndpoint
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedMalariaTesting)
-
-                        Just id ->
-                            encodeMalariaTestingValue value
-                                |> List.append
-                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
-                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
-                                    ]
-                                |> object
-                                |> sw.patchAny malariaTestingEndpoint id
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedMalariaTesting)
-            in
             ( { model | saveMalariaTesting = Loading }
-            , cmd
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeMalariaTesting malariaTestingEndpoint HandleSavedMalariaTesting
             )
 
         HandleSavedMalariaTesting data ->
@@ -260,34 +97,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         SaveSendToHC personId valueId value ->
-            let
-                cmd =
-                    case valueId of
-                        Nothing ->
-                            { participantId = personId
-                            , dateMeasured = currentDate
-                            , encounterId = Just encounterId
-                            , nurse = nurseId
-                            , healthCenter = healthCenterId
-                            , value = value
-                            }
-                                |> sw.post sendToHCEndpoint
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedSendToHC)
-
-                        Just id ->
-                            encodeSendToHCValue value
-                                |> List.append
-                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
-                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
-                                    ]
-                                |> object
-                                |> sw.patchAny sendToHCEndpoint id
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedSendToHC)
-            in
             ( { model | saveSendToHC = Loading }
-            , cmd
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeSendToHC sendToHCEndpoint HandleSavedSendToHC
             )
 
         HandleSavedSendToHC data ->
@@ -296,34 +107,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         SaveMedicationDistribution personId valueId value ->
-            let
-                cmd =
-                    case valueId of
-                        Nothing ->
-                            { participantId = personId
-                            , dateMeasured = currentDate
-                            , encounterId = Just encounterId
-                            , nurse = nurseId
-                            , healthCenter = healthCenterId
-                            , value = value
-                            }
-                                |> sw.post medicationDistributionEndpoint
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedMedicationDistribution)
-
-                        Just id ->
-                            encodeMedicationDistributionValue value
-                                |> List.append
-                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
-                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
-                                    ]
-                                |> object
-                                |> sw.patchAny medicationDistributionEndpoint id
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedMedicationDistribution)
-            in
             ( { model | saveMedicationDistribution = Loading }
-            , cmd
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeMedicationDistribution medicationDistributionEndpoint HandleSavedMedicationDistribution
             )
 
         HandleSavedMedicationDistribution data ->
@@ -332,34 +117,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         SaveTravelHistory personId valueId value ->
-            let
-                cmd =
-                    case valueId of
-                        Nothing ->
-                            { participantId = personId
-                            , dateMeasured = currentDate
-                            , encounterId = Just encounterId
-                            , nurse = nurseId
-                            , healthCenter = healthCenterId
-                            , value = value
-                            }
-                                |> sw.post travelHistoryEndpoint
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedTravelHistory)
-
-                        Just id ->
-                            encodeTravelHistoryValue value
-                                |> List.append
-                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
-                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
-                                    ]
-                                |> object
-                                |> sw.patchAny travelHistoryEndpoint id
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedTravelHistory)
-            in
             ( { model | saveTravelHistory = Loading }
-            , cmd
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeTravelHistory travelHistoryEndpoint HandleSavedTravelHistory
             )
 
         HandleSavedTravelHistory data ->
@@ -368,34 +127,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         SaveExposure personId valueId value ->
-            let
-                cmd =
-                    case valueId of
-                        Nothing ->
-                            { participantId = personId
-                            , dateMeasured = currentDate
-                            , encounterId = Just encounterId
-                            , nurse = nurseId
-                            , healthCenter = healthCenterId
-                            , value = value
-                            }
-                                |> sw.post exposureEndpoint
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedExposure)
-
-                        Just id ->
-                            encodeExposureValue value
-                                |> List.append
-                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
-                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
-                                    ]
-                                |> object
-                                |> sw.patchAny exposureEndpoint id
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedExposure)
-            in
             ( { model | saveExposure = Loading }
-            , cmd
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeExposure exposureEndpoint HandleSavedExposure
             )
 
         HandleSavedExposure data ->
@@ -404,34 +137,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         SaveIsolation personId valueId value ->
-            let
-                cmd =
-                    case valueId of
-                        Nothing ->
-                            { participantId = personId
-                            , dateMeasured = currentDate
-                            , encounterId = Just encounterId
-                            , nurse = nurseId
-                            , healthCenter = healthCenterId
-                            , value = value
-                            }
-                                |> sw.post isolationEndpoint
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedIsolation)
-
-                        Just id ->
-                            encodeIsolationValue value
-                                |> List.append
-                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
-                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
-                                    ]
-                                |> object
-                                |> sw.patchAny isolationEndpoint id
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedIsolation)
-            in
             ( { model | saveIsolation = Loading }
-            , cmd
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeIsolation isolationEndpoint HandleSavedIsolation
             )
 
         HandleSavedIsolation data ->
@@ -440,34 +147,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         SaveHCContact personId valueId value ->
-            let
-                cmd =
-                    case valueId of
-                        Nothing ->
-                            { participantId = personId
-                            , dateMeasured = currentDate
-                            , encounterId = Just encounterId
-                            , nurse = nurseId
-                            , healthCenter = healthCenterId
-                            , value = value
-                            }
-                                |> sw.post hcContactEndpoint
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedHCContact)
-
-                        Just id ->
-                            encodeHCContactValue value
-                                |> List.append
-                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
-                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
-                                    ]
-                                |> object
-                                |> sw.patchAny hcContactEndpoint id
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedHCContact)
-            in
             ( { model | saveHCContact = Loading }
-            , cmd
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeHCContact hcContactEndpoint HandleSavedHCContact
             )
 
         HandleSavedHCContact data ->
@@ -476,34 +157,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         SaveTreatmentReview personId valueId value ->
-            let
-                cmd =
-                    case valueId of
-                        Nothing ->
-                            { participantId = personId
-                            , dateMeasured = currentDate
-                            , encounterId = Just encounterId
-                            , nurse = nurseId
-                            , healthCenter = healthCenterId
-                            , value = value
-                            }
-                                |> sw.post treatmentReviewEndpoint
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedTreatmentReview)
-
-                        Just id ->
-                            encodeTreatmentReviewValue value
-                                |> List.append
-                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
-                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
-                                    ]
-                                |> object
-                                |> sw.patchAny treatmentReviewEndpoint id
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedTreatmentReview)
-            in
             ( { model | saveTreatmentReview = Loading }
-            , cmd
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeTreatmentReview treatmentReviewEndpoint HandleSavedTreatmentReview
             )
 
         HandleSavedTreatmentReview data ->

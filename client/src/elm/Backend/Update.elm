@@ -30,7 +30,7 @@ import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
-import Backend.Utils exposing (mapAcuteIllnessMeasurements, mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, nodesUuid)
+import Backend.Utils exposing (mapAcuteIllnessMeasurements, mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, nodesUuid, sw)
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -53,9 +53,6 @@ import Task
 updateIndexedDb : NominalDate -> Maybe NurseId -> Maybe HealthCenterId -> Bool -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
 updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
     let
-        sw =
-            applyBackendUrl "/sw"
-
         noChange =
             ( model, Cmd.none, [] )
     in

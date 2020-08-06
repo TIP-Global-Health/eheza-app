@@ -4,6 +4,7 @@ import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (..)
 import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (object)
 import Json.Encode.Extra
@@ -14,10 +15,6 @@ import Restful.Endpoint exposing (applyBackendUrl, encodeEntityUuid, toCmd, with
 
 update : Maybe NurseId -> Maybe HealthCenterId -> PrenatalEncounterId -> Maybe PrenatalEncounter -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
 update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
-    let
-        sw =
-            applyBackendUrl "/sw"
-    in
     case msg of
         ClosePrenatalEncounter ->
             maybeEncounter

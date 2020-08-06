@@ -8,6 +8,7 @@ import Backend.Measurement.Encoder exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.NutritionEncounter.Fetch
 import Backend.Session.Model exposing (..)
+import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (object)
 import Json.Encode.Extra
@@ -19,10 +20,6 @@ import Restful.Endpoint exposing (applyBackendUrl, encodeEntityUuid, toCmd, with
 
 update : Maybe NurseId -> SessionId -> Maybe Session -> NominalDate -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List MsgIndexedDb )
 update nurseId sessionId maybeSession currentDate db msg model =
-    let
-        sw =
-            applyBackendUrl "/sw"
-    in
     case msg of
         CloseSession ->
             unwrap
