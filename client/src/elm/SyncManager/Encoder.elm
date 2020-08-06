@@ -57,6 +57,7 @@ encodeIndexDbQueryUploadAuthorityResultRecord record =
                 doEncode encoder identifier_ =
                     encoder identifier_.entity
                         |> replacePhotoWithFileId identifier_.revision
+                        |> List.append [ ( "uuid", string identifier.uuid ) ]
                         |> Json.Encode.object
 
                 data =

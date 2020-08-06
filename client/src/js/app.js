@@ -389,7 +389,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .where('isSynced')
             // IndexDB doesn't index Boolean, so we use an Int to indicate "false".
             .equals(0)
-            .limit(1)
             .toArray();
 
         if (!result[0]) {
@@ -397,73 +396,75 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
           return sendResultToElm(queryType, {tag: 'Success', result: null});
         }
 
-        const row = result[0];
         const photosUploadCache = "photos-upload";
 
         const cache = await caches.open(photosUploadCache);
-        const cachedResponse = await cache.match(row.photo);
-        if (!cachedResponse) {
-          // Photo is registered in IndexDB, but doesn't appear in the cache.
-          return sendResultToElm(queryType, {tag: 'Error', error: 'PhotoNotFoundOnCacheStorage'});
-        }
 
-        const blob = await cachedResponse.blob();
-        const formData = new FormData();
-        const imageName = 'image-' + row.uuid.substring(0, 7) + '.jpg';
+        result.forEach(async function(row) {
+            const cachedResponse = await cache.match(row.photo);
+            if (!cachedResponse) {
+              // Photo is registered in IndexDB, but doesn't appear in the cache.
+              return sendResultToElm(queryType, {tag: 'Error', error: 'PhotoNotFoundOnCacheStorage'});
+            }
 
-        formData.set('file', blob, imageName);
+            const blob = await cachedResponse.blob();
+            const formData = new FormData();
+            const imageName = 'image-' + getRandom8Digits() + '.jpg';
 
-        const dataArr = JSON.parse(data);
+            formData.set('file', blob, imageName);
 
-        const backendUrl = dataArr.backend_url;
-        const accessToken = dataArr.access_token;
+            const dataArr = JSON.parse(data);
 
-        const uploadUrl = [
-          backendUrl,
-          '/api/file-upload?access_token=',
-          accessToken,
-        ].join('');
+            const backendUrl = dataArr.backend_url;
+            const accessToken = dataArr.access_token;
 
-        try {
-          var response = await fetch(uploadUrl, {
-            method: 'POST',
-            body: formData,
-            // This prevents attaching cookies to request, to prevent
-            // sending authentication cookie, as our desired
-            // authentication method is token.
-            credentials: 'omit'
-          });
-        }
-        catch (e) {
-            // Network error.
-            return sendResultToElm(queryType,{tag: 'Error', error: 'FetchError', reason: e.toString()});
-        }
+            const uploadUrl = [
+              backendUrl,
+              '/api/file-upload?access_token=',
+              accessToken,
+            ].join('');
 
-        if (response.ok) {
-          try {
-            var json = await response.json();
-          }
-          catch (e) {
-            // Bad JSON.
-            return sendResultToElm(queryType,{tag: 'Error', error: 'BadJson', reason: e.toString()});
-          }
+            try {
+              var response = await fetch(uploadUrl, {
+                method: 'POST',
+                body: formData,
+                // This prevents attaching cookies to request, to prevent
+                // sending authentication cookie, as our desired
+                // authentication method is token.
+                credentials: 'omit'
+              });
+            }
+            catch (e) {
+                // Network error.
+                return sendResultToElm(queryType,{tag: 'Error', error: 'FetchError', reason: e.toString()});
+            }
 
-          const changes = {
-            'fileId': parseInt(json.data[0].id),
-            'remoteFileName': json.data[0].label,
-            'isSynced': 1,
-          }
+            if (response.ok) {
+              try {
+                var json = await response.json();
+              }
+              catch (e) {
+                // Bad JSON.
+                return sendResultToElm(queryType,{tag: 'Error', error: 'BadJson', reason: e.toString()});
+              }
 
-          // Update IndexDb to hold the fileId. As there could have been multiple
-          // operations on the same entity, we replace all the photo occurrences.
-          // For example, lets say a person's photo was changed, and later also
-          // their name. So on the two records there were created on the
-          // photoUploadChanges table, the same photo local URL will appear.
-          await dbSync.authorityPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
+              const changes = {
+                'fileId': parseInt(json.data[0].id),
+                'remoteFileName': json.data[0].label,
+                'isSynced': 1,
+              }
 
-          const completedResult = Object.assign(row, changes);
-          return sendResultToElm(queryType, {tag: 'Success', result: completedResult});
-        }
+              // Update IndexDb to hold the fileId. As there could have been multiple
+              // operations on the same entity, we replace all the photo occurrences.
+              // For example, lets say a person's photo was changed, and later also
+              // their name. So on the two records there were created on the
+              // photoUploadChanges table, the same photo local URL will appear.
+              await dbSync.authorityPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
+            }
+        });
+        // @todo: figure out the response.
+        // const completedResult = Object.assign(row, changes);
+        return sendResultToElm(queryType, {tag: 'Success', result: "!"});
       })();
       break;
 
@@ -599,7 +600,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
   }
 });
 
-
 /**
  * Mark local changes are uploaded, so later we could delete them.
  *
@@ -691,8 +691,12 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
   await cache.delete(row.data.photo);
 });
 
+function getRandom8Digits () {
+  var timestamp = String(performance.timeOrigin + performance.now());
+  timestamp = timestamp.replace('.', '');
 
-// @todo: Move logic to Elm to `gatherWords`.
+  return timestamp.slice(timestamp.length - 8);
+}
 
 function gatherWords (text) {
   // Split on spaces, and remove blanks from result.
