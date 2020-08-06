@@ -518,19 +518,24 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
           return row.localId;
         });
 
+        let resultToSend = {
+          'entities': entitiesResult
+        };
+
         let uploadPhotosResult = await dbSync
             .authorityPhotoUploadChanges
             .where('localId')
             .anyOf(localIds)
             .toArray();
 
-        const resultToSend = {
-          'entities': entitiesResult,
-          'uploadPhotos': uploadPhotosResult,
-        };
+        if (uploadPhotosResult[0]) {
+            resultToSend = {
+              'entities': entitiesResult,
+              'uploadPhotos': uploadPhotosResult
+            };
+        }
 
         return sendResultToElm(queryType, resultToSend);
-
       })();
       break;
 
