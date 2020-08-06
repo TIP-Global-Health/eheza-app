@@ -28,9 +28,7 @@ update nurseId sessionId maybeSession currentDate db msg model =
                 (\session ->
                     ( { model | closeSessionRequest = Loading }
                     , { session | endDate = Just currentDate }
-                        |> encodeSession
-                        |> object
-                        |> sw.patchAny sessionEndpoint sessionId
+                        |> sw.patchFull sessionEndpoint sessionId
                         |> withoutDecoder
                         |> toCmd (RemoteData.fromResult >> HandleClosedSession)
                     , []
@@ -51,43 +49,43 @@ update nurseId sessionId maybeSession currentDate db msg model =
 
                 SaveHeight valueId value ->
                     ( { model | saveHeightRequest = Dict.insert personId Loading model.saveHeightRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value encodeHeight heightEndpoint (HandleSaveHeight personId)
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value heightEndpoint (HandleSaveHeight personId)
                     , []
                     )
 
                 SaveWeight valueId value ->
                     ( { model | saveWeightRequest = Dict.insert personId Loading model.saveWeightRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value encodeWeight weightEndpoint (HandleSaveWeight personId)
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value weightEndpoint (HandleSaveWeight personId)
                     , []
                     )
 
                 SaveMuac valueId value ->
                     ( { model | saveMuacRequest = Dict.insert personId Loading model.saveMuacRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value encodeMuac muacEndpoint (HandleSaveMuac personId)
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value muacEndpoint (HandleSaveMuac personId)
                     , []
                     )
 
                 SaveCounselingSession valueId timing topics ->
                     ( { model | saveCounselingSessionRequest = Dict.insert personId Loading model.saveCounselingSessionRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId ( timing, topics ) encodeCounselingSession counselingSessionEndpoint (HandleSaveCounselingSession personId)
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId ( timing, topics ) counselingSessionEndpoint (HandleSaveCounselingSession personId)
                     , []
                     )
 
                 SaveChildNutritionSigns valueId value ->
                     ( { model | saveNutritionRequest = Dict.insert personId Loading model.saveNutritionRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value encodeNutrition nutritionEndpoint (HandleSaveNutrition personId)
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value nutritionEndpoint (HandleSaveNutrition personId)
                     , []
                     )
 
                 SavePhoto valueId value ->
                     ( { model | savePhotoRequest = Dict.insert personId Loading model.savePhotoRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value encodePhoto photoEndpoint (HandleSavePhoto personId)
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value photoEndpoint (HandleSavePhoto personId)
                     , []
                     )
 
                 SaveChildFbf valueId value ->
                     ( { model | saveFbfRequest = Dict.insert personId Loading model.saveLactationRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value encodeFbf childFbfEndpoint (HandleSaveFbf personId)
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value childFbfEndpoint (HandleSaveFbf personId)
                     , []
                     )
 
@@ -99,25 +97,25 @@ update nurseId sessionId maybeSession currentDate db msg model =
             case subMsg of
                 SaveAttendance valueId value ->
                     ( { model | saveAttendanceRequest = Dict.insert personId Loading model.saveAttendanceRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value encodeAttendance attendanceEndpoint (HandleSaveAttendance personId)
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value attendanceEndpoint (HandleSaveAttendance personId)
                     , []
                     )
 
                 SaveFamilyPlanningSigns valueId value ->
                     ( { model | saveFamilyPlanningRequest = Dict.insert personId Loading model.saveFamilyPlanningRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value encodeFamilyPlanning familyPlanningEndpoint (HandleSaveFamilyPlanning personId)
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value familyPlanningEndpoint (HandleSaveFamilyPlanning personId)
                     , []
                     )
 
                 SaveLactation valueId value ->
                     ( { model | saveLactationRequest = Dict.insert personId Loading model.saveLactationRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value encodeLactation lactationEndpoint (HandleSaveLactation personId)
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value lactationEndpoint (HandleSaveLactation personId)
                     , []
                     )
 
                 SaveMotherFbf valueId value ->
                     ( { model | saveFbfRequest = Dict.insert personId Loading model.saveLactationRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value encodeFbf motherFbfEndpoint (HandleSaveFbf personId)
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value motherFbfEndpoint (HandleSaveFbf personId)
                     , []
                     )
 
@@ -129,7 +127,7 @@ update nurseId sessionId maybeSession currentDate db msg model =
                             }
                     in
                     ( { model | saveParticipantConsentRequest = Dict.insert personId Loading model.saveParticipantConsentRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value encodeParticipantConsent participantConsentEndpoint (HandleSaveParticipantConsent personId)
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value participantConsentEndpoint (HandleSaveParticipantConsent personId)
                     , []
                     )
 

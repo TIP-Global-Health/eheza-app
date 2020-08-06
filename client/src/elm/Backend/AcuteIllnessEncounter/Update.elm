@@ -23,9 +23,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                     (\encounter ->
                         ( { model | closeAcuteIllnessEncounter = Loading }
                         , { encounter | endDate = Just currentDate }
-                            |> encodeAcuteIllnessEncounter
-                            |> object
-                            |> sw.patchAny acuteIllnessEncounterEndpoint encounterId
+                            |> sw.patchFull acuteIllnessEncounterEndpoint encounterId
                             |> withoutDecoder
                             |> toCmd (RemoteData.fromResult >> HandleClosedAcuteIllnessEncounter)
                         )
@@ -38,7 +36,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveSymptomsGeneral personId valueId value ->
             ( { model | saveSymptomsGeneral = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeSymptomsGeneral symptomsGeneralEndpoint HandleSavedSymptomsGeneral
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value symptomsGeneralEndpoint HandleSavedSymptomsGeneral
             )
 
         HandleSavedSymptomsGeneral data ->
@@ -48,7 +46,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveSymptomsRespiratory personId valueId value ->
             ( { model | saveSymptomsRespiratory = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeSymptomsRespiratory symptomsRespiratoryEndpoint HandleSavedSymptomsRespiratory
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value symptomsRespiratoryEndpoint HandleSavedSymptomsRespiratory
             )
 
         HandleSavedSymptomsRespiratory data ->
@@ -58,7 +56,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveSymptomsGI personId valueId value ->
             ( { model | saveSymptomsGI = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeSymptomsGI symptomsGIEndpoint HandleSavedSymptomsGI
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value symptomsGIEndpoint HandleSavedSymptomsGI
             )
 
         HandleSavedSymptomsGI data ->
@@ -68,7 +66,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveVitals personId valueId value ->
             ( { model | saveVitals = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeAcuteIllnessVitals acuteIllnessVitalsEndpoint HandleSavedVitals
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value acuteIllnessVitalsEndpoint HandleSavedVitals
             )
 
         HandleSavedVitals data ->
@@ -78,7 +76,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveAcuteFindings personId valueId value ->
             ( { model | saveAcuteFindings = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeAcuteFindings acuteFindingsEndpoint HandleSavedAcuteFindings
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value acuteFindingsEndpoint HandleSavedAcuteFindings
             )
 
         HandleSavedAcuteFindings data ->
@@ -88,7 +86,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveMalariaTesting personId valueId value ->
             ( { model | saveMalariaTesting = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeMalariaTesting malariaTestingEndpoint HandleSavedMalariaTesting
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value malariaTestingEndpoint HandleSavedMalariaTesting
             )
 
         HandleSavedMalariaTesting data ->
@@ -98,7 +96,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveSendToHC personId valueId value ->
             ( { model | saveSendToHC = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeSendToHC sendToHCEndpoint HandleSavedSendToHC
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value sendToHCEndpoint HandleSavedSendToHC
             )
 
         HandleSavedSendToHC data ->
@@ -108,7 +106,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveMedicationDistribution personId valueId value ->
             ( { model | saveMedicationDistribution = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeMedicationDistribution medicationDistributionEndpoint HandleSavedMedicationDistribution
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value medicationDistributionEndpoint HandleSavedMedicationDistribution
             )
 
         HandleSavedMedicationDistribution data ->
@@ -118,7 +116,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveTravelHistory personId valueId value ->
             ( { model | saveTravelHistory = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeTravelHistory travelHistoryEndpoint HandleSavedTravelHistory
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value travelHistoryEndpoint HandleSavedTravelHistory
             )
 
         HandleSavedTravelHistory data ->
@@ -128,7 +126,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveExposure personId valueId value ->
             ( { model | saveExposure = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeExposure exposureEndpoint HandleSavedExposure
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value exposureEndpoint HandleSavedExposure
             )
 
         HandleSavedExposure data ->
@@ -138,7 +136,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveIsolation personId valueId value ->
             ( { model | saveIsolation = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeIsolation isolationEndpoint HandleSavedIsolation
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value isolationEndpoint HandleSavedIsolation
             )
 
         HandleSavedIsolation data ->
@@ -148,7 +146,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveHCContact personId valueId value ->
             ( { model | saveHCContact = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeHCContact hcContactEndpoint HandleSavedHCContact
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hcContactEndpoint HandleSavedHCContact
             )
 
         HandleSavedHCContact data ->
@@ -158,7 +156,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveTreatmentReview personId valueId value ->
             ( { model | saveTreatmentReview = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeTreatmentReview treatmentReviewEndpoint HandleSavedTreatmentReview
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value treatmentReviewEndpoint HandleSavedTreatmentReview
             )
 
         HandleSavedTreatmentReview data ->

@@ -24,9 +24,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                     (\encounter ->
                         ( { model | closeNutritionEncounter = Loading }
                         , { encounter | endDate = Just currentDate }
-                            |> encodeNutritionEncounter
-                            |> object
-                            |> sw.patchAny nutritionEncounterEndpoint encounterId
+                            |> sw.patchFull nutritionEncounterEndpoint encounterId
                             |> withoutDecoder
                             |> toCmd (RemoteData.fromResult >> HandleClosedNutritionEncounter)
                         )
@@ -39,7 +37,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveHeight personId valueId value ->
             ( { model | saveHeight = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeNutritionHeight nutritionHeightEndpoint HandleSavedHeight
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value nutritionHeightEndpoint HandleSavedHeight
             )
 
         HandleSavedHeight data ->
@@ -49,7 +47,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveMuac personId valueId value ->
             ( { model | saveMuac = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeNutritionMuac nutritionMuacEndpoint HandleSavedMuac
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value nutritionMuacEndpoint HandleSavedMuac
             )
 
         HandleSavedMuac data ->
@@ -59,7 +57,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveNutrition personId valueId value ->
             ( { model | saveNutrition = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeNutritionNutrition nutritionNutritionEndpoint HandleSavedNutrition
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value nutritionNutritionEndpoint HandleSavedNutrition
             )
 
         HandleSavedNutrition data ->
@@ -69,7 +67,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SavePhoto personId valueId value ->
             ( { model | savePhoto = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeNutritionPhoto nutritionPhotoEndpoint HandleSavedPhoto
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value nutritionPhotoEndpoint HandleSavedPhoto
             )
 
         HandleSavedPhoto data ->
@@ -79,7 +77,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveWeight personId valueId value ->
             ( { model | saveWeight = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeNutritionWeight nutritionWeightEndpoint HandleSavedWeight
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value nutritionWeightEndpoint HandleSavedWeight
             )
 
         HandleSavedWeight data ->

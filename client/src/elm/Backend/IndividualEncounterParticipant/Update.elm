@@ -30,9 +30,7 @@ update participantId maybeParticipant currentDate msg model =
                         in
                         ( { model | closePrenatalSession = Loading }
                         , { participant | dateConcluded = Just pregnancyConcludedDate, outcome = Just pregnancyOutcome, deliveryLocation = Just deliveryLocation }
-                            |> encodeIndividualEncounterParticipant
-                            |> object
-                            |> sw.patchAny individualEncounterParticipantEndpoint participantId
+                            |> sw.patchFull individualEncounterParticipantEndpoint participantId
                             |> withoutDecoder
                             |> toCmd (RemoteData.fromResult >> HandleClosedPrenatalSession)
                         )
@@ -49,9 +47,7 @@ update participantId maybeParticipant currentDate msg model =
                     (\participant ->
                         ( { model | setEddDate = Loading }
                         , { participant | eddDate = Just eddDate }
-                            |> encodeIndividualEncounterParticipant
-                            |> object
-                            |> sw.patchAny individualEncounterParticipantEndpoint participantId
+                            |> sw.patchFull individualEncounterParticipantEndpoint participantId
                             |> withoutDecoder
                             |> toCmd (RemoteData.fromResult >> HandleSetEddDate)
                         )

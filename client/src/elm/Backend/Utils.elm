@@ -86,7 +86,7 @@ mapAcuteIllnessMeasurements id func model =
             model
 
 
-saveMeasurementCmd date encounter person nurse healthCenter savedValueId savedValue valueEncoder endpoint handleSavedMsg =
+saveMeasurementCmd date encounter person nurse healthCenter savedValueId savedValue endpoint handleSavedMsg =
     let
         measurement =
             { participantId = person
@@ -106,9 +106,7 @@ saveMeasurementCmd date encounter person nurse healthCenter savedValueId savedVa
 
                 Just id ->
                     measurement
-                        |> valueEncoder
-                        |> object
-                        |> sw.patchAny endpoint id
+                        |> sw.patchFull endpoint id
                         |> withoutDecoder
     in
     toCmd (RemoteData.fromResult >> handleSavedMsg) requestData

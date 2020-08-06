@@ -23,9 +23,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                     (\encounter ->
                         ( { model | closePrenatalEncounter = Loading }
                         , { encounter | endDate = Just currentDate }
-                            |> encodePrenatalEncounter
-                            |> object
-                            |> sw.patchAny prenatalEncounterEndpoint encounterId
+                            |> sw.patchFull prenatalEncounterEndpoint encounterId
                             |> withoutDecoder
                             |> toCmd (RemoteData.fromResult >> HandleClosedPrenatalEncounter)
                         )
@@ -38,7 +36,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveBreastExam personId valueId value ->
             ( { model | saveBreastExam = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeBreastExam breastExamEndpoint HandleSavedBreastExam
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value breastExamEndpoint HandleSavedBreastExam
             )
 
         HandleSavedBreastExam data ->
@@ -48,7 +46,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveCorePhysicalExam personId valueId value ->
             ( { model | saveCorePhysicalExam = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeCorePhysicalExam corePhysicalExamEndpoint HandleSavedCorePhysicalExam
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value corePhysicalExamEndpoint HandleSavedCorePhysicalExam
             )
 
         HandleSavedCorePhysicalExam data ->
@@ -58,7 +56,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveDangerSigns personId valueId value ->
             ( { model | saveDangerSigns = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeDangerSigns dangerSignsEndpoint HandleSavedDangerSigns
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value dangerSignsEndpoint HandleSavedDangerSigns
             )
 
         HandleSavedDangerSigns data ->
@@ -68,7 +66,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveLastMenstrualPeriod personId valueId value ->
             ( { model | saveLastMenstrualPeriod = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeLastMenstrualPeriod lastMenstrualPeriodEndpoint HandleSavedLastMenstrualPeriod
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value lastMenstrualPeriodEndpoint HandleSavedLastMenstrualPeriod
             )
 
         HandleSavedLastMenstrualPeriod data ->
@@ -78,7 +76,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveMedicalHistory personId valueId value ->
             ( { model | saveMedicalHistory = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeMedicalHistory medicalHistoryEndpoint HandleSavedMedicalHistory
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value medicalHistoryEndpoint HandleSavedMedicalHistory
             )
 
         HandleSavedMedicalHistory data ->
@@ -88,7 +86,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveMedication personId valueId value ->
             ( { model | saveMedication = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeMedication medicationEndpoint HandleSavedMedication
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value medicationEndpoint HandleSavedMedication
             )
 
         HandleSavedMedication data ->
@@ -98,7 +96,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveObstetricalExam personId valueId value ->
             ( { model | saveObstetricalExam = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeObstetricalExam obstetricalExamEndpoint HandleSavedObstetricalExam
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value obstetricalExamEndpoint HandleSavedObstetricalExam
             )
 
         HandleSavedObstetricalExam data ->
@@ -108,7 +106,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveObstetricHistory personId valueId value ->
             ( { model | saveObstetricHistory = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeObstetricHistory obstetricHistoryEndpoint HandleSavedObstetricHistory
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value obstetricHistoryEndpoint HandleSavedObstetricHistory
             )
 
         HandleSavedObstetricHistory data ->
@@ -118,7 +116,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveObstetricHistoryStep2 personId valueId value ->
             ( { model | saveObstetricHistoryStep2 = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeObstetricHistoryStep2 obstetricHistoryStep2Endpoint HandleSavedObstetricHistoryStep2
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value obstetricHistoryStep2Endpoint HandleSavedObstetricHistoryStep2
             )
 
         HandleSavedObstetricHistoryStep2 data ->
@@ -128,7 +126,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveFamilyPlanning personId valueId value ->
             ( { model | saveFamilyPlanning = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodePrenatalFamilyPlanning prenatalFamilyPlanningEndpoint HandleSavedFamilyPlanning
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalFamilyPlanningEndpoint HandleSavedFamilyPlanning
             )
 
         HandleSavedFamilyPlanning data ->
@@ -138,7 +136,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveNutrition personId valueId value ->
             ( { model | saveNutrition = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodePrenatalNutrition prenatalNutritionEndpoint HandleSavedNutrition
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalNutritionEndpoint HandleSavedNutrition
             )
 
         HandleSavedNutrition data ->
@@ -148,7 +146,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveResource personId valueId value ->
             ( { model | saveResource = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeResource resourceEndpoint HandleSavedResource
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value resourceEndpoint HandleSavedResource
             )
 
         HandleSavedResource data ->
@@ -158,7 +156,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveSocialHistory personId valueId value ->
             ( { model | saveSocialHistory = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeSocialHistory socialHistoryEndpoint HandleSavedSocialHistory
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value socialHistoryEndpoint HandleSavedSocialHistory
             )
 
         HandleSavedSocialHistory data ->
@@ -168,7 +166,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveVitals personId valueId value ->
             ( { model | saveVitals = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodeVitals vitalsEndpoint HandleSavedVitals
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value vitalsEndpoint HandleSavedVitals
             )
 
         HandleSavedVitals data ->
@@ -178,7 +176,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SavePrenatalPhoto personId valueId value ->
             ( { model | savePrenatalPhoto = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value encodePrenatalPhoto prenatalPhotoEndpoint HandleSavedPrenatalPhoto
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalPhotoEndpoint HandleSavedPrenatalPhoto
             )
 
         HandleSavedPrenatalPhoto data ->
