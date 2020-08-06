@@ -143,7 +143,7 @@ decodeIndexDbQueryUploadAuthorityResultRecord : Decoder IndexDbQueryUploadAuthor
 decodeIndexDbQueryUploadAuthorityResultRecord =
     succeed IndexDbQueryUploadAuthorityResultRecord
         |> required "entities" (list <| decodeBackendEntityAndUploadMethod (\uuid localId -> decodeBackendAuthorityEntity (hardcoded uuid) (hardcoded localId)))
-        |> required "uploadPhotos"
+        |> optional "uploadPhotos"
             (list decodeIndexDbQueryUploadPhotoResultRecord
                 |> andThen
                     (\list_ ->
@@ -154,6 +154,7 @@ decodeIndexDbQueryUploadAuthorityResultRecord =
                             |> succeed
                     )
             )
+            Dict.empty
 
 
 {-| We need to get the localId, which is wrapping the data. It looks something like:
