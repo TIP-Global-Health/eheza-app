@@ -2,8 +2,8 @@ module Pages.Dashboard.Model exposing
     ( BeneficiariesTableLabels(..)
     , Card
     , CardValueSeverity(..)
+    , DashboardFilter(..)
     , FamilyPlanningSignsCounter
-    , FilterCharts(..)
     , FilterGender(..)
     , FilterPeriod(..)
     , FilterType(..)
@@ -11,12 +11,13 @@ module Pages.Dashboard.Model exposing
     , MonthlyChartType(..)
     , Msg(..)
     , StatsCard
+    , caseManagementFilters
     , emptyModel
-    , filterCharts
     , filterGenders
     , filterPeriodsForCaseManagementPage
     , filterPeriodsForMainPage
     , filterPeriodsForStatsPage
+    , monthlyChartFilters
     )
 
 {-| Filtering by period
@@ -75,15 +76,16 @@ filterGenders =
 
 {-| Define the charts filters.
 -}
-type FilterCharts
+type DashboardFilter
     = Stunting
     | Underweight
     | Wasting
     | MUAC
+    | MissedSession
 
 
-filterCharts : List FilterCharts
-filterCharts =
+monthlyChartFilters : List DashboardFilter
+monthlyChartFilters =
     [ Stunting
     , Underweight
     , Wasting
@@ -91,12 +93,22 @@ filterCharts =
     ]
 
 
+caseManagementFilters : List DashboardFilter
+caseManagementFilters =
+    [ Stunting
+    , Underweight
+    , Wasting
+    , MUAC
+    , MissedSession
+    ]
+
+
 type alias Model =
     { period : FilterPeriod
     , beneficiariesGender : FilterGender
-    , currentBeneficiariesChartsFilter : FilterCharts
-    , currentBeneficiariesIncidenceChartsFilter : FilterCharts
-    , currentCaseManagementFilter : FilterCharts
+    , currentBeneficiariesChartsFilter : DashboardFilter
+    , currentBeneficiariesIncidenceChartsFilter : DashboardFilter
+    , currentCaseManagementFilter : DashboardFilter
     , latestPage : DashboardPage
     , modalTable : List ParticipantStats
     , modalTitle : String
@@ -172,6 +184,6 @@ type Msg
     = ModalToggle Bool (List ParticipantStats) String
     | SetFilterGender FilterGender
     | SetFilterPeriod FilterPeriod
-    | SetFilterBeneficiariesChart FilterCharts FilterType
-    | SetFilterCaseManagement FilterCharts
+    | SetFilterBeneficiariesChart DashboardFilter FilterType
+    | SetFilterCaseManagement DashboardFilter
     | SetActivePage Page

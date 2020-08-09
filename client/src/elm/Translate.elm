@@ -47,7 +47,7 @@ import Http
 import Measurement.Model exposing (FloatInputConstraints)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
-import Pages.Dashboard.Model as Dashboard exposing (BeneficiariesTableLabels(..), FilterPeriod(..))
+import Pages.Dashboard.Model as Dashboard exposing (BeneficiariesTableLabels(..), DashboardFilter(..), FilterPeriod(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
     exposing
@@ -183,6 +183,7 @@ type Dashboard
     | CompletedProgramLabel
     | FamilyPlanningLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
+    | Filter DashboardFilter
     | GirlsFilterLabel
     | GoodNutritionLabel
     | IncidenceOf
@@ -4780,6 +4781,33 @@ translateDashboard trans =
             { english = String.fromInt useFamilyPlanning ++ " out of " ++ String.fromInt total ++ " women"
             , kinyarwanda = Nothing
             }
+
+        Filter filter ->
+            case filter of
+                Stunting ->
+                    { english = "Stunting"
+                    , kinyarwanda = Nothing
+                    }
+
+                Underweight ->
+                    { english = "Underweight"
+                    , kinyarwanda = Nothing
+                    }
+
+                Wasting ->
+                    { english = "Wasting"
+                    , kinyarwanda = Nothing
+                    }
+
+                Dashboard.MUAC ->
+                    { english = "MUAC"
+                    , kinyarwanda = Nothing
+                    }
+
+                MissedSession ->
+                    { english = "Missed Sessions"
+                    , kinyarwanda = Nothing
+                    }
 
         GirlsFilterLabel ->
             { english = "Girls"

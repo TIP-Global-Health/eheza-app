@@ -15,6 +15,7 @@ module Backend.Dashboard.Model exposing
     , TotalBeneficiaries
     , emptyModel
     , emptyNutrition
+    , emptyNutritionValue
     , emptyTotalBeneficiaries
     )
 
@@ -143,6 +144,13 @@ emptyNutrition =
 type alias NutritionValue =
     { class : NutritionStatus
     , value : String
+    }
+
+
+emptyNutritionValue : NutritionValue
+emptyNutritionValue =
+    { class = Neutral
+    , value = "X"
     }
 
 
