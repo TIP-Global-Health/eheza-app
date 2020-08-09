@@ -1474,6 +1474,21 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                 |> RemoteData.withDefault []
             )
 
+        ResetFailedToFetchAuthorities ->
+            let
+                failureToNotAsked webData =
+                    case webData of
+                        Failure _ ->
+                            NotAsked
+
+                        _ ->
+                            webData
+            in
+            ( { model | healthCenters = failureToNotAsked model.healthCenters, villages = failureToNotAsked model.villages }
+            , Cmd.none
+            , []
+            )
+
 
 {-| The extra return value indicates whether we need to recalculate our
 successful EditableSessions. Ideally, we would handle this in a more

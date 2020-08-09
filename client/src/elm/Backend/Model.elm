@@ -269,6 +269,7 @@ type MsgIndexedDb
     | MsgNutritionEncounter NutritionEncounterId Backend.NutritionEncounter.Model.Msg
     | MsgAcuteIllnessEncounter AcuteIllnessEncounterId Backend.AcuteIllnessEncounter.Model.Msg
     | MsgIndividualSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
+    | ResetFailedToFetchAuthorities
 
 
 {-| Wrapper for all the revisions we can receive.

@@ -1,6 +1,7 @@
 port module SyncManager.Update exposing (subscriptions, update)
 
 import App.Model exposing (SubModelReturn)
+import Backend.Model
 import Device.Encoder
 import Device.Model exposing (Device)
 import Editable
@@ -405,7 +406,7 @@ update currentDate dbVersion device msg model =
                     ]
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendGeneralFetchHandle")
-                []
+                [ Backend.Model.ResetFailedToFetchAuthorities |> App.Model.MsgIndexedDb ]
 
         SetLastFetchedRevisionIdAuthority zipper revisionId ->
             let
