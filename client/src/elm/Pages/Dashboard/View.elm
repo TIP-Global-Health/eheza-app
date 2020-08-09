@@ -409,8 +409,11 @@ viewCaseManagementPage language currentDate stats model =
                 currentPeriodStats.caseManagement
                 |> List.filter
                     (.nutrition
-                        >> List.all (Tuple.second >> .class >> (==) Backend.Dashboard.Model.Good)
-                        >> not
+                        >> List.any
+                            (Tuple.second
+                                >> .class
+                                >> (\class -> (class == Backend.Dashboard.Model.Moderate) || (class == Backend.Dashboard.Model.Severe))
+                            )
                     )
                 -- List table by person's name but turn it to lowercase for the comparision so it's truly sorted, this
                 -- will not effect the display.
