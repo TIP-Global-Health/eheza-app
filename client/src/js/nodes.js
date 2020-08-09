@@ -15,16 +15,9 @@
 
 (async () => {
 
-    var dbSync = new Dexie('sync');
-
-    // As we defined Dexie's store in app.js, it seems we cannot do it here.
-    // Instead, we re-define the table properties, which seems to make it work.
-    var db = await dbSync.open();
-    db.tables.forEach(function(table) {
-        dbSync[table.name] = table;
-    });
-
-
+    // As we defined Dexie's store in app.js, we'll need to redefine tables properties here.
+    // Since we don't know exactly when the DB will be ready, we define DB placeholder here.
+    var dbSync = null;
 
     // This defines our URL scheme. A URL will look like
     //
@@ -37,7 +30,30 @@
     // /sw/nodes/health_center/78cf21d1-b3f4-496a-b312-d8ae73041f09
     var nodesUrlRegex = /\/sw\/nodes\/([^/]+)\/?(.*)/;
 
-    self.addEventListener('fetch', function (event) {
+    self.addEventListener('fetch', async function (event) {
+        // If placeholder still indicates tha DB was not initialized.
+        if (dbSync === null) {
+            // Check if IndexedDB exists.
+            var dbExists = await Dexie.exists('sync');
+            if (!dbExists) {
+              // Skip any further actions, if it's not.
+              return;
+            }
+
+            // Redefine tables properties.
+            dbSync = new Dexie('sync');
+            var db = await dbSync.open();
+            db.tables.forEach(function(table) {
+                dbSync[table.name] = table;
+            });
+
+            // A hook to create matching row in `authorityPhotoUploadChanges`, if entity has a photo.
+            dbSync.shardChanges.hook('creating', function (primKey, obj, transaction) {
+                const self = this;
+                return addPhotoUploadChanges(self, dbSync.authorityPhotoUploadChanges, obj);
+            });
+        }
+
         var url = new URL(event.request.url);
         var matches = nodesUrlRegex.exec(url.pathname);
 
@@ -743,14 +759,6 @@
             return Promise.resolve(kelektivUuid.v5(timestamp, deviceUuid));
         });
     }
-
-    /**
-     * Create matching row in `authorityPhotoUploadChanges`, if entity has a photo.
-     */
-    dbSync.shardChanges.hook('creating', function (primKey, obj, transaction) {
-        const self = this;
-        return addPhotoUploadChanges(self, dbSync.authorityPhotoUploadChanges, obj);
-    });
 
     /**
      * Helper function to add a record to authority PhotoUploadChanges.
