@@ -21,11 +21,6 @@ var photosUploadCache = "photos-upload";
 var photosDownloadUrlRegex = /\/system\/files\//;
 var photosUploadUrlRegex = /\/cache-upload\/images/;
 
-
-// A UUID which represents the "shard" which is our general data that
-// all devices get. (That is, unsharded data).
-var nodesUuid = '78cf21d1-b3f4-496a-b312-d8ae73041f09';
-
 // All those entities are the entities we're going to get from the backend.
 // They should also be mapped in SyncManager.Model.BackendGeneralEntity (for
 // General entities), or SyncManager.Model.BackendAuthorityEntity (for Authority
