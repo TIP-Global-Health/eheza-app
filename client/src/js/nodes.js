@@ -671,8 +671,6 @@
     function sendRevisedNode (table, uuid) {
         return table.get(uuid).catch(databaseError).then(function (item) {
             if (item) {
-                console.log(item);
-
                 return sendRevisions([item]);
             } else {
                 return Promise.reject("UUID unexpectedly not found.");
