@@ -54,17 +54,17 @@ determineSyncStatus model =
             syncStatus =
                 model.syncStatus
 
-            revisionIdPerAuthorityZipper =
-                model.revisionIdPerAuthorityZipper
+            syncInfoAuthorities =
+                model.syncInfoAuthorities
 
             noChange =
-                ( syncStatus, revisionIdPerAuthorityZipper )
+                ( syncStatus, syncInfoAuthorities )
 
-            ( syncStatusUpdated, revisionIdPerAuthorityZipperUpdated ) =
+            ( syncStatusUpdated, syncInfoAuthoritiesUpdated ) =
                 -- Cases are ordered by the cycle order.
                 case syncStatus of
                     SyncIdle ->
-                        ( SyncUploadPhotoAuthority RemoteData.NotAsked, revisionIdPerAuthorityZipper )
+                        ( SyncUploadPhotoAuthority RemoteData.NotAsked, syncInfoAuthorities )
 
                     SyncUploadPhotoAuthority webData ->
                         case webData of
@@ -76,7 +76,7 @@ determineSyncStatus model =
 
                                     Nothing ->
                                         -- No more photos to upload.
-                                        ( SyncUploadGeneral emptyUploadRec, revisionIdPerAuthorityZipper )
+                                        ( SyncUploadGeneral emptyUploadRec, syncInfoAuthorities )
 
                             _ ->
                                 noChange
@@ -85,7 +85,7 @@ determineSyncStatus model =
                         if record.indexDbRemoteData == RemoteData.Success Nothing then
                             -- We tried to fetch entities for upload from IndexDB,
                             -- but there we non matching the query.
-                            ( SyncUploadAuthority emptyUploadRec, revisionIdPerAuthorityZipper )
+                            ( SyncUploadAuthority emptyUploadRec, syncInfoAuthorities )
 
                         else
                             noChange
@@ -97,7 +97,7 @@ determineSyncStatus model =
                                     -- We tried to fetch, but there was no more data.
                                     -- Next we try authorities.
                                     ( SyncDownloadAuthority RemoteData.NotAsked
-                                    , revisionIdPerAuthorityZipper
+                                    , syncInfoAuthorities
                                     )
 
                                 else
@@ -111,18 +111,18 @@ determineSyncStatus model =
                         if record.indexDbRemoteData == RemoteData.Success Nothing then
                             -- We tried to fetch entities for upload from IndexDB,
                             -- but there we non matching the query.
-                            ( SyncDownloadGeneral RemoteData.NotAsked, revisionIdPerAuthorityZipper )
+                            ( SyncDownloadGeneral RemoteData.NotAsked, syncInfoAuthorities )
 
                         else
                             noChange
 
                     SyncDownloadAuthority webData ->
-                        case ( model.revisionIdPerAuthorityZipper, webData ) of
+                        case ( model.syncInfoAuthorities, webData ) of
                             ( Nothing, _ ) ->
                                 -- There are no authorities, so we can set the next
                                 -- status.
                                 ( SyncDownloadPhotos model.downloadPhotos
-                                , revisionIdPerAuthorityZipper
+                                , syncInfoAuthorities
                                 )
 
                             ( Just zipper, RemoteData.Success data ) ->
@@ -165,18 +165,18 @@ determineSyncStatus model =
                     SyncDownloadPhotos record ->
                         case record of
                             DownloadPhotosNone ->
-                                ( SyncIdle, revisionIdPerAuthorityZipper )
+                                ( SyncIdle, syncInfoAuthorities )
 
                             DownloadPhotosBatch deferredPhoto ->
                                 if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
                                     -- We tried to fetch deferred photos from IndexDB,
                                     -- but there we non matching the query.
-                                    ( SyncIdle, revisionIdPerAuthorityZipper )
+                                    ( SyncIdle, syncInfoAuthorities )
 
                                 else if deferredPhoto.batchCounter < 1 then
                                     -- We've reached the end of the batch, so we
                                     -- need to rotate.
-                                    ( SyncIdle, revisionIdPerAuthorityZipper )
+                                    ( SyncIdle, syncInfoAuthorities )
 
                                 else
                                     noChange
@@ -185,7 +185,7 @@ determineSyncStatus model =
                                 if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
                                     -- We tried to fetch deferred photos from IndexDB,
                                     -- but there we non matching the query.
-                                    ( SyncIdle, revisionIdPerAuthorityZipper )
+                                    ( SyncIdle, syncInfoAuthorities )
 
                                 else
                                     -- There are still deferred photos in IndexDB
@@ -194,7 +194,7 @@ determineSyncStatus model =
         in
         { model
             | syncStatus = syncStatusUpdated
-            , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipperUpdated
+            , syncInfoAuthorities = syncInfoAuthoritiesUpdated
         }
 
     else
@@ -763,6 +763,6 @@ getDataToSendAuthority entity accum =
 
 getSyncedHealthCenters : Model -> List String
 getSyncedHealthCenters model =
-    model.revisionIdPerAuthorityZipper
+    model.syncInfoAuthorities
         |> Maybe.map (Zipper.toList >> List.map .uuid)
         |> Maybe.withDefault []

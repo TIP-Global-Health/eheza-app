@@ -284,10 +284,7 @@ type alias Flags =
     , healthCenterId : String
     , villageId : String
     , syncInfoGeneral : SyncManager.Model.SyncInfoGeneral
-
-    -- We may have multiple authorities, and each one has its own revision ID to
-    -- fetch from.
-    , revisionIdPerAuthority : List SyncManager.Model.RevisionIdPerAuthority
+    , syncInfoAuthorities : List SyncManager.Model.SyncInfoAuthority
     , photoDownloadBatchSize : Int
     , syncSpeed : SyncManager.Model.SyncSpeed
     }
@@ -310,12 +307,12 @@ emptyModel key url flags =
             else
                 Just (toEntityUuid flags.villageId)
 
-        revisionIdPerAuthorityZipper =
-            Zipper.fromList flags.revisionIdPerAuthority
+        syncInfoAuthorities =
+            Zipper.fromList flags.syncInfoAuthorities
 
         syncManagerFlags =
             { syncInfoGeneral = flags.syncInfoGeneral
-            , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
+            , syncInfoAuthorities = syncInfoAuthorities
             , batchSize = flags.photoDownloadBatchSize
             , syncSpeed = flags.syncSpeed
             }

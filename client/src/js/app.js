@@ -207,14 +207,18 @@ const getSyncInfoGeneral = function() {
 /**
  * Return saved authorities.
  */
-const getRevisionIdPerAuthority = function() {
-  const storage = localStorage.getItem('revisionIdPerAuthority');
+const getSyncInfoAuthorities = function() {
+  const storage = localStorage.getItem('syncInfoAuthorities');
 
   if (!!storage) {
     let storageArr = JSON.parse(storage);
     // Convert values to int.
     storageArr.forEach(function(value, index) {
-      value.revisionId = parseInt(value.revisionId);
+      value.lastFetchedRevisionId = parseInt(value.lastFetchedRevisionId);
+      value.lastSuccesfulContact = parseInt(value.lastSuccesfulContact);
+      value.remainingToUpload = parseInt(value.remainingToDownload);
+      value.remainingToDownload = parseInt(value.remainingToDownload);
+      value.status = value.status;
       this[index] = value;
     }, storageArr);
 
@@ -254,7 +258,7 @@ var elmApp = Elm.Main.init({
     healthCenterId: localStorage.getItem('healthCenterId') || '',
     villageId: localStorage.getItem('villageId') || '',
     syncInfoGeneral: getSyncInfoGeneral(),
-    revisionIdPerAuthority: getRevisionIdPerAuthority(),
+    syncInfoAuthorities: getSyncInfoAuthorities(),
     photoDownloadBatchSize: parseInt(localStorage.getItem('photoDownloadBatchSize')) || (10),
     syncSpeed: getSyncSpeed(),
   }
@@ -322,11 +326,10 @@ elmApp.ports.sendSyncInfoGeneral.subscribe(function(syncInfoGeneral) {
 });
 
 /**
- * Set a list with the last revision ID used to download Authority, along with
- * their UUID.
+ * Set the information about Autohorities sync.
  */
-elmApp.ports.sendRevisionIdPerAuthority.subscribe(function(revisionIdPerAuthority) {
-  localStorage.setItem('revisionIdPerAuthority', JSON.stringify(revisionIdPerAuthority));
+elmApp.ports.sendSyncInfoAuthorities.subscribe(function(sendSyncInfoAuthorities) {
+  localStorage.setItem('sendSyncInfoAuthorities', JSON.stringify(sendSyncInfoAuthorities));
 });
 
 /**

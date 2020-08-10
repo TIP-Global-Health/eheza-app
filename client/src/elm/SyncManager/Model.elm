@@ -1,33 +1,4 @@
-module SyncManager.Model exposing
-    ( BackendAuthorityEntity(..)
-    , BackendEntity
-    , BackendEntityIdentifier
-    , BackendGeneralEntity(..)
-    , DownloadPhotos(..)
-    , DownloadPhotosBatchRec
-    , DownloadSyncResponse
-    , Flags
-    , IndexDbQueryDeferredPhotoResultRecord
-    , IndexDbQueryType(..)
-    , IndexDbQueryTypeResult(..)
-    , IndexDbQueryUploadAuthorityResultRecord
-    , IndexDbQueryUploadGeneralResultRecord
-    , IndexDbQueryUploadPhotoResultRecord
-    , Model
-    , Msg(..)
-    , RevisionIdPerAuthority
-    , RevisionIdPerAuthorityZipper
-    , SyncCycle(..)
-    , SyncInfoGeneral
-    , SyncSpeed
-    , SyncStatus(..)
-    , UploadMethod(..)
-    , UploadPhotoError(..)
-    , emptyDownloadPhotosBatchRec
-    , emptyModel
-    , emptyRevisionIdPerAuthority
-    , emptyUploadRec
-    )
+module SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), DownloadPhotos(..), DownloadPhotosAllRec, DownloadPhotosBatchRec, DownloadSyncResponse, Flags, IndexDbDeferredPhotoRemoteData, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryType(..), IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, IndexDbUploadRemoteData, Model, Msg(..), RevisionIdPerAuthority, RevisionIdPerAuthorityZipper, SyncCycle(..), SyncInfoAuthority, SyncInfoAuthorityZipper, SyncInfoGeneral, SyncSpeed, SyncStatus(..), UploadMethod(..), UploadPhotoError(..), UploadRec, emptyDownloadPhotosBatchRec, emptyModel, emptyRevisionIdPerAuthority, emptySyncInfoAuthority, emptyUploadRec)
 
 import AssocList exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
@@ -160,6 +131,31 @@ type alias SyncInfoGeneral =
     }
 
 
+type alias SyncInfoAuthority =
+    { uuid : String
+    , lastFetchedRevisionId : Int
+    , lastSuccesfulContact : Int
+    , remainingToUpload : Int
+    , remainingToDownload : Int
+    , status : String
+    }
+
+
+emptySyncInfoAuthority : String -> SyncInfoAuthority
+emptySyncInfoAuthority uuid =
+    { uuid = uuid
+    , lastFetchedRevisionId = 0
+    , lastSuccesfulContact = 0
+    , remainingToUpload = 0
+    , remainingToDownload = 0
+    , status = "Not Available"
+    }
+
+
+type alias SyncInfoAuthorityZipper =
+    Maybe (Zipper SyncInfoAuthority)
+
+
 type alias RevisionIdPerAuthority =
     { uuid : String
     , revisionId : Int
@@ -180,10 +176,7 @@ type alias RevisionIdPerAuthorityZipper =
 type alias Model =
     { syncStatus : SyncStatus
     , syncInfoGeneral : SyncInfoGeneral
-
-    -- We may have multiple authorities, and each one has its own revision ID to
-    -- fetch from.
-    , revisionIdPerAuthorityZipper : RevisionIdPerAuthorityZipper
+    , syncInfoAuthorities : SyncInfoAuthorityZipper
     , lastTryBackendGeneralDownloadTime : Time.Posix
 
     -- Determine how we're going to download photos.
@@ -209,7 +202,7 @@ emptyModel : Flags -> Model
 emptyModel flags =
     { syncStatus = SyncIdle
     , syncInfoGeneral = flags.syncInfoGeneral
-    , revisionIdPerAuthorityZipper = flags.revisionIdPerAuthorityZipper
+    , syncInfoAuthorities = flags.syncInfoAuthorities
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , downloadPhotos = DownloadPhotosBatch (emptyDownloadPhotosBatchRec flags.batchSize)
     , downloadPhotosBatchSize = flags.batchSize
@@ -222,7 +215,7 @@ emptyModel flags =
 -}
 type alias Flags =
     { syncInfoGeneral : SyncInfoGeneral
-    , revisionIdPerAuthorityZipper : RevisionIdPerAuthorityZipper
+    , syncInfoAuthorities : SyncInfoAuthorityZipper
     , batchSize : Int
     , syncSpeed : SyncSpeed
     }
@@ -418,7 +411,7 @@ type alias IndexDbQueryDeferredPhotoResultRecord =
 
 type Msg
     = BackendAuthorityFetch
-    | BackendAuthorityFetchHandle (Zipper RevisionIdPerAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
+    | BackendAuthorityFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
       -- This is the main entry point for the Sync loop. This will dispatch a call
       -- according to the `syncStatus`.
     | BackendFetchMain
@@ -444,7 +437,7 @@ type Msg
     | FetchFromIndexDbUploadAuthority
     | RevisionIdAuthorityAdd HealthCenterId
     | RevisionIdAuthorityRemove HealthCenterId
-    | SetLastFetchedRevisionIdAuthority (Zipper RevisionIdPerAuthority) Int
+    | SetLastFetchedRevisionIdAuthority (Zipper SyncInfoAuthority) Int
     | SetLastFetchedRevisionIdGeneral Int
       -- UI settings
     | ResetSettings

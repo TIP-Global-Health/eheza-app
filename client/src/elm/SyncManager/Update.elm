@@ -43,7 +43,7 @@ update currentDate currentTime dbVersion device msg model =
                         noChange
 
                     else
-                        case model.revisionIdPerAuthorityZipper of
+                        case model.syncInfoAuthorities of
                             Nothing ->
                                 -- No zipper, means not subscribed yet to any
                                 -- authority. `determineSyncStatus` will take care of
@@ -65,7 +65,7 @@ update currentDate currentTime dbVersion device msg model =
                                                 |> withQueryParams
                                                     [ ( "access_token", device.accessToken )
                                                     , ( "db_version", String.fromInt dbVersion )
-                                                    , ( "base_revision", String.fromInt currentZipper.revisionId )
+                                                    , ( "base_revision", String.fromInt currentZipper.lastFetchedRevisionId )
                                                     ]
                                                 |> withExpectJson decodeDownloadSyncResponseAuthority
                                                 |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipper)
@@ -133,31 +133,47 @@ update currentDate currentTime dbVersion device msg model =
                         Nothing ->
                             Cmd.none
 
-                lastFetchedRevisionId =
+                syncInfoAuthorities =
                     case RemoteData.toMaybe webData of
                         Just data ->
-                            -- Get the last item.
-                            data.entities
-                                |> List.reverse
-                                |> List.head
-                                |> Maybe.map
-                                    (\entity ->
-                                        SyncManager.Utils.getBackendAuthorityEntityIdentifier entity
-                                            |> (\entityIdentifier -> entityIdentifier.revision)
-                                    )
-                                |> Maybe.withDefault currentZipper.revisionId
+                            let
+                                status =
+                                    if data.revisionCount == 0 then
+                                        "Success"
+
+                                    else
+                                        model.syncInfoGeneral.status
+
+                                lastFetchedRevisionId =
+                                    data.entities
+                                        |> List.reverse
+                                        |> List.head
+                                        |> Maybe.map
+                                            (\entity ->
+                                                SyncManager.Utils.getBackendAuthorityEntityIdentifier entity
+                                                    |> (\entityIdentifier -> entityIdentifier.revision)
+                                            )
+                                        |> Maybe.withDefault currentZipper.lastFetchedRevisionId
+                            in
+                            Zipper.mapCurrent
+                                (\old ->
+                                    { old
+                                        | lastFetchedRevisionId = lastFetchedRevisionId
+                                        , lastSuccesfulContact = Time.posixToMillis currentTime
+                                        , remainingToDownload = data.revisionCount
+                                        , status = status
+                                    }
+                                )
+                                zipper
 
                         Nothing ->
-                            currentZipper.revisionId
-
-                zipperUpdated =
-                    Zipper.mapCurrent (\old -> { old | revisionId = lastFetchedRevisionId }) zipper
+                            zipper
 
                 modelWithSyncStatus =
                     SyncManager.Utils.determineSyncStatus
                         { model
                             | syncStatus = SyncDownloadAuthority webData
-                            , revisionIdPerAuthorityZipper = Just zipperUpdated
+                            , syncInfoAuthorities = Just syncInfoAuthorities
                         }
             in
             SubModelReturn
@@ -166,9 +182,8 @@ update currentDate currentTime dbVersion device msg model =
                     [ cmd
                     , deferredPhotosCmd
 
-                    -- Send to JS the updated revision ID. We send the entire
-                    -- list.
-                    , sendRevisionIdPerAuthority (Zipper.toList zipperUpdated)
+                    -- Send to JS the updated revision ID. We send the entire list.
+                    , sendSyncInfoAuthorities (Zipper.toList syncInfoAuthorities)
                     ]
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
@@ -239,31 +254,31 @@ update currentDate currentTime dbVersion device msg model =
                 uuidAsString =
                     fromEntityUuid uuid
 
-                revisionIdPerAuthorityZipper =
-                    case model.revisionIdPerAuthorityZipper of
+                syncInfoAuthorities =
+                    case model.syncInfoAuthorities of
                         Just zipper ->
                             zipper
                                 |> Zipper.toList
                                 -- Before adding, lets remove the same UUID, so in case it's already
                                 -- we won't have duplicates.
                                 |> List.filter (\row -> row.uuid /= uuidAsString)
-                                |> (\list -> emptyRevisionIdPerAuthority uuidAsString :: list)
+                                |> (\list -> emptySyncInfoAuthority uuidAsString :: list)
                                 |> Zipper.fromList
 
                         Nothing ->
-                            [ emptyRevisionIdPerAuthority uuidAsString ]
+                            [ emptySyncInfoAuthority uuidAsString ]
                                 |> Zipper.fromList
 
                 cmd =
-                    case revisionIdPerAuthorityZipper of
+                    case syncInfoAuthorities of
                         Just zipper ->
-                            sendRevisionIdPerAuthority (Zipper.toList zipper)
+                            sendSyncInfoAuthorities (Zipper.toList zipper)
 
                         Nothing ->
                             Cmd.none
             in
             SubModelReturn
-                { model | revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper }
+                { model | syncInfoAuthorities = syncInfoAuthorities }
                 cmd
                 noError
                 []
@@ -274,8 +289,8 @@ update currentDate currentTime dbVersion device msg model =
                 uuidAsString =
                     fromEntityUuid uuid
 
-                revisionIdPerAuthorityZipper =
-                    case model.revisionIdPerAuthorityZipper of
+                syncInfoAuthorities =
+                    case model.syncInfoAuthorities of
                         Just zipper ->
                             zipper
                                 |> Zipper.toList
@@ -288,15 +303,15 @@ update currentDate currentTime dbVersion device msg model =
                             Nothing
 
                 cmd =
-                    case revisionIdPerAuthorityZipper of
+                    case syncInfoAuthorities of
                         Just zipper ->
-                            sendRevisionIdPerAuthority (Zipper.toList zipper)
+                            sendSyncInfoAuthorities (Zipper.toList zipper)
 
                         Nothing ->
                             Cmd.none
             in
             SubModelReturn
-                { model | revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper }
+                { model | syncInfoAuthorities = syncInfoAuthorities }
                 cmd
                 noError
                 []
@@ -350,9 +365,6 @@ update currentDate currentTime dbVersion device msg model =
 
         BackendGeneralFetchHandle webData ->
             let
-                _ =
-                    Debug.log "webData" webData
-
                 cmd =
                     case RemoteData.toMaybe webData of
                         Just data ->
@@ -453,10 +465,10 @@ update currentDate currentTime dbVersion device msg model =
         SetLastFetchedRevisionIdAuthority zipper revisionId ->
             let
                 zipperUpdated =
-                    Zipper.mapCurrent (\old -> { old | revisionId = revisionId }) zipper
+                    Zipper.mapCurrent (\old -> { old | lastFetchedRevisionId = revisionId }) zipper
             in
             SubModelReturn
-                { model | revisionIdPerAuthorityZipper = Just zipperUpdated }
+                { model | syncInfoAuthorities = Just zipperUpdated }
                 Cmd.none
                 noError
                 []
@@ -1251,9 +1263,14 @@ subscriptions model =
 port sendSyncedDataToIndexDb : { table : String, data : List String, shard : String } -> Cmd msg
 
 
-{-| Send to JS the last revision ID used to download General.
+{-| Send to JS the information about General sync.
 -}
 port sendSyncInfoGeneral : SyncInfoGeneral -> Cmd msg
+
+
+{-| Send to JS the information about Autohorities sync.
+-}
+port sendSyncInfoAuthorities : List SyncInfoAuthority -> Cmd msg
 
 
 {-| Send to JS a list with the last revision ID used to download Authority,

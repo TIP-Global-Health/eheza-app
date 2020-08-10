@@ -320,7 +320,7 @@ viewGeneralEntity language backendGeneralEntity =
 
 viewSyncDownloadAuthority : Language -> ModelIndexedDb -> Model -> WebData (DownloadSyncResponse BackendAuthorityEntity) -> Html Msg
 viewSyncDownloadAuthority language db model webData =
-    case model.revisionIdPerAuthorityZipper of
+    case model.syncInfoAuthorities of
         Nothing ->
             emptyNode
 
@@ -341,7 +341,7 @@ viewSyncDownloadAuthority language db model webData =
                         |> List.map
                             (\row ->
                                 if row.uuid == currentZipper.uuid then
-                                    li [ class "active" ] [ text <| getAuthorityName row.uuid ++ " (from revision ID " ++ String.fromInt row.revisionId ++ ")" ]
+                                    li [ class "active" ] [ text <| getAuthorityName row.uuid ++ " (from revision ID " ++ String.fromInt row.lastFetchedRevisionId ++ ")" ]
 
                                 else
                                     li [] [ text <| getAuthorityName row.uuid ]
