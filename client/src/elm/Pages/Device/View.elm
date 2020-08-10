@@ -10,6 +10,8 @@ import Pages.Device.Model exposing (..)
 import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
+import SyncManager.Model exposing (SyncInfoGeneral)
+import Time
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
 
@@ -53,6 +55,11 @@ viewDeviceStatus language device app model =
                     ]
                     [ text <| translate language Translate.TrySyncing ]
                 , viewStorageStatus language app
+                , div
+                    [ class "general-sync" ]
+                    [ h2 [] [ text <| translate language Translate.SyncGeneral ]
+                    , viewSyncInfo language app.syncManager.syncInfoGeneral
+                    ]
                 ]
 
         _ ->
@@ -80,6 +87,51 @@ viewStorageStatus language app =
     ]
         |> List.filterMap identity
         |> ul [ class "storage-dashboard" ]
+
+
+viewSyncInfo : Language -> SyncInfoGeneral -> Html Msg
+viewSyncInfo language info =
+    let
+        viewDateTime time =
+            let
+                normalize number =
+                    if number < 10 then
+                        "0" ++ String.fromInt number
+
+                    else
+                        String.fromInt number
+
+                year =
+                    Time.toYear Time.utc time |> String.fromInt
+
+                month =
+                    Time.toMonth Time.utc time
+                        |> Translate.ResolveMonth
+                        |> translate language
+
+                day =
+                    Time.toDay Time.utc time |> normalize
+
+                hour =
+                    Time.toHour Time.utc time |> normalize
+
+                minute =
+                    Time.toMinute Time.utc time |> normalize
+
+                second =
+                    Time.toSecond Time.utc time |> normalize
+            in
+            day ++ " " ++ month ++ " " ++ year ++ " " ++ hour ++ ":" ++ minute ++ ":" ++ second ++ " UTC"
+
+        lastSuccessfulContact =
+            viewDateTime (Time.millisToPosix info.lastSuccesfulContact)
+    in
+    div [ class "general-status" ]
+        [ div [] [ text <| translate language Translate.LastSuccesfulContactLabel ++ ": " ++ lastSuccessfulContact ]
+        , div [] [ text <| translate language Translate.RemainingForUploadLabel ++ ": " ++ String.fromInt info.remainingToUpload ]
+        , div [] [ text <| translate language Translate.RemainingForDownloadLabel ++ ": " ++ String.fromInt info.remainingToDownload ]
+        , div [] [ text <| translate language Translate.StatusLabel ++ ": " ++ info.status ]
+        ]
 
 
 viewPairingForm : Language -> WebData Device -> Model -> Html Msg
