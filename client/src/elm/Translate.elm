@@ -4766,11 +4766,6 @@ translationSet trans =
                     , kinyarwanda = Just "Kubabara umutwe"
                     }
 
-                LossOfSmell ->
-                    { english = "Loss of Smell"
-                    , kinyarwanda = Just "Kudahumekerwa"
-                    }
-
                 NightSweats ->
                     { english = "Night Sweats"
                     , kinyarwanda = Just "Kubira ibyuya nijoro"
@@ -4903,6 +4898,11 @@ translationSet trans =
                 SoreThroat ->
                     { english = "Sore Throat"
                     , kinyarwanda = Just "Kubabara mu muhogo"
+                    }
+
+                LossOfSmell ->
+                    { english = "Loss of Smell"
+                    , kinyarwanda = Just "Kudahumekerwa"
                     }
 
                 StabbingChestPain ->

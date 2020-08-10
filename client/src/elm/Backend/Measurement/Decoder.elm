@@ -1055,7 +1055,6 @@ decodeSymptomsGeneral =
         |> required "night_sweats_period" decodeInt
         |> required "body_aches_period" decodeInt
         |> required "headache_period" decodeInt
-        |> required "loss_of_smell_period" decodeInt
         |> required "lethargy_period" decodeInt
         |> required "poor_suck_period" decodeInt
         |> required "unable_to_drink_period" decodeInt
@@ -1078,7 +1077,6 @@ symptomsGeneralToDict value =
     , ( NightSweats, value.nightSweats )
     , ( BodyAches, value.bodyAches )
     , ( Headache, value.headache )
-    , ( LossOfSmell, value.lossOfSmell )
     , ( Lethargy, value.lethargy )
     , ( PoorSuck, value.poorSuck )
     , ( UnableToDrink, value.unableToDrink )
@@ -1105,22 +1103,24 @@ symptomsGeneralToDict value =
 decodeSymptomsRespiratory : Decoder SymptomsRespiratory
 decodeSymptomsRespiratory =
     decodeAcuteIllnessMeasurement <|
-        map6 symptomsRespiratoryToDict
+        map7 symptomsRespiratoryToDict
             (field "cough_period" decodeInt)
             (field "shortness_of_breath_period" decodeInt)
             (field "nasal_congestion_period" decodeInt)
             (field "blood_in_sputum_period" decodeInt)
             (field "sore_throat_period" decodeInt)
+            (field "loss_of_smell_period" decodeInt)
             (field "stabbing_chest_pain_period" decodeInt)
 
 
-symptomsRespiratoryToDict : Int -> Int -> Int -> Int -> Int -> Int -> Dict SymptomsRespiratorySign Int
-symptomsRespiratoryToDict cough shortnessOfBreath nasalCongestion bloodInSputum soreThroat stabbingChestPain =
+symptomsRespiratoryToDict : Int -> Int -> Int -> Int -> Int -> Int -> Int -> Dict SymptomsRespiratorySign Int
+symptomsRespiratoryToDict cough shortnessOfBreath nasalCongestion bloodInSputum soreThroat lossOfSmell stabbingChestPain =
     [ ( Cough, cough )
     , ( ShortnessOfBreath, shortnessOfBreath )
     , ( NasalCongestion, nasalCongestion )
     , ( BloodInSputum, bloodInSputum )
     , ( SoreThroat, soreThroat )
+    , ( LossOfSmell, lossOfSmell )
     , ( StabbingChestPain, stabbingChestPain )
     ]
         |> List.filter (Tuple.second >> (/=) 0)

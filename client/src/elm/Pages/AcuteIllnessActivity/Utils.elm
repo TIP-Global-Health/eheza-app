@@ -61,7 +61,6 @@ allSymptomsGeneralSigns =
       , NightSweats
       , BodyAches
       , Headache
-      , LossOfSmell
       ]
         ++ symptomsGeneralDangerSigns
     , NoSymptomsGeneral
@@ -75,6 +74,7 @@ allSymptomsRespiratorySigns =
       , NasalCongestion
       , BloodInSputum
       , SoreThroat
+      , LossOfSmell
       , StabbingChestPain
       ]
     , NoSymptomsRespiratory

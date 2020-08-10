@@ -661,7 +661,7 @@ malarialDangerSignsPresent measurements =
 
 respiratoryInfectionSymptomsPresent : AcuteIllnessMeasurements -> Bool
 respiratoryInfectionSymptomsPresent measurements =
-    countRespiratorySymptoms measurements [ ShortnessOfBreath, StabbingChestPain ] > 0
+    countRespiratorySymptoms measurements [ LossOfSmell, ShortnessOfBreath, StabbingChestPain ] > 0
 
 
 respiratoryInfectionDangerSignsPresent : AcuteIllnessMeasurements -> Bool
