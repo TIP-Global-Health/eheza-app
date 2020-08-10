@@ -310,6 +310,21 @@ update currentDate currentTime dbVersion device msg model =
 
                     else
                         let
+                            syncInfoGeneral =
+                                if model.syncInfoGeneral.status == "Downloading" then
+                                    model.syncInfoGeneral
+
+                                else
+                                    model.syncInfoGeneral
+                                        |> (\info -> { info | status = "Downloading" })
+
+                            setSyncInfoGeneralCmd =
+                                if model.syncInfoGeneral.status == "Downloading" then
+                                    Cmd.none
+
+                                else
+                                    sendSyncInfoGeneral syncInfoGeneral
+
                             cmd =
                                 HttpBuilder.get (device.backendUrl ++ "/api/sync")
                                     |> withQueryParams
@@ -321,8 +336,8 @@ update currentDate currentTime dbVersion device msg model =
                                     |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle)
                         in
                         SubModelReturn
-                            { model | syncStatus = SyncDownloadGeneral RemoteData.Loading }
-                            cmd
+                            { model | syncStatus = SyncDownloadGeneral RemoteData.Loading, syncInfoGeneral = syncInfoGeneral }
+                            (Cmd.batch [ cmd, setSyncInfoGeneralCmd ])
                             noError
                             []
 
@@ -387,6 +402,13 @@ update currentDate currentTime dbVersion device msg model =
                     case RemoteData.toMaybe webData of
                         Just data ->
                             let
+                                status =
+                                    if data.revisionCount == 0 then
+                                        "Success"
+
+                                    else
+                                        model.syncInfoGeneral.status
+
                                 lastFetchedRevisionId =
                                     data.entities
                                         |> List.reverse
@@ -407,6 +429,7 @@ update currentDate currentTime dbVersion device msg model =
                                             | lastFetchedRevisionId = lastFetchedRevisionId
                                             , lastSuccesfulContact = Time.posixToMillis currentTime
                                             , remainingToDownload = data.revisionCount
+                                            , status = status
                                         }
                                    )
 

@@ -156,6 +156,7 @@ type alias SyncInfoGeneral =
     , lastSuccesfulContact : Int
     , remainingToUpload : Int
     , remainingToDownload : Int
+    , status : String
     }
 
 
