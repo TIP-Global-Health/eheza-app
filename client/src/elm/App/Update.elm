@@ -921,7 +921,7 @@ subscriptions model =
                 []
     in
     Sub.batch
-        ([ Time.every 60000 Tick
+        ([ Time.every 10000 Tick
          , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
          , persistentStorage SetPersistentStorage
          , storageQuota SetStorageQuota

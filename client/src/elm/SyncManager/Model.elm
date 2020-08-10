@@ -151,10 +151,6 @@ type alias BackendEntityIdentifier =
     { uuid : String, revision : Int, type_ : String }
 
 
-type alias LastFetchedRevisionIdGeneral =
-    Int
-
-
 type alias SyncInfoGeneral =
     { lastFetchedRevisionId : Int
     , lastSuccesfulContact : Int
@@ -183,7 +179,6 @@ type alias RevisionIdPerAuthorityZipper =
 type alias Model =
     { syncStatus : SyncStatus
     , syncInfoGeneral : SyncInfoGeneral
-    , lastFetchedRevisionIdGeneral : LastFetchedRevisionIdGeneral
 
     -- We may have multiple authorities, and each one has its own revision ID to
     -- fetch from.
@@ -213,7 +208,6 @@ emptyModel : Flags -> Model
 emptyModel flags =
     { syncStatus = SyncIdle
     , syncInfoGeneral = flags.syncInfoGeneral
-    , lastFetchedRevisionIdGeneral = flags.lastFetchedRevisionIdGeneral
     , revisionIdPerAuthorityZipper = flags.revisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , downloadPhotos = DownloadPhotosBatch (emptyDownloadPhotosBatchRec flags.batchSize)
@@ -227,7 +221,6 @@ emptyModel flags =
 -}
 type alias Flags =
     { syncInfoGeneral : SyncInfoGeneral
-    , lastFetchedRevisionIdGeneral : LastFetchedRevisionIdGeneral
     , revisionIdPerAuthorityZipper : RevisionIdPerAuthorityZipper
     , batchSize : Int
     , syncSpeed : SyncSpeed

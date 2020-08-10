@@ -266,7 +266,7 @@ viewSyncSettings language model =
 viewSyncDownloadGeneral : Language -> Model -> WebData (DownloadSyncResponse BackendGeneralEntity) -> Html Msg
 viewSyncDownloadGeneral language model webData =
     div []
-        [ div [] [ text <| "Fetch from General from revision ID " ++ String.fromInt model.lastFetchedRevisionIdGeneral ]
+        [ div [] [ text <| "Fetch from General from revision ID " ++ String.fromInt model.syncInfoGeneral.lastFetchedRevisionId ]
         , button [ onClick <| SyncManager.Model.SetLastFetchedRevisionIdGeneral 0 ] [ text "Reset revision ID to 0" ]
         , div [] [ text "HTTP requests:" ]
         , case webData of

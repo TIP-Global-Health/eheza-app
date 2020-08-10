@@ -315,7 +315,7 @@ update currentDate currentTime dbVersion device msg model =
                                     |> withQueryParams
                                         [ ( "access_token", device.accessToken )
                                         , ( "db_version", String.fromInt dbVersion )
-                                        , ( "base_revision", String.fromInt model.lastFetchedRevisionIdGeneral )
+                                        , ( "base_revision", String.fromInt model.syncInfoGeneral.lastFetchedRevisionId )
                                         ]
                                     |> withExpectJson decodeDownloadSyncResponseGeneral
                                     |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle)
@@ -335,6 +335,9 @@ update currentDate currentTime dbVersion device msg model =
 
         BackendGeneralFetchHandle webData ->
             let
+                _ =
+                    Debug.log "webData" webData
+
                 cmd =
                     case RemoteData.toMaybe webData of
                         Just data ->
@@ -396,7 +399,7 @@ update currentDate currentTime dbVersion device msg model =
                                                 in
                                                 identifier.revision
                                             )
-                                        |> Maybe.withDefault model.lastFetchedRevisionIdGeneral
+                                        |> Maybe.withDefault model.syncInfoGeneral.lastFetchedRevisionId
                             in
                             model.syncInfoGeneral
                                 |> (\info ->
@@ -410,35 +413,14 @@ update currentDate currentTime dbVersion device msg model =
                         Nothing ->
                             model.syncInfoGeneral
 
-                lastFetchedRevisionIdGeneral =
-                    case RemoteData.toMaybe webData of
-                        Just data ->
-                            -- Get the last item.
-                            data.entities
-                                |> List.reverse
-                                |> List.head
-                                |> Maybe.map
-                                    (\entity ->
-                                        let
-                                            identifier =
-                                                SyncManager.Utils.getBackendGeneralEntityIdentifier entity
-                                        in
-                                        identifier.revision
-                                    )
-                                |> Maybe.withDefault model.lastFetchedRevisionIdGeneral
-
-                        Nothing ->
-                            model.lastFetchedRevisionIdGeneral
-
                 modelWithSyncStatus =
                     SyncManager.Utils.determineSyncStatus { model | syncStatus = SyncDownloadGeneral webData }
             in
             SubModelReturn
-                { modelWithSyncStatus | lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral }
+                { modelWithSyncStatus | syncInfoGeneral = syncInfoGeneral }
                 (Cmd.batch
                     [ cmd
                     , deleteLocalIdsCmd
-                    , sendLastFetchedRevisionIdGeneral lastFetchedRevisionIdGeneral
                     , sendSyncInfoGeneral syncInfoGeneral
                     ]
                 )
@@ -457,8 +439,13 @@ update currentDate currentTime dbVersion device msg model =
                 []
 
         SetLastFetchedRevisionIdGeneral revisionId ->
+            let
+                infoUpdated =
+                    model.syncInfoGeneral
+                        |> (\info -> { info | lastFetchedRevisionId = revisionId })
+            in
             SubModelReturn
-                { model | lastFetchedRevisionIdGeneral = revisionId }
+                { model | syncInfoGeneral = infoUpdated }
                 Cmd.none
                 noError
                 []
@@ -1239,11 +1226,6 @@ subscriptions model =
 {-| Send to JS data we have synced, e.g. `person`, `health center`, etc.
 -}
 port sendSyncedDataToIndexDb : { table : String, data : List String, shard : String } -> Cmd msg
-
-
-{-| Send to JS the last revision ID used to download General.
--}
-port sendLastFetchedRevisionIdGeneral : Int -> Cmd msg
 
 
 {-| Send to JS the last revision ID used to download General.

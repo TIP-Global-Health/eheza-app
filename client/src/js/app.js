@@ -253,7 +253,6 @@ var elmApp = Elm.Main.init({
     healthCenterId: localStorage.getItem('healthCenterId') || '',
     villageId: localStorage.getItem('villageId') || '',
     syncInfoGeneral: getSyncInfoGeneral(),
-    lastFetchedRevisionIdGeneral: parseInt(localStorage.getItem('lastFetchedRevisionIdGeneral')) || 0,
     revisionIdPerAuthority: getRevisionIdPerAuthority(),
     photoDownloadBatchSize: parseInt(localStorage.getItem('photoDownloadBatchSize')) || (10),
     syncSpeed: getSyncSpeed(),
@@ -312,13 +311,6 @@ elmApp.ports.scrollToElement.subscribe(function(elementId) {
   if (element) {
     element.scrollIntoView(true);
   }
-});
-
-/**
- * Set the last revision ID used to download General.
- */
-elmApp.ports.sendLastFetchedRevisionIdGeneral.subscribe(function(lastFetchedRevisionIdGeneral) {
-  localStorage.setItem('lastFetchedRevisionIdGeneral', lastFetchedRevisionIdGeneral);
 });
 
 /**

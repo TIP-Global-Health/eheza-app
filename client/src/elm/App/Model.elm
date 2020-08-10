@@ -284,7 +284,6 @@ type alias Flags =
     , healthCenterId : String
     , villageId : String
     , syncInfoGeneral : SyncManager.Model.SyncInfoGeneral
-    , lastFetchedRevisionIdGeneral : Int
 
     -- We may have multiple authorities, and each one has its own revision ID to
     -- fetch from.
@@ -316,7 +315,6 @@ emptyModel key url flags =
 
         syncManagerFlags =
             { syncInfoGeneral = flags.syncInfoGeneral
-            , lastFetchedRevisionIdGeneral = flags.lastFetchedRevisionIdGeneral
             , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
             , batchSize = flags.photoDownloadBatchSize
             , syncSpeed = flags.syncSpeed
