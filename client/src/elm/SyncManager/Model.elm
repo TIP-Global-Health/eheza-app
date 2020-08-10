@@ -18,6 +18,7 @@ module SyncManager.Model exposing
     , RevisionIdPerAuthority
     , RevisionIdPerAuthorityZipper
     , SyncCycle(..)
+    , SyncInfoGeneral
     , SyncSpeed
     , SyncStatus(..)
     , UploadMethod(..)
@@ -46,6 +47,7 @@ import Backend.Relationship.Model exposing (Relationship)
 import Backend.Session.Model exposing (Session)
 import Backend.Village.Model exposing (Village)
 import Editable exposing (Editable)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Json.Decode exposing (Value)
 import List.Zipper exposing (Zipper)
 import RemoteData exposing (RemoteData, WebData)
@@ -153,6 +155,14 @@ type alias LastFetchedRevisionIdGeneral =
     Int
 
 
+type alias SyncInfoGeneral =
+    { lastFetchedRevisionId : Int
+    , lastSuccesfulContact : Int
+    , remainingToUpload : Int
+    , remainingToDownload : Int
+    }
+
+
 type alias RevisionIdPerAuthority =
     { uuid : String
     , revisionId : Int
@@ -172,6 +182,7 @@ type alias RevisionIdPerAuthorityZipper =
 
 type alias Model =
     { syncStatus : SyncStatus
+    , syncInfoGeneral : SyncInfoGeneral
     , lastFetchedRevisionIdGeneral : LastFetchedRevisionIdGeneral
 
     -- We may have multiple authorities, and each one has its own revision ID to
@@ -201,6 +212,7 @@ type alias Model =
 emptyModel : Flags -> Model
 emptyModel flags =
     { syncStatus = SyncIdle
+    , syncInfoGeneral = flags.syncInfoGeneral
     , lastFetchedRevisionIdGeneral = flags.lastFetchedRevisionIdGeneral
     , revisionIdPerAuthorityZipper = flags.revisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
@@ -214,7 +226,8 @@ emptyModel flags =
 {-| The information we get initially from App.Model via flags.
 -}
 type alias Flags =
-    { lastFetchedRevisionIdGeneral : LastFetchedRevisionIdGeneral
+    { syncInfoGeneral : SyncInfoGeneral
+    , lastFetchedRevisionIdGeneral : LastFetchedRevisionIdGeneral
     , revisionIdPerAuthorityZipper : RevisionIdPerAuthorityZipper
     , batchSize : Int
     , syncSpeed : SyncSpeed

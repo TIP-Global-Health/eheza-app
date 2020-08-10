@@ -689,7 +689,7 @@ update msg model =
                         updateSubModel
                             subMsg
                             model.syncManager
-                            (\subMsg_ subModel -> SyncManager.Update.update currentDate model.dbVersion device subMsg_ subModel)
+                            (\subMsg_ subModel -> SyncManager.Update.update currentDate model.currentTime model.dbVersion device subMsg_ subModel)
                             (\subModel model_ -> { model_ | syncManager = subModel })
                             (\subCmds -> MsgSyncManager subCmds)
                             model

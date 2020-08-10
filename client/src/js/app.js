@@ -186,6 +186,24 @@ dbSync.version(12).stores({
 const dbVersion = 12;
 
 /**
+ * Return saved info for General sync.
+ */
+const getSyncInfoGeneral = function() {
+  const storage = localStorage.getItem('syncInfoGeneral');
+
+  if (!!storage) {
+    let storageArr = JSON.parse(storage);
+    storageArr.lastFetchedRevisionId = parseInt(storageArr.lastFetchedRevisionId);
+    storageArr.lastSuccesfulContact = parseInt(storageArr.lastSuccesfulContact);
+    storageArr.remainingToUpload = parseInt(storageArr.remainingToDownload);
+    storageArr.remainingToDownload = parseInt(storageArr.remainingToDownload);
+    return storageArr;
+  }
+
+  return {lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0};
+};
+
+/**
  * Return saved authorities.
  */
 const getRevisionIdPerAuthority = function() {
@@ -234,9 +252,7 @@ var elmApp = Elm.Main.init({
     activeLanguage: localStorage.getItem('language') || '',
     healthCenterId: localStorage.getItem('healthCenterId') || '',
     villageId: localStorage.getItem('villageId') || '',
-
-    // @todo: Instead of 0, we can check IndexDB for latest vid.
-    // Sync related.
+    syncInfoGeneral: getSyncInfoGeneral(),
     lastFetchedRevisionIdGeneral: parseInt(localStorage.getItem('lastFetchedRevisionIdGeneral')) || 0,
     revisionIdPerAuthority: getRevisionIdPerAuthority(),
     photoDownloadBatchSize: parseInt(localStorage.getItem('photoDownloadBatchSize')) || (10),
@@ -303,6 +319,13 @@ elmApp.ports.scrollToElement.subscribe(function(elementId) {
  */
 elmApp.ports.sendLastFetchedRevisionIdGeneral.subscribe(function(lastFetchedRevisionIdGeneral) {
   localStorage.setItem('lastFetchedRevisionIdGeneral', lastFetchedRevisionIdGeneral);
+});
+
+/**
+ * Set the information about General sync.
+ */
+elmApp.ports.sendSyncInfoGeneral.subscribe(function(syncInfoGeneral) {
+  localStorage.setItem('syncInfoGeneral', JSON.stringify(syncInfoGeneral));
 });
 
 /**

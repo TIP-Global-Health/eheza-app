@@ -283,6 +283,7 @@ type alias Flags =
     , pinCode : String
     , healthCenterId : String
     , villageId : String
+    , syncInfoGeneral : SyncManager.Model.SyncInfoGeneral
     , lastFetchedRevisionIdGeneral : Int
 
     -- We may have multiple authorities, and each one has its own revision ID to
@@ -314,7 +315,8 @@ emptyModel key url flags =
             Zipper.fromList flags.revisionIdPerAuthority
 
         syncManagerFlags =
-            { lastFetchedRevisionIdGeneral = flags.lastFetchedRevisionIdGeneral
+            { syncInfoGeneral = flags.syncInfoGeneral
+            , lastFetchedRevisionIdGeneral = flags.lastFetchedRevisionIdGeneral
             , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
             , batchSize = flags.photoDownloadBatchSize
             , syncSpeed = flags.syncSpeed

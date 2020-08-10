@@ -15,14 +15,14 @@ import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseGeneral)
 import SyncManager.Encoder
-import SyncManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadPhotos(..), IndexDbQueryType(..), IndexDbQueryTypeResult(..), Model, Msg(..), SyncStatus(..), emptyRevisionIdPerAuthority)
+import SyncManager.Model exposing (..)
 import SyncManager.Utils exposing (getSyncSpeedForSubscriptions)
 import Time
 import Utils.WebData
 
 
-update : NominalDate -> Int -> Device -> Msg -> Model -> SubModelReturn Model Msg
-update currentDate dbVersion device msg model =
+update : NominalDate -> Time.Posix -> Int -> Device -> Msg -> Model -> SubModelReturn Model Msg
+update currentDate currentTime dbVersion device msg model =
     let
         noChange =
             SubModelReturn model Cmd.none noError []
@@ -182,6 +182,7 @@ update currentDate dbVersion device msg model =
                 SyncUploadGeneral _ ->
                     update
                         currentDate
+                        currentTime
                         dbVersion
                         device
                         FetchFromIndexDbUploadGeneral
@@ -190,6 +191,7 @@ update currentDate dbVersion device msg model =
                 SyncUploadPhotoAuthority _ ->
                     update
                         currentDate
+                        currentTime
                         dbVersion
                         device
                         BackendPhotoUploadAuthority
@@ -198,6 +200,7 @@ update currentDate dbVersion device msg model =
                 SyncUploadAuthority _ ->
                     update
                         currentDate
+                        currentTime
                         dbVersion
                         device
                         FetchFromIndexDbUploadAuthority
@@ -206,6 +209,7 @@ update currentDate dbVersion device msg model =
                 SyncDownloadGeneral _ ->
                     update
                         currentDate
+                        currentTime
                         dbVersion
                         device
                         BackendGeneralFetch
@@ -214,6 +218,7 @@ update currentDate dbVersion device msg model =
                 SyncDownloadAuthority _ ->
                     update
                         currentDate
+                        currentTime
                         dbVersion
                         device
                         BackendAuthorityFetch
@@ -222,6 +227,7 @@ update currentDate dbVersion device msg model =
                 SyncDownloadPhotos _ ->
                     update
                         currentDate
+                        currentTime
                         dbVersion
                         device
                         FetchFromIndexDbDeferredPhoto
@@ -374,6 +380,36 @@ update currentDate dbVersion device msg model =
                         _ ->
                             Cmd.none
 
+                syncInfoGeneral =
+                    case RemoteData.toMaybe webData of
+                        Just data ->
+                            let
+                                lastFetchedRevisionId =
+                                    data.entities
+                                        |> List.reverse
+                                        |> List.head
+                                        |> Maybe.map
+                                            (\entity ->
+                                                let
+                                                    identifier =
+                                                        SyncManager.Utils.getBackendGeneralEntityIdentifier entity
+                                                in
+                                                identifier.revision
+                                            )
+                                        |> Maybe.withDefault model.lastFetchedRevisionIdGeneral
+                            in
+                            model.syncInfoGeneral
+                                |> (\info ->
+                                        { info
+                                            | lastFetchedRevisionId = lastFetchedRevisionId
+                                            , lastSuccesfulContact = Time.posixToMillis currentTime
+                                            , remainingToDownload = data.revisionCount
+                                        }
+                                   )
+
+                        Nothing ->
+                            model.syncInfoGeneral
+
                 lastFetchedRevisionIdGeneral =
                     case RemoteData.toMaybe webData of
                         Just data ->
@@ -403,6 +439,7 @@ update currentDate dbVersion device msg model =
                     [ cmd
                     , deleteLocalIdsCmd
                     , sendLastFetchedRevisionIdGeneral lastFetchedRevisionIdGeneral
+                    , sendSyncInfoGeneral syncInfoGeneral
                     ]
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendGeneralFetchHandle")
@@ -447,6 +484,7 @@ update currentDate dbVersion device msg model =
                         in
                         update
                             currentDate
+                            currentTime
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryDeferredPhoto)
@@ -467,6 +505,7 @@ update currentDate dbVersion device msg model =
                         in
                         update
                             currentDate
+                            currentTime
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryDeferredPhoto)
@@ -493,6 +532,7 @@ update currentDate dbVersion device msg model =
                         in
                         update
                             currentDate
+                            currentTime
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryUploadGeneral)
@@ -519,6 +559,7 @@ update currentDate dbVersion device msg model =
                         in
                         update
                             currentDate
+                            currentTime
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryUploadAuthority)
@@ -536,6 +577,7 @@ update currentDate dbVersion device msg model =
                     else
                         update
                             currentDate
+                            currentTime
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryUploadPhotoAuthority)
@@ -908,6 +950,7 @@ update currentDate dbVersion device msg model =
                         in
                         update
                             currentDate
+                            currentTime
                             dbVersion
                             device
                             (QueryIndexDb <| IndexDbQueryUpdateDeferredPhotoAttempts result)
@@ -942,6 +985,7 @@ update currentDate dbVersion device msg model =
                     -- `deferredPhotos` table.
                     update
                         currentDate
+                        currentTime
                         dbVersion
                         device
                         (QueryIndexDb <| IndexDbQueryRemoveDeferredPhotoAttempts result.uuid)
@@ -1014,6 +1058,7 @@ update currentDate dbVersion device msg model =
                         IndexDbQueryUploadPhotoAuthorityResult remoteData ->
                             update
                                 currentDate
+                                currentTime
                                 dbVersion
                                 device
                                 (BackendUploadPhotoAuthorityHandle remoteData)
@@ -1022,6 +1067,7 @@ update currentDate dbVersion device msg model =
                         IndexDbQueryUploadAuthorityResult result ->
                             update
                                 currentDate
+                                currentTime
                                 dbVersion
                                 device
                                 (BackendUploadAuthority result)
@@ -1030,6 +1076,7 @@ update currentDate dbVersion device msg model =
                         IndexDbQueryUploadGeneralResult result ->
                             update
                                 currentDate
+                                currentTime
                                 dbVersion
                                 device
                                 (BackendUploadGeneral result)
@@ -1038,6 +1085,7 @@ update currentDate dbVersion device msg model =
                         IndexDbQueryDeferredPhotoResult result ->
                             update
                                 currentDate
+                                currentTime
                                 dbVersion
                                 device
                                 (BackendDeferredPhotoFetch result)
@@ -1196,6 +1244,11 @@ port sendSyncedDataToIndexDb : { table : String, data : List String, shard : Str
 {-| Send to JS the last revision ID used to download General.
 -}
 port sendLastFetchedRevisionIdGeneral : Int -> Cmd msg
+
+
+{-| Send to JS the last revision ID used to download General.
+-}
+port sendSyncInfoGeneral : SyncInfoGeneral -> Cmd msg
 
 
 {-| Send to JS a list with the last revision ID used to download Authority,
