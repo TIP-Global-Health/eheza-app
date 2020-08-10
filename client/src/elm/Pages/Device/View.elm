@@ -45,7 +45,14 @@ viewDeviceStatus language device app model =
     case device of
         Success _ ->
             div [ class "device-status" ]
-                [ viewStorageStatus language app
+                [ button
+                    [ class "ui fluid primary button"
+
+                    -- @todo
+                    -- , onClick TrySyncing
+                    ]
+                    [ text <| translate language Translate.TrySyncing ]
+                , viewStorageStatus language app
                 ]
 
         _ ->
