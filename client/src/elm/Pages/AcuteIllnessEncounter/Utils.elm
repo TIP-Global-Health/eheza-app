@@ -333,7 +333,7 @@ covid19Diagnosed measurements =
             countSymptoms measurements.symptomsGeneral .value excludesGeneral
 
         respiratorySymptomsCount =
-            countRespiratorySymptoms measurements [ StabbingChestPain ]
+            countRespiratorySymptoms measurements []
 
         giSymptomsCount =
             countGISymptoms measurements []
