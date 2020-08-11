@@ -368,13 +368,13 @@ type UploadMethod
 
 type alias IndexDbQueryUploadGeneralResultRecord =
     { entities : List ( BackendGeneralEntity, UploadMethod )
-    , remianing : Int
+    , remaining : Int
     }
 
 
 type alias IndexDbQueryUploadAuthorityResultRecord =
     { entities : List ( BackendAuthorityEntity, UploadMethod )
-    , remianing : Int
+    , remaining : Int
 
     -- Instead of list, it is be handier to get a Dict, keyed by the `localId`
     -- so when we would like to switch the photo URL with Drupal's file ID, we

@@ -653,8 +653,30 @@ update currentDate currentTime dbVersion device msg model =
                                     , indexDbRemoteData = RemoteData.Success (Just result)
                                 }
 
-                            modelUpdated =
-                                { model | syncStatus = SyncUploadAuthority recordUpdated }
+                            ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
+                                model.syncInfoAuthorities
+                                    |> Maybe.map
+                                        (\zipper ->
+                                            let
+                                                currentZipper =
+                                                    Zipper.current zipper
+
+                                                zipperUpdated =
+                                                    if currentZipper.status == "Uploading" then
+                                                        zipper
+
+                                                    else
+                                                        Zipper.mapCurrent
+                                                            (\old -> { old | status = "Uploading" })
+                                                            zipper
+                                            in
+                                            if currentZipper.status == "Uploading" then
+                                                ( model.syncInfoAuthorities, Cmd.none )
+
+                                            else
+                                                ( Just zipperUpdated, sendSyncInfoAuthorities (Zipper.toList zipperUpdated) )
+                                        )
+                                    |> Maybe.withDefault ( model.syncInfoAuthorities, Cmd.none )
 
                             cmd =
                                 if List.isEmpty result.entities then
@@ -671,10 +693,13 @@ update currentDate currentTime dbVersion device msg model =
                                         -- We don't need to decode anything, as we just want to have
                                         -- the browser download it.
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadAuthorityHandle result)
+
+                            modelUpdated =
+                                { model | syncStatus = SyncUploadAuthority recordUpdated, syncInfoAuthorities = syncInfoAuthorities }
                         in
                         SubModelReturn
                             (SyncManager.Utils.determineSyncStatus modelUpdated)
-                            cmd
+                            (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
                             noError
                             []
 
@@ -689,15 +714,53 @@ update currentDate currentTime dbVersion device msg model =
                             let
                                 syncStatus =
                                     SyncUploadAuthority { record | backendRemoteData = RemoteData.Failure error }
+
+                                ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
+                                    model.syncInfoAuthorities
+                                        |> Maybe.map
+                                            (\zipper ->
+                                                let
+                                                    zipperUpdated =
+                                                        Zipper.mapCurrent
+                                                            (\old -> { old | status = "Error" })
+                                                            zipper
+                                                in
+                                                ( Just zipperUpdated, sendSyncInfoAuthorities (Zipper.toList zipperUpdated) )
+                                            )
+                                        |> Maybe.withDefault ( model.syncInfoAuthorities, Cmd.none )
                             in
                             SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
-                                Cmd.none
+                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoAuthorities = syncInfoAuthorities })
+                                setSyncInfoAurhoritiesCmd
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadAuthorityHandle")
                                 []
 
                         RemoteData.Success _ ->
                             let
+                                ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
+                                    model.syncInfoAuthorities
+                                        |> Maybe.map
+                                            (\zipper ->
+                                                let
+                                                    currentZipper =
+                                                        Zipper.current zipper
+
+                                                    status =
+                                                        if result.remaining == 0 then
+                                                            "Success"
+
+                                                        else
+                                                            currentZipper.status
+
+                                                    zipperUpdated =
+                                                        Zipper.mapCurrent
+                                                            (\old -> { old | status = status, remainingToUpload = result.remaining })
+                                                            zipper
+                                                in
+                                                ( Just zipperUpdated, sendSyncInfoAuthorities (Zipper.toList zipperUpdated) )
+                                            )
+                                        |> Maybe.withDefault ( model.syncInfoAuthorities, Cmd.none )
+
                                 syncStatus =
                                     SyncUploadAuthority { record | backendRemoteData = RemoteData.Success () }
 
@@ -719,8 +782,8 @@ update currentDate currentTime dbVersion device msg model =
                                     deleteEntitiesThatWereUploaded { type_ = "Authority", localId = localIds }
                             in
                             SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
-                                cmd
+                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoAuthorities = syncInfoAuthorities })
+                                (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
                                 noError
                                 []
 
@@ -769,8 +832,20 @@ update currentDate currentTime dbVersion device msg model =
                                     , indexDbRemoteData = RemoteData.Success (Just result)
                                 }
 
-                            modelUpdated =
-                                { model | syncStatus = SyncUploadGeneral recordUpdated }
+                            syncInfoGeneral =
+                                if model.syncInfoGeneral.status == "Uploading" then
+                                    model.syncInfoGeneral
+
+                                else
+                                    model.syncInfoGeneral
+                                        |> (\info -> { info | status = "Uploading" })
+
+                            setSyncInfoGeneralCmd =
+                                if model.syncInfoGeneral.status == "Uploading" then
+                                    Cmd.none
+
+                                else
+                                    sendSyncInfoGeneral syncInfoGeneral
 
                             cmd =
                                 if List.isEmpty result.entities then
@@ -787,10 +862,13 @@ update currentDate currentTime dbVersion device msg model =
                                         -- We don't need to decode anything, as we just want to have
                                         -- the browser download it.
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle result)
+
+                            modelUpdated =
+                                { model | syncStatus = SyncUploadGeneral recordUpdated, syncInfoGeneral = syncInfoGeneral }
                         in
                         SubModelReturn
                             (SyncManager.Utils.determineSyncStatus modelUpdated)
-                            cmd
+                            setSyncInfoGeneralCmd
                             noError
                             []
 
@@ -805,10 +883,17 @@ update currentDate currentTime dbVersion device msg model =
                             let
                                 syncStatus =
                                     SyncUploadGeneral { record | backendRemoteData = RemoteData.Failure error }
+
+                                syncInfoGeneral =
+                                    model.syncInfoGeneral
+                                        |> (\info -> { info | status = "Error" })
+
+                                setSyncInfoGeneralCmd =
+                                    sendSyncInfoGeneral syncInfoGeneral
                             in
                             SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
-                                Cmd.none
+                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral })
+                                setSyncInfoGeneralCmd
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadGeneralHandle")
                                 []
 
@@ -816,6 +901,21 @@ update currentDate currentTime dbVersion device msg model =
                             let
                                 syncStatus =
                                     SyncUploadGeneral { record | backendRemoteData = RemoteData.Success () }
+
+                                syncInfoGeneral =
+                                    let
+                                        status =
+                                            if result.remaining == 0 then
+                                                "Success"
+
+                                            else
+                                                model.syncInfoGeneral.status
+                                    in
+                                    model.syncInfoGeneral
+                                        |> (\info -> { info | remainingToUpload = result.remaining, status = status })
+
+                                setSyncInfoGeneralCmd =
+                                    sendSyncInfoGeneral syncInfoGeneral
 
                                 -- We have successfully uploaded the entities, so
                                 -- we can mark them as `isSynced`.
@@ -835,8 +935,8 @@ update currentDate currentTime dbVersion device msg model =
                                     deleteEntitiesThatWereUploaded { type_ = "General", localId = localIds }
                             in
                             SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
-                                cmd
+                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral })
+                                (Cmd.batch [ cmd, setSyncInfoGeneralCmd ])
                                 noError
                                 []
 
