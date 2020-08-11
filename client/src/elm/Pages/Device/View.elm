@@ -1,16 +1,22 @@
 module Pages.Device.View exposing (view)
 
 import App.Model
+import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.HealthCenter.Model exposing (HealthCenter)
+import Backend.Model exposing (ModelIndexedDb)
 import Device.Model exposing (..)
+import Gizra.Html exposing (showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import List.Extra
+import List.Zipper as Zipper
 import Pages.Device.Model exposing (..)
 import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (toEntityUuid)
-import SyncManager.Model exposing (SyncInfoGeneral)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
+import SyncManager.Model exposing (SyncInfoAuthorityZipper, SyncInfoGeneral)
 import Time
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
@@ -60,6 +66,7 @@ viewDeviceStatus language device app model =
                     [ h2 [] [ text <| translate language Translate.SyncGeneral ]
                     , viewSyncInfo language app.syncManager.syncInfoGeneral
                     ]
+                , viewHealthCenters language app.syncManager.syncInfoAuthorities app.indexedDb
                 ]
 
         _ ->
@@ -89,7 +96,7 @@ viewStorageStatus language app =
         |> ul [ class "storage-dashboard" ]
 
 
-viewSyncInfo : Language -> SyncInfoGeneral -> Html Msg
+viewSyncInfo : Language -> { a | lastFetchedRevisionId : Int, lastSuccesfulContact : Int, remainingToUpload : Int, remainingToDownload : Int, status : String } -> Html Msg
 viewSyncInfo language info =
     let
         viewDateTime time =
@@ -126,11 +133,63 @@ viewSyncInfo language info =
         lastSuccessfulContact =
             viewDateTime (Time.millisToPosix info.lastSuccesfulContact)
     in
-    div [ class "general-status" ]
+    div [ class "sync-status" ]
         [ div [] [ text <| translate language Translate.LastSuccesfulContactLabel ++ ": " ++ lastSuccessfulContact ]
         , div [] [ text <| translate language Translate.RemainingForUploadLabel ++ ": " ++ String.fromInt info.remainingToUpload ]
         , div [] [ text <| translate language Translate.RemainingForDownloadLabel ++ ": " ++ String.fromInt info.remainingToDownload ]
         , div [] [ text <| translate language Translate.StatusLabel ++ ": " ++ info.status ]
+        ]
+
+
+viewHealthCenters : Language -> SyncInfoAuthorityZipper -> ModelIndexedDb -> Html Msg
+viewHealthCenters language zipper db =
+    db.healthCenters
+        |> RemoteData.map
+            (\data ->
+                data
+                    |> Dict.toList
+                    |> List.sortBy (Tuple.second >> .name)
+                    |> List.map (viewHealthCenter language zipper)
+                    |> div [ class "health-centers" ]
+            )
+        |> RemoteData.withDefault spinner
+
+
+viewHealthCenter : Language -> SyncInfoAuthorityZipper -> ( HealthCenterId, HealthCenter ) -> Html Msg
+viewHealthCenter language zipper ( healthCenterId, healthCenter ) =
+    let
+        viewNotSyncedHealthCenter uuid =
+            button
+                [ class "ui button"
+
+                -- , onClick (SetSyncing uuid True)
+                ]
+                [ text <| translate language Translate.StartSyncing ]
+
+        viewSyncedAuthority authorityInfo =
+            div [ class "health-center-info" ]
+                [ viewSyncInfo language authorityInfo
+                , button
+                    [ class "ui button"
+
+                    -- , onClick (SetSyncing uuid False)
+                    ]
+                    [ text <| translate language Translate.StopSyncing ]
+                ]
+
+        content =
+            zipper
+                |> Maybe.map
+                    (Zipper.toList
+                        >> List.Extra.find (\authorityInfo -> authorityInfo.uuid == fromEntityUuid healthCenterId)
+                        >> Maybe.map viewSyncedAuthority
+                        >> Maybe.withDefault (viewNotSyncedHealthCenter healthCenterId)
+                    )
+                |> Maybe.withDefault (viewNotSyncedHealthCenter healthCenterId)
+    in
+    div [ class "health-center" ]
+        [ h2 [] [ text <| healthCenter.name ]
+        , content
         ]
 
 

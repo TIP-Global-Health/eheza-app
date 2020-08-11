@@ -25,7 +25,6 @@ import SyncManager.Model
         , DownloadSyncResponse
         , Model
         , Msg(..)
-        , RevisionIdPerAuthorityZipper
         , SyncCycle(..)
         , SyncStatus(..)
         )

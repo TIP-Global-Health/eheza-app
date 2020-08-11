@@ -1,4 +1,4 @@
-module SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), DownloadPhotos(..), DownloadPhotosAllRec, DownloadPhotosBatchRec, DownloadSyncResponse, Flags, IndexDbDeferredPhotoRemoteData, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryType(..), IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, IndexDbUploadRemoteData, Model, Msg(..), RevisionIdPerAuthority, RevisionIdPerAuthorityZipper, SyncCycle(..), SyncInfoAuthority, SyncInfoAuthorityZipper, SyncInfoGeneral, SyncSpeed, SyncStatus(..), UploadMethod(..), UploadPhotoError(..), UploadRec, emptyDownloadPhotosBatchRec, emptyModel, emptyRevisionIdPerAuthority, emptySyncInfoAuthority, emptyUploadRec)
+module SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), DownloadPhotos(..), DownloadPhotosAllRec, DownloadPhotosBatchRec, DownloadSyncResponse, Flags, IndexDbDeferredPhotoRemoteData, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryType(..), IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, IndexDbUploadRemoteData, Model, Msg(..), SyncCycle(..), SyncInfoAuthority, SyncInfoAuthorityZipper, SyncInfoGeneral, SyncSpeed, SyncStatus(..), UploadMethod(..), UploadPhotoError(..), UploadRec, emptyDownloadPhotosBatchRec, emptyModel, emptySyncInfoAuthority, emptyUploadRec)
 
 import AssocList exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
@@ -154,23 +154,6 @@ emptySyncInfoAuthority uuid =
 
 type alias SyncInfoAuthorityZipper =
     Maybe (Zipper SyncInfoAuthority)
-
-
-type alias RevisionIdPerAuthority =
-    { uuid : String
-    , revisionId : Int
-    }
-
-
-emptyRevisionIdPerAuthority : String -> RevisionIdPerAuthority
-emptyRevisionIdPerAuthority uuid =
-    { uuid = uuid
-    , revisionId = 0
-    }
-
-
-type alias RevisionIdPerAuthorityZipper =
-    Maybe (Zipper RevisionIdPerAuthority)
 
 
 type alias Model =

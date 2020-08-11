@@ -1273,12 +1273,6 @@ port sendSyncInfoGeneral : SyncInfoGeneral -> Cmd msg
 port sendSyncInfoAuthorities : List SyncInfoAuthority -> Cmd msg
 
 
-{-| Send to JS a list with the last revision ID used to download Authority,
-along with their UUID.
--}
-port sendRevisionIdPerAuthority : List { uuid : String, revisionId : Int } -> Cmd msg
-
-
 {-| Send to JS a list of local ID that were uploaded.
 
 The `type_` can be `General` or `Authority`.

@@ -37,7 +37,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import Rollbar
 import ServiceWorker.Model
-import SyncManager.Model exposing (RevisionIdPerAuthority)
+import SyncManager.Model
 import Time
 import Translate.Model exposing (Language(..))
 import Url exposing (Url)
