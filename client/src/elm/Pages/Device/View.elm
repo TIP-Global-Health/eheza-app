@@ -54,10 +54,11 @@ viewDeviceStatus language device app model =
         Success _ ->
             div [ class "device-status" ]
                 [ button
-                    [ class "ui fluid primary button"
-
-                    -- @todo
-                    -- , onClick TrySyncing
+                    [ classList
+                        [ ( "ui fluid primary button", True )
+                        , ( "disabled", app.syncManager.syncStatus /= SyncManager.Model.SyncIdle )
+                        ]
+                    , onClick <| MsgSyncManager SyncManager.Model.BackendFetchMain
                     ]
                     [ text <| translate language Translate.TrySyncing ]
                 , viewStorageStatus language app
