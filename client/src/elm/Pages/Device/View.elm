@@ -161,8 +161,7 @@ viewHealthCenter language zipper ( healthCenterId, healthCenter ) =
         viewNotSyncedHealthCenter uuid =
             button
                 [ class "ui button"
-
-                -- , onClick (SetSyncing uuid True)
+                , onClick <| MsgSyncManager <| SyncManager.Model.RevisionIdAuthorityAdd uuid
                 ]
                 [ text <| translate language Translate.StartSyncing ]
 
@@ -171,8 +170,7 @@ viewHealthCenter language zipper ( healthCenterId, healthCenter ) =
                 [ viewSyncInfo language authorityInfo
                 , button
                     [ class "ui button"
-
-                    -- , onClick (SetSyncing uuid False)
+                    , onClick <| MsgSyncManager <| SyncManager.Model.RevisionIdAuthorityRemove (toEntityUuid authorityInfo.uuid)
                     ]
                     [ text <| translate language Translate.StopSyncing ]
                 ]
