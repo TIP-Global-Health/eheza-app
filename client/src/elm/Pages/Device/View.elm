@@ -100,35 +100,39 @@ viewSyncInfo : Language -> { a | lastFetchedRevisionId : Int, lastSuccesfulConta
 viewSyncInfo language info =
     let
         viewDateTime time =
-            let
-                normalize number =
-                    if number < 10 then
-                        "0" ++ String.fromInt number
+            if Time.posixToMillis time == 0 then
+                "Never"
 
-                    else
-                        String.fromInt number
+            else
+                let
+                    normalize number =
+                        if number < 10 then
+                            "0" ++ String.fromInt number
 
-                year =
-                    Time.toYear Time.utc time |> String.fromInt
+                        else
+                            String.fromInt number
 
-                month =
-                    Time.toMonth Time.utc time
-                        |> Translate.ResolveMonth
-                        |> translate language
+                    year =
+                        Time.toYear Time.utc time |> String.fromInt
 
-                day =
-                    Time.toDay Time.utc time |> normalize
+                    month =
+                        Time.toMonth Time.utc time
+                            |> Translate.ResolveMonth
+                            |> translate language
 
-                hour =
-                    Time.toHour Time.utc time |> normalize
+                    day =
+                        Time.toDay Time.utc time |> normalize
 
-                minute =
-                    Time.toMinute Time.utc time |> normalize
+                    hour =
+                        Time.toHour Time.utc time |> normalize
 
-                second =
-                    Time.toSecond Time.utc time |> normalize
-            in
-            day ++ " " ++ month ++ " " ++ year ++ " " ++ hour ++ ":" ++ minute ++ ":" ++ second ++ " UTC"
+                    minute =
+                        Time.toMinute Time.utc time |> normalize
+
+                    second =
+                        Time.toSecond Time.utc time |> normalize
+                in
+                day ++ " " ++ month ++ " " ++ year ++ " " ++ hour ++ ":" ++ minute ++ ":" ++ second ++ " UTC"
 
         lastSuccessfulContact =
             viewDateTime (Time.millisToPosix info.lastSuccesfulContact)
