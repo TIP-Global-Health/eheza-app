@@ -60,6 +60,22 @@ update currentDate currentTime dbVersion device msg model =
                                         currentZipper =
                                             Zipper.current zipper
 
+                                        zipperUpdated =
+                                            if currentZipper.status == "Downloading" then
+                                                zipper
+
+                                            else
+                                                Zipper.mapCurrent
+                                                    (\old -> { old | status = "Downloading" })
+                                                    zipper
+
+                                        ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
+                                            if currentZipper.status == "Downloading" then
+                                                ( model.syncInfoAuthorities, Cmd.none )
+
+                                            else
+                                                ( Just zipperUpdated, sendSyncInfoAuthorities (Zipper.toList zipperUpdated) )
+
                                         cmd =
                                             HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
                                                 |> withQueryParams
@@ -68,11 +84,11 @@ update currentDate currentTime dbVersion device msg model =
                                                     , ( "base_revision", String.fromInt currentZipper.lastFetchedRevisionId )
                                                     ]
                                                 |> withExpectJson decodeDownloadSyncResponseAuthority
-                                                |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipper)
+                                                |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipperUpdated)
                                     in
                                     SubModelReturn
-                                        { model | syncStatus = SyncDownloadAuthority RemoteData.Loading }
-                                        cmd
+                                        { model | syncStatus = SyncDownloadAuthority RemoteData.Loading, syncInfoAuthorities = syncInfoAuthorities }
+                                        (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
                                         noError
                                         []
 
@@ -142,17 +158,14 @@ update currentDate currentTime dbVersion device msg model =
                                         "Success"
 
                                     else
-                                        model.syncInfoGeneral.status
+                                        currentZipper.status
 
                                 lastFetchedRevisionId =
                                     data.entities
+                                        |> List.sortBy (SyncManager.Utils.getBackendAuthorityEntityIdentifier >> .revision)
                                         |> List.reverse
                                         |> List.head
-                                        |> Maybe.map
-                                            (\entity ->
-                                                SyncManager.Utils.getBackendAuthorityEntityIdentifier entity
-                                                    |> (\entityIdentifier -> entityIdentifier.revision)
-                                            )
+                                        |> Maybe.map (SyncManager.Utils.getBackendAuthorityEntityIdentifier >> .revision)
                                         |> Maybe.withDefault currentZipper.lastFetchedRevisionId
                             in
                             Zipper.mapCurrent
@@ -423,16 +436,10 @@ update currentDate currentTime dbVersion device msg model =
 
                                 lastFetchedRevisionId =
                                     data.entities
+                                        |> List.sortBy (SyncManager.Utils.getBackendGeneralEntityIdentifier >> .revision)
                                         |> List.reverse
                                         |> List.head
-                                        |> Maybe.map
-                                            (\entity ->
-                                                let
-                                                    identifier =
-                                                        SyncManager.Utils.getBackendGeneralEntityIdentifier entity
-                                                in
-                                                identifier.revision
-                                            )
+                                        |> Maybe.map (SyncManager.Utils.getBackendGeneralEntityIdentifier >> .revision)
                                         |> Maybe.withDefault model.syncInfoGeneral.lastFetchedRevisionId
                             in
                             model.syncInfoGeneral
