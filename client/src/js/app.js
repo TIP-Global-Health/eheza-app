@@ -488,6 +488,17 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         const batchSize = 50;
 
+        let totalEntites = await dbSync
+            .nodeChanges
+            .where('isSynced')
+            .notEqual(1)
+            .count();
+
+        if (totalEntites == 0) {
+          // No entities for upload found.
+          return sendResultToElm(queryType, null);
+        }
+
         let entitiesResult = await dbSync
             .nodeChanges
             .where('isSynced')
@@ -496,13 +507,9 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .limit(batchSize)
             .toArray();
 
-        if (!entitiesResult[0]) {
-          // No entities for upload found.
-          return sendResultToElm(queryType, null);
-        }
-
         const resultToSend = {
-          'entities': entitiesResult
+          'entities': entitiesResult,
+          'remaining': totalEntites - entitiesResult.length
         };
 
         return sendResultToElm(queryType, resultToSend);
@@ -515,6 +522,17 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         const batchSize = 50;
 
+        let totalEntites = await dbSync
+            .shardChanges
+            .where('isSynced')
+            .notEqual(1)
+            .count();
+
+        if (totalEntites == 0) {
+          // No entities for upload found.
+          return sendResultToElm(queryType, null);
+        }
+
         let entitiesResult = await dbSync
             .shardChanges
             .where('isSynced')
@@ -523,10 +541,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .limit(batchSize)
             .toArray();
 
-        if (!entitiesResult[0]) {
-          // No entities for upload found.
-          return sendResultToElm(queryType, null);
-        }
+        let remaining = totalEntites - entitiesResult.length;
 
         // Query by the localId the `authorityUploadPhotos` to get the matching
         // file ID.
@@ -535,7 +550,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         });
 
         let resultToSend = {
-          'entities': entitiesResult
+          'entities': entitiesResult,
+          'remaining': remaining
         };
 
         let uploadPhotosResult = await dbSync
@@ -547,6 +563,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         if (uploadPhotosResult[0]) {
             resultToSend = {
               'entities': entitiesResult,
+              'remaining': remaining,
               'uploadPhotos': uploadPhotosResult
             };
         }

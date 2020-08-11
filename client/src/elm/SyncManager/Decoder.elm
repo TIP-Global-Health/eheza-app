@@ -137,12 +137,14 @@ decodeIndexDbQueryUploadGeneralResultRecord : Decoder IndexDbQueryUploadGeneralR
 decodeIndexDbQueryUploadGeneralResultRecord =
     succeed IndexDbQueryUploadGeneralResultRecord
         |> required "entities" (list <| decodeBackendEntityAndUploadMethod (\uuid localId -> decodeBackendGeneralEntity (hardcoded uuid) (hardcoded localId)))
+        |> required "remaining" decodeInt
 
 
 decodeIndexDbQueryUploadAuthorityResultRecord : Decoder IndexDbQueryUploadAuthorityResultRecord
 decodeIndexDbQueryUploadAuthorityResultRecord =
     succeed IndexDbQueryUploadAuthorityResultRecord
         |> required "entities" (list <| decodeBackendEntityAndUploadMethod (\uuid localId -> decodeBackendAuthorityEntity (hardcoded uuid) (hardcoded localId)))
+        |> required "remaining" decodeInt
         |> optional "uploadPhotos"
             (list decodeIndexDbQueryUploadPhotoResultRecord
                 |> andThen
