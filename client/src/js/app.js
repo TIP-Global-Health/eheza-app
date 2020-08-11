@@ -269,12 +269,10 @@ navigator.storage.persist().then(function(granted) {
   elmApp.ports.persistentStorage.send(granted);
 });
 
-
 // Milliseconds for the specified minutes
 function minutesToMillis(minutes) {
   return minutes * 60 * 1000;
 }
-
 
 // Report our quota status.
 function reportQuota() {
@@ -290,8 +288,6 @@ reportQuota();
 
 // And, then every minute.
 setInterval(reportQuota, minutesToMillis(1));
-
-
 
 elmApp.ports.cachePinCode.subscribe(function(pinCode) {
   localStorage.setItem('pinCode', pinCode);
@@ -328,8 +324,8 @@ elmApp.ports.sendSyncInfoGeneral.subscribe(function(syncInfoGeneral) {
 /**
  * Set the information about Autohorities sync.
  */
-elmApp.ports.sendSyncInfoAuthorities.subscribe(function(sendSyncInfoAuthorities) {
-  localStorage.setItem('sendSyncInfoAuthorities', JSON.stringify(sendSyncInfoAuthorities));
+elmApp.ports.sendSyncInfoAuthorities.subscribe(function(syncInfoAuthorities) {
+  localStorage.setItem('syncInfoAuthorities', JSON.stringify(syncInfoAuthorities));
 });
 
 /**
