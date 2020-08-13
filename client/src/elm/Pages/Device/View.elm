@@ -58,7 +58,7 @@ viewDeviceStatus language device app model =
                         [ ( "ui fluid primary button", True )
                         , ( "disabled", app.syncManager.syncStatus /= SyncManager.Model.SyncIdle )
                         ]
-                    , onClick <| MsgSyncManager SyncManager.Model.BackendFetchMain
+                    , onClick <| MsgSyncManager SyncManager.Model.TrySyncing
                     ]
                     [ text <| translate language Translate.TrySyncing ]
                 , viewStorageStatus language app

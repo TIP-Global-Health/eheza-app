@@ -431,3 +431,4 @@ type Msg
     | SetSyncSpeedIdle String
     | SetSyncSpeedCycle String
     | SetSyncSpeedOffline String
+    | TrySyncing

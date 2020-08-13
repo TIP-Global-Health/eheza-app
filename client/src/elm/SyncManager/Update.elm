@@ -1347,6 +1347,21 @@ update currentDate currentTime dbVersion device msg model =
                 _ ->
                     noChange
 
+        TrySyncing ->
+            case model.syncStatus of
+                SyncIdle ->
+                    update
+                        currentDate
+                        currentTime
+                        dbVersion
+                        device
+                        BackendFetchMain
+                        model
+
+                _ ->
+                    -- Sync is already in progress.
+                    noChange
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -1357,7 +1372,7 @@ subscriptions model =
                     Sub.none
 
                 _ ->
-                    Time.every (getSyncSpeedForSubscriptions model) (\_ -> BackendFetchMain)
+                    Time.every (getSyncSpeedForSubscriptions model) (\_ -> TrySyncing)
     in
     Sub.batch
         [ backendFetchMain
