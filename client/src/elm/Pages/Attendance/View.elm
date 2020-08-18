@@ -9,7 +9,9 @@ at a session.
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Person.Model exposing (Person)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
+import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildren, getMotherMeasurementData)
 import Html exposing (..)
@@ -18,13 +20,13 @@ import Html.Events exposing (onClick, onInput)
 import LocalData exposing (LocalData(..))
 import Pages.Attendance.Model exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
+import Pages.Utils exposing (backFromSessionPage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 
 
-view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg
-view language ( sessionId, session ) model =
+view : Language -> Nurse -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language nurse ( sessionId, session ) model =
     let
         filter =
             normalizeFilter model.filter
@@ -60,6 +62,9 @@ view language ( sessionId, session ) model =
                     matching
                         |> Dict.map (viewMother session)
                         |> Dict.values
+
+        goBackPage =
+            backFromSessionPage nurse session.offlineSession
     in
     div [ class "wrap wrap-alt-2 page-attendance" ]
         [ div
@@ -69,11 +74,7 @@ view language ( sessionId, session ) model =
                 [ text <| translate language Translate.Attendance ]
             , a
                 [ class "link-back"
-                , Just session.offlineSession.session.clinicId
-                    |> ClinicsPage
-                    |> UserPage
-                    |> SetActivePage
-                    |> onClick
+                , onClick <| SetActivePage goBackPage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []
@@ -92,16 +93,21 @@ view language ( sessionId, session ) model =
             ]
         , div
             [ class "ui full blue segment" ]
-            [ div
-                [ class "full content" ]
-                [ div [ class "wrap-list" ]
-                    [ h3
-                        [ class "ui header" ]
-                        [ text <| translate language Translate.CheckIn ]
-                    , p [] [ text <| translate language Translate.ClickTheCheckMark ]
-                    , viewNameFilter language model.filter SetFilter
-                    , viewToggleDisplay language model
-                    , div [ class "ui middle aligned divided list" ] mothers
+            [ h3 [ class "ui header" ]
+                [ text <| translate language Translate.CheckIn ]
+            , p [] [ text <| translate language Translate.ClickTheCheckMark ]
+            , viewNameFilter language model.filter SetFilter
+            , viewToggleDisplay language model
+            , div [ class "search-middle" ]
+                [ div [ class "ui middle aligned divided list" ] mothers ]
+            , div [ class "search-bottom" ]
+                [ div
+                    [ class "register-actions" ]
+                    [ button
+                        [ class "ui primary button fluid"
+                        , onClick <| SetActivePage <| UserPage <| PersonsPage Nothing (GroupEncounterOrigin sessionId)
+                        ]
+                        [ text <| translate language Translate.AddNewParticipant ]
                     ]
                 ]
             ]

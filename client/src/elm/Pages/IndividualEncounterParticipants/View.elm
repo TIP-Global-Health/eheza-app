@@ -4,9 +4,10 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (ExpectedAge(..), Person, RegistrationInitiator(..))
-import Backend.Person.Utils exposing (ageInYears, isPersonAFertileWoman)
+import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
+import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isPersonAFertileWoman, isPersonAnAdult)
 import Backend.SyncData.Model
+import Backend.Village.Utils exposing (personLivesInVillage)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -32,16 +33,16 @@ import Utils.WebData exposing (viewWebData)
     family member for that person, either child, parent, etc.
 
 -}
-view : Language -> NominalDate -> HealthCenterId -> IndividualEncounterType -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate healthCenterId encounterType model db =
+view : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> IndividualEncounterType -> Model -> ModelIndexedDb -> Html Msg
+view language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db =
     let
         title =
             translate language Translate.SearchExistingParticipants
     in
     div
-        [ class "wrap wrap-alt-2 page-prenatal-participants" ]
+        [ class "wrap wrap-alt-2 page-participants" ]
         [ viewHeader title
-        , viewBody language currentDate healthCenterId encounterType model db
+        , viewBody language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db
         ]
 
 
@@ -62,8 +63,8 @@ viewHeader title =
         ]
 
 
-viewBody : Language -> NominalDate -> HealthCenterId -> IndividualEncounterType -> Model -> ModelIndexedDb -> Html Msg
-viewBody language currentDate selectedHealthCenterId encounterType model db =
+viewBody : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> IndividualEncounterType -> Model -> ModelIndexedDb -> Html Msg
+viewBody language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db =
     let
         sync =
             db.syncData |> RemoteData.withDefault Dict.empty
@@ -77,7 +78,7 @@ viewBody language currentDate selectedHealthCenterId encounterType model db =
                     ]
                 ]
     in
-    Dict.get selectedHealthCenterId sync
+    Dict.get healthCenterId sync
         |> unwrap
             (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
             (\selectedHealthCenterSyncData ->
@@ -109,13 +110,13 @@ viewBody language currentDate selectedHealthCenterId encounterType model db =
                         [ class "search-wrapper" ]
                         [ div
                             [ class "ui full segment" ]
-                            [ viewSearchForm language currentDate selectedHealthCenterId encounterType model db ]
+                            [ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db ]
                         ]
             )
 
 
-viewSearchForm : Language -> NominalDate -> HealthCenterId -> IndividualEncounterType -> Model -> ModelIndexedDb -> Html Msg
-viewSearchForm language currentDate selectedHealthCenterId encounterType model db =
+viewSearchForm : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> IndividualEncounterType -> Model -> ModelIndexedDb -> Html Msg
+viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db =
     let
         searchForm =
             Html.form []
@@ -139,15 +140,31 @@ viewSearchForm language currentDate selectedHealthCenterId encounterType model d
             model.search
                 |> Maybe.withDefault ""
 
-        participantsFilter id person =
+        encounterCondition person =
             case encounterType of
+                AcuteIllnessEncounter ->
+                    True
+
                 AntenatalEncounter ->
                     isPersonAFertileWoman currentDate person
-                        -- Show only mothers that belong to selected health center
-                        && (person.healthCenterId == Just selectedHealthCenterId)
+
+                NutritionEncounter ->
+                    isPersonAnAdult currentDate person
+                        |> Maybe.map not
+                        |> Maybe.withDefault False
 
                 _ ->
-                    True
+                    False
+
+        -- For CHW nurse, we present people only from the village that was selected.
+        chwCondition person =
+            if isChw then
+                maybeVillageId
+                    |> Maybe.map (personLivesInVillage person db)
+                    |> Maybe.withDefault False
+
+            else
+                True
 
         results =
             if String.isEmpty searchValue then
@@ -157,7 +174,15 @@ viewSearchForm language currentDate selectedHealthCenterId encounterType model d
                 Dict.get searchValue db.personSearches
                     |> Maybe.withDefault NotAsked
                     |> RemoteData.map
-                        (Dict.filter participantsFilter)
+                        (Dict.filter
+                            (\filteredPersonId filteredPerson ->
+                                -- Show only participants that belong to selected health center.
+                                -- Todo: check if this really required.
+                                (filteredPerson.healthCenterId == Just healthCenterId)
+                                    && encounterCondition filteredPerson
+                                    && chwCondition filteredPerson
+                            )
+                        )
                     |> Just
 
         summary =
@@ -207,7 +232,7 @@ viewSearchForm language currentDate selectedHealthCenterId encounterType model d
                 [ class "register-actions" ]
                 [ button
                     [ class "ui primary button fluid"
-                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage Nothing (IndividualEncounterOrigin AntenatalEncounter)
+                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage Nothing (IndividualEncounterOrigin encounterType)
                     ]
                     [ text <| translate language Translate.RegisterNewParticipant ]
                 ]
@@ -220,8 +245,14 @@ viewParticipant language currentDate encounterType db id person =
     let
         action =
             case encounterType of
+                AcuteIllnessEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage id ]
+
                 AntenatalEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage id ]
+
+                NutritionEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| NutritionParticipantPage id ]
 
                 _ ->
                     []
@@ -257,11 +288,14 @@ viewParticipant language currentDate encounterType db id person =
                     ]
                 , viewAction
                 ]
+
+        defaultIcon =
+            defaultIconForPerson currentDate person
     in
     div
         [ class "item participant-view" ]
         [ div
             [ class "ui image" ]
-            [ thumbnailImage "mother" person.avatarUrl person.name 120 120 ]
+            [ thumbnailImage defaultIcon person.avatarUrl person.name 120 120 ]
         , viewContent
         ]

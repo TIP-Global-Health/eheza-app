@@ -195,12 +195,28 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       $output = array_merge($output, $rendered_items);
     }
 
-    return [
+    $return = [
       'base_revision' => $base,
       'last_timestamp' => $last_timestamp,
       'revision_count' => $count,
-      'batch' => $output,
     ];
+
+    if (!empty($request['access_token'])) {
+      $device_user_id = hedley_restful_resolve_device_by_token($request['access_token']);
+      if ($device_user_id) {
+        $device_user = user_load($device_user_id);
+        $device_name = $device_user->name;
+        $words = explode(' ', $device_name);
+        if (end($words) == 'Robot') {
+          array_splice($words, -1);
+        }
+        $return['device_name'] = implode(' ', $words);
+      }
+    }
+
+    $return['batch'] = $output;
+
+    return $return;
   }
 
   /**
@@ -243,16 +259,18 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $query = db_select('node', 'node');
 
-    // Filter by Health center.
-    hedley_restful_join_field_to_query($query, 'node', 'field_shards');
+    // Filter by Shards.
+    hedley_restful_join_field_to_query($query, 'node', 'field_shards', FALSE);
 
     // And the table which will give us the UUID of the shard.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_shards.field_shards_target_id");
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_shards.field_shards_target_id", 'field_uuid_shards');
 
     $query
       ->fields('node', ['type', 'nid', 'vid', 'created', 'changed'])
-      ->condition('field_uuid.field_uuid_value', $uuid)
+      ->condition('field_uuid_shards.field_uuid_value', $uuid)
       ->condition('node.type', array_keys($handlers_by_types), 'IN');
+
+    $query->distinct();
 
     // Get the timestamp of the last revision. We'll also get a count of
     // remaining revisions, but the timestamp of the last revision will also

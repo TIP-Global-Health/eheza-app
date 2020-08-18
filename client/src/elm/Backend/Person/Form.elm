@@ -58,13 +58,14 @@ import Backend.Person.Encoder
         , encodeUbudehe
         )
 import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (diffInYears, expectedAgeByPerson, isAdult, isPersonAnAdult, resolveExpectedAge)
+import Backend.Person.Utils exposing (expectedAgeByPerson, isAdult, isPersonAnAdult, resolveExpectedAge)
+import Backend.Village.Model exposing (Village)
 import Date
 import Form exposing (..)
 import Form.Field
 import Form.Init exposing (..)
 import Form.Validate exposing (..)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, formatYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffYears, formatYYYYMMDD)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Regex exposing (Regex)
@@ -101,36 +102,71 @@ expectedAgeByForm currentDate form operation =
         |> (\birthDate_ -> resolveExpectedAge currentDate birthDate_ operation)
 
 
-applyDefaultValues : Maybe Person -> ParticipantDirectoryOperation -> NominalDate -> PersonForm -> PersonForm
-applyDefaultValues maybeRelatedPerson operation currentDate form =
+applyDefaultValues : NominalDate -> Maybe Village -> Bool -> Maybe Person -> ParticipantDirectoryOperation -> PersonForm -> PersonForm
+applyDefaultValues currentDate maybeVillage isChw maybeRelatedPerson operation form =
     let
+        defaultProvince =
+            if isChw then
+                maybeVillage |> Maybe.map .province
+
+            else
+                maybeRelatedPerson
+                    |> Maybe.andThen .province
+
         defaultProvinceId =
-            maybeRelatedPerson
-                |> Maybe.andThen .province
+            defaultProvince
                 |> Maybe.andThen (getGeoLocation Nothing)
                 |> Maybe.map Tuple.first
 
+        defaultDistrict =
+            if isChw then
+                maybeVillage |> Maybe.map .district
+
+            else
+                maybeRelatedPerson
+                    |> Maybe.andThen .district
+
         defaultDistrictId =
-            maybeRelatedPerson
-                |> Maybe.andThen .district
+            defaultDistrict
                 |> Maybe.andThen (getGeoLocation defaultProvinceId)
                 |> Maybe.map Tuple.first
 
+        defaultSector =
+            if isChw then
+                maybeVillage |> Maybe.map .sector
+
+            else
+                maybeRelatedPerson
+                    |> Maybe.andThen .sector
+
         defaultSectorId =
-            maybeRelatedPerson
-                |> Maybe.andThen .sector
+            defaultSector
                 |> Maybe.andThen (getGeoLocation defaultDistrictId)
                 |> Maybe.map Tuple.first
 
+        defaultCell =
+            if isChw then
+                maybeVillage |> Maybe.map .cell
+
+            else
+                maybeRelatedPerson
+                    |> Maybe.andThen .cell
+
         defaultCellId =
-            maybeRelatedPerson
-                |> Maybe.andThen .cell
+            defaultCell
                 |> Maybe.andThen (getGeoLocation defaultSectorId)
                 |> Maybe.map Tuple.first
 
+        defaultVillage =
+            if isChw then
+                maybeVillage |> Maybe.map .village
+
+            else
+                maybeRelatedPerson
+                    |> Maybe.andThen .village
+
         defaultVillageId =
-            maybeRelatedPerson
-                |> Maybe.andThen .village
+            defaultVillage
                 |> Maybe.andThen (getGeoLocation defaultCellId)
                 |> Maybe.map Tuple.first
 
@@ -139,8 +175,13 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
                 |> Maybe.andThen .ubudehe
 
         defaultHealthCenter =
-            maybeRelatedPerson
-                |> Maybe.andThen .healthCenterId
+            if isChw then
+                maybeVillage
+                    |> Maybe.map .healthCenterId
+
+            else
+                maybeRelatedPerson
+                    |> Maybe.andThen .healthCenterId
 
         defaultHmisNumber =
             maybeRelatedPerson
@@ -265,7 +306,7 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
                     if formFieldEmpty fieldName form_ then
                         Form.update
                             validation
-                            (Form.Input fieldName Form.Select (Form.Field.String (Debug.toString <| fromEntityId defaultId)))
+                            (Form.Input fieldName Form.Select (Form.Field.String (String.fromInt <| fromEntityId defaultId)))
                             form_
 
                     else
@@ -277,13 +318,13 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
     case operation of
         CreatePerson _ ->
             form
-                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> Debug.toString)
-                |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
+                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> String.fromInt)
                 |> applyDefaultLocation province defaultProvinceId
                 |> applyDefaultLocation district defaultDistrictId
                 |> applyDefaultLocation sector defaultSectorId
                 |> applyDefaultLocation cell defaultCellId
                 |> applyDefaultLocation village defaultVillageId
+                |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
 
         EditPerson _ ->
             form
@@ -296,11 +337,11 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
                 |> applyDefaultSelectInput hmisNumber defaultHmisNumber identity
                 |> applyDefaultGender
                 |> applyDefaultSelectInput hivStatus defaultHivStatus encodeHivStatus
-                |> applyDefaultSelectInput educationLevel defaultlEducationLevel (encodeEducationLevel >> Debug.toString)
+                |> applyDefaultSelectInput educationLevel defaultlEducationLevel (encodeEducationLevel >> String.fromInt)
                 |> applyDefaultSelectInput maritalStatus defaultMaritalStatus encodeMaritalStatus
                 |> applyDefaultSelectInput modeOfDelivery defaultModeOfDelivery encodeModeOfDelivery
-                |> applyDefaultSelectInput numberOfChildren defaultlNumberOfChildrenl Debug.toString
-                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> Debug.toString)
+                |> applyDefaultSelectInput numberOfChildren defaultlNumberOfChildrenl String.fromInt
+                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> String.fromInt)
                 |> applyDefaultLocation province defaultProvinceId
                 |> applyDefaultLocation district defaultDistrictId
                 |> applyDefaultLocation sector defaultSectorId
@@ -391,6 +432,7 @@ validatePerson maybeRelated operation maybeCurrentDate =
                 |> andMap (field village (validateVillage maybeRelated))
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
                 |> andMap (field healthCenter (validateHealthCenterId maybeRelated))
+                |> andMap (succeed Nothing)
     in
     andThen withFirstName (field firstName (oneOf [ string, emptyString ]))
 
@@ -537,18 +579,16 @@ validateBirthDate expectedAge maybeCurrentDate =
                         -- When we don't know current date, try to decode input value.
                         (fromDecoder DecoderError Nothing (Json.Decode.nullable decodeYYYYMMDD))
                         (\currentDate ->
-                            let
-                                -- Convert to NominalDate.
-                                maybeBirthDate =
-                                    Date.fromIsoString s
-                                        |> Result.toMaybe
-                            in
                             -- Calculate difference of years between input birth
                             -- date and current date.
-                            diffInYears currentDate maybeBirthDate
-                                |> unwrap
-                                    (fail <| customError InvalidBirthDate)
-                                    (\delta ->
+                            Date.fromIsoString s
+                                |> Result.toMaybe
+                                |> Maybe.map
+                                    (\birthDate_ ->
+                                        let
+                                            delta =
+                                                diffYears birthDate_ currentDate
+                                        in
                                         if delta > 12 && expectedAge == ExpectChild then
                                             fail <| customError InvalidBirthDateForChild
                                             -- Invalid age for child.
@@ -558,8 +598,9 @@ validateBirthDate expectedAge maybeCurrentDate =
                                             -- Invalid age for adult.
 
                                         else
-                                            succeed maybeBirthDate
+                                            succeed (Just birthDate_)
                                     )
+                                |> Maybe.withDefault (fail <| customError InvalidBirthDate)
                         )
             )
 

@@ -1,5 +1,2 @@
-name,pass,email,role,clinics
-aya,aya,aya@example.com,nurse,clinic1|clinic2
-theo,theo,theo@example.com,,
-fabrice,fabrice,fabrice@example.com,,
-emmy,emmy,emmy@example.com,,
+name,pass,email,role
+gizra,2ASC$Hvm,gizra@example.com,administrator

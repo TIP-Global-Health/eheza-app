@@ -9,6 +9,7 @@ type alias Relationship =
     { person : PersonId
     , relatedTo : PersonId
     , relatedBy : RelatedBy
+    , shard : Maybe HealthCenterId
     }
 
 

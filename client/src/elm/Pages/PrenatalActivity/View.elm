@@ -25,7 +25,22 @@ import Pages.PrenatalActivity.Utils exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
-import Pages.Utils exposing (taskCompleted, taskListCompleted, viewBoolInput, viewCustomLabel, viewLabel, viewPhotoThumbFromPhotoUrl, viewQuestionLabel)
+import Pages.Utils
+    exposing
+        ( isTaskCompleted
+        , taskCompleted
+        , taskListCompleted
+        , tasksBarId
+        , viewBoolInput
+        , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectInput
+        , viewCustomLabel
+        , viewLabel
+        , viewMeasurementInput
+        , viewPhotoThumbFromPhotoUrl
+        , viewPreviousMeasurement
+        , viewQuestionLabel
+        )
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -42,7 +57,7 @@ view language currentDate id activity db model =
         content =
             viewWebData language (viewContent language currentDate activity model) identity data
     in
-    div [ class "page-prenatal-activity" ] <|
+    div [ class "page-activity prenatal" ] <|
         [ viewHeader language id activity
         , content
         ]
@@ -223,7 +238,7 @@ viewHistoryContent language currentDate assembled data_ =
             in
             div [ class "column" ]
                 [ a attributes
-                    [ span [ class <| "icon-history-task icon-" ++ iconClass ] []
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.HistoryTask task)
                     ]
                 ]
@@ -476,7 +491,7 @@ viewExaminationContent language currentDate assembled data =
             in
             div [ class <| "column " ++ iconClass ]
                 [ a attributes
-                    [ span [ class <| "icon-examination-task icon-" ++ iconClass ] []
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.ExaminationTask task)
                     ]
                 ]
@@ -757,7 +772,7 @@ viewPatientProvisionsContent language currentDate assembled data =
             in
             div [ class "column" ]
                 [ a attributes
-                    [ span [ class <| "icon-patient-provisions-task icon-" ++ iconClass ] []
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.PatientProvisionsTask task)
                     ]
                 ]
@@ -1577,19 +1592,19 @@ viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html 
 viewVitalsForm language currentDate assembled form =
     let
         sysBloodPressureUpdateFunc value form_ =
-            { form_ | sysBloodPressure = value }
+            { form_ | sysBloodPressure = value, sysBloodPressureDirty = True }
 
         diaBloodPressureUpdateFunc value form_ =
-            { form_ | diaBloodPressure = value }
+            { form_ | diaBloodPressure = value, diaBloodPressureDirty = True }
 
         heartRateUpdateFunc value form_ =
-            { form_ | heartRate = value }
+            { form_ | heartRate = value, heartRateDirty = True }
 
         respiratoryRateUpdateFunc value form_ =
-            { form_ | respiratoryRate = value }
+            { form_ | respiratoryRate = value, respiratoryRateDirty = True }
 
         bodyTemperatureUpdateFunc value form_ =
-            { form_ | bodyTemperature = value }
+            { form_ | bodyTemperature = value, bodyTemperatureDirty = True }
 
         sysBloodPressurePreviousValue =
             resolvePreviousValue assembled .vitals .sys
@@ -1704,16 +1719,16 @@ viewNutritionAssessmentForm : Language -> NominalDate -> AssembledData -> Nutrit
 viewNutritionAssessmentForm language currentDate assembled form hideHeightInput =
     let
         heightUpdateFunc value form_ =
-            { form_ | height = value }
+            { form_ | height = value, heightDirty = True }
 
         weightUpdateFunc value form_ =
-            { form_ | weight = value }
+            { form_ | weight = value, weightDirty = True }
 
         bmiUpdateFunc value form_ =
             form_
 
         muacUpdateFunc value form_ =
-            { form_ | muac = value }
+            { form_ | muac = value, muacDirty = True }
 
         heightPreviousValue =
             resolvePreviousValue assembled .nutrition .height
@@ -2028,10 +2043,10 @@ viewObstetricalExamForm language currentDate assembled form =
                     }
 
         fundalHeightUpdateFunc value form_ =
-            { form_ | fundalHeight = value }
+            { form_ | fundalHeight = value, fundalHeightDirty = True }
 
         fetalHeartRateUpdateFunc value form_ =
-            { form_ | fetalHeartRate = value }
+            { form_ | fetalHeartRate = value, fetalHeartRateDirty = True }
 
         fetalMovementUpdateFunc value form_ =
             { form_ | fetalMovement = Just value }
@@ -2202,17 +2217,51 @@ viewResourcesForm language currentDate assembled form =
 
 
 
--- Inputs
+-- Components
+
+
+viewRedAlertForSelect : List a -> List a -> Html any
+viewRedAlertForSelect actual normal =
+    viewAlertForSelect "red" actual normal
+
+
+viewYellowAlertForSelect : List a -> List a -> Html any
+viewYellowAlertForSelect actual normal =
+    viewAlertForSelect "yellow" actual normal
+
+
+viewAlertForSelect : String -> List a -> List a -> Html any
+viewAlertForSelect color actual normal =
+    if
+        List.isEmpty actual
+            || List.all
+                (\item ->
+                    List.member item normal
+                )
+                actual
+    then
+        emptyNode
+
+    else
+        div [ class <| "alert " ++ color ]
+            [ viewAlert color ]
+
+
+viewRedAlertForBool : Maybe Bool -> Bool -> Html any
+viewRedAlertForBool actual normal =
+    viewRedAlertForSelect
+        (actual |> Maybe.map List.singleton |> Maybe.withDefault [])
+        [ normal ]
 
 
 viewNumberInput :
     Language
     -> Maybe a
-    -> (String -> Msg)
+    -> (String -> msg)
     -> String
     -> TranslationId
     -> Maybe ( List (List (a -> Bool)), List (List (a -> Bool)) )
-    -> Html Msg
+    -> Html msg
 viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId maybeAlertConditions =
     let
         currentValue =
@@ -2250,140 +2299,6 @@ viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId 
             , alert
             ]
         ]
-
-
-viewCheckBoxSelectInput : Language -> List a -> List a -> Maybe a -> (a -> Msg) -> (a -> TranslationId) -> Html Msg
-viewCheckBoxSelectInput language leftOptions rightOptions currentValue setMsg translateFunc =
-    let
-        checkedOptions =
-            currentValue |> Maybe.map List.singleton |> Maybe.withDefault []
-    in
-    viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions Nothing setMsg translateFunc
-
-
-viewCheckBoxMultipleSelectInput : Language -> List a -> List a -> List a -> Maybe a -> (a -> Msg) -> (a -> TranslationId) -> Html Msg
-viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions noneOption setMsg translateFunc =
-    let
-        noneSection =
-            noneOption
-                |> unwrap
-                    []
-                    (\option ->
-                        [ div [ class "ui divider" ] []
-                        , viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc option
-                        ]
-                    )
-    in
-    div [ class "checkbox-select-input" ] <|
-        div [ class "ui grid" ]
-            [ leftOptions
-                |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc)
-                |> div [ class "eight wide column" ]
-            , rightOptions
-                |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc)
-                |> div [ class "eight wide column" ]
-            ]
-            :: noneSection
-
-
-viewCheckBoxSelectInputItem : Language -> List a -> (a -> Msg) -> (a -> TranslationId) -> a -> Html Msg
-viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc option =
-    let
-        isChecked =
-            List.member option checkedOptions
-    in
-    div
-        [ class "ui checkbox activity"
-        , onClick <| setMsg option
-        ]
-        [ input
-            [ type_ "checkbox"
-            , checked isChecked
-            , classList [ ( "checked", isChecked ) ]
-            ]
-            []
-        , label []
-            [ text <| translate language (translateFunc option) ]
-        ]
-
-
-viewMeasurementInput : Language -> Maybe Float -> (String -> Msg) -> String -> TranslationId -> Html Msg
-viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslationId =
-    let
-        currentValue =
-            maybeCurrentValue
-                |> Maybe.map Debug.toString
-                |> Maybe.withDefault ""
-
-        inputAttrs =
-            [ type_ "number"
-            , Html.Attributes.min "0"
-            , onInput setMsg
-            , value currentValue
-            ]
-    in
-    div [ class <| "form-input measurement " ++ inputClass ]
-        [ input inputAttrs []
-        , div [ class "unit" ]
-            [ text <| translate language unitTranslationId ]
-        ]
-
-
-
--- Components
-
-
-viewPreviousMeasurement : Language -> Maybe Float -> TranslationId -> Html any
-viewPreviousMeasurement language maybePreviousValue unitTranslationId =
-    let
-        message =
-            maybePreviousValue
-                |> unwrap
-                    (translate language Translate.PreviousMeasurementNotFound)
-                    (\previousValue ->
-                        (previousValue
-                            |> Translate.PreviousFloatMeasurement
-                            |> translate language
-                        )
-                            ++ " "
-                            ++ translate language unitTranslationId
-                    )
-    in
-    div [ class "previous-value" ] [ text message ]
-
-
-viewRedAlertForSelect : List a -> List a -> Html any
-viewRedAlertForSelect actual normal =
-    viewAlertForSelect "red" actual normal
-
-
-viewYellowAlertForSelect : List a -> List a -> Html any
-viewYellowAlertForSelect actual normal =
-    viewAlertForSelect "yellow" actual normal
-
-
-viewAlertForSelect : String -> List a -> List a -> Html any
-viewAlertForSelect color actual normal =
-    if
-        List.isEmpty actual
-            || List.all
-                (\item ->
-                    List.member item normal
-                )
-                actual
-    then
-        emptyNode
-
-    else
-        div [ class <| "alert " ++ color ]
-            [ viewAlert color ]
-
-
-viewRedAlertForBool : Maybe Bool -> Bool -> Html any
-viewRedAlertForBool actual normal =
-    viewRedAlertForSelect
-        (actual |> Maybe.map List.singleton |> Maybe.withDefault [])
-        [ normal ]
 
 
 {-| The idea here is that we get lists for red alert conditions, and yellow
@@ -2447,19 +2362,3 @@ viewAlert color =
             "assets/images/alert-" ++ color ++ ".png"
     in
     img [ src icon ] []
-
-
-
--- Helper functions
-
-
-resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
-resolvePreviousValue assembled measurementFunc valueFunc =
-    assembled.previousMeasurementsWithDates
-        |> List.filterMap
-            (\( _, measurements ) ->
-                measurementFunc measurements
-                    |> Maybe.map (Tuple.second >> .value >> valueFunc)
-            )
-        |> List.reverse
-        |> List.head

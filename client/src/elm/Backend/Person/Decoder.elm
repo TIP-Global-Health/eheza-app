@@ -33,6 +33,7 @@ decodePerson =
         |> optional "village" (nullable string) Nothing
         |> optional "phone_number" (nullable string) Nothing
         |> optional "health_center" (nullable decodeEntityUuid) Nothing
+        |> hardcoded Nothing
 
 
 decodeHivStatus : Decoder HIVStatus

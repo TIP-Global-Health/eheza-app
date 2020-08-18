@@ -31,7 +31,6 @@ import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import PrenatalActivity.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
-import Utils.NominalDate exposing (compareDates)
 
 
 calculateEDD : NominalDate -> NominalDate
@@ -89,18 +88,18 @@ generateGravida value =
                   )
     in
     if total < 10 then
-        "0" ++ Debug.toString total
+        "0" ++ String.fromInt total
 
     else
-        Debug.toString total
+        String.fromInt total
 
 
 generatePara : ObstetricHistoryValue -> String
 generatePara value =
-    Debug.toString (value.termPregnancy + value.stillbirthsAtTerm)
-        ++ Debug.toString (value.preTermPregnancy + value.stillbirthsPreTerm)
-        ++ Debug.toString value.abortions
-        ++ Debug.toString value.liveChildren
+    String.fromInt (value.termPregnancy + value.stillbirthsAtTerm)
+        ++ String.fromInt (value.preTermPregnancy + value.stillbirthsPreTerm)
+        ++ String.fromInt value.abortions
+        ++ String.fromInt value.liveChildren
 
 
 getLmpMeasurement : PrenatalMeasurements -> Maybe NominalDate
@@ -174,7 +173,7 @@ generatePreviousMeasurements currentEncounterId participantId db =
                                     Nothing
                     )
                 >> List.sortWith
-                    (\( date1, _ ) ( date2, _ ) -> compareDates date1 date2)
+                    (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date1 date2)
             )
 
 

@@ -2,7 +2,7 @@ module Pages.Person.View exposing (view, viewCreateEditForm)
 
 import App.Model
 import AssocList as Dict exposing (Dict)
-import Backend.Clinic.Model exposing (Clinic)
+import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
@@ -20,32 +20,34 @@ import Backend.Person.Model
         ( ExpectedAge(..)
         , ExpectedGender(..)
         , Gender(..)
+        , Initiator(..)
         , ParticipantDirectoryOperation(..)
         , Person
-        , RegistrationInitiator(..)
         , allEducationLevels
         , allHivStatuses
         , allMaritalStatuses
         , allModesOfDelivery
         , allUbudehes
         )
-import Backend.Person.Utils exposing (expectedAgeByPerson, isAdult, isPersonAnAdult)
+import Backend.Person.Utils exposing (defaultIconForPerson, expectedAgeByPerson, graduatingAgeInMonth, isAdult, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
+import Backend.Session.Utils exposing (getSession)
+import Backend.Village.Utils exposing (getVillageById)
 import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import Form exposing (Form)
 import Form.Field
 import Form.Input
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Person.Model exposing (..)
 import Pages.Utils exposing (viewPhotoThumb)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -59,8 +61,8 @@ import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
 
-view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate id db =
+view : Language -> NominalDate -> Bool -> Initiator -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate isChw initiator id db =
     let
         person =
             Dict.get id db.people
@@ -73,16 +75,20 @@ view language currentDate id db =
     in
     div
         [ class "page-person" ]
-        [ viewHeader language headerName
+        [ viewHeader language initiator headerName
         , div
             [ class "ui full segment blue" ]
-            [ viewWebData language (viewParticipantDetailsForm language currentDate db id) identity person
+            [ viewWebData language (viewParticipantDetailsForm language currentDate isChw initiator db id) identity person
             ]
         ]
 
 
-viewHeader : Language -> String -> Html App.Model.Msg
-viewHeader language name =
+viewHeader : Language -> Initiator -> String -> Html App.Model.Msg
+viewHeader language initiator name =
+    let
+        goBackPage =
+            UserPage (PersonsPage Nothing initiator)
+    in
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -90,7 +96,7 @@ viewHeader language name =
             [ text name ]
         , a
             [ class "link-back"
-            , onClick <| App.Model.SetActivePage PinCodePage
+            , onClick <| App.Model.SetActivePage goBackPage
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -108,8 +114,8 @@ type alias OtherPerson =
     }
 
 
-viewParticipantDetailsForm : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
-viewParticipantDetailsForm language currentDate db id person =
+viewParticipantDetailsForm : Language -> NominalDate -> Bool -> Initiator -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
+viewParticipantDetailsForm language currentDate isChw initiator db id person =
     let
         -- We re-organize our data about relatoinships and group participations
         -- so that we have one record per `OtherPerson`.
@@ -175,7 +181,7 @@ viewParticipantDetailsForm language currentDate db id person =
                         Dict.get otherPersonId db.people
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.append db.clinics
-                            |> viewWebData language (viewOtherPerson language currentDate id ( otherPersonId, otherPerson )) identity
+                            |> viewWebData language (viewOtherPerson language currentDate isChw initiator db id ( otherPersonId, otherPerson )) identity
                     )
                 |> Dict.values
                 |> div [ class "ui unstackable items participants-list" ]
@@ -219,7 +225,7 @@ viewParticipantDetailsForm language currentDate db id person =
                             [ class "action" ]
                             [ div
                                 [ class "add-participant-icon-wrapper"
-                                , onClick <| App.Model.SetActivePage <| UserPage <| PersonsPage (Just id)
+                                , onClick <| App.Model.SetActivePage <| UserPage <| PersonsPage (Just id) initiator
                                 ]
                                 [ span [ class "add-participant-icon" ] [] ]
                             ]
@@ -233,7 +239,7 @@ viewParticipantDetailsForm language currentDate db id person =
             [ text <| translate language Translate.DemographicInformation ++ ": " ]
         , div
             [ class "ui unstackable items participants-list" ]
-            [ viewPerson language currentDate id person ]
+            [ viewPerson language currentDate initiator db id person ]
         , h3
             [ class "ui header" ]
             [ text <| translate language Translate.FamilyMembers ++ ": " ]
@@ -243,32 +249,28 @@ viewParticipantDetailsForm language currentDate db id person =
         ]
 
 
-viewPerson : Language -> NominalDate -> PersonId -> Person -> Html App.Model.Msg
-viewPerson language currentDate id person =
+viewPerson : Language -> NominalDate -> Initiator -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
+viewPerson language currentDate initiator db id person =
     let
         typeForThumbnail =
-            case isPersonAnAdult currentDate person of
-                Just True ->
-                    "mother"
-
-                Just False ->
-                    "child"
-
-                Nothing ->
-                    "mother"
+            defaultIconForPerson currentDate person
 
         action =
-            div
-                [ class "action" ]
-                [ div
-                    [ class "action-icon-wrapper" ]
-                    [ span
-                        [ class "action-icon edit"
-                        , onClick <| App.Model.SetActivePage <| UserPage <| EditPersonPage id
+            if initiator == ParticipantDirectoryOrigin then
+                div
+                    [ class "action" ]
+                    [ div
+                        [ class "action-icon-wrapper" ]
+                        [ span
+                            [ class "action-icon edit"
+                            , onClick <| App.Model.SetActivePage <| UserPage <| EditPersonPage id
+                            ]
+                            []
                         ]
-                        []
                     ]
-                ]
+
+            else
+                emptyNode
 
         content =
             div [ class "content" ]
@@ -302,19 +304,15 @@ viewPerson language currentDate id person =
         ]
 
 
-viewOtherPerson : Language -> NominalDate -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
-viewOtherPerson language currentDate relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
+viewOtherPerson : Language -> NominalDate -> Bool -> Initiator -> ModelIndexedDb -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
+viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
     let
         typeForThumbnail =
-            case isPersonAnAdult currentDate person of
-                Just True ->
-                    "mother"
+            defaultIconForPerson currentDate person
 
-                Just False ->
-                    "child"
-
-                Nothing ->
-                    "mother"
+        isAdult =
+            isPersonAnAdult currentDate person
+                |> Maybe.withDefault True
 
         relationshipLabel =
             otherPerson.relationship
@@ -329,31 +327,79 @@ viewOtherPerson language currentDate relationMainId ( otherPersonId, otherPerson
                     )
                 |> Maybe.withDefault emptyNode
 
-        groupNames =
-            otherPerson.groups
-                |> List.map (\( _, group ) -> Dict.get group.clinic clinics)
-                |> List.filterMap (Maybe.map .name)
-                |> String.join ", "
+        ( groups, action ) =
+            if isChw then
+                ( emptyNode, emptyNode )
 
-        groups =
-            p
-                []
-                [ label [] [ text <| translate language Translate.Groups ++ ": " ]
-                , span [] [ text groupNames ]
-                ]
+            else
+                let
+                    groupNames =
+                        otherPerson.groups
+                            |> List.map (\( _, group ) -> Dict.get group.clinic clinics)
+                            |> List.filterMap (Maybe.map .name)
+                            |> String.join ", "
 
-        action =
-            div
-                [ class "action" ]
-                [ div
-                    [ class "action-icon-wrapper" ]
-                    [ span
-                        [ class "action-icon forward"
-                        , onClick <| App.Model.SetActivePage <| UserPage <| RelationshipPage relationMainId otherPersonId
-                        ]
-                        []
+                    viewGoToRelationshipPageArrow =
+                        div
+                            [ class "action" ]
+                            [ div
+                                [ class "action-icon-wrapper" ]
+                                [ span
+                                    [ class "action-icon forward"
+                                    , onClick <| App.Model.SetActivePage <| UserPage <| RelationshipPage relationMainId otherPersonId initiator
+                                    ]
+                                    []
+                                ]
+                            ]
+                in
+                ( p []
+                    [ label [] [ text <| translate language Translate.Groups ++ ": " ]
+                    , span [] [ text groupNames ]
                     ]
-                ]
+                , case initiator of
+                    ParticipantDirectoryOrigin ->
+                        viewGoToRelationshipPageArrow
+
+                    IndividualEncounterOrigin _ ->
+                        -- For now, we do not use this page for individual encounters.
+                        -- Those got their own dedicated page.
+                        emptyNode
+
+                    GroupEncounterOrigin sessionId ->
+                        -- We show the arrow only when person does not yet
+                        -- a participant of clinic to which initating session belongs.
+                        -- Also, when person is a child, we examine clinic type and
+                        -- age, to determine whether or not to show the arrow.
+                        getSession sessionId db
+                            |> Maybe.map
+                                (\session ->
+                                    let
+                                        -- Allow any adult. Allow any child, when clinic type is other
+                                        -- than Sorwathe. When clinic is Sorwathe, do allow child
+                                        -- with age lower than 26 month.
+                                        qualifiesByAge =
+                                            isAdult || session.clinicType == Sorwathe || childAgeCondition
+
+                                        -- When clinic type is other than Sorwathe, we expect child age
+                                        -- to be less than 26 month.
+                                        childAgeCondition =
+                                            person.birthDate
+                                                |> Maybe.map (\birthDate -> diffMonths birthDate currentDate < graduatingAgeInMonth)
+                                                |> Maybe.withDefault False
+
+                                        alreadyParticipates =
+                                            otherPerson.groups
+                                                |> List.map (Tuple.second >> .clinic)
+                                                |> List.member session.clinicId
+                                    in
+                                    if alreadyParticipates || not qualifiesByAge then
+                                        emptyNode
+
+                                    else
+                                        viewGoToRelationshipPageArrow
+                                )
+                            |> Maybe.withDefault emptyNode
+                )
 
         content =
             div [ class "content" ]
@@ -401,8 +447,8 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateEditForm : Language -> NominalDate -> ParticipantDirectoryOperation -> RegistrationInitiator -> Model -> ModelIndexedDb -> Html Msg
-viewCreateEditForm language currentDate operation initiator model db =
+viewCreateEditForm : Language -> NominalDate -> Maybe VillageId -> Bool -> ParticipantDirectoryOperation -> Initiator -> Model -> ModelIndexedDb -> Html Msg
+viewCreateEditForm language currentDate maybeVillageId isChw operation initiator model db =
     let
         formBeforeDefaults =
             model.form
@@ -423,11 +469,15 @@ viewCreateEditForm language currentDate operation initiator model db =
                 |> Maybe.andThen (\id -> Dict.get id db.people)
                 |> Maybe.andThen RemoteData.toMaybe
 
+        maybeVillage =
+            maybeVillageId
+                |> Maybe.andThen (getVillageById db)
+
         today =
             currentDate
 
         personForm =
-            applyDefaultValues maybeRelatedPerson operation currentDate formBeforeDefaults
+            applyDefaultValues currentDate maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
 
         request =
             db.postPerson
@@ -442,13 +492,13 @@ viewCreateEditForm language currentDate operation initiator model db =
                         goBackPage =
                             case operation of
                                 CreatePerson _ ->
-                                    UserPage <| PersonsPage personId
+                                    UserPage <| PersonsPage personId initiator
 
                                 EditPerson _ ->
                                     personId
                                         |> Maybe.map
                                             (\personId_ ->
-                                                UserPage <| PersonPage personId_
+                                                UserPage <| PersonPage personId_ initiator
                                             )
                                         |> Maybe.withDefault PinCodePage
 
@@ -487,12 +537,32 @@ viewCreateEditForm language currentDate operation initiator model db =
 
                 IndividualEncounterOrigin encounterType ->
                     case encounterType of
+                        AcuteIllnessEncounter ->
+                            let
+                                expectedAge =
+                                    expectedAgeByForm currentDate personForm operation
+                            in
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage AcuteIllnessEncounter)
+                            , expectedAge = expectedAge
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -90 today
+                            , birthDateSelectorTo = today
+                            }
+
                         AntenatalEncounter ->
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage AntenatalEncounter)
                             , expectedAge = ExpectAdult
                             , expectedGender = ExpectFemale
                             , birthDateSelectorFrom = Date.add Years -45 today
                             , birthDateSelectorTo = Date.add Years -13 today
+                            }
+
+                        NutritionEncounter ->
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage NutritionEncounter)
+                            , expectedAge = ExpectChild
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -5 today
+                            , birthDateSelectorTo = today
                             }
 
                         -- This will be redefined after we add support for more
@@ -504,6 +574,58 @@ viewCreateEditForm language currentDate operation initiator model db =
                             , birthDateSelectorFrom = Date.add Years -60 today
                             , birthDateSelectorTo = today
                             }
+
+                GroupEncounterOrigin sessionId ->
+                    let
+                        expectedAge =
+                            maybeRelatedPerson
+                                |> Maybe.map
+                                    (\related -> expectedAgeByPerson currentDate related operation)
+                                -- If we don't have a related person, or don't know whether
+                                -- that person is an adult, then we check whether a birthdate
+                                -- has been entered into the form so far.
+                                |> Maybe.withDefault (expectedAgeByForm currentDate personForm operation)
+
+                        ( birthDateSelectorFrom, birthDateSelectorTo ) =
+                            case operation of
+                                -- When creating with relation, limit child age
+                                -- according to type of clinic to which session belongs.
+                                CreatePerson (Just _) ->
+                                    case expectedAge of
+                                        ExpectChild ->
+                                            let
+                                                defaultMaximalAge =
+                                                    Date.add Years -13 currentDate
+
+                                                maximalAge =
+                                                    getSession sessionId db
+                                                        |> Maybe.map
+                                                            (\session ->
+                                                                if session.clinicType /= Sorwathe then
+                                                                    Date.add Months (-1 * graduatingAgeInMonth) currentDate
+
+                                                                else
+                                                                    defaultMaximalAge
+                                                            )
+                                                        |> Maybe.withDefault defaultMaximalAge
+                                            in
+                                            ( maximalAge, currentDate )
+
+                                        ExpectAdult ->
+                                            ( Date.add Years -60 currentDate, Date.add Years -13 currentDate )
+
+                                        ExpectAdultOrChild ->
+                                            ( Date.add Years -60 currentDate, currentDate )
+
+                                _ ->
+                                    ( Date.add Years -60 currentDate, currentDate )
+                    in
+                    { goBackPage = UserPage (PersonsPage personId initiator)
+                    , expectedAge = expectedAge
+                    , expectedGender = ExpectMaleOrFemale
+                    , birthDateSelectorFrom = birthDateSelectorFrom
+                    , birthDateSelectorTo = birthDateSelectorTo
+                    }
 
         header =
             div [ class "ui basic segment head" ]
@@ -633,7 +755,7 @@ viewCreateEditForm language currentDate operation initiator model db =
             allEducationLevels
                 |> List.map
                     (\level ->
-                        ( Debug.toString (encodeEducationLevel level)
+                        ( String.fromInt (encodeEducationLevel level)
                         , translate language (Translate.LevelOfEducation level)
                         )
                     )
@@ -733,7 +855,7 @@ viewCreateEditForm language currentDate operation initiator model db =
                 options =
                     emptyOption
                         :: (List.repeat 5 "."
-                                |> List.indexedMap (\index _ -> ( Debug.toString index, Debug.toString index ))
+                                |> List.indexedMap (\index _ -> ( String.fromInt index, String.fromInt index ))
                            )
             in
             viewSelectInput language Translate.NumberOfChildrenUnder5 options Backend.Person.Form.numberOfChildren "ten" "select-input" False personForm
@@ -782,8 +904,8 @@ viewCreateEditForm language currentDate operation initiator model db =
             allUbudehes
                 |> List.map
                     (\ubudehe ->
-                        ( Debug.toString (encodeUbudehe ubudehe)
-                        , Debug.toString (encodeUbudehe ubudehe)
+                        ( String.fromInt (encodeUbudehe ubudehe)
+                        , String.fromInt (encodeUbudehe ubudehe)
                         )
                     )
                 |> (::) emptyOption
@@ -797,7 +919,7 @@ viewCreateEditForm language currentDate operation initiator model db =
                 |> Dict.toList
                 |> List.map
                     (\( id, geoLocation ) ->
-                        ( Debug.toString <| fromEntityId id, geoLocation.name )
+                        ( String.fromInt <| fromEntityId id, geoLocation.name )
                     )
 
         filterGeoLocationDictByParent parentId dict =
@@ -974,6 +1096,19 @@ viewCreateEditForm language currentDate operation initiator model db =
             , viewVillage
             ]
 
+        addressSection =
+            if isChw then
+                []
+
+            else
+                [ h3
+                    [ class "ui header" ]
+                    [ text <| translate language Translate.AddressInformation ++ ":" ]
+                , addressFields
+                    |> fieldset [ class "registration-form address-info" ]
+                    |> Html.map (MsgForm operation initiator)
+                ]
+
         contactInformationSection =
             if originBasedSettings.expectedAge /= ExpectChild then
                 [ h3
@@ -991,41 +1126,45 @@ viewCreateEditForm language currentDate operation initiator model db =
             Form.getFieldAsString Backend.Person.Form.healthCenter personForm
 
         healthCenterSection =
-            let
-                inputClass =
-                    "select-input"
-                        ++ (if isEditOperation && isFormFieldSet healthCenter then
-                                " disabled"
+            if isChw then
+                []
 
-                            else
-                                ""
-                           )
+            else
+                let
+                    inputClass =
+                        "select-input"
+                            ++ (if isEditOperation && isFormFieldSet healthCenter then
+                                    " disabled"
 
-                options =
-                    emptyOption
-                        :: (db.healthCenters
-                                |> RemoteData.map
-                                    (\dict ->
-                                        dict
-                                            |> Dict.toList
-                                            |> List.map
-                                                (\( id, healthCenter_ ) ->
-                                                    ( fromEntityUuid id
-                                                    , healthCenter_.name
+                                else
+                                    ""
+                               )
+
+                    options =
+                        emptyOption
+                            :: (db.healthCenters
+                                    |> RemoteData.map
+                                        (\dict ->
+                                            dict
+                                                |> Dict.toList
+                                                |> List.map
+                                                    (\( id, healthCenter_ ) ->
+                                                        ( fromEntityUuid id
+                                                        , healthCenter_.name
+                                                        )
                                                     )
-                                                )
-                                            |> List.sortBy (\( id, name ) -> name)
-                                    )
-                                |> RemoteData.withDefault []
-                           )
-            in
-            [ h3
-                [ class "ui header" ]
-                [ text <| translate language Translate.RegistratingHealthCenter ++ ":" ]
-            , [ viewSelectInput language Translate.HealthCenter options Backend.Person.Form.healthCenter "ten" inputClass True personForm ]
-                |> fieldset [ class "registration-form health-center" ]
-                |> Html.map (MsgForm operation initiator)
-            ]
+                                                |> List.sortBy (\( id, name ) -> name)
+                                        )
+                                    |> RemoteData.withDefault []
+                               )
+                in
+                [ h3
+                    [ class "ui header" ]
+                    [ text <| translate language Translate.RegistratingHealthCenter ++ ":" ]
+                , [ viewSelectInput language Translate.HealthCenter options Backend.Person.Form.healthCenter "ten" inputClass True personForm ]
+                    |> fieldset [ class "registration-form health-center" ]
+                    |> Html.map (MsgForm operation initiator)
+                ]
 
         submitButton =
             button
@@ -1051,13 +1190,8 @@ viewCreateEditForm language currentDate operation initiator model db =
             , familyInformationFields
                 |> fieldset [ class "registration-form family-info" ]
                 |> Html.map (MsgForm operation initiator)
-            , h3
-                [ class "ui header" ]
-                [ text <| translate language Translate.AddressInformation ++ ":" ]
-            , addressFields
-                |> fieldset [ class "registration-form address-info" ]
-                |> Html.map (MsgForm operation initiator)
             ]
+                ++ addressSection
                 ++ contactInformationSection
                 ++ healthCenterSection
                 ++ [ p [] []

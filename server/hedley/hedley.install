@@ -36,6 +36,9 @@ function hedley_install() {
   // Setup private files.
   variable_set('file_private_path', 'sites/default/files/private');
 
+  // Set authentication token expiration period to 5 years.
+  variable_set('restful_token_auth_expiration_period', 'P5Y');
+
   // Perform several of the updates that aren't handled in
   // `hedley_standard_install`, and are needed on a fresh install.
   hedley_update_7002();
@@ -562,3 +565,30 @@ function hedley_update_7024() {
   module_enable(['smtp']);
   variable_set('smtp_on', TRUE);
 }
+
+/**
+ * Enable hedley_chw module.
+ */
+function hedley_update_7025() {
+  $modules = ['hedley_chw'];
+  module_enable($modules);
+}
+
+/**
+ * Enable and configure mailsystem model.
+ */
+function hedley_update_7026() {
+  $modules = ['mailsystem'];
+  module_enable($modules);
+
+  variable_set('mail_system', array('default-system' => 'SmtpMailSystem'));
+}
+
+/**
+ * Enable hedley_acute_illness module.
+ */
+function hedley_update_7027() {
+  $modules = ['hedley_acute_illness'];
+  module_enable($modules);
+}
+

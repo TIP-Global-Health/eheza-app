@@ -1,13 +1,14 @@
-module Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getMotherForm)
+module Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getMotherForm, resolvePreviousValueInCommonContext, withinConstraints)
 
 import Activity.Utils exposing (expectCounselingActivity, expectParticipantConsent)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
+import Backend.Measurement.Utils exposing (currentValue, currentValues, fbfValueToForm, lactationSignsToForm, mapMeasurementData)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
 import EverySet
+import Gizra.NominalDate exposing (NominalDate)
 import LocalData
 import Measurement.Model exposing (..)
 import Pages.Session.Model
@@ -15,22 +16,22 @@ import Pages.Session.Model
 
 getInputConstraintsHeight : FloatInputConstraints
 getInputConstraintsHeight =
-    { minVal = 0.5
-    , maxVal = 100
+    { minVal = 25
+    , maxVal = 250
     }
 
 
 getInputConstraintsMuac : FloatInputConstraints
 getInputConstraintsMuac =
-    { minVal = 0.5
-    , maxVal = 40
+    { minVal = 5
+    , maxVal = 99
     }
 
 
 getInputConstraintsWeight : FloatInputConstraints
 getInputConstraintsWeight =
     { minVal = 0.5
-    , maxVal = 60
+    , maxVal = 200
     }
 
 
@@ -74,6 +75,12 @@ fromChildMeasurementData data =
             |> currentValue
             |> Maybe.map (.value >> (\(WeightInKg kg) -> String.fromFloat kg))
             |> Maybe.withDefault ""
+    , fbfForm =
+        data
+            |> mapMeasurementData .fbf
+            |> currentValue
+            |> Maybe.map (.value >> fbfValueToForm)
+            |> Maybe.withDefault (FbfForm Nothing Nothing)
     }
 
 
@@ -102,6 +109,18 @@ fromMotherMeasurementData data =
         , view = Nothing
         , progress = progress
         }
+    , lactationForm =
+        data
+            |> mapMeasurementData .lactation
+            |> currentValue
+            |> Maybe.map (.value >> lactationSignsToForm)
+            |> Maybe.withDefault (LactationForm Nothing)
+    , fbfForm =
+        data
+            |> mapMeasurementData .fbf
+            |> currentValue
+            |> Maybe.map (.value >> fbfValueToForm)
+            |> Maybe.withDefault (FbfForm Nothing Nothing)
     }
 
 
@@ -163,3 +182,31 @@ getChildForm childId pages session =
                                         }
                            )
                     )
+
+
+{-| Here we get a Float measurement value with it's date\_measured, from group and individual contexts.
+We return the most recent value, or Nothing, if both provided parameters were Nothing.
+-}
+resolvePreviousValueInCommonContext : Maybe ( NominalDate, Float ) -> Maybe ( NominalDate, Float ) -> Maybe Float
+resolvePreviousValueInCommonContext previousGroupMeasurement previousIndividualMeasurement =
+    case previousGroupMeasurement of
+        Just ( pgmDate, pgmValue ) ->
+            case previousIndividualMeasurement of
+                Just ( pimDate, pimValue ) ->
+                    case Gizra.NominalDate.compare pgmDate pimDate of
+                        GT ->
+                            Just pgmValue
+
+                        _ ->
+                            Just pimValue
+
+                Nothing ->
+                    Just pgmValue
+
+        Nothing ->
+            Maybe.map Tuple.second previousIndividualMeasurement
+
+
+withinConstraints : FloatInputConstraints -> Float -> Bool
+withinConstraints constraints value =
+    value >= constraints.minVal && value <= constraints.maxVal

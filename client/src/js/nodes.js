@@ -41,6 +41,12 @@
                     else if (type === 'prenatal-measurements') {
                         return event.respondWith(viewMeasurements('prenatal_encounter', uuid));
                     }
+                    else if (type === 'nutrition-measurements') {
+                        return event.respondWith(viewMeasurements('nutrition_encounter', uuid));
+                    }
+                    else if (type === 'acute-illness-measurements') {
+                        return event.respondWith(viewMeasurements('acute_illness_encounter', uuid));
+                    }
                     else {
                         return event.respondWith(view(type, uuid));
                     }
@@ -82,47 +88,6 @@
         }
     });
 
-    var tableForType = {
-        attendance: 'shards',
-        breast_exam: 'shards',
-        catchment_area: 'nodes',
-        clinic: 'nodes',
-        counseling_schedule: 'nodes',
-        counseling_session: 'shards',
-        counseling_topic: 'nodes',
-        core_physical_exam: 'shards',
-        danger_signs: 'shards',
-        family_planning: 'shards',
-        health_center: 'nodes',
-        height: 'shards',
-        last_menstrual_period: 'shards',
-        medical_history: 'shards',
-        medication: 'shards',
-        muac: 'shards',
-        nurse: 'nodes',
-        nutrition: 'shards',
-        obstetric_history: 'shards',
-        obstetric_history_step2: 'shards',
-        obstetrical_exam: 'shards',
-        participant_consent: 'shards',
-        participant_form: 'nodes',
-        person: 'nodes',
-        photo: 'shards',
-        prenatal_photo: 'shards',
-        pmtct_participant: 'nodes',
-        prenatal_family_planning: 'shards',
-        prenatal_nutrition: 'shards',
-        individual_participant: 'nodes',
-        prenatal_encounter: 'nodes',
-        relationship: 'nodes',
-        resource: 'shards',
-        session: 'nodes',
-        social_history: 'shards',
-        syncmetadata: 'syncMetadata',
-        vitals: 'shards',
-        weight: 'shards'
-    };
-
     var Status = {
         published: 1,
         unpublished: 0
@@ -130,10 +95,9 @@
 
     function expectedOnDate (participation, sessionDate) {
         var joinedGroupBeforeSession = participation.expected.value <= sessionDate;
-        var notLeftGroup = !participation.expected.value2 || (participation.expected.value === participation.expected.value2);
-        var leftGroupAfterSession = participation.expected.value2 > sessionDate;
+        var notLeftGroup = !participation.expected.value2 || participation.expected.value2 > sessionDate;
 
-        return joinedGroupBeforeSession && (notLeftGroup || leftGroupAfterSession);
+        return joinedGroupBeforeSession && notLeftGroup;
     }
 
     function getTableForType (type) {
@@ -401,6 +365,23 @@
         }).catch(sendErrorResponses);
     }
 
+    // A list of all types of measuremnts that can be
+    // taken during groups encounter.
+    var groupMeasurementTypes = [
+      'attendance',
+      'counseling_session',
+      'child_fbf',
+      'family_planning',
+      'height',
+      'lactation',
+      'mother_fbf',
+      'muac',
+      'nutrition',
+      'participant_consent',
+      'photo',
+      'weight'
+    ];
+
     // This is a kind of special-case for now, at least. We're wanting to get
     // back all of measuremnts for whom the key is equal to the value.
     //
@@ -423,12 +404,25 @@
         });
 
         return query.toArray().catch(databaseError).then(function (nodes) {
-            // We could also check that the type is the expected type.
             if (nodes) {
                 nodes.forEach(function (node) {
                     var target = node.person;
-                    if (key === 'prenatal_encounter') {
-                      target = node.prenatal_encounter;
+                    if (key === 'person') {
+                        // Check that node type for group encounter is one
+                        // of mother / child measurements. See full list at
+                        // groupMeasurementTypes array.
+                        if (!groupMeasurementTypes.includes(node.type)) {
+                          return;
+                        }
+                    }
+                    else if (key === 'prenatal_encounter') {
+                        target = node.prenatal_encounter;
+                    }
+                    else if (key === 'nutrition_encounter') {
+                        target = node.nutrition_encounter;
+                    }
+                    else if (key === 'acute_illness_encounter') {
+                      target = node.acute_illness_encounter;
                     }
 
                     data[target] = data[target] || {};
@@ -549,11 +543,11 @@
                     }
                 }
 
-                if (type === 'prenatal_encounter') {
-                  var prenatalSessionId = params.get('individual_participant');
-                  if (prenatalSessionId) {
+                if (type === 'prenatal_encounter' || type === 'nutrition_encounter' || type === 'acute_illness_encounter') {
+                  var individualSessionId = params.get('individual_participant');
+                  if (individualSessionId) {
                     modifyQuery = modifyQuery.then(function () {
-                        criteria.individual_participant = prenatalSessionId;
+                        criteria.individual_participant = individualSessionId;
                         query = table.where(criteria);
 
                         countQuery = query.clone();
@@ -572,20 +566,18 @@
                             return table.where({
                                 type: 'pmtct_participant',
                                 person: childId
-                            }).first().then(function (participation) {
-                                if (participation) {
-                                    criteria.clinic = participation.clinic;
+                            }).toArray().then(function (participations) {
+                                var clinics = [];
+                                participations.forEach(function(participation) {
+                                  clinics.push(['session', participation.clinic]);
+                                })
 
-                                    query = table.where(criteria).and(function (session) {
-                                        return expectedOnDate(participation, session.scheduled_date.value)
-                                    });
+                                query = table.where('[type+clinic]').anyOf(clinics);
 
-                                    countQuery = query.clone();
+                                // Cloning doesn't seem to work for this one.
+                                countQuery = table.where('[type+clinic]').anyOf(clinics);
 
-                                    return Promise.resolve();
-                                } else {
-                                    return Promise.reject('Could not find participation for child: ' + childId);
-                                }
+                                return Promise.resolve();
                             });
                         });
                     }
@@ -593,6 +585,7 @@
 
                 return modifyQuery.then(function () {
                     return countQuery.count().catch(databaseError).then(function (count) {
+
                         if (offset > 0) {
                             query.offset(offset);
                         }
@@ -626,31 +619,49 @@
         }).catch(sendErrorResponses);
     }
 
-    // It's not entirely clear whose job it ought to be to figure out what
-    // shard a node should be assigned to. For now, it seems simplest to do it
-    // here, but we can revisit that.
     function determineShard (node) {
+        // Shraded nodes that specifically specify their shard.
+        // To be more precise, these are individual participants,
+        // individual encounters, persons and relationships.
+        // This check must be first, so the shard field would not get
+        // overriden by health_center field, when both of them exist
+        // at node - for example, at perosn node.
+        if (node.shard) {
+            return Promise.resolve(node.shard);
+        }
+
+        // Resolving for group measurements.
+        if (node.session) {
+            return dbSync.shards.get(node.session).then (function (session) {
+                return resolveShardByClinicId(session.clinic)
+            });
+        }
+
+        // Resolving for individual measurements.
         if (node.health_center) {
             return Promise.resolve(node.health_center);
         }
 
-        if (node.session) {
-            return dbSync.nodes.get(node.session).then (function (session) {
-                return dbSync.nodes.get(session.clinic).then(function (clinic) {
-                    if (clinic) {
-                        if (clinic.health_center) {
-                            return Promise.resolve(clinic.health_center);
-                        } else {
-                            return Promise.reject('Clinic had no health_center: ' + clinic.uuid);
-                        }
-                    } else {
-                        return Promise.reject('Could not find clinic: ' + session.clinic);
-                    }
-                });
-            });
-        } else {
-            return Promise.reject('Node had no session field: ' + node.uuid);
+        // Resolving for pmtct_participant.
+        if (node.clinic) {
+            return resolveShardByClinicId(node.clinic);
         }
+
+        return Promise.reject('Node ' + node.uuid + ' got no fields using which shard can be resolved!' );
+    }
+
+    function resolveShardByClinicId (clinicId) {
+      return dbSync.shards.get(clinicId).then(function (clinic) {
+          if (clinic) {
+              if (clinic.health_center) {
+                  return Promise.resolve(clinic.health_center);
+              } else {
+                  return Promise.reject('Clinic had no health_center: ' + clinic.uuid);
+              }
+          } else {
+              return Promise.reject('Could not find clinic: ' + session.clinic);
+          }
+      });
     }
 
     // This is meant for the end of a promise chain. If we've rejected with a

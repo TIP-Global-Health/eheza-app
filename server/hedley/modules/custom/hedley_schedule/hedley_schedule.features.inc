@@ -19,6 +19,14 @@ function hedley_schedule_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function hedley_schedule_node_info() {
   $items = array(
+    'acute_illness_encounter' => array(
+      'name' => t('Acute Illness Encounter'),
+      'base' => 'node_content',
+      'description' => t('Tracks a visit by a person in which acute illness activities are performed.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'clinic' => array(
       'name' => t('Group'),
       'base' => 'node_content',
@@ -55,6 +63,14 @@ function hedley_schedule_node_info() {
       'name' => t('Individual Participant'),
       'base' => 'node_content',
       'description' => t('Identifies a person as a participant in individual encounter activities, according to type of individual encounter.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'nutrition_encounter' => array(
+      'name' => t('Nutrition Encounter'),
+      'base' => 'node_content',
+      'description' => t('Tracks a visit by a child in which nutrition activities are performed.'),
       'has_title' => '1',
       'title_label' => t('Title'),
       'help' => '',

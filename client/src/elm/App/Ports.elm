@@ -1,4 +1,4 @@
-port module App.Ports exposing (bindDropZone, cacheHealthCenter, cachePinCode, memoryQuota, persistentStorage, pusherKey, scrollToElement, setLanguage, storageQuota, trySyncing)
+port module App.Ports exposing (bindDropZone, cacheHealthCenter, cachePinCode, cacheVillage, memoryQuota, persistentStorage, pusherKey, scrollToElement, setLanguage, storageQuota, trySyncing)
 
 import App.Model exposing (MemoryQuota, StorageQuota)
 
@@ -44,6 +44,9 @@ port storageQuota : (StorageQuota -> msg) -> Sub msg
 the browser is reloaded.
 -}
 port cacheHealthCenter : String -> Cmd msg
+
+
+port cacheVillage : String -> Cmd msg
 
 
 port bindDropZone : () -> Cmd msg

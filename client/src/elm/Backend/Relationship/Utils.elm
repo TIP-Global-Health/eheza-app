@@ -43,29 +43,33 @@ toMyRelationship id relationship =
 {-| Reverse the above ... that is, turn a `MyRelationship` back into the
 normalized form we use in the database.
 -}
-toRelationship : PersonId -> MyRelationship -> Relationship
-toRelationship personId myRelationship =
+toRelationship : PersonId -> MyRelationship -> Maybe HealthCenterId -> Relationship
+toRelationship personId myRelationship shard =
     case myRelationship.relatedBy of
         MyParent ->
             { person = myRelationship.relatedTo
             , relatedTo = personId
             , relatedBy = ParentOf
+            , shard = shard
             }
 
         MyChild ->
             { person = personId
             , relatedTo = myRelationship.relatedTo
             , relatedBy = ParentOf
+            , shard = shard
             }
 
         MyCaregiver ->
             { person = myRelationship.relatedTo
             , relatedTo = personId
             , relatedBy = CaregiverFor
+            , shard = shard
             }
 
         MyCaregiven ->
             { person = personId
             , relatedTo = myRelationship.relatedTo
             , relatedBy = CaregiverFor
+            , shard = shard
             }

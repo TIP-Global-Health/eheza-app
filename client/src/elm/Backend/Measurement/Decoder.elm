@@ -1,33 +1,4 @@
-module Backend.Measurement.Decoder exposing
-    ( decodeAttendance
-    , decodeBreastExam
-    , decodeChildMeasurementList
-    , decodeCorePhysicalExam
-    , decodeCounselingSession
-    , decodeDangerSigns
-    , decodeFamilyPlanning
-    , decodeHeight
-    , decodeLastMenstrualPeriod
-    , decodeMedicalHistory
-    , decodeMedication
-    , decodeMotherMeasurementList
-    , decodeMuac
-    , decodeNutrition
-    , decodeObstetricHistory
-    , decodeObstetricHistoryStep2
-    , decodeObstetricalExam
-    , decodeParticipantConsent
-    , decodePhoto
-    , decodePrenatalFamilyPlanning
-    , decodePrenatalMeasurements
-    , decodePrenatalNutrition
-    , decodePrenatalPhoto
-    , decodeResource
-    , decodeSocialHistory
-    , decodeSocialHistoryHivTestingResult
-    , decodeVitals
-    , decodeWeight
-    )
+module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAcuteFindings, decodeAcuteFindingsGeneralSign, decodeAcuteFindingsRespiratorySign, decodeAcuteIllnessMeasurement, decodeAcuteIllnessMeasurements, decodeAcuteIllnessVitals, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeDistributionNotice, decodeExposure, decodeExposureSign, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFbf, decodeFbfValue, decodeFetalPresentation, decodeGroupMeasurement, decodeHCContact, decodeHCContactSign, decodeHCRecomendation, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeIsolation, decodeIsolationSign, decodeLactation, decodeLactationSign, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMalariaRapidTestResult, decodeMalariaTesting, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationDistribution, decodeMedicationDistributionSign, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionHeight, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionMuac, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeReasonForNotIsolating, decodeResource, decodeResourceSign, decodeResponsePeriod, decodeSendToHC, decodeSendToHCSign, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeSymptomsGI, decodeSymptomsGIDerivedSign, decodeSymptomsGIDict, decodeSymptomsGeneral, decodeSymptomsRespiratory, decodeTravelHistory, decodeTravelHistorySign, decodeTreatmentReview, decodeTreatmentReviewSign, decodeVitals, decodeWeight, decodeWithEntityUuid, malariaRapidTestResultFromString, symptomsGIToDict, symptomsGeneralToDict, symptomsRespiratoryToDict)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
@@ -50,6 +21,16 @@ decodeGroupMeasurement =
 decodePrenatalMeasurement : Decoder value -> Decoder (Measurement PrenatalEncounterId value)
 decodePrenatalMeasurement =
     decodeMeasurement "prenatal_encounter"
+
+
+decodeNutritionMeasurement : Decoder value -> Decoder (Measurement NutritionEncounterId value)
+decodeNutritionMeasurement =
+    decodeMeasurement "nutrition_encounter"
+
+
+decodeAcuteIllnessMeasurement : Decoder value -> Decoder (Measurement AcuteIllnessEncounterId value)
+decodeAcuteIllnessMeasurement =
+    decodeMeasurement "acute_illness_encounter"
 
 
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
@@ -76,6 +57,8 @@ decodeMotherMeasurementList =
         |> optional "attendance" (map Dict.fromList <| list (decodeWithEntityUuid decodeAttendance)) Dict.empty
         |> optional "family_planning" (map Dict.fromList <| list (decodeWithEntityUuid decodeFamilyPlanning)) Dict.empty
         |> optional "participant_consent" (map Dict.fromList <| list (decodeWithEntityUuid decodeParticipantConsent)) Dict.empty
+        |> optional "lactation" (map Dict.fromList <| list (decodeWithEntityUuid decodeLactation)) Dict.empty
+        |> optional "mother_fbf" (map Dict.fromList <| list (decodeWithEntityUuid decodeFbf)) Dict.empty
 
 
 decodeChildMeasurementList : Decoder ChildMeasurementList
@@ -87,14 +70,11 @@ decodeChildMeasurementList =
         |> optional "photo" (map Dict.fromList <| list (decodeWithEntityUuid decodePhoto)) Dict.empty
         |> optional "weight" (map Dict.fromList <| list (decodeWithEntityUuid decodeWeight)) Dict.empty
         |> optional "counseling_session" (map Dict.fromList <| list (decodeWithEntityUuid decodeCounselingSession)) Dict.empty
+        |> optional "child_fbf" (map Dict.fromList <| list (decodeWithEntityUuid decodeFbf)) Dict.empty
 
 
 decodePrenatalMeasurements : Decoder PrenatalMeasurements
 decodePrenatalMeasurements =
-    let
-        decodeHead =
-            map List.head << list << decodeWithEntityUuid
-    in
     succeed PrenatalMeasurements
         |> optional "breast_exam" (decodeHead decodeBreastExam) Nothing
         |> optional "core_physical_exam" (decodeHead decodeCorePhysicalExam) Nothing
@@ -111,6 +91,39 @@ decodePrenatalMeasurements =
         |> optional "social_history" (decodeHead decodeSocialHistory) Nothing
         |> optional "vitals" (decodeHead decodeVitals) Nothing
         |> optional "prenatal_photo" (decodeHead decodePrenatalPhoto) Nothing
+
+
+decodeNutritionMeasurements : Decoder NutritionMeasurements
+decodeNutritionMeasurements =
+    succeed NutritionMeasurements
+        |> optional "nutrition_muac" (decodeHead decodeNutritionMuac) Nothing
+        |> optional "nutrition_height" (decodeHead decodeNutritionHeight) Nothing
+        |> optional "nutrition_nutrition" (decodeHead decodeNutritionNutrition) Nothing
+        |> optional "nutrition_photo" (decodeHead decodeNutritionPhoto) Nothing
+        |> optional "nutrition_weight" (decodeHead decodeNutritionWeight) Nothing
+
+
+decodeAcuteIllnessMeasurements : Decoder AcuteIllnessMeasurements
+decodeAcuteIllnessMeasurements =
+    succeed AcuteIllnessMeasurements
+        |> optional "symptoms_general" (decodeHead decodeSymptomsGeneral) Nothing
+        |> optional "symptoms_respiratory" (decodeHead decodeSymptomsRespiratory) Nothing
+        |> optional "symptoms_gi" (decodeHead decodeSymptomsGI) Nothing
+        |> optional "acute_illness_vitals" (decodeHead decodeAcuteIllnessVitals) Nothing
+        |> optional "acute_findings" (decodeHead decodeAcuteFindings) Nothing
+        |> optional "malaria_testing" (decodeHead decodeMalariaTesting) Nothing
+        |> optional "travel_history" (decodeHead decodeTravelHistory) Nothing
+        |> optional "exposure" (decodeHead decodeExposure) Nothing
+        |> optional "isolation" (decodeHead decodeIsolation) Nothing
+        |> optional "hc_contact" (decodeHead decodeHCContact) Nothing
+        |> optional "treatment_history" (decodeHead decodeTreatmentReview) Nothing
+        |> optional "send_to_hc" (decodeHead decodeSendToHC) Nothing
+        |> optional "medication_distribution" (decodeHead decodeMedicationDistribution) Nothing
+
+
+decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
+decodeHead =
+    map List.head << list << decodeWithEntityUuid
 
 
 decodePhoto : Decoder Photo
@@ -153,6 +166,18 @@ decodeFamilyPlanning =
     decodeEverySet decodeFamilyPlanningSign
         |> field "family_planning_signs"
         |> decodeGroupMeasurement
+
+
+decodeLactation : Decoder Lactation
+decodeLactation =
+    decodeEverySet decodeLactationSign
+        |> field "lactation_signs"
+        |> decodeGroupMeasurement
+
+
+decodeFbf : Decoder Fbf
+decodeFbf =
+    decodeGroupMeasurement decodeFbfValue
 
 
 decodeAttendance : Decoder Attendance
@@ -286,6 +311,54 @@ decodeFamilyPlanningSign =
                         fail <|
                             sign
                                 ++ " is not a recognized FamilyPlanningSign"
+            )
+
+
+decodeLactationSign : Decoder LactationSign
+decodeLactationSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "breastfeeding" ->
+                        succeed Breastfeeding
+
+                    "none" ->
+                        succeed NoLactationSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized LactationSign"
+            )
+
+
+decodeFbfValue : Decoder FbfValue
+decodeFbfValue =
+    succeed FbfValue
+        |> required "distributed_amount" float
+        |> required "distribution_notice" decodeDistributionNotice
+
+
+decodeDistributionNotice : Decoder DistributionNotice
+decodeDistributionNotice =
+    string
+        |> andThen
+            (\notice ->
+                case notice of
+                    "complete" ->
+                        succeed DistributedFully
+
+                    "lack-of-stock" ->
+                        succeed DistributedPartiallyLackOfStock
+
+                    "other" ->
+                        succeed DistributedPartiallyOther
+
+                    _ ->
+                        fail <|
+                            notice
+                                ++ " is not a recognized DistributionNotice"
             )
 
 
@@ -937,3 +1010,602 @@ decodeObstetricHistoryStep2 =
         |> required "previous_delivery_period" (decodeEverySet decodePreviousDeliveryPeriod)
         |> required "obstetric_history" (decodeEverySet decodeObstetricHistorySign)
         |> decodePrenatalMeasurement
+
+
+decodeNutritionMuac : Decoder NutritionMuac
+decodeNutritionMuac =
+    field "muac" decodeFloat
+        |> map MuacInCm
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionHeight : Decoder NutritionHeight
+decodeNutritionHeight =
+    field "height" decodeFloat
+        |> map HeightInCm
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionNutrition : Decoder NutritionNutrition
+decodeNutritionNutrition =
+    decodeEverySet decodeChildNutritionSign
+        |> field "nutrition_signs"
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionPhoto : Decoder NutritionPhoto
+decodeNutritionPhoto =
+    field "photo" string
+        |> map PhotoUrl
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionWeight : Decoder NutritionWeight
+decodeNutritionWeight =
+    field "weight" decodeFloat
+        |> map WeightInKg
+        |> decodeNutritionMeasurement
+
+
+decodeSymptomsGeneral : Decoder SymptomsGeneral
+decodeSymptomsGeneral =
+    succeed SymptomsGeneralValue
+        |> required "fever_period" decodeInt
+        |> required "chills_period" decodeInt
+        |> required "night_sweats_period" decodeInt
+        |> required "body_aches_period" decodeInt
+        |> required "headache_period" decodeInt
+        |> required "loss_of_smell_period" decodeInt
+        |> required "lethargy_period" decodeInt
+        |> required "poor_suck_period" decodeInt
+        |> required "unable_to_drink_period" decodeInt
+        |> required "unable_to_eat_period" decodeInt
+        |> required "increased_thirst_period" decodeInt
+        |> required "dry_mouth_period" decodeInt
+        |> required "severe_weakness_period" decodeInt
+        |> required "yellow_eyes_period" decodeInt
+        |> required "coke_colored_urine_period" decodeInt
+        |> required "convulsions_period" decodeInt
+        |> required "spontaneos_bleeding_period" decodeInt
+        |> map symptomsGeneralToDict
+        |> decodeAcuteIllnessMeasurement
+
+
+symptomsGeneralToDict : SymptomsGeneralValue -> Dict SymptomsGeneralSign Int
+symptomsGeneralToDict value =
+    [ ( SymptomGeneralFever, value.fever )
+    , ( Chills, value.chills )
+    , ( NightSweats, value.nightSweats )
+    , ( BodyAches, value.bodyAches )
+    , ( Headache, value.headache )
+    , ( LossOfSmell, value.lossOfSmell )
+    , ( Lethargy, value.lethargy )
+    , ( PoorSuck, value.poorSuck )
+    , ( UnableToDrink, value.unableToDrink )
+    , ( UnableToEat, value.unableToEat )
+    , ( IncreasedThirst, value.increasedThirst )
+    , ( DryMouth, value.dryMouth )
+    , ( SevereWeakness, value.severeWeakness )
+    , ( YellowEyes, value.yellowEyes )
+    , ( CokeColoredUrine, value.cokeColoredUrine )
+    , ( SymptomsGeneralConvulsions, value.convulsions )
+    , ( SpontaneousBleeding, value.spontaneousBleeding )
+    ]
+        |> List.filter (Tuple.second >> (/=) 0)
+        |> (\list ->
+                if List.isEmpty list then
+                    [ ( NoSymptomsGeneral, 0 ) ]
+
+                else
+                    list
+           )
+        |> Dict.fromList
+
+
+decodeSymptomsRespiratory : Decoder SymptomsRespiratory
+decodeSymptomsRespiratory =
+    decodeAcuteIllnessMeasurement <|
+        map6 symptomsRespiratoryToDict
+            (field "cough_period" decodeInt)
+            (field "shortness_of_breath_period" decodeInt)
+            (field "nasal_congestion_period" decodeInt)
+            (field "blood_in_sputum_period" decodeInt)
+            (field "sore_throat_period" decodeInt)
+            (field "stabbing_chest_pain_period" decodeInt)
+
+
+symptomsRespiratoryToDict : Int -> Int -> Int -> Int -> Int -> Int -> Dict SymptomsRespiratorySign Int
+symptomsRespiratoryToDict cough shortnessOfBreath nasalCongestion bloodInSputum soreThroat stabbingChestPain =
+    [ ( Cough, cough )
+    , ( ShortnessOfBreath, shortnessOfBreath )
+    , ( NasalCongestion, nasalCongestion )
+    , ( BloodInSputum, bloodInSputum )
+    , ( SoreThroat, soreThroat )
+    , ( StabbingChestPain, stabbingChestPain )
+    ]
+        |> List.filter (Tuple.second >> (/=) 0)
+        |> (\list ->
+                if List.isEmpty list then
+                    [ ( NoSymptomsRespiratory, 0 ) ]
+
+                else
+                    list
+           )
+        |> Dict.fromList
+
+
+decodeSymptomsGI : Decoder SymptomsGI
+decodeSymptomsGI =
+    succeed SymptomsGIValue
+        |> custom decodeSymptomsGIDict
+        |> required "symptoms_gi_derived_signs" (decodeEverySet decodeSymptomsGIDerivedSign)
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeSymptomsGIDict : Decoder (Dict SymptomsGISign Int)
+decodeSymptomsGIDict =
+    map5 symptomsGIToDict
+        (field "bloody_diarrhea_period" decodeInt)
+        (field "non_bloody_diarrhea_period" decodeInt)
+        (field "nausea_period" decodeInt)
+        (field "vomiting_period" decodeInt)
+        (field "abdominal_pain_period" decodeInt)
+
+
+symptomsGIToDict : Int -> Int -> Int -> Int -> Int -> Dict SymptomsGISign Int
+symptomsGIToDict bloodyDiarrhea nonBloodyDiarrhea nausea vomiting abdominalPain =
+    [ ( BloodyDiarrhea, bloodyDiarrhea )
+    , ( NonBloodyDiarrhea, nonBloodyDiarrhea )
+    , ( Nausea, nausea )
+    , ( Vomiting, vomiting )
+    , ( SymptomGIAbdominalPain, abdominalPain )
+    ]
+        |> List.filter (Tuple.second >> (/=) 0)
+        |> (\list ->
+                if List.isEmpty list then
+                    [ ( NoSymptomsGI, 0 ) ]
+
+                else
+                    list
+           )
+        |> Dict.fromList
+
+
+decodeSymptomsGIDerivedSign : Decoder SymptomsGIDerivedSign
+decodeSymptomsGIDerivedSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "intractable-vomiting" ->
+                        succeed IntractableVomiting
+
+                    "none" ->
+                        succeed NoSymptomsGIDerived
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized SymptomsGIDerivedSign"
+            )
+
+
+decodeAcuteIllnessVitals : Decoder AcuteIllnessVitals
+decodeAcuteIllnessVitals =
+    succeed AcuteIllnessVitalsValue
+        |> required "respiratory_rate" decodeInt
+        |> required "body_temperature" decodeFloat
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeAcuteFindings : Decoder AcuteFindings
+decodeAcuteFindings =
+    succeed AcuteFindingsValue
+        |> required "findings_signs_general" (decodeEverySet decodeAcuteFindingsGeneralSign)
+        |> required "findings_signs_respiratory" (decodeEverySet decodeAcuteFindingsRespiratorySign)
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeAcuteFindingsGeneralSign : Decoder AcuteFindingsGeneralSign
+decodeAcuteFindingsGeneralSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "lethargic-or-unconscious" ->
+                        succeed LethargicOrUnconscious
+
+                    "poor-suck" ->
+                        succeed AcuteFindingsPoorSuck
+
+                    "sunken-eyes" ->
+                        succeed SunkenEyes
+
+                    "poor-skin-turgor" ->
+                        succeed PoorSkinTurgor
+
+                    "jaundice" ->
+                        succeed Jaundice
+
+                    "none" ->
+                        succeed NoAcuteFindingsGeneralSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized AcuteFindingsGeneralSign"
+            )
+
+
+decodeAcuteFindingsRespiratorySign : Decoder AcuteFindingsRespiratorySign
+decodeAcuteFindingsRespiratorySign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "stridor" ->
+                        succeed Stridor
+
+                    "nasal-flaring" ->
+                        succeed NasalFlaring
+
+                    "severe-wheezing" ->
+                        succeed SevereWheezing
+
+                    "sub-costal-retractions" ->
+                        succeed SubCostalRetractions
+
+                    "none" ->
+                        succeed NoAcuteFindingsRespiratorySigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized AcuteFindingsRespiratorySign"
+            )
+
+
+decodeMalariaTesting : Decoder MalariaTesting
+decodeMalariaTesting =
+    decodeMalariaRapidTestResult
+        |> field "malaria_rapid_test"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeMalariaRapidTestResult : Decoder MalariaRapidTestResult
+decodeMalariaRapidTestResult =
+    string
+        |> andThen
+            (\result ->
+                malariaRapidTestResultFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized MalariaRapidTestResult" |> fail)
+            )
+
+
+malariaRapidTestResultFromString : String -> Maybe MalariaRapidTestResult
+malariaRapidTestResultFromString result =
+    case result of
+        "positive" ->
+            Just RapidTestPositive
+
+        "positive-and-pregnant" ->
+            Just RapidTestPositiveAndPregnant
+
+        "negative" ->
+            Just RapidTestNegative
+
+        "indeterminate" ->
+            Just RapidTestIndeterminate
+
+        "unable-to-run" ->
+            Just RapidTestUnableToRun
+
+        _ ->
+            Nothing
+
+
+decodeSendToHC : Decoder SendToHC
+decodeSendToHC =
+    decodeEverySet decodeSendToHCSign
+        |> field "send_to_hc"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeSendToHCSign : Decoder SendToHCSign
+decodeSendToHCSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "referral-form" ->
+                        succeed HandReferrerForm
+
+                    "refer-to-hc" ->
+                        succeed ReferToHealthCenter
+
+                    "none" ->
+                        succeed NoSendToHCSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized SendToHCSign"
+            )
+
+
+decodeMedicationDistribution : Decoder MedicationDistribution
+decodeMedicationDistribution =
+    decodeEverySet decodeMedicationDistributionSign
+        |> field "prescribed_medication"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeMedicationDistributionSign : Decoder MedicationDistributionSign
+decodeMedicationDistributionSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "amoxicillin" ->
+                        succeed Amoxicillin
+
+                    "coartem" ->
+                        succeed Coartem
+
+                    "ors" ->
+                        succeed ORS
+
+                    "zinc" ->
+                        succeed Zinc
+
+                    "lemon-juice-or-honey" ->
+                        succeed LemonJuiceOrHoney
+
+                    "none" ->
+                        succeed NoMedicationDistributionSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized MedicationDistributionSign"
+            )
+
+
+decodeTravelHistory : Decoder TravelHistory
+decodeTravelHistory =
+    decodeEverySet decodeTravelHistorySign
+        |> field "travel_history"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeTravelHistorySign : Decoder TravelHistorySign
+decodeTravelHistorySign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "covid19-country" ->
+                        succeed COVID19Country
+
+                    "none" ->
+                        succeed NoTravelHistorySigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized TravelHistorySign"
+            )
+
+
+decodeTreatmentReview : Decoder TreatmentReview
+decodeTreatmentReview =
+    decodeEverySet decodeTreatmentReviewSign
+        |> field "treatment_history"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeTreatmentReviewSign : Decoder TreatmentReviewSign
+decodeTreatmentReviewSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "fever-past-six-hours" ->
+                        succeed FeverPast6Hours
+
+                    "fever-past-six-hours-helped" ->
+                        succeed FeverPast6HoursHelped
+
+                    "malaria-today" ->
+                        succeed MalariaToday
+
+                    "malaria-today-helped" ->
+                        succeed MalariaTodayHelped
+
+                    "malaria-past-month" ->
+                        succeed MalariaWithinPastMonth
+
+                    "malaria-past-month-helped" ->
+                        succeed MalariaWithinPastMonthHelped
+
+                    "none" ->
+                        succeed NoTreatmentReviewSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized TreatmentReviewSign"
+            )
+
+
+decodeExposure : Decoder Exposure
+decodeExposure =
+    decodeEverySet decodeExposureSign
+        |> field "exposure"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeExposureSign : Decoder ExposureSign
+decodeExposureSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "covid19-symptioms" ->
+                        succeed COVID19Symptoms
+
+                    "none" ->
+                        succeed NoExposureSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized ExposureSign"
+            )
+
+
+decodeIsolation : Decoder Isolation
+decodeIsolation =
+    succeed IsolationValue
+        |> required "isolation" (decodeEverySet decodeIsolationSign)
+        |> required "reason_for_not_isolating" (decodeEverySet decodeReasonForNotIsolating)
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeIsolationSign : Decoder IsolationSign
+decodeIsolationSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "patient-isolated" ->
+                        succeed PatientIsolated
+
+                    "sign-on-door" ->
+                        succeed SignOnDoor
+
+                    "health-education" ->
+                        succeed HealthEducation
+
+                    "none" ->
+                        succeed NoIsolationSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized IsolationSign"
+            )
+
+
+decodeReasonForNotIsolating : Decoder ReasonForNotIsolating
+decodeReasonForNotIsolating =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "no-space" ->
+                        succeed NoSpace
+
+                    "too-ill" ->
+                        succeed TooIll
+
+                    "can-not-separate" ->
+                        succeed CanNotSeparateFromFamily
+
+                    "other" ->
+                        succeed OtherReason
+
+                    "n-a" ->
+                        succeed IsolationReasonNotApplicable
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized IsolationSign"
+            )
+
+
+decodeHCContact : Decoder HCContact
+decodeHCContact =
+    succeed HCContactValue
+        |> required "hc_contact" (decodeEverySet decodeHCContactSign)
+        |> required "hc_recommendation" (decodeEverySet decodeHCRecomendation)
+        |> required "hc_response_time" (decodeEverySet decodeResponsePeriod)
+        |> required "ambulance_arrival_time" (decodeEverySet decodeResponsePeriod)
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeHCContactSign : Decoder HCContactSign
+decodeHCContactSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "contact-hc" ->
+                        succeed ContactedHealthCenter
+
+                    "none" ->
+                        succeed NoHCContactSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized HCContactSign"
+            )
+
+
+decodeHCRecomendation : Decoder HCRecomendation
+decodeHCRecomendation =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "send-ambulance" ->
+                        succeed SendAmbulance
+
+                    "home-isolation" ->
+                        succeed HomeIsolation
+
+                    "come-to-hc" ->
+                        succeed ComeToHealthCenter
+
+                    "chw-monitoring" ->
+                        succeed ChwMonitoring
+
+                    "n-a" ->
+                        succeed HCRecomendationNotApplicable
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized HCRecomendation"
+            )
+
+
+decodeResponsePeriod : Decoder ResponsePeriod
+decodeResponsePeriod =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "less-than-30m" ->
+                        succeed LessThan30Min
+
+                    "30m-1h" ->
+                        succeed Between30min1Hour
+
+                    "1h-2h" ->
+                        succeed Between1Hour2Hour
+
+                    "2h-1d" ->
+                        succeed Between2Hour1Day
+
+                    "n-a" ->
+                        succeed ResponsePeriodNotApplicable
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized ResponsePeriod"
+            )

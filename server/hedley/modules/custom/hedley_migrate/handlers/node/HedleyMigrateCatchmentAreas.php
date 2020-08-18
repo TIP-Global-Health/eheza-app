@@ -26,6 +26,7 @@ class HedleyMigrateCatchmentAreas extends HedleyMigrateBase {
   protected $csvColumns = [
     'id',
     'title',
+    'created',
   ];
 
 }

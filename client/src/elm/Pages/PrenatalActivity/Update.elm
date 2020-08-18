@@ -29,6 +29,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (calculateEDD)
+import Pages.Utils exposing (tasksBarId)
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
 
@@ -170,7 +171,7 @@ update currentDate id db msg model =
                                   -- not set - that is when we're 3 month past EDD date.
                                   calculateEDD lastMenstrualPeriodValue.date
                                     |> Backend.IndividualEncounterParticipant.Model.SetEddDate
-                                    |> Backend.Model.MsgPrenatalSession prenatalParticipantId
+                                    |> Backend.Model.MsgIndividualSession prenatalParticipantId
                                     |> App.Model.MsgIndexedDb
                                 , PrenatalEncounterPage id |> UserPage |> App.Model.SetActivePage
                                 ]

@@ -6,6 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (emptyMotherMeasurementData, getMotherMeasurementData)
+import Gizra.NominalDate exposing (NominalDate)
 import LocalData
 import Maybe.Extra
 import Measurement.Utils exposing (getChildForm, getMotherForm)
@@ -20,8 +21,8 @@ import Pages.Session.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 
 
-update : SessionId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update sessionId db msg model =
+update : NominalDate -> SessionId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate sessionId db msg model =
     let
         sessionData =
             Dict.get sessionId db.editableSessions
@@ -29,7 +30,7 @@ update sessionId db msg model =
     in
     case sessionData of
         Success session ->
-            updateFoundSession sessionId session msg model
+            updateFoundSession currentDate sessionId session msg model
 
         _ ->
             -- We're handling UI messages here, and the UI should only be shown if
@@ -41,8 +42,8 @@ update sessionId db msg model =
 {-| We need the editableSession in order to pass on some needed data. But we
 don't modify it directly ... instead, we return messages to do so.
 -}
-updateFoundSession : SessionId -> EditableSession -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-updateFoundSession sessionId session msg model =
+updateFoundSession : NominalDate -> SessionId -> EditableSession -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+updateFoundSession currentDate sessionId session msg model =
     case msg of
         MsgActivities subMsg ->
             let
@@ -75,7 +76,7 @@ updateFoundSession sessionId session msg model =
                     Maybe.map (\childId -> getChildForm childId model session) maybeChildId
 
                 updateReturns =
-                    Pages.Activity.Update.updateChild subMsg activityPage childForm
+                    Pages.Activity.Update.updateChild currentDate subMsg activityPage session activityType childForm
 
                 sessionMsgs =
                     maybeChildId

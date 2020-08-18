@@ -21,19 +21,19 @@ import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate id db =
+view : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate selectedHealthCenter id db =
     let
         prenatalSessions =
             Dict.get id db.individualParticipantsByPerson
                 |> Maybe.withDefault NotAsked
     in
     div
-        [ class "wrap wrap-alt-2 page-prenatal-participant" ]
+        [ class "wrap wrap-alt-2 page-participant prenatal" ]
         [ viewHeader language id
         , div
             [ class "ui full segment" ]
-            [ viewWebData language (viewPrenatalActions language currentDate id db) identity prenatalSessions
+            [ viewWebData language (viewPrenatalActions language currentDate selectedHealthCenter id db) identity prenatalSessions
             ]
         ]
 
@@ -44,7 +44,7 @@ viewHeader language id =
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language Translate.PrenatalEncounter ]
+            [ text <| translate language <| Translate.IndividualEncounterLabel AntenatalEncounter ]
         , a
             [ class "link-back"
             , onClick <| App.Model.SetActivePage <| UserPage <| IndividualEncounterParticipantsPage AntenatalEncounter
@@ -55,14 +55,18 @@ viewHeader language id =
         ]
 
 
-viewPrenatalActions : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
-viewPrenatalActions language currentDate id db prenatalSessions =
+viewPrenatalActions : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
+viewPrenatalActions language currentDate selectedHealthCenter id db prenatalSessions =
     let
         -- Person prenatal session.
         maybeSessionId =
             prenatalSessions
                 |> Dict.toList
-                |> List.filter (Tuple.second >> isPregnancyActive currentDate)
+                |> List.filter
+                    (\( sessionId, session ) ->
+                        (session.encounterType == Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
+                            && isPregnancyActive currentDate session
+                    )
                 |> List.head
                 |> Maybe.map Tuple.first
 
@@ -102,7 +106,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                     )
                 |> Maybe.withDefault ( Nothing, 0, False )
 
-        -- Wither first prenatal encounter for person is in process.
+        -- Whether first prenatal encounter for person is in process.
         -- This is True when there's only one encounter, and it's active.
         firstEncounterInProcess =
             maybeSessionId
@@ -138,7 +142,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                     |> Maybe.map
                         -- If prenatal session exists, create new encounter for it.
                         (\sessionId ->
-                            [ PrenatalEncounter sessionId currentDate Nothing
+                            [ PrenatalEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
                                 |> Backend.Model.PostPrenatalEncounter
                                 |> App.Model.MsgIndexedDb
                                 |> onClick
@@ -146,7 +150,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                         )
                     -- If prenatal session does not exist, create it.
                     |> Maybe.withDefault
-                        [ IndividualEncounterParticipant id AntenatalEncounter currentDate Nothing Nothing
+                        [ IndividualEncounterParticipant id AntenatalEncounter currentDate Nothing Nothing (Just selectedHealthCenter)
                             |> Backend.Model.PostIndividualSession
                             |> App.Model.MsgIndexedDb
                             |> onClick
@@ -159,7 +163,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                     (maybeSessionId
                         |> Maybe.map
                             (\sessionId ->
-                                [ PrenatalEncounter sessionId currentDate Nothing
+                                [ PrenatalEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
                                     |> Backend.Model.PostPrenatalEncounter
                                     |> App.Model.MsgIndexedDb
                                     |> onClick
@@ -197,7 +201,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
             isJust maybeSessionId && not firstEncounterInProcess
     in
     div []
-        [ p [ class "label-antenatal-visit" ] [ text <| translate language Translate.SelectAntenatalVisit ]
+        [ p [ class "label-antenatal-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter ]
         , button
             (classList
                 [ ( "ui primary button", True )
@@ -205,7 +209,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                 ]
                 :: firstVisitAction
             )
-            [ span [ class "text" ] [ text <| translate language Translate.FirstAntenatalVisit ]
+            [ span [ class "text" ] [ text <| translate language <| Translate.IndividualEncounterFirstVisit AntenatalEncounter ]
             , span [ class "icon-back" ] []
             ]
         , button
@@ -215,7 +219,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                 ]
                 :: subsequentVisitAction
             )
-            [ span [ class "text" ] [ text <| translate language Translate.SubsequentAntenatalVisit ]
+            [ span [ class "text" ] [ text <| translate language <| Translate.IndividualEncounterSubsequentVisit AntenatalEncounter ]
             , span [ class "icon-back" ] []
             ]
         , div [ class "separator" ] []

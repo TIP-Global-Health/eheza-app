@@ -1,4 +1,4 @@
-module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), BreastExamId, BreastExamUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildNutritionId, ChildNutritionUuidType(..), ClinicId, ClinicUuidType(..), CorePhysicalExamId, CorePhysicalExamUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), DangerSignsId, DangerSignsUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), IndividualEncounterParticipantId, IndividualEncounterParticipantIdType(..), LastMenstrualPeriodId, LastMenstrualPeriodUuidType(..), MedicalHistoryId, MedicalHistoryUuidType(..), MedicationId, MedicationUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), ObstetricHistoryId, ObstetricHistoryStep2Id, ObstetricHistoryStep2UuidType(..), ObstetricHistoryUuidType(..), ObstetricalExamId, ObstetricalExamUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PersonId, PersonUuidType(..), PhotoId, PhotoUuidType(..), PmtctParticipantId, PmtctParticipantUuidType(..), PrenatalEncounterId, PrenatalEncounterIdType(..), PrenatalFamilyPlanningId, PrenatalFamilyPlanningUuidType(..), PrenatalNutritionId, PrenatalNutritionUuidType(..), PrenatalPhotoId, RelationshipId, RelationshipUuidType(..), ResourceId, ResourceUuidType(..), SessionId, SessionUuidType(..), SocialHistoryId, SocialHistoryUuidType(..), VitalsId, VitalsUuidType(..), WeightId, WeightUuidType(..))
+module Backend.Entities exposing (AcuteFindingsId, AcuteFindingsUuidType(..), AcuteIllnessEncounterId, AcuteIllnessEncounterUuidType(..), AcuteIllnessVitalsId, AcuteIllnessVitalsUuidType(..), AttendanceId, AttendanceUuidType(..), BreastExamId, BreastExamUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildFbfId, ChildFbfUuidType(..), ChildNutritionId, ChildNutritionUuidType(..), ClinicId, ClinicUuidType(..), CorePhysicalExamId, CorePhysicalExamUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), DangerSignsId, DangerSignsUuidType(..), ExposureId, ExposureUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HCContactId, HCContactUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), IndividualEncounterParticipantId, IndividualEncounterParticipantIdType(..), IsolationId, IsolationUuidType(..), LactationId, LactationUuidType(..), LastMenstrualPeriodId, LastMenstrualPeriodUuidType(..), MalariaTestingId, MalariaTestingUuidType(..), MedicalHistoryId, MedicalHistoryUuidType(..), MedicationDistributionId, MedicationDistributionIdUuidType(..), MedicationId, MedicationUuidType(..), MotherFbfId, MotherFbfUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), NutritionEncounterId, NutritionEncounterUuidType(..), NutritionHeightId, NutritionHeightUuidType(..), NutritionMuacId, NutritionMuacUuidType(..), NutritionNutritionId, NutritionNutritionUuidType(..), NutritionPhotoId, NutritionPhotoUuidType(..), NutritionWeightId, NutritionWeightUuidType(..), ObstetricHistoryId, ObstetricHistoryStep2Id, ObstetricHistoryStep2UuidType(..), ObstetricHistoryUuidType(..), ObstetricalExamId, ObstetricalExamUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PersonId, PersonUuidType(..), PhotoId, PhotoUuidType(..), PmtctParticipantId, PmtctParticipantUuidType(..), PrenatalEncounterId, PrenatalEncounterIdType(..), PrenatalFamilyPlanningId, PrenatalFamilyPlanningUuidType(..), PrenatalNutritionId, PrenatalNutritionUuidType(..), PrenatalPhotoId, PrenatalPhotoUuidType(..), RelationshipId, RelationshipUuidType(..), ResourceId, ResourceUuidType(..), SendToHCId, SendToHCIdUuidType(..), SessionId, SessionUuidType(..), SocialHistoryId, SocialHistoryUuidType(..), SymptomsGIId, SymptomsGIUuidType(..), SymptomsGeneralId, SymptomsGeneralUuidType(..), SymptomsRespiratoryId, SymptomsRespiratoryUuidType(..), TravelHistoryId, TravelHistoryUuidType(..), TreatmentReviewId, TreatmentReviewUuidType(..), VillageId, VillageUuidType(..), VitalsId, VitalsUuidType(..), WeightId, WeightUuidType(..))
 
 {-|
 
@@ -207,6 +207,14 @@ type CatchmentAreaUuidType
     = CatchmentAreaUuidType
 
 
+type alias ChildFbfId =
+    EntityUuid ChildFbfUuidType
+
+
+type ChildFbfUuidType
+    = ChildFbfUuidType
+
+
 type alias ChildNutritionId =
     EntityUuid ChildNutritionUuidType
 
@@ -277,6 +285,22 @@ type alias HeightId =
 
 type HeightUuidType
     = HeightUuidType
+
+
+type alias LactationId =
+    EntityUuid LactationUuidType
+
+
+type LactationUuidType
+    = LactationUuidType
+
+
+type alias MotherFbfId =
+    EntityUuid MotherFbfUuidType
+
+
+type MotherFbfUuidType
+    = MotherFbfUuidType
 
 
 type alias MuacId =
@@ -375,9 +399,177 @@ type SessionUuidType
     = SessionUuidType
 
 
+type alias VillageId =
+    EntityUuid VillageUuidType
+
+
+type VillageUuidType
+    = VillageUuidType
+
+
 type alias WeightId =
     EntityUuid WeightUuidType
 
 
 type WeightUuidType
     = WeightUuidType
+
+
+type alias NutritionEncounterId =
+    EntityUuid NutritionEncounterUuidType
+
+
+type NutritionEncounterUuidType
+    = NutritionEncounterUuidType
+
+
+type alias NutritionMuacId =
+    EntityUuid NutritionMuacUuidType
+
+
+type NutritionMuacUuidType
+    = NutritionMuacUuidType
+
+
+type alias NutritionHeightId =
+    EntityUuid NutritionHeightUuidType
+
+
+type NutritionHeightUuidType
+    = NutritionHeightUuidType
+
+
+type alias NutritionNutritionId =
+    EntityUuid NutritionNutritionUuidType
+
+
+type NutritionNutritionUuidType
+    = NutritionNutritionUuidType
+
+
+type alias NutritionPhotoId =
+    EntityUuid NutritionPhotoUuidType
+
+
+type NutritionPhotoUuidType
+    = NutritionPhotoUuidType
+
+
+type alias NutritionWeightId =
+    EntityUuid NutritionWeightUuidType
+
+
+type NutritionWeightUuidType
+    = NutritionWeightUuidType
+
+
+type alias AcuteIllnessEncounterId =
+    EntityUuid AcuteIllnessEncounterUuidType
+
+
+type AcuteIllnessEncounterUuidType
+    = AcuteIllnessEncounterUuidType
+
+
+type alias SymptomsGeneralId =
+    EntityUuid SymptomsGeneralUuidType
+
+
+type SymptomsGeneralUuidType
+    = SymptomsGeneralUuidType
+
+
+type alias SymptomsRespiratoryId =
+    EntityUuid SymptomsRespiratoryUuidType
+
+
+type SymptomsRespiratoryUuidType
+    = SymptomsRespiratoryUuidType
+
+
+type alias SymptomsGIId =
+    EntityUuid SymptomsGIUuidType
+
+
+type SymptomsGIUuidType
+    = SymptomsGIUuidType
+
+
+type alias AcuteIllnessVitalsId =
+    EntityUuid AcuteIllnessVitalsUuidType
+
+
+type AcuteIllnessVitalsUuidType
+    = AcuteIllnessVitalsUuidType
+
+
+type alias MalariaTestingId =
+    EntityUuid MalariaTestingUuidType
+
+
+type MalariaTestingUuidType
+    = MalariaTestingUuidType
+
+
+type alias TravelHistoryId =
+    EntityUuid TravelHistoryUuidType
+
+
+type TravelHistoryUuidType
+    = TravelHistoryUuidType
+
+
+type alias TreatmentReviewId =
+    EntityUuid TreatmentReviewUuidType
+
+
+type TreatmentReviewUuidType
+    = TreatmentReviewUuidType
+
+
+type alias ExposureId =
+    EntityUuid ExposureUuidType
+
+
+type ExposureUuidType
+    = ExposureUuidType
+
+
+type alias IsolationId =
+    EntityUuid IsolationUuidType
+
+
+type IsolationUuidType
+    = IsolationUuidType
+
+
+type alias HCContactId =
+    EntityUuid HCContactUuidType
+
+
+type HCContactUuidType
+    = HCContactUuidType
+
+
+type alias AcuteFindingsId =
+    EntityUuid AcuteFindingsUuidType
+
+
+type AcuteFindingsUuidType
+    = AcuteFindingsUuidType
+
+
+type alias SendToHCId =
+    EntityUuid SendToHCIdUuidType
+
+
+type SendToHCIdUuidType
+    = SendToHCIdUuidType
+
+
+type alias MedicationDistributionId =
+    EntityUuid MedicationDistributionIdUuidType
+
+
+type MedicationDistributionIdUuidType
+    = MedicationDistributionIdUuidType

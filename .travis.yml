@@ -1,36 +1,77 @@
 sudo: required
+
 language: php
+
 php:
 - 7.2
-env:
-  matrix:
-  - BUILD_SERVER=1
-  # - BUILD_CLIENT=1
-  - CODE_REVIEW=1 REVIEW_STANDARD="Drupal"
-  - CODE_REVIEW=1 REVIEW_STANDARD="DrupalPractice"
-  - SHELL_REVIEW=1
-  - ELM_REVIEW=1
+
 services:
 - docker
+
+stages:
+  - lint
+  - test
+  - deploy
+
 before_install:
-- export PATH="$HOME/.config/composer/vendor/bin:$PATH"
+- openssl aes-256-cbc -K $encrypted_414fa4dd00a5_key -iv $encrypted_414fa4dd00a5_iv
+  -in deployment-robot-key.enc -out deployment-robot-key -d
+- export PATH="$HOME/.config/composer/vendor/bin:$HOME/vendor/bin:$PATH"
 - "([ ! -z $BUILD_WEBDRIVERIO ] && sudo pip install docker-compose) || :"
-install:
-- "$TRAVIS_BUILD_DIR/ci-scripts/install_client.sh"
-- "$TRAVIS_BUILD_DIR/ci-scripts/install_coder.sh"
-- "$TRAVIS_BUILD_DIR/ci-scripts/install_server.sh"
-- "$TRAVIS_BUILD_DIR/ci-scripts/install_shell.sh"
-- "$TRAVIS_BUILD_DIR/ci-scripts/install_elm_format.sh"
-before_script:
-- "$TRAVIS_BUILD_DIR/ci-scripts/prepare_client.sh"
-script:
-- "$TRAVIS_BUILD_DIR/ci-scripts/test_client.sh"
-- "$TRAVIS_BUILD_DIR/ci-scripts/test_coder.sh"
-- "$TRAVIS_BUILD_DIR/ci-scripts/test_server.sh"
-- "$TRAVIS_BUILD_DIR/ci-scripts/test_shell.sh"
-- "$TRAVIS_BUILD_DIR/ci-scripts/test_elm_format.sh"
+
+jobs:
+  include:
+    - stage: Lint
+      name: "Drupal coding standard: PhpCs"
+      env:
+        - REVIEW_STANDARD="Drupal"
+      script:
+        - "$TRAVIS_BUILD_DIR/ci-scripts/install_coder.sh"
+        - "$TRAVIS_BUILD_DIR/ci-scripts/test_coder.sh"
+    - stage: Lint
+      name: "Drupal Practice coding standard: PhpCs"
+      env:
+        - REVIEW_STANDARD="DrupalPractice"
+      script:
+        - "$TRAVIS_BUILD_DIR/ci-scripts/install_coder.sh"
+        - "$TRAVIS_BUILD_DIR/ci-scripts/test_coder.sh"
+    - stage: Lint
+      name: "Elm coding standard: Elm Format"
+      script:
+        - "$TRAVIS_BUILD_DIR/ci-scripts/install_elm_format.sh"
+        - "$TRAVIS_BUILD_DIR/ci-scripts/test_elm_format.sh"
+    - stage: Lint
+      name: "Drupal coding standard: Shellcheck"
+      script:
+        - "$TRAVIS_BUILD_DIR/ci-scripts/install_shell.sh"
+        - "$TRAVIS_BUILD_DIR/ci-scripts/test_shell.sh"
+    - stage: Test
+      name: "Server-side"
+      script:
+        - "$TRAVIS_BUILD_DIR/ci-scripts/install_server.sh"
+        - "$TRAVIS_BUILD_DIR/ci-scripts/test_server.sh"
+    - stage: Test
+      name: "Client-side"
+      if: commit_message ~= [test client]
+      script:
+        - "$TRAVIS_BUILD_DIR/ci-scripts/install_client.sh"
+        - "$TRAVIS_BUILD_DIR/ci-scripts/test_client.sh"
+    - stage: Deploy
+      name: "Deployment to Pantheon"
+      if: branch = develop
+      script:
+        - "export DEPLOY=1 && $TRAVIS_BUILD_DIR/ci-scripts/install_client.sh"
+        - "$TRAVIS_BUILD_DIR/ci-scripts/install_ddev.sh"
+        - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_deploy.sh"
+        - "cd $TRAVIS_BUILD_DIR/server && ddev robo deploy:pantheon qa --no-interaction"
+
 cache:
   directories:
   - client/elm-stuff/packages
   - client/sysconfcpus
   - travis-cache
+  - vendor
+
+env:
+  global:
+    secure: a2Z2hXYHeMFFWohx+o9/Zb/vFiTzNppvis+N0H/K0yJFpQkn3KpiaOPhYdwVcfyZk4fh/OANI+0iqzgcmOKhsnEkJ8W2v5AtUxi5rLKPriBYqI8Al1EnDPjkGLrurqazO2bH5CzNeiepbSEw038SVdNHGNCgq59HsH8Zv82TvTF24Htn4uNAfxyk0QkvofQWE5XqkZ61exfF0NszOIjTntZ/qKHBrxwynluDAQ5GDw/tDIbX6GBECF/T4G1PZop5KcT87HZc/qn5JCmyfTZqAwRbu1gVzutc6I19rOtuBCPMeYYRoKYop4eCsgQ9kyjEeXQyInTuydQ9MntWGz1VLazBzFTxxq0RXw2AI+t3YqT/WR3rHqoBlP8inBtwLPlJbxWIOu7uYcjZm2VbyHLu0JnzatOTqQC9SBEAJuZimBIM8MfaT402Ywi90zOp09Cc/Uc+jKQab8WvtEz0gwhiiALgCkJ80Prq3rpS1LSC1hyXrOjGFw7HuD6IRHyHTqrahKoY6yV6kbFih+33rADbxEgdCovY/B5JoYiYhsq9iu257smvn0EDTZO1G2Vd+rncj0YNip1zUJzwknZ68JDia9/pJUivAequ+EnhUl1eGkjbWnvIN4O5IDzqcH8+KJkd95anb+FSsfuvMBCTjBKW+tZoiuXGQltU9wXNjxqJUv0=

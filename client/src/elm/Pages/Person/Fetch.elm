@@ -1,14 +1,15 @@
-module Pages.Person.Fetch exposing (fetch, fetchForCreateOrEdit)
+module Pages.Person.Fetch exposing (fetch, fetchFamilyMembers, fetchForCreateOrEdit)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.Person.Model exposing (Initiator(..))
 import EverySet
 import RemoteData exposing (RemoteData(..))
 
 
-fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
-fetch id db =
+fetch : PersonId -> Initiator -> ModelIndexedDb -> List MsgIndexedDb
+fetch id initiator db =
     let
         addParticipants participant accum =
             -- We add them both, and then as a final step remove the id itself,
@@ -30,9 +31,18 @@ fetch id db =
                         >> List.map FetchPerson
                     )
                 |> RemoteData.withDefault []
+
+        initiatorDependentContent =
+            case initiator of
+                GroupEncounterOrigin sessionId ->
+                    [ FetchSession sessionId ]
+
+                _ ->
+                    []
     in
     fetchFamilyMembers id db
         ++ participantMembers
+        ++ initiatorDependentContent
         ++ [ FetchPerson id
            , FetchRelationshipsForPerson id
            , FetchParticipantsForPerson id
@@ -42,10 +52,11 @@ fetch id db =
 
 fetchForCreateOrEdit : Maybe PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetchForCreateOrEdit related db =
-    FetchHealthCenters
-        :: (related
-                |> Maybe.map
-                    (\id -> FetchPerson id :: fetchFamilyMembers id db)
+    [ FetchHealthCenters
+    , FetchVillages
+    ]
+        ++ (related
+                |> Maybe.map (\id -> FetchPerson id :: fetchFamilyMembers id db)
                 |> Maybe.withDefault []
            )
 

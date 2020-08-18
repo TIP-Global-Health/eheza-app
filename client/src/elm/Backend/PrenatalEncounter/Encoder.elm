@@ -1,10 +1,10 @@
 module Backend.PrenatalEncounter.Encoder exposing (encodePrenatalEncounter)
 
 import Backend.PrenatalEncounter.Model exposing (..)
-import Gizra.NominalDate exposing (encodeDrupalRange, encodeYYYYMMDD)
+import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
-import Restful.Endpoint exposing (encodeEntityUuid, fromEntityUuid)
+import Restful.Endpoint exposing (encodeEntityUuid)
 
 
 {-| Encodes a `PrenatalEncounter`.
@@ -18,4 +18,5 @@ encodePrenatalEncounter session =
             ]
       )
     , ( "individual_participant", encodeEntityUuid session.participant )
+    , ( "shard", maybe encodeEntityUuid session.shard )
     ]

@@ -3,7 +3,10 @@ module Pages.Activities.View exposing (view)
 import Activity.Model exposing (emptySummaryByActivity)
 import Activity.Utils exposing (getActivityIcon, getAllActivities, getParticipantCountForActivity)
 import Backend.Entities exposing (..)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Session.Model exposing (EditableSession)
+import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -11,23 +14,24 @@ import List as List
 import LocalData
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.Utils exposing (backFromSessionPage, viewEndEncounterDialog)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 
 
-view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg
-view language ( sessionId, session ) model =
+view : Language -> Nurse -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language nurse ( sessionId, session ) model =
     let
         summary =
             session.summaryByActivity
                 |> LocalData.withDefault emptySummaryByActivity
 
         pendingActivities =
-            getAllActivities
+            getAllActivities session.offlineSession
                 |> List.filter (\activity -> (getParticipantCountForActivity summary activity).pending > 0)
 
         noPendingActivities =
-            getAllActivities
+            getAllActivities session.offlineSession
                 |> List.filter (\activity -> (getParticipantCountForActivity summary activity).completed > 0)
 
         pendingTabTitle =
@@ -74,32 +78,7 @@ view language ( sessionId, session ) model =
         endSessionDialog =
             if model.showEndSessionDialog then
                 Just <|
-                    div [ class "ui tiny active modal" ]
-                        [ div
-                            [ class "header" ]
-                            [ text <| translate language Trans.AreYouSure ]
-                        , div
-                            [ class "content" ]
-                            [ p []
-                                [ text <| translate language Trans.OnceYouEndYourGroupEncounter ]
-                            ]
-                        , div
-                            [ class "actions" ]
-                            [ div
-                                [ class "two ui buttons" ]
-                                [ button
-                                    [ class "ui fluid button"
-                                    , onClick <| ShowEndSessionDialog False
-                                    ]
-                                    [ text <| translate language Trans.Cancel ]
-                                , button
-                                    [ class "ui primary fluid button"
-                                    , onClick CloseSession
-                                    ]
-                                    [ text <| translate language Trans.Continue ]
-                                ]
-                            ]
-                        ]
+                    viewEndEncounterDialog language Trans.AreYouSure Trans.OnceYouEndYourGroupEncounter CloseSession (ShowEndSessionDialog False)
 
             else
                 Nothing
@@ -111,6 +90,25 @@ view language ( sessionId, session ) model =
 
                 Completed ->
                     ( noPendingActivities, translate language Trans.NoActivitiesCompleted )
+
+        goBackPage =
+            backFromSessionPage nurse session.offlineSession
+
+        endSessionAction =
+            if isCommunityHealthWorker nurse then
+                SetRedirectPage goBackPage
+
+            else
+                ShowEndSessionDialog True
+
+        endSessionButton =
+            div [ class "actions" ]
+                [ button
+                    [ class "ui fluid primary button"
+                    , onClick endSessionAction
+                    ]
+                    [ text <| translate language Trans.EndGroupEncounter ]
+                ]
     in
     div
         [ class "wrap wrap-alt-2" ]
@@ -121,7 +119,7 @@ view language ( sessionId, session ) model =
                 [ text <| translate language Trans.Activities ]
             , a
                 [ class "link-back"
-                , onClick <| SetRedirectPage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
+                , onClick <| SetRedirectPage goBackPage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []
@@ -152,14 +150,7 @@ view language ( sessionId, session ) model =
                             List.map viewCard selectedActivities
                     ]
                 ]
-            , div
-                [ class "actions" ]
-                [ button
-                    [ class "ui fluid primary button"
-                    , onClick <| ShowEndSessionDialog True
-                    ]
-                    [ text <| translate language Trans.EndGroupEncounter ]
-                ]
+            , endSessionButton
             ]
         , viewModal endSessionDialog
         ]

@@ -4,11 +4,11 @@ module Backend.Person.Model exposing
     , ExpectedGender(..)
     , Gender(..)
     , HIVStatus(..)
+    , Initiator(..)
     , MaritalStatus(..)
     , ModeOfDelivery(..)
     , ParticipantDirectoryOperation(..)
     , Person
-    , RegistrationInitiator(..)
     , Ubudehe(..)
     , VaginalDelivery(..)
     , allEducationLevels
@@ -18,7 +18,7 @@ module Backend.Person.Model exposing
     , allUbudehes
     )
 
-import Backend.Entities exposing (HealthCenterId, PersonId)
+import Backend.Entities exposing (HealthCenterId, PersonId, SessionId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Gizra.NominalDate exposing (NominalDate)
 
@@ -46,6 +46,7 @@ type alias Person =
     , village : Maybe String
     , telephoneNumber : Maybe String
     , healthCenterId : Maybe HealthCenterId
+    , shard : Maybe HealthCenterId
     }
 
 
@@ -147,9 +148,10 @@ allMaritalStatuses =
     ]
 
 
-type RegistrationInitiator
+type Initiator
     = ParticipantDirectoryOrigin
     | IndividualEncounterOrigin IndividualEncounterType
+    | GroupEncounterOrigin SessionId
 
 
 type ParticipantDirectoryOperation

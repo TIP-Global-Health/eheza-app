@@ -1,5 +1,6 @@
 module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, Model, Msg(..), MsgLoggedIn(..), StorageQuota, Version, emptyLoggedInModel, emptyModel)
 
+import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model
@@ -10,9 +11,15 @@ import Config.Model
 import Device.Model exposing (Device)
 import Http
 import Json.Encode exposing (Value)
+import NutritionActivity.Model exposing (NutritionActivity)
+import Pages.AcuteIllnessActivity.Model
+import Pages.AcuteIllnessEncounter.Model
+import Pages.AcuteIllnessProgressReport.Model
 import Pages.Clinics.Model
 import Pages.Device.Model
 import Pages.IndividualEncounterParticipants.Model
+import Pages.NutritionActivity.Model
+import Pages.NutritionEncounter.Model
 import Pages.Page exposing (Page(..))
 import Pages.People.Model
 import Pages.Person.Model
@@ -89,6 +96,12 @@ type alias Model =
 
     -- Which health center a nurse is working at.
     , healthCenterId : Maybe HealthCenterId
+
+    -- Which village center a nurse is working at.
+    , villageId : Maybe VillageId
+
+    -- The name of device nurse is working with.
+    , deviceName : Maybe String
     }
 
 
@@ -159,6 +172,11 @@ type alias LoggedInModel =
     , prenatalActivityPages : Dict ( PrenatalEncounterId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
     , pregnancyOutcomePages : Dict IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Model
     , sessionPages : Dict SessionId Pages.Session.Model.Model
+    , nutritionEncounterPages : Dict NutritionEncounterId Pages.NutritionEncounter.Model.Model
+    , nutritionActivityPages : Dict ( NutritionEncounterId, NutritionActivity ) Pages.NutritionActivity.Model.Model
+    , acuteIllnessEncounterPages : Dict AcuteIllnessEncounterId Pages.AcuteIllnessEncounter.Model.Model
+    , acuteIllnessActivityPages : Dict ( AcuteIllnessEncounterId, AcuteIllnessActivity ) Pages.AcuteIllnessActivity.Model.Model
+    , acuteIllnessProgressReportPages : Dict AcuteIllnessEncounterId Pages.AcuteIllnessProgressReport.Model.Model
     }
 
 
@@ -175,6 +193,11 @@ emptyLoggedInModel nurse =
     , prenatalActivityPages = Dict.empty
     , pregnancyOutcomePages = Dict.empty
     , sessionPages = Dict.empty
+    , nutritionEncounterPages = Dict.empty
+    , nutritionActivityPages = Dict.empty
+    , acuteIllnessEncounterPages = Dict.empty
+    , acuteIllnessActivityPages = Dict.empty
+    , acuteIllnessProgressReportPages = Dict.empty
     }
 
 
@@ -206,6 +229,8 @@ type Msg
     | SetStorageQuota StorageQuota
     | SetMemoryQuota MemoryQuota
     | SetHealthCenter (Maybe HealthCenterId)
+    | SetVillage (Maybe VillageId)
+    | SetDeviceName (Maybe String)
     | Tick Time.Posix
     | CheckDataWanted
     | UrlRequested Browser.UrlRequest
@@ -224,8 +249,13 @@ type MsgLoggedIn
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
     | MsgPagePrenatalEncounter PrenatalEncounterId Pages.PrenatalEncounter.Model.Msg
+    | MsgPageNutritionEncounter NutritionEncounterId Pages.NutritionEncounter.Model.Msg
+    | MsgPageAcuteIllnessEncounter AcuteIllnessEncounterId Pages.AcuteIllnessEncounter.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.PrenatalActivity.Model.Msg
+    | MsgPageNutritionActivity NutritionEncounterId NutritionActivity Pages.NutritionActivity.Model.Msg
     | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
+    | MsgPageAcuteIllnessActivity AcuteIllnessEncounterId AcuteIllnessActivity Pages.AcuteIllnessActivity.Model.Msg
+    | MsgPageAcuteIllnessProgressReport AcuteIllnessEncounterId Pages.AcuteIllnessProgressReport.Model.Msg
 
 
 type alias Flags =
@@ -234,6 +264,7 @@ type alias Flags =
     , hostname : String
     , pinCode : String
     , healthCenterId : String
+    , villageId : String
     }
 
 
@@ -246,6 +277,13 @@ emptyModel key url flags =
 
             else
                 Just (toEntityUuid flags.healthCenterId)
+
+        villageId =
+            if flags.villageId == "" then
+                Nothing
+
+            else
+                Just (toEntityUuid flags.villageId)
     in
     { activePage = PinCodePage
     , navigationKey = key
@@ -262,4 +300,6 @@ emptyModel key url flags =
     , storageQuota = Nothing
     , zscores = ZScore.Model.emptyModel
     , healthCenterId = healthCenterId
+    , villageId = villageId
+    , deviceName = Nothing
     }

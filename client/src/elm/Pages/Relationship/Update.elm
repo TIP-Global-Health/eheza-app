@@ -3,7 +3,8 @@ module Pages.Relationship.Update exposing (update)
 import App.Model
 import Backend.Entities exposing (..)
 import Backend.Model
-import Pages.Page exposing (Page(..), UserPage(..))
+import Backend.Person.Model exposing (Initiator(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Relationship.Model exposing (..)
 import Restful.Endpoint exposing (toEntityUuid)
 
@@ -31,16 +32,25 @@ update id1 id2 msg model =
             , [ App.Model.SetActivePage page ]
             )
 
-        Reset ->
+        Reset initiator ->
+            let
+                nextPage =
+                    case initiator of
+                        -- When at session context, we navigate to session Attendance page.
+                        -- At that page, we should see newly created attendance.
+                        GroupEncounterOrigin sessionId ->
+                            UserPage (SessionPage sessionId AttendancePage)
+
+                        -- For other cases, we navigate to the page of main person.
+                        _ ->
+                            UserPage (PersonPage id1 initiator)
+            in
             ( emptyModel
             , Cmd.none
-            , [ PersonPage id1
-                    |> UserPage
-                    |> App.Model.SetActivePage
-              ]
+            , [ App.Model.SetActivePage nextPage ]
             )
 
-        Save maybeRelatedBy ->
+        Save maybeRelatedBy assignToGroup initiator ->
             let
                 extraMsg =
                     case maybeRelatedBy of
@@ -49,7 +59,8 @@ update id1 id2 msg model =
                                 { relatedBy = relatedBy
                                 , relatedTo = id2
                                 }
-                                model.assignToGroup
+                                assignToGroup
+                                initiator
                                 |> App.Model.MsgIndexedDb
                             ]
 

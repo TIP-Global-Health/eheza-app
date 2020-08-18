@@ -5,24 +5,27 @@ This is a starting base to create Drupal 7 websites using an install profile.
 
 ## Installation
 
+### Install with DDEV
+
+#### Requirements
+
+ - https://ddev.readthedocs.io/en/latest/#installation
+ - Drush 8 or earlier: https://docs.drush.org/en/master/install/#drupal-compatibility - that supports Drupal 7.
+
+#### Steps
+
+  cp default.config.sh config.sh
+  cp .ddev/config.local.yaml.example .ddev/config.local.yaml
+  ddev restart
+
+Migrate content with either `ddev migrate default` or `ddev migrate sample`
+depending on whether you want minimal development content or a full set of
+sample content (takes much longer).
+
+### Native Install
+
 **Warning:** you need to setup [Drush](https://github.com/drush-ops/drush)
 first or the installation and update scripts will not work.
-
-### With DDEV
-
-Copy the example configuration file to config.sh:
-
-	cp default.config.sh config.sh
-	
-Build Drupal modules
-
-    chmod +x ./scripts/build
-	./scripts/build
-	
-(Re)Start DDEV
-
-    ddev restart
-
 
 #### Create config file
 
