@@ -14,6 +14,10 @@ update msg subPage model =
             , []
             )
 
+        NavigateToStuntingTable filter ->
+            { model | currentCaseManagementSubFilter = filter }
+                |> update (SetActivePage (UserPage (DashboardPage CaseManagementPage))) subPage
+
         SetFilterGender gender ->
             ( { model | beneficiariesGender = gender }
             , Cmd.none

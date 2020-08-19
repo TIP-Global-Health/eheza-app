@@ -205,6 +205,7 @@ type MonthlyChartType
 
 type Msg
     = ModalToggle Bool (List ParticipantStats) String
+    | NavigateToStuntingTable DashboardSubFilter
     | SetFilterGender FilterGender
     | SetFilterPeriod FilterPeriod
     | SetFilterBeneficiariesChart DashboardFilter FilterType
