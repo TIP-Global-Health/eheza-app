@@ -439,7 +439,17 @@ viewCaseManagementPage language currentDate stats model =
                                 >> List.any
                                     (Tuple.second
                                         >> .class
-                                        >> (\class -> (class == Backend.Dashboard.Model.Moderate) || (class == Backend.Dashboard.Model.Severe))
+                                        >> (\class ->
+                                                case model.currentCaseManagementSubFilter of
+                                                    FilterTotal ->
+                                                        (class == Backend.Dashboard.Model.Moderate) || (class == Backend.Dashboard.Model.Severe)
+
+                                                    FilterModerate ->
+                                                        class == Backend.Dashboard.Model.Moderate
+
+                                                    FilterSevere ->
+                                                        class == Backend.Dashboard.Model.Severe
+                                           )
                                     )
                             )
 
@@ -475,8 +485,10 @@ viewCaseManagementPage language currentDate stats model =
             [ div [ class "case-management" ]
                 [ div [ class "header" ]
                     [ h3 [ class "title left floated column" ] [ translateText language <| Translate.Dashboard Translate.CaseManagementLabel ]
-                    , List.map (viewFilters language FilterCaseManagement model.currentCaseManagementFilter) caseManagementFilters
+                    , List.map (viewFilter language FilterCaseManagement model.currentCaseManagementFilter) caseManagementFilters
                         |> div [ class "filters" ]
+                    , List.map (viewSubFilter language model.currentCaseManagementSubFilter) (caseManagementSubFilters model.currentCaseManagementFilter)
+                        |> div [ class "filters secondary" ]
                     ]
                 , div [ class "content" ]
                     [ viewCaseManagementTable language currentDate model tableData ]
@@ -935,7 +947,7 @@ viewBeneficiariesGenderFilter language model =
             span
                 [ classList
                     [ ( "active", model.beneficiariesGender == gender )
-                    , ( "dashboard-filters", True )
+                    , ( "dashboard-filter", True )
                     ]
                 , onClick <| SetFilterGender gender
                 ]
@@ -1292,7 +1304,7 @@ viewMonthlyChart language currentDate chartType filterType data currentFilter =
     div [ class "ui segment blue dashboards-monthly-chart" ]
         [ div [ class "header" ]
             [ caption
-            , List.map (viewFilters language filterType currentFilter) monthlyChartFilters
+            , List.map (viewFilter language filterType currentFilter) monthlyChartFilters
                 |> div [ class "filters" ]
             ]
         , div [ class "content" ]
@@ -1334,8 +1346,8 @@ viewBarsChartLegend language =
         ]
 
 
-viewFilters : Language -> FilterType -> DashboardFilter -> DashboardFilter -> Html Msg
-viewFilters language filterType currentChartFilter filter =
+viewFilter : Language -> FilterType -> DashboardFilter -> DashboardFilter -> Html Msg
+viewFilter language filterType currentChartFilter filter =
     let
         filterAction =
             case filterType of
@@ -1350,12 +1362,24 @@ viewFilters language filterType currentChartFilter filter =
     in
     span
         [ classList
-            [ ( "dashboard-filters", True )
+            [ ( "dashboard-filter", True )
             , ( "active", filter == currentChartFilter )
             ]
         , onClick <| filterAction
         ]
         [ translateText language <| Translate.Dashboard <| Translate.Filter filter ]
+
+
+viewSubFilter : Language -> DashboardSubFilter -> DashboardSubFilter -> Html Msg
+viewSubFilter language currentSubFilter filter =
+    span
+        [ classList
+            [ ( "dashboard-filter", True )
+            , ( "active", filter == currentSubFilter )
+            ]
+        , onClick <| SetSubFilterCaseManagement filter
+        ]
+        [ translateText language <| Translate.Dashboard <| Translate.SubFilter filter ]
 
 
 viewFamilyPlanningChartLegend : Language -> List ( FamilyPlanningSign, Int ) -> Html Msg

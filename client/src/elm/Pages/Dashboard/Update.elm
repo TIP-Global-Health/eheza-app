@@ -32,6 +32,12 @@ update msg subPage model =
             , []
             )
 
+        SetSubFilterCaseManagement filter ->
+            ( { model | currentCaseManagementSubFilter = filter }
+            , Cmd.none
+            , []
+            )
+
         SetFilterBeneficiariesChart filter filterType ->
             let
                 updatedModel =

@@ -58,7 +58,7 @@ import Pages.AcuteIllnessActivity.Model
         )
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
-import Pages.Dashboard.Model as Dashboard exposing (BeneficiariesTableLabels(..), DashboardFilter(..), FilterPeriod(..))
+import Pages.Dashboard.Model as Dashboard exposing (BeneficiariesTableLabels(..), DashboardFilter(..), DashboardSubFilter(..), FilterPeriod(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
     exposing
@@ -212,6 +212,7 @@ type Dashboard
     | SeverelyMalnourished
     | StatisticsFirstWordHelper
     | StatisticsHelper
+    | SubFilter DashboardSubFilter
     | SyncNotice
     | TotalBeneficiaries
     | TotalMalnourished
@@ -5975,6 +5976,23 @@ translateDashboard trans =
             { english = "statistics for this month"
             , kinyarwanda = Nothing
             }
+
+        SubFilter filter ->
+            case filter of
+                FilterTotal ->
+                    { english = "Total"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterModerate ->
+                    { english = "Moderate"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterSevere ->
+                    { english = "Severe"
+                    , kinyarwanda = Nothing
+                    }
 
         SyncNotice ->
             { english = "If the dashboard statistics doesn't load shortly, please sync data from the backend."

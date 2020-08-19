@@ -3,6 +3,7 @@ module Pages.Dashboard.Model exposing
     , Card
     , CardValueSeverity(..)
     , DashboardFilter(..)
+    , DashboardSubFilter(..)
     , FamilyPlanningSignsCounter
     , FilterGender(..)
     , FilterPeriod(..)
@@ -12,6 +13,7 @@ module Pages.Dashboard.Model exposing
     , Msg(..)
     , StatsCard
     , caseManagementFilters
+    , caseManagementSubFilters
     , emptyModel
     , filterGenders
     , filterPeriodsForCaseManagementPage
@@ -84,6 +86,12 @@ type DashboardFilter
     | MissedSession
 
 
+type DashboardSubFilter
+    = FilterTotal
+    | FilterModerate
+    | FilterSevere
+
+
 monthlyChartFilters : List DashboardFilter
 monthlyChartFilters =
     [ Stunting
@@ -103,12 +111,26 @@ caseManagementFilters =
     ]
 
 
+caseManagementSubFilters : DashboardFilter -> List DashboardSubFilter
+caseManagementSubFilters mainFilter =
+    case mainFilter of
+        MissedSession ->
+            []
+
+        _ ->
+            [ FilterTotal
+            , FilterModerate
+            , FilterSevere
+            ]
+
+
 type alias Model =
     { period : FilterPeriod
     , beneficiariesGender : FilterGender
     , currentBeneficiariesChartsFilter : DashboardFilter
     , currentBeneficiariesIncidenceChartsFilter : DashboardFilter
     , currentCaseManagementFilter : DashboardFilter
+    , currentCaseManagementSubFilter : DashboardSubFilter
     , latestPage : DashboardPage
     , modalTable : List ParticipantStats
     , modalTitle : String
@@ -123,6 +145,7 @@ emptyModel =
     , currentBeneficiariesChartsFilter = Stunting
     , currentBeneficiariesIncidenceChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
+    , currentCaseManagementSubFilter = FilterTotal
     , latestPage = MainPage
     , modalTable = []
     , modalTitle = ""
@@ -186,4 +209,5 @@ type Msg
     | SetFilterPeriod FilterPeriod
     | SetFilterBeneficiariesChart DashboardFilter FilterType
     | SetFilterCaseManagement DashboardFilter
+    | SetSubFilterCaseManagement DashboardSubFilter
     | SetActivePage Page

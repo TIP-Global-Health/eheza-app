@@ -462,7 +462,7 @@
         color: $color-background;
         margin-top: 6px;
 
-        .dashboard-filters {
+        .dashboard-filter {
           padding: 4px 5px;
           cursor: pointer;
 
@@ -471,6 +471,15 @@
             color: white;
             border-radius: 3px;
           }
+        }
+      }
+
+      .filters.secondary {
+        margin-top: 5px;
+        margin-bottom: 15px;
+
+        .dashboard-filter {
+          padding: 5px 30px;
         }
       }
     }
@@ -565,7 +574,7 @@
           margin-right: 10px;
         }
 
-        .dashboard-filters {
+        .dashboard-filter {
           padding: 0 5px;
         }
       }
@@ -595,6 +604,10 @@
   .case-management .header .filters {
     margin-bottom: 10px;
     margin-top: 0;
+
+    &.secondary {
+
+    }
   }
 
   .dashboards-links {
