@@ -517,7 +517,13 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
   }
 
   // HIV status.
-  $valid_values = ['hiv-exposed infant', 'negative', 'negative - discordant couple', 'positive', 'unknown'];
+  $valid_values = [
+    'hiv-exposed infant',
+    'negative',
+    'negative - discordant couple',
+    'positive',
+    'unknown',
+  ];
   if (!in_array(strtolower($hiv_status), $valid_values)) {
     $errors[] = "HIV status: Invalid value - $hiv_status";
   }
