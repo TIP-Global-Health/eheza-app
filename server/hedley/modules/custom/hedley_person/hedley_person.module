@@ -559,7 +559,7 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
     }
 
     if (!empty($relation) && in_array($relation, ['parent', 'caregiver'])) {
-      $adult_id = hedley_person_resolve_adult_by_name($adult_name);
+      $adult_id = hedley_person_resolve_person_by_name($adult_name);
 
       if (empty($adult_id)) {
         $warnings[] = "Failed to resolve $relation for child, therefore, relationship with $adult_name will not be created";
@@ -778,7 +778,7 @@ function hedley_person_import_patient($patient_type, array $values) {
     $adult_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_PARENT_NAME]);
 
     // Resolve parent/caregiver.
-    $adult_id = hedley_person_resolve_adult_by_name($adult_name);
+    $adult_id = hedley_person_resolve_person_by_name($adult_name);
 
     if (!empty($adult_id)) {
       if (!hedley_person_create_relationship($wrapper->getIdentifier(), $adult_id, $relation)) {
@@ -799,7 +799,7 @@ function hedley_person_import_patient($patient_type, array $values) {
   }
 
   // Type specific logic - adult.
-  $education_level = trim($values[HEDLEY_PERSON_COLUMN_ADULT_EDUCATION_LEVEL]);
+  $education_level = strtolower(trim($values[HEDLEY_PERSON_COLUMN_ADULT_EDUCATION_LEVEL]));
   switch (strtolower($education_level)) {
     case 'no schooling':
       $wrapper->field_mode_of_delivery->set('0');
@@ -963,41 +963,26 @@ function hedley_person_resolve_content_by_name($type, $health_center) {
 }
 
 /**
- * Resolves Health Center node ID by it's name.
+ * Resolves Person's node ID by it's name.
  *
- * @param string $adult_name
- *   Name of adult person (13 years of age, or more).
+ * @param string $name
+ *   Name of person.
  *
  * @return int|null
  *   Node ID. Null, if not found.
  */
-function hedley_person_resolve_adult_by_name($adult_name) {
+function hedley_person_resolve_person_by_name($name) {
   $query = new EntityFieldQuery();
 
   $result = $query->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'person')
-    ->propertyCondition('title', $adult_name)
+    ->propertyCondition('title', $name)
     ->propertyCondition('status', 1)
     ->propertyOrderBy('nid', 'DESC')
     ->execute();
 
-  if (empty($result['node'])) {
-    return NULL;
-  }
 
-  $candidates = node_load_multiple(array_keys($result['node']));
-  foreach ($candidates as $candidate) {
-    $wrapper = entity_metadata_wrapper('node', $candidate);
-    $birth_date = $wrapper->field_birth_date->value();
-
-    // Is person over age of 13?
-    if ((time() - strtotime($birth_date)) / (365 * 24 * 3600) > 13) {
-      return $wrapper->getIdentifier();
-    }
-  }
-
-  // If we got this far, we failed to find parent / caregiver.
-  return NULL;
+  return empty($result['node']) ? NULL : key($result['node']);
 }
 
 /**
