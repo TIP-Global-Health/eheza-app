@@ -29,7 +29,7 @@ import Backend.Person.Model
         , allModesOfDelivery
         , allUbudehes
         )
-import Backend.Person.Utils exposing (expectedAgeByPerson, graduatingAgeInMonth, isAdult, isPersonAnAdult)
+import Backend.Person.Utils exposing (defaultIconForPerson, expectedAgeByPerson, graduatingAgeInMonth, isAdult, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Utils exposing (getSession)
@@ -253,15 +253,7 @@ viewPerson : Language -> NominalDate -> Initiator -> ModelIndexedDb -> PersonId 
 viewPerson language currentDate initiator db id person =
     let
         typeForThumbnail =
-            case isPersonAnAdult currentDate person of
-                Just True ->
-                    "mother"
-
-                Just False ->
-                    "child"
-
-                Nothing ->
-                    "mother"
+            defaultIconForPerson currentDate person
 
         action =
             if initiator == ParticipantDirectoryOrigin then
@@ -315,16 +307,12 @@ viewPerson language currentDate initiator db id person =
 viewOtherPerson : Language -> NominalDate -> Bool -> Initiator -> ModelIndexedDb -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
 viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
     let
+        typeForThumbnail =
+            defaultIconForPerson currentDate person
+
         isAdult =
             isPersonAnAdult currentDate person
                 |> Maybe.withDefault True
-
-        typeForThumbnail =
-            if isAdult then
-                "mother"
-
-            else
-                "child"
 
         relationshipLabel =
             otherPerson.relationship
@@ -549,6 +537,18 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
 
                 IndividualEncounterOrigin encounterType ->
                     case encounterType of
+                        AcuteIllnessEncounter ->
+                            let
+                                expectedAge =
+                                    expectedAgeByForm currentDate personForm operation
+                            in
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage AcuteIllnessEncounter)
+                            , expectedAge = expectedAge
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -90 today
+                            , birthDateSelectorTo = today
+                            }
+
                         AntenatalEncounter ->
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage AntenatalEncounter)
                             , expectedAge = ExpectAdult
@@ -755,7 +755,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             allEducationLevels
                 |> List.map
                     (\level ->
-                        ( Debug.toString (encodeEducationLevel level)
+                        ( String.fromInt (encodeEducationLevel level)
                         , translate language (Translate.LevelOfEducation level)
                         )
                     )
@@ -855,7 +855,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                 options =
                     emptyOption
                         :: (List.repeat 5 "."
-                                |> List.indexedMap (\index _ -> ( Debug.toString index, Debug.toString index ))
+                                |> List.indexedMap (\index _ -> ( String.fromInt index, String.fromInt index ))
                            )
             in
             viewSelectInput language Translate.NumberOfChildrenUnder5 options Backend.Person.Form.numberOfChildren "ten" "select-input" False personForm
@@ -904,8 +904,8 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             allUbudehes
                 |> List.map
                     (\ubudehe ->
-                        ( Debug.toString (encodeUbudehe ubudehe)
-                        , Debug.toString (encodeUbudehe ubudehe)
+                        ( String.fromInt (encodeUbudehe ubudehe)
+                        , String.fromInt (encodeUbudehe ubudehe)
                         )
                     )
                 |> (::) emptyOption
@@ -919,7 +919,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                 |> Dict.toList
                 |> List.map
                     (\( id, geoLocation ) ->
-                        ( Debug.toString <| fromEntityId id, geoLocation.name )
+                        ( String.fromInt <| fromEntityId id, geoLocation.name )
                     )
 
         filterGeoLocationDictByParent parentId dict =

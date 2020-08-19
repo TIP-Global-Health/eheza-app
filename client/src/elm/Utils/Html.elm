@@ -58,8 +58,8 @@ thumbnailImage subClass maybeAvatarUrl label height width =
         Nothing ->
             span
                 [ class <| "icon-participant " ++ subClass
-                , style "height" (Debug.toString height ++ "px")
-                , style "width" (Debug.toString width ++ "px")
+                , style "height" (String.fromInt height ++ "px")
+                , style "width" (String.fromInt width ++ "px")
                 ]
                 []
 
@@ -67,8 +67,8 @@ thumbnailImage subClass maybeAvatarUrl label height width =
             img
                 [ src source
                 , attribute "alt" label
-                , style "height" (Debug.toString height ++ "px")
-                , style "width" (Debug.toString width ++ "px")
+                , style "height" (String.fromInt height ++ "px")
+                , style "width" (String.fromInt width ++ "px")
                 , class <| "photo-participant " ++ subClass ++ " rotate-90"
                 ]
                 []

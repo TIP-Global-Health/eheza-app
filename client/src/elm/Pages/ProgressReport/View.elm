@@ -636,7 +636,7 @@ viewHeightWithIndication language child zscores height =
                 |> Maybe.Extra.toList
 
         value =
-            Debug.toString cm ++ translate language Translate.CentimeterShorthand
+            String.fromFloat cm ++ translate language Translate.CentimeterShorthand
     in
     span indication [ text value ]
 
@@ -646,7 +646,7 @@ viewMuactWithIndication language muac =
         |> (\((MuacInCm cm) as muac_) ->
                 span
                     [ class <| classForIndication <| muacIndicationToIndication <| muacIndication muac_ ]
-                    [ text <| Debug.toString cm ++ translate language Translate.CentimeterShorthand ]
+                    [ text <| String.fromFloat cm ++ translate language Translate.CentimeterShorthand ]
            )
 
 
@@ -670,7 +670,7 @@ viewWeightWithIndication language child zscores weight =
                 |> Maybe.Extra.toList
 
         value =
-            Debug.toString kg ++ translate language Translate.KilogramShorthand
+            String.fromFloat kg ++ translate language Translate.KilogramShorthand
     in
     span indication [ text value ]
 

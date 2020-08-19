@@ -1,5 +1,6 @@
-module Pages.Utils exposing (backFromSessionPage, calculatePercentage, filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, viewBoolInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectInput, viewCheckBoxSelectInputItem, viewCustomLabel, viewLabel, viewMeasurementInput, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement, viewQuestionLabel)
+module Pages.Utils exposing (..)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (PhotoUrl(..))
 import Backend.Nurse.Model exposing (Nurse)
@@ -7,11 +8,12 @@ import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust, or, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Time exposing (Month(..))
 import Translate exposing (Language, TranslationId, translate)
@@ -153,31 +155,35 @@ viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
             else
                 "four"
 
-        viewInput value currentValue_ setMsg_ =
+        viewInput value =
             let
                 isChecked =
-                    currentValue_ == Just value
+                    currentValue == Just value
+
+                transId =
+                    if value then
+                        yesTransId
+
+                    else
+                        noTransId
             in
-            input
+            [ input
                 [ type_ "radio"
                 , checked isChecked
                 , classList [ ( "checked", isChecked ) ]
-                , onCheck (always (setMsg_ value))
+                , onCheck (always (setMsg value))
                 ]
                 []
+            , label [ onClick <| setMsg value ]
+                [ text <| translate language transId ]
+            ]
     in
     div [ class <| "form-input yes-no " ++ inputClass ]
         [ div [ class "ui grid" ]
-            [ div [ class <| inputWidth ++ " wide column" ]
-                [ viewInput True currentValue setMsg
-                , label [ onClick <| setMsg True ]
-                    [ text <| translate language yesTransId ]
-                ]
-            , div [ class <| inputWidth ++ " wide column" ]
-                [ viewInput False currentValue setMsg
-                , label [ onClick <| setMsg False ]
-                    [ text <| translate language noTransId ]
-                ]
+            [ div [ class <| inputWidth ++ " wide column" ] <|
+                viewInput True
+            , div [ class <| inputWidth ++ " wide column" ] <|
+                viewInput False
             ]
         ]
 
@@ -191,8 +197,27 @@ viewCheckBoxSelectInput language leftOptions rightOptions currentValue setMsg tr
     viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions Nothing setMsg translateFunc
 
 
+viewCheckBoxSelectCustomInput : Language -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> Html msg) -> Html msg
+viewCheckBoxSelectCustomInput language leftOptions rightOptions currentValue setMsg viewOptionFunc =
+    let
+        checkedOptions =
+            currentValue |> Maybe.map List.singleton |> Maybe.withDefault []
+    in
+    viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedOptions Nothing setMsg viewOptionFunc
+
+
 viewCheckBoxMultipleSelectInput : Language -> List a -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> TranslationId) -> Html msg
 viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions noneOption setMsg translateFunc =
+    let
+        viewOptionFunc option =
+            label []
+                [ translateFunc option |> translate language |> text ]
+    in
+    viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedOptions noneOption setMsg viewOptionFunc
+
+
+viewCheckBoxMultipleSelectCustomInput : Language -> List a -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> Html msg) -> Html msg
+viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedOptions noneOption setMsg viewOptionFunc =
     let
         noneSection =
             noneOption
@@ -200,24 +225,33 @@ viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions
                     []
                     (\option ->
                         [ div [ class "ui divider" ] []
-                        , viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc option
+                        , viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc option
                         ]
                     )
+
+        ( leftOptionsClass, rightOptionsSection ) =
+            if List.isEmpty rightOptions then
+                ( "sixteen", emptyNode )
+
+            else
+                ( "eight"
+                , rightOptions
+                    |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc)
+                    |> div [ class "eight wide column" ]
+                )
     in
     div [ class "checkbox-select-input" ] <|
         div [ class "ui grid" ]
             [ leftOptions
-                |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc)
-                |> div [ class "eight wide column" ]
-            , rightOptions
-                |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc)
-                |> div [ class "eight wide column" ]
+                |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc)
+                |> div [ class <| leftOptionsClass ++ " wide column" ]
+            , rightOptionsSection
             ]
             :: noneSection
 
 
-viewCheckBoxSelectInputItem : Language -> List a -> (a -> msg) -> (a -> TranslationId) -> a -> Html msg
-viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc option =
+viewCheckBoxSelectInputItem : Language -> List a -> (a -> msg) -> (a -> Html msg) -> a -> Html msg
+viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc option =
     let
         isChecked =
             List.member option checkedOptions
@@ -232,8 +266,7 @@ viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc option 
             , classList [ ( "checked", isChecked ) ]
             ]
             []
-        , label []
-            [ text <| translate language (translateFunc option) ]
+        , viewOptionFunc option
         ]
 
 
@@ -242,7 +275,7 @@ viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslatio
     let
         currentValue =
             maybeCurrentValue
-                |> Maybe.map Debug.toString
+                |> Maybe.map String.fromFloat
                 |> Maybe.withDefault ""
 
         inputAttrs =
@@ -278,6 +311,129 @@ viewPreviousMeasurement language maybePreviousValue unitTranslationId =
     div [ class "previous-value" ] [ text message ]
 
 
+viewCheckBoxValueInput : Language -> ( List a, a ) -> Dict a Int -> (a -> msg) -> (a -> String -> msg) -> (a -> TranslationId) -> List (Html msg)
+viewCheckBoxValueInput language ( signs, none ) data toggleMsg setMsg translateFunc =
+    let
+        items =
+            List.map (viewCheckBoxValueInputItem language data toggleMsg setMsg translateFunc) signs
+
+        noneItem =
+            [ viewCheckBoxValueInputNone language data toggleMsg translateFunc none ]
+    in
+    items ++ noneItem
+
+
+viewCheckBoxValueInputItem : Language -> Dict a Int -> (a -> msg) -> (a -> String -> msg) -> (a -> TranslationId) -> a -> Html msg
+viewCheckBoxValueInputItem language data toggleMsg setMsg translateFunc sign =
+    let
+        currentValue =
+            Dict.get sign data
+
+        isChecked =
+            isJust currentValue
+
+        periodSection =
+            if isChecked then
+                let
+                    periodInput =
+                        List.range 1 14
+                            |> List.map
+                                (\number ->
+                                    option
+                                        [ value (String.fromInt number)
+                                        , selected (currentValue == Just number)
+                                        ]
+                                        [ text (String.fromInt number) ]
+                                )
+                            |> select [ onInput (setMsg sign), class "form-input period" ]
+                in
+                [ div [ class "three wide column" ] [ periodInput ]
+                , div [ class "four wide column" ]
+                    [ div [ class "days-present" ] [ text <| translate language Translate.DaysPresent ] ]
+                ]
+
+            else
+                []
+    in
+    div [ class "ui grid" ] <|
+        div [ class "eight wide column" ]
+            [ div
+                [ class "ui checkbox activity"
+                , onClick <| toggleMsg sign
+                ]
+                [ input
+                    [ type_ "checkbox"
+                    , checked isChecked
+                    , classList [ ( "checked", isChecked ) ]
+                    ]
+                    []
+                , label []
+                    [ text <| translate language (translateFunc sign) ]
+                ]
+            ]
+            :: periodSection
+
+
+viewCheckBoxValueInputNone : Language -> Dict a Int -> (a -> msg) -> (a -> TranslationId) -> a -> Html msg
+viewCheckBoxValueInputNone language data setMsg translateFunc noneSign =
+    let
+        currentValue =
+            Dict.get noneSign data
+
+        isChecked =
+            isJust currentValue
+
+        action =
+            if isChecked then
+                []
+
+            else
+                [ onClick <| setMsg noneSign ]
+    in
+    div [ class "ui grid" ]
+        [ div
+            [ class "seven wide column" ]
+            [ div (class "ui checkbox activity" :: action)
+                [ input
+                    [ type_ "checkbox"
+                    , checked isChecked
+                    , classList [ ( "checked", isChecked ) ]
+                    ]
+                    []
+                , label []
+                    [ text <| translate language (translateFunc noneSign) ]
+                ]
+            ]
+        ]
+
+
+viewEndEncounterDialog : Language -> TranslationId -> TranslationId -> msg -> msg -> Html msg
+viewEndEncounterDialog language heading message confirmAction cancelAction =
+    div [ class "ui tiny active modal" ]
+        [ div [ class "header" ]
+            [ text <| translate language heading ]
+        , div
+            [ class "content" ]
+            [ p [] [ text <| translate language message ]
+            ]
+        , div
+            [ class "actions" ]
+            [ div [ class "two ui buttons" ]
+                [ button
+                    [ class "ui fluid button"
+                    , onClick cancelAction
+                    ]
+                    [ text <| translate language Translate.Cancel ]
+                , button
+                    [ class "ui primary fluid button"
+                    , onClick confirmAction
+                    ]
+                    [ text <| translate language Translate.Continue ]
+                ]
+            ]
+        ]
+
+
 taskCompleted : Maybe a -> Int
 taskCompleted maybe =
     if isJust maybe then
@@ -296,6 +452,24 @@ taskListCompleted list =
         0
 
 
+ifEverySetEmpty : a -> EverySet a -> EverySet a
+ifEverySetEmpty value set =
+    if EverySet.isEmpty set then
+        EverySet.singleton value
+
+    else
+        set
+
+
+valueConsideringIsDirtyField : Bool -> Maybe a -> a -> Maybe a
+valueConsideringIsDirtyField isDirty formVariant valueVariant =
+    if isDirty then
+        formVariant
+
+    else
+        or formVariant (Just valueVariant)
+
+
 {-| Show a photo thumbnail.
 -}
 viewPhotoThumb : String -> Html any
@@ -312,3 +486,15 @@ viewPhotoThumb url =
 viewPhotoThumbFromPhotoUrl : PhotoUrl -> Html any
 viewPhotoThumbFromPhotoUrl (PhotoUrl url) =
     viewPhotoThumb url
+
+
+isTaskCompleted : Dict t ( Int, Int ) -> t -> Bool
+isTaskCompleted dict task =
+    Dict.get task dict
+        |> Maybe.map (\( completed, total ) -> completed == total)
+        |> Maybe.withDefault False
+
+
+tasksBarId : String
+tasksBarId =
+    "tasks-bar"

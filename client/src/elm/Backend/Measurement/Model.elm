@@ -1,4 +1,4 @@
-module Backend.Measurement.Model exposing (AbdomenCPESign(..), Attendance, BreastExam, BreastExamSign(..), BreastExamValue, CSectionReason(..), CSectionScar(..), ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CorePhysicalExam, CorePhysicalExamValue, CounselingSession, DangerSign(..), DangerSigns, DistributionNotice(..), EyesCPESign(..), FamilyPlanning, FamilyPlanningSign(..), Fbf, FbfForm, FbfValue, FetalPresentation(..), GroupMeasurement, HairHeadCPESign(..), HandsCPESign(..), HeartCPESign(..), Height, HeightInCm(..), HistoricalMeasurements, Lactation, LactationForm, LactationSign(..), LastMenstrualPeriod, LastMenstrualPeriodValue, LegsCPESign(..), LungsCPESign(..), Measurement, MeasurementData, Measurements, MedicalHistory, MedicalHistorySign(..), Medication, MedicationSign(..), MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), NeckCPESign(..), NutritionHeight, NutritionMeasurement, NutritionMeasurements, NutritionMuac, NutritionNutrition, NutritionPhoto, NutritionWeight, ObstetricHistory, ObstetricHistorySign(..), ObstetricHistoryStep2, ObstetricHistoryStep2Value, ObstetricHistoryValue, ObstetricalExam, ObstetricalExamValue, ParticipantConsent, ParticipantConsentValue, Photo, PhotoUrl(..), PrenatalFamilyPlanning, PrenatalMeasurement, PrenatalMeasurements, PrenatalNutrition, PrenatalNutritionValue, PrenatalPhoto, PreviousDeliveryPeriod(..), PreviousDeliverySign(..), PreviousMeasurementsValue, Resource, ResourceSign(..), SocialHistory, SocialHistoryHivTestingResult(..), SocialHistorySign(..), SocialHistoryValue, Vitals, VitalsValue, Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
+module Backend.Measurement.Model exposing (AbdomenCPESign(..), AcuteFindings, AcuteFindingsGeneralSign(..), AcuteFindingsRespiratorySign(..), AcuteFindingsValue, AcuteIllnessMeasurement, AcuteIllnessMeasurements, AcuteIllnessVitals, AcuteIllnessVitalsValue, Attendance, BreastExam, BreastExamSign(..), BreastExamValue, CSectionReason(..), CSectionScar(..), ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CorePhysicalExam, CorePhysicalExamValue, CounselingSession, DangerSign(..), DangerSigns, DistributionNotice(..), Exposure, ExposureSign(..), EyesCPESign(..), FamilyPlanning, FamilyPlanningSign(..), Fbf, FbfForm, FbfValue, FetalPresentation(..), GroupMeasurement, HCContact, HCContactSign(..), HCContactValue, HCRecomendation(..), HairHeadCPESign(..), HandsCPESign(..), HeartCPESign(..), Height, HeightInCm(..), HistoricalMeasurements, Isolation, IsolationSign(..), IsolationValue, Lactation, LactationForm, LactationSign(..), LastMenstrualPeriod, LastMenstrualPeriodValue, LegsCPESign(..), LungsCPESign(..), MalariaRapidTestResult(..), MalariaTesting, Measurement, MeasurementData, Measurements, MedicalHistory, MedicalHistorySign(..), Medication, MedicationDistribution, MedicationDistributionSign(..), MedicationSign(..), MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), NeckCPESign(..), NutritionHeight, NutritionMeasurement, NutritionMeasurements, NutritionMuac, NutritionNutrition, NutritionPhoto, NutritionWeight, ObstetricHistory, ObstetricHistorySign(..), ObstetricHistoryStep2, ObstetricHistoryStep2Value, ObstetricHistoryValue, ObstetricalExam, ObstetricalExamValue, ParticipantConsent, ParticipantConsentValue, Photo, PhotoUrl(..), PrenatalFamilyPlanning, PrenatalMeasurement, PrenatalMeasurements, PrenatalNutrition, PrenatalNutritionValue, PrenatalPhoto, PreviousDeliveryPeriod(..), PreviousDeliverySign(..), PreviousMeasurementsValue, ReasonForNotIsolating(..), Resource, ResourceSign(..), ResponsePeriod(..), SendToHC, SendToHCSign(..), SocialHistory, SocialHistoryHivTestingResult(..), SocialHistorySign(..), SocialHistoryValue, SymptomsGI, SymptomsGIDerivedSign(..), SymptomsGISign(..), SymptomsGIValue, SymptomsGeneral, SymptomsGeneralSign(..), SymptomsGeneralValue, SymptomsRespiratory, SymptomsRespiratorySign(..), TravelHistory, TravelHistorySign(..), TreatmentReview, TreatmentReviewSign(..), Vitals, VitalsValue, Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
 
 {-| This module represents various measurements to be stored on the backend,
 and cached in local storage.
@@ -39,12 +39,16 @@ type alias GroupMeasurement value =
     Measurement SessionId value
 
 
+type alias PrenatalMeasurement value =
+    Measurement PrenatalEncounterId value
+
+
 type alias NutritionMeasurement value =
     Measurement NutritionEncounterId value
 
 
-type alias PrenatalMeasurement value =
-    Measurement PrenatalEncounterId value
+type alias AcuteIllnessMeasurement value =
+    Measurement AcuteIllnessEncounterId value
 
 
 
@@ -509,6 +513,256 @@ type alias Vitals =
 
 
 
+-- ACUTE ILLNESS MEASUREMENTS
+
+
+type SymptomsGeneralSign
+    = BodyAches
+    | Chills
+    | SymptomGeneralFever
+    | Headache
+    | LossOfSmell
+    | NightSweats
+    | Lethargy
+    | PoorSuck
+    | UnableToDrink
+    | UnableToEat
+    | IncreasedThirst
+    | DryMouth
+    | SevereWeakness
+    | YellowEyes
+    | CokeColoredUrine
+    | SymptomsGeneralConvulsions
+    | SpontaneousBleeding
+    | NoSymptomsGeneral
+
+
+type alias SymptomsGeneralValue =
+    { fever : Int
+    , chills : Int
+    , nightSweats : Int
+    , bodyAches : Int
+    , headache : Int
+    , lossOfSmell : Int
+    , lethargy : Int
+    , poorSuck : Int
+    , unableToDrink : Int
+    , unableToEat : Int
+    , increasedThirst : Int
+    , dryMouth : Int
+    , severeWeakness : Int
+    , yellowEyes : Int
+    , cokeColoredUrine : Int
+    , convulsions : Int
+    , spontaneousBleeding : Int
+    }
+
+
+type alias SymptomsGeneral =
+    AcuteIllnessMeasurement (Dict SymptomsGeneralSign Int)
+
+
+type SymptomsRespiratorySign
+    = BloodInSputum
+    | Cough
+    | NasalCongestion
+    | ShortnessOfBreath
+    | SoreThroat
+    | StabbingChestPain
+    | NoSymptomsRespiratory
+
+
+type alias SymptomsRespiratory =
+    AcuteIllnessMeasurement (Dict SymptomsRespiratorySign Int)
+
+
+type SymptomsGISign
+    = SymptomGIAbdominalPain
+    | BloodyDiarrhea
+    | Nausea
+    | NonBloodyDiarrhea
+    | Vomiting
+    | NoSymptomsGI
+
+
+type SymptomsGIDerivedSign
+    = IntractableVomiting
+    | NoSymptomsGIDerived
+
+
+type alias SymptomsGIValue =
+    { signs : Dict SymptomsGISign Int
+    , derivedSigns : EverySet SymptomsGIDerivedSign
+    }
+
+
+type alias SymptomsGI =
+    AcuteIllnessMeasurement SymptomsGIValue
+
+
+type alias AcuteIllnessVitalsValue =
+    { respiratoryRate : Int
+    , bodyTemperature : Float
+    }
+
+
+type alias AcuteIllnessVitals =
+    AcuteIllnessMeasurement AcuteIllnessVitalsValue
+
+
+type AcuteFindingsGeneralSign
+    = LethargicOrUnconscious
+    | AcuteFindingsPoorSuck
+    | SunkenEyes
+    | PoorSkinTurgor
+    | Jaundice
+    | NoAcuteFindingsGeneralSigns
+
+
+type AcuteFindingsRespiratorySign
+    = Stridor
+    | NasalFlaring
+    | SevereWheezing
+    | SubCostalRetractions
+    | NoAcuteFindingsRespiratorySigns
+
+
+type alias AcuteFindingsValue =
+    { signsGeneral : EverySet AcuteFindingsGeneralSign
+    , signsRespiratory : EverySet AcuteFindingsRespiratorySign
+    }
+
+
+type alias AcuteFindings =
+    AcuteIllnessMeasurement AcuteFindingsValue
+
+
+type MalariaRapidTestResult
+    = RapidTestPositive
+    | RapidTestPositiveAndPregnant
+    | RapidTestNegative
+    | RapidTestIndeterminate
+    | RapidTestUnableToRun
+
+
+type alias MalariaTesting =
+    AcuteIllnessMeasurement MalariaRapidTestResult
+
+
+type TravelHistorySign
+    = COVID19Country
+    | NoTravelHistorySigns
+
+
+type alias TravelHistory =
+    AcuteIllnessMeasurement (EverySet TravelHistorySign)
+
+
+type TreatmentReviewSign
+    = FeverPast6Hours
+    | FeverPast6HoursHelped
+    | MalariaToday
+    | MalariaTodayHelped
+    | MalariaWithinPastMonth
+    | MalariaWithinPastMonthHelped
+    | NoTreatmentReviewSigns
+
+
+type alias TreatmentReview =
+    AcuteIllnessMeasurement (EverySet TreatmentReviewSign)
+
+
+type ExposureSign
+    = COVID19Symptoms
+    | NoExposureSigns
+
+
+type alias Exposure =
+    AcuteIllnessMeasurement (EverySet ExposureSign)
+
+
+type IsolationSign
+    = PatientIsolated
+    | SignOnDoor
+    | HealthEducation
+    | NoIsolationSigns
+
+
+type ReasonForNotIsolating
+    = NoSpace
+    | TooIll
+    | CanNotSeparateFromFamily
+    | OtherReason
+    | IsolationReasonNotApplicable
+
+
+type alias IsolationValue =
+    { signs : EverySet IsolationSign
+    , reasonsForNotIsolating : EverySet ReasonForNotIsolating
+    }
+
+
+type alias Isolation =
+    AcuteIllnessMeasurement IsolationValue
+
+
+type HCContactSign
+    = ContactedHealthCenter
+    | NoHCContactSigns
+
+
+type HCRecomendation
+    = SendAmbulance
+    | HomeIsolation
+    | ComeToHealthCenter
+    | ChwMonitoring
+    | HCRecomendationNotApplicable
+
+
+type ResponsePeriod
+    = LessThan30Min
+    | Between30min1Hour
+    | Between1Hour2Hour
+    | Between2Hour1Day
+    | ResponsePeriodNotApplicable
+
+
+type alias HCContactValue =
+    { signs : EverySet HCContactSign
+    , recomendations : EverySet HCRecomendation
+    , responsePeriod : EverySet ResponsePeriod
+    , ambulanceArrivalPeriod : EverySet ResponsePeriod
+    }
+
+
+type alias HCContact =
+    AcuteIllnessMeasurement HCContactValue
+
+
+type SendToHCSign
+    = HandReferrerForm
+    | ReferToHealthCenter
+    | NoSendToHCSigns
+
+
+type alias SendToHC =
+    AcuteIllnessMeasurement (EverySet SendToHCSign)
+
+
+type MedicationDistributionSign
+    = Amoxicillin
+    | Coartem
+    | ORS
+    | Zinc
+    | LemonJuiceOrHoney
+    | NoMedicationDistributionSigns
+
+
+type alias MedicationDistribution =
+    AcuteIllnessMeasurement (EverySet MedicationDistributionSign)
+
+
+
 -- LISTS OF MEASUREMENTS
 
 
@@ -613,6 +867,26 @@ type alias NutritionMeasurements =
     , nutrition : Maybe ( NutritionNutritionId, NutritionNutrition )
     , photo : Maybe ( NutritionPhotoId, NutritionPhoto )
     , weight : Maybe ( NutritionWeightId, NutritionWeight )
+    }
+
+
+{-| A set of Acute Illness measurements that correspond to the same Nutrition
+encounter.
+-}
+type alias AcuteIllnessMeasurements =
+    { symptomsGeneral : Maybe ( SymptomsGeneralId, SymptomsGeneral )
+    , symptomsRespiratory : Maybe ( SymptomsRespiratoryId, SymptomsRespiratory )
+    , symptomsGI : Maybe ( SymptomsGIId, SymptomsGI )
+    , vitals : Maybe ( AcuteIllnessVitalsId, AcuteIllnessVitals )
+    , acuteFindings : Maybe ( AcuteFindingsId, AcuteFindings )
+    , malariaTesting : Maybe ( MalariaTestingId, MalariaTesting )
+    , travelHistory : Maybe ( TravelHistoryId, TravelHistory )
+    , exposure : Maybe ( ExposureId, Exposure )
+    , isolation : Maybe ( IsolationId, Isolation )
+    , hcContact : Maybe ( HCContactId, HCContact )
+    , treatmentReview : Maybe ( TreatmentReviewId, TreatmentReview )
+    , sendToHC : Maybe ( SendToHCId, SendToHC )
+    , medicationDistribution : Maybe ( MedicationDistributionId, MedicationDistribution )
     }
 
 

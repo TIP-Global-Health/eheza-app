@@ -291,7 +291,7 @@ viewPatientProgressPane language currentDate data =
                             [ div [] [ text <| translate language Translate.DueDate ++ ":" ]
                             , div []
                                 [ text <|
-                                    (Date.day eddDate |> Debug.toString)
+                                    (Date.day eddDate |> String.fromInt)
                                         ++ " "
                                         ++ translate language (Translate.ResolveMonth False (Date.month eddDate))
                                 ]
@@ -413,7 +413,7 @@ viewPatientProgressPane language currentDate data =
                             (\color ->
                                 p
                                     [ class <| "period " ++ color
-                                    , style "width" (Debug.toString periodWidth ++ "px")
+                                    , style "width" (String.fromInt periodWidth ++ "px")
                                     ]
                                     []
                             )
@@ -438,10 +438,10 @@ viewPatientProgressPane language currentDate data =
                     trimesterEncountersDates
                         |> List.map
                             (\date ->
-                                span [ style "width" (Debug.toString encounterIconWidth ++ "px") ]
+                                span [ style "width" (String.fromInt encounterIconWidth ++ "px") ]
                                     [ img
                                         [ src "assets/images/icon-blue-circle.png"
-                                        , style "width" (Debug.toString encounterIconWidth ++ "px")
+                                        , style "width" (String.fromInt encounterIconWidth ++ "px")
                                         ]
                                         []
                                     , timelineIcons date
@@ -674,7 +674,7 @@ heightWeightBMITable language currentDate maybeLmpDate allMeasurementsWithDates 
                                                         |> .height
                                                         |> (\(Backend.Measurement.Model.HeightInCm cm) -> cm)
                                             in
-                                            [ text <| Debug.toString height ++ translate language Translate.CentimeterShorthand ]
+                                            [ text <| String.fromFloat height ++ translate language Translate.CentimeterShorthand ]
                                         )
                                     >> Maybe.withDefault [ text "--" ]
                                     >> td [ class "center aligned" ]
@@ -696,7 +696,7 @@ heightWeightBMITable language currentDate maybeLmpDate allMeasurementsWithDates 
                                                         |> .weight
                                                         |> (\(Backend.Measurement.Model.WeightInKg kg) -> kg)
                                             in
-                                            [ text <| Debug.toString weight ++ translate language Translate.KilogramShorthand ]
+                                            [ text <| String.fromFloat weight ++ translate language Translate.KilogramShorthand ]
                                         )
                                     >> Maybe.withDefault [ text "--" ]
                                     >> td [ class "center aligned" ]
@@ -778,7 +778,7 @@ fundalHeightTable language currentDate maybeLmpDate allMeasurementsWithDates =
                                                         |> .fundalHeight
                                                         |> (\(Backend.Measurement.Model.HeightInCm cm) -> cm)
                                             in
-                                            [ text <| Debug.toString height ++ translate language Translate.CentimeterShorthand ]
+                                            [ text <| String.fromFloat height ++ translate language Translate.CentimeterShorthand ]
                                         )
                                     >> Maybe.withDefault [ text "--" ]
                                     >> td [ class "center aligned" ]

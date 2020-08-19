@@ -88,18 +88,18 @@ generateGravida value =
                   )
     in
     if total < 10 then
-        "0" ++ Debug.toString total
+        "0" ++ String.fromInt total
 
     else
-        Debug.toString total
+        String.fromInt total
 
 
 generatePara : ObstetricHistoryValue -> String
 generatePara value =
-    Debug.toString (value.termPregnancy + value.stillbirthsAtTerm)
-        ++ Debug.toString (value.preTermPregnancy + value.stillbirthsPreTerm)
-        ++ Debug.toString value.abortions
-        ++ Debug.toString value.liveChildren
+    String.fromInt (value.termPregnancy + value.stillbirthsAtTerm)
+        ++ String.fromInt (value.preTermPregnancy + value.stillbirthsPreTerm)
+        ++ String.fromInt value.abortions
+        ++ String.fromInt value.liveChildren
 
 
 getLmpMeasurement : PrenatalMeasurements -> Maybe NominalDate

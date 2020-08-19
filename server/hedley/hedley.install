@@ -585,8 +585,16 @@ function hedley_update_7026() {
 }
 
 /**
- * Enable the Hedley Stats and Hedley General modules.
+ * Enable hedley_acute_illness module.
  */
 function hedley_update_7027() {
+  $modules = ['hedley_acute_illness'];
+  module_enable($modules);
+}
+
+/**
+ * Enable the Hedley Stats and Hedley General modules.
+ */
+function hedley_update_7028() {
   module_enable(['hedley_stats', 'hedley_general']);
 }
