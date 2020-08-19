@@ -470,7 +470,7 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
     $second_name = $values[HEDLEY_PERSON_COLUMN_CHILD_SECOND_NAME];
     $birth_date = trim($values[HEDLEY_PERSON_COLUMN_CHILD_BIRTH_DATE]);
     $estimated = trim($values[HEDLEY_PERSON_COLUMN_CHILD_ESTIMATED]);
-    $national_id = trim($values[HEDLEY_PERSON_COLUMN_CHILD_NATIONAL_ID]);
+    $national_id = (string) trim($values[HEDLEY_PERSON_COLUMN_CHILD_NATIONAL_ID]);
     $gender = trim($values[HEDLEY_PERSON_COLUMN_CHILD_GENDER]);
     $ubudehe = trim($values[HEDLEY_PERSON_COLUMN_CHILD_UBUDEHE]);
     $hiv_status = trim($values[HEDLEY_PERSON_COLUMN_CHILD_HIV_STATUS]);
@@ -480,7 +480,7 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
     $second_name = $values[HEDLEY_PERSON_COLUMN_ADULT_SECOND_NAME];
     $birth_date = trim($values[HEDLEY_PERSON_COLUMN_ADULT_BIRTH_DATE]);
     $estimated = trim($values[HEDLEY_PERSON_COLUMN_ADULT_ESTIMATED]);
-    $national_id = trim($values[HEDLEY_PERSON_COLUMN_ADULT_NATIONAL_ID]);
+    $national_id = (string) trim($values[HEDLEY_PERSON_COLUMN_ADULT_NATIONAL_ID]);
     $gender = trim($values[HEDLEY_PERSON_COLUMN_ADULT_GENDER]);
     $ubudehe = trim($values[HEDLEY_PERSON_COLUMN_ADULT_UBUDEHE]);
     $hiv_status = trim($values[HEDLEY_PERSON_COLUMN_ADULT_HIV_STATUS]);
@@ -517,7 +517,8 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
   }
 
   // HIV status.
-  if (!in_array(strtolower($hiv_status), ['1', '2', '3', '4', '5'])) {
+  $valid_values = ['hiv-exposed infant', 'negative', 'negative - discordant couple', 'positive', 'unknown'];
+  if (!in_array(strtolower($hiv_status), $valid_values)) {
     $errors[] = "HIV status: Invalid value - $hiv_status";
   }
 
@@ -530,7 +531,13 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
   // Type specific logic - child.
   if ($patient_type == 'child') {
     $mode_of_delivery = trim($values[HEDLEY_PERSON_COLUMN_CHILD_MODE_OF_DELIVERY]);
-    if (!in_array(strtolower($mode_of_delivery), ['1', '2', '3', '4'])) {
+    $valid_values = [
+      'spontaneous vaginal delivery with episiotomy',
+      'spontaneous vaginal delivery without episiotomy',
+      'vaginal delivery with vacuum extraction',
+      'cesarean delivery',
+    ];
+    if (!in_array(strtolower($mode_of_delivery), $valid_values)) {
       $errors[] = "Mode of delivery: Invalid value - $mode_of_delivery";
     }
 
@@ -573,8 +580,17 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
   }
 
   // Type specific logic - adult.
-  $education_level = trim($values[HEDLEY_PERSON_COLUMN_ADULT_EDUCATION_LEVEL]);
-  if (!in_array($education_level, ['0', '1', '2', '3', '4', '5', '6'])) {
+  $education_level = strtolower(trim($values[HEDLEY_PERSON_COLUMN_ADULT_EDUCATION_LEVEL]));
+  $valid_values = [
+    'no schooling',
+    'primary school',
+    'vocational training school',
+    'secondary school',
+    'diploma programs',
+    'higher education',
+    'advanced diploma',
+  ];
+  if (!in_array($education_level, $valid_values)) {
     $errors[] = "Education level: Invalid value - $education_level";
   }
 
@@ -692,24 +708,24 @@ function hedley_person_import_patient($patient_type, array $values) {
   $wrapper->field_ubudehe->set((int) $ubudehe);
 
   // HIV status.
-  switch ($hiv_status) {
-    case '1':
+  switch (strtolower($hiv_status)) {
+    case 'hiv-exposed infant':
       $wrapper->field_hiv_status->set('hiv-exposed-infant');
       break;
 
-    case '2':
+    case 'negative':
       $wrapper->field_hiv_status->set('negative');
       break;
 
-    case '3':
+    case 'negative - discordant couple':
       $wrapper->field_hiv_status->set('negative-dc');
       break;
 
-    case '4':
+    case 'positive':
       $wrapper->field_hiv_status->set('positive');
       break;
 
-    case '5':
+    case 'unknown':
       $wrapper->field_hiv_status->set('unknown');
       break;
   }
@@ -731,20 +747,20 @@ function hedley_person_import_patient($patient_type, array $values) {
   if ($patient_type == 'child') {
     $mode_of_delivery = trim($values[HEDLEY_PERSON_COLUMN_CHILD_MODE_OF_DELIVERY]);
 
-    switch ($mode_of_delivery) {
-      case '1':
+    switch (strtolower($mode_of_delivery)) {
+      case 'spontaneous vaginal delivery with episiotomy':
         $wrapper->field_mode_of_delivery->set('svd-episiotomy');
         break;
 
-      case '2':
+      case 'spontaneous vaginal delivery without episiotomy':
         $wrapper->field_mode_of_delivery->set('svd-no-episiotomy');
         break;
 
-      case '3':
+      case 'vaginal delivery with vacuum extraction':
         $wrapper->field_mode_of_delivery->set('vd-vacuum');
         break;
 
-      case '4':
+      case 'cesarean delivery':
         $wrapper->field_mode_of_delivery->set('cesarean-delivery');
         break;
     }
@@ -778,7 +794,35 @@ function hedley_person_import_patient($patient_type, array $values) {
 
   // Type specific logic - adult.
   $education_level = trim($values[HEDLEY_PERSON_COLUMN_ADULT_EDUCATION_LEVEL]);
-  $wrapper->field_education_level->set($education_level);
+  switch (strtolower($education_level)) {
+    case 'no schooling':
+      $wrapper->field_mode_of_delivery->set('0');
+      break;
+
+    case 'primary school':
+      $wrapper->field_mode_of_delivery->set('1');
+      break;
+
+    case 'vocational training school':
+      $wrapper->field_mode_of_delivery->set('2');
+      break;
+
+    case 'secondary school':
+      $wrapper->field_mode_of_delivery->set('3');
+      break;
+
+    case 'diploma programs':
+      $wrapper->field_mode_of_delivery->set('4');
+      break;
+
+    case 'higher education':
+      $wrapper->field_mode_of_delivery->set('5');
+      break;
+
+    case 'advanced diploma':
+      $wrapper->field_mode_of_delivery->set('6');
+      break;
+  }
 
   $marital_status = strtolower($values[HEDLEY_PERSON_COLUMN_ADULT_MARITAL_STATUS]);
   $wrapper->field_marital_status->set($marital_status);
