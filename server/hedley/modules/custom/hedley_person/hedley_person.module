@@ -981,7 +981,6 @@ function hedley_person_resolve_person_by_name($name) {
     ->propertyOrderBy('nid', 'DESC')
     ->execute();
 
-
   return empty($result['node']) ? NULL : key($result['node']);
 }
 
