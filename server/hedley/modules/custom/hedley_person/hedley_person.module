@@ -286,6 +286,8 @@ function hedley_person_import_get_data(array $form, array &$form_state) {
     $values = explode(',', $line);
     $unique_id = trim($values[HEDLEY_PERSON_COLUMN_UNIQUE_ID]);
 
+    // If there are errors, we'll not allow performing the import.
+    // If there are warning, we'll notify about them, but allow the import.
     $patient_errors = $patient_warnings = [];
     hedley_person_validate_patient_fields($patient_type, $values, $patient_errors, $patient_warnings);
 
