@@ -2,6 +2,8 @@ module Pages.Router exposing (activePageByUrl, pageToFragment)
 
 import Activity.Model exposing (Activity)
 import Activity.Utils
+import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import AcuteIllnessActivity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encoudeIndividualEncounterTypeAsString)
 import Backend.Person.Model exposing (Initiator(..))
@@ -121,6 +123,9 @@ pageToFragment current =
                 NutritionParticipantPage id ->
                     Just <| "nutrition-participant/" ++ fromEntityUuid id
 
+                AcuteIllnessParticipantPage id ->
+                    Just <| "acute-illness-participant/" ++ fromEntityUuid id
+
                 IndividualEncounterParticipantsPage encounterType ->
                     Just <| "individual-participants/" ++ encoudeIndividualEncounterTypeAsString encounterType
 
@@ -189,6 +194,15 @@ pageToFragment current =
                 NutritionProgressReportPage encounterId ->
                     Just <| "nutrition-progress-report/" ++ fromEntityUuid encounterId
 
+                AcuteIllnessEncounterPage id ->
+                    Just <| "acute-illness-encounter/" ++ fromEntityUuid id
+
+                AcuteIllnessActivityPage id activity ->
+                    Just <| "acute-illness-activity/" ++ fromEntityUuid id ++ "/" ++ AcuteIllnessActivity.Utils.encodeActivityAsString activity
+
+                AcuteIllnessProgressReportPage id ->
+                    Just <| "acute-illness-progress-report/" ++ fromEntityUuid id
+
 
 parser : Parser (Page -> c) c
 parser =
@@ -210,6 +224,7 @@ parser =
         , map (\id origin -> UserPage <| PersonPage id origin) (s "person" </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalParticipantPage id) (s "prenatal-participant" </> parseUuid)
         , map (\id -> UserPage <| NutritionParticipantPage id) (s "nutrition-participant" </> parseUuid)
+        , map (\id -> UserPage <| AcuteIllnessParticipantPage id) (s "acute-illness-participant" </> parseUuid)
         , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
@@ -221,9 +236,11 @@ parser =
         , map (\id -> UserPage <| NutritionEncounterPage id) (s "nutrition-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NutritionActivityPage id activity) (s "nutrition-activity" </> parseUuid </> parseNutritionActivity)
         , map (\id -> UserPage <| NutritionProgressReportPage id) (s "nutrition-progress-report" </> parseUuid)
+        , map (\id -> UserPage <| AcuteIllnessEncounterPage id) (s "acute-illness-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| AcuteIllnessActivityPage id activity) (s "acute-illness-activity" </> parseUuid </> parseAcuteIllnessActivity)
+        , map (\id -> UserPage <| AcuteIllnessProgressReportPage id) (s "acute-illness-progress-report" </> parseUuid)
 
-        -- `top` represents the page without any segements ... i.e. the
-        -- root page.
+        -- `top` represents the page without any segements ... i.e. the root page.
         , map PinCodePage top
         ]
 
@@ -268,6 +285,11 @@ parsePrenatalActivity =
 parseNutritionActivity : Parser (NutritionActivity -> c) c
 parseNutritionActivity =
     custom "NutritionActivity" NutritionActivity.Utils.decodeActivityFromString
+
+
+parseAcuteIllnessActivity : Parser (AcuteIllnessActivity -> c) c
+parseAcuteIllnessActivity =
+    custom "AcuteIllnessActivity" AcuteIllnessActivity.Utils.decodeActivityFromString
 
 
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c

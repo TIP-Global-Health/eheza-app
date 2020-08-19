@@ -24,6 +24,12 @@ import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
 import Maybe.Extra exposing (isJust)
 import NutritionActivity.Model exposing (NutritionActivity(..))
+import Pages.AcuteIllnessActivity.Model
+import Pages.AcuteIllnessActivity.Update
+import Pages.AcuteIllnessEncounter.Model
+import Pages.AcuteIllnessEncounter.Update
+import Pages.AcuteIllnessProgressReport.Model
+import Pages.AcuteIllnessProgressReport.Update
 import Pages.Clinics.Update
 import Pages.Dashboard.Update
 import Pages.Device.Model
@@ -334,6 +340,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageAcuteIllnessEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.acuteIllnessEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.AcuteIllnessEncounter.Model.emptyModel
+                                        |> Pages.AcuteIllnessEncounter.Update.update subMsg
+                            in
+                            ( { data | acuteIllnessEncounterPages = Dict.insert id subModel data.acuteIllnessEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessEncounter id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePrenatalActivity id activity subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -360,6 +379,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageAcuteIllnessActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.acuteIllnessActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.AcuteIllnessActivity.Model.emptyModel
+                                        |> Pages.AcuteIllnessActivity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | acuteIllnessActivityPages = Dict.insert ( id, activity ) subModel data.acuteIllnessActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePregnancyOutcome id subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
@@ -371,6 +403,19 @@ update msg model =
                             ( { data | pregnancyOutcomePages = Dict.insert id subModel data.pregnancyOutcomePages }
                             , Cmd.map (MsgLoggedIn << MsgPagePregnancyOutcome id) subCmd
                             , appMsgs
+                            )
+
+                        MsgPageAcuteIllnessProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.acuteIllnessProgressReportPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.AcuteIllnessProgressReport.Model.emptyModel
+                                        |> Pages.AcuteIllnessProgressReport.Update.update subMsg
+                            in
+                            ( { data | acuteIllnessProgressReportPages = Dict.insert id subModel data.acuteIllnessProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport id) subCmd
+                            , extraMsgs
                             )
                 )
                 model
