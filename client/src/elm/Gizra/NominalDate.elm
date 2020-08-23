@@ -5,7 +5,7 @@ module Gizra.NominalDate exposing
     , fromLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , compare, diffMonths, diffYears, formatDDMMYY, formatDDMMYYYY, isDiffTruthy
+    , allMonths, compare, daysInMonth, diffCalendarMonths, diffMonths, diffYears, formatDDMMYY, formatDDMMYYYY, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -25,6 +25,7 @@ time zone information.
 -}
 
 import Date
+import Gizra.String exposing (addLeadingZero)
 import Json.Decode exposing (Decoder, andThen, field, map2, string)
 import Json.Decode.Extra exposing (fromResult)
 import Json.Encode exposing (Value, object)
@@ -321,3 +322,37 @@ daysInMonth y m =
 isLeapYear : Int -> Bool
 isLeapYear y =
     modBy 4 y == 0 && modBy 100 y /= 0 || modBy 400 y == 0
+
+
+{-| A list of all the months, in the traditional order.
+-}
+allMonths : List Month
+allMonths =
+    [ Jan
+    , Feb
+    , Mar
+    , Apr
+    , May
+    , Jun
+    , Jul
+    , Aug
+    , Sep
+    , Oct
+    , Nov
+    , Dec
+    ]
+
+
+monthMM : NominalDate -> String
+monthMM =
+    Date.month >> Date.monthToNumber >> Debug.toString >> addLeadingZero
+
+
+yearYY : NominalDate -> String
+yearYY date =
+    yearYYNumber |> Debug.toString |> addLeadingZero
+
+
+yearYYNumber : NominalDate -> Int
+yearYYNumber date =
+    modBy 100 (Date.year date)

@@ -14,6 +14,10 @@ update msg subPage model =
             , []
             )
 
+        NavigateToStuntingTable filter ->
+            { model | currentCaseManagementSubFilter = filter }
+                |> update (SetActivePage (UserPage (DashboardPage CaseManagementPage))) subPage
+
         SetFilterGender gender ->
             ( { model | beneficiariesGender = gender }
             , Cmd.none
@@ -28,6 +32,12 @@ update msg subPage model =
 
         SetFilterCaseManagement filter ->
             ( { model | currentCaseManagementFilter = filter }
+            , Cmd.none
+            , []
+            )
+
+        SetSubFilterCaseManagement filter ->
+            ( { model | currentCaseManagementSubFilter = filter }
             , Cmd.none
             , []
             )
@@ -49,10 +59,17 @@ update msg subPage model =
         SetActivePage page ->
             let
                 newPeriod =
-                    if page == UserPage (DashboardPage StatsPage) then
-                        ThisMonth
+                    case page of
+                        UserPage (DashboardPage MainPage) ->
+                            OneYear
 
-                    else
-                        OneYear
+                        UserPage (DashboardPage StatsPage) ->
+                            ThisMonth
+
+                        UserPage (DashboardPage CaseManagementPage) ->
+                            ThreeMonthsAgo
+
+                        _ ->
+                            OneYear
             in
             ( { model | latestPage = subPage, period = newPeriod }, Cmd.none, [ App.Model.SetActivePage page ] )

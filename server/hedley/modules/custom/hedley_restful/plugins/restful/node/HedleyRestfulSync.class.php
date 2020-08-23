@@ -335,8 +335,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     }
 
     // Get the HC node ID.
-    if ($health_center_nid = hedley_restful_resolve_nid_for_uuid($uuid)) {
-      $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_nid);
+    if ($health_center_id = hedley_restful_resolve_nid_for_uuid($uuid)) {
+      $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id);
 
       $calculate_stats = FALSE;
       // Check if we need to calculate the statistics for this HC.
@@ -370,8 +370,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
         // worker already exists, the general function will know to not create
         // a duplicated worker.
         // The cache is set in the calculating function itself.
-        hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center_nid, [
-          'health_center_nid' => $health_center_nid,
+        hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center_id, [
+          'health_center_nid' => $health_center_id,
         ]);
       }
 
@@ -383,9 +383,10 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
         // This means the stats already have been calculated and cached.
         // The cache is set in the calculating function itself.
         if (!isset($request['stats_cache_hash']) || (isset($request['stats_cache_hash']) && $cache_data != $request['stats_cache_hash'])) {
-          $stats = hedley_stats_calculate_stats_for_health_center($health_center_nid);
+          $stats = hedley_stats_calculate_stats_for_health_center($health_center_id);
 
           $output[] = $stats;
+          $count++;
         }
       }
     }

@@ -91,19 +91,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             let
                 modelUpdated =
                     RemoteData.toMaybe webData
-                        |> Maybe.map
-                            (\data ->
-                                let
-                                    -- Check that we add only data that is related to the desired HC.
-                                    data_ =
-                                        if Dict.member healthCenterId_ data then
-                                            data
-
-                                        else
-                                            model.computedDashboard
-                                in
-                                { model | computedDashboard = data_ }
-                            )
+                        |> Maybe.map (\data -> { model | computedDashboard = data })
                         |> Maybe.withDefault model
             in
             ( modelUpdated
@@ -1675,6 +1663,9 @@ handleRevision revision (( model, recalc ) as noChange) =
                 model
             , recalc
             )
+
+        DashboardStatsRevision uuid data ->
+            ( { model | computedDashboard = Dict.insert uuid data model.computedDashboard }, recalc )
 
         ExposureRevision uuid data ->
             ( mapAcuteIllnessMeasurements

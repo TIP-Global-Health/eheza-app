@@ -58,7 +58,7 @@ import Pages.AcuteIllnessActivity.Model
         )
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
-import Pages.Dashboard.Model as Dashboard exposing (BeneficiariesTableLabels(..), FilterPeriod(..))
+import Pages.Dashboard.Model as Dashboard exposing (BeneficiariesTableLabels(..), DashboardFilter(..), DashboardSubFilter(..), FilterPeriod(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
     exposing
@@ -194,6 +194,7 @@ type Dashboard
     | CompletedProgramLabel
     | FamilyPlanningLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
+    | Filter DashboardFilter
     | GirlsFilterLabel
     | GoodNutritionLabel
     | IncidenceOf
@@ -211,6 +212,7 @@ type Dashboard
     | SeverelyMalnourished
     | StatisticsFirstWordHelper
     | StatisticsHelper
+    | SubFilter DashboardSubFilter
     | SyncNotice
     | TotalBeneficiaries
     | TotalMalnourished
@@ -658,7 +660,8 @@ type TranslationId
     | Reports
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
-    | ResolveMonth Month Bool
+    | ResolveMonth Bool Month
+    | ResolveMonthYY Int Bool Month
     | RespiratoryRate
     | ResponsePeriod ResponsePeriod
     | Retry
@@ -4378,8 +4381,11 @@ translationSet trans =
             , kinyarwanda = Just <| String.fromInt completed ++ " / " ++ String.fromInt (pending + completed) ++ " Raporo irarangiye"
             }
 
-        ResolveMonth month short ->
+        ResolveMonth short month ->
             translateMonth month short
+
+        ResolveMonthYY year short month ->
+            translateMonthYY month year short
 
         RespiratoryRate ->
             { english = "Respiratory Rate"
@@ -5780,6 +5786,11 @@ translateDashboard trans =
                     , kinyarwanda = Nothing
                     }
 
+                Total ->
+                    { english = "Total beneficiaries in program"
+                    , kinyarwanda = Nothing
+                    }
+
         BeneficiariesTableLabel ->
             { english = "Grouped by age (Months)"
             , kinyarwanda = Nothing
@@ -5819,6 +5830,33 @@ translateDashboard trans =
             { english = String.fromInt useFamilyPlanning ++ " out of " ++ String.fromInt total ++ " women"
             , kinyarwanda = Nothing
             }
+
+        Filter filter ->
+            case filter of
+                Stunting ->
+                    { english = "Stunting"
+                    , kinyarwanda = Nothing
+                    }
+
+                Underweight ->
+                    { english = "Underweight"
+                    , kinyarwanda = Nothing
+                    }
+
+                Wasting ->
+                    { english = "Wasting"
+                    , kinyarwanda = Nothing
+                    }
+
+                Dashboard.MUAC ->
+                    { english = "MUAC"
+                    , kinyarwanda = Nothing
+                    }
+
+                MissedSession ->
+                    { english = "Missed Sessions"
+                    , kinyarwanda = Nothing
+                    }
 
         GirlsFilterLabel ->
             { english = "Girls"
@@ -5938,6 +5976,23 @@ translateDashboard trans =
             { english = "statistics for this month"
             , kinyarwanda = Nothing
             }
+
+        SubFilter filter ->
+            case filter of
+                FilterTotal ->
+                    { english = "Total"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterModerate ->
+                    { english = "Moderate"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterSevere ->
+                    { english = "Severe"
+                    , kinyarwanda = Nothing
+                    }
 
         SyncNotice ->
             { english = "If the dashboard statistics doesn't load shortly, please sync data from the backend."
@@ -6198,6 +6253,16 @@ translateMonth month short =
                 { english = "December"
                 , kinyarwanda = Just "Ukuboza"
                 }
+
+
+translateMonthYY : Month -> Int -> Bool -> TranslationSet String
+translateMonthYY month year short =
+    translateMonth month short
+        |> (\set ->
+                { english = set.english ++ "-" ++ Debug.toString year
+                , kinyarwanda = Maybe.map (\kinyarwanda -> kinyarwanda ++ "-" ++ Debug.toString year) set.kinyarwanda
+                }
+           )
 
 
 translateHttpError : Http.Error -> TranslationSet String

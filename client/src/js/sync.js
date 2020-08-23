@@ -664,7 +664,9 @@
                             if (!!item.type && item.type === 'statistics') {
                                 // We don't push it to the saved nodes, since
                                 // it's not a node.
-                                return dbSync.statistics.put(item);
+                                return dbSync.statistics.put(item).then(function() {
+                                    sendRevisions([item]);
+                                });
                             }
 
                             var table = tableForType[item.type] == 'nodes' ? dbSync.nodes : dbSync.shards;

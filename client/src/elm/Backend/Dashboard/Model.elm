@@ -1,4 +1,23 @@
-module Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, NutritionStatus(..), NutritionValue, ParticipantStats, Periods, TotalBeneficiaries, emptyModel)
+module Backend.Dashboard.Model exposing
+    ( CaseManagement
+    , CaseNutrition
+    , CaseNutritionTotal
+    , ChildrenBeneficiariesStats
+    , DashboardStats
+    , FamilyPlanningStats
+    , GoodNutrition
+    , MalnourishedStats
+    , Nutrition
+    , NutritionStatus(..)
+    , NutritionValue
+    , ParticipantStats
+    , Periods
+    , TotalBeneficiaries
+    , emptyModel
+    , emptyNutrition
+    , emptyNutritionValue
+    , emptyTotalBeneficiaries
+    )
 
 {-| The stats for the dashboard.
 -}
@@ -24,9 +43,7 @@ type alias DashboardStats =
     , maybeGoodNutrition : Maybe GoodNutrition
     , malnourished : List MalnourishedStats
     , missedSessions : List ParticipantStats
-    , maybeTotalBeneficiaries : Maybe (Dict Int TotalBeneficiaries)
-    , maybeTotalBeneficiariesIncidence : Maybe (Dict Int TotalBeneficiaries)
-    , maybeTotalEncounters : Maybe Periods
+    , totalEncounters : Periods
     }
 
 
@@ -39,9 +56,7 @@ emptyModel =
     , maybeGoodNutrition = Nothing
     , malnourished = []
     , missedSessions = []
-    , maybeTotalEncounters = Nothing
-    , maybeTotalBeneficiaries = Nothing
-    , maybeTotalBeneficiariesIncidence = Nothing
+    , totalEncounters = Periods 0 0
     }
 
 
@@ -59,6 +74,14 @@ type alias CaseNutrition =
     }
 
 
+type alias CaseNutritionTotal =
+    { stunting : Dict Int Nutrition
+    , underweight : Dict Int Nutrition
+    , wasting : Dict Int Nutrition
+    , muac : Dict Int Nutrition
+    }
+
+
 type alias ChildrenBeneficiariesStats =
     { gender : Gender
     , birthDate : NominalDate
@@ -66,6 +89,7 @@ type alias ChildrenBeneficiariesStats =
     , name : String
     , motherName : String
     , phoneNumber : Maybe String
+    , graduationDate : NominalDate
     }
 
 
@@ -76,7 +100,8 @@ type alias FamilyPlanningStats =
 
 
 type alias MalnourishedStats =
-    { created : NominalDate
+    { identifier : String
+    , created : NominalDate
     , birthDate : NominalDate
     , gender : Gender
     , zscore : ZScore
@@ -111,9 +136,21 @@ type alias Nutrition =
     }
 
 
+emptyNutrition : Nutrition
+emptyNutrition =
+    Nutrition 0 0
+
+
 type alias NutritionValue =
     { class : NutritionStatus
     , value : String
+    }
+
+
+emptyNutritionValue : NutritionValue
+emptyNutritionValue =
+    { class = Neutral
+    , value = "X"
     }
 
 
@@ -122,6 +159,15 @@ type alias TotalBeneficiaries =
     , underweight : Nutrition
     , wasting : Nutrition
     , muac : Nutrition
+    }
+
+
+emptyTotalBeneficiaries : TotalBeneficiaries
+emptyTotalBeneficiaries =
+    { stunting = emptyNutrition
+    , underweight = emptyNutrition
+    , wasting = emptyNutrition
+    , muac = emptyNutrition
     }
 
 

@@ -1,6 +1,7 @@
 module Pages.PinCode.View exposing (view)
 
 import AssocList as Dict
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse, Role(..))
@@ -204,27 +205,32 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) deviceName sele
                     ]
                     [ text <| translate language Translate.Clinical ]
 
-            dashboardButton =
+            healthCenterGotFbfClinic =
                 healthCenterId
                     |> Maybe.andThen
                         (\id ->
-                            RemoteData.toMaybe db.healthCenters
-                                |> Maybe.andThen (Dict.get id)
+                            db.clinics
+                                |> RemoteData.toMaybe
+                                |> Maybe.map
+                                    (Dict.values
+                                        >> List.filter (\clinic -> clinic.healthCenterId == id && clinic.clinicType == Fbf)
+                                        >> List.isEmpty
+                                        >> not
+                                    )
                         )
-                    |> Maybe.map
-                        (\healthCenter ->
-                            if healthCenter.fbfClinics then
-                                button
-                                    [ class "ui primary button"
-                                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
-                                    ]
-                                    [ text <| translate language Translate.DashboardLabel
-                                    ]
+                    |> Maybe.withDefault False
 
-                            else
-                                emptyNode
-                        )
-                    |> Maybe.withDefault emptyNode
+            dashboardButton =
+                if not (isCommunityHealthWorker nurse) && healthCenterGotFbfClinic then
+                    button
+                        [ class "ui primary button"
+                        , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
+                        ]
+                        [ text <| translate language Translate.DashboardLabel
+                        ]
+
+                else
+                    emptyNode
 
             participantDirectoryButton =
                 button

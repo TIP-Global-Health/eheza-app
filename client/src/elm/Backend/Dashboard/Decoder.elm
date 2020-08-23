@@ -15,28 +15,14 @@ decodeDashboardStats : Decoder DashboardStats
 decodeDashboardStats =
     succeed DashboardStats
         |> required "case_management" (list decodeCaseManagement)
+        -- |> hardcoded []
         |> required "children_beneficiaries" (list decodePeopleStats)
         |> required "completed_program" (list decodeParticipantStats)
         |> required "family_planning" (list decodeFamilyPlanningStats)
         |> optional "good_nutrition" (nullable decodeGoodNutrition) Nothing
         |> required "malnourished_beneficiaries" (list decodeMalnourishedStats)
         |> required "missed_sessions" (list decodeParticipantStats)
-        |> optional "total_beneficiaries" (nullable decodeTotalBeneficiariesDict) Nothing
-        |> optional "total_beneficiaries_incidence" (nullable decodeTotalBeneficiariesDict) Nothing
-        |> optional "total_encounters" (nullable decodePeriods) Nothing
-
-
-decodeTotalBeneficiariesDict : Decoder (Dict Int TotalBeneficiaries)
-decodeTotalBeneficiariesDict =
-    dict decodeTotalBeneficiaries
-        |> andThen
-            (\dict ->
-                LegacyDict.toList dict
-                    |> List.map
-                        (\( k, v ) -> ( Maybe.withDefault 1 (String.toInt k), v ))
-                    |> Dict.fromList
-                    |> succeed
-            )
+        |> required "total_encounters" decodePeriods
 
 
 decodeCaseManagement : Decoder CaseManagement
@@ -62,7 +48,9 @@ decodeNutritionValueDict =
             (\dict ->
                 LegacyDict.toList dict
                     |> List.map
-                        (\( k, v ) -> ( Maybe.withDefault 1 (String.toInt k), v ))
+                        (\( k, v ) ->
+                            ( Maybe.withDefault 1 (String.toInt k), v )
+                        )
                     |> Dict.fromList
                     |> succeed
             )
@@ -100,15 +88,6 @@ decodeNutritionStatus =
             )
 
 
-decodeTotalBeneficiaries : Decoder TotalBeneficiaries
-decodeTotalBeneficiaries =
-    succeed TotalBeneficiaries
-        |> required "stunting" decodeBeneficiaries
-        |> required "underweight" decodeBeneficiaries
-        |> required "wasting" decodeBeneficiaries
-        |> required "muac" decodeBeneficiaries
-
-
 decodeBeneficiaries : Decoder Nutrition
 decodeBeneficiaries =
     succeed Nutrition
@@ -125,6 +104,7 @@ decodePeopleStats =
         |> required "name" string
         |> required "mother_name" string
         |> optional "phone_number" (nullable string) Nothing
+        |> required "graduation_date" decodeYYYYMMDD
 
 
 decodeParticipantStats : Decoder ParticipantStats
@@ -155,6 +135,7 @@ decodeGoodNutrition =
 decodeMalnourishedStats : Decoder MalnourishedStats
 decodeMalnourishedStats =
     succeed MalnourishedStats
+        |> required "field_person" string
         |> required "created" decodeYYYYMMDD
         |> required "field_birth_date" decodeYYYYMMDD
         |> required "field_gender" decodeGender

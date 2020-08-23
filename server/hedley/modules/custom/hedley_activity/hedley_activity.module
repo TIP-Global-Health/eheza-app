@@ -313,54 +313,29 @@ function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper
  * @return array
  *   Node IDs if they exist or empty array if no nodes exist.
  */
-function hedley_activity_get_measurements_by_period($person_id, array $measurement_bundles, array $period, $range = 100) {
-  $query = new EntityFieldQuery();
-  $result = $query
-    ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', $measurement_bundles, 'IN')
-    ->fieldCondition('field_person', 'target_id', $person_id)
-    ->fieldCondition('field_date_measured', 'value', [
-      date('Y-m-d 00:00:00', $period['start']),
-      date('Y-m-d 00:00:00', $period['end']),
-    ], 'BETWEEN')
-    ->propertyCondition('status', NODE_PUBLISHED)
-    ->range(0, $range)
-    ->execute();
+function hedley_activity_get_person_measurements_by_period($person_id, array $measurement_bundles, array $period, $range = 100) {
+  $query = db_select('node', 'node');
+  $query->fields('node', ['nid', 'created', 'type']);
 
-  return !empty($result['node']) ? array_keys($result['node']) : [];
-}
+  $person_field = 'field_person';
+  hedley_stats_join_field_to_query($query, 'node', $person_field);
+  $person_field_name = $person_field . '.' . $person_field . '_target_id';
+  $query->condition($person_field_name, $person_id);
 
-/**
- * Get an attendance by the session and the person IDs.
- *
- * @param int $session_id
- *   The session node ID.
- * @param int $person_id
- *   Optional; The person node ID.
- * @param bool $attendance_status
- *   Optional; The attendance status.
- * @param int $range
- *   Optional; The query's range.
- *
- * @return array
- *   Node IDs if they exist or empty array if no nodes exist.
- */
-function hedley_activity_get_attendance_by_session($session_id, $person_id = NULL, $attendance_status = TRUE, $range = 100) {
-  $query = new EntityFieldQuery();
   $query
-    ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'attendance')
-    ->fieldCondition('field_session', 'target_id', $session_id)
-    ->fieldCondition('field_attended', 'value', $attendance_status)
-    ->propertyCondition('status', NODE_PUBLISHED)
-    ->range(0, $range);
+    ->condition('type', $measurement_bundles, 'IN')
+    ->condition('status', NODE_PUBLISHED);
 
-  if ($person_id) {
-    $query
-      ->fieldCondition('field_person', 'target_id', $person_id);
-  }
+  hedley_stats_join_field_to_query($query, 'node', 'field_session');
+  $date_field = 'field_scheduled_date';
+  hedley_stats_join_field_to_query($query, 'node', $date_field, TRUE, "field_session.field_session_target_id");
+  $date_field_name = $date_field . '.' . $date_field . '_value';
 
-  $result = $query->execute();
+  $query->condition($date_field_name, [$period['start'], $period['end']], 'BETWEEN');
 
-  return !empty($result['node']) ? array_keys($result['node']) : [];
+  $query->range(0, $range);
+
+  return $query
+    ->execute()
+    ->fetchAllAssoc('nid');
 }

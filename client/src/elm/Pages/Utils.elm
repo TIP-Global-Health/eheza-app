@@ -19,17 +19,26 @@ import Time exposing (Month(..))
 import Translate exposing (Language, TranslationId, translate)
 
 
-{-| Calculate percentage.
--}
 calculatePercentage : Int -> Int -> Float
-calculatePercentage total unique =
+calculatePercentage now before =
     -- Avoid dividing by zero and getting "NaN", just return 0.
     -- Besides, if the total is 0, then we don't need to calculate anything here.
-    if total == 0 then
+    if before == 0 && now == 0 then
         0
 
+    else if before == 0 && now > 0 then
+        100
+
     else
-        (toFloat unique / toFloat total) * 100
+        let
+            diff =
+                abs (now - before)
+        in
+        if now > before then
+            (toFloat diff / toFloat before) * 100
+
+        else
+            (toFloat diff / toFloat before) * -100
 
 
 filterDependentNoResultsMessage : Language -> String -> TranslationId -> String
@@ -50,11 +59,6 @@ matchFilter filter filteredValue =
         filteredValue
             |> String.toLower
             |> String.contains filter
-
-
-monthList : List Month
-monthList =
-    [ Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec ]
 
 
 matchMotherAndHerChildren : String -> OfflineSession -> PersonId -> Person -> Bool
