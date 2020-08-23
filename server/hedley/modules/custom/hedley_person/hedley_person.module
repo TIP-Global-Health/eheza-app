@@ -747,6 +747,7 @@ function hedley_person_import_patient($patient_type, array $values) {
   $health_center_id = hedley_person_resolve_content_by_name('health_center', $health_center);
   if (!empty($health_center_id)) {
     $wrapper->field_health_center->set($health_center_id);
+    $wrapper->field_shards->set([$health_center_id]);
   }
 
   // Type specific logic - child.
