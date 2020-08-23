@@ -26,19 +26,15 @@ view language nurse ( sessionId, session ) model =
             session.summaryByActivity
                 |> LocalData.withDefault emptySummaryByActivity
 
-        pendingActivities =
+        ( pendingActivities, completedActivities ) =
             getAllActivities session.offlineSession
-                |> List.filter (\activity -> (getParticipantCountForActivity summary activity).pending > 0)
-
-        noPendingActivities =
-            getAllActivities session.offlineSession
-                |> List.filter (\activity -> (getParticipantCountForActivity summary activity).completed > 0)
+                |> List.partition (\activity -> (getParticipantCountForActivity summary activity).pending > 0)
 
         pendingTabTitle =
             translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities
 
         completedTabTitle =
-            translate language <| Trans.ActivitiesCompleted <| List.length noPendingActivities
+            translate language <| Trans.ActivitiesCompleted <| List.length completedActivities
 
         tabs =
             div [ class "ui tabular menu" ]
@@ -89,7 +85,7 @@ view language nurse ( sessionId, session ) model =
                     ( pendingActivities, translate language Trans.NoActivitiesPending )
 
                 Completed ->
-                    ( noPendingActivities, translate language Trans.NoActivitiesCompleted )
+                    ( completedActivities, translate language Trans.NoActivitiesCompleted )
 
         goBackPage =
             backFromSessionPage nurse session.offlineSession

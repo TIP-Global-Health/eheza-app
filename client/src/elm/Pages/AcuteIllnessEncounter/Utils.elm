@@ -291,15 +291,19 @@ ageDependentARINextStep currentDate person =
 
 resolveAcuteIllnessDiagnosis : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
 resolveAcuteIllnessDiagnosis currentDate person measurements =
+    let
+        ( covid19ByCompleteSet, covid19ByPartialSet ) =
+            covid19Diagnosed measurements
+    in
     -- First we check for Covid19.
-    if covid19Diagnosed measurements then
+    if covid19ByCompleteSet then
         Just DiagnosisCovid19
 
     else
-        resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements
+        resolveNonCovid19AcuteIllnessDiagnosis currentDate person covid19ByPartialSet measurements
 
 
-covid19Diagnosed : AcuteIllnessMeasurements -> Bool
+covid19Diagnosed : AcuteIllnessMeasurements -> ( Bool, Bool )
 covid19Diagnosed measurements =
     let
         countSigns measurement_ exclusion =
@@ -333,7 +337,7 @@ covid19Diagnosed measurements =
             countSymptoms measurements.symptomsGeneral .value excludesGeneral
 
         respiratorySymptomsCount =
-            countRespiratorySymptoms measurements [ StabbingChestPain ]
+            countRespiratorySymptoms measurements []
 
         giSymptomsCount =
             countGISymptoms measurements []
@@ -355,18 +359,20 @@ covid19Diagnosed measurements =
         signsIndicateCovid =
             totalSigns > 0
 
-        rdtDoneAndNegative =
-            malariaRapidTestResult measurements == Just RapidTestNegative
+        rdtDoneAndPositive =
+            malariaRapidTestResult measurements == Just RapidTestPositive
     in
-    signsIndicateCovid && (symptomsIndicateCovid || rdtDoneAndNegative)
+    ( signsIndicateCovid && (symptomsIndicateCovid || not rdtDoneAndPositive)
+    , not signsIndicateCovid && symptomsIndicateCovid && not rdtDoneAndPositive
+    )
 
 
-resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements =
+resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveNonCovid19AcuteIllnessDiagnosis currentDate person covid19ByPartialSet measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
     if mandatoryActivitiesCompleted measurements then
         if feverRecorded measurements then
-            resolveAcuteIllnessDiagnosisByLaboratoryResults measurements
+            resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements
 
         else if respiratoryInfectionDangerSignsPresent measurements then
             Just DiagnosisRespiratoryInfectionComplicated
@@ -393,22 +399,12 @@ resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements =
         Nothing
 
 
-resolveAcuteIllnessDiagnosisByLaboratoryResults : AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
+resolveAcuteIllnessDiagnosisByLaboratoryResults : Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements =
     malariaRapidTestResult measurements
         |> Maybe.andThen
             (\testResult ->
                 case testResult of
-                    RapidTestNegative ->
-                        if respiratoryInfectionDangerSignsPresent measurements then
-                            Just DiagnosisRespiratoryInfectionComplicated
-
-                        else if gastrointestinalInfectionDangerSignsPresent measurements then
-                            Just DiagnosisGastrointestinalInfectionComplicated
-
-                        else
-                            Just DiagnosisFeverOfUnknownOrigin
-
                     RapidTestPositive ->
                         if malarialDangerSignsPresent measurements then
                             Just DiagnosisMalariaComplicated
@@ -423,11 +419,18 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
                         else
                             Just DiagnosisMalariaUncomplicatedAndPregnant
 
-                    RapidTestIndeterminate ->
-                        Just DiagnosisFeverOfUnknownOrigin
+                    _ ->
+                        if respiratoryInfectionDangerSignsPresent measurements then
+                            Just DiagnosisRespiratoryInfectionComplicated
 
-                    RapidTestUnableToRun ->
-                        Just DiagnosisFeverOfUnknownOrigin
+                        else if gastrointestinalInfectionDangerSignsPresent measurements then
+                            Just DiagnosisGastrointestinalInfectionComplicated
+
+                        else if covid19ByPartialSet then
+                            Just DiagnosisCovid19
+
+                        else
+                            Just DiagnosisFeverOfUnknownOrigin
             )
 
 
@@ -661,7 +664,7 @@ malarialDangerSignsPresent measurements =
 
 respiratoryInfectionSymptomsPresent : AcuteIllnessMeasurements -> Bool
 respiratoryInfectionSymptomsPresent measurements =
-    countRespiratorySymptoms measurements [ ShortnessOfBreath, StabbingChestPain ] > 0
+    countRespiratorySymptoms measurements [ LossOfSmell, ShortnessOfBreath, StabbingChestPain ] > 0
 
 
 respiratoryInfectionDangerSignsPresent : AcuteIllnessMeasurements -> Bool

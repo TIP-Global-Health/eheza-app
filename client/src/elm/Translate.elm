@@ -862,7 +862,7 @@ translationSet trans =
 
         ActionsTaken ->
             { english = "Actions Taken"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibyakozwe"
             }
 
         ActionsToTake ->
@@ -1075,7 +1075,7 @@ translationSet trans =
 
         Administered ->
             { english = "Administered"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umuti watanzwe"
             }
 
         AdministeredMedicationQuestion ->
@@ -1785,12 +1785,12 @@ translationSet trans =
 
         CompletedHCReferralForm ->
             { english = "Completed health center referral form"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Urupapuro rwohereza umurwayi ku kigo nderabuzima rwujujwe"
             }
 
         ContactedHC ->
             { english = "Contacted health center"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Yamenyesheje ikigo nderabuzima"
             }
 
         ContactedHCQuestion ->
@@ -1820,7 +1820,7 @@ translationSet trans =
 
         CurrentIllnessBegan ->
             { english = "Current illness began"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igihe ubu burwayi afite bwatangiriye"
             }
 
         CSectionScar scar ->
@@ -1857,7 +1857,7 @@ translationSet trans =
 
         Close ->
             { english = "Close"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gufunga"
             }
 
         Closed ->
@@ -2982,7 +2982,7 @@ translationSet trans =
 
         IsolatedAtHome ->
             { english = "Isolated at home"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Yashyizwe mu kato mu rugo"
             }
 
         KilogramShorthand ->
@@ -3179,7 +3179,7 @@ translationSet trans =
 
                 RapidTestUnableToRun ->
                     { english = "Unable to run"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini nticyakozwe"
                     }
 
         MaritalStatusLabel ->
@@ -3962,7 +3962,7 @@ translationSet trans =
 
         PhysicalExam ->
             { english = "Physical Exam"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gusuzuma umurwayi"
             }
 
         PhysicalExamTask task ->
@@ -4796,7 +4796,7 @@ translationSet trans =
 
         Symptoms ->
             { english = "Symptoms"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibimenyetso"
             }
 
         SymptomsGeneralSign sign ->
@@ -4819,11 +4819,6 @@ translationSet trans =
                 Headache ->
                     { english = "Headache"
                     , kinyarwanda = Just "Kubabara umutwe"
-                    }
-
-                LossOfSmell ->
-                    { english = "Loss of Smell"
-                    , kinyarwanda = Just "Kudahumekerwa"
                     }
 
                 NightSweats ->
@@ -4960,6 +4955,11 @@ translationSet trans =
                     , kinyarwanda = Just "Kubabara mu muhogo"
                     }
 
+                LossOfSmell ->
+                    { english = "Loss of Smell"
+                    , kinyarwanda = Just "Kudahumekerwa"
+                    }
+
                 StabbingChestPain ->
                     { english = "Stabbing Chest Pain"
                     , kinyarwanda = Just "Kubabara mu gatuza"
@@ -5029,7 +5029,7 @@ translationSet trans =
 
         SentPatientToHC ->
             { english = "Sent patient to the health center"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kohereza umurwayi ku kigo nderabuzima"
             }
 
         ShowAll ->
@@ -5084,7 +5084,7 @@ translationSet trans =
 
         Tachypnea ->
             { english = "Tachypnea (fast resp. rate)"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Guhumeka vuba vuba"
             }
 
         TabletSinglePlural value ->
