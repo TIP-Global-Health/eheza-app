@@ -1000,6 +1000,39 @@ function hedley_person_import_form_callback(array $form, array $form_state) {
 }
 
 /**
+ * Get a relationships by a person.
+ *
+ * @param int $person_id
+ *   The person node ID.
+ * @param string $relation_type
+ *   Optional; the type of the relation, can be either "parent" or "child".
+ *
+ * @return array
+ *   Node IDs if they exist or empty array if no nodes exist.
+ */
+function hedley_person_get_relationships($person_id, $relation_type = HEDLEY_PERSON_RELATED_BY_PARENT_OF) {
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', 'relationship')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->range(0, 1);
+
+  if ($relation_type == HEDLEY_PERSON_RELATED_BY_PARENT_OF) {
+    $query
+      ->fieldCondition('field_person', 'target_id', $person_id);
+  }
+  else {
+    $query
+      ->fieldCondition('field_related_to', 'target_id', $person_id);
+  }
+
+  $result = $query->execute();
+
+  return !empty($result['node']) ? array_keys($result['node']) : [];
+}
+
+/**
  * Implements hook_node_update().
  *
  * When child age is edited, updates graduation date for all

@@ -31,6 +31,7 @@ import Pages.AcuteIllnessEncounter.Update
 import Pages.AcuteIllnessProgressReport.Model
 import Pages.AcuteIllnessProgressReport.Update
 import Pages.Clinics.Update
+import Pages.Dashboard.Update
 import Pages.Device.Model
 import Pages.Device.Update
 import Pages.IndividualEncounterParticipants.Update
@@ -234,6 +235,16 @@ update msg model =
                             in
                             ( { data | createPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageDashboard subPage subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.Dashboard.Update.update subMsg subPage data.dashboardPage
+                            in
+                            ( { data | dashboardPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageDashboard subPage) subCmd
                             , appMsgs
                             )
 

@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), acuteFindingsEndpoint, acuteIllnessEncounterEndpoint, acuteIllnessMeasurementsEndpoint, acuteIllnessVitalsEndpoint, attendanceEndpoint, breastExamEndpoint, childFbfEndpoint, childMeasurementListEndpoint, clinicEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, dangerSignsEndpoint, encodeIndividualEncounterParams, encodeIndividualEncounterParticipantParams, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, exposureEndpoint, familyPlanningEndpoint, fbfEndpoint, hcContactEndpoint, healthCenterEndpoint, heightEndpoint, individualEncounterParticipantEndpoint, isolationEndpoint, lactationEndpoint, lastMenstrualPeriodEndpoint, malariaTestingEndpoint, medicalHistoryEndpoint, medicationDistributionEndpoint, medicationEndpoint, motherFbfEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEncounterEndpoint, nutritionEndpoint, nutritionHeightEndpoint, nutritionMeasurementsEndpoint, nutritionMuacEndpoint, nutritionNutritionEndpoint, nutritionPhotoEndpoint, nutritionWeightEndpoint, obstetricHistoryEndpoint, obstetricHistoryStep2Endpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalMeasurementsEndpoint, prenatalNutritionEndpoint, prenatalPhotoEndpoint, relationshipEndpoint, resourceEndpoint, sendToHCEndpoint, sessionEndpoint, socialHistoryEndpoint, swEndpoint, symptomsGIEndpoint, symptomsGeneralEndpoint, symptomsRespiratoryEndpoint, syncDataEndpoint, travelHistoryEndpoint, treatmentReviewEndpoint, villageEndpoint, vitalsEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (..)
 
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessEncounter)
@@ -9,6 +9,8 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Counseling.Encoder exposing (encodeCounselingSchedule, encodeCounselingTopic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
+import Backend.Dashboard.Decoder exposing (decodeDashboardStats)
+import Backend.Dashboard.Model exposing (DashboardStats)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
 import Backend.HealthCenter.Model exposing (HealthCenter)
@@ -47,10 +49,10 @@ import Backend.SyncData.Model exposing (SyncData)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.Village.Model exposing (Village)
 import Http exposing (Error)
-import Json.Decode exposing (Decoder, field, succeed)
+import Json.Decode exposing (Decoder, field)
 import Json.Encode exposing (Value, object)
-import Maybe.Extra exposing (toList)
-import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityUuid, endpoint, fromEntityUuid, toCmd, toEntityUuid, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
+import Maybe.Extra
+import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, drupalBackend, endpoint, fromEntityUuid, toEntityUuid, withKeyEncoder, withParamsEncoder, withValueEncoder)
 
 
 {-| Construct an endpoint that talks to our local service worker in terms of UUIDs.
@@ -103,6 +105,13 @@ encodeRelationshipParams params =
         [ Maybe.map (\person -> ( "person", fromEntityUuid person )) params.person
         , Maybe.map (\relatedTo -> ( "related_to", fromEntityUuid relatedTo )) params.relatedTo
         ]
+
+
+{-| @todo: For now we'll fetch only health center. Eventually, we'll get all the data, and compute inside Elm.
+-}
+computedDashboardEndpoint : ReadOnlyEndPoint Error HealthCenterId DashboardStats ()
+computedDashboardEndpoint =
+    swEndpoint "statistics" decodeDashboardStats
 
 
 healthCenterEndpoint : ReadOnlyEndPoint Error HealthCenterId HealthCenter ()

@@ -87,6 +87,18 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             , []
             )
 
+        HandleFetchedComputedDashboard healthCenterId_ webData ->
+            let
+                modelUpdated =
+                    RemoteData.toMaybe webData
+                        |> Maybe.map (\data -> { model | computedDashboard = data })
+                        |> Maybe.withDefault model
+            in
+            ( modelUpdated
+            , Cmd.none
+            , []
+            )
+
         HandleFetchedChildrenMeasurements webData ->
             case RemoteData.toMaybe webData of
                 Nothing ->
@@ -106,6 +118,13 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             ( { model | clinics = Loading }
             , sw.select clinicEndpoint ()
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> List.sortBy (Tuple.second >> .name) >> Dict.fromList) >> HandleFetchedClinics)
+            , []
+            )
+
+        FetchComputedDashboard healthCenterId_ ->
+            ( model
+            , sw.select computedDashboardEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedComputedDashboard healthCenterId_)
             , []
             )
 
@@ -1644,6 +1663,9 @@ handleRevision revision (( model, recalc ) as noChange) =
                 model
             , recalc
             )
+
+        DashboardStatsRevision uuid data ->
+            ( { model | computedDashboard = Dict.insert uuid data model.computedDashboard }, recalc )
 
         ExposureRevision uuid data ->
             ( mapAcuteIllnessMeasurements

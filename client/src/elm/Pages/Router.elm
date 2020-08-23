@@ -56,6 +56,21 @@ pageToFragment current =
                     in
                     Just ("clinics" ++ clinic)
 
+                DashboardPage subPage ->
+                    let
+                        url =
+                            case subPage of
+                                MainPage ->
+                                    "main"
+
+                                StatsPage ->
+                                    "stats"
+
+                                CaseManagementPage ->
+                                    "case-management"
+                    in
+                    Just ("dashboard/" ++ url)
+
                 ClinicalProgressReportPage prenatalEncounterId ->
                     Just <| "clinical-progress-report/" ++ fromEntityUuid prenatalEncounterId
 
@@ -194,6 +209,7 @@ parser =
     oneOf
         [ map (UserPage << ClinicsPage << Just) (s "clinics" </> parseUuid)
         , map (UserPage (ClinicsPage Nothing)) (s "clinics")
+        , map (\page -> UserPage <| DashboardPage page) (s "dashboard" </> parseDashboardPage)
         , map DevicePage (s "device")
         , map PinCodePage (s "pincode")
         , map ServiceWorkerPage (s "deployment")
@@ -226,6 +242,15 @@ parser =
 
         -- `top` represents the page without any segements ... i.e. the root page.
         , map PinCodePage top
+        ]
+
+
+parseDashboardPage : Parser (DashboardPage -> c) c
+parseDashboardPage =
+    oneOf
+        [ map MainPage (s "main")
+        , map StatsPage (s "stats")
+        , map CaseManagementPage (s "case-management")
         ]
 
 

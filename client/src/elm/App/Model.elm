@@ -16,11 +16,12 @@ import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessProgressReport.Model
 import Pages.Clinics.Model
+import Pages.Dashboard.Model
 import Pages.Device.Model
 import Pages.IndividualEncounterParticipants.Model
 import Pages.NutritionActivity.Model
 import Pages.NutritionEncounter.Model
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (DashboardPage(..), Page(..))
 import Pages.People.Model
 import Pages.Person.Model
 import Pages.PinCode.Model
@@ -158,6 +159,7 @@ it at the appropriate moment.
 -}
 type alias LoggedInModel =
     { createPersonPage : Pages.Person.Model.Model
+    , dashboardPage : Pages.Dashboard.Model.Model
     , editPersonPage : Pages.Person.Model.Model
     , relationshipPages : Dict ( PersonId, PersonId ) Pages.Relationship.Model.Model
     , personsPage : Pages.People.Model.Model
@@ -183,6 +185,7 @@ type alias LoggedInModel =
 emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
     { createPersonPage = Pages.Person.Model.emptyCreateModel
+    , dashboardPage = Pages.Dashboard.Model.emptyModel
     , editPersonPage = Pages.Person.Model.emptyEditModel
     , personsPage = Pages.People.Model.emptyModel
     , individualEncounterParticipantsPage = Pages.IndividualEncounterParticipants.Model.emptyModel
@@ -242,6 +245,7 @@ type Msg
 type MsgLoggedIn
     = MsgPageClinics Pages.Clinics.Model.Msg
     | MsgPageCreatePerson Pages.Person.Model.Msg
+    | MsgPageDashboard DashboardPage Pages.Dashboard.Model.Msg
     | MsgPageEditPerson Pages.Person.Model.Msg
     | MsgPagePersons Pages.People.Model.Msg
     | MsgPagePrenatalParticipant PersonId Pages.PrenatalParticipant.Model.Msg

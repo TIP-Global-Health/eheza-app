@@ -237,8 +237,8 @@ h3.ui.header {
   font-size: 1.52rem;  //24px
   padding-top: 1em;
   padding-bottom: 1em;
-  text-transform: uppercase !important;
-  font-weight: 800 !important;
+  text-transform: uppercase;
+  font-weight: 800;
   font-family: $font;
   border : 0; //2px;
   border-radius : 0; //25px;
@@ -641,7 +641,7 @@ h3.ui.header {
   }
 
   .input-wrapper {
-    border: 2px solid $color-gray-border;
+    border: 2px solid $color-grey-border;
   }
 }
 
@@ -681,7 +681,7 @@ h3.ui.header {
 
   &.search-input,
   &.pairing-code {
-    background: $color-light-gray;
+    background: $color-lighter-grey;
   }
 }
 
@@ -730,7 +730,7 @@ h3.ui.header {
 
       .icon-participant.add {
         background-color: white;
-        border: 2px dashed $color-gray;
+        border: 2px dashed $color-grey;
         height: 120px;
         width: 120px;
       }
@@ -762,7 +762,7 @@ h3.ui.header {
     }
 
     .separator-line {
-      border-top: 2px solid $color-gray;
+      border-top: 2px solid $color-grey;
       width: 620px;
       margin-top: 70px;
       margin-bottom: 70px;
@@ -773,7 +773,7 @@ h3.ui.header {
   &.search {
 
     .items {
-      color: $color-gray;
+      color: $color-grey;
       margin-bottom: 50px;
 
       .item .content {
@@ -783,7 +783,7 @@ h3.ui.header {
           width: 70%;
 
           .ui.header {
-            color: $color-gray;
+            color: $color-grey;
             font-size: 24px;
             font-weight: bold;
             margin-top: 3px;
@@ -858,7 +858,7 @@ h3.ui.header {
       .select-input {
         background: none;
         font-size: 2rem;
-        border: 2px solid $color-gray;
+        border: 2px solid $color-grey;
         padding: 0 0.5em;
         line-height: 0.5;
         text-align: left;
@@ -1078,7 +1078,7 @@ input::placeholder {
   box-shadow: 0 0 8px rgba(0,0,0,0.2);
 
   &.alerts-dialog {
-    border-top: 7px solid $color-red-alert;
+    border-top: 7px solid $color-velvet;
     width: 700px !important;
     margin-left: -350px !important;
 
@@ -1097,7 +1097,7 @@ input::placeholder {
         }
 
         .section-label {
-          color: $color-dark-gray;
+          color: $color-dark-grey;
           float: left;
           line-height: 48px;
           margin-left: 30px;
@@ -1107,7 +1107,7 @@ input::placeholder {
       }
 
       .section-items {
-        color: $color-gray;
+        color: $color-grey;
         font-size: 20px;
         padding-left: 6rem;
         text-align: left;
@@ -1120,7 +1120,7 @@ input::placeholder {
           }
 
           .alert-value {
-            color: $color-red-alert;
+            color: $color-velvet;
             margin-left: 10px;
           }
 
@@ -1166,7 +1166,7 @@ input::placeholder {
         }
 
         .popup-heading {
-          color: $color-dark-gray;
+          color: $color-dark-grey;
           float: left;
           font-size: 30px;
           font-weight: bold;
@@ -1178,7 +1178,7 @@ input::placeholder {
       }
 
       .popup-title {
-        color: $color-dark-gray;
+        color: $color-dark-grey;
         font-size: 30px;
         font-weight: bold;
         margin-bottom: 1rem;
@@ -1187,7 +1187,7 @@ input::placeholder {
       }
 
       .popup-action {
-        color: $color-dark-gray;
+        color: $color-dark-grey;
         font-size: 30px;
         margin-bottom: 2rem;
         padding: 0 4rem;
@@ -1581,7 +1581,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-obstetrichistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-obstetrichistory-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1595,7 +1595,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-medicalhistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-medicalhistory-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1609,7 +1609,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-socialhistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-socialhistory-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1623,7 +1623,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-vitals-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-vitals-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1637,7 +1637,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-nutritionassessment-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-nutritionassessment-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1651,7 +1651,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-corephysicalexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-corephysicalexam-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1665,7 +1665,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-obstetricalexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-obstetricalexam-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1679,7 +1679,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-breastexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-breastexam-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1693,7 +1693,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-medication-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-medication-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1707,7 +1707,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-resources-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-resources-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 

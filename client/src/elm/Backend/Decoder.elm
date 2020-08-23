@@ -3,6 +3,7 @@ module Backend.Decoder exposing (decodeRevision)
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessEncounter)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
+import Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
 import Backend.Measurement.Decoder exposing (..)
@@ -186,6 +187,9 @@ decodeRevision =
 
                     "social_history" ->
                         decodeWithUuid SocialHistoryRevision decodeSocialHistory
+
+                    "statistics" ->
+                        decodeWithUuid DashboardStatsRevision decodeDashboardStats
 
                     "symptoms_general" ->
                         decodeWithUuid SymptomsGeneralRevision decodeSymptomsGeneral
