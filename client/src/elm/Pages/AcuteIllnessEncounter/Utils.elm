@@ -359,11 +359,14 @@ covid19Diagnosed measurements =
         signsIndicateCovid =
             totalSigns > 0
 
-        rdtDoneAndPositive =
-            malariaRapidTestResult measurements == Just RapidTestPositive
+        rdtResult =
+            malariaRapidTestResult measurements
+
+        rdtDoneAndNotPositive =
+            isJust rdtResult && rdtResult /= Just RapidTestPositive
     in
-    ( signsIndicateCovid && (symptomsIndicateCovid || not rdtDoneAndPositive)
-    , not signsIndicateCovid && symptomsIndicateCovid && not rdtDoneAndPositive
+    ( signsIndicateCovid && (symptomsIndicateCovid || rdtDoneAndNotPositive)
+    , not signsIndicateCovid && symptomsIndicateCovid && rdtDoneAndNotPositive
     )
 
 
