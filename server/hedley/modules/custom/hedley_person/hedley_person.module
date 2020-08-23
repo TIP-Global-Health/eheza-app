@@ -803,31 +803,31 @@ function hedley_person_import_patient($patient_type, array $values) {
   $education_level = strtolower(trim($values[HEDLEY_PERSON_COLUMN_ADULT_EDUCATION_LEVEL]));
   switch (strtolower($education_level)) {
     case 'no schooling':
-      $wrapper->field_mode_of_delivery->set('0');
+      $wrapper->field_education_level->set('0');
       break;
 
     case 'primary school':
-      $wrapper->field_mode_of_delivery->set('1');
+      $wrapper->field_education_level->set('1');
       break;
 
     case 'vocational training school':
-      $wrapper->field_mode_of_delivery->set('2');
+      $wrapper->field_education_level->set('2');
       break;
 
     case 'secondary school':
-      $wrapper->field_mode_of_delivery->set('3');
+      $wrapper->field_education_level->set('3');
       break;
 
     case 'diploma programs':
-      $wrapper->field_mode_of_delivery->set('4');
+      $wrapper->field_education_level->set('4');
       break;
 
     case 'higher education':
-      $wrapper->field_mode_of_delivery->set('5');
+      $wrapper->field_education_level->set('5');
       break;
 
     case 'advanced diploma':
-      $wrapper->field_mode_of_delivery->set('6');
+      $wrapper->field_education_level->set('6');
       break;
   }
 
