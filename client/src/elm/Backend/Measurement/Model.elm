@@ -521,7 +521,6 @@ type SymptomsGeneralSign
     | Chills
     | SymptomGeneralFever
     | Headache
-    | LossOfSmell
     | NightSweats
     | Lethargy
     | PoorSuck
@@ -543,7 +542,6 @@ type alias SymptomsGeneralValue =
     , nightSweats : Int
     , bodyAches : Int
     , headache : Int
-    , lossOfSmell : Int
     , lethargy : Int
     , poorSuck : Int
     , unableToDrink : Int
@@ -568,6 +566,7 @@ type SymptomsRespiratorySign
     | NasalCongestion
     | ShortnessOfBreath
     | SoreThroat
+    | LossOfSmell
     | StabbingChestPain
     | NoSymptomsRespiratory
 
