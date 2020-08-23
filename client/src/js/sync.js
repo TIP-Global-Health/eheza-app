@@ -62,6 +62,7 @@
         'increased_thirst_period',
         'lethargy_period',
         'live_children',
+        'loss_of_smell_period',
         'nasal_congestion_period',
         'nausea_period',
         'night_sweats_period',
@@ -279,27 +280,55 @@
         var dbVersion = dbSync.verno;
 
         var shardUrlPart = shard.uuid === nodesUuid ? '' : '/' + shard.uuid;
-
-        var url = [
+        var urlArray = [
             backendUrl, '/api/v1.0/sync', shardUrlPart,
             '?access_token=', token,
             '&db_version=', dbVersion
-        ].join('');
+          ]
 
-        return url;
+        if (shard.uuid) {
+            var criteria = {
+                uuid: shard.uuid
+            };
+
+            var statsTable = dbSync.statistics;
+            var query = statsTable.where(criteria);
+
+            return query.first().then(function (syncData) {
+                if (syncData) {
+                    return getSyncUrlParams(urlArray, syncData['stats_cache_hash']);
+                }
+                else {
+                    return getSyncUrlParams(urlArray);
+                }
+            }).catch(formatDatabaseError);
+        }
+        else {
+            // Sync without stats cache hash.
+            return Promise.resolve(getSyncUrlParams(urlArray));
+        }
+    }
+
+    function getSyncUrlParams(urlArray, maybeStatsCacheHash) {
+        if (maybeStatsCacheHash) {
+            // We already have stats synced, however we send their md5 hash to
+            // the server so it would know if we have the most up to date
+            // version. If not, it will send the latest.
+            urlArray.push('&stats_cache_hash=', maybeStatsCacheHash);
+        }
+
+        return urlArray.join('');
     }
 
     function getUploadUrl (credentials) {
         var token = credentials.access_token;
         var backendUrl = credentials.backend_url;
 
-        var url = [
+        return [
             backendUrl,
             '/api/file-upload?access_token=',
             token
         ].join('');
-
-        return url;
     }
 
     // Resolves with metadata, or rejects with an attempt result. In either
@@ -307,28 +336,29 @@
     //
     // The parameter is our shard metadata.
     function uploadSingleShard (shard, credentials) {
-        var url = getSyncUrl(shard, credentials);
-        var uploadUrl = getUploadUrl(credentials);
+        return getSyncUrl(shard, credentials).then(function (syncUrl) {
+            var uploadUrl = getUploadUrl(credentials);
 
-        return recordAttempt(shard.uuid, {
-            tag: Uploading,
-            timestamp: Date.now()
-        }).then(function () {
-            return sendToBackend(shard.uuid, url, uploadUrl).catch(function (err) {
-                return recordAttempt(shard.uuid, err).then(function () {
-                    return Promise.reject(err);
-                });
-            }).then(function (status) {
-                return recordAttempt(shard.uuid, {
-                    tag: Success,
-                    timestamp: Date.now()
-                }).then(function () {
-                    if (status.remaining > 0) {
-                        // Keep going if there are more.
-                        return uploadSingleShard(shard, credentials);
-                    } else {
-                        return Promise.resolve(status);
-                    }
+            return recordAttempt(shard.uuid, {
+                tag: Uploading,
+                timestamp: Date.now()
+            }).then(function () {
+                return sendToBackend(shard.uuid, syncUrl, uploadUrl).catch(function (err) {
+                    return recordAttempt(shard.uuid, err).then(function () {
+                        return Promise.reject(err);
+                    });
+                }).then(function (status) {
+                    return recordAttempt(shard.uuid, {
+                        tag: Success,
+                        timestamp: Date.now()
+                    }).then(function () {
+                        if (status.remaining > 0) {
+                            // Keep going if there are more.
+                            return uploadSingleShard(shard, credentials);
+                        } else {
+                            return Promise.resolve(status);
+                        }
+                    });
                 });
             });
         });
@@ -340,31 +370,33 @@
     // The parameter is our shard metadata.
     function downloadSingleShard (shard, credentials) {
         return getLastVid(shard.uuid).then(function (baseRevision) {
-            var url = getSyncUrl(shard, credentials) + '&base_revision=' + baseRevision;
+            getSyncUrl(shard, credentials).then(function (syncUrl) {
+                var url = syncUrl + '&base_revision=' + baseRevision;
 
-            return recordAttempt(shard.uuid, {
-                tag: Loading,
-                revision: baseRevision,
-                timestamp: Date.now()
-            }).then(function () {
-                return fetchFromBackend(shard.uuid, url).catch(function (err) {
-                    return recordAttempt(shard.uuid, err).then(function () {
-                        return Promise.reject(err);
-                    });
-                }).then(function (status) {
-                    return recordAttempt(shard.uuid, {
-                        tag: Success,
-                        timestampe: Date.now()
-                    }).then(function () {
-                        return dbSync.syncMetadata.update(shard.uuid, {
-                            download: status
-                        }).then(sendSyncData).then(function () {
-                            if (status.remaining > 0) {
-                                // Keep going if there are more.
-                                return downloadSingleShard(shard, credentials);
-                            } else {
-                                return Promise.resolve(status);
-                            }
+                return recordAttempt(shard.uuid, {
+                    tag: Loading,
+                    revision: baseRevision,
+                    timestamp: Date.now()
+                }).then(function () {
+                    return fetchFromBackend(shard.uuid, url).catch(function (err) {
+                        return recordAttempt(shard.uuid, err).then(function () {
+                            return Promise.reject(err);
+                        });
+                    }).then(function (status) {
+                        return recordAttempt(shard.uuid, {
+                            tag: Success,
+                            timestampe: Date.now()
+                        }).then(function () {
+                            return dbSync.syncMetadata.update(shard.uuid, {
+                                download: status
+                            }).then(sendSyncData).then(function () {
+                                if (status.remaining > 0) {
+                                    // Keep going if there are more.
+                                    return downloadSingleShard(shard, credentials);
+                                } else {
+                                    return Promise.resolve(status);
+                                }
+                            });
                         });
                     });
                 });
@@ -613,7 +645,7 @@
                     // If the node references an image (or other file, for that
                     // matter), we'd like to decide immediately whether to
                     // cache it. Downloading to the cache will be async, and
-                    // our db tranasactions can't handle that ... IndexedDB
+                    // our db transactions can't handle that ... IndexedDB
                     // transactions can handle async db actions, but not other
                     // async actions (no "long" transactions). So, we'll need
                     // to handle this one-by-one. However, we'll wait to the
@@ -625,9 +657,18 @@
                     // our progress in downloading images.
                     //
                     // So, that's why we don't use `Promise.all` here ... it
-                    // would execute in parrallel rather than sequentially.
+                    // would execute in parallel rather than sequentially.
                     return json.data.batch.reduce(function (previous, item) {
                         return previous.then(function () {
+                            // Apart of the nodes we send statistics.
+                            if (!!item.type && item.type === 'statistics') {
+                                // We don't push it to the saved nodes, since
+                                // it's not a node.
+                                return dbSync.statistics.put(item).then(function() {
+                                    sendRevisions([item]);
+                                });
+                            }
+
                             var table = tableForType[item.type] == 'nodes' ? dbSync.nodes : dbSync.shards;
 
                             return formatNode(table, item, shardUuid).then(function (formatted) {

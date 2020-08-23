@@ -80,8 +80,11 @@ where we don't need to show any progress.
 viewLoading : Html any
 viewLoading =
     div
-        [ class "ui basic segment" ]
-        [ spinner ]
+        [ class "wrap wrap-alt-2" ]
+        [ div
+            [ class "ui segment center aligned" ]
+            [ spinner ]
+        ]
 
 
 {-| Takes some HTML with a "modal" class, and puts it in an overlay

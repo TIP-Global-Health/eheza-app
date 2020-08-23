@@ -87,6 +87,18 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             , []
             )
 
+        HandleFetchedComputedDashboard healthCenterId_ webData ->
+            let
+                modelUpdated =
+                    RemoteData.toMaybe webData
+                        |> Maybe.map (\data -> { model | computedDashboard = data })
+                        |> Maybe.withDefault model
+            in
+            ( modelUpdated
+            , Cmd.none
+            , []
+            )
+
         HandleFetchedChildrenMeasurements webData ->
             case RemoteData.toMaybe webData of
                 Nothing ->
@@ -106,6 +118,13 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             ( { model | clinics = Loading }
             , sw.select clinicEndpoint ()
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> List.sortBy (Tuple.second >> .name) >> Dict.fromList) >> HandleFetchedClinics)
+            , []
+            )
+
+        FetchComputedDashboard healthCenterId_ ->
+            ( model
+            , sw.select computedDashboardEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedComputedDashboard healthCenterId_)
             , []
             )
 
@@ -315,10 +334,10 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                 trimmed =
                     String.trim name
             in
-            -- We'll limit the search to 100 each for now ... basically,
+            -- We'll limit the search to 500 each for now ... basically,
             -- just to avoid truly pathological cases.
             ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
-            , sw.selectRange personEndpoint { nameContains = Just trimmed } 0 (Just 100)
+            , sw.selectRange personEndpoint { nameContains = Just trimmed } 0 (Just 500)
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
             , []
             )
@@ -872,7 +891,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     )
 
                 -- When we see that needed data for suspected COVID 19 case was collected,
-                -- view a pop-up suggesting to end the encounter.
+                -- navigate to Progress Report page.
                 [ IsolationRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -880,7 +899,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateEndAcuteIllnessEncounterMsgs newModel)
+                                |> Maybe.map (generateCovidFlowDataCollectedMsgs newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -889,7 +908,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     )
 
                 -- When we see that needed data for suspected COVID 19 case was collected,
-                -- view a pop-up suggesting to end the encounter.
+                -- navigate to Progress Report page.
                 [ HCContactRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -897,7 +916,41 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateEndAcuteIllnessEncounterMsgs newModel)
+                                |> Maybe.map (generateCovidFlowDataCollectedMsgs newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                -- Since we know that needed data for suspected non COVID 19 case was collected,
+                -- navigate to Progress Report page.
+                [ MedicationDistributionRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (navigateToProgressReportPageMsg >> List.singleton)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                -- Since we know that needed data for suspected non COVID 19 case was collected,
+                -- navigate to Progress Report page.
+                [ SendToHCRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (navigateToProgressReportPageMsg >> List.singleton)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -1611,6 +1664,9 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        DashboardStatsRevision uuid data ->
+            ( { model | computedDashboard = Dict.insert uuid data model.computedDashboard }, recalc )
+
         ExposureRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
@@ -2075,24 +2131,25 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
         []
 
 
-generateEndAcuteIllnessEncounterMsgs : ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
-generateEndAcuteIllnessEncounterMsgs db id =
+generateCovidFlowDataCollectedMsgs : ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
+generateCovidFlowDataCollectedMsgs db id =
     Dict.get id db.acuteIllnessMeasurements
         |> Maybe.withDefault NotAsked
         |> RemoteData.toMaybe
         |> Maybe.map
             (\measurements ->
                 if isJust measurements.isolation && isJust measurements.hcContact then
-                    [ App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
-                    , Pages.AcuteIllnessEncounter.Model.SetEndEncounterDialogState True
-                        |> App.Model.MsgPageAcuteIllnessEncounter id
-                        |> App.Model.MsgLoggedIn
-                    ]
+                    [ navigateToProgressReportPageMsg id ]
 
                 else
                     []
             )
         |> Maybe.withDefault []
+
+
+navigateToProgressReportPageMsg : AcuteIllnessEncounterId -> App.Model.Msg
+navigateToProgressReportPageMsg id =
+    App.Model.SetActivePage (UserPage (AcuteIllnessProgressReportPage id))
 
 
 {-| Construct an EditableSession from our data, if we have all the needed data.

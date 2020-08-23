@@ -1,4 +1,4 @@
-module Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+module Pages.Page exposing (DashboardPage(..), Page(..), SessionPage(..), UserPage(..))
 
 {-| A module that defines a type which controls what the user wishes
 to be shown at the moment.
@@ -123,6 +123,7 @@ type UserPage
     = ClinicalPage -- shows a list of clinical options, allows you to choose one
     | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
     | ClinicalProgressReportPage PrenatalEncounterId
+    | DashboardPage DashboardPage -- Dashboard with visual summary of the data
     | DemographicsReportPage PrenatalEncounterId
     | SessionPage SessionId SessionPage -- pages that manipulate a group session
     | MyAccountPage -- shows information about the logged-in user
@@ -159,6 +160,14 @@ type UserPage
     | AcuteIllnessEncounterPage AcuteIllnessEncounterId -- acute illness activities index
     | AcuteIllnessActivityPage AcuteIllnessEncounterId AcuteIllnessActivity -- record acute illness activity
     | AcuteIllnessProgressReportPage AcuteIllnessEncounterId -- acute illness progress report
+
+
+{-| We group together the pages that can only be viewed in the Dashboard
+-}
+type DashboardPage
+    = MainPage
+    | StatsPage
+    | CaseManagementPage
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

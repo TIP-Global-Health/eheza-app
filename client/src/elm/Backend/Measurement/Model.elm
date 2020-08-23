@@ -537,11 +537,11 @@ type SymptomsGeneralSign
 
 
 type alias SymptomsGeneralValue =
-    { feverPeriod : Int
-    , chillsPeriod : Int
-    , nightSweatsPeriod : Int
-    , bodyAchesPeriod : Int
-    , headachePeriod : Int
+    { fever : Int
+    , chills : Int
+    , nightSweats : Int
+    , bodyAches : Int
+    , headache : Int
     , lethargy : Int
     , poorSuck : Int
     , unableToDrink : Int
@@ -566,6 +566,7 @@ type SymptomsRespiratorySign
     | NasalCongestion
     | ShortnessOfBreath
     | SoreThroat
+    | LossOfSmell
     | StabbingChestPain
     | NoSymptomsRespiratory
 
@@ -672,7 +673,6 @@ type alias TreatmentReview =
 
 type ExposureSign
     = COVID19Symptoms
-    | SimilarSymptoms
     | NoExposureSigns
 
 

@@ -1072,11 +1072,11 @@ decodeSymptomsGeneral =
 
 symptomsGeneralToDict : SymptomsGeneralValue -> Dict SymptomsGeneralSign Int
 symptomsGeneralToDict value =
-    [ ( SymptomGeneralFever, value.feverPeriod )
-    , ( Chills, value.chillsPeriod )
-    , ( NightSweats, value.nightSweatsPeriod )
-    , ( BodyAches, value.bodyAchesPeriod )
-    , ( Headache, value.headachePeriod )
+    [ ( SymptomGeneralFever, value.fever )
+    , ( Chills, value.chills )
+    , ( NightSweats, value.nightSweats )
+    , ( BodyAches, value.bodyAches )
+    , ( Headache, value.headache )
     , ( Lethargy, value.lethargy )
     , ( PoorSuck, value.poorSuck )
     , ( UnableToDrink, value.unableToDrink )
@@ -1103,22 +1103,24 @@ symptomsGeneralToDict value =
 decodeSymptomsRespiratory : Decoder SymptomsRespiratory
 decodeSymptomsRespiratory =
     decodeAcuteIllnessMeasurement <|
-        map6 symptomsRespiratoryToDict
+        map7 symptomsRespiratoryToDict
             (field "cough_period" decodeInt)
             (field "shortness_of_breath_period" decodeInt)
             (field "nasal_congestion_period" decodeInt)
             (field "blood_in_sputum_period" decodeInt)
             (field "sore_throat_period" decodeInt)
+            (field "loss_of_smell_period" decodeInt)
             (field "stabbing_chest_pain_period" decodeInt)
 
 
-symptomsRespiratoryToDict : Int -> Int -> Int -> Int -> Int -> Int -> Dict SymptomsRespiratorySign Int
-symptomsRespiratoryToDict cough shortnessOfBreath nasalCongestion bloodInSputum soreThroat stabbingChestPain =
+symptomsRespiratoryToDict : Int -> Int -> Int -> Int -> Int -> Int -> Int -> Dict SymptomsRespiratorySign Int
+symptomsRespiratoryToDict cough shortnessOfBreath nasalCongestion bloodInSputum soreThroat lossOfSmell stabbingChestPain =
     [ ( Cough, cough )
     , ( ShortnessOfBreath, shortnessOfBreath )
     , ( NasalCongestion, nasalCongestion )
     , ( BloodInSputum, bloodInSputum )
     , ( SoreThroat, soreThroat )
+    , ( LossOfSmell, lossOfSmell )
     , ( StabbingChestPain, stabbingChestPain )
     ]
         |> List.filter (Tuple.second >> (/=) 0)
@@ -1452,9 +1454,6 @@ decodeExposureSign =
                 case sign of
                     "covid19-symptioms" ->
                         succeed COVID19Symptoms
-
-                    "similar-symptoms" ->
-                        succeed SimilarSymptoms
 
                     "none" ->
                         succeed NoExposureSigns

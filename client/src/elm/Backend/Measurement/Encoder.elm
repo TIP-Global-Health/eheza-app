@@ -1000,6 +1000,9 @@ encodeSymptomsRespiratoryValue signs =
         soreThroat =
             Dict.get SoreThroat signs |> Maybe.withDefault 0
 
+        lossOfSmell =
+            Dict.get LossOfSmell signs |> Maybe.withDefault 0
+
         stabbingChestPain =
             Dict.get StabbingChestPain signs |> Maybe.withDefault 0
     in
@@ -1008,6 +1011,7 @@ encodeSymptomsRespiratoryValue signs =
     , ( "nasal_congestion_period", int nasalCongestion )
     , ( "blood_in_sputum_period", int bloodInSputum )
     , ( "sore_throat_period", int soreThroat )
+    , ( "loss_of_smell_period", int lossOfSmell )
     , ( "stabbing_chest_pain_period", int stabbingChestPain )
     ]
 
@@ -1286,9 +1290,6 @@ encodeExposureSign sign =
         case sign of
             COVID19Symptoms ->
                 "covid19-symptioms"
-
-            SimilarSymptoms ->
-                "similar-symptoms"
 
             NoExposureSigns ->
                 "none"

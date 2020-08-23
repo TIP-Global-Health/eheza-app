@@ -66,6 +66,17 @@ ehezaGlobal =
 ***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
     , name = "***REMOVED***"
+    , pusherKey = PusherAppKey "" UsEast1
+    , debug = False
+    , rollbarToken = Rollbar.token "***REMOVED***"
+    , sandbox = False
+    }
+
+
+***REMOVED*** : Model
+***REMOVED*** =
+    { backendUrl = "https://***REMOVED***"
+    , name = "***REMOVED***"
 
     -- We're not actually using Pusher at the moment, so just filling in a
     -- blank key for now.
@@ -80,17 +91,6 @@ ehezaGlobal =
 ***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
     , name = "***REMOVED***"
-    , pusherKey = PusherAppKey "" UsEast1
-    , debug = False
-    , rollbarToken = Rollbar.token "***REMOVED***"
-    , sandbox = False
-    }
-
-
-elm19Pantheon : Model
-elm19Pantheon =
-    { backendUrl = "https://elm19-ihangane.pantheonsite.io"
-    , name = "elm19Pantheon"
     , pusherKey = PusherAppKey "" UsEast1
     , debug = False
     , rollbarToken = Rollbar.token "***REMOVED***"
@@ -130,7 +130,7 @@ configs =
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
-        , ( "elm19-ihangane.pantheonsite.io", elm19Pantheon )
+        , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         ]

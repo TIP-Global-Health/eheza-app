@@ -212,7 +212,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                                 |> object
                                 |> sw.patchAny acuteFindingsEndpoint id
                                 |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedVitals)
+                                |> toCmd (RemoteData.fromResult >> HandleSavedAcuteFindings)
             in
             ( { model | saveAcuteFindings = Loading }
             , cmd

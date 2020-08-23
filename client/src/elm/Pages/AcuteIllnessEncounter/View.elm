@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.View exposing (view, viewPersonDetailsWithAlert, warningPopup)
+module Pages.AcuteIllnessEncounter.View exposing (splitActivities, view, viewEndEncounterButton, viewPersonDetailsWithAlert, warningPopup)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
@@ -211,9 +211,7 @@ viewMainPageContent language currentDate id data diagnosis model =
             data.measurements
 
         ( completedActivities, pendingActivities ) =
-            getAllActivities
-                |> List.filter (expectActivity currentDate data.person measurements diagnosis)
-                |> List.partition (activityCompleted currentDate data.person measurements diagnosis)
+            splitActivities currentDate data diagnosis
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -228,7 +226,7 @@ viewMainPageContent language currentDate id data diagnosis model =
             div [ class "ui tabular menu" ]
                 [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
-                , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetSelectedTab Reports)
+                , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetActivePage (UserPage (AcuteIllnessProgressReportPage id)))
                 ]
 
         viewCard activity =
@@ -289,32 +287,56 @@ viewMainPageContent language currentDate id data diagnosis model =
                         ]
                     ]
 
-        allowEndEcounter =
-            if diagnosis == Just DiagnosisCovid19 then
-                isJust measurements.isolation && isJust measurements.hcContact
-
-            else
-                List.isEmpty pendingActivities
-
-        endEcounterButtonAttributes =
-            if allowEndEcounter then
-                [ class "ui fluid primary button"
-                , onClick <| SetEndEncounterDialogState True
-                ]
-
-            else
-                [ class "ui fluid primary button disabled" ]
-
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , div [ class "actions" ]
-                    [ button
-                        endEcounterButtonAttributes
-                        [ text <| translate language Translate.EndEncounter ]
-                    ]
+                , viewEndEncounterButton language measurements pendingActivities diagnosis SetEndEncounterDialogState
                 ]
     in
     [ tabs
     , content
     ]
+
+
+splitActivities : NominalDate -> AssembledData -> Maybe AcuteIllnessDiagnosis -> ( List AcuteIllnessActivity, List AcuteIllnessActivity )
+splitActivities currentDate data diagnosis =
+    getAllActivities
+        |> List.filter (expectActivity currentDate data.person data.measurements diagnosis)
+        |> List.partition (activityCompleted currentDate data.person data.measurements diagnosis)
+
+
+viewEndEncounterButton : Language -> AcuteIllnessMeasurements -> List AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> (Bool -> msg) -> Html msg
+viewEndEncounterButton language measurements pendingActivities diagnosis setDialogStateMsgs =
+    let
+        allowEndEcounter =
+            if diagnosis == Just DiagnosisCovid19 then
+                isJust measurements.isolation && isJust measurements.hcContact
+
+            else if isJust diagnosis then
+                case pendingActivities of
+                    [] ->
+                        True
+
+                    [ AcuteIllnessPriorTreatment ] ->
+                        True
+
+                    _ ->
+                        False
+
+            else
+                List.isEmpty pendingActivities
+
+        attributes =
+            if allowEndEcounter then
+                [ class "ui fluid primary button"
+                , onClick <| setDialogStateMsgs True
+                ]
+
+            else
+                [ class "ui fluid primary button disabled" ]
+    in
+    div [ class "actions" ]
+        [ button
+            attributes
+            [ text <| translate language Translate.EndEncounter ]
+        ]

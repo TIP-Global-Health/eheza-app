@@ -28,7 +28,10 @@ import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessActivity.Update
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.Update
+import Pages.AcuteIllnessProgressReport.Model
+import Pages.AcuteIllnessProgressReport.Update
 import Pages.Clinics.Update
+import Pages.Dashboard.Update
 import Pages.Device.Model
 import Pages.Device.Update
 import Pages.IndividualEncounterParticipants.Update
@@ -235,6 +238,16 @@ update msg model =
                             , appMsgs
                             )
 
+                        MsgPageDashboard subPage subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.Dashboard.Update.update subMsg subPage data.dashboardPage
+                            in
+                            ( { data | dashboardPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageDashboard subPage) subCmd
+                            , appMsgs
+                            )
+
                         MsgPageEditPerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
@@ -390,6 +403,19 @@ update msg model =
                             ( { data | pregnancyOutcomePages = Dict.insert id subModel data.pregnancyOutcomePages }
                             , Cmd.map (MsgLoggedIn << MsgPagePregnancyOutcome id) subCmd
                             , appMsgs
+                            )
+
+                        MsgPageAcuteIllnessProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.acuteIllnessProgressReportPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.AcuteIllnessProgressReport.Model.emptyModel
+                                        |> Pages.AcuteIllnessProgressReport.Update.update subMsg
+                            in
+                            ( { data | acuteIllnessProgressReportPages = Dict.insert id subModel data.acuteIllnessProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport id) subCmd
+                            , extraMsgs
                             )
                 )
                 model

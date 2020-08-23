@@ -18,10 +18,12 @@ import Pages.AcuteIllnessActivity.View
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.View
 import Pages.AcuteIllnessParticipant.View
+import Pages.AcuteIllnessProgressReport.Model
 import Pages.AcuteIllnessProgressReport.View
 import Pages.Clinical.View
 import Pages.ClinicalProgressReport.View
 import Pages.Clinics.View
+import Pages.Dashboard.View
 import Pages.DemographicsReport.View
 import Pages.Device.View
 import Pages.IndividualEncounterParticipants.View
@@ -48,12 +50,12 @@ import Pages.PrenatalParticipant.View
 import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
-import Pages.Session.View exposing (view)
+import Pages.Session.View
 import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
-import Utils.Html exposing (spinner, wrapPage)
+import Utils.Html exposing (viewLoading)
 import Version
 
 
@@ -253,6 +255,11 @@ viewUserPage page model configured =
                             |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
                             |> flexPageWrapper model
 
+                    DashboardPage subPage ->
+                        Pages.Dashboard.View.view model.language subPage currentDate healthCenterId loggedInModel.dashboardPage model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageDashboard subPage)
+                            |> flexPageWrapper model
+
                     DemographicsReportPage prenatalEncounterId ->
                         Pages.DemographicsReport.View.view model.language currentDate prenatalEncounterId model.indexedDb
                             |> flexPageWrapper model
@@ -417,7 +424,13 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     AcuteIllnessProgressReportPage encounterId ->
-                        Pages.AcuteIllnessProgressReport.View.view model.language currentDate encounterId model.indexedDb
+                        let
+                            page_ =
+                                Dict.get encounterId loggedInModel.acuteIllnessProgressReportPages
+                                    |> Maybe.withDefault Pages.AcuteIllnessProgressReport.Model.emptyModel
+                        in
+                        Pages.AcuteIllnessProgressReport.View.view model.language currentDate encounterId model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport encounterId)
                             |> oldPageWrapper model
 
             else
@@ -441,16 +454,3 @@ viewUserPage page model configured =
                 model.indexedDb
                 |> Html.map MsgPagePinCode
                 |> flexPageWrapper model
-
-
-{-| Just show a generic loading indicator, for cases that will resolve soon,
-where we don't need to show any progress.
--}
-viewLoading : Html any
-viewLoading =
-    div
-        [ class "wrap wrap-alt-2" ]
-        [ div
-            [ class "ui segment center aligned" ]
-            [ spinner ]
-        ]
