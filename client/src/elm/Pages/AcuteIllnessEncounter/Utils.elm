@@ -365,8 +365,11 @@ covid19Diagnosed measurements =
         rdtDoneAndNotPositive =
             isJust rdtResult && rdtResult /= Just RapidTestPositive
     in
-    ( signsIndicateCovid && (symptomsIndicateCovid || rdtDoneAndNotPositive)
-    , not signsIndicateCovid && symptomsIndicateCovid && rdtDoneAndNotPositive
+    ( (signsIndicateCovid && symptomsIndicateCovid)
+        || (signsIndicateCovid && rdtDoneAndNotPositive)
+        || (not signsIndicateCovid && rdtDoneAndNotPositive && respiratorySymptomsCount > 0)
+        || (not signsIndicateCovid && rdtDoneAndNotPositive && generalSymptomsCount > 1)
+    , False
     )
 
 
