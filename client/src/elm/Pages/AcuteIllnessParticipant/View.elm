@@ -65,9 +65,6 @@ viewHeader language id =
 viewActions : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
 viewActions language currentDate selectedHealthCenter id db sessions =
     let
-        _ =
-            Debug.log "hi" maybeSessionId
-
         maybeSessionId =
             sessions
                 |> Dict.toList
@@ -86,10 +83,6 @@ viewActions language currentDate selectedHealthCenter id db sessions =
             maybeSessionId
                 |> Maybe.map
                     (\sessionId ->
-                        let
-                            _ =
-                                Debug.log "" (Dict.get sessionId db.acuteIllnessEncountersByParticipant)
-                        in
                         Dict.get sessionId db.acuteIllnessEncountersByParticipant
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.map

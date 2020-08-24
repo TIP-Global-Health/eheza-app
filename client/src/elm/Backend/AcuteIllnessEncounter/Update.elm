@@ -23,10 +23,6 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
         SetAcuteIllnessDiagnosis diagnosis ->
-            let
-                _ =
-                    Debug.log "SetAcuteIllnessDiagnosis" diagnosis
-            in
             updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | diagnosis = diagnosis }) model
 
         HandleUpdatedAcuteIllnessEncounter data ->
@@ -508,9 +504,6 @@ updateEncounter currentDate encounterId maybeEncounter updateFunc model =
     let
         sw =
             applyBackendUrl "/sw"
-
-        _ =
-            Debug.log "maybeEncounter" maybeEncounter
     in
     maybeEncounter
         |> unwrap ( model, Cmd.none )
