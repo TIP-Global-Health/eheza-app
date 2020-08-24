@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AssembledData, Model, Msg(..), Tab(..), emptyModel)
+module Pages.AcuteIllnessEncounter.Model exposing (AssembledData, Model, Msg(..), Tab(..), emptyModel)
 
 import Backend.AcuteIllnessEncounter.Model exposing (..)
 import Backend.Entities exposing (..)
@@ -49,16 +49,3 @@ type alias AssembledData =
     , measurements : AcuteIllnessMeasurements
     , previousMeasurementsWithDates : List ( NominalDate, AcuteIllnessMeasurements )
     }
-
-
-type AcuteIllnessDiagnosis
-    = DiagnosisCovid19
-    | DiagnosisMalariaComplicated
-    | DiagnosisMalariaUncomplicated
-    | DiagnosisMalariaUncomplicatedAndPregnant
-    | DiagnosisGastrointestinalInfectionComplicated
-    | DiagnosisGastrointestinalInfectionUncomplicated
-    | DiagnosisSimpleColdAndCough
-    | DiagnosisRespiratoryInfectionComplicated
-    | DiagnosisRespiratoryInfectionUncomplicated
-    | DiagnosisFeverOfUnknownOrigin

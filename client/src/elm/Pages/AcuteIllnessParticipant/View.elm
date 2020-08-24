@@ -2,7 +2,7 @@ module Pages.AcuteIllnessParticipant.View exposing (view)
 
 import App.Model
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter, emptyAcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
@@ -65,6 +65,9 @@ viewHeader language id =
 viewActions : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
 viewActions language currentDate selectedHealthCenter id db sessions =
     let
+        _ =
+            Debug.log "hi" maybeSessionId
+
         maybeSessionId =
             sessions
                 |> Dict.toList
@@ -83,6 +86,10 @@ viewActions language currentDate selectedHealthCenter id db sessions =
             maybeSessionId
                 |> Maybe.map
                     (\sessionId ->
+                        let
+                            _ =
+                                Debug.log "" (Dict.get sessionId db.acuteIllnessEncountersByParticipant)
+                        in
                         Dict.get sessionId db.acuteIllnessEncountersByParticipant
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.map
@@ -139,7 +146,7 @@ viewActions language currentDate selectedHealthCenter id db sessions =
                     |> Maybe.map
                         -- If session exists, create new encounter for it.
                         (\sessionId ->
-                            [ Backend.AcuteIllnessEncounter.Model.AcuteIllnessEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
+                            [ emptyAcuteIllnessEncounter sessionId currentDate (Just selectedHealthCenter)
                                 |> Backend.Model.PostAcuteIllnessEncounter
                                 |> App.Model.MsgIndexedDb
                                 |> onClick
@@ -165,7 +172,7 @@ viewActions language currentDate selectedHealthCenter id db sessions =
                     (maybeSessionId
                         |> Maybe.map
                             (\sessionId ->
-                                [ Backend.AcuteIllnessEncounter.Model.AcuteIllnessEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
+                                [ emptyAcuteIllnessEncounter sessionId currentDate (Just selectedHealthCenter)
                                     |> Backend.Model.PostAcuteIllnessEncounter
                                     |> App.Model.MsgIndexedDb
                                     |> onClick
@@ -187,7 +194,7 @@ viewActions language currentDate selectedHealthCenter id db sessions =
             isJust maybeSessionId && not firstEncounterInProcess
     in
     div []
-        [ p [ class "label-antenatal-visit" ]
+        [ p [ class "label-acute-illness-visit" ]
             [ text <|
                 translate language <|
                     Translate.IndividualEncounterSelectVisit

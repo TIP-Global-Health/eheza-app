@@ -2,7 +2,7 @@ module Pages.AcuteIllnessActivity.View exposing (view, viewAdministeredMedicatio
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Encoder exposing (malariaRapidTestResultAsString)
@@ -20,7 +20,7 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
-import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AssembledData)
+import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.AcuteIllnessEncounter.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.View exposing (viewPersonDetailsWithAlert, warningPopup)
 import Pages.Page exposing (Page(..), UserPage(..))

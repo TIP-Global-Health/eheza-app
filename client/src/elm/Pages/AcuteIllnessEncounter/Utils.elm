@@ -2,6 +2,7 @@ module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, ageDepende
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model
     exposing
@@ -228,35 +229,38 @@ resolveNextStepByDiagnosis currentDate person maybeDiagnosis =
         |> Maybe.andThen
             (\diagnosis ->
                 case diagnosis of
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19 ->
+                    DiagnosisCovid19 ->
                         Just NextStepsIsolation
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated ->
+                    DiagnosisMalariaUncomplicated ->
                         ageDependentUncomplicatedMalariaNextStep currentDate person
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicatedAndPregnant ->
+                    DiagnosisMalariaUncomplicatedAndPregnant ->
                         Just NextStepsSendToHC
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaComplicated ->
+                    DiagnosisMalariaComplicated ->
                         Just NextStepsSendToHC
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionUncomplicated ->
+                    DiagnosisGastrointestinalInfectionUncomplicated ->
                         Just NextStepsMedicationDistribution
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionComplicated ->
+                    DiagnosisGastrointestinalInfectionComplicated ->
                         Just NextStepsSendToHC
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisSimpleColdAndCough ->
+                    DiagnosisSimpleColdAndCough ->
                         ageDependentARINextStep currentDate person
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisRespiratoryInfectionUncomplicated ->
+                    DiagnosisRespiratoryInfectionUncomplicated ->
                         ageDependentARINextStep currentDate person
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisRespiratoryInfectionComplicated ->
+                    DiagnosisRespiratoryInfectionComplicated ->
                         Just NextStepsSendToHC
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisFeverOfUnknownOrigin ->
+                    DiagnosisFeverOfUnknownOrigin ->
                         Just NextStepsSendToHC
+
+                    NoAcuteIllnessDiagnosis ->
+                        Nothing
             )
 
 

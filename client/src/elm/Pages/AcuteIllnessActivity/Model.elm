@@ -1,10 +1,10 @@
 module Pages.AcuteIllnessActivity.Model exposing (AcuteFindingsForm, ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, MedicationDistributionForm, Model, Msg(..), NextStepsData, NextStepsTask(..), PhysicalExamData, PhysicalExamTask(..), PriorTreatmentData, PriorTreatmentTask(..), SendToHCForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentReviewForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyNextStepsData, emptyPhysicalExamData, emptyPriorTreatmentData, emptySymptomsData, emptyTreatmentReviewForm)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
-import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Pages.Page exposing (Page)
 
 
