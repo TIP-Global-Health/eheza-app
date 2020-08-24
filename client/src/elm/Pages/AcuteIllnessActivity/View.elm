@@ -60,12 +60,8 @@ view language currentDate id activity db model =
 
 viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
 viewHeaderAndContent language currentDate id activity model data =
-    let
-        diagnosis =
-            resolveAcuteIllnessDiagnosis currentDate data.person data.measurements
-    in
     div [ class "page-activity acute-illness" ]
-        [ viewHeader language id activity diagnosis
+        [ viewHeader language id activity data.encounter.diagnosis
         , viewContent language currentDate id activity model data
         , viewModal <|
             warningPopup language
@@ -74,7 +70,7 @@ viewHeaderAndContent language currentDate id activity model data =
         ]
 
 
-viewHeader : Language -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> Html Msg
+viewHeader : Language -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> AcuteIllnessDiagnosis -> Html Msg
 viewHeader language id activity diagnosis =
     let
         title =
@@ -82,13 +78,9 @@ viewHeader language id activity diagnosis =
                 AcuteIllnessNextSteps ->
                     let
                         prefix =
-                            diagnosis
-                                |> Maybe.map
-                                    (Translate.AcuteIllnessDiagnosis
-                                        >> translate language
-                                        >> (\diagnosisTitle -> diagnosisTitle ++ ": ")
-                                    )
-                                |> Maybe.withDefault ""
+                            Translate.AcuteIllnessDiagnosis diagnosis
+                                |> translate language
+                                |> (\diagnosisTitle -> diagnosisTitle ++ ": ")
                     in
                     prefix ++ translate language (Translate.AcuteIllnessActivityTitle activity)
 
@@ -114,7 +106,7 @@ viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllness
 viewContent language currentDate id activity model data =
     let
         diagnosis =
-            resolveAcuteIllnessDiagnosis currentDate data.person data.measurements
+            acuteIllnessDiagnosisToMaybe data.encounter.diagnosis
     in
     (viewPersonDetailsWithAlert language currentDate data.person diagnosis model.showAlertsDialog SetAlertsDialogState
         :: viewActivity language currentDate id activity diagnosis data model
