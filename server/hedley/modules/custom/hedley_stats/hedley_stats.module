@@ -34,7 +34,6 @@ define('HEDLEY_STATS_CACHE_GET', 'get');
 define('HEDLEY_STATS_CACHE_SET', 'set');
 define('HEDLEY_STATS_CACHE_CLEAR', 'clear');
 
-
 /**
  * Implements hook_node_insert().
  */
@@ -695,9 +694,9 @@ function hedley_stats_get_total_encounters($health_center_id) {
  */
 function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
   // Return the cache if exists.
-//  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center_id, $period)) {
-//    return $cache_data;
-//  }
+  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center_id, $period)) {
+    return $cache_data;
+  }
 
   // Set the data for each month.
   $data_per_month = [];
