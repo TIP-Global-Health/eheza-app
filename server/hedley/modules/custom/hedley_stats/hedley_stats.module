@@ -139,11 +139,6 @@ function hedley_stats_clear_caches_for_health_center($nid) {
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES, $nid, $period);
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $nid, $period);
   }
-
-  // Now we add an AQ item to re-calculate all the stats offline.
-  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $nid, [
-    'health_center_nid' => $nid,
-  ]);
 }
 
 /**
