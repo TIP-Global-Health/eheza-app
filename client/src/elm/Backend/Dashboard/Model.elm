@@ -61,7 +61,10 @@ emptyModel =
 
 
 type alias CaseManagement =
-    { name : String
+    { identifier : Int
+    , name : String
+    , birthDate : NominalDate
+    , gender : Gender
     , nutrition : CaseNutrition
     }
 

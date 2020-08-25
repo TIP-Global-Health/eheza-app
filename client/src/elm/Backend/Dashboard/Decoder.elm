@@ -15,7 +15,6 @@ decodeDashboardStats : Decoder DashboardStats
 decodeDashboardStats =
     succeed DashboardStats
         |> required "case_management" (list decodeCaseManagement)
-        -- |> hardcoded []
         |> required "children_beneficiaries" (list decodePeopleStats)
         |> required "completed_program" (list decodeParticipantStats)
         |> required "family_planning" (list decodeFamilyPlanningStats)
@@ -28,7 +27,10 @@ decodeDashboardStats =
 decodeCaseManagement : Decoder CaseManagement
 decodeCaseManagement =
     succeed CaseManagement
+        |> required "id" int
         |> required "name" string
+        |> required "birth_date" decodeYYYYMMDD
+        |> required "gender" decodeGender
         |> required "nutrition" decodeCaseNutrition
 
 

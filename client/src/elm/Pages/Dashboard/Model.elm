@@ -8,6 +8,7 @@ module Pages.Dashboard.Model exposing
     , FilterGender(..)
     , FilterPeriod(..)
     , FilterType(..)
+    , MalnorishedNutritionData
     , Model
     , MonthlyChartType(..)
     , Msg(..)
@@ -28,6 +29,8 @@ module Pages.Dashboard.Model exposing
 import AssocList exposing (Dict)
 import Backend.Dashboard.Model exposing (ParticipantStats)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
+import Backend.Person.Model exposing (Gender)
+import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (DashboardPage(..), Page(..))
 
 
@@ -189,6 +192,14 @@ type alias StatsCard =
     , previousPercentage : Int
     , previousPercentageLabel : FilterPeriod
     , newCases : Maybe Int
+    }
+
+
+type alias MalnorishedNutritionData =
+    { identifier : Int
+    , birthDate : NominalDate
+    , gender : Gender
+    , nutritionStatus : Backend.Dashboard.Model.NutritionStatus
     }
 
 
