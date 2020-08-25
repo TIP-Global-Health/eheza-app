@@ -70,13 +70,13 @@ function hedley_stats_trigger_stats_recalculation($node) {
     return;
   }
 
-  $session_wrapper =  $wrapper = entity_metadata_wrapper('node', $session_id);
+  $session_wrapper = entity_metadata_wrapper('node', $session_id);
   $clinic_id = $session_wrapper->field_clinic->getIdentifier();
   if (!$clinic_id) {
     return;
   }
 
-  $clinic_wrapper =  $wrapper = entity_metadata_wrapper('node', $clinic_id);
+  $clinic_wrapper = entity_metadata_wrapper('node', $clinic_id);
   $clinic_type = $clinic_wrapper->field_group_type->value();
 
   if ($clinic_type != 'fbf') {
