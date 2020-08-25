@@ -35,22 +35,48 @@ define('HEDLEY_STATS_CACHE_GET', 'get');
 define('HEDLEY_STATS_CACHE_SET', 'set');
 define('HEDLEY_STATS_CACHE_CLEAR', 'clear');
 
+
 /**
- * Reset the cache of measurements because a measurement has changed.
- *
+ * Implements hook_node_insert().
+ */
+function hedley_stats_node_insert($node) {
+  hedley_stats_trigger_stats_recalculation($node);
+}
+
+/**
  * Implements hook_node_update().
  */
-function hedley_stats_node_presave($node) {
+function hedley_stats_node_update($node) {
+  hedley_stats_trigger_stats_recalculation($node);
+}
+
+/**
+ * If needed, reset statistics cache and trigger recalculation.
+ *
+ * @param object $node
+ *   The node that triggered the change.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function hedley_stats_trigger_stats_recalculation($node) {
   $measurements_content_types = hedley_activity_get_measurements_content_types();
 
   if (!in_array($node->type, $measurements_content_types)) {
-    // Reset cache only when a measurement is changed.
+    // This is not content that affects statistics.
     return;
   }
 
   $wrapper = entity_metadata_wrapper('node', $node);
+  $clinic_type = $wrapper->field_session->field_clinic->field_group_type->value();
+
+  if ($clinic_type != 'fbf') {
+    // This measurement does not belong to FBF group, therefore, it
+    // does not affects statistics.
+    return;
+  }
 
   if (!$wrapper->__isset('field_shards')) {
+    // Can't resolve to which health centers measurement belongs.
     return;
   }
 
@@ -68,6 +94,7 @@ function hedley_stats_node_presave($node) {
     HEDLEY_STATS_PERIOD_ONE_YEAR,
     HEDLEY_STATS_PERIOD_LAST_YEAR,
   ];
+
   // Reset the cache for the stats of the health center because a measurement in
   // it has changed.
   foreach ($health_centers as $health_center) {
@@ -738,9 +765,9 @@ function hedley_stats_get_total_encounters($health_center_id) {
  */
 function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
   // Return the cache if exists.
-  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center_id, $period)) {
-    return $cache_data;
-  }
+//  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center_id, $period)) {
+//    return $cache_data;
+//  }
 
   // Set the data for each month.
   $data_per_month = [];
