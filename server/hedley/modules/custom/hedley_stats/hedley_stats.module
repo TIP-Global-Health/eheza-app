@@ -773,7 +773,10 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
   foreach ($people_data as $id => $person) {
     $wrapper = entity_metadata_wrapper('node', $id);
     $people[$id] = [
+      'id' => $id,
       'name' => trim($wrapper->label()),
+      'birth_date' => hedley_stats_convert_timestamp_to_nominal($wrapper->field_birth_date->value()),
+      'gender' => $wrapper->field_gender->value(),
       'nutrition' => $nutrition_per_person,
     ];
 
