@@ -96,6 +96,25 @@ function hedley_stats_trigger_stats_recalculation($node) {
     return;
   }
 
+  // Reset the cache for the stats of the health center because a measurement in
+  // it has changed.
+  foreach ($health_centers as $health_center) {
+    hedley_stats_clear_caches_for_health_center($health_center->nid);
+
+    // Now we add an AQ item to re-calculate all the stats offline.
+    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center->nid, [
+      'health_center_nid' => $health_center->nid,
+    ]);
+  }
+}
+
+/**
+ * Clears all statistics related caches for a health center.
+ *
+ * @param int $nid
+ *   Health center node ID.
+ */
+function hedley_stats_clear_caches_for_health_center($nid) {
   $periods = [
     HEDLEY_STATS_PERIOD_THIS_MONTH,
     HEDLEY_STATS_PERIOD_LAST_MONTH,
@@ -105,34 +124,26 @@ function hedley_stats_trigger_stats_recalculation($node) {
     HEDLEY_STATS_PERIOD_LAST_YEAR,
   ];
 
-  // Reset the cache for the stats of the health center because a measurement in
-  // it has changed.
-  foreach ($health_centers as $health_center) {
-    // First, clear the stats hash cache.
-    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center->nid);
+  // First, clear the stats hash cache.
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_STATS_CACHE, $nid);
 
-    // Clear cache that doesn't have periods.
-    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_GOOD_NUTRITION, $health_center->nid);
-    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS, $health_center->nid);
-    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center->nid);
+  // Clear cache that doesn't have periods.
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_GOOD_NUTRITION, $nid);
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS, $nid);
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $nid);
 
-    foreach ($periods as $period) {
-      if ($node->type == 'family_planning') {
-        hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_FAMILY_PLANNING, $health_center->nid, $period);
-      }
-      else {
-        // Clear cache for all the periods.
-        hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON, $health_center->nid, $period);
-        hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES, $health_center->nid, $period);
-        hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center->nid, $period);
-      }
-    }
-
-    // Now we add an AQ item to re-calculate all the stats offline.
-    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center->nid, [
-      'health_center_nid' => $health_center->nid,
-    ]);
+  foreach ($periods as $period) {
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_FAMILY_PLANNING, $nid, $period);
+      // Clear cache for all the periods.
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON, $nid, $period);
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES, $nid, $period);
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $nid, $period);
   }
+
+  // Now we add an AQ item to re-calculate all the stats offline.
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $nid, [
+    'health_center_nid' => $nid,
+  ]);
 }
 
 /**
