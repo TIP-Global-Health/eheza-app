@@ -65,7 +65,19 @@ function hedley_stats_trigger_stats_recalculation($node) {
   }
 
   $wrapper = entity_metadata_wrapper('node', $node);
-  $clinic_type = $wrapper->field_session->field_clinic->field_group_type->value();
+  $session_id = $wrapper->field_session->getIdentifier();
+  if (!$session_id) {
+    return;
+  }
+
+  $session_wrapper =  $wrapper = entity_metadata_wrapper('node', $session_id);
+  $clinic_id = $session_wrapper->field_clinic->getIdentifier();
+  if (!$clinic_id) {
+    return;
+  }
+
+  $clinic_wrapper =  $wrapper = entity_metadata_wrapper('node', $clinic_id);
+  $clinic_type = $clinic_wrapper->field_group_type->value();
 
   if ($clinic_type != 'fbf') {
     // This measurement does not belong to FBF group, therefore, it
