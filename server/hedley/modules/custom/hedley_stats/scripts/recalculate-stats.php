@@ -5,7 +5,7 @@
  * Generates new revisions for all entities of certain content type.
  *
  * Execution:  drush scr profiles/hedley/modules/custom/hedley_stats/
- *             scripts/recalculate-stats.php
+ *             scripts/recalculate-stats.php.
  */
 
 if (!drupal_is_cli()) {
