@@ -1550,15 +1550,11 @@ filterStatsByAge currentDate func stats =
 
         missedSessions =
             applyAgeFilter currentDate func stats.missedSessions
-
-        malnourished =
-            applyAgeFilter currentDate func stats.malnourished
     in
     { stats
         | childrenBeneficiaries = childrenBeneficiaries
         , completedPrograms = completedPrograms
         , missedSessions = missedSessions
-        , malnourished = malnourished
     }
 
 
@@ -1628,10 +1624,6 @@ filterStatsByPeriod fiterFunc currentDate model stats =
             stats.familyPlanning
                 |> List.filter (\familyPlanning -> filterPartial familyPlanning.created)
 
-        malnourishedUpdated =
-            stats.malnourished
-                |> List.filter (\malnourished -> filterPartial malnourished.created)
-
         completedPrograms =
             stats.completedPrograms
                 |> List.filter (\completedProgram -> filterPartial completedProgram.expectedDate)
@@ -1643,7 +1635,6 @@ filterStatsByPeriod fiterFunc currentDate model stats =
     { stats
         | childrenBeneficiaries = childrenBeneficiariesUpdated
         , familyPlanning = familyPlanningUpdated
-        , malnourished = malnourishedUpdated
         , completedPrograms = completedPrograms
         , missedSessions = missedSessions
     }
@@ -1657,7 +1648,6 @@ filterStatsByGender currentDate model stats =
         | childrenBeneficiaries = applyGenderFilter model stats.childrenBeneficiaries
         , completedPrograms = applyGenderFilter model stats.completedPrograms
         , missedSessions = applyGenderFilter model stats.missedSessions
-        , malnourished = applyGenderFilter model stats.malnourished
     }
 
 

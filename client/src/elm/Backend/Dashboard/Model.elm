@@ -6,7 +6,6 @@ module Backend.Dashboard.Model exposing
     , DashboardStats
     , FamilyPlanningStats
     , GoodNutrition
-    , MalnourishedStats
     , Nutrition
     , NutritionStatus(..)
     , NutritionValue
@@ -41,7 +40,6 @@ type alias DashboardStats =
     , completedPrograms : List ParticipantStats
     , familyPlanning : List FamilyPlanningStats
     , maybeGoodNutrition : Maybe GoodNutrition
-    , malnourished : List MalnourishedStats
     , missedSessions : List ParticipantStats
     , totalEncounters : Periods
     }
@@ -54,7 +52,6 @@ emptyModel =
     , completedPrograms = []
     , familyPlanning = []
     , maybeGoodNutrition = Nothing
-    , malnourished = []
     , missedSessions = []
     , totalEncounters = Periods 0 0
     }
@@ -99,15 +96,6 @@ type alias ChildrenBeneficiariesStats =
 type alias FamilyPlanningStats =
     { created : NominalDate
     , signs : List FamilyPlanningSign
-    }
-
-
-type alias MalnourishedStats =
-    { identifier : String
-    , created : NominalDate
-    , birthDate : NominalDate
-    , gender : Gender
-    , zscore : ZScore
     }
 
 

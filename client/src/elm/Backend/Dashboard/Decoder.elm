@@ -1,7 +1,7 @@
 module Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, NutritionStatus(..), NutritionValue, ParticipantStats, Periods, TotalBeneficiaries)
+import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, Nutrition, NutritionStatus(..), NutritionValue, ParticipantStats, Periods, TotalBeneficiaries)
 import Backend.Measurement.Decoder exposing (decodeFamilyPlanningSign)
 import Backend.Person.Decoder exposing (decodeGender)
 import Dict as LegacyDict
@@ -19,7 +19,6 @@ decodeDashboardStats =
         |> required "completed_program" (list decodeParticipantStats)
         |> required "family_planning" (list decodeFamilyPlanningStats)
         |> optional "good_nutrition" (nullable decodeGoodNutrition) Nothing
-        |> required "malnourished_beneficiaries" (list decodeMalnourishedStats)
         |> required "missed_sessions" (list decodeParticipantStats)
         |> required "total_encounters" decodePeriods
 
@@ -132,16 +131,6 @@ decodeGoodNutrition =
     succeed GoodNutrition
         |> required "all" decodePeriods
         |> required "good" decodePeriods
-
-
-decodeMalnourishedStats : Decoder MalnourishedStats
-decodeMalnourishedStats =
-    succeed MalnourishedStats
-        |> required "field_person" string
-        |> required "created" decodeYYYYMMDD
-        |> required "field_birth_date" decodeYYYYMMDD
-        |> required "field_gender" decodeGender
-        |> required "field_zscore_age" float
 
 
 decodePeriods : Decoder Periods
