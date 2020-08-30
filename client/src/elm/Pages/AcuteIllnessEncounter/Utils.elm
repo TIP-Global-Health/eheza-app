@@ -257,6 +257,9 @@ resolveNextStepByDiagnosis currentDate person maybeDiagnosis =
 
                     Pages.AcuteIllnessEncounter.Model.DiagnosisFeverOfUnknownOrigin ->
                         Just NextStepsSendToHC
+
+                    Pages.AcuteIllnessEncounter.Model.DiagnosisUndeterminedMoreEvaluationNeeded ->
+                        Just NextStepsSendToHC
             )
 
 
@@ -397,6 +400,9 @@ resolveNonCovid19AcuteIllnessDiagnosis currentDate person covid19ByPartialSet me
             -- Non Bloody Diarrhea is the only GI symptom that is diagnosed as Uncomplicated, when fever is  not recorded.
             Just DiagnosisGastrointestinalInfectionUncomplicated
 
+        else if mildGastrointestinalInfectionSymptomsPresent measurements then
+            Just DiagnosisUndeterminedMoreEvaluationNeeded
+
         else
             Nothing
 
@@ -518,13 +524,6 @@ respiratoryRateElevated currentDate person measurements =
         |> Maybe.withDefault False
 
 
-nonBloodyDiarrheaAtSymptoms : AcuteIllnessMeasurements -> Bool
-nonBloodyDiarrheaAtSymptoms measurements =
-    measurements.symptomsGI
-        |> Maybe.map (Tuple.second >> .value >> .signs >> symptomAppearsAtSymptomsDict NonBloodyDiarrhea)
-        |> Maybe.withDefault False
-
-
 malariaRapidTestResult : AcuteIllnessMeasurements -> Maybe MalariaRapidTestResult
 malariaRapidTestResult measurements =
     measurements.malariaTesting
@@ -596,7 +595,7 @@ malarialDangerSignsPresent measurements =
                     symptomAppearsAtSymptomsDict Vomiting symptomsGIDict
 
                 intractableVomiting =
-                    EverySet.member IntractableVomiting symptomsGISet
+                    vomiting && EverySet.member IntractableVomiting symptomsGISet
 
                 increasedThirst =
                     symptomAppearsAtSymptomsDict IncreasedThirst symptomsGeneralDict
@@ -694,11 +693,35 @@ gastrointestinalInfectionDangerSignsPresent measurements =
                     symptomAppearsAtSymptomsDict NonBloodyDiarrhea symptomsGIDict
 
                 intractableVomiting =
-                    EverySet.member IntractableVomiting symptomsGISet
+                    symptomAppearsAtSymptomsDict Vomiting symptomsGIDict
+                        && EverySet.member IntractableVomiting symptomsGISet
             in
             bloodyDiarrhea || (nonBloodyDiarrhea && intractableVomiting)
         )
         measurements.symptomsGI
+        |> Maybe.withDefault False
+
+
+mildGastrointestinalInfectionSymptomsPresent : AcuteIllnessMeasurements -> Bool
+mildGastrointestinalInfectionSymptomsPresent measurements =
+    Maybe.map
+        (\symptomsGI ->
+            let
+                symptomsGIDict =
+                    Tuple.second symptomsGI |> .value |> .signs
+            in
+            symptomAppearsAtSymptomsDict SymptomGIAbdominalPain symptomsGIDict
+                || symptomAppearsAtSymptomsDict Nausea symptomsGIDict
+                || symptomAppearsAtSymptomsDict Vomiting symptomsGIDict
+        )
+        measurements.symptomsGI
+        |> Maybe.withDefault False
+
+
+nonBloodyDiarrheaAtSymptoms : AcuteIllnessMeasurements -> Bool
+nonBloodyDiarrheaAtSymptoms measurements =
+    measurements.symptomsGI
+        |> Maybe.map (Tuple.second >> .value >> .signs >> symptomAppearsAtSymptomsDict NonBloodyDiarrhea)
         |> Maybe.withDefault False
 
 

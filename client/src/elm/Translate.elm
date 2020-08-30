@@ -981,6 +981,11 @@ translationSet trans =
                     , kinyarwanda = Just "Umuriro utazi icyawuteye"
                     }
 
+                DiagnosisUndeterminedMoreEvaluationNeeded ->
+                    { english = "Undetermined - More Evaluation Needed"
+                    , kinyarwanda = Nothing
+                    }
+
         AcuteIllnessDiagnosisWarning diagnosis ->
             case diagnosis of
                 DiagnosisCovid19 ->
@@ -1031,6 +1036,11 @@ translationSet trans =
                 DiagnosisFeverOfUnknownOrigin ->
                     { english = "Fever of Unknown Origin"
                     , kinyarwanda = Just "Umuriro utazi icyawuteye"
+                    }
+
+                DiagnosisUndeterminedMoreEvaluationNeeded ->
+                    { english = "Undetermined - More Evaluation Needed"
+                    , kinyarwanda = Nothing
                     }
 
         AddChild ->
