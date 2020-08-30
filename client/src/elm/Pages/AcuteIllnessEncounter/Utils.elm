@@ -147,8 +147,7 @@ expectActivity : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe Acut
 expectActivity currentDate person measurements diagnosis activity =
     case activity of
         AcuteIllnessLaboratory ->
-            (diagnosis /= Just DiagnosisCovid19)
-                && mandatoryActivitiesCompleted measurements
+            mandatoryActivitiesCompleted measurements
                 && feverRecorded measurements
 
         AcuteIllnessNextSteps ->
