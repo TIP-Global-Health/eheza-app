@@ -138,6 +138,7 @@ resolveNextStepsTasks currentDate person diagnosis =
                         || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths0To2)
                         || (diagnosis == Just DiagnosisRespiratoryInfectionComplicated)
                         || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
+                        || (diagnosis == Just DiagnosisUndeterminedMoreEvaluationNeeded)
     in
     [ NextStepsIsolation, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
         |> List.filter expectTask
