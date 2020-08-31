@@ -62,3 +62,4 @@ type AcuteIllnessDiagnosis
     | DiagnosisRespiratoryInfectionComplicated
     | DiagnosisRespiratoryInfectionUncomplicated
     | DiagnosisFeverOfUnknownOrigin
+    | DiagnosisUndeterminedMoreEvaluationNeeded
