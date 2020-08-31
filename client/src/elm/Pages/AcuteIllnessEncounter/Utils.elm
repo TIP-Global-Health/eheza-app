@@ -261,7 +261,7 @@ resolveNextStepByDiagnosis currentDate person maybeDiagnosis =
 
                     DiagnosisUndeterminedMoreEvaluationNeeded ->
                         Just NextStepsSendToHC
-                        
+
                     NoAcuteIllnessDiagnosis ->
                         Nothing
             )

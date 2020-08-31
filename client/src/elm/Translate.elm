@@ -985,12 +985,11 @@ translationSet trans =
                     { english = "Undetermined - More Evaluation Needed"
                     , kinyarwanda = Nothing
                     }
-                    
+
                 NoAcuteIllnessDiagnosis ->
                     { english = "No Diagnosis"
                     , kinyarwanda = Nothing
                     }
-
 
         AcuteIllnessDiagnosisWarning diagnosis ->
             case diagnosis of
@@ -1048,7 +1047,7 @@ translationSet trans =
                     { english = "Undetermined - More Evaluation Needed"
                     , kinyarwanda = Nothing
                     }
-                    
+
                 NoAcuteIllnessDiagnosis ->
                     { english = "No Diagnosis"
                     , kinyarwanda = Nothing
