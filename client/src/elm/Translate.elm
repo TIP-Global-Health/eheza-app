@@ -981,10 +981,16 @@ translationSet trans =
                     , kinyarwanda = Just "Umuriro utazi icyawuteye"
                     }
 
+                DiagnosisUndeterminedMoreEvaluationNeeded ->
+                    { english = "Undetermined - More Evaluation Needed"
+                    , kinyarwanda = Nothing
+                    }
+                    
                 NoAcuteIllnessDiagnosis ->
                     { english = "No Diagnosis"
                     , kinyarwanda = Nothing
                     }
+
 
         AcuteIllnessDiagnosisWarning diagnosis ->
             case diagnosis of
@@ -1038,6 +1044,11 @@ translationSet trans =
                     , kinyarwanda = Just "Umuriro utazi icyawuteye"
                     }
 
+                DiagnosisUndeterminedMoreEvaluationNeeded ->
+                    { english = "Undetermined - More Evaluation Needed"
+                    , kinyarwanda = Nothing
+                    }
+                    
                 NoAcuteIllnessDiagnosis ->
                     { english = "No Diagnosis"
                     , kinyarwanda = Nothing
