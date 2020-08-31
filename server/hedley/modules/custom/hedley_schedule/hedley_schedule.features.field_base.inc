@@ -36,6 +36,7 @@ function hedley_schedule_field_default_field_bases() {
         'ri-complicated' => 'Respiratory Infection Complicated',
         'ri-uncomplicated' => 'Respiratory Infection Uncomplicated',
         'fever-of-unknown-origin' => 'Fever of Unknown Origin',
+        'undetermined' => 'Undetermined - more evaluation needed',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

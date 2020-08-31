@@ -37,6 +37,9 @@ acuteIllnessDiagnosisToString diagnosis =
         DiagnosisFeverOfUnknownOrigin ->
             "fever-of-unknown-origin"
 
+        DiagnosisUndeterminedMoreEvaluationNeeded ->
+            "undetermined"
+
         NoAcuteIllnessDiagnosis ->
             "none"
 
@@ -73,6 +76,9 @@ acuteIllnessDiagnosisFromString diagnosis =
 
         "fever-of-unknown-origin" ->
             Just DiagnosisFeverOfUnknownOrigin
+
+        "undetermined" ->
+            Just DiagnosisUndeterminedMoreEvaluationNeeded
 
         "none" ->
             Just NoAcuteIllnessDiagnosis
