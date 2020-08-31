@@ -50,6 +50,8 @@ class HedleyRestfulIndividualEncounter extends HedleyRestfulSyncBase {
 
     // Get the UUIDs of the Individual participant.
     hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_individual_participant.field_individual_participant_target_id", 'uuid_individual_participant');
+
+    return $query;
   }
 
   /**

@@ -1,6 +1,7 @@
 module Pages.AcuteIllnessProgressReport.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
@@ -17,8 +18,8 @@ import Maybe.Extra exposing (isNothing)
 import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecomendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
-import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AssembledData)
-import Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData, resolveAcuteIllnessDiagnosis, resolveNextStepByDiagnosis)
+import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
+import Pages.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisToMaybe, generateAssembledData, resolveNextStepByDiagnosis)
 import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
 import Pages.AcuteIllnessProgressReport.Model exposing (..)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
@@ -53,7 +54,7 @@ viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> Ass
 viewContent language currentDate id model data =
     let
         diagnosis =
-            resolveAcuteIllnessDiagnosis currentDate data.person data.measurements
+            acuteIllnessDiagnosisToMaybe data.encounter.diagnosis
 
         ( _, pendingActivities ) =
             splitActivities currentDate data diagnosis

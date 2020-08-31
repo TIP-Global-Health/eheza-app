@@ -11,6 +11,40 @@
 function hedley_schedule_field_default_field_bases() {
   $field_bases = array();
 
+  // Exported field_base: 'field_acute_illness_diagnosis'.
+  $field_bases['field_acute_illness_diagnosis'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_acute_illness_diagnosis',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'covid19' => 'Covid19',
+        'malaria-complicated' => 'Malaria Complicated',
+        'malaria-uncomplicated' => 'Malaria Uncomplicated',
+        'malaria-uncomplicated-pregnant' => 'Malaria Uncomplicated and Pregnant',
+        'gi-complicated' => 'Gastrointestinal Infection Complicated',
+        'gi-uncomplicated' => 'Gastrointestinal Infection Uncomplicated',
+        'ri-complicated' => 'Respiratory Infection Complicated',
+        'ri-uncomplicated' => 'Respiratory Infection Uncomplicated',
+        'fever-of-unknown-origin' => 'Fever of Unknown Origin',
+        'undetermined' => 'Undetermined - more evaluation needed',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_adult'.
   $field_bases['field_adult'] = array(
     'active' => 1,

@@ -1,4 +1,4 @@
-module Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter, Model, Msg(..), emptyModel)
+module Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter, Model, Msg(..), emptyAcuteIllnessEncounter, emptyModel)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -12,7 +12,18 @@ type alias AcuteIllnessEncounter =
     { participant : IndividualEncounterParticipantId
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , diagnosis : AcuteIllnessDiagnosis
     , shard : Maybe HealthCenterId
+    }
+
+
+emptyAcuteIllnessEncounter : IndividualEncounterParticipantId -> NominalDate -> Maybe HealthCenterId -> AcuteIllnessEncounter
+emptyAcuteIllnessEncounter participant startDate shard =
+    { participant = participant
+    , startDate = startDate
+    , endDate = Nothing
+    , diagnosis = NoAcuteIllnessDiagnosis
+    , shard = shard
     }
 
 
@@ -20,7 +31,7 @@ type alias AcuteIllnessEncounter =
 to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
-    { closeAcuteIllnessEncounter : WebData ()
+    { updateAcuteIllnessEncounter : WebData ()
     , saveSymptomsGeneral : WebData ()
     , saveSymptomsRespiratory : WebData ()
     , saveSymptomsGI : WebData ()
@@ -39,7 +50,7 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { closeAcuteIllnessEncounter = NotAsked
+    { updateAcuteIllnessEncounter = NotAsked
     , saveSymptomsGeneral = NotAsked
     , saveSymptomsRespiratory = NotAsked
     , saveSymptomsGI = NotAsked
@@ -56,9 +67,25 @@ emptyModel =
     }
 
 
+type AcuteIllnessDiagnosis
+    = DiagnosisCovid19
+    | DiagnosisMalariaComplicated
+    | DiagnosisMalariaUncomplicated
+    | DiagnosisMalariaUncomplicatedAndPregnant
+    | DiagnosisGastrointestinalInfectionComplicated
+    | DiagnosisGastrointestinalInfectionUncomplicated
+    | DiagnosisSimpleColdAndCough
+    | DiagnosisRespiratoryInfectionComplicated
+    | DiagnosisRespiratoryInfectionUncomplicated
+    | DiagnosisFeverOfUnknownOrigin
+    | DiagnosisUndeterminedMoreEvaluationNeeded
+    | NoAcuteIllnessDiagnosis
+
+
 type Msg
     = CloseAcuteIllnessEncounter
-    | HandleClosedAcuteIllnessEncounter (WebData ())
+    | SetAcuteIllnessDiagnosis AcuteIllnessDiagnosis
+    | HandleUpdatedAcuteIllnessEncounter (WebData ())
     | SaveSymptomsGeneral PersonId (Maybe SymptomsGeneralId) (Dict SymptomsGeneralSign Int)
     | HandleSavedSymptomsGeneral (WebData ())
     | SaveSymptomsRespiratory PersonId (Maybe SymptomsRespiratoryId) (Dict SymptomsRespiratorySign Int)

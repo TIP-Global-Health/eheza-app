@@ -20,26 +20,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
     in
     case msg of
         CloseAcuteIllnessEncounter ->
-            maybeEncounter
-                |> unwrap ( model, Cmd.none )
-                    (\encounter ->
-                        ( { model | closeAcuteIllnessEncounter = Loading }
-                        , object
-                            [ ( "scheduled_date"
-                              , object
-                                    [ ( "value", encodeYYYYMMDD encounter.startDate )
-                                    , ( "value2", encodeYYYYMMDD currentDate )
-                                    ]
-                              )
-                            ]
-                            |> sw.patchAny acuteIllnessEncounterEndpoint encounterId
-                            |> withoutDecoder
-                            |> toCmd (RemoteData.fromResult >> HandleClosedAcuteIllnessEncounter)
-                        )
-                    )
+            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
-        HandleClosedAcuteIllnessEncounter data ->
-            ( { model | closeAcuteIllnessEncounter = data }
+        SetAcuteIllnessDiagnosis diagnosis ->
+            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | diagnosis = diagnosis }) model
+
+        HandleUpdatedAcuteIllnessEncounter data ->
+            ( { model | updateAcuteIllnessEncounter = data }
             , Cmd.none
             )
 
@@ -509,4 +496,22 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
         HandleSavedTreatmentReview data ->
             ( { model | saveTreatmentReview = data }
             , Cmd.none
+            )
+
+
+updateEncounter : NominalDate -> AcuteIllnessEncounterId -> Maybe AcuteIllnessEncounter -> (AcuteIllnessEncounter -> AcuteIllnessEncounter) -> Model -> ( Model, Cmd Msg )
+updateEncounter currentDate encounterId maybeEncounter updateFunc model =
+    let
+        sw =
+            applyBackendUrl "/sw"
+    in
+    maybeEncounter
+        |> unwrap ( model, Cmd.none )
+            (\encounter ->
+                ( { model | updateAcuteIllnessEncounter = Loading }
+                , updateFunc encounter
+                    |> sw.patchFull acuteIllnessEncounterEndpoint encounterId
+                    |> withoutDecoder
+                    |> toCmd (RemoteData.fromResult >> HandleUpdatedAcuteIllnessEncounter)
+                )
             )

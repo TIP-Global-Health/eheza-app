@@ -3,7 +3,7 @@ module Pages.AcuteIllnessEncounter.View exposing (splitActivities, view, viewEnd
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (AcuteIllnessMeasurements)
@@ -132,7 +132,7 @@ viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> Ass
 viewContent language currentDate id model data =
     let
         diagnosis =
-            resolveAcuteIllnessDiagnosis currentDate data.person data.measurements
+            acuteIllnessDiagnosisToMaybe data.encounter.diagnosis
     in
     (viewPersonDetailsWithAlert language currentDate data.person diagnosis model.showAlertsDialog SetAlertsDialogState
         :: viewMainPageContent language currentDate id data diagnosis model

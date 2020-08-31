@@ -26,6 +26,7 @@ general utilities, see `Translate.Model` and `Translate.Utils`.
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
@@ -56,7 +57,6 @@ import Pages.AcuteIllnessActivity.Model
         , PriorTreatmentTask(..)
         , SymptomsTask(..)
         )
-import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Dashboard.Model as Dashboard exposing (BeneficiariesTableLabels(..), DashboardFilter(..), DashboardSubFilter(..), FilterPeriod(..))
 import Pages.Page exposing (..)
@@ -986,6 +986,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                NoAcuteIllnessDiagnosis ->
+                    { english = "No Diagnosis"
+                    , kinyarwanda = Nothing
+                    }
+
         AcuteIllnessDiagnosisWarning diagnosis ->
             case diagnosis of
                 DiagnosisCovid19 ->
@@ -1040,6 +1045,11 @@ translationSet trans =
 
                 DiagnosisUndeterminedMoreEvaluationNeeded ->
                     { english = "Undetermined - More Evaluation Needed"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoAcuteIllnessDiagnosis ->
+                    { english = "No Diagnosis"
                     , kinyarwanda = Nothing
                     }
 

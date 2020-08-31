@@ -12,6 +12,44 @@ function hedley_schedule_field_default_field_instances() {
   $field_instances = array();
 
   // Exported field_instance:
+  // 'node-acute_illness_encounter-field_acute_illness_diagnosis'.
+  $field_instances['node-acute_illness_encounter-field_acute_illness_diagnosis'] = array(
+    'bundle' => 'acute_illness_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 4,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_acute_illness_diagnosis',
+    'label' => 'Acute Illness Diagnosis',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-acute_illness_encounter-field_individual_participant'.
   $field_instances['node-acute_illness_encounter-field_individual_participant'] = array(
     'bundle' => 'acute_illness_encounter',
@@ -52,7 +90,7 @@ function hedley_schedule_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -109,7 +147,7 @@ function hedley_schedule_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -153,7 +191,7 @@ function hedley_schedule_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 5,
     ),
   );
 
@@ -193,7 +231,7 @@ function hedley_schedule_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 1,
+      'weight' => 4,
     ),
   );
 
