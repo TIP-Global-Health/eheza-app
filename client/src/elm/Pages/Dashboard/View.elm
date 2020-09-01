@@ -345,24 +345,95 @@ generateCaseNutritionNewCases currentDate caseNutrition =
 viewStatsPage : Language -> NominalDate -> DashboardStats -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg
 viewStatsPage language currentDate stats model healthCenterId db =
     let
+        currentMonth =
+            Date.month currentDate
+                |> Date.monthToNumber
+
+        ( modelWithLastMonth, displayedMonth ) =
+            if model.period == ThisMonth then
+                ( { model | period = LastMonth }, currentMonth )
+
+            else
+                ( { model | period = ThreeMonthsAgo }, resolvePreviousMonth currentMonth )
+
         currentPeriodStats =
             filterStatsWithinPeriod currentDate model stats
+
+        monthBeforeStats =
+            filterStatsWithinPeriod currentDate modelWithLastMonth stats
+
+        malnourishedCurrentMonth =
+            mapMalnorishedByMonth displayedMonth currentPeriodStats.caseManagement
+
+        malnourishedPreviousMonth =
+            mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodStats.caseManagement
     in
     div [ class "dashboard stats" ]
         [ viewPeriodFilter language model filterPeriodsForStatsPage
-        , viewAllStatsCards language stats currentPeriodStats currentDate model healthCenterId db
-        , viewBeneficiariesTable language currentDate stats currentPeriodStats model
+        , div [ class "ui equal width grid" ]
+            [ viewMalnourishedCards language malnourishedCurrentMonth malnourishedPreviousMonth
+            , viewMiscCards language currentDate currentPeriodStats monthBeforeStats
+            ]
+        , viewBeneficiariesTable language currentDate stats currentPeriodStats malnourishedCurrentMonth model
         , viewFamilyPlanning language currentPeriodStats
         , viewStatsTableModal language model
         ]
 
 
+mapMalnorishedByMonth : Int -> List CaseManagement -> List MalnorishedNutritionData
+mapMalnorishedByMonth mappedMonth caseManagement =
+    caseManagement
+        |> List.foldl
+            (\caseNutrition accum ->
+                let
+                    nutrition =
+                        caseNutrition.nutrition.stunting
+                            |> Dict.toList
+                            |> List.filterMap
+                                (\( month, stuntingValue ) ->
+                                    if month /= mappedMonth then
+                                        Nothing
+
+                                    else
+                                        let
+                                            resolveValueClass func =
+                                                Dict.get month (func caseNutrition.nutrition)
+                                                    |> Maybe.withDefault emptyNutritionValue
+                                                    |> .class
+
+                                            values =
+                                                [ stuntingValue.class
+                                                , resolveValueClass .underweight
+                                                , resolveValueClass .wasting
+                                                , resolveValueClass .muac
+                                                ]
+                                        in
+                                        if List.any ((==) Backend.Dashboard.Model.Severe) values then
+                                            MalnorishedNutritionData caseNutrition.identifier
+                                                caseNutrition.birthDate
+                                                caseNutrition.gender
+                                                Backend.Dashboard.Model.Severe
+                                                |> Just
+
+                                        else if List.any ((==) Backend.Dashboard.Model.Moderate) values then
+                                            MalnorishedNutritionData caseNutrition.identifier
+                                                caseNutrition.birthDate
+                                                caseNutrition.gender
+                                                Backend.Dashboard.Model.Moderate
+                                                |> Just
+
+                                        else
+                                            Nothing
+                                )
+                in
+                nutrition ++ accum
+            )
+            []
+
+
 viewCaseManagementPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
 viewCaseManagementPage language currentDate stats model =
     let
-        currentPeriodStats =
-            filterStatsWithinPeriod currentDate model stats
-
         currentMonth =
             Date.month currentDate
                 |> Date.monthToNumber
@@ -380,7 +451,7 @@ viewCaseManagementPage language currentDate stats model =
                                         |> Dict.toList
                                         |> List.filterMap
                                             (\( month, stuntingValue ) ->
-                                                if withinThreePreviousMonths month then
+                                                if withinThreePreviousMonths currentMonth month then
                                                     let
                                                         resolveValueClass func =
                                                             Dict.get month (func caseNutrition.nutrition)
@@ -409,7 +480,7 @@ viewCaseManagementPage language currentDate stats model =
                             { name = caseNutrition.name, nutrition = nutrition } :: accum
                         )
                         []
-                        currentPeriodStats.caseManagement
+                        stats.caseManagement
                         |> List.filter (.nutrition >> List.all (Tuple.second >> .class >> (==) Backend.Dashboard.Model.Good) >> not)
 
                 _ ->
@@ -433,7 +504,7 @@ viewCaseManagementPage language currentDate stats model =
                                     accum
                         )
                         []
-                        currentPeriodStats.caseManagement
+                        stats.caseManagement
                         |> List.filter
                             (.nutrition
                                 >> List.any
@@ -461,23 +532,9 @@ viewCaseManagementPage language currentDate stats model =
         filterForCaseManagementTableFunc nutritionDict =
             nutritionDict
                 |> Dict.toList
-                |> List.filter (Tuple.first >> withinThreePreviousMonths)
+                |> List.filter (Tuple.first >> withinThreePreviousMonths currentMonth)
                 |> List.sortBy Tuple.first
                 |> List.reverse
-
-        withinThreePreviousMonths monthNumber =
-            case currentMonth of
-                1 ->
-                    monthNumber > 9
-
-                2 ->
-                    monthNumber > 10 || monthNumber == 1
-
-                3 ->
-                    monthNumber == 12 || monthNumber == 1 || monthNumber == 2
-
-                _ ->
-                    monthNumber < currentMonth && monthNumber >= (currentMonth - 3)
     in
     div [ class "dashboard case" ]
         [ viewPeriodFilter language model filterPeriodsForCaseManagementPage
@@ -620,47 +677,26 @@ viewTotalEncounters language encounters =
     viewCard language statsCard
 
 
-viewAllStatsCards : Language -> DashboardStats -> DashboardStats -> NominalDate -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg
-viewAllStatsCards language stats currentPeriodStats currentDate model healthCenterId db =
-    let
-        modelWithLastMonth =
-            if model.period == ThisMonth then
-                { model | period = LastMonth }
-
-            else
-                { model | period = ThreeMonthsAgo }
-
-        monthBeforeStats =
-            filterStatsWithinPeriod currentDate modelWithLastMonth stats
-    in
-    div [ class "ui equal width grid" ]
-        [ viewMalnourishedCards language currentPeriodStats monthBeforeStats
-        , viewMiscCards language currentDate currentPeriodStats monthBeforeStats
-        ]
-
-
-viewMalnourishedCards : Language -> DashboardStats -> DashboardStats -> Html Msg
-viewMalnourishedCards language stats monthBeforeStats =
+viewMalnourishedCards : Language -> List MalnorishedNutritionData -> List MalnorishedNutritionData -> Html Msg
+viewMalnourishedCards language malnourishedCurrentMonth malnourishedPreviousMonth =
     let
         total =
-            stats.malnourished
-                |> List.length
+            List.length malnourishedCurrentMonth
 
         totalBefore =
-            monthBeforeStats.malnourished
-                |> List.length
+            List.length malnourishedPreviousMonth
 
         totalPercentage =
             calculatePercentage total totalBefore
                 |> round
 
         malnourishedBeforeIdentifiers =
-            monthBeforeStats.malnourished
+            malnourishedPreviousMonth
                 |> List.map .identifier
 
         malnourishedNewCases =
-            stats.malnourished
-                |> List.filter (\malnourished -> List.member malnourished.identifier malnourishedBeforeIdentifiers |> not)
+            malnourishedCurrentMonth
+                |> List.filter (\item -> List.member item.identifier malnourishedBeforeIdentifiers |> not)
                 |> List.length
 
         totalCard =
@@ -676,12 +712,12 @@ viewMalnourishedCards language stats monthBeforeStats =
             }
 
         severe =
-            stats.malnourished
-                |> List.filter (\row -> row.zscore <= -2)
+            malnourishedCurrentMonth
+                |> List.filter (.nutritionStatus >> (==) Backend.Dashboard.Model.Severe)
 
         severeBefore =
-            monthBeforeStats.malnourished
-                |> List.filter (\row -> row.zscore <= -2)
+            malnourishedPreviousMonth
+                |> List.filter (.nutritionStatus >> (==) Backend.Dashboard.Model.Severe)
 
         severePercentage =
             calculatePercentage (List.length severe) (List.length severeBefore)
@@ -693,7 +729,7 @@ viewMalnourishedCards language stats monthBeforeStats =
 
         severeNewCases =
             severe
-                |> List.filter (\severe_ -> List.member severe_.identifier severeBeforeIdentifiers |> not)
+                |> List.filter (\item -> List.member item.identifier severeBeforeIdentifiers |> not)
                 |> List.length
 
         severeCard =
@@ -709,12 +745,12 @@ viewMalnourishedCards language stats monthBeforeStats =
             }
 
         moderate =
-            stats.malnourished
-                |> List.filter (\row -> row.zscore > -2)
+            malnourishedCurrentMonth
+                |> List.filter (.nutritionStatus >> (==) Backend.Dashboard.Model.Moderate)
 
         moderateBefore =
-            monthBeforeStats.malnourished
-                |> List.filter (\row -> row.zscore > -2)
+            malnourishedPreviousMonth
+                |> List.filter (.nutritionStatus >> (==) Backend.Dashboard.Model.Moderate)
 
         moderatePercentage =
             calculatePercentage (List.length moderate) (List.length moderateBefore)
@@ -726,7 +762,7 @@ viewMalnourishedCards language stats monthBeforeStats =
 
         moderateNewCases =
             moderate
-                |> List.filter (\moderate_ -> List.member moderate_.identifier moderateBeforeIdentifiers |> not)
+                |> List.filter (\item -> List.member item.identifier moderateBeforeIdentifiers |> not)
                 |> List.length
 
         moderateCard =
@@ -958,8 +994,8 @@ viewBeneficiariesGenderFilter language model =
         (List.map renderButton filterGenders)
 
 
-viewBeneficiariesTable : Language -> NominalDate -> DashboardStats -> DashboardStats -> Model -> Html Msg
-viewBeneficiariesTable language currentDate stats currentPeriodStats model =
+viewBeneficiariesTable : Language -> NominalDate -> DashboardStats -> DashboardStats -> List MalnorishedNutritionData -> Model -> Html Msg
+viewBeneficiariesTable language currentDate stats currentPeriodStats malnourished model =
     let
         currentPeriodTotalBeneficiaries =
             case model.period of
@@ -1046,8 +1082,20 @@ viewBeneficiariesTable language currentDate stats currentPeriodStats model =
         getMissedSessionBeneficiariesCount stats_ =
             lengthAsString stats_.missedSessions
 
-        getTotalMalnourishedCount stats_ =
-            lengthAsString stats_.malnourished
+        malnourishedFilteredByGender =
+            applyGenderFilter model malnourished
+
+        malnourished0_5 =
+            applyAgeFilter currentDate filter0_5Func malnourishedFilteredByGender |> lengthAsString
+
+        malnourished6_8 =
+            applyAgeFilter currentDate filter6_8Func malnourishedFilteredByGender |> lengthAsString
+
+        malnourished9_11 =
+            applyAgeFilter currentDate filter9_11Func malnourishedFilteredByGender |> lengthAsString
+
+        malnourished12_25 =
+            applyAgeFilter currentDate filter12_25Func malnourishedFilteredByGender |> lengthAsString
 
         lengthAsString list =
             List.length list
@@ -1094,10 +1142,10 @@ viewBeneficiariesTable language currentDate stats currentPeriodStats model =
                         ]
                     , tr []
                         [ td [ class "label" ] [ translateText language <| Translate.Dashboard <| Translate.BeneficiariesTableColumnLabel Malnourished ]
-                        , td [] [ text <| getTotalMalnourishedCount currentPeriodStats0_5 ]
-                        , td [] [ text <| getTotalMalnourishedCount currentPeriodStats6_8 ]
-                        , td [] [ text <| getTotalMalnourishedCount currentPeriodStats9_11 ]
-                        , td [] [ text <| getTotalMalnourishedCount currentPeriodStats12_25 ]
+                        , td [] [ text malnourished0_5 ]
+                        , td [] [ text malnourished6_8 ]
+                        , td [] [ text malnourished9_11 ]
+                        , td [] [ text malnourished12_25 ]
                         ]
                     ]
                 ]
@@ -1502,15 +1550,11 @@ filterStatsByAge currentDate func stats =
 
         missedSessions =
             applyAgeFilter currentDate func stats.missedSessions
-
-        malnourished =
-            applyAgeFilter currentDate func stats.malnourished
     in
     { stats
         | childrenBeneficiaries = childrenBeneficiaries
         , completedPrograms = completedPrograms
         , missedSessions = missedSessions
-        , malnourished = malnourished
     }
 
 
@@ -1580,10 +1624,6 @@ filterStatsByPeriod fiterFunc currentDate model stats =
             stats.familyPlanning
                 |> List.filter (\familyPlanning -> filterPartial familyPlanning.created)
 
-        malnourishedUpdated =
-            stats.malnourished
-                |> List.filter (\malnourished -> filterPartial malnourished.created)
-
         completedPrograms =
             stats.completedPrograms
                 |> List.filter (\completedProgram -> filterPartial completedProgram.expectedDate)
@@ -1595,7 +1635,6 @@ filterStatsByPeriod fiterFunc currentDate model stats =
     { stats
         | childrenBeneficiaries = childrenBeneficiariesUpdated
         , familyPlanning = familyPlanningUpdated
-        , malnourished = malnourishedUpdated
         , completedPrograms = completedPrograms
         , missedSessions = missedSessions
     }
@@ -1609,7 +1648,6 @@ filterStatsByGender currentDate model stats =
         | childrenBeneficiaries = applyGenderFilter model stats.childrenBeneficiaries
         , completedPrograms = applyGenderFilter model stats.completedPrograms
         , missedSessions = applyGenderFilter model stats.missedSessions
-        , malnourished = applyGenderFilter model stats.malnourished
     }
 
 
@@ -1679,3 +1717,28 @@ annular signsList arcs =
     g [ transform [ Translate (3 * radius + 20) radius ] ]
         [ g [] <| List.indexedMap makeSlice arcs
         ]
+
+
+withinThreePreviousMonths : Int -> Int -> Bool
+withinThreePreviousMonths currentMonth monthNumber =
+    case currentMonth of
+        1 ->
+            monthNumber > 9
+
+        2 ->
+            monthNumber > 10 || monthNumber == 1
+
+        3 ->
+            monthNumber == 12 || monthNumber == 1 || monthNumber == 2
+
+        _ ->
+            monthNumber < currentMonth && monthNumber >= (currentMonth - 3)
+
+
+resolvePreviousMonth : Int -> Int
+resolvePreviousMonth thisMonth =
+    if thisMonth == 1 then
+        12
+
+    else
+        thisMonth - 1
