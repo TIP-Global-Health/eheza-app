@@ -87,7 +87,7 @@ warningPopup language maybeDiagnosis setStateMsg =
                                 )
 
                             _ ->
-                                ( infoHeading, [], "blue" )
+                                ( infoHeading, [], "red" )
                 in
                 div [ class <| "ui active modal diagnosis-popup " ++ color ]
                     [ div [ class "content" ] <|
