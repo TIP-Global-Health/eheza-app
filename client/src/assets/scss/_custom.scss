@@ -1202,7 +1202,7 @@ input::placeholder {
     }
 
     &.blue {
-      border-top: 15px solid $color-primary;
+      border-top: 15px solid $color-red-alert;
 
       .popup-heading-wrapper {
         margin-bottom: 2rem;
@@ -1218,7 +1218,7 @@ input::placeholder {
       }
 
       .button {
-        background-color: $color-primary;
+        background-color: $color-red-alert;
       }
     }
 
