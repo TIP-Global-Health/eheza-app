@@ -911,7 +911,7 @@ translationSet trans =
 
                 NasalFlaring ->
                     { english = "Nasal Flaring"
-                    , kinyarwanda = Just "Amazuru abyina igihe umwana ahumeka"
+                    , kinyarwanda = Just "Amazuru abyina igihe ahumeka"
                     }
 
                 SevereWheezing ->
@@ -983,7 +983,7 @@ translationSet trans =
 
                 DiagnosisUndeterminedMoreEvaluationNeeded ->
                     { english = "Undetermined - More Evaluation Needed"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibisobanutse - Hakenewe Isuzuma Ryimbitse"
                     }
 
                 NoAcuteIllnessDiagnosis ->
@@ -999,18 +999,18 @@ translationSet trans =
                     }
 
                 DiagnosisMalariaComplicated ->
-                    { english = "Suspected Malaria (with Complications)"
-                    , kinyarwanda = Just "Aracyekwaho Malariya y'igikatu"
+                    { english = "Malaria with Complications"
+                    , kinyarwanda = Just "Afite Malariya y'igikatu"
                     }
 
                 DiagnosisMalariaUncomplicated ->
-                    { english = "Suspected Malaria (without Complications)"
-                    , kinyarwanda = Just "Aracyekwaho Malariya yoroheje"
+                    { english = "Malaria  Without Complications"
+                    , kinyarwanda = Just "Afite Malariya yoroheje"
                     }
 
                 DiagnosisMalariaUncomplicatedAndPregnant ->
-                    { english = "Suspected Malaria (without Complications)"
-                    , kinyarwanda = Just "Aracyekwaho Malariya yoroheje"
+                    { english = "Malaria Without Complications"
+                    , kinyarwanda = Just "Afite Malariya yoroheje"
                     }
 
                 DiagnosisGastrointestinalInfectionComplicated ->
@@ -1045,7 +1045,7 @@ translationSet trans =
 
                 DiagnosisUndeterminedMoreEvaluationNeeded ->
                     { english = "Undetermined - More Evaluation Needed"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibisobanutse - Hakenewe Isuzuma Ryimbitse"
                     }
 
                 NoAcuteIllnessDiagnosis ->
@@ -2626,7 +2626,7 @@ translationSet trans =
 
                 HomeIsolation ->
                     { english = "advised patient to stay home in isolation"
-                    , kinyarwanda = Just "wagiriye inama umurwayi yo kuguma mu rugo ahantu ari wenyine?"
+                    , kinyarwanda = Just "wagiriye inama umurwayi yo kuguma mu rugo ahantu ari wenyine"
                     }
 
                 ComeToHealthCenter ->
@@ -2646,7 +2646,7 @@ translationSet trans =
 
         HCResponseQuestion ->
             { english = "What was the Health Center's response"
-            , kinyarwanda = Just "N'ikihe gisubizo cyavuye n'ikigo nderabuzima"
+            , kinyarwanda = Just "Ni ikihe gisubizo cyavuye ku kigo nderabuzima"
             }
 
         HCResponsePeriodQuestion ->
@@ -2666,7 +2666,7 @@ translationSet trans =
 
         HealthCenterDetermined ->
             { english = "Health center determined this is a"
-            , kinyarwanda = Just "Ikigo nderabuzima cyagaragaje ko iki ari"
+            , kinyarwanda = Just "Ikigo nderabuzima cyagaragaje ko"
             }
 
         HealthEducationProvidedQuestion ->
@@ -2718,7 +2718,7 @@ translationSet trans =
 
         HighRiskCase ->
             { english = "high-risk case"
-            , kinyarwanda = Just "Afite ibyago byinshi byo kwandura"
+            , kinyarwanda = Just "afite ibyago byinshi byo kuba yaranduye"
             }
 
         HighRiskFactor factor ->
@@ -4192,7 +4192,7 @@ translationSet trans =
 
         ProgressReport ->
             { english = "Progress Report"
-            , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
+            , kinyarwanda = Just "Raporo y’ibyakozwe"
             }
 
         ProgressTimeline ->
@@ -4233,8 +4233,8 @@ translationSet trans =
         ReasonForNotIsolating reason ->
             case reason of
                 NoSpace ->
-                    { english = "No space avilable at home or clinic"
-                    , kinyarwanda = Just "Nta mwanya uhaboneka  mu rugo no ku ivuriro"
+                    { english = "No space available at home or clinic"
+                    , kinyarwanda = Just "Nta mwanya uboneka mu rugo cyangwa mu ivuriro"
                     }
 
                 TooIll ->
@@ -4286,7 +4286,7 @@ translationSet trans =
 
         ReferredPatientToHealthCenterQuestion ->
             { english = "Have you referred the patient to the health center"
-            , kinyarwanda = Just "Waba wohereje umurwayi kukigo nderabuzima"
+            , kinyarwanda = Just "Waba wohereje umurwayi ku kigo nderabuzima"
             }
 
         Register ->
@@ -4421,7 +4421,7 @@ translationSet trans =
 
                 Between30min1Hour ->
                     { english = "30 min - 1 hour"
-                    , kinyarwanda = Just "Hagati y'niminota mirongo itatu n'isaha"
+                    , kinyarwanda = Just "Hagati y’iminota mirongo itatu n’isaha"
                     }
 
                 Between1Hour2Hour ->
@@ -4431,7 +4431,7 @@ translationSet trans =
 
                 Between2Hour1Day ->
                     { english = "2 hours - 1 day"
-                    , kinyarwanda = Just "Hagati y'amasha abiri n'umunsi"
+                    , kinyarwanda = Just "Hagati y'amasaha abiri n'umunsi"
                     }
 
                 ResponsePeriodNotApplicable ->
@@ -4858,7 +4858,7 @@ translationSet trans =
 
                 UnableToDrink ->
                     { english = "Unable to Drink"
-                    , kinyarwanda = Just "Ntashobora kunywahing"
+                    , kinyarwanda = Just "Ntashobora kunywa"
                     }
 
                 UnableToEat ->
@@ -4898,7 +4898,7 @@ translationSet trans =
 
                 SpontaneousBleeding ->
                     { english = "Spontaneous Bleeding"
-                    , kinyarwanda = Just "Kuva amaraso"
+                    , kinyarwanda = Just "Kuva amaraso bitunguranye"
                     }
 
                 NoSymptomsGeneral ->
@@ -4942,7 +4942,7 @@ translationSet trans =
             case sign of
                 NonBloodyDiarrhea ->
                     { english = "Non-Bloody Diarrhea"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta maraso yituma"
                     }
 
                 _ ->
@@ -4977,7 +4977,7 @@ translationSet trans =
 
                 LossOfSmell ->
                     { english = "Loss of Smell"
-                    , kinyarwanda = Just "Kudahumekerwa"
+                    , kinyarwanda = Just "Kudahumurirwa"
                     }
 
                 StabbingChestPain ->
@@ -5175,7 +5175,7 @@ translationSet trans =
 
         TraveledToCOVID19CountryQuestion ->
             { english = "Have you traveled to any country or district in Rwanda known to have COVID-19 in the past 14 days"
-            , kinyarwanda = Just "Waba waragiye mu gihugu kirimo ubwandu bwa COVID-19 mu minsi 14 ishize"
+            , kinyarwanda = Just "Waba waragiye mu gihugu cyangwa mu karere mu Rwanda bizwi ko hagaragayemo ubwandu bwa Covid 19 mu minsi 14 ishize"
             }
 
         PriorTreatmentTask task ->
@@ -5248,7 +5248,7 @@ translationSet trans =
 
         ViewProgressReport ->
             { english = "View Progress Report"
-            , kinyarwanda = Just "Garagaza uruhererekane rw'imikurire y'umwana"
+            , kinyarwanda = Just "Raporo y’ibyakozwe"
             }
 
         Village ->
@@ -5322,8 +5322,8 @@ translationSet trans =
             }
 
         YearsOld int ->
-            { english = String.fromInt int ++ " years old"
-            , kinyarwanda = Nothing
+            { english = String.fromInt int ++ " Years old"
+            , kinyarwanda = Just (String.fromInt int)
             }
 
         Yes ->
