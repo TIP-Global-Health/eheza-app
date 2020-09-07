@@ -83,13 +83,12 @@ warningPopup language maybeDiagnosis setStateMsg =
                                 , [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
                                   , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
                                   ]
-
                                 )
 
                             _ ->
                                 ( infoHeading, [] )
                 in
-                div [ class <| "ui active modal diagnosis-popup " ]
+                div [ class "ui active modal diagnosis-popup" ]
                     [ div [ class "content" ] <|
                         [ div [ class "popup-heading-wrapper" ] heading
                         , div [ class "popup-title" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
@@ -98,7 +97,7 @@ warningPopup language maybeDiagnosis setStateMsg =
                     , div
                         [ class "actions" ]
                         [ button
-                            [ class <| "ui primary fluid button "
+                            [ class "ui primary fluid button"
                             , onClick <| setStateMsg Nothing
                             ]
                             [ text <| translate language Translate.Continue ]
