@@ -348,7 +348,7 @@ viewPhysicalExamPane language currentDate measurements =
                             td [] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
 
                         else
-                            td [ class "alert" ] [ text <| String.fromInt respiratoryRate_ ++ " " ++ translate language Translate.BpmUnit ]
+                            td [ class "alert" ] [ text <| translate language <| Translate.BpmUnit <| respiratoryRate_ ]
                     )
                 |> Maybe.withDefault (td [] [])
 

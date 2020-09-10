@@ -278,13 +278,13 @@ generateHighSeverityAlertData language currentDate data alert =
                         if value >= 120 then
                             Just
                                 ( trans Translate.High ++ " " ++ transAlert alert
-                                , String.fromInt value ++ trans Translate.BpmUnit
+                                , trans <| Translate.BpmUnit <| value
                                 )
 
                         else if value < 40 then
                             Just
                                 ( trans Translate.Low ++ " " ++ transAlert alert
-                                , String.fromInt value ++ trans Translate.BpmUnit
+                                , trans <| Translate.BpmUnit <| value
                                 )
 
                         else
@@ -302,13 +302,13 @@ generateHighSeverityAlertData language currentDate data alert =
                         if value > 30 then
                             Just
                                 ( trans Translate.High ++ " " ++ transAlert alert
-                                , String.fromInt value ++ trans Translate.BpmUnit
+                                , trans <| Translate.BpmUnit <| value
                                 )
 
                         else if value < 12 then
                             Just
                                 ( trans Translate.Low ++ " " ++ transAlert alert
-                                , String.fromInt value ++ trans Translate.BpmUnit
+                                , trans <| Translate.BpmUnit <| value
                                 )
 
                         else

@@ -719,8 +719,8 @@ viewVitalsForm language currentDate measurements form =
             (Maybe.map toFloat form.respiratoryRate)
             SetVitalsResporatoryRate
             "respiratory-rate"
-            Translate.BpmUnit
-        , viewPreviousMeasurement language respiratoryRatePreviousValue Translate.BpmUnit
+            Translate.BpmUnitLabel
+        , viewPreviousMeasurement language respiratoryRatePreviousValue Translate.BpmUnitLabel
         , div [ class "separator" ] []
         , viewLabel language Translate.BodyTemperature
         , viewMeasurementInput
