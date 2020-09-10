@@ -76,20 +76,19 @@ warningPopup language maybeDiagnosis setStateMsg =
                         , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
                         ]
 
-                    ( heading, content, color ) =
+                    ( heading, content ) =
                         case diagnosis of
                             DiagnosisCovid19 ->
                                 ( warningHeading
                                 , [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
                                   , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
                                   ]
-                                , "red"
                                 )
 
                             _ ->
-                                ( infoHeading, [], "blue" )
+                                ( infoHeading, [] )
                 in
-                div [ class <| "ui active modal diagnosis-popup " ++ color ]
+                div [ class "ui active modal diagnosis-popup" ]
                     [ div [ class "content" ] <|
                         [ div [ class "popup-heading-wrapper" ] heading
                         , div [ class "popup-title" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
@@ -98,7 +97,7 @@ warningPopup language maybeDiagnosis setStateMsg =
                     , div
                         [ class "actions" ]
                         [ button
-                            [ class <| "ui primary fluid button " ++ color
+                            [ class "ui primary fluid button"
                             , onClick <| setStateMsg Nothing
                             ]
                             [ text <| translate language Translate.Continue ]

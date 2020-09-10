@@ -1201,27 +1201,6 @@ input::placeholder {
       margin-left: 0;
     }
 
-    &.blue {
-      border-top: 15px solid $color-primary;
-
-      .popup-heading-wrapper {
-        margin-bottom: 2rem;
-
-        .popup-heading {
-          width: 100%;
-        }
-      }
-
-      .popup-title {
-        font-weight: 400;
-        text-transform: none;
-      }
-
-      .button {
-        background-color: $color-primary;
-      }
-    }
-
   }
 
   > .icon:first-child+*,
