@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, acuteIllnessDiagnosisToMaybe, ageDependentARINextStep, ageDependentUncomplicatedMalariaNextStep, countGISymptoms, countRespiratorySymptoms, countSymptoms, covid19Diagnosed, expectActivity, feverAtPhysicalExam, feverAtSymptoms, feverRecorded, gastrointestinalInfectionDangerSignsPresent, generateAssembledData, generatePreviousMeasurements, malariaRapidTestResult, malarialDangerSignsPresent, mandatoryActivitiesCompleted, mandatoryActivityCompleted, mildGastrointestinalInfectionSymptomsPresent, nonBloodyDiarrheaAtSymptoms, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByLaboratoryResults, resolveNextStepByDiagnosis, resolveNextStepsTasks, resolveNonCovid19AcuteIllnessDiagnosis, respiratoryInfectionDangerSignsPresent, respiratoryInfectionSymptomsPresent, respiratoryRateElevated, symptomAppearsAtSymptomsDict)
+module Pages.AcuteIllnessEncounter.Utils exposing (..)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
