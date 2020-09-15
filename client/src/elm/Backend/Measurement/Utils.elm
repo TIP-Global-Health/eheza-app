@@ -1,4 +1,4 @@
-module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, fbfFormToValue, fbfValueToForm, getCurrentAndPrevious, lactationFormToSigns, lactationSignsToForm, mapMeasurementData, muacIndication, socialHistoryHivTestingResultFromString, splitChildMeasurements, splitMotherMeasurements)
+module Backend.Measurement.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -275,3 +275,38 @@ socialHistoryHivTestingResultFromString result =
 
         _ ->
             Nothing
+
+
+nonAdministrationReasonFromString : String -> Maybe NonAdministrationReason
+nonAdministrationReasonFromString reason =
+    case reason of
+        "lack-of-stock" ->
+            Just NonAdministrationLackOfStock
+
+        "known-allergy" ->
+            Just NonAdministrationKnownAllergy
+
+        "patient-declined" ->
+            Just NonAdministrationPatientDeclined
+
+        "other" ->
+            Just NonAdministrationOther
+
+        _ ->
+            Nothing
+
+
+nonAdministrationReasonToString : NonAdministrationReason -> String
+nonAdministrationReasonToString reason =
+    case reason of
+        NonAdministrationLackOfStock ->
+            "lack-of-stock"
+
+        NonAdministrationKnownAllergy ->
+            "known-allergy"
+
+        NonAdministrationPatientDeclined ->
+            "patient-declined"
+
+        NonAdministrationOther ->
+            "other"

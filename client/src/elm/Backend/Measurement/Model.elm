@@ -1,4 +1,4 @@
-module Backend.Measurement.Model exposing (AbdomenCPESign(..), AcuteFindings, AcuteFindingsGeneralSign(..), AcuteFindingsRespiratorySign(..), AcuteFindingsValue, AcuteIllnessMeasurement, AcuteIllnessMeasurements, AcuteIllnessVitals, AcuteIllnessVitalsValue, Attendance, BreastExam, BreastExamSign(..), BreastExamValue, CSectionReason(..), CSectionScar(..), ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CorePhysicalExam, CorePhysicalExamValue, CounselingSession, DangerSign(..), DangerSigns, DistributionNotice(..), Exposure, ExposureSign(..), EyesCPESign(..), FamilyPlanning, FamilyPlanningSign(..), Fbf, FbfForm, FbfValue, FetalPresentation(..), GroupMeasurement, HCContact, HCContactSign(..), HCContactValue, HCRecomendation(..), HairHeadCPESign(..), HandsCPESign(..), HeartCPESign(..), Height, HeightInCm(..), HistoricalMeasurements, Isolation, IsolationSign(..), IsolationValue, Lactation, LactationForm, LactationSign(..), LastMenstrualPeriod, LastMenstrualPeriodValue, LegsCPESign(..), LungsCPESign(..), MalariaRapidTestResult(..), MalariaTesting, Measurement, MeasurementData, Measurements, MedicalHistory, MedicalHistorySign(..), Medication, MedicationDistribution, MedicationDistributionSign(..), MedicationSign(..), MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), NeckCPESign(..), NutritionHeight, NutritionMeasurement, NutritionMeasurements, NutritionMuac, NutritionNutrition, NutritionPhoto, NutritionWeight, ObstetricHistory, ObstetricHistorySign(..), ObstetricHistoryStep2, ObstetricHistoryStep2Value, ObstetricHistoryValue, ObstetricalExam, ObstetricalExamValue, ParticipantConsent, ParticipantConsentValue, Photo, PhotoUrl(..), PrenatalFamilyPlanning, PrenatalMeasurement, PrenatalMeasurements, PrenatalNutrition, PrenatalNutritionValue, PrenatalPhoto, PreviousDeliveryPeriod(..), PreviousDeliverySign(..), PreviousMeasurementsValue, ReasonForNotIsolating(..), Resource, ResourceSign(..), ResponsePeriod(..), SendToHC, SendToHCSign(..), SocialHistory, SocialHistoryHivTestingResult(..), SocialHistorySign(..), SocialHistoryValue, SymptomsGI, SymptomsGIDerivedSign(..), SymptomsGISign(..), SymptomsGIValue, SymptomsGeneral, SymptomsGeneralSign(..), SymptomsGeneralValue, SymptomsRespiratory, SymptomsRespiratorySign(..), TravelHistory, TravelHistorySign(..), TreatmentReview, TreatmentReviewSign(..), Vitals, VitalsValue, Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
+module Backend.Measurement.Model exposing (..)
 
 {-| This module represents various measurements to be stored on the backend,
 and cached in local storage.
@@ -755,6 +755,28 @@ type MedicationDistributionSign
     | Zinc
     | LemonJuiceOrHoney
     | NoMedicationDistributionSigns
+
+
+type NonAdministrationReason
+    = NonAdministrationLackOfStock
+    | NonAdministrationKnownAllergy
+    | NonAdministrationPatientDeclined
+    | NonAdministrationOther
+
+
+type MedicationNonAdministrationSign
+    = MedicationAmoxicillin NonAdministrationReason
+    | MedicationCoartem NonAdministrationReason
+    | MedicationORS NonAdministrationReason
+    | MedicationZinc NonAdministrationReason
+    | NoMedicationNonAdministrationSigns
+
+
+type alias MedicationDistributionValue =
+    { distributionSigns : EverySet MedicationDistributionSign
+    , nonAdministrationSigns : EverySet MedicationNonAdministrationSign
+    }
+
 
 
 type alias MedicationDistribution =

@@ -1,9 +1,10 @@
-module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAcuteFindings, decodeAcuteFindingsGeneralSign, decodeAcuteFindingsRespiratorySign, decodeAcuteIllnessMeasurement, decodeAcuteIllnessMeasurements, decodeAcuteIllnessVitals, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeDistributionNotice, decodeExposure, decodeExposureSign, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFbf, decodeFbfValue, decodeFetalPresentation, decodeGroupMeasurement, decodeHCContact, decodeHCContactSign, decodeHCRecomendation, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeIsolation, decodeIsolationSign, decodeLactation, decodeLactationSign, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMalariaRapidTestResult, decodeMalariaTesting, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationDistribution, decodeMedicationDistributionSign, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionHeight, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionMuac, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeReasonForNotIsolating, decodeResource, decodeResourceSign, decodeResponsePeriod, decodeSendToHC, decodeSendToHCSign, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeSymptomsGI, decodeSymptomsGIDerivedSign, decodeSymptomsGIDict, decodeSymptomsGeneral, decodeSymptomsRespiratory, decodeTravelHistory, decodeTravelHistorySign, decodeTreatmentReview, decodeTreatmentReviewSign, decodeVitals, decodeWeight, decodeWithEntityUuid, malariaRapidTestResultFromString, symptomsGIToDict, symptomsGeneralToDict, symptomsRespiratoryToDict)
+module Backend.Measurement.Decoder exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (..)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
@@ -1366,9 +1367,56 @@ decodeMedicationDistributionSign =
                         succeed NoMedicationDistributionSigns
 
                     _ ->
-                        fail <|
-                            sign
-                                ++ " is not a recognized MedicationDistributionSign"
+                        fail <| sign ++ " is not a recognized MedicationDistributionSign"
+            )
+
+
+decodeMedicationNonAdministrationSign : Decoder MedicationNonAdministrationSign
+decodeMedicationNonAdministrationSign =
+    string
+        |> andThen
+            (\sign ->
+                let
+                    parts =
+                        String.split "-" sign
+
+                    failure =
+                        fail <| sign ++ " is not a recognized MedicationNonAdministrationSign"
+                in
+                List.head parts
+                    |> Maybe.map
+                        (\prefix ->
+                            let
+                                nonAdministrationReason =
+                                    List.tail parts
+                                        |> Maybe.map (List.intersperse "-" >> String.concat)
+                                        |> Maybe.andThen nonAdministrationReasonFromString
+                            in
+                            case prefix of
+                                "amoxicillin" ->
+                                    nonAdministrationReason
+                                        |> Maybe.map (MedicationAmoxicillin >> succeed)
+                                        |> Maybe.withDefault failure
+
+                                "coartem" ->
+                                    nonAdministrationReason
+                                        |> Maybe.map (MedicationCoartem >> succeed)
+                                        |> Maybe.withDefault failure
+
+                                "ors" ->
+                                    nonAdministrationReason
+                                        |> Maybe.map (MedicationORS >> succeed)
+                                        |> Maybe.withDefault failure
+
+                                "zinc" ->
+                                    nonAdministrationReason
+                                        |> Maybe.map (MedicationZinc >> succeed)
+                                        |> Maybe.withDefault failure
+
+                                _ ->
+                                    failure
+                        )
+                    |> Maybe.withDefault failure
             )
 
 
