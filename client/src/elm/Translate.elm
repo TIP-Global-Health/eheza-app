@@ -545,6 +545,7 @@ type TranslationId
     | NoActivitiesPendingForThisParticipant
     | NoGroupsFound
     | NoMatchesFound
+    | NonAdministrationReason NonAdministrationReason
     | NoParticipantsPending
     | NoParticipantsPendingForThisActivity
     | NoParticipantsCompleted
@@ -3595,6 +3596,28 @@ translationSet trans =
             { english = "No matches found"
             , kinyarwanda = Nothing
             }
+
+        NonAdministrationReason reason ->
+            case reason of
+                NonAdministrationLackOfStock ->
+                    { english = "Lack of Stock"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationKnownAllergy ->
+                    { english = "Known Allergy"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationPatientDeclined ->
+                    { english = "Patient Declined"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
 
         NoParticipantsCompleted ->
             { english = "No participants have completed all their activities yet."

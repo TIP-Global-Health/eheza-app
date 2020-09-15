@@ -63,6 +63,7 @@ type Msg
     | SetHandReferralForm Bool
     | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC ))
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
+    | SetMedicationDistributionNonAdministrationReason (Maybe NonAdministrationReason) MedicationDistributionSign NonAdministrationReason
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution ))
 
 
@@ -337,5 +338,5 @@ type alias MedicationDistributionForm =
     , ors : Maybe Bool
     , zinc : Maybe Bool
     , lemonJuiceOrHoney : Maybe Bool
-    , nonAdministrationReasons : Maybe (EverySet MedicationNonAdministrationSign)
+    , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
     }

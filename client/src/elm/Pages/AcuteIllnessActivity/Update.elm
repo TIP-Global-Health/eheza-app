@@ -13,6 +13,7 @@ import Backend.Measurement.Model
         , HCRecomendation(..)
         , MalariaRapidTestResult(..)
         , MedicationDistributionSign(..)
+        , MedicationNonAdministrationSign(..)
         , ReasonForNotIsolating(..)
         , ResponsePeriod(..)
         , SymptomsGISign(..)
@@ -1127,6 +1128,58 @@ update currentDate id db msg model =
                     let
                         updatedForm =
                             formUpdateFunc value model.nextStepsData.medicationDistributionForm
+                    in
+                    model.nextStepsData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicationDistributionNonAdministrationReason currentValue medication reason ->
+            let
+                form =
+                    model.nextStepsData.medicationDistributionForm
+
+                reasonToSign reason_ =
+                    case medication of
+                        Amoxicillin ->
+                            MedicationAmoxicillin reason_
+
+                        Coartem ->
+                            MedicationCoartem reason_
+
+                        ORS ->
+                            MedicationORS reason_
+
+                        Zinc ->
+                            MedicationZinc reason_
+
+                        _ ->
+                            NoMedicationNonAdministrationSigns
+
+                updatedValue =
+                    reasonToSign reason
+
+                updatedNonAdministrationSigns =
+                    form.nonAdministrationSigns
+                        |> Maybe.map
+                            (\nonAdministrationSigns ->
+                                case currentValue of
+                                    Just value ->
+                                        EverySet.remove (reasonToSign value) nonAdministrationSigns
+                                            |> EverySet.insert updatedValue
+
+                                    Nothing ->
+                                        EverySet.insert updatedValue nonAdministrationSigns
+                            )
+                        |> Maybe.withDefault (EverySet.singleton updatedValue)
+
+                updatedData =
+                    let
+                        updatedForm =
+                            { form | nonAdministrationSigns = Just updatedNonAdministrationSigns }
                     in
                     model.nextStepsData
                         |> (\data -> { data | medicationDistributionForm = updatedForm })

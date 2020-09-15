@@ -19,6 +19,7 @@ import Backend.Measurement.Model
         , MedicationDistributionSign(..)
         , MedicationDistributionValue
         , MedicationNonAdministrationSign(..)
+        , NonAdministrationReason(..)
         , ReasonForNotIsolating(..)
         , ResponsePeriod(..)
         , SendToHCSign(..)
@@ -362,17 +363,56 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                     measurements.medicationDistribution
                         |> Maybe.map (Tuple.second >> .value)
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
+
+                derivedQuestionExists formValue =
+                    if formValue == Just False then
+                        1
+
+                    else
+                        0
+
+                derivedQuestionCompleted medication reasonToSignFunc formValue =
+                    if formValue /= Just False then
+                        0
+
+                    else
+                        let
+                            nonAdministrationSigns =
+                                form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
+
+                            valueSet =
+                                [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientDeclined, NonAdministrationOther ]
+                                    |> List.filterMap
+                                        (\reason ->
+                                            if EverySet.member (reasonToSignFunc reason) nonAdministrationSigns then
+                                                Just reason
+
+                                            else
+                                                Nothing
+                                        )
+                                    |> List.head
+                                    |> isJust
+                        in
+                        if valueSet then
+                            1
+
+                        else
+                            0
             in
             case diagnosis of
                 Just DiagnosisMalariaUncomplicated ->
-                    ( taskCompleted form.coartem
-                    , 1
+                    ( taskCompleted form.coartem + derivedQuestionCompleted Coartem MedicationCoartem form.coartem
+                    , 1 + derivedQuestionExists form.coartem
                     )
 
                 Just DiagnosisGastrointestinalInfectionUncomplicated ->
                     ( taskCompleted form.ors
                         + taskCompleted form.zinc
+                        + derivedQuestionCompleted ORS MedicationORS form.ors
+                        + derivedQuestionCompleted Zinc MedicationZinc form.zinc
                     , 2
+                        + derivedQuestionExists form.ors
+                        + derivedQuestionExists form.zinc
                     )
 
                 Just DiagnosisSimpleColdAndCough ->
@@ -382,8 +422,8 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
 
                 -- This is for child form 2 month old, to 5 years old.
                 Just DiagnosisRespiratoryInfectionUncomplicated ->
-                    ( taskCompleted form.amoxicillin
-                    , 1
+                    ( taskCompleted form.amoxicillin + derivedQuestionCompleted Amoxicillin MedicationAmoxicillin form.amoxicillin
+                    , 1 + derivedQuestionExists form.amoxicillin
                     )
 
                 _ ->
@@ -931,7 +971,7 @@ fromMedicationDistributionValue saved =
     , ors = Maybe.map (.distributionSigns >> EverySet.member ORS) saved
     , zinc = Maybe.map (.distributionSigns >> EverySet.member Zinc) saved
     , lemonJuiceOrHoney = Maybe.map (.distributionSigns >> EverySet.member LemonJuiceOrHoney) saved
-    , nonAdministrationReasons = Maybe.map .nonAdministrationSigns saved
+    , nonAdministrationSigns = Maybe.map .nonAdministrationSigns saved
     }
 
 
@@ -946,7 +986,7 @@ medicationDistributionFormWithDefault form saved =
                 , ors = or form.ors (EverySet.member ORS value.distributionSigns |> Just)
                 , zinc = or form.zinc (EverySet.member Zinc value.distributionSigns |> Just)
                 , lemonJuiceOrHoney = or form.lemonJuiceOrHoney (EverySet.member LemonJuiceOrHoney value.distributionSigns |> Just)
-                , nonAdministrationReasons = or form.nonAdministrationReasons (Just value.nonAdministrationSigns)
+                , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
                 }
             )
 
@@ -971,7 +1011,7 @@ toMedicationDistributionValue form =
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationDistributionSigns)
 
         nonAdministrationSigns =
-            form.nonAdministrationReasons
+            form.nonAdministrationSigns
                 |> Maybe.map (ifEverySetEmpty NoMedicationNonAdministrationSigns)
     in
     Maybe.map MedicationDistributionValue distributionSigns
