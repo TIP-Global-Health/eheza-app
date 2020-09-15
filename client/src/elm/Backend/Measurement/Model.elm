@@ -757,7 +757,7 @@ type MedicationDistributionSign
     | NoMedicationDistributionSigns
 
 
-type NonAdministrationReason
+type MedicationNonAdministrationReason
     = NonAdministrationLackOfStock
     | NonAdministrationKnownAllergy
     | NonAdministrationPatientDeclined
@@ -765,10 +765,10 @@ type NonAdministrationReason
 
 
 type MedicationNonAdministrationSign
-    = MedicationAmoxicillin NonAdministrationReason
-    | MedicationCoartem NonAdministrationReason
-    | MedicationORS NonAdministrationReason
-    | MedicationZinc NonAdministrationReason
+    = MedicationAmoxicillin MedicationNonAdministrationReason
+    | MedicationCoartem MedicationNonAdministrationReason
+    | MedicationORS MedicationNonAdministrationReason
+    | MedicationZinc MedicationNonAdministrationReason
     | NoMedicationNonAdministrationSigns
 
 

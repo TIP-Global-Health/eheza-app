@@ -1388,29 +1388,29 @@ decodeMedicationNonAdministrationSign =
                     |> Maybe.map
                         (\prefix ->
                             let
-                                nonAdministrationReason =
+                                medicationNonAdministrationReason =
                                     List.tail parts
                                         |> Maybe.map (List.intersperse "-" >> String.concat)
-                                        |> Maybe.andThen nonAdministrationReasonFromString
+                                        |> Maybe.andThen medicationNonAdministrationReasonFromString
                             in
                             case prefix of
                                 "amoxicillin" ->
-                                    nonAdministrationReason
+                                    medicationNonAdministrationReason
                                         |> Maybe.map (MedicationAmoxicillin >> succeed)
                                         |> Maybe.withDefault failure
 
                                 "coartem" ->
-                                    nonAdministrationReason
+                                    medicationNonAdministrationReason
                                         |> Maybe.map (MedicationCoartem >> succeed)
                                         |> Maybe.withDefault failure
 
                                 "ors" ->
-                                    nonAdministrationReason
+                                    medicationNonAdministrationReason
                                         |> Maybe.map (MedicationORS >> succeed)
                                         |> Maybe.withDefault failure
 
                                 "zinc" ->
-                                    nonAdministrationReason
+                                    medicationNonAdministrationReason
                                         |> Maybe.map (MedicationZinc >> succeed)
                                         |> Maybe.withDefault failure
 

@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Utils exposing (acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromAcuteFindingsValue, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromMedicationDistributionValue, fromSendToHCValue, fromTravelHistoryValue, fromTreatmentReviewValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, medicationDistributionFormWithDefault, naListTaskCompleted, naTaskCompleted, nextStepsTasksCompletedFromTotal, physicalExamTasksCompletedFromTotal, resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage, sendToHCFormWithDefault, symptomsGIFormWithDefault, symptomsGeneralDangerSigns, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toAcuteFindingsValue, toAcuteFindingsValueWithDefault, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toMedicationDistributionValue, toMedicationDistributionValueWithDefault, toSendToHCValue, toSendToHCValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
+module Pages.AcuteIllnessActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
@@ -18,8 +18,8 @@ import Backend.Measurement.Model
         , MalariaRapidTestResult(..)
         , MedicationDistributionSign(..)
         , MedicationDistributionValue
+        , MedicationNonAdministrationReason(..)
         , MedicationNonAdministrationSign(..)
-        , NonAdministrationReason(..)
         , ReasonForNotIsolating(..)
         , ResponsePeriod(..)
         , SendToHCSign(..)
@@ -381,16 +381,7 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                                 form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
 
                             valueSet =
-                                [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientDeclined, NonAdministrationOther ]
-                                    |> List.filterMap
-                                        (\reason ->
-                                            if EverySet.member (reasonToSignFunc reason) nonAdministrationSigns then
-                                                Just reason
-
-                                            else
-                                                Nothing
-                                        )
-                                    |> List.head
+                                getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form
                                     |> isJust
                         in
                         if valueSet then
@@ -1086,6 +1077,46 @@ resolveAmoxicillinDosage currentDate person =
                 else
                     Nothing
             )
+
+
+getCurrentReasonForMedicaitonNonAdministration :
+    (MedicationNonAdministrationReason -> MedicationNonAdministrationSign)
+    -> MedicationDistributionForm
+    -> Maybe MedicationNonAdministrationReason
+getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form =
+    let
+        nonAdministrationSigns =
+            form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
+    in
+    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientDeclined, NonAdministrationOther ]
+        |> List.filterMap
+            (\reason ->
+                if EverySet.member (reasonToSignFunc reason) nonAdministrationSigns then
+                    Just reason
+
+                else
+                    Nothing
+            )
+        |> List.head
+
+
+nonAdministrationReasonToSign : MedicationDistributionSign -> MedicationNonAdministrationReason -> MedicationNonAdministrationSign
+nonAdministrationReasonToSign sign reason =
+    case sign of
+        Amoxicillin ->
+            MedicationAmoxicillin reason
+
+        Coartem ->
+            MedicationCoartem reason
+
+        ORS ->
+            MedicationORS reason
+
+        Zinc ->
+            MedicationZinc reason
+
+        _ ->
+            NoMedicationNonAdministrationSigns
 
 
 

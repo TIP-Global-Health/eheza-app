@@ -277,8 +277,8 @@ socialHistoryHivTestingResultFromString result =
             Nothing
 
 
-nonAdministrationReasonFromString : String -> Maybe NonAdministrationReason
-nonAdministrationReasonFromString reason =
+medicationNonAdministrationReasonFromString : String -> Maybe MedicationNonAdministrationReason
+medicationNonAdministrationReasonFromString reason =
     case reason of
         "lack-of-stock" ->
             Just NonAdministrationLackOfStock
@@ -296,8 +296,8 @@ nonAdministrationReasonFromString reason =
             Nothing
 
 
-nonAdministrationReasonToString : NonAdministrationReason -> String
-nonAdministrationReasonToString reason =
+medicationNonAdministrationReasonToString : MedicationNonAdministrationReason -> String
+medicationNonAdministrationReasonToString reason =
     case reason of
         NonAdministrationLackOfStock ->
             "lack-of-stock"

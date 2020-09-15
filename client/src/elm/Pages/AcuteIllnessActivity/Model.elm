@@ -63,7 +63,7 @@ type Msg
     | SetHandReferralForm Bool
     | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC ))
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
-    | SetMedicationDistributionNonAdministrationReason (Maybe NonAdministrationReason) MedicationDistributionSign NonAdministrationReason
+    | SetMedicationDistributionMedicationNonAdministrationReason (Maybe MedicationNonAdministrationReason) MedicationDistributionSign MedicationNonAdministrationReason
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution ))
 
 

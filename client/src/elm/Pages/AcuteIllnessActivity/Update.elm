@@ -1137,30 +1137,13 @@ update currentDate id db msg model =
             , []
             )
 
-        SetMedicationDistributionNonAdministrationReason currentValue medication reason ->
+        SetMedicationDistributionMedicationNonAdministrationReason currentValue medication reason ->
             let
                 form =
                     model.nextStepsData.medicationDistributionForm
 
-                reasonToSign reason_ =
-                    case medication of
-                        Amoxicillin ->
-                            MedicationAmoxicillin reason_
-
-                        Coartem ->
-                            MedicationCoartem reason_
-
-                        ORS ->
-                            MedicationORS reason_
-
-                        Zinc ->
-                            MedicationZinc reason_
-
-                        _ ->
-                            NoMedicationNonAdministrationSigns
-
                 updatedValue =
-                    reasonToSign reason
+                    nonAdministrationReasonToSign medication reason
 
                 updatedNonAdministrationSigns =
                     form.nonAdministrationSigns
@@ -1168,7 +1151,7 @@ update currentDate id db msg model =
                             (\nonAdministrationSigns ->
                                 case currentValue of
                                     Just value ->
-                                        EverySet.remove (reasonToSign value) nonAdministrationSigns
+                                        EverySet.remove (nonAdministrationReasonToSign medication value) nonAdministrationSigns
                                             |> EverySet.insert updatedValue
 
                                     Nothing ->

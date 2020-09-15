@@ -545,7 +545,7 @@ type TranslationId
     | NoActivitiesPendingForThisParticipant
     | NoGroupsFound
     | NoMatchesFound
-    | NonAdministrationReason NonAdministrationReason
+    | MedicationNonAdministrationReason MedicationNonAdministrationReason
     | NoParticipantsPending
     | NoParticipantsPendingForThisActivity
     | NoParticipantsCompleted
@@ -3597,7 +3597,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        NonAdministrationReason reason ->
+        MedicationNonAdministrationReason reason ->
             case reason of
                 NonAdministrationLackOfStock ->
                     { english = "Lack of Stock"
