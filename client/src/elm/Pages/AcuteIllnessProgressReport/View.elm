@@ -467,7 +467,7 @@ viewActionsTakenPane language currentDate diagnosis data =
                 Just NextStepsMedicationDistribution ->
                     let
                         medicationSigns =
-                            Maybe.map (Tuple.second >> .value) data.measurements.medicationDistribution
+                            Maybe.map (Tuple.second >> .value >> .distributionSigns) data.measurements.medicationDistribution
                     in
                     case diagnosis of
                         Just DiagnosisMalariaUncomplicated ->

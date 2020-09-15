@@ -1337,8 +1337,9 @@ decodeSendToHCSign =
 
 decodeMedicationDistribution : Decoder MedicationDistribution
 decodeMedicationDistribution =
-    decodeEverySet decodeMedicationDistributionSign
-        |> field "prescribed_medication"
+    succeed MedicationDistributionValue
+        |> required "prescribed_medication" (decodeEverySet decodeMedicationDistributionSign)
+        |> required "non_administration_reason" (decodeEverySet decodeMedicationNonAdministrationSign)
         |> decodeAcuteIllnessMeasurement
 
 

@@ -100,7 +100,7 @@ type Msg
     | HandleSavedMalariaTesting (WebData ())
     | SaveSendToHC PersonId (Maybe SendToHCId) (EverySet SendToHCSign)
     | HandleSavedSendToHC (WebData ())
-    | SaveMedicationDistribution PersonId (Maybe MedicationDistributionId) (EverySet MedicationDistributionSign)
+    | SaveMedicationDistribution PersonId (Maybe MedicationDistributionId) MedicationDistributionValue
     | HandleSavedMedicationDistribution (WebData ())
     | SaveTravelHistory PersonId (Maybe TravelHistoryId) (EverySet TravelHistorySign)
     | HandleSavedTravelHistory (WebData ())

@@ -1190,9 +1190,11 @@ encodeMedicationDistribution =
     encodeAcuteIllnessMeasurement encodeMedicationDistributionValue
 
 
-encodeMedicationDistributionValue : EverySet MedicationDistributionSign -> List ( String, Value )
+encodeMedicationDistributionValue : MedicationDistributionValue -> List ( String, Value )
 encodeMedicationDistributionValue value =
-    [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value ) ]
+    [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value.distributionSigns )
+    , ( "non_administration_reason", encodeEverySet encodeMedicationNonAdministrationSign value.nonAdministrationSigns )
+    ]
 
 
 encondeMedicationDistributionSign : MedicationDistributionSign -> Value

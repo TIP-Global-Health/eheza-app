@@ -17,6 +17,8 @@ import Backend.Measurement.Model
         , IsolationValue
         , MalariaRapidTestResult(..)
         , MedicationDistributionSign(..)
+        , MedicationDistributionValue
+        , MedicationNonAdministrationSign(..)
         , ReasonForNotIsolating(..)
         , ResponsePeriod(..)
         , SendToHCSign(..)
@@ -922,47 +924,58 @@ toSendToHCValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
 
 
-fromMedicationDistributionValue : Maybe (EverySet MedicationDistributionSign) -> MedicationDistributionForm
+fromMedicationDistributionValue : Maybe MedicationDistributionValue -> MedicationDistributionForm
 fromMedicationDistributionValue saved =
-    { amoxicillin = Maybe.map (EverySet.member Amoxicillin) saved
-    , coartem = Maybe.map (EverySet.member Coartem) saved
-    , ors = Maybe.map (EverySet.member ORS) saved
-    , zinc = Maybe.map (EverySet.member Zinc) saved
-    , lemonJuiceOrHoney = Maybe.map (EverySet.member LemonJuiceOrHoney) saved
+    { amoxicillin = Maybe.map (.distributionSigns >> EverySet.member Amoxicillin) saved
+    , coartem = Maybe.map (.distributionSigns >> EverySet.member Coartem) saved
+    , ors = Maybe.map (.distributionSigns >> EverySet.member ORS) saved
+    , zinc = Maybe.map (.distributionSigns >> EverySet.member Zinc) saved
+    , lemonJuiceOrHoney = Maybe.map (.distributionSigns >> EverySet.member LemonJuiceOrHoney) saved
+    , nonAdministrationReasons = Maybe.map .nonAdministrationSigns saved
     }
 
 
-medicationDistributionFormWithDefault : MedicationDistributionForm -> Maybe (EverySet MedicationDistributionSign) -> MedicationDistributionForm
+medicationDistributionFormWithDefault : MedicationDistributionForm -> Maybe MedicationDistributionValue -> MedicationDistributionForm
 medicationDistributionFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { amoxicillin = or form.amoxicillin (EverySet.member Amoxicillin value |> Just)
-                , coartem = or form.coartem (EverySet.member Coartem value |> Just)
-                , ors = or form.ors (EverySet.member ORS value |> Just)
-                , zinc = or form.zinc (EverySet.member Zinc value |> Just)
-                , lemonJuiceOrHoney = or form.lemonJuiceOrHoney (EverySet.member LemonJuiceOrHoney value |> Just)
+                { amoxicillin = or form.amoxicillin (EverySet.member Amoxicillin value.distributionSigns |> Just)
+                , coartem = or form.coartem (EverySet.member Coartem value.distributionSigns |> Just)
+                , ors = or form.ors (EverySet.member ORS value.distributionSigns |> Just)
+                , zinc = or form.zinc (EverySet.member Zinc value.distributionSigns |> Just)
+                , lemonJuiceOrHoney = or form.lemonJuiceOrHoney (EverySet.member LemonJuiceOrHoney value.distributionSigns |> Just)
+                , nonAdministrationReasons = or form.nonAdministrationReasons (Just value.nonAdministrationSigns)
                 }
             )
 
 
-toMedicationDistributionValueWithDefault : Maybe (EverySet MedicationDistributionSign) -> MedicationDistributionForm -> Maybe (EverySet MedicationDistributionSign)
+toMedicationDistributionValueWithDefault : Maybe MedicationDistributionValue -> MedicationDistributionForm -> Maybe MedicationDistributionValue
 toMedicationDistributionValueWithDefault saved form =
     medicationDistributionFormWithDefault form saved
         |> toMedicationDistributionValue
 
 
-toMedicationDistributionValue : MedicationDistributionForm -> Maybe (EverySet MedicationDistributionSign)
+toMedicationDistributionValue : MedicationDistributionForm -> Maybe MedicationDistributionValue
 toMedicationDistributionValue form =
-    [ ifNullableTrue Amoxicillin form.amoxicillin
-    , ifNullableTrue Coartem form.coartem
-    , ifNullableTrue ORS form.ors
-    , ifNullableTrue Zinc form.zinc
-    , ifNullableTrue LemonJuiceOrHoney form.lemonJuiceOrHoney
-    ]
-        |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationDistributionSigns)
+    let
+        distributionSigns =
+            [ ifNullableTrue Amoxicillin form.amoxicillin
+            , ifNullableTrue Coartem form.coartem
+            , ifNullableTrue ORS form.ors
+            , ifNullableTrue Zinc form.zinc
+            , ifNullableTrue LemonJuiceOrHoney form.lemonJuiceOrHoney
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationDistributionSigns)
+
+        nonAdministrationSigns =
+            form.nonAdministrationReasons
+                |> Maybe.map (ifEverySetEmpty NoMedicationNonAdministrationSigns)
+    in
+    Maybe.map MedicationDistributionValue distributionSigns
+        |> andMap nonAdministrationSigns
 
 
 resolveCoartemDosage : NominalDate -> Person -> Maybe String

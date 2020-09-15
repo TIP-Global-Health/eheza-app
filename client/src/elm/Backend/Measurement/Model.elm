@@ -778,9 +778,8 @@ type alias MedicationDistributionValue =
     }
 
 
-
 type alias MedicationDistribution =
-    AcuteIllnessMeasurement (EverySet MedicationDistributionSign)
+    AcuteIllnessMeasurement MedicationDistributionValue
 
 
 
