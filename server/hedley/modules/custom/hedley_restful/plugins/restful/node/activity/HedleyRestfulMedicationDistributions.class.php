@@ -15,6 +15,7 @@ class HedleyRestfulMedicationDistributions extends HedleyRestfulAcuteIllnessActi
    */
   protected $multiFields = [
     'field_prescribed_medication',
+    'field_non_administration_reason'
   ];
 
 }

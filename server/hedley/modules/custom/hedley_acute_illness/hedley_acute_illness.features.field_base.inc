@@ -547,6 +547,46 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_non_administration_reason'.
+  $field_bases['field_non_administration_reason'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_non_administration_reason',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'amoxicillin-lack-of-stock' => 'Amoxicillin - Lack of stock',
+        'amoxicillin-known-allergy' => 'Amoxicillin - Known allergy',
+        'amoxicillin-patient-decline' => 'Amoxicillin - Patient declined',
+        'amoxicillin-other' => 'Amoxicillin - Other',
+        'coartem-lack-of-stock' => 'Coartem - Lack of stock',
+        'coartem-known-allergy' => 'Coartem - Known allergy',
+        'coartem-patient-decline' => 'Coartem - Patient declined',
+        'coartem-other' => 'Coartem - Other',
+        'ors-lack-of-stock' => 'ORS  - Lack of stock',
+        'ors-known-allergy' => 'ORS - Known allergy',
+        'ors-patient-decline' => 'ORS - Patient declined',
+        'ors-other' => 'ORS - Other',
+        'zinc-lack-of-stock' => 'Zinc - Lack of stock',
+        'zinc-known-allergy' => 'Zinc - Known allergy',
+        'zinc-patient-decline' => 'Zinc - Patient declined',
+        'zinc-other' => 'Zinc - Other',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_non_bloody_diarrhea_period'.
   $field_bases['field_non_bloody_diarrhea_period'] = array(
     'active' => 1,
