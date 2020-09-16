@@ -1567,7 +1567,7 @@ translationSet trans =
             }
 
         BpmUnit respiratoryRate ->
-            { english = String.fromInt respiratoryRate ++ "bpm"
+            { english = String.fromInt respiratoryRate ++ " bpm"
             , kinyarwanda = Just <| "Inshuro ahumeka ku munota " ++ String.fromInt respiratoryRate
             }
 
