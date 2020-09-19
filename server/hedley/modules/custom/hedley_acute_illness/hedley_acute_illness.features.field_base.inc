@@ -61,34 +61,6 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
-  // Exported field_base: 'field_ambulance_arrival_time'.
-  $field_bases['field_ambulance_arrival_time'] = array(
-    'active' => 1,
-    'cardinality' => -1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_ambulance_arrival_time',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(
-        'less-than-30m' => 'Less than 30 min',
-        '30m-1h' => '30 min - 1 hour',
-        '1h-2h' => '1 hour- 2 hours',
-        '2h-1d' => '2hours - 1 day',
-        'n-a' => 'Not applicable',
-      ),
-      'allowed_values_function' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
-  );
-
   // Exported field_base: 'field_blood_in_sputum_period'.
   $field_bases['field_blood_in_sputum_period'] = array(
     'active' => 1,
@@ -322,7 +294,8 @@ function hedley_acute_illness_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'contact-hc' => 'Contact HC',
+        'call-114' => 'Call 114',
+        'contact-site' => 'Contact recommended site',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',
@@ -347,39 +320,13 @@ function hedley_acute_illness_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'send-ambulance' => 'Send ambulance',
-        'home-isolation' => 'Home isolation',
-        'come-to-hc' => 'Come to HC',
-        'chw-monitoring' => 'CHW monitoring',
-        'n-a' => 'Not applicable',
-      ),
-      'allowed_values_function' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
-  );
-
-  // Exported field_base: 'field_hc_response_time'.
-  $field_bases['field_hc_response_time'] = array(
-    'active' => 1,
-    'cardinality' => -1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_hc_response_time',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(
-        'less-than-30m' => 'Less than 30 min',
-        '30m-1h' => '30 min - 1 hour',
-        '1h-2h' => '1 hour- 2 hours',
-        '2h-1d' => '2hours - 1 day',
-        'n-a' => 'Not applicable',
+        'send-to-hc' => 'Send Patient to the nearest health center',
+        'send-to-rrtc' => 'Send patient to the Rapid Response Team center',
+        'send-to-hospital' => 'Send patient to the nearest hospital',
+        'yes-other' => 'Other recommendation',
+        'no-answer' => 'No answer',
+        'busy-signal' => 'Busy Signal',
+        'no-other' => 'Other reason for not talking with 114',
       ),
       'allowed_values_function' => '',
     ),
@@ -688,6 +635,36 @@ function hedley_acute_illness_field_default_field_bases() {
     'settings' => array(),
     'translatable' => 0,
     'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_site_recommendation'.
+  $field_bases['field_site_recommendation'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_site_recommendation',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'team-to-village' => 'Team will come to village',
+        'send-with-referral-form' => 'Advised to send patient to site with referral form',
+        'yes-other' => 'Other response',
+        'no-response-sent-with-form' => 'No response. Sent patient with referral form',
+        'patient-refused' => 'Patient refused',
+        'no-other' => 'Other reason for not contacting site',
+        'n-a' => 'Not applicable',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_sore_throat_period'.
