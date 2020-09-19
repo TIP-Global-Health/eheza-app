@@ -318,10 +318,10 @@ type alias IsolationForm =
 
 
 type alias HCContactForm =
-    { contactedHC : Maybe Bool
-    , recommendations : Maybe HCRecommendation
-    , responsePeriod : Maybe ResponsePeriod
-    , ambulanceArrivalPeriod : Maybe ResponsePeriod
+    { called114 : Maybe Bool
+    , hcRecommendations : Maybe HCRecommendation
+    , contactedSite : Maybe Bool
+    , siteRecommendations : Maybe SiteRecommendation
     }
 
 
