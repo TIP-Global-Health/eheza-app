@@ -779,10 +779,10 @@ isolationValuePostProcess saved =
 
 fromHCContactValue : Maybe HCContactValue -> HCContactForm
 fromHCContactValue saved =
-    { contactedHC = Maybe.map (.signs >> EverySet.member ContactedHealthCenter) saved
-    , recommendations = Maybe.andThen (.recommendations >> EverySet.toList >> List.head) saved
-    , responsePeriod = Maybe.andThen (.responsePeriod >> EverySet.toList >> List.head) saved
-    , ambulanceArrivalPeriod = Maybe.andThen (.ambulanceArrivalPeriod >> EverySet.toList >> List.head) saved
+    { called114 = Maybe.map (.signs >> EverySet.member Call114) saved
+    , hcRecommendations = Maybe.andThen (.hcRecommendations >> EverySet.toList >> List.head) saved
+    , contactedSite = Maybe.map (.signs >> EverySet.member ContactSite) saved
+    , siteRecommendations = Maybe.andThen (.siteRecommendations >> EverySet.toList >> List.head) saved
     }
 
 
@@ -792,10 +792,10 @@ hcContactFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { contactedHC = or form.contactedHC (EverySet.member ContactedHealthCenter value.signs |> Just)
-                , recommendations = or form.recommendations (value.recommendations |> EverySet.toList |> List.head)
-                , responsePeriod = or form.responsePeriod (value.responsePeriod |> EverySet.toList |> List.head)
-                , ambulanceArrivalPeriod = or form.ambulanceArrivalPeriod (value.ambulanceArrivalPeriod |> EverySet.toList |> List.head)
+                { called114 = or form.contactedHC (EverySet.member Call114 value.signs |> Just)
+                , hcRecommendations = or form.hcRecommendations (value.hcRecommendations |> EverySet.toList |> List.head)
+                , contactedSite = or form.contactedSite (EverySet.member ContactSite value.signs |> Just)
+                , siteRecommendations = or form.siteRecommendations (value.siteRecommendations |> EverySet.toList |> List.head)
                 }
             )
 
@@ -811,14 +811,15 @@ toHCContactValue : HCContactForm -> Maybe HCContactValue
 toHCContactValue form =
     let
         signs =
-            [ Maybe.map (ifTrue ContactedHealthCenter) form.contactedHC ]
+            [ Maybe.map (ifTrue Call114) form.called114
+            , Maybe.map (ifTrue ContactSite) form.contactedSite
+            ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHCContactSigns)
     in
     Maybe.map HCContactValue signs
-        |> andMap (form.recommendations |> withDefaultValue HCRecommendationNotApplicable |> Just)
-        |> andMap (form.responsePeriod |> withDefaultValue ResponsePeriodNotApplicable |> Just)
-        |> andMap (form.ambulanceArrivalPeriod |> withDefaultValue ResponsePeriodNotApplicable |> Just)
+        |> andMap (form.hcRecommendations |> withDefaultValue NoneOtherHCRecommendation |> Just)
+        |> andMap (form.siteRecommendations |> withDefaultValue SiteRecommendationNotApplicable |> Just)
 
 
 hcContactValuePostProcess : Maybe HCContactValue -> Maybe HCContactValue
@@ -826,19 +827,21 @@ hcContactValuePostProcess saved =
     saved
         |> Maybe.map
             (\value ->
-                if EverySet.member ContactedHealthCenter value.signs then
-                    if EverySet.member SendAmbulance value.recommendations then
-                        value
+                let
+                    siteRecommendationNotApplicable =
+                        { value | siteRecommendations = EverySet.singleton SiteRecommendationNotApplicable }
+                in
+                if EverySet.member Call114 value.signs then
+                    -- An attempt to contact 114 did not succeed, or, 114 did not recomment to contact a site.
+                    if not (EverySet.member ContactSite value.signs) || EverySet.member OtherHCRecommendation value.hcRecommendations then
+                        siteRecommendationNotApplicable
 
                     else
-                        { value | ambulanceArrivalPeriod = EverySet.singleton ResponsePeriodNotApplicable }
+                        value
 
                 else
-                    { value
-                        | recommendations = EverySet.singleton HCRecommendationNotApplicable
-                        , responsePeriod = EverySet.singleton ResponsePeriodNotApplicable
-                        , ambulanceArrivalPeriod = EverySet.singleton ResponsePeriodNotApplicable
-                    }
+                    -- There was no attempt to contact 114.
+                    siteRecommendationNotApplicable
             )
 
 
