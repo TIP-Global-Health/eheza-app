@@ -435,7 +435,7 @@ type TranslationId
     | HandedReferralFormQuestion
     | Hands
     | HandsCPESign HandsCPESign
-    | HCRecomendation HCRecomendation
+    | HCRecommendation HCRecommendation
     | HCResponseQuestion
     | HCResponsePeriodQuestion
     | HeadHair
@@ -2617,8 +2617,8 @@ translationSet trans =
                 NormalHands ->
                     translationSet Normal
 
-        HCRecomendation recomendation ->
-            case recomendation of
+        HCRecommendation recommendation ->
+            case recommendation of
                 SendAmbulance ->
                     { english = "agreed to call the District Hospital to send an ambulance"
                     , kinyarwanda = Just "wemeye guhamagare ibitaro ngo byohereza imbangukiragitabara"
@@ -2639,7 +2639,7 @@ translationSet trans =
                     , kinyarwanda = Just "Umujyanama w'ubuzima agomba gukomeza gukurikirana umurwayi"
                     }
 
-                HCRecomendationNotApplicable ->
+                HCRecommendationNotApplicable ->
                     { english = "Not Applicable"
                     , kinyarwanda = Just "Ibi ntibikorwa"
                     }

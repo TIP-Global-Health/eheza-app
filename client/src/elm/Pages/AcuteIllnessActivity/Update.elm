@@ -10,7 +10,7 @@ import Backend.Measurement.Model
     exposing
         ( AcuteFindingsGeneralSign(..)
         , AcuteFindingsRespiratorySign(..)
-        , HCRecomendation(..)
+        , HCRecommendation(..)
         , MalariaRapidTestResult(..)
         , MedicationDistributionSign(..)
         , ReasonForNotIsolating(..)
@@ -951,16 +951,16 @@ update currentDate id db msg model =
                     model.nextStepsData.hcContactForm
 
                 updatedForm =
-                    case form.recomendations of
+                    case form.recommendations of
                         Just period ->
                             if period == value then
-                                { form | recomendations = Nothing }
+                                { form | recommendations = Nothing }
 
                             else
-                                { form | recomendations = Just value }
+                                { form | recommendations = Just value }
 
                         Nothing ->
-                            { form | recomendations = Just value }
+                            { form | recommendations = Just value }
 
                 updatedData =
                     model.nextStepsData

@@ -55,7 +55,7 @@ type Msg
     | SetReasonForNotIsolating ReasonForNotIsolating
     | SaveIsolation PersonId (Maybe ( IsolationId, Isolation )) (Maybe NextStepsTask)
     | SetContactedHC Bool
-    | SetHCRecommendation HCRecomendation
+    | SetHCRecommendation HCRecommendation
     | SetResponsePeriod ResponsePeriod
     | SetAmbulanceArrivalPeriod ResponsePeriod
     | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe NextStepsTask)
@@ -319,7 +319,7 @@ type alias IsolationForm =
 
 type alias HCContactForm =
     { contactedHC : Maybe Bool
-    , recomendations : Maybe HCRecomendation
+    , recommendations : Maybe HCRecommendation
     , responsePeriod : Maybe ResponsePeriod
     , ambulanceArrivalPeriod : Maybe ResponsePeriod
     }

@@ -1,4 +1,4 @@
-module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAcuteFindings, decodeAcuteFindingsGeneralSign, decodeAcuteFindingsRespiratorySign, decodeAcuteIllnessMeasurement, decodeAcuteIllnessMeasurements, decodeAcuteIllnessVitals, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeDistributionNotice, decodeExposure, decodeExposureSign, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFbf, decodeFbfValue, decodeFetalPresentation, decodeGroupMeasurement, decodeHCContact, decodeHCContactSign, decodeHCRecomendation, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeIsolation, decodeIsolationSign, decodeLactation, decodeLactationSign, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMalariaRapidTestResult, decodeMalariaTesting, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationDistribution, decodeMedicationDistributionSign, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionHeight, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionMuac, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeReasonForNotIsolating, decodeResource, decodeResourceSign, decodeResponsePeriod, decodeSendToHC, decodeSendToHCSign, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeSymptomsGI, decodeSymptomsGIDerivedSign, decodeSymptomsGIDict, decodeSymptomsGeneral, decodeSymptomsRespiratory, decodeTravelHistory, decodeTravelHistorySign, decodeTreatmentReview, decodeTreatmentReviewSign, decodeVitals, decodeWeight, decodeWithEntityUuid, malariaRapidTestResultFromString, symptomsGIToDict, symptomsGeneralToDict, symptomsRespiratoryToDict)
+module Backend.Measurement.Decoder exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
@@ -1530,9 +1530,8 @@ decodeHCContact : Decoder HCContact
 decodeHCContact =
     succeed HCContactValue
         |> required "hc_contact" (decodeEverySet decodeHCContactSign)
-        |> required "hc_recommendation" (decodeEverySet decodeHCRecomendation)
-        |> required "hc_response_time" (decodeEverySet decodeResponsePeriod)
-        |> required "ambulance_arrival_time" (decodeEverySet decodeResponsePeriod)
+        |> required "hc_recommendation" (decodeEverySet decodeHCRecommendation)
+        |> required "site_recommendation" (decodeEverySet decodeSiteRecommendation)
         |> decodeAcuteIllnessMeasurement
 
 
@@ -1542,8 +1541,11 @@ decodeHCContactSign =
         |> andThen
             (\sign ->
                 case sign of
-                    "contact-hc" ->
-                        succeed ContactedHealthCenter
+                    "call-114" ->
+                        succeed Call114
+
+                    "contact-site" ->
+                        succeed ContactSite
 
                     "none" ->
                         succeed NoHCContactSigns
@@ -1555,57 +1557,69 @@ decodeHCContactSign =
             )
 
 
-decodeHCRecomendation : Decoder HCRecomendation
-decodeHCRecomendation =
+decodeHCRecommendation : Decoder HCRecommendation
+decodeHCRecommendation =
     string
         |> andThen
             (\sign ->
                 case sign of
-                    "send-ambulance" ->
-                        succeed SendAmbulance
+                    "send-to-hc" ->
+                        succeed SendToHealthCenter
 
-                    "home-isolation" ->
-                        succeed HomeIsolation
+                    "send-to-rrtc" ->
+                        succeed SendToRRTCenter
 
-                    "come-to-hc" ->
-                        succeed ComeToHealthCenter
+                    "send-to-hospital" ->
+                        succeed SendToHospital
 
-                    "chw-monitoring" ->
-                        succeed ChwMonitoring
+                    "other" ->
+                        succeed OtherHCRecommendation
 
-                    "n-a" ->
-                        succeed HCRecomendationNotApplicable
+                    "none-no-answer" ->
+                        succeed NoneNoAnswer
+
+                    "none-busy-signal" ->
+                        succeed NoneBusySignal
+
+                    "none-other" ->
+                        succeed NoneOtherHCRecommendation
 
                     _ ->
                         fail <|
                             sign
-                                ++ " is not a recognized HCRecomendation"
+                                ++ " is not a recognized HCRecommendation"
             )
 
 
-decodeResponsePeriod : Decoder ResponsePeriod
-decodeResponsePeriod =
+decodeSiteRecommendation : Decoder SiteRecommendation
+decodeSiteRecommendation =
     string
         |> andThen
             (\sign ->
                 case sign of
-                    "less-than-30m" ->
-                        succeed LessThan30Min
+                    "team-to-village" ->
+                        succeed TeamComeToVillage
 
-                    "30m-1h" ->
-                        succeed Between30min1Hour
+                    "send-with-form" ->
+                        succeed SendToSiteWithForm
 
-                    "1h-2h" ->
-                        succeed Between1Hour2Hour
+                    "other" ->
+                        succeed OtherSiteRecommendation
 
-                    "2h-1d" ->
-                        succeed Between2Hour1Day
+                    "none-sent-with-form" ->
+                        succeed NoneSentWithForm
+
+                    "none-patient-refused" ->
+                        succeed NonePatientRefused
+
+                    "none-other" ->
+                        succeed NoneOtherSiteRecommendation
 
                     "n-a" ->
-                        succeed ResponsePeriodNotApplicable
+                        succeed SiteRecommendationNotApplicable
 
                     _ ->
                         fail <|
                             sign
-                                ++ " is not a recognized ResponsePeriod"
+                                ++ " is not a recognized SiteRecommendation"
             )

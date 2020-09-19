@@ -1,4 +1,4 @@
-module Backend.Measurement.Encoder exposing (encodeAbdomenCPESign, encodeAcuteFindings, encodeAcuteFindingsGeneralSign, encodeAcuteFindingsRespiratorySign, encodeAcuteFindingsValue, encodeAcuteIllnessMeasurement, encodeAcuteIllnessVitals, encodeAcuteIllnessVitalsValue, encodeAttendance, encodeAttendanceValue, encodeBreastExam, encodeBreastExamSign, encodeBreastExamValue, encodeCSectionReason, encodeCSectionScar, encodeCorePhysicalExam, encodeCorePhysicalExamValue, encodeCounselingSession, encodeCounselingSessionValue, encodeDangerSign, encodeDangerSigns, encodeDangerSignsValue, encodeDistributionNotice, encodeDistributionNoticeAsString, encodeEverySet, encodeExposure, encodeExposureSign, encodeExposureValue, encodeEyesCPESign, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeFbf, encodeFbfValue, encodeFetalPresentation, encodeGroupMeasurement, encodeHCContact, encodeHCContactSign, encodeHCContactValue, encodeHCRecomendation, encodeHairHeadCPESign, encodeHandsCPESign, encodeHeartCPESign, encodeHeight, encodeHeightInCm, encodeHeightValue, encodeIsolation, encodeIsolationSign, encodeIsolationValue, encodeLactation, encodeLactationSign, encodeLactationValue, encodeLastMenstrualPeriod, encodeLastMenstrualPeriodValue, encodeLegsCPESign, encodeLungsCPESign, encodeMalariaRapidTestResult, encodeMalariaTesting, encodeMalariaTestingValue, encodeMeasurement, encodeMedicalHistory, encodeMedicalHistorySign, encodeMedicalHistoryValue, encodeMedication, encodeMedicationDistribution, encodeMedicationDistributionValue, encodeMedicationSign, encodeMedicationValue, encodeMuac, encodeMuacInCm, encodeMuacValue, encodeNeckCPESign, encodeNutrition, encodeNutritionHeight, encodeNutritionMeasurement, encodeNutritionMuac, encodeNutritionNutrition, encodeNutritionPhoto, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeNutritionWeight, encodeObstetricHistory, encodeObstetricHistorySign, encodeObstetricHistoryStep2, encodeObstetricHistoryStep2Value, encodeObstetricHistoryValue, encodeObstetricalExam, encodeObstetricalExamValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodePrenatalFamilyPlanning, encodePrenatalMeasurement, encodePrenatalNutrition, encodePrenatalNutritionValue, encodePrenatalPhoto, encodePreviousDeliveryPeriod, encodePreviousDeliverySign, encodeReasonForNotIsolating, encodeResource, encodeResourceSign, encodeResourceValue, encodeResponsePeriod, encodeSendToHC, encodeSendToHCValue, encodeSocialHistory, encodeSocialHistoryHivTestingResult, encodeSocialHistorySign, encodeSocialHistoryValue, encodeSymptomsGI, encodeSymptomsGIDerivedSigns, encodeSymptomsGIValue, encodeSymptomsGeneral, encodeSymptomsGeneralValue, encodeSymptomsRespiratory, encodeSymptomsRespiratoryValue, encodeTravelHistory, encodeTravelHistorySign, encodeTravelHistoryValue, encodeTreatmentReview, encodeTreatmentReviewSign, encodeTreatmentReviewValue, encodeVitals, encodeVitalsValue, encodeWeight, encodeWeightInKg, encodeWeightValue, encondeMedicationDistributionSign, encondeSendToHCSign, malariaRapidTestResultAsString, socialHistoryHivTestingResultToString)
+module Backend.Measurement.Encoder exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
@@ -1352,9 +1352,8 @@ encodeHCContact =
 encodeHCContactValue : HCContactValue -> List ( String, Value )
 encodeHCContactValue value =
     [ ( "hc_contact", encodeEverySet encodeHCContactSign value.signs )
-    , ( "hc_recommendation", encodeEverySet encodeHCRecomendation value.recomendations )
-    , ( "hc_response_time", encodeEverySet encodeResponsePeriod value.responsePeriod )
-    , ( "ambulance_arrival_time", encodeEverySet encodeResponsePeriod value.ambulanceArrivalPeriod )
+    , ( "hc_recommendation", encodeEverySet encodeHCRecommendation value.hcRecommendations )
+    , ( "site_recommendation", encodeEverySet encodeSiteRecommendation value.siteRecommendations )
     ]
 
 
@@ -1362,48 +1361,63 @@ encodeHCContactSign : HCContactSign -> Value
 encodeHCContactSign sign =
     string <|
         case sign of
-            ContactedHealthCenter ->
-                "contact-hc"
+            Call114 ->
+                "call-114"
+
+            ContactSite ->
+                "contact-site"
 
             NoHCContactSigns ->
                 "none"
 
 
-encodeHCRecomendation : HCRecomendation -> Value
-encodeHCRecomendation recomendation =
+encodeHCRecommendation : HCRecommendation -> Value
+encodeHCRecommendation recommendation =
     string <|
-        case recomendation of
-            SendAmbulance ->
-                "send-ambulance"
+        case recommendation of
+            SendToHealthCenter ->
+                "send-to-hc"
 
-            HomeIsolation ->
-                "home-isolation"
+            SendToRRTCenter ->
+                "send-to-rrtc"
 
-            ComeToHealthCenter ->
-                "come-to-hc"
+            SendToHospital ->
+                "send-to-hospital"
 
-            ChwMonitoring ->
-                "chw-monitoring"
+            OtherHCRecommendation ->
+                "other"
 
-            HCRecomendationNotApplicable ->
-                "n-a"
+            NoneNoAnswer ->
+                "none-no-answer"
+
+            NoneBusySignal ->
+                "none-busy-signal"
+
+            NoneOtherHCRecommendation ->
+                "none-other"
 
 
-encodeResponsePeriod : ResponsePeriod -> Value
-encodeResponsePeriod period =
+encodeSiteRecommendation : SiteRecommendation -> Value
+encodeSiteRecommendation period =
     string <|
         case period of
-            LessThan30Min ->
-                "less-than-30m"
+            TeamComeToVillage ->
+                "team-to-village"
 
-            Between30min1Hour ->
-                "30m-1h"
+            SendToSiteWithForm ->
+                "send-referral-form"
 
-            Between1Hour2Hour ->
-                "1h-2h"
+            OtherSiteRecommendation ->
+                "other"
 
-            Between2Hour1Day ->
-                "2h-1d"
+            NoneSentWithForm ->
+                "none-sent-with-form"
 
-            ResponsePeriodNotApplicable ->
+            NonePatientRefused ->
+                "none-patient-refused"
+
+            NoneOtherSiteRecommendation ->
+                "none-other"
+
+            SiteRecommendationNotApplicable ->
                 "n-a"

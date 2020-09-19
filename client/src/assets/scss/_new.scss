@@ -71,7 +71,7 @@
   }
 }
 
-@mixin recomendation-label {
+@mixin recommendation-label {
 
   label {
     font-size: 24px;
@@ -886,7 +886,7 @@ div.page-activity.acute-illness {
       .ui.checkbox.activity {
         margin-bottom: 10px;
 
-        @include recomendation-label;
+        @include recommendation-label;
       }
     }
 
@@ -2004,11 +2004,11 @@ div.page-report.acute-illness {
       margin-bottom: 0;
       padding: 20px;
 
-      .recomendation {
+      .recommendation {
         font-weight: normal;
         margin-left: 52px;
 
-        @include recomendation-label;
+        @include recommendation-label;
 
         > span {
           margin-left: -5px;

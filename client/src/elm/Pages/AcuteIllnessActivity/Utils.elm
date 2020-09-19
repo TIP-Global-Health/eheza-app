@@ -12,7 +12,7 @@ import Backend.Measurement.Model
         , ExposureSign(..)
         , HCContactSign(..)
         , HCContactValue
-        , HCRecomendation(..)
+        , HCRecommendation(..)
         , IsolationSign(..)
         , IsolationValue
         , MalariaRapidTestResult(..)
@@ -328,14 +328,14 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                     (\contactedHC ->
                         if contactedHC then
                             let
-                                recomendationsCompleted =
-                                    naTaskCompleted HCRecomendationNotApplicable form.recomendations
+                                recommendationsCompleted =
+                                    naTaskCompleted HCRecommendationNotApplicable form.recommendations
 
                                 ( ambulanceActive, ambulanceCompleted ) =
-                                    form.recomendations
+                                    form.recommendations
                                         |> Maybe.map
-                                            (\recomendations ->
-                                                if recomendations == SendAmbulance then
+                                            (\recommendations ->
+                                                if recommendations == SendAmbulance then
                                                     ( naTaskCompleted ResponsePeriodNotApplicable form.ambulanceArrivalPeriod
                                                     , naTaskCompleted ResponsePeriodNotApplicable form.ambulanceArrivalPeriod
                                                     )
@@ -345,7 +345,7 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                                             )
                                         |> Maybe.withDefault ( 0, 0 )
                             in
-                            ( 1 + recomendationsCompleted + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceCompleted
+                            ( 1 + recommendationsCompleted + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceCompleted
                             , 2 + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceActive
                             )
 
@@ -780,7 +780,7 @@ isolationValuePostProcess saved =
 fromHCContactValue : Maybe HCContactValue -> HCContactForm
 fromHCContactValue saved =
     { contactedHC = Maybe.map (.signs >> EverySet.member ContactedHealthCenter) saved
-    , recomendations = Maybe.andThen (.recomendations >> EverySet.toList >> List.head) saved
+    , recommendations = Maybe.andThen (.recommendations >> EverySet.toList >> List.head) saved
     , responsePeriod = Maybe.andThen (.responsePeriod >> EverySet.toList >> List.head) saved
     , ambulanceArrivalPeriod = Maybe.andThen (.ambulanceArrivalPeriod >> EverySet.toList >> List.head) saved
     }
@@ -793,7 +793,7 @@ hcContactFormWithDefault form saved =
             form
             (\value ->
                 { contactedHC = or form.contactedHC (EverySet.member ContactedHealthCenter value.signs |> Just)
-                , recomendations = or form.recomendations (value.recomendations |> EverySet.toList |> List.head)
+                , recommendations = or form.recommendations (value.recommendations |> EverySet.toList |> List.head)
                 , responsePeriod = or form.responsePeriod (value.responsePeriod |> EverySet.toList |> List.head)
                 , ambulanceArrivalPeriod = or form.ambulanceArrivalPeriod (value.ambulanceArrivalPeriod |> EverySet.toList |> List.head)
                 }
@@ -816,7 +816,7 @@ toHCContactValue form =
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHCContactSigns)
     in
     Maybe.map HCContactValue signs
-        |> andMap (form.recomendations |> withDefaultValue HCRecomendationNotApplicable |> Just)
+        |> andMap (form.recommendations |> withDefaultValue HCRecommendationNotApplicable |> Just)
         |> andMap (form.responsePeriod |> withDefaultValue ResponsePeriodNotApplicable |> Just)
         |> andMap (form.ambulanceArrivalPeriod |> withDefaultValue ResponsePeriodNotApplicable |> Just)
 
@@ -827,7 +827,7 @@ hcContactValuePostProcess saved =
         |> Maybe.map
             (\value ->
                 if EverySet.member ContactedHealthCenter value.signs then
-                    if EverySet.member SendAmbulance value.recomendations then
+                    if EverySet.member SendAmbulance value.recommendations then
                         value
 
                     else
@@ -835,7 +835,7 @@ hcContactValuePostProcess saved =
 
                 else
                     { value
-                        | recomendations = EverySet.singleton HCRecomendationNotApplicable
+                        | recommendations = EverySet.singleton HCRecommendationNotApplicable
                         , responsePeriod = EverySet.singleton ResponsePeriodNotApplicable
                         , ambulanceArrivalPeriod = EverySet.singleton ResponsePeriodNotApplicable
                     }

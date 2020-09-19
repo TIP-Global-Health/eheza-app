@@ -17,7 +17,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isNothing)
 import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
-import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecomendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
+import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisToMaybe, generateAssembledData, resolveNextStepByDiagnosis)
 import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
@@ -425,14 +425,14 @@ viewActionsTakenPane language currentDate diagnosis data =
                                     (\value ->
                                         if EverySet.member ContactedHealthCenter value.signs then
                                             let
-                                                recomendation =
-                                                    value.recomendations
+                                                recommendation =
+                                                    value.recommendations
                                                         |> EverySet.toList
                                                         |> List.head
-                                                        |> Maybe.withDefault HCRecomendationNotApplicable
+                                                        |> Maybe.withDefault HCRecommendationNotApplicable
                                             in
                                             [ viewSendToHCActionLabel language Translate.ContactedHC "icon-phone" (Just currentDate)
-                                            , viewHCRecomendationActionTaken language recomendation
+                                            , viewHCRecommendationActionTaken language recommendation
                                             ]
 
                                         else
@@ -605,13 +605,13 @@ viewActionsTakenPane language currentDate diagnosis data =
         ]
 
 
-viewHCRecomendationActionTaken : Language -> HCRecomendation -> Html any
-viewHCRecomendationActionTaken language recomendation =
-    if recomendation == HCRecomendationNotApplicable then
+viewHCRecommendationActionTaken : Language -> HCRecommendation -> Html any
+viewHCRecommendationActionTaken language recommendation =
+    if recommendation == HCRecommendationNotApplicable then
         emptyNode
 
     else
-        div [ class "recomendation" ]
-            [ viewHCRecomendation language recomendation
+        div [ class "recommendation" ]
+            [ viewHCRecommendation language recommendation
             , span [] [ text "." ]
             ]

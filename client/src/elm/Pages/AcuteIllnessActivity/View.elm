@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.View exposing (view, viewAdministeredMedicationLabel, viewHCRecomendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
+module Pages.AcuteIllnessActivity.View exposing (view, viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -800,11 +800,11 @@ viewExposureForm language currentDate measurements form =
         ]
 
 
-viewHCRecomendation : Language -> HCRecomendation -> Html any
-viewHCRecomendation language recomendation =
+viewHCRecommendation : Language -> HCRecommendation -> Html any
+viewHCRecommendation language recommendation =
     let
         riskLevel =
-            case recomendation of
+            case recommendation of
                 SendAmbulance ->
                     Translate.HighRiskCase
 
@@ -817,14 +817,14 @@ viewHCRecomendation language recomendation =
                 ChwMonitoring ->
                     Translate.LowRiskCase
 
-                HCRecomendationNotApplicable ->
+                HCRecommendationNotApplicable ->
                     Translate.LowRiskCase
     in
     label []
         [ translate language Translate.HealthCenterDetermined |> text
         , span [ class "strong" ] [ translate language riskLevel |> text ]
         , translate language Translate.And |> text
-        , span [ class "strong" ] [ Translate.HCRecomendation recomendation |> translate language |> text ]
+        , span [ class "strong" ] [ Translate.HCRecommendation recommendation |> translate language |> text ]
         ]
 
 
@@ -1295,9 +1295,9 @@ viewHCContactForm language currentDate measurements form =
                             , viewCheckBoxSelectCustomInput language
                                 [ SendAmbulance, HomeIsolation, ComeToHealthCenter, ChwMonitoring ]
                                 []
-                                form.recomendations
+                                form.recommendations
                                 SetHCRecommendation
-                                (viewHCRecomendation language)
+                                (viewHCRecommendation language)
                             ]
 
                         hcRespnonsePeriodInput =
@@ -1311,10 +1311,10 @@ viewHCContactForm language currentDate measurements form =
                             ]
 
                         derivedInput =
-                            form.recomendations
+                            form.recommendations
                                 |> Maybe.map
-                                    (\recomendations ->
-                                        if recomendations == SendAmbulance then
+                                    (\recommendations ->
+                                        if recommendations == SendAmbulance then
                                             [ viewQuestionLabel language Translate.AmbulancArrivalPeriodQuestion
                                             , viewCheckBoxSelectInput language
                                                 [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
