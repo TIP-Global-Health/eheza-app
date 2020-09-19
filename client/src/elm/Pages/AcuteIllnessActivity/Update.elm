@@ -951,16 +951,16 @@ update currentDate id db msg model =
                     model.nextStepsData.hcContactForm
 
                 updatedForm =
-                    case form.recommendations of
+                    case form.hcRecommendations of
                         Just period ->
                             if period == value then
-                                { form | recommendations = Nothing }
+                                { form | hcRecommendations = Nothing }
 
                             else
-                                { form | recommendations = Just value }
+                                { form | hcRecommendations = Just value }
 
                         Nothing ->
-                            { form | recommendations = Just value }
+                            { form | hcRecommendations = Just value }
 
                 updatedData =
                     model.nextStepsData
@@ -971,48 +971,22 @@ update currentDate id db msg model =
             , []
             )
 
-        SetResponsePeriod value ->
+        SetSiteRecommendation value ->
             let
                 form =
                     model.nextStepsData.hcContactForm
 
                 updatedForm =
-                    case form.responsePeriod of
+                    case form.siteRecommendations of
                         Just period ->
                             if period == value then
-                                { form | responsePeriod = Nothing }
+                                { form | siteRecommendations = Nothing }
 
                             else
-                                { form | responsePeriod = Just value }
+                                { form | siteRecommendations = Just value }
 
                         Nothing ->
-                            { form | responsePeriod = Just value }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | hcContactForm = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetAmbulanceArrivalPeriod value ->
-            let
-                form =
-                    model.nextStepsData.hcContactForm
-
-                updatedForm =
-                    case form.ambulanceArrivalPeriod of
-                        Just period ->
-                            if period == value then
-                                { form | ambulanceArrivalPeriod = Nothing }
-
-                            else
-                                { form | ambulanceArrivalPeriod = Just value }
-
-                        Nothing ->
-                            { form | ambulanceArrivalPeriod = Just value }
+                            { form | siteRecommendations = Just value }
 
                 updatedData =
                     model.nextStepsData

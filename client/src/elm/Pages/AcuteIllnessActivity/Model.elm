@@ -56,8 +56,7 @@ type Msg
     | SaveIsolation PersonId (Maybe ( IsolationId, Isolation )) (Maybe NextStepsTask)
     | SetContactedHC Bool
     | SetHCRecommendation HCRecommendation
-    | SetResponsePeriod ResponsePeriod
-    | SetAmbulanceArrivalPeriod ResponsePeriod
+    | SetSiteRecommendation SiteRecommendation
     | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe NextStepsTask)
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
