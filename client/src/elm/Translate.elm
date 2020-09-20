@@ -324,6 +324,7 @@ type TranslationId
     | CompleteHCReferralForm
     | CompletedHCReferralForm
     | ContactedHC
+    | ContactedRecommendedSiteQuestion
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
@@ -781,6 +782,7 @@ type TranslationId
     | Weight
     | WelcomeUser String
     | WhatDoYouWantToDo
+    | WhatWasTheirResponse
     | WhyNot
     | WhyDifferentFbfAmount Activity
     | Year
@@ -1823,6 +1825,11 @@ translationSet trans =
         ContactedHC ->
             { english = "Contacted health center"
             , kinyarwanda = Just "Yamenyesheje ikigo nderabuzima"
+            }
+
+        ContactedRecommendedSiteQuestion ->
+            { english = "Did you contact the recommended site"
+            , kinyarwanda = Nothing
             }
 
         ContactWithCOVID19SymptomsHelper ->
@@ -5329,6 +5336,11 @@ translationSet trans =
         WhatDoYouWantToDo ->
             { english = "What do you want to do?"
             , kinyarwanda = Just "Urashaka gukora iki?"
+            }
+
+        WhatWasTheirResponse ->
+            { english = "What was their response"
+            , kinyarwanda = Nothing
             }
 
         WhyNot ->

@@ -330,14 +330,22 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                             form.hcRecommendation
                                 |> Maybe.map
                                     (\hcRecommendation ->
+                                        -- We do not show qustions about contacting site, if
+                                        -- 114 did not recommend to contact a site.
                                         if hcRecommendation == OtherHCRecommendation then
                                             ( 2, 2 )
 
-                                        else if isJust form.siteRecommendation then
-                                            ( 4, 4 )
-
                                         else
-                                            ( 3, 4 )
+                                            form.contactedSite
+                                                |> Maybe.map
+                                                    (\contactedSite ->
+                                                        if isJust form.siteRecommendation then
+                                                            ( 4, 4 )
+
+                                                        else
+                                                            ( 3, 4 )
+                                                    )
+                                                |> Maybe.withDefault ( 2, 3 )
                                     )
                                 |> Maybe.withDefault ( 1, 2 )
 

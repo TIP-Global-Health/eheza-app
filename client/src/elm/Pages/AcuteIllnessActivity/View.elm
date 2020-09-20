@@ -802,6 +802,7 @@ viewExposureForm language currentDate measurements form =
 
 viewHCRecommendation : Language -> HCRecommendation -> Html any
 viewHCRecommendation language recommendation =
+    -- @todo
     emptyNode
 
 
@@ -1112,7 +1113,7 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                     measurements.hcContact
                         |> Maybe.map (Tuple.second >> .value)
                         |> hcContactFormWithDefault data.hcContactForm
-                        |> viewHCContactForm language currentDate measurements
+                        |> viewCall114Form language currentDate measurements
 
                 Just NextStepsMedicationDistribution ->
                     measurements.medicationDistribution
@@ -1247,79 +1248,105 @@ viewIsolationForm language currentDate measurements form =
     in
     patientIsolatedInput
         ++ derivedInputs
-        |> div [ class "ui form exposure isolation" ]
+        |> div [ class "ui form next-steps isolation" ]
 
 
-viewHCContactForm : Language -> NominalDate -> AcuteIllnessMeasurements -> HCContactForm -> Html Msg
-viewHCContactForm language currentDate measurements form =
+viewCall114Form : Language -> NominalDate -> AcuteIllnessMeasurements -> HCContactForm -> Html Msg
+viewCall114Form language currentDate measurements form =
     let
         header =
             [ viewCustomLabel language Translate.Call114 "" "helper"
             , viewCustomLabel language Translate.ReviewCaseWith144Respondent "" "helper"
             ]
 
-        contactedHCInput =
+        called114Input =
             [ viewQuestionLabel language Translate.Called114Question
-
-            -- , viewBoolInput
-            --     language
-            --     form.contactedHC
-            --     SetContactedHC
-            --     "contacted-hc"
-            --     Nothing
+            , viewBoolInput
+                language
+                form.called114
+                SetCalled114
+                "called-114"
+                Nothing
             ]
 
-        -- derivedInputs =
-        --     case form.contactedHC of
-        --         Just True ->
-        --             let
-        --                 hcRespnonseInput =
-        --                     [ viewQuestionLabel language Translate.HCResponseQuestion
-        --                     , viewCheckBoxSelectCustomInput language
-        --                         [ SendAmbulance, HomeIsolation, ComeToHealthCenter, ChwMonitoring ]
-        --                         []
-        --                         form.recommendations
-        --                         SetHCRecommendation
-        --                         (viewHCRecommendation language)
-        --                     ]
-        --
-        --                 hcRespnonsePeriodInput =
-        --                     [ viewQuestionLabel language Translate.HCResponsePeriodQuestion
-        --                     , viewCheckBoxSelectInput language
-        --                         [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
-        --                         []
-        --                         form.responsePeriod
-        --                         SetResponsePeriod
-        --                         Translate.ResponsePeriod
-        --                     ]
-        --
-        --                 derivedInput =
-        --                     form.recommendations
-        --                         |> Maybe.map
-        --                             (\recommendations ->
-        --                                 if recommendations == SendAmbulance then
-        --                                     [ viewQuestionLabel language Translate.AmbulancArrivalPeriodQuestion
-        --                                     , viewCheckBoxSelectInput language
-        --                                         [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
-        --                                         []
-        --                                         form.ambulanceArrivalPeriod
-        --                                         SetAmbulanceArrivalPeriod
-        --                                         Translate.ResponsePeriod
-        --                                     ]
-        --
-        --                                 else
-        --                                     []
-        --                             )
-        --                         |> Maybe.withDefault []
-        --             in
-        --             hcRespnonseInput ++ hcRespnonsePeriodInput ++ derivedInput
-        --
-        --         _ ->
-        --             []
+        derrivedInputs =
+            form.called114
+                |> Maybe.map
+                    (\called114 ->
+                        if called114 then
+                            let
+                                hcRecommendationInput =
+                                    [ viewQuestionLabel language Translate.WhatWasTheirResponse
+                                    , viewCheckBoxSelectInput language
+                                        [ SendToHealthCenter, SendToRRTCenter, SendToHospital, OtherHCRecommendation ]
+                                        []
+                                        form.hcRecommendation
+                                        SetHCRecommendation
+                                        Translate.HCRecommendation
+                                    ]
+
+                                derrivedSiteInputs =
+                                    if isJust form.hcRecommendation && form.hcRecommendation /= Just OtherHCRecommendation then
+                                        let
+                                            contactedSiteInput =
+                                                [ viewQuestionLabel language Translate.ContactedRecommendedSiteQuestion
+                                                , viewBoolInput
+                                                    language
+                                                    form.contactedSite
+                                                    SetContactedSite
+                                                    "contacted-site"
+                                                    Nothing
+                                                ]
+
+                                            siteRecommndationInput =
+                                                form.contactedSite
+                                                    |> Maybe.map
+                                                        (\contactedSite ->
+                                                            if contactedSite then
+                                                                [ viewQuestionLabel language Translate.WhatWasTheirResponse
+                                                                , viewCheckBoxSelectInput language
+                                                                    [ TeamComeToVillage, SendToSiteWithForm, OtherSiteRecommendation ]
+                                                                    []
+                                                                    form.siteRecommendation
+                                                                    SetSiteRecommendation
+                                                                    Translate.SiteRecommendation
+                                                                ]
+
+                                                            else
+                                                                [ viewQuestionLabel language Translate.WhyNot
+                                                                , viewCheckBoxSelectInput language
+                                                                    [ NoneSentWithForm, NonePatientRefused, NoneOtherSiteRecommendation ]
+                                                                    []
+                                                                    form.siteRecommendation
+                                                                    SetSiteRecommendation
+                                                                    Translate.SiteRecommendation
+                                                                ]
+                                                        )
+                                                    |> Maybe.withDefault []
+                                        in
+                                        contactedSiteInput ++ siteRecommndationInput
+
+                                    else
+                                        []
+                            in
+                            hcRecommendationInput ++ derrivedSiteInputs
+
+                        else
+                            [ viewQuestionLabel language Translate.WhyNot
+                            , viewCheckBoxSelectInput language
+                                [ NoneNoAnswer, NoneBusySignal, NoneOtherHCRecommendation ]
+                                []
+                                form.hcRecommendation
+                                SetHCRecommendation
+                                Translate.HCRecommendation
+                            ]
+                    )
+                |> Maybe.withDefault []
     in
     header
-        ++ contactedHCInput
-        |> div [ class "ui form exposure hc-contact" ]
+        ++ called114Input
+        ++ derrivedInputs
+        |> div [ class "ui form next-steps call-114" ]
 
 
 viewSendToHCForm : Language -> NominalDate -> SendToHCForm -> Html Msg

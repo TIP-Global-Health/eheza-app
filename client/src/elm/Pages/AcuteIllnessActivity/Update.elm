@@ -934,7 +934,7 @@ update currentDate id db msg model =
                     model.nextStepsData.hcContactForm
 
                 updatedForm =
-                    { form | called114 = Just value }
+                    { form | called114 = Just value, hcRecommendation = Nothing }
 
                 updatedData =
                     model.nextStepsData
@@ -951,7 +951,7 @@ update currentDate id db msg model =
                     model.nextStepsData.hcContactForm
 
                 updatedForm =
-                    { form | contactedSite = Just value }
+                    { form | contactedSite = Just value, siteRecommendation = Nothing }
 
                 updatedData =
                     model.nextStepsData
@@ -971,13 +971,13 @@ update currentDate id db msg model =
                     case form.hcRecommendation of
                         Just period ->
                             if period == value then
-                                { form | hcRecommendation = Nothing }
+                                { form | hcRecommendation = Nothing, contactedSite = Nothing }
 
                             else
-                                { form | hcRecommendation = Just value }
+                                { form | hcRecommendation = Just value, contactedSite = Nothing }
 
                         Nothing ->
-                            { form | hcRecommendation = Just value }
+                            { form | hcRecommendation = Just value, contactedSite = Nothing }
 
                 updatedData =
                     model.nextStepsData
