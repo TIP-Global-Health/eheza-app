@@ -18,7 +18,7 @@ import Backend.Measurement.Model
         , IsolationValue
         , MalariaRapidTestResult(..)
         , ReasonForNotIsolating(..)
-        , ResponsePeriod(..)
+        , SiteRecommendation(..)
         , SymptomsGIDerivedSign(..)
         , SymptomsGISign(..)
         , SymptomsGeneralSign(..)

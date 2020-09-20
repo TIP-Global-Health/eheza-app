@@ -18,8 +18,8 @@ import Backend.Measurement.Model
         , MalariaRapidTestResult(..)
         , MedicationDistributionSign(..)
         , ReasonForNotIsolating(..)
-        , ResponsePeriod(..)
         , SendToHCSign(..)
+        , SiteRecommendation(..)
         , SymptomsGIDerivedSign(..)
         , SymptomsGISign(..)
         , SymptomsGIValue
@@ -323,34 +323,29 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                         |> Maybe.map (Tuple.second >> .value)
                         |> hcContactFormWithDefault data.hcContactForm
             in
-            form.contactedHC
+            form.called114
                 |> Maybe.map
-                    (\contactedHC ->
-                        if contactedHC then
-                            let
-                                recommendationsCompleted =
-                                    naTaskCompleted HCRecommendationNotApplicable form.recommendations
+                    (\called114 ->
+                        if called114 then
+                            form.hcRecommendation
+                                |> Maybe.map
+                                    (\hcRecommendation ->
+                                        if hcRecommendation == OtherHCRecommendation then
+                                            ( 2, 2 )
 
-                                ( ambulanceActive, ambulanceCompleted ) =
-                                    form.recommendations
-                                        |> Maybe.map
-                                            (\recommendations ->
-                                                if recommendations == SendAmbulance then
-                                                    ( naTaskCompleted ResponsePeriodNotApplicable form.ambulanceArrivalPeriod
-                                                    , naTaskCompleted ResponsePeriodNotApplicable form.ambulanceArrivalPeriod
-                                                    )
+                                        else if isJust form.siteRecommendation then
+                                            ( 4, 4 )
 
-                                                else
-                                                    ( 0, 0 )
-                                            )
-                                        |> Maybe.withDefault ( 0, 0 )
-                            in
-                            ( 1 + recommendationsCompleted + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceCompleted
-                            , 2 + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceActive
-                            )
+                                        else
+                                            ( 3, 4 )
+                                    )
+                                |> Maybe.withDefault ( 1, 2 )
+
+                        else if isJust form.hcRecommendation then
+                            ( 2, 2 )
 
                         else
-                            ( 1, 1 )
+                            ( 1, 2 )
                     )
                 |> Maybe.withDefault ( 0, 1 )
 
@@ -780,9 +775,9 @@ isolationValuePostProcess saved =
 fromHCContactValue : Maybe HCContactValue -> HCContactForm
 fromHCContactValue saved =
     { called114 = Maybe.map (.signs >> EverySet.member Call114) saved
-    , hcRecommendations = Maybe.andThen (.hcRecommendations >> EverySet.toList >> List.head) saved
+    , hcRecommendation = Maybe.andThen (.hcRecommendations >> EverySet.toList >> List.head) saved
     , contactedSite = Maybe.map (.signs >> EverySet.member ContactSite) saved
-    , siteRecommendations = Maybe.andThen (.siteRecommendations >> EverySet.toList >> List.head) saved
+    , siteRecommendation = Maybe.andThen (.siteRecommendations >> EverySet.toList >> List.head) saved
     }
 
 
@@ -792,10 +787,10 @@ hcContactFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { called114 = or form.contactedHC (EverySet.member Call114 value.signs |> Just)
-                , hcRecommendations = or form.hcRecommendations (value.hcRecommendations |> EverySet.toList |> List.head)
+                { called114 = or form.called114 (EverySet.member Call114 value.signs |> Just)
+                , hcRecommendation = or form.hcRecommendation (value.hcRecommendations |> EverySet.toList |> List.head)
                 , contactedSite = or form.contactedSite (EverySet.member ContactSite value.signs |> Just)
-                , siteRecommendations = or form.siteRecommendations (value.siteRecommendations |> EverySet.toList |> List.head)
+                , siteRecommendation = or form.siteRecommendation (value.siteRecommendations |> EverySet.toList |> List.head)
                 }
             )
 
@@ -818,8 +813,8 @@ toHCContactValue form =
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHCContactSigns)
     in
     Maybe.map HCContactValue signs
-        |> andMap (form.hcRecommendations |> withDefaultValue NoneOtherHCRecommendation |> Just)
-        |> andMap (form.siteRecommendations |> withDefaultValue SiteRecommendationNotApplicable |> Just)
+        |> andMap (form.hcRecommendation |> withDefaultValue NoneOtherHCRecommendation |> Just)
+        |> andMap (form.siteRecommendation |> withDefaultValue SiteRecommendationNotApplicable |> Just)
 
 
 hcContactValuePostProcess : Maybe HCContactValue -> Maybe HCContactValue

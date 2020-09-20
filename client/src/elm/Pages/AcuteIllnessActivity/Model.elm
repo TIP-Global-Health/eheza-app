@@ -54,7 +54,8 @@ type Msg
     | SetSignOnDoor Bool
     | SetReasonForNotIsolating ReasonForNotIsolating
     | SaveIsolation PersonId (Maybe ( IsolationId, Isolation )) (Maybe NextStepsTask)
-    | SetContactedHC Bool
+    | SetCalled114 Bool
+    | SetContactedSite Bool
     | SetHCRecommendation HCRecommendation
     | SetSiteRecommendation SiteRecommendation
     | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe NextStepsTask)
@@ -318,9 +319,9 @@ type alias IsolationForm =
 
 type alias HCContactForm =
     { called114 : Maybe Bool
-    , hcRecommendations : Maybe HCRecommendation
+    , hcRecommendation : Maybe HCRecommendation
     , contactedSite : Maybe Bool
-    , siteRecommendations : Maybe SiteRecommendation
+    , siteRecommendation : Maybe SiteRecommendation
     }
 
 

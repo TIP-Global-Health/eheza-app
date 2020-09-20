@@ -294,6 +294,8 @@ type TranslationId
     | BrittleHair
     | ByMouthDaylyForXDays Int
     | ByMouthTwiceADayForXDays Int
+    | Call114
+    | Called114Question
     | Cancel
     | CardiacDisease
     | CaregiverName
@@ -322,7 +324,6 @@ type TranslationId
     | CompleteHCReferralForm
     | CompletedHCReferralForm
     | ContactedHC
-    | ContactedHCQuestion
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
@@ -664,6 +665,7 @@ type TranslationId
     | ResolveMonthYY Int Bool Month
     | RespiratoryRate
     | Retry
+    | ReviewCaseWith144Respondent
     | RhNegative
     | RiskFactorAlert RiskFactor
     | RiskFactors
@@ -1604,6 +1606,16 @@ translationSet trans =
             , kinyarwanda = Just <| "Kunywa umuti inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
             }
 
+        Call114 ->
+            { english = "Call 114"
+            , kinyarwanda = Nothing
+            }
+
+        Called114Question ->
+            { english = "Were you able to talk with 114"
+            , kinyarwanda = Nothing
+            }
+
         Cancel ->
             { english = "Cancel"
             , kinyarwanda = Just "Guhagarika"
@@ -1811,11 +1823,6 @@ translationSet trans =
         ContactedHC ->
             { english = "Contacted health center"
             , kinyarwanda = Just "Yamenyesheje ikigo nderabuzima"
-            }
-
-        ContactedHCQuestion ->
-            { english = "Have you contacted the health center"
-            , kinyarwanda = Just "Wamenyesheje ikigo nderabuzima"
             }
 
         ContactWithCOVID19SymptomsHelper ->
@@ -4425,6 +4432,11 @@ translationSet trans =
         Retry ->
             { english = "Retry"
             , kinyarwanda = Just "Kongera kugerageza"
+            }
+
+        ReviewCaseWith144Respondent ->
+            { english = "Review case with 114 Respondent"
+            , kinyarwanda = Nothing
             }
 
         RhNegative ->
