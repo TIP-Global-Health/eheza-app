@@ -1166,7 +1166,7 @@ input::placeholder {
           width: 48px;
         }
 
-        .popup-heading {
+        .popup-heading{
           color: $color-dark-grey;
           font-size: 30px;
           font-weight: bold;
@@ -1174,6 +1174,11 @@ input::placeholder {
           text-align: center;
           text-transform: uppercase;
           min-width: 400px;
+        }
+
+        .warning {
+          width: 400px;
+          float: left;
         }
       }
 

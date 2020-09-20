@@ -69,11 +69,11 @@ warningPopup language maybeDiagnosis setStateMsg =
             (\diagnosis ->
                 let
                     infoHeading =
-                        [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
+                        [ div [ class "popup-heading " ] [ text <| translate language Translate.Assessment ++ ":" ] ]
 
                     warningHeading =
                         [ img [ src "assets/images/exclamation-red.png" ] []
-                        , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
+                        , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
                         ]
 
                     ( heading, content ) =
