@@ -121,7 +121,7 @@ resolveNextStepsTasks currentDate person diagnosis =
                 NextStepsIsolation ->
                     diagnosis == Just DiagnosisCovid19
 
-                NextStepsContactHC ->
+                NextStepsCall114 ->
                     diagnosis == Just DiagnosisCovid19
 
                 NextStepsMedicationDistribution ->
@@ -141,7 +141,7 @@ resolveNextStepsTasks currentDate person diagnosis =
                         || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
                         || (diagnosis == Just DiagnosisUndeterminedMoreEvaluationNeeded)
     in
-    [ NextStepsIsolation, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
+    [ NextStepsIsolation, NextStepsCall114, NextStepsMedicationDistribution, NextStepsSendToHC ]
         |> List.filter expectTask
 
 
@@ -180,7 +180,7 @@ activityCompleted currentDate person measurements diagnosis activity =
 
         AcuteIllnessNextSteps ->
             case resolveNextStepsTasks currentDate person diagnosis of
-                [ NextStepsIsolation, NextStepsContactHC ] ->
+                [ NextStepsIsolation, NextStepsCall114 ] ->
                     isJust measurements.isolation
                         && isJust measurements.hcContact
 

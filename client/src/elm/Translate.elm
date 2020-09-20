@@ -3563,9 +3563,9 @@ translationSet trans =
                     , kinyarwanda = Just "Shyira umurwayi mu kato"
                     }
 
-                NextStepsContactHC ->
-                    { english = "Contact Health Center"
-                    , kinyarwanda = Just "Menyesha ikigo nderabuzima"
+                NextStepsCall114 ->
+                    { english = "Call 114"
+                    , kinyarwanda = Nothing
                     }
 
                 NextStepsMedicationDistribution ->

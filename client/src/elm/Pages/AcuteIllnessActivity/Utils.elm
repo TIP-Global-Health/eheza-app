@@ -316,7 +316,7 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
             , 1 + derivedActive
             )
 
-        NextStepsContactHC ->
+        NextStepsCall114 ->
             let
                 form =
                     measurements.hcContact

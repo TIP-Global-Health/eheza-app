@@ -304,7 +304,7 @@ emptyNextStepsData =
 
 type NextStepsTask
     = NextStepsIsolation
-    | NextStepsContactHC
+    | NextStepsCall114
     | NextStepsMedicationDistribution
     | NextStepsSendToHC
 

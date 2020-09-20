@@ -404,65 +404,7 @@ viewActionsTakenPane language currentDate diagnosis data =
         actionsTaken =
             case resolveNextStepByDiagnosis currentDate data.person diagnosis of
                 Just NextStepsIsolation ->
-                    let
-                        contacedHCValue =
-                            data.measurements.hcContact
-                                |> Maybe.map (Tuple.second >> .value)
-
-                        contacedHC =
-                            data.measurements.hcContact
-                                |> Maybe.map
-                                    (Tuple.second
-                                        >> .value
-                                        >> .signs
-                                        >> EverySet.member ContactedHealthCenter
-                                    )
-                                |> Maybe.withDefault False
-
-                        contacedHCAction =
-                            contacedHCValue
-                                |> Maybe.map
-                                    (\value ->
-                                        if EverySet.member ContactedHealthCenter value.signs then
-                                            let
-                                                recommendation =
-                                                    value.recommendations
-                                                        |> EverySet.toList
-                                                        |> List.head
-                                                        |> Maybe.withDefault HCRecommendationNotApplicable
-                                            in
-                                            [ viewSendToHCActionLabel language Translate.ContactedHC "icon-phone" (Just currentDate)
-                                            , viewHCRecommendationActionTaken language recommendation
-                                            ]
-
-                                        else
-                                            []
-                                    )
-                                |> Maybe.withDefault []
-
-                        patientIsolated =
-                            data.measurements.isolation
-                                |> Maybe.map
-                                    (Tuple.second
-                                        >> .value
-                                        >> .signs
-                                        >> EverySet.member PatientIsolated
-                                    )
-                                |> Maybe.withDefault False
-
-                        patientIsolatedAction =
-                            if patientIsolated then
-                                [ viewSendToHCActionLabel language Translate.IsolatedAtHome "icon-patient-in-bed" (Just currentDate) ]
-
-                            else
-                                []
-                    in
-                    if contacedHC || patientIsolated then
-                        div [ class "instructions" ] <|
-                            (contacedHCAction ++ patientIsolatedAction)
-
-                    else
-                        emptyNode
+                    emptyNode
 
                 Just NextStepsMedicationDistribution ->
                     let
@@ -603,15 +545,3 @@ viewActionsTakenPane language currentDate diagnosis data =
         [ viewItemHeading language Translate.ActionsTaken "blue"
         , actionsTaken
         ]
-
-
-viewHCRecommendationActionTaken : Language -> HCRecommendation -> Html any
-viewHCRecommendationActionTaken language recommendation =
-    if recommendation == HCRecommendationNotApplicable then
-        emptyNode
-
-    else
-        div [ class "recommendation" ]
-            [ viewHCRecommendation language recommendation
-            , span [] [ text "." ]
-            ]
