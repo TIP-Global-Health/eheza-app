@@ -783,6 +783,28 @@ div.page-activity.acute-illness {
       @include next-steps;
     }
 
+    .ui.form.next-steps.call-114 {
+
+      .helper.call-114 {
+        margin-bottom: 5px;
+      }
+
+      .review-case-wrapper {
+        display: flex;
+
+        .helper.review-case {
+          margin-bottom: 30px;
+        }
+
+        img {
+          height: 35px;
+          margin-left: 4px;
+          margin-top: -4px;
+        }
+      }
+
+    }
+
     .label {
       margin-bottom: 5px;
     }

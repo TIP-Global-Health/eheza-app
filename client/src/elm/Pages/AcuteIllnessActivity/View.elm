@@ -1255,8 +1255,11 @@ viewCall114Form : Language -> NominalDate -> AcuteIllnessMeasurements -> HCConta
 viewCall114Form language currentDate measurements form =
     let
         header =
-            [ viewCustomLabel language Translate.Call114 "" "helper"
-            , viewCustomLabel language Translate.ReviewCaseWith144Respondent "" "helper"
+            [ viewCustomLabel language Translate.Call114 "" "helper call-114"
+            , div [ class "review-case-wrapper" ]
+                [ viewCustomLabel language Translate.ReviewCaseWith144Respondent "" "helper review-case"
+                , img [ src "assets/images/icon-review.png" ] []
+                ]
             ]
 
         called114Input =
