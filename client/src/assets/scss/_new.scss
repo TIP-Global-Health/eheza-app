@@ -722,22 +722,22 @@ div.page-activity.acute-illness {
 
         .label {
           float: left;
-          width: 24%;
+          max-width: 54%;
         }
 
         .diagnosis {
           float: left;
-          width: 75%;
+          max-width: 46%;
         }
 
         &.covid-19 {
 
           .label {
-            width: 26%;
+            max-width: 58%;
           }
 
           .diagnosis {
-            width: 73%;
+            max-width: 42%;
           }
         }
       }
