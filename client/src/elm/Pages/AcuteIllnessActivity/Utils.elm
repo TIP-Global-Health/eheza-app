@@ -35,7 +35,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (ifNullableTrue, ifTrue)
-import Pages.Utils exposing (ifEverySetEmpty, taskCompleted, valueConsideringIsDirtyField)
+import Pages.Utils exposing (ifEverySetEmpty, maybeValueConsideringIsDirtyField, taskCompleted, valueConsideringIsDirtyField)
 
 
 symptomsGeneralDangerSigns : List SymptomsGeneralSign
@@ -332,18 +332,23 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                                     (\hcRecommendation ->
                                         -- We do not show qustions about contacting site, if
                                         -- 114 did not recommend to contact a site.
-                                        if hcRecommendation == OtherHCRecommendation then
+                                        if List.member hcRecommendation [ OtherHCRecommendation, NoneNoAnswer, NoneBusySignal, NoneOtherHCRecommendation ] then
                                             ( 2, 2 )
 
                                         else
                                             form.contactedSite
                                                 |> Maybe.map
                                                     (\contactedSite ->
-                                                        if isJust form.siteRecommendation then
-                                                            ( 4, 4 )
+                                                        form.siteRecommendation
+                                                            |> Maybe.map
+                                                                (\siteRecommendation ->
+                                                                    if List.member siteRecommendation [ TeamComeToVillage, SendToSiteWithForm, OtherSiteRecommendation ] then
+                                                                        ( 4, 4 )
 
-                                                        else
-                                                            ( 3, 4 )
+                                                                    else
+                                                                        ( 3, 4 )
+                                                                )
+                                                            |> Maybe.withDefault ( 3, 4 )
                                                     )
                                                 |> Maybe.withDefault ( 2, 3 )
                                     )
@@ -784,8 +789,11 @@ fromHCContactValue : Maybe HCContactValue -> HCContactForm
 fromHCContactValue saved =
     { called114 = Maybe.map (.signs >> EverySet.member Call114) saved
     , hcRecommendation = Maybe.andThen (.hcRecommendations >> EverySet.toList >> List.head) saved
+    , hcRecommendationDirty = False
     , contactedSite = Maybe.map (.signs >> EverySet.member ContactSite) saved
+    , contactedSiteDirty = False
     , siteRecommendation = Maybe.andThen (.siteRecommendations >> EverySet.toList >> List.head) saved
+    , siteRecommendationDirty = False
     }
 
 
@@ -796,9 +804,15 @@ hcContactFormWithDefault form saved =
             form
             (\value ->
                 { called114 = or form.called114 (EverySet.member Call114 value.signs |> Just)
-                , hcRecommendation = or form.hcRecommendation (value.hcRecommendations |> EverySet.toList |> List.head)
-                , contactedSite = or form.contactedSite (EverySet.member ContactSite value.signs |> Just)
-                , siteRecommendation = or form.siteRecommendation (value.siteRecommendations |> EverySet.toList |> List.head)
+                , hcRecommendation =
+                    maybeValueConsideringIsDirtyField form.hcRecommendationDirty form.hcRecommendation (value.hcRecommendations |> EverySet.toList |> List.head)
+                , hcRecommendationDirty = form.hcRecommendationDirty
+                , contactedSite =
+                    valueConsideringIsDirtyField form.contactedSiteDirty form.contactedSite (EverySet.member ContactSite value.signs)
+                , contactedSiteDirty = form.contactedSiteDirty
+                , siteRecommendation =
+                    maybeValueConsideringIsDirtyField form.siteRecommendationDirty form.siteRecommendation (value.siteRecommendations |> EverySet.toList |> List.head)
+                , siteRecommendationDirty = form.siteRecommendationDirty
                 }
             )
 

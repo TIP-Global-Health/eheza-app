@@ -934,24 +934,15 @@ update currentDate id db msg model =
                     model.nextStepsData.hcContactForm
 
                 updatedForm =
-                    { form | called114 = Just value, hcRecommendation = Nothing }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | hcContactForm = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetContactedSite value ->
-            let
-                form =
-                    model.nextStepsData.hcContactForm
-
-                updatedForm =
-                    { form | contactedSite = Just value, siteRecommendation = Nothing }
+                    { form
+                        | called114 = Just value
+                        , hcRecommendation = Nothing
+                        , hcRecommendationDirty = True
+                        , contactedSite = Nothing
+                        , contactedSiteDirty = True
+                        , siteRecommendation = Nothing
+                        , siteRecommendationDirty = True
+                    }
 
                 updatedData =
                     model.nextStepsData
@@ -971,13 +962,56 @@ update currentDate id db msg model =
                     case form.hcRecommendation of
                         Just period ->
                             if period == value then
-                                { form | hcRecommendation = Nothing, contactedSite = Nothing }
+                                { form
+                                    | hcRecommendation = Nothing
+                                    , hcRecommendationDirty = True
+                                    , contactedSite = Nothing
+                                    , contactedSiteDirty = True
+                                    , siteRecommendation = Nothing
+                                    , siteRecommendationDirty = True
+                                }
 
                             else
-                                { form | hcRecommendation = Just value, contactedSite = Nothing }
+                                { form
+                                    | hcRecommendation = Just value
+                                    , hcRecommendationDirty = True
+                                    , contactedSite = Nothing
+                                    , contactedSiteDirty = True
+                                    , siteRecommendation = Nothing
+                                    , siteRecommendationDirty = True
+                                }
 
                         Nothing ->
-                            { form | hcRecommendation = Just value, contactedSite = Nothing }
+                            { form
+                                | hcRecommendation = Just value
+                                , hcRecommendationDirty = True
+                                , contactedSite = Nothing
+                                , contactedSiteDirty = True
+                                , siteRecommendation = Nothing
+                                , siteRecommendationDirty = True
+                            }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | hcContactForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetContactedSite value ->
+            let
+                form =
+                    model.nextStepsData.hcContactForm
+
+                updatedForm =
+                    { form
+                        | contactedSite = Just value
+                        , contactedSiteDirty = True
+                        , siteRecommendation = Nothing
+                        , siteRecommendationDirty = True
+                    }
 
                 updatedData =
                     model.nextStepsData
@@ -997,13 +1031,13 @@ update currentDate id db msg model =
                     case form.siteRecommendation of
                         Just period ->
                             if period == value then
-                                { form | siteRecommendation = Nothing }
+                                { form | siteRecommendation = Nothing, siteRecommendationDirty = True }
 
                             else
-                                { form | siteRecommendation = Just value }
+                                { form | siteRecommendation = Just value, siteRecommendationDirty = True }
 
                         Nothing ->
-                            { form | siteRecommendation = Just value }
+                            { form | siteRecommendation = Just value, siteRecommendationDirty = True }
 
                 updatedData =
                     model.nextStepsData

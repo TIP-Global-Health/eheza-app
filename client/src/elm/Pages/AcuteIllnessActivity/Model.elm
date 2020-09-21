@@ -295,7 +295,7 @@ type alias NextStepsData =
 emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { isolationForm = IsolationForm Nothing Nothing Nothing Nothing
-    , hcContactForm = HCContactForm Nothing Nothing Nothing Nothing
+    , hcContactForm = emptyHCContactForm
     , sendToHCForm = SendToHCForm Nothing Nothing
     , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing
     , activeTask = Nothing
@@ -320,8 +320,23 @@ type alias IsolationForm =
 type alias HCContactForm =
     { called114 : Maybe Bool
     , hcRecommendation : Maybe HCRecommendation
+    , hcRecommendationDirty : Bool
     , contactedSite : Maybe Bool
+    , contactedSiteDirty : Bool
     , siteRecommendation : Maybe SiteRecommendation
+    , siteRecommendationDirty : Bool
+    }
+
+
+emptyHCContactForm : HCContactForm
+emptyHCContactForm =
+    { called114 = Nothing
+    , hcRecommendation = Nothing
+    , hcRecommendationDirty = False
+    , contactedSite = Nothing
+    , contactedSiteDirty = False
+    , siteRecommendation = Nothing
+    , siteRecommendationDirty = False
     }
 
 
