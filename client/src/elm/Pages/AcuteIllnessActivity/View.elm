@@ -71,6 +71,7 @@ viewHeaderAndContent language currentDate id activity model data =
             pertinentSymptomsPopup language
                 model.showPertinentSymptomsPopup
                 (SetPertinentSymptomsPopupState False)
+                data.measurements
         ]
 
 
@@ -118,8 +119,8 @@ viewContent language currentDate id activity model data =
         |> div [ class "ui unstackable items" ]
 
 
-pertinentSymptomsPopup : Language -> Bool -> msg -> Maybe (Html msg)
-pertinentSymptomsPopup language isOpen closeMsg =
+pertinentSymptomsPopup : Language -> Bool -> msg -> AcuteIllnessMeasurements -> Maybe (Html msg)
+pertinentSymptomsPopup language isOpen closeMsg measurements =
     if isOpen then
         let
             sectionLabel title =
@@ -127,15 +128,86 @@ pertinentSymptomsPopup language isOpen closeMsg =
                     [ img [ src "assets/images/exclamation-red.png" ] []
                     , div [ class "section-label" ] [ text <| translate language title ++ ":" ]
                     ]
+
+            textItemWrapper textItem =
+                "- " ++ textItem |> text
+
+            vitalsValue =
+                measurements.vitals
+                    |> Maybe.map (Tuple.second >> .value)
+
+            viewBodyTemperature =
+                vitalsValue
+                    |> Maybe.map
+                        (.bodyTemperature
+                            >> (\bodyTemperature ->
+                                    div []
+                                        [ translate language Translate.BodyTemperature
+                                            ++ ": "
+                                            ++ String.fromFloat bodyTemperature
+                                            ++ " "
+                                            ++ translate language Translate.CelsiusAbbrev
+                                            |> textItemWrapper
+                                        ]
+                               )
+                        )
+                    |> Maybe.withDefault
+                        emptyNode
+
+            viewRespiratoryRate =
+                vitalsValue
+                    |> Maybe.map
+                        (.respiratoryRate
+                            >> (\respiratoryRate ->
+                                    translate language Translate.RespiratoryRate
+                                        ++ ": "
+                                        ++ String.fromInt respiratoryRate
+                                        ++ " "
+                                        ++ translate language Translate.BpmUnit
+                                        |> textItemWrapper
+                               )
+                        )
+                    |> Maybe.withDefault
+                        emptyNode
+
+            travelHistory =
+                measurements.travelHistory
+                    |> Maybe.map
+                        (Tuple.second
+                            >> .value
+                            >> EverySet.member COVID19Country
+                            >> (\isMember ->
+                                    if isMember then
+                                        Translate.Yes
+
+                                    else
+                                        Translate.No
+                               )
+                        )
+
+            viewTravelHistory =
+                travelHistory
+                    |> Maybe.map
+                        (\history ->
+                            translate language Translate.TravelHistory
+                                ++ ": "
+                                ++ translate language history
+                                |> textItemWrapper
+                        )
+                    |> Maybe.withDefault emptyNode
+
+            contactExposure =
+                measurements.exposure
+                    |> Maybe.map (Tuple.second >> .value >> EverySet.member COVID19Symptoms)
         in
         Just <|
             div [ class "ui active modal alerts-dialog" ]
                 [ div [ class "content" ]
                     [ div [ class "high-severity-alerts" ]
                         [ sectionLabel Translate.PerinentSymptoms
-                        , div [ class "section-items" ]
-                            [ div [ class "alert" ]
-                                []
+                        , div [ class "section-items vitals" ]
+                            [ viewBodyTemperature
+                            , viewRespiratoryRate
                             ]
                         ]
                     ]

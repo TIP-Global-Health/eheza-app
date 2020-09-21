@@ -475,7 +475,7 @@ countGISymptoms measurements exclusions =
 
 feverRecorded : AcuteIllnessMeasurements -> Bool
 feverRecorded measurements =
-    feverAtSymptoms measurements || feverAtPhysicalExam measurements
+    feverAtSymptoms measurements || isJust (feverAtPhysicalExam measurements)
 
 
 feverAtSymptoms : AcuteIllnessMeasurements -> Bool
@@ -485,10 +485,10 @@ feverAtSymptoms measurements =
         |> Maybe.withDefault False
 
 
-feverAtPhysicalExam : AcuteIllnessMeasurements -> Bool
+feverAtPhysicalExam : AcuteIllnessMeasurements -> Maybe Float
 feverAtPhysicalExam measurements =
     measurements.vitals
-        |> Maybe.map
+        |> Maybe.andThen
             (\measurement ->
                 let
                     bodyTemperature =
@@ -496,9 +496,12 @@ feverAtPhysicalExam measurements =
                             |> .value
                             |> .bodyTemperature
                 in
-                bodyTemperature >= 37.5
+                if bodyTemperature >= 37.5 then
+                    Just bodyTemperature
+
+                else
+                    Nothing
             )
-        |> Maybe.withDefault False
 
 
 respiratoryRateElevated : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool

@@ -762,6 +762,7 @@ type TranslationId
     | TrainingGroupEncounterCreateSuccessMessage
     | TrainingGroupEncounterDeleteSuccessMessage
     | TraveledToCOVID19CountryQuestion
+    | TravelHistory
     | PriorTreatmentTask PriorTreatmentTask
     | TrySyncing
     | TuberculosisPast
@@ -5221,6 +5222,11 @@ translationSet trans =
         TraveledToCOVID19CountryQuestion ->
             { english = "Have you traveled to any country or district in Rwanda known to have COVID-19 in the past 14 days"
             , kinyarwanda = Just "Waba waragiye mu gihugu cyangwa mu karere mu Rwanda bizwi ko hagaragayemo ubwandu bwa Covid 19 mu minsi 14 ishize"
+            }
+
+        TravelHistory ->
+            { english = "Travel History"
+            , kinyarwanda = Nothing
             }
 
         PriorTreatmentTask task ->
