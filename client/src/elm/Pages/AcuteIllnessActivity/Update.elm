@@ -73,6 +73,9 @@ update currentDate id db msg model =
         SetWarningPopupState diagnosis ->
             ( { model | warningPopupState = diagnosis }, Cmd.none, [] )
 
+        SetPertinentSymptomsPopupState isOpen ->
+            ( { model | showPertinentSymptomsPopup = isOpen }, Cmd.none, [] )
+
         SetActiveSymptomsTask task ->
             let
                 updatedData =

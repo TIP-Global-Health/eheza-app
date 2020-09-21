@@ -67,6 +67,10 @@ viewHeaderAndContent language currentDate id activity model data =
             warningPopup language
                 model.warningPopupState
                 SetWarningPopupState
+        , viewModal <|
+            pertinentSymptomsPopup language
+                model.showPertinentSymptomsPopup
+                (SetPertinentSymptomsPopupState False)
         ]
 
 
@@ -112,6 +116,41 @@ viewContent language currentDate id activity model data =
         :: viewActivity language currentDate id activity diagnosis data model
     )
         |> div [ class "ui unstackable items" ]
+
+
+pertinentSymptomsPopup : Language -> Bool -> msg -> Maybe (Html msg)
+pertinentSymptomsPopup language isOpen closeMsg =
+    if isOpen then
+        let
+            sectionLabel title =
+                div [ class "section-label-wrapper" ]
+                    [ img [ src "assets/images/exclamation-red.png" ] []
+                    , div [ class "section-label" ] [ text <| translate language title ++ ":" ]
+                    ]
+        in
+        Just <|
+            div [ class "ui active modal alerts-dialog" ]
+                [ div [ class "content" ]
+                    [ div [ class "high-severity-alerts" ]
+                        [ sectionLabel Translate.PerinentSymptoms
+                        , div [ class "section-items" ]
+                            [ div [ class "alert" ]
+                                []
+                            ]
+                        ]
+                    ]
+                , div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick closeMsg
+                        ]
+                        [ text <| translate language Translate.Close ]
+                    ]
+                ]
+
+    else
+        Nothing
 
 
 viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> AssembledData -> Model -> List (Html Msg)
@@ -1256,7 +1295,10 @@ viewCall114Form language currentDate measurements form =
     let
         header =
             [ viewCustomLabel language Translate.Call114 "" "helper call-114"
-            , div [ class "review-case-wrapper" ]
+            , div
+                [ class "review-case-wrapper"
+                , onClick <| SetPertinentSymptomsPopupState True
+                ]
                 [ viewCustomLabel language Translate.ReviewCaseWith144Respondent "" "helper review-case"
                 , img [ src "assets/images/icon-review.png" ] []
                 ]

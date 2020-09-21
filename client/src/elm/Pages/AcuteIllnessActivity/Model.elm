@@ -12,6 +12,7 @@ type Msg
     = SetActivePage Page
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe AcuteIllnessDiagnosis)
+    | SetPertinentSymptomsPopupState Bool
       -- SYMPTOMS Msgs
     | SetActiveSymptomsTask SymptomsTask
     | ToggleSymptomsGeneralSign SymptomsGeneralSign
@@ -74,6 +75,7 @@ type alias Model =
     , priorTreatmentData : PriorTreatmentData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
+    , showPertinentSymptomsPopup : Bool
     , warningPopupState : Maybe AcuteIllnessDiagnosis
     }
 
@@ -87,6 +89,7 @@ emptyModel =
     , priorTreatmentData = emptyPriorTreatmentData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
+    , showPertinentSymptomsPopup = False
     , warningPopupState = Nothing
     }
 
