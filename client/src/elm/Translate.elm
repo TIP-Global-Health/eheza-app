@@ -341,6 +341,7 @@ type TranslationId
     | ConfirmDeleteTrainingGroupEncounters
     | ConfirmRegisterParticipant
     | Connected
+    | ContactExposure
     | ContactInformation
     | Continue
     | CounselingTimingHeading CounselingTiming
@@ -366,6 +367,7 @@ type TranslationId
     | Days
     | DaysAbbrev
     | DaysPresent
+    | DaysSinglePlural Int
     | Delete
     | DeliveryLocation
     | DeliveryOutcome
@@ -1926,6 +1928,11 @@ translationSet trans =
             , kinyarwanda = Just "Ufite interineti (murandasi)"
             }
 
+        ContactExposure ->
+            { english = "Contact Exposure"
+            , kinyarwanda = Nothing
+            }
+
         ContactInformation ->
             { english = "Contact Information"
             , kinyarwanda = Just "Uburyo bwakwifashishwa mu kugera ku mugenerwabikorwa"
@@ -2123,6 +2130,17 @@ translationSet trans =
             { english = "Days present"
             , kinyarwanda = Just "Igihe gishize"
             }
+
+        DaysSinglePlural value ->
+            if value == 1 then
+                { english = "1 day"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = String.fromInt value ++ " days"
+                , kinyarwanda = Nothing
+                }
 
         Delete ->
             { english = "Delete"

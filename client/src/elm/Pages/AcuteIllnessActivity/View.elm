@@ -129,8 +129,14 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
                     , div [ class "section-label" ] [ text <| translate language title ++ ":" ]
                     ]
 
-            textItemWrapper textItem =
-                "- " ++ textItem |> text
+            viewLabelValuePopupItem transLabel value =
+                translate language transLabel
+                    ++ ": "
+                    ++ value
+                    |> viewPopupItem
+
+            viewPopupItem value =
+                div [] [ text <| "- " ++ value ]
 
             vitalsValue =
                 measurements.vitals
@@ -141,34 +147,18 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
                     |> Maybe.map
                         (.bodyTemperature
                             >> (\bodyTemperature ->
-                                    div []
-                                        [ translate language Translate.BodyTemperature
-                                            ++ ": "
-                                            ++ String.fromFloat bodyTemperature
-                                            ++ " "
-                                            ++ translate language Translate.CelsiusAbbrev
-                                            |> textItemWrapper
-                                        ]
+                                    viewLabelValuePopupItem Translate.BodyTemperature (String.fromFloat bodyTemperature ++ " " ++ translate language Translate.CelsiusAbbrev)
                                )
                         )
-                    |> Maybe.withDefault
-                        emptyNode
 
             viewRespiratoryRate =
                 vitalsValue
                     |> Maybe.map
                         (.respiratoryRate
                             >> (\respiratoryRate ->
-                                    translate language Translate.RespiratoryRate
-                                        ++ ": "
-                                        ++ String.fromInt respiratoryRate
-                                        ++ " "
-                                        ++ translate language Translate.BpmUnit
-                                        |> textItemWrapper
+                                    viewLabelValuePopupItem Translate.RespiratoryRate (String.fromInt respiratoryRate ++ " " ++ translate language Translate.BpmUnit)
                                )
                         )
-                    |> Maybe.withDefault
-                        emptyNode
 
             travelHistory =
                 measurements.travelHistory
@@ -187,28 +177,172 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
 
             viewTravelHistory =
                 travelHistory
-                    |> Maybe.map
-                        (\history ->
-                            translate language Translate.TravelHistory
-                                ++ ": "
-                                ++ translate language history
-                                |> textItemWrapper
-                        )
-                    |> Maybe.withDefault emptyNode
+                    |> Maybe.map (translate language >> viewLabelValuePopupItem Translate.TravelHistory)
 
             contactExposure =
                 measurements.exposure
-                    |> Maybe.map (Tuple.second >> .value >> EverySet.member COVID19Symptoms)
+                    |> Maybe.map
+                        (Tuple.second
+                            >> .value
+                            >> EverySet.member COVID19Symptoms
+                            >> (\isMember ->
+                                    if isMember then
+                                        Translate.Yes
+
+                                    else
+                                        Translate.No
+                               )
+                        )
+
+            viewContactExposure =
+                contactExposure
+                    |> Maybe.map (translate language >> viewLabelValuePopupItem Translate.ContactExposure)
+
+            viewMalariaTesting =
+                measurements.malariaTesting
+                    |> Maybe.map
+                        (Tuple.second
+                            >> .value
+                            >> (Translate.MalariaRapidTestResult
+                                    >> translate language
+                                    >> viewLabelValuePopupItem Translate.MalariaRapidDiagnosticTest
+                               )
+                        )
+
+            symptomsGeneral =
+                measurements.symptomsGeneral
+                    |> Maybe.map
+                        (Tuple.second
+                            >> .value
+                            >> Dict.toList
+                            >> List.filterMap
+                                (\( key, value ) ->
+                                    if key /= NoSymptomsGeneral && value > 0 then
+                                        viewLabelValuePopupItem
+                                            (Translate.SymptomsGeneralSign key)
+                                            (translate language <| Translate.DaysSinglePlural value)
+                                            |> Just
+
+                                    else
+                                        Nothing
+                                )
+                        )
+                    |> Maybe.withDefault []
+
+            symptomsRespiratory =
+                measurements.symptomsRespiratory
+                    |> Maybe.map
+                        (Tuple.second
+                            >> .value
+                            >> Dict.toList
+                            >> List.filterMap
+                                (\( key, value ) ->
+                                    if key /= NoSymptomsRespiratory && value > 0 then
+                                        viewLabelValuePopupItem
+                                            (Translate.SymptomsRespiratorySign key)
+                                            (translate language <| Translate.DaysSinglePlural value)
+                                            |> Just
+
+                                    else
+                                        Nothing
+                                )
+                        )
+                    |> Maybe.withDefault []
+
+            symptomsGIValue =
+                measurements.symptomsGI
+                    |> Maybe.map (Tuple.second >> .value)
+
+            symptomsGI =
+                symptomsGIValue
+                    |> Maybe.map
+                        (.signs
+                            >> Dict.toList
+                            >> List.filterMap
+                                (\( key, value ) ->
+                                    if key /= NoSymptomsGI && value > 0 then
+                                        viewLabelValuePopupItem
+                                            (Translate.SymptomsGISign key)
+                                            (translate language <| Translate.DaysSinglePlural value)
+                                            |> Just
+
+                                    else
+                                        Nothing
+                                )
+                        )
+                    |> Maybe.withDefault []
+
+            intractableVomiting =
+                symptomsGIValue
+                    |> Maybe.map
+                        (.derivedSigns
+                            >> EverySet.member IntractableVomiting
+                            >> (\isMember ->
+                                    if vomitingAtSymptoms measurements then
+                                        viewPopupItem
+                                            (translate language <| Translate.IntractableVomiting isMember)
+                                            |> List.singleton
+
+                                    else
+                                        []
+                               )
+                        )
+                    |> Maybe.withDefault []
+
+            acuteFindingsValue =
+                measurements.acuteFindings
+                    |> Maybe.map (Tuple.second >> .value)
+
+            acuteFindingsGeneral =
+                acuteFindingsValue
+                    |> Maybe.map
+                        (.signsGeneral
+                            >> EverySet.toList
+                            >> List.filter ((/=) NoAcuteFindingsGeneralSigns)
+                            >> List.map
+                                (Translate.AcuteFindingsGeneralSign
+                                    >> translate language
+                                    >> viewPopupItem
+                                )
+                        )
+                    |> Maybe.withDefault []
+
+            acuteFindingsRespiratory =
+                acuteFindingsValue
+                    |> Maybe.map
+                        (.signsRespiratory
+                            >> EverySet.toList
+                            >> List.filter ((/=) NoAcuteFindingsRespiratorySigns)
+                            >> List.map
+                                (Translate.AcuteFindingsRespiratorySign
+                                    >> translate language
+                                    >> viewPopupItem
+                                )
+                        )
+                    |> Maybe.withDefault []
+
+            content =
+                List.filterMap identity
+                    [ viewBodyTemperature
+                    , viewRespiratoryRate
+                    , viewTravelHistory
+                    , viewContactExposure
+                    , viewMalariaTesting
+                    ]
+                    ++ symptomsGeneral
+                    ++ symptomsRespiratory
+                    ++ symptomsGI
+                    ++ intractableVomiting
+                    ++ acuteFindingsGeneral
+                    ++ acuteFindingsRespiratory
         in
         Just <|
             div [ class "ui active modal alerts-dialog" ]
                 [ div [ class "content" ]
                     [ div [ class "high-severity-alerts" ]
                         [ sectionLabel Translate.PerinentSymptoms
-                        , div [ class "section-items vitals" ]
-                            [ viewBodyTemperature
-                            , viewRespiratoryRate
-                            ]
+                        , content
+                            |> div [ class "section-items" ]
                         ]
                     ]
                 , div

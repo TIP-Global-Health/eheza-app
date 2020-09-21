@@ -732,6 +732,13 @@ nonBloodyDiarrheaAtSymptoms measurements =
         |> Maybe.withDefault False
 
 
+vomitingAtSymptoms : AcuteIllnessMeasurements -> Bool
+vomitingAtSymptoms measurements =
+    measurements.symptomsGI
+        |> Maybe.map (Tuple.second >> .value >> .signs >> symptomAppearsAtSymptomsDict Vomiting)
+        |> Maybe.withDefault False
+
+
 symptomAppearsAtSymptomsDict : a -> Dict a Int -> Bool
 symptomAppearsAtSymptomsDict symptom dict =
     Dict.get symptom dict
