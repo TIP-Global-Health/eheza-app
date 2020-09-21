@@ -1158,6 +1158,7 @@ input::placeholder {
 
       .popup-heading-wrapper {
         height: 48px;
+        text-align: center;
         margin-bottom: 1rem;
 
         img {
@@ -1167,13 +1168,16 @@ input::placeholder {
 
         .popup-heading {
           color: $color-dark-grey;
-          float: left;
           font-size: 30px;
           font-weight: bold;
           line-height: 48px;
           text-align: center;
           text-transform: uppercase;
+          min-width: 400px;
+        }
+        .warning {
           width: 400px;
+          float: left;
         }
       }
 

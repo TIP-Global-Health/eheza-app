@@ -73,7 +73,7 @@ warningPopup language maybeDiagnosis setStateMsg =
 
                     warningHeading =
                         [ img [ src "assets/images/exclamation-red.png" ] []
-                        , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
+                        , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
                         ]
 
                     ( heading, content ) =
