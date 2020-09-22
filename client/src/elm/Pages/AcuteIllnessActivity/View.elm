@@ -339,14 +339,13 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
         Just <|
             div [ class "ui active modal alerts-dialog" ]
                 [ div [ class "content" ]
-                    [ div [ class "high-severity-alerts" ]
+                    [ div [ class "perinent-symptoms" ]
                         [ sectionLabel Translate.PerinentSymptoms
                         , content
                             |> div [ class "section-items" ]
                         ]
                     ]
-                , div
-                    [ class "actions" ]
+                , div [ class "actions" ]
                     [ button
                         [ class "ui primary fluid button"
                         , onClick closeMsg

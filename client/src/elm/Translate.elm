@@ -1658,7 +1658,7 @@ translationSet trans =
             }
 
         CelsiusAbbrev ->
-            { english = "C"
+            { english = "°C"
             , kinyarwanda = Nothing
             }
 
