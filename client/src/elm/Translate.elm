@@ -323,7 +323,7 @@ type TranslationId
     | ClinicalProgressReport
     | CompleteHCReferralForm
     | CompletedHCReferralForm
-    | ContactedHC
+    | Contacted114
     | ContactedRecommendedSiteQuestion
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
@@ -668,6 +668,8 @@ type TranslationId
     | ResolveMonth Bool Month
     | ResolveMonthYY Int Bool Month
     | RespiratoryRate
+    | ResultOfContacting114 HCRecommendation
+    | ResultOfContactingRecommendedSite SiteRecommendation
     | Retry
     | ReviewCaseWith144Respondent
     | RhNegative
@@ -1826,9 +1828,9 @@ translationSet trans =
             , kinyarwanda = Just "Urupapuro rwohereza umurwayi ku kigo nderabuzima rwujujwe"
             }
 
-        ContactedHC ->
-            { english = "Contacted health center"
-            , kinyarwanda = Just "Yamenyesheje ikigo nderabuzima"
+        Contacted114 ->
+            { english = "Contacted 114"
+            , kinyarwanda = Nothing
             }
 
         ContactedRecommendedSiteQuestion ->
@@ -4460,6 +4462,80 @@ translationSet trans =
             { english = "Respiratory Rate"
             , kinyarwanda = Just "Inshuro ahumeka"
             }
+
+        ResultOfContacting114 recommendation ->
+            case recommendation of
+                SendToHealthCenter ->
+                    { english = "114 recommended to send patient to the nearest health center"
+                    , kinyarwanda = Nothing
+                    }
+
+                SendToRRTCenter ->
+                    { english = "114 recommended to send patient to Rapid Response Team center"
+                    , kinyarwanda = Nothing
+                    }
+
+                SendToHospital ->
+                    { english = "114 recommended to send patient to the nearest hospital"
+                    , kinyarwanda = Nothing
+                    }
+
+                OtherHCRecommendation ->
+                    { english = "114 recommended did not recommended to send patient to site"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoneNoAnswer ->
+                    { english = "Not able to talk to 114 - no answer"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoneBusySignal ->
+                    { english = "Not able to talk to 114 - busy signal"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoneOtherHCRecommendation ->
+                    { english = "Not able to talk to 114 - other reason"
+                    , kinyarwanda = Nothing
+                    }
+
+        ResultOfContactingRecommendedSite recommendation ->
+            case recommendation of
+                TeamComeToVillage ->
+                    { english = "Site recommendation: Team will come to village"
+                    , kinyarwanda = Nothing
+                    }
+
+                SendToSiteWithForm ->
+                    { english = "Site recommendation: Send patient to site with referral form"
+                    , kinyarwanda = Nothing
+                    }
+
+                OtherSiteRecommendation ->
+                    { english = "Site recommendation: Other"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoneSentWithForm ->
+                    { english = "Not able to talk to site due - no response. Sent patient with referral form"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonePatientRefused ->
+                    { english = "Did not talk to site as patient has refused"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoneOtherSiteRecommendation ->
+                    { english = "Not able to talk to site - other reason"
+                    , kinyarwanda = Nothing
+                    }
+
+                SiteRecommendationNotApplicable ->
+                    { english = "Not Applicable"
+                    , kinyarwanda = Just "Ibi ntibikorwa"
+                    }
 
         Retry ->
             { english = "Retry"

@@ -1405,7 +1405,7 @@ encodeSiteRecommendation period =
                 "team-to-village"
 
             SendToSiteWithForm ->
-                "send-referral-form"
+                "send-with-form"
 
             OtherSiteRecommendation ->
                 "other"

@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.View exposing (view, viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
+module Pages.AcuteIllnessActivity.View exposing (view, view114Recommendation, viewAdministeredMedicationLabel, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -1048,8 +1048,8 @@ viewExposureForm language currentDate measurements form =
         ]
 
 
-viewHCRecommendation : Language -> HCRecommendation -> Html any
-viewHCRecommendation language recommendation =
+view114Recommendation : Language -> HCRecommendation -> Html any
+view114Recommendation language recommendation =
     -- @todo
     emptyNode
 

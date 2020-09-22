@@ -339,16 +339,11 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                                             form.contactedSite
                                                 |> Maybe.map
                                                     (\contactedSite ->
-                                                        form.siteRecommendation
-                                                            |> Maybe.map
-                                                                (\siteRecommendation ->
-                                                                    if List.member siteRecommendation [ TeamComeToVillage, SendToSiteWithForm, OtherSiteRecommendation ] then
-                                                                        ( 4, 4 )
+                                                        if isJust form.siteRecommendation then
+                                                            ( 4, 4 )
 
-                                                                    else
-                                                                        ( 3, 4 )
-                                                                )
-                                                            |> Maybe.withDefault ( 3, 4 )
+                                                        else
+                                                            ( 3, 4 )
                                                     )
                                                 |> Maybe.withDefault ( 2, 3 )
                                     )
@@ -829,7 +824,7 @@ toHCContactValue form =
     let
         signs =
             [ Maybe.map (ifTrue Call114) form.called114
-            , Maybe.map (ifTrue ContactSite) form.contactedSite
+            , ifNullableTrue ContactSite form.contactedSite
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHCContactSigns)
@@ -849,8 +844,8 @@ hcContactValuePostProcess saved =
                         { value | siteRecommendations = EverySet.singleton SiteRecommendationNotApplicable }
                 in
                 if EverySet.member Call114 value.signs then
-                    -- An attempt to contact 114 did not succeed, or, 114 did not recomment to contact a site.
-                    if not (EverySet.member ContactSite value.signs) || EverySet.member OtherHCRecommendation value.hcRecommendations then
+                    --  114 did not recomment to contact a site.
+                    if EverySet.member OtherHCRecommendation value.hcRecommendations then
                         siteRecommendationNotApplicable
 
                     else
