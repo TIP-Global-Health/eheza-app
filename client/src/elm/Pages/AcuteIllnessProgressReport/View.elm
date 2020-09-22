@@ -17,7 +17,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isNothing)
 import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
-import Pages.AcuteIllnessActivity.View exposing (view114Recommendation, viewAdministeredMedicationLabel, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
+import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisToMaybe, generateAssembledData, resolveNextStepByDiagnosis)
 import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
@@ -438,8 +438,6 @@ viewActionsTakenPane language currentDate diagnosis data =
                                                 [ viewSendToHCActionLabel language Translate.Contacted114 "icon-phone" (Just currentDate)
                                                 , recommenationOf114
                                                 , recommenationOfSite
-
-                                                -- , viewHCRecomendationActionTaken language recomendation
                                                 ]
                                            )
                                     )
