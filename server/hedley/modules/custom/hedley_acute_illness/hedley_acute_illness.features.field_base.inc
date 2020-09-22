@@ -307,7 +307,7 @@ function hedley_acute_illness_field_default_field_bases() {
   // Exported field_base: 'field_hc_recommendation'.
   $field_bases['field_hc_recommendation'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_hc_recommendation',
@@ -640,7 +640,7 @@ function hedley_acute_illness_field_default_field_bases() {
   // Exported field_base: 'field_site_recommendation'.
   $field_bases['field_site_recommendation'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_site_recommendation',
