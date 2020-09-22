@@ -136,7 +136,7 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
                     |> viewPopupItem
 
             viewPopupItem value =
-                div [] [ text <| "- " ++ value ]
+                div [ class "popup-item" ] [ text <| "- " ++ value ]
 
             vitalsValue =
                 measurements.vitals
@@ -147,7 +147,9 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
                     |> Maybe.map
                         (.bodyTemperature
                             >> (\bodyTemperature ->
-                                    viewLabelValuePopupItem Translate.BodyTemperature (String.fromFloat bodyTemperature ++ " " ++ translate language Translate.CelsiusAbbrev)
+                                    viewLabelValuePopupItem
+                                        Translate.BodyTemperature
+                                        (String.fromFloat bodyTemperature ++ " " ++ translate language Translate.CelsiusAbbrev)
                                )
                         )
 
@@ -156,7 +158,9 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
                     |> Maybe.map
                         (.respiratoryRate
                             >> (\respiratoryRate ->
-                                    viewLabelValuePopupItem Translate.RespiratoryRate (String.fromInt respiratoryRate ++ " " ++ translate language Translate.BpmUnit)
+                                    viewLabelValuePopupItem
+                                        Translate.RespiratoryRate
+                                        (String.fromInt respiratoryRate ++ " " ++ translate language Translate.BpmUnit)
                                )
                         )
 
