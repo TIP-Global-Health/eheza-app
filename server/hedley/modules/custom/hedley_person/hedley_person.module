@@ -427,27 +427,14 @@ function hedley_person_reset_form(array $form, array &$form_state) {
  */
 function hedley_person_date_process($trimmed) {
   if (empty($trimmed)) {
-    return $trimmed;
+    return FALSE;
   }
 
-  // Some dates are year-only ... we'll make those Jan. 1.
-  if (preg_match('/^\\d\\d\\d\\d$/', $trimmed)) {
-    $trimmed = "$trimmed-01-01";
+  if (!preg_match('@^\\d\\d?/\\d\\d?/\\d\\d\\d\\d@', $trimmed)) {
+    return FALSE;
   }
 
-  if (preg_match('/^\\d\\d-\\d\\d-\\d\\d$/', $trimmed)) {
-    return DateTime::createFromFormat('!y-m-d', $trimmed)->getTimestamp();
-  }
-
-  if (preg_match('/^\\d\\d\\d\\d-\\d\\d-\\d\\d$/', $trimmed)) {
-    return DateTime::createFromFormat('!Y-m-d', $trimmed)->getTimestamp();
-  }
-
-  if (preg_match('@^\\d\\d?/\\d\\d?/\\d\\d\\d\\d@', $trimmed)) {
-    return DateTime::createFromFormat('!d/m/Y', $trimmed)->getTimestamp();
-  }
-
-  return FALSE;
+  return DateTime::createFromFormat('!m/d/Y', $trimmed)->getTimestamp();
 }
 
 /**
