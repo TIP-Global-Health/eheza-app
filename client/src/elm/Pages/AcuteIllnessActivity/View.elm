@@ -160,7 +160,7 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
                             >> (\respiratoryRate ->
                                     viewLabelValuePopupItem
                                         Translate.RespiratoryRate
-                                        (String.fromInt respiratoryRate ++ " " ++ translate language Translate.BpmUnit)
+                                        (String.fromInt respiratoryRate ++ " " ++ translate language Translate.BpmUnitLabel)
                                )
                         )
 
@@ -719,8 +719,8 @@ viewVitalsForm language currentDate measurements form =
             (Maybe.map toFloat form.respiratoryRate)
             SetVitalsResporatoryRate
             "respiratory-rate"
-            Translate.BpmUnit
-        , viewPreviousMeasurement language respiratoryRatePreviousValue Translate.BpmUnit
+            Translate.BpmUnitLabel
+        , viewPreviousMeasurement language respiratoryRatePreviousValue Translate.BpmUnitLabel
         , div [ class "separator" ] []
         , viewLabel language Translate.BodyTemperature
         , viewMeasurementInput

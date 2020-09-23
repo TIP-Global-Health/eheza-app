@@ -287,7 +287,8 @@ type TranslationId
     | BodyTemperature
     | Born
     | BowedLegs
-    | BpmUnit
+    | BpmUnit Int
+    | BpmUnitLabel
     | BreastExam
     | BreastExamSign BreastExamSign
     | BreastExamQuestion
@@ -1565,7 +1566,12 @@ translationSet trans =
             , kinyarwanda = Just "Amaguru atameze neza (yagize imitego)"
             }
 
-        BpmUnit ->
+        BpmUnit respiratoryRate ->
+            { english = String.fromInt respiratoryRate ++ " bpm"
+            , kinyarwanda = Just <| "Inshuro ahumeka ku munota " ++ String.fromInt respiratoryRate
+            }
+
+        BpmUnitLabel ->
             { english = "bpm"
             , kinyarwanda = Just "Inshuro ahumeka ku munota"
             }
