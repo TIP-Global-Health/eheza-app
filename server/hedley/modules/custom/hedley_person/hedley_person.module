@@ -616,6 +616,7 @@ function hedley_person_import_patient($patient_type, array $values) {
     $first_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_FIRST_NAME]);
     $second_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_SECOND_NAME]);
     $birth_date = trim($values[HEDLEY_PERSON_COLUMN_CHILD_BIRTH_DATE]);
+    $national_id = trim($values[HEDLEY_PERSON_COLUMN_CHILD_NATIONAL_ID]);
     $province = trim($values[HEDLEY_PERSON_COLUMN_CHILD_PROVINCE]);
     $district = trim($values[HEDLEY_PERSON_COLUMN_CHILD_DISTRICT]);
     $sector = trim($values[HEDLEY_PERSON_COLUMN_CHILD_SECTOR]);
@@ -626,6 +627,7 @@ function hedley_person_import_patient($patient_type, array $values) {
     $first_name = trim($values[HEDLEY_PERSON_COLUMN_ADULT_FIRST_NAME]);
     $second_name = trim($values[HEDLEY_PERSON_COLUMN_ADULT_SECOND_NAME]);
     $birth_date = trim($values[HEDLEY_PERSON_COLUMN_ADULT_BIRTH_DATE]);
+    $national_id = trim($values[HEDLEY_PERSON_COLUMN_ADULT_NATIONAL_ID]);
     $province = trim($values[HEDLEY_PERSON_COLUMN_ADULT_PROVINCE]);
     $district = trim($values[HEDLEY_PERSON_COLUMN_ADULT_DISTRICT]);
     $sector = trim($values[HEDLEY_PERSON_COLUMN_ADULT_SECTOR]);
@@ -635,9 +637,10 @@ function hedley_person_import_patient($patient_type, array $values) {
 
   // Title.
   $title = empty($first_name) ? $second_name : "$second_name $first_name";
+  $wrong_birth_date_as_timestamp = DateTime::createFromFormat('!d/m/Y', $birth_date)->getTimestamp();
 
   $query = new EntityFieldQuery();
-  $result = $query->entityCondition('entity_type', 'node')
+  $query->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'person')
     ->propertyCondition('title', $title)
     ->propertyCondition('status', 1)
@@ -646,29 +649,32 @@ function hedley_person_import_patient($patient_type, array $values) {
     ->fieldCondition('field_sector', 'value', $sector)
     ->fieldCondition('field_cell', 'value', $cell)
     ->fieldCondition('field_village', 'value', $village)
-    ->propertyOrderBy('nid', 'DESC')
-    ->execute();
+    ->fieldCondition('field_birth_date', 'value', date('Y-m-d', $wrong_birth_date_as_timestamp))
+    ->propertyOrderBy('nid', 'DESC');
+
+  if (!empty($national_id)) {
+    $query->fieldCondition('field_national_id_number', 'value', $national_id);
+  }
+
+  $result = $query->execute();
 
   if (empty($result['node'])) {
-    watchdog('debug', "Can't locate person $title");
-    return FALSE;
+    $error = "Can't locate person $title";
+    watchdog('debug', $error);
+    return $error;
   }
 
   $count = count($result['node']);
-  watchdog('debug', "Can't locate person $title");
-
   if ($count > 1) {
-    watchdog('debug', "Person $title exists $count times");
-    return FALSE;
+    $error = "Person $title exists $count times";
+    watchdog('debug', $error);
+    return $error;
   }
 
   $wrapper = entity_metadata_wrapper('node', key($result['node']));
   $wrapper->field_province->set('Amajyaruguru');
-
-  if ($patient_type == 'child') {
-    $birth_date = hedley_person_date_process($birth_date);
-    $wrapper->field_birth_date->set($birth_date);
-  }
+  $birth_date = hedley_person_date_process($birth_date);
+  $wrapper->field_birth_date->set($birth_date);
 
   $wrapper->save();
 
