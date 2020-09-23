@@ -616,6 +616,82 @@ function hedley_person_import_patient($patient_type, array $values) {
     $first_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_FIRST_NAME]);
     $second_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_SECOND_NAME]);
     $birth_date = trim($values[HEDLEY_PERSON_COLUMN_CHILD_BIRTH_DATE]);
+    $province = trim($values[HEDLEY_PERSON_COLUMN_CHILD_PROVINCE]);
+    $district = trim($values[HEDLEY_PERSON_COLUMN_CHILD_DISTRICT]);
+    $sector = trim($values[HEDLEY_PERSON_COLUMN_CHILD_SECTOR]);
+    $cell = trim($values[HEDLEY_PERSON_COLUMN_CHILD_CELL]);
+    $village = trim($values[HEDLEY_PERSON_COLUMN_CHILD_VILLAGE]);
+  }
+  else {
+    $first_name = trim($values[HEDLEY_PERSON_COLUMN_ADULT_FIRST_NAME]);
+    $second_name = trim($values[HEDLEY_PERSON_COLUMN_ADULT_SECOND_NAME]);
+    $birth_date = trim($values[HEDLEY_PERSON_COLUMN_ADULT_BIRTH_DATE]);
+    $province = trim($values[HEDLEY_PERSON_COLUMN_ADULT_PROVINCE]);
+    $district = trim($values[HEDLEY_PERSON_COLUMN_ADULT_DISTRICT]);
+    $sector = trim($values[HEDLEY_PERSON_COLUMN_ADULT_SECTOR]);
+    $cell = trim($values[HEDLEY_PERSON_COLUMN_ADULT_CELL]);
+    $village = trim($values[HEDLEY_PERSON_COLUMN_ADULT_VILLAGE]);
+  }
+
+  // Title.
+  $title = empty($first_name) ? $second_name : "$second_name $first_name";
+
+  $query = new EntityFieldQuery();
+  $result = $query->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', 'person')
+    ->propertyCondition('title', $title)
+    ->propertyCondition('status', 1)
+    ->fieldCondition('field_province', 'value', $province)
+    ->fieldCondition('field_district', 'value', $district)
+    ->fieldCondition('field_sector', 'value', $sector)
+    ->fieldCondition('field_cell', 'value', $cell)
+    ->fieldCondition('field_village', 'value', $village)
+    ->propertyOrderBy('nid', 'DESC')
+    ->execute();
+
+  if (empty($result['node'])) {
+    watchdog('debug', "Can't locate person $title");
+    return FALSE;
+  }
+
+  $count = count($result['node']);
+  watchdog('debug', "Can't locate person $title");
+
+  if ($count > 1) {
+    watchdog('debug', "Person $title exists $count times");
+    return FALSE;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', key($result['node']));
+  $wrapper->field_province->set('Amajyaruguru');
+
+  if ($patient_type == 'child') {
+    $birth_date = hedley_person_date_process($birth_date);
+    $wrapper->field_birth_date->set($birth_date);
+  }
+
+  $wrapper->save();
+
+  return TRUE;
+}
+
+/**
+ * Creates patient using supplied data.
+ *
+ * @param string $patient_type
+ *   Child oe Adult.
+ * @param array $values
+ *   Data values.
+ *
+ * @return bool|string
+ *   TRUE on success, error message otherwise.
+ */
+function hedley_person_import_patient2($patient_type, array $values) {
+  // Common logic.
+  if ($patient_type == 'child') {
+    $first_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_FIRST_NAME]);
+    $second_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_SECOND_NAME]);
+    $birth_date = trim($values[HEDLEY_PERSON_COLUMN_CHILD_BIRTH_DATE]);
     $estimated = trim($values[HEDLEY_PERSON_COLUMN_CHILD_ESTIMATED]);
     $national_id = trim($values[HEDLEY_PERSON_COLUMN_CHILD_NATIONAL_ID]);
     $gender = trim($values[HEDLEY_PERSON_COLUMN_CHILD_GENDER]);
@@ -1057,7 +1133,7 @@ function hedley_person_node_update($node) {
     $clinic_type = $participant_wrapper->field_clinic->field_group_type->value();
     // We do not change graduation date for 'Sorwathe' group participants.
     if (empty($clinic_type) || $clinic_type == HEDLEY_PERSON_CLINIC_TYPE_SORWATHE) {
-      $expected_new_end_date =  $expected['value2'];
+      $expected_new_end_date = $expected['value2'];
     }
 
     $participant_wrapper->field_expected->set([
