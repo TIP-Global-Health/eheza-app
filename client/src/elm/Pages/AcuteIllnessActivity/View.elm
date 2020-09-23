@@ -160,7 +160,7 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
                             >> (\respiratoryRate ->
                                     viewLabelValuePopupItem
                                         Translate.RespiratoryRate
-                                        (String.fromInt respiratoryRate ++ " " ++ translate language Translate.BpmUnit)
+                                        (String.fromInt respiratoryRate ++ " " ++ translate language Translate.BpmUnitLabel)
                                )
                         )
 
