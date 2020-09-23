@@ -761,8 +761,29 @@ type MedicationDistributionSign
     | NoMedicationDistributionSigns
 
 
+type MedicationNonAdministrationReason
+    = NonAdministrationLackOfStock
+    | NonAdministrationKnownAllergy
+    | NonAdministrationPatientDeclined
+    | NonAdministrationOther
+
+
+type MedicationNonAdministrationSign
+    = MedicationAmoxicillin MedicationNonAdministrationReason
+    | MedicationCoartem MedicationNonAdministrationReason
+    | MedicationORS MedicationNonAdministrationReason
+    | MedicationZinc MedicationNonAdministrationReason
+    | NoMedicationNonAdministrationSigns
+
+
+type alias MedicationDistributionValue =
+    { distributionSigns : EverySet MedicationDistributionSign
+    , nonAdministrationSigns : EverySet MedicationNonAdministrationSign
+    }
+
+
 type alias MedicationDistribution =
-    AcuteIllnessMeasurement (EverySet MedicationDistributionSign)
+    AcuteIllnessMeasurement MedicationDistributionValue
 
 
 

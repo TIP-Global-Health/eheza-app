@@ -1647,11 +1647,54 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                 ]
 
         ( instructions, questions ) =
+            let
+                viewDerivedQuestion medication reasonToSignFunc =
+                    let
+                        nonAdministrationSigns =
+                            form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
+
+                        currentValue =
+                            getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form
+                    in
+                    [ viewQuestionLabel language Translate.WhyNot
+                    , viewCheckBoxSelectInput language
+                        [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy ]
+                        [ NonAdministrationPatientDeclined, NonAdministrationOther ]
+                        currentValue
+                        (SetMedicationDistributionMedicationNonAdministrationReason currentValue medication)
+                        Translate.MedicationNonAdministrationReason
+                    ]
+
+                -- When answer for medication administartion is Yes, we clean the reason for not adminsetering the medication.
+                updateNonAdministrationSigns medication reasonToSignFunc value form_ =
+                    if value == True then
+                        form_.nonAdministrationSigns
+                            |> Maybe.andThen
+                                (\nonAdministrationSigns ->
+                                    getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form_
+                                        |> Maybe.map
+                                            (\reason ->
+                                                Just <| EverySet.remove (nonAdministrationReasonToSign medication reason) nonAdministrationSigns
+                                            )
+                                        |> Maybe.withDefault (Just nonAdministrationSigns)
+                                )
+
+                    else
+                        form_.nonAdministrationSigns
+            in
             case diagnosis of
                 Just DiagnosisMalariaUncomplicated ->
                     let
                         coartemUpdateFunc value form_ =
-                            { form_ | coartem = Just value }
+                            { form_ | coartem = Just value, nonAdministrationSigns = updateNonAdministrationSigns Coartem MedicationCoartem value form_ }
+
+                        derivedQuestion =
+                            case form.coartem of
+                                Just False ->
+                                    viewDerivedQuestion Coartem MedicationCoartem
+
+                                _ ->
+                                    []
                     in
                     ( resolveCoartemDosage currentDate person
                         |> Maybe.map
@@ -1670,15 +1713,32 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                             "coartem-medication"
                             Nothing
                       ]
+                        ++ derivedQuestion
                     )
 
                 Just DiagnosisGastrointestinalInfectionUncomplicated ->
                     let
                         orsUpdateFunc value form_ =
-                            { form_ | ors = Just value }
+                            { form_ | ors = Just value, nonAdministrationSigns = updateNonAdministrationSigns ORS MedicationORS value form_ }
 
                         zincUpdateFunc value form_ =
-                            { form_ | zinc = Just value }
+                            { form_ | zinc = Just value, nonAdministrationSigns = updateNonAdministrationSigns Zinc MedicationZinc value form_ }
+
+                        orsDerivedQuestion =
+                            case form.ors of
+                                Just False ->
+                                    viewDerivedQuestion ORS MedicationORS
+
+                                _ ->
+                                    []
+
+                        zincDerivedQuestion =
+                            case form.zinc of
+                                Just False ->
+                                    viewDerivedQuestion Zinc MedicationZinc
+
+                                _ ->
+                                    []
                     in
                     ( Maybe.map2
                         (\orsDosage zincDosage ->
@@ -1699,14 +1759,17 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                             (SetMedicationDistributionBoolInput orsUpdateFunc)
                             "ors-medication"
                             Nothing
-                      , viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Zinc)
-                      , viewBoolInput
-                            language
-                            form.zinc
-                            (SetMedicationDistributionBoolInput zincUpdateFunc)
-                            "zinc-medication"
-                            Nothing
                       ]
+                        ++ orsDerivedQuestion
+                        ++ [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Zinc)
+                           , viewBoolInput
+                                language
+                                form.zinc
+                                (SetMedicationDistributionBoolInput zincUpdateFunc)
+                                "zinc-medication"
+                                Nothing
+                           ]
+                        ++ zincDerivedQuestion
                     )
 
                 Just DiagnosisSimpleColdAndCough ->
@@ -1729,7 +1792,15 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                 Just DiagnosisRespiratoryInfectionUncomplicated ->
                     let
                         amoxicillinUpdateFunc value form_ =
-                            { form_ | amoxicillin = Just value }
+                            { form_ | amoxicillin = Just value, nonAdministrationSigns = updateNonAdministrationSigns Amoxicillin MedicationAmoxicillin value form_ }
+
+                        derivedQuestion =
+                            case form.amoxicillin of
+                                Just False ->
+                                    viewDerivedQuestion Amoxicillin MedicationAmoxicillin
+
+                                _ ->
+                                    []
                     in
                     ( resolveAmoxicillinDosage currentDate person
                         |> Maybe.map
@@ -1748,6 +1819,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                             "amoxicillin-medication"
                             Nothing
                       ]
+                        ++ derivedQuestion
                     )
 
                 _ ->

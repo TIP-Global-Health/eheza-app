@@ -5,6 +5,7 @@ import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate
 import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, string)
@@ -1189,9 +1190,11 @@ encodeMedicationDistribution =
     encodeAcuteIllnessMeasurement encodeMedicationDistributionValue
 
 
-encodeMedicationDistributionValue : EverySet MedicationDistributionSign -> List ( String, Value )
+encodeMedicationDistributionValue : MedicationDistributionValue -> List ( String, Value )
 encodeMedicationDistributionValue value =
-    [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value ) ]
+    [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value.distributionSigns )
+    , ( "non_administration_reason", encodeEverySet encodeMedicationNonAdministrationSign value.nonAdministrationSigns )
+    ]
 
 
 encondeMedicationDistributionSign : MedicationDistributionSign -> Value
@@ -1214,6 +1217,26 @@ encondeMedicationDistributionSign sign =
                 "lemon-juice-or-honey"
 
             NoMedicationDistributionSigns ->
+                "none"
+
+
+encodeMedicationNonAdministrationSign : MedicationNonAdministrationSign -> Value
+encodeMedicationNonAdministrationSign sign =
+    string <|
+        case sign of
+            MedicationAmoxicillin reason ->
+                "amoxicillin-" ++ medicationNonAdministrationReasonToString reason
+
+            MedicationCoartem reason ->
+                "coartem-" ++ medicationNonAdministrationReasonToString reason
+
+            MedicationORS reason ->
+                "ors-" ++ medicationNonAdministrationReasonToString reason
+
+            MedicationZinc reason ->
+                "zinc-" ++ medicationNonAdministrationReasonToString reason
+
+            NoMedicationNonAdministrationSigns ->
                 "none"
 
 

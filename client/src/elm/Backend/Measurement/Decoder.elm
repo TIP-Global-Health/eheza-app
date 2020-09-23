@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (..)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
@@ -1336,8 +1337,9 @@ decodeSendToHCSign =
 
 decodeMedicationDistribution : Decoder MedicationDistribution
 decodeMedicationDistribution =
-    decodeEverySet decodeMedicationDistributionSign
-        |> field "prescribed_medication"
+    succeed MedicationDistributionValue
+        |> required "prescribed_medication" (decodeEverySet decodeMedicationDistributionSign)
+        |> required "non_administration_reason" (decodeEverySet decodeMedicationNonAdministrationSign)
         |> decodeAcuteIllnessMeasurement
 
 
@@ -1366,9 +1368,56 @@ decodeMedicationDistributionSign =
                         succeed NoMedicationDistributionSigns
 
                     _ ->
-                        fail <|
-                            sign
-                                ++ " is not a recognized MedicationDistributionSign"
+                        fail <| sign ++ " is not a recognized MedicationDistributionSign"
+            )
+
+
+decodeMedicationNonAdministrationSign : Decoder MedicationNonAdministrationSign
+decodeMedicationNonAdministrationSign =
+    string
+        |> andThen
+            (\sign ->
+                let
+                    parts =
+                        String.split "-" sign
+
+                    failure =
+                        fail <| sign ++ " is not a recognized MedicationNonAdministrationSign"
+                in
+                List.head parts
+                    |> Maybe.map
+                        (\prefix ->
+                            let
+                                medicationNonAdministrationReason =
+                                    List.tail parts
+                                        |> Maybe.map (List.intersperse "-" >> String.concat)
+                                        |> Maybe.andThen medicationNonAdministrationReasonFromString
+                            in
+                            case prefix of
+                                "amoxicillin" ->
+                                    medicationNonAdministrationReason
+                                        |> Maybe.map (MedicationAmoxicillin >> succeed)
+                                        |> Maybe.withDefault failure
+
+                                "coartem" ->
+                                    medicationNonAdministrationReason
+                                        |> Maybe.map (MedicationCoartem >> succeed)
+                                        |> Maybe.withDefault failure
+
+                                "ors" ->
+                                    medicationNonAdministrationReason
+                                        |> Maybe.map (MedicationORS >> succeed)
+                                        |> Maybe.withDefault failure
+
+                                "zinc" ->
+                                    medicationNonAdministrationReason
+                                        |> Maybe.map (MedicationZinc >> succeed)
+                                        |> Maybe.withDefault failure
+
+                                _ ->
+                                    failure
+                        )
+                    |> Maybe.withDefault failure
             )
 
 
