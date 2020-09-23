@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Utils exposing (acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromAcuteFindingsValue, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromMedicationDistributionValue, fromSendToHCValue, fromTravelHistoryValue, fromTreatmentReviewValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, medicationDistributionFormWithDefault, naListTaskCompleted, naTaskCompleted, nextStepsTasksCompletedFromTotal, physicalExamTasksCompletedFromTotal, resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage, sendToHCFormWithDefault, symptomsGIFormWithDefault, symptomsGeneralDangerSigns, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toAcuteFindingsValue, toAcuteFindingsValueWithDefault, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toMedicationDistributionValue, toMedicationDistributionValueWithDefault, toSendToHCValue, toSendToHCValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
+module Pages.AcuteIllnessActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
@@ -12,14 +12,14 @@ import Backend.Measurement.Model
         , ExposureSign(..)
         , HCContactSign(..)
         , HCContactValue
-        , HCRecomendation(..)
+        , HCRecommendation(..)
         , IsolationSign(..)
         , IsolationValue
         , MalariaRapidTestResult(..)
         , MedicationDistributionSign(..)
         , ReasonForNotIsolating(..)
-        , ResponsePeriod(..)
         , SendToHCSign(..)
+        , SiteRecommendation(..)
         , SymptomsGIDerivedSign(..)
         , SymptomsGISign(..)
         , SymptomsGIValue
@@ -35,7 +35,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (ifNullableTrue, ifTrue)
-import Pages.Utils exposing (ifEverySetEmpty, taskCompleted, valueConsideringIsDirtyField)
+import Pages.Utils exposing (ifEverySetEmpty, maybeValueConsideringIsDirtyField, taskCompleted, valueConsideringIsDirtyField)
 
 
 symptomsGeneralDangerSigns : List SymptomsGeneralSign
@@ -316,41 +316,44 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
             , 1 + derivedActive
             )
 
-        NextStepsContactHC ->
+        NextStepsCall114 ->
             let
                 form =
                     measurements.hcContact
                         |> Maybe.map (Tuple.second >> .value)
                         |> hcContactFormWithDefault data.hcContactForm
             in
-            form.contactedHC
+            form.called114
                 |> Maybe.map
-                    (\contactedHC ->
-                        if contactedHC then
-                            let
-                                recomendationsCompleted =
-                                    naTaskCompleted HCRecomendationNotApplicable form.recomendations
+                    (\called114 ->
+                        if called114 then
+                            form.hcRecommendation
+                                |> Maybe.map
+                                    (\hcRecommendation ->
+                                        -- We do not show qustions about contacting site, if
+                                        -- 114 did not recommend to contact a site.
+                                        if List.member hcRecommendation [ OtherHCRecommendation, NoneNoAnswer, NoneBusySignal, NoneOtherHCRecommendation ] then
+                                            ( 2, 2 )
 
-                                ( ambulanceActive, ambulanceCompleted ) =
-                                    form.recomendations
-                                        |> Maybe.map
-                                            (\recomendations ->
-                                                if recomendations == SendAmbulance then
-                                                    ( naTaskCompleted ResponsePeriodNotApplicable form.ambulanceArrivalPeriod
-                                                    , naTaskCompleted ResponsePeriodNotApplicable form.ambulanceArrivalPeriod
+                                        else
+                                            form.contactedSite
+                                                |> Maybe.map
+                                                    (\contactedSite ->
+                                                        if isJust form.siteRecommendation then
+                                                            ( 4, 4 )
+
+                                                        else
+                                                            ( 3, 4 )
                                                     )
+                                                |> Maybe.withDefault ( 2, 3 )
+                                    )
+                                |> Maybe.withDefault ( 1, 2 )
 
-                                                else
-                                                    ( 0, 0 )
-                                            )
-                                        |> Maybe.withDefault ( 0, 0 )
-                            in
-                            ( 1 + recomendationsCompleted + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceCompleted
-                            , 2 + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceActive
-                            )
+                        else if isJust form.hcRecommendation then
+                            ( 2, 2 )
 
                         else
-                            ( 1, 1 )
+                            ( 1, 2 )
                     )
                 |> Maybe.withDefault ( 0, 1 )
 
@@ -779,10 +782,13 @@ isolationValuePostProcess saved =
 
 fromHCContactValue : Maybe HCContactValue -> HCContactForm
 fromHCContactValue saved =
-    { contactedHC = Maybe.map (.signs >> EverySet.member ContactedHealthCenter) saved
-    , recomendations = Maybe.andThen (.recomendations >> EverySet.toList >> List.head) saved
-    , responsePeriod = Maybe.andThen (.responsePeriod >> EverySet.toList >> List.head) saved
-    , ambulanceArrivalPeriod = Maybe.andThen (.ambulanceArrivalPeriod >> EverySet.toList >> List.head) saved
+    { called114 = Maybe.map (.signs >> EverySet.member Call114) saved
+    , hcRecommendation = Maybe.andThen (.hcRecommendations >> EverySet.toList >> List.head) saved
+    , hcRecommendationDirty = False
+    , contactedSite = Maybe.map (.signs >> EverySet.member ContactSite) saved
+    , contactedSiteDirty = False
+    , siteRecommendation = Maybe.andThen (.siteRecommendations >> EverySet.toList >> List.head) saved
+    , siteRecommendationDirty = False
     }
 
 
@@ -792,10 +798,16 @@ hcContactFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { contactedHC = or form.contactedHC (EverySet.member ContactedHealthCenter value.signs |> Just)
-                , recomendations = or form.recomendations (value.recomendations |> EverySet.toList |> List.head)
-                , responsePeriod = or form.responsePeriod (value.responsePeriod |> EverySet.toList |> List.head)
-                , ambulanceArrivalPeriod = or form.ambulanceArrivalPeriod (value.ambulanceArrivalPeriod |> EverySet.toList |> List.head)
+                { called114 = or form.called114 (EverySet.member Call114 value.signs |> Just)
+                , hcRecommendation =
+                    maybeValueConsideringIsDirtyField form.hcRecommendationDirty form.hcRecommendation (value.hcRecommendations |> EverySet.toList |> List.head)
+                , hcRecommendationDirty = form.hcRecommendationDirty
+                , contactedSite =
+                    valueConsideringIsDirtyField form.contactedSiteDirty form.contactedSite (EverySet.member ContactSite value.signs)
+                , contactedSiteDirty = form.contactedSiteDirty
+                , siteRecommendation =
+                    maybeValueConsideringIsDirtyField form.siteRecommendationDirty form.siteRecommendation (value.siteRecommendations |> EverySet.toList |> List.head)
+                , siteRecommendationDirty = form.siteRecommendationDirty
                 }
             )
 
@@ -811,14 +823,15 @@ toHCContactValue : HCContactForm -> Maybe HCContactValue
 toHCContactValue form =
     let
         signs =
-            [ Maybe.map (ifTrue ContactedHealthCenter) form.contactedHC ]
+            [ Maybe.map (ifTrue Call114) form.called114
+            , ifNullableTrue ContactSite form.contactedSite
+            ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHCContactSigns)
     in
     Maybe.map HCContactValue signs
-        |> andMap (form.recomendations |> withDefaultValue HCRecomendationNotApplicable |> Just)
-        |> andMap (form.responsePeriod |> withDefaultValue ResponsePeriodNotApplicable |> Just)
-        |> andMap (form.ambulanceArrivalPeriod |> withDefaultValue ResponsePeriodNotApplicable |> Just)
+        |> andMap (form.hcRecommendation |> withDefaultValue NoneOtherHCRecommendation |> Just)
+        |> andMap (form.siteRecommendation |> withDefaultValue SiteRecommendationNotApplicable |> Just)
 
 
 hcContactValuePostProcess : Maybe HCContactValue -> Maybe HCContactValue
@@ -826,19 +839,21 @@ hcContactValuePostProcess saved =
     saved
         |> Maybe.map
             (\value ->
-                if EverySet.member ContactedHealthCenter value.signs then
-                    if EverySet.member SendAmbulance value.recomendations then
-                        value
+                let
+                    siteRecommendationNotApplicable =
+                        { value | siteRecommendations = EverySet.singleton SiteRecommendationNotApplicable }
+                in
+                if EverySet.member Call114 value.signs then
+                    --  114 did not recomment to contact a site.
+                    if EverySet.member OtherHCRecommendation value.hcRecommendations then
+                        siteRecommendationNotApplicable
 
                     else
-                        { value | ambulanceArrivalPeriod = EverySet.singleton ResponsePeriodNotApplicable }
+                        value
 
                 else
-                    { value
-                        | recomendations = EverySet.singleton HCRecomendationNotApplicable
-                        , responsePeriod = EverySet.singleton ResponsePeriodNotApplicable
-                        , ambulanceArrivalPeriod = EverySet.singleton ResponsePeriodNotApplicable
-                    }
+                    -- There was no attempt to contact 114.
+                    siteRecommendationNotApplicable
             )
 
 

@@ -44,7 +44,7 @@ function hedley_acute_illness_node_info() {
       'help' => '',
     ),
     'hc_contact' => array(
-      'name' => t('HC Contact'),
+      'name' => t('Call 114'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

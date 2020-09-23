@@ -17,7 +17,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isNothing)
 import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
-import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecomendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
+import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisToMaybe, generateAssembledData, resolveNextStepByDiagnosis)
 import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
@@ -403,40 +403,43 @@ viewActionsTakenPane language currentDate diagnosis data =
     let
         actionsTaken =
             case resolveNextStepByDiagnosis currentDate data.person diagnosis of
+                -- This is COVID19 case
                 Just NextStepsIsolation ->
                     let
-                        contacedHCValue =
-                            data.measurements.hcContact
-                                |> Maybe.map (Tuple.second >> .value)
-
-                        contacedHC =
+                        contacedHCAction =
                             data.measurements.hcContact
                                 |> Maybe.map
                                     (Tuple.second
                                         >> .value
-                                        >> .signs
-                                        >> EverySet.member ContactedHealthCenter
-                                    )
-                                |> Maybe.withDefault False
+                                        >> (\value ->
+                                                let
+                                                    viewRecommendation recommenation =
+                                                        div [ class "recommendation" ]
+                                                            [ text <| "- " ++ translate language recommenation ++ "."
+                                                            ]
 
-                        contacedHCAction =
-                            contacedHCValue
-                                |> Maybe.map
-                                    (\value ->
-                                        if EverySet.member ContactedHealthCenter value.signs then
-                                            let
-                                                recomendation =
-                                                    value.recomendations
-                                                        |> EverySet.toList
-                                                        |> List.head
-                                                        |> Maybe.withDefault HCRecomendationNotApplicable
-                                            in
-                                            [ viewSendToHCActionLabel language Translate.ContactedHC "icon-phone" (Just currentDate)
-                                            , viewHCRecomendationActionTaken language recomendation
-                                            ]
+                                                    recommenationOf114 =
+                                                        value.hcRecommendations
+                                                            |> EverySet.toList
+                                                            -- There can be only one recommendation.
+                                                            |> List.head
+                                                            |> Maybe.map (Translate.ResultOfContacting114 >> viewRecommendation)
+                                                            |> Maybe.withDefault emptyNode
 
-                                        else
-                                            []
+                                                    recommenationOfSite =
+                                                        value.siteRecommendations
+                                                            |> EverySet.toList
+                                                            |> List.filter ((/=) SiteRecommendationNotApplicable)
+                                                            -- There can be only one recommendation.
+                                                            |> List.head
+                                                            |> Maybe.map (Translate.ResultOfContactingRecommendedSite >> viewRecommendation)
+                                                            |> Maybe.withDefault emptyNode
+                                                in
+                                                [ viewSendToHCActionLabel language Translate.Contacted114 "icon-phone" (Just currentDate)
+                                                , recommenationOf114
+                                                , recommenationOfSite
+                                                ]
+                                           )
                                     )
                                 |> Maybe.withDefault []
 
@@ -457,12 +460,8 @@ viewActionsTakenPane language currentDate diagnosis data =
                             else
                                 []
                     in
-                    if contacedHC || patientIsolated then
-                        div [ class "instructions" ] <|
-                            (contacedHCAction ++ patientIsolatedAction)
-
-                    else
-                        emptyNode
+                    div [ class "instructions" ] <|
+                        (contacedHCAction ++ patientIsolatedAction)
 
                 Just NextStepsMedicationDistribution ->
                     let
@@ -603,15 +602,3 @@ viewActionsTakenPane language currentDate diagnosis data =
         [ viewItemHeading language Translate.ActionsTaken "blue"
         , actionsTaken
         ]
-
-
-viewHCRecomendationActionTaken : Language -> HCRecomendation -> Html any
-viewHCRecomendationActionTaken language recomendation =
-    if recomendation == HCRecomendationNotApplicable then
-        emptyNode
-
-    else
-        div [ class "recomendation" ]
-            [ viewHCRecomendation language recomendation
-            , span [] [ text "." ]
-            ]

@@ -12,6 +12,7 @@ type Msg
     = SetActivePage Page
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe AcuteIllnessDiagnosis)
+    | SetPertinentSymptomsPopupState Bool
       -- SYMPTOMS Msgs
     | SetActiveSymptomsTask SymptomsTask
     | ToggleSymptomsGeneralSign SymptomsGeneralSign
@@ -54,10 +55,10 @@ type Msg
     | SetSignOnDoor Bool
     | SetReasonForNotIsolating ReasonForNotIsolating
     | SaveIsolation PersonId (Maybe ( IsolationId, Isolation )) (Maybe NextStepsTask)
-    | SetContactedHC Bool
-    | SetHCRecommendation HCRecomendation
-    | SetResponsePeriod ResponsePeriod
-    | SetAmbulanceArrivalPeriod ResponsePeriod
+    | SetCalled114 Bool
+    | SetContactedSite Bool
+    | SetHCRecommendation HCRecommendation
+    | SetSiteRecommendation SiteRecommendation
     | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe NextStepsTask)
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
@@ -74,6 +75,7 @@ type alias Model =
     , priorTreatmentData : PriorTreatmentData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
+    , showPertinentSymptomsPopup : Bool
     , warningPopupState : Maybe AcuteIllnessDiagnosis
     }
 
@@ -87,6 +89,7 @@ emptyModel =
     , priorTreatmentData = emptyPriorTreatmentData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
+    , showPertinentSymptomsPopup = False
     , warningPopupState = Nothing
     }
 
@@ -295,7 +298,7 @@ type alias NextStepsData =
 emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { isolationForm = IsolationForm Nothing Nothing Nothing Nothing
-    , hcContactForm = HCContactForm Nothing Nothing Nothing Nothing
+    , hcContactForm = emptyHCContactForm
     , sendToHCForm = SendToHCForm Nothing Nothing
     , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing
     , activeTask = Nothing
@@ -304,7 +307,7 @@ emptyNextStepsData =
 
 type NextStepsTask
     = NextStepsIsolation
-    | NextStepsContactHC
+    | NextStepsCall114
     | NextStepsMedicationDistribution
     | NextStepsSendToHC
 
@@ -318,10 +321,25 @@ type alias IsolationForm =
 
 
 type alias HCContactForm =
-    { contactedHC : Maybe Bool
-    , recomendations : Maybe HCRecomendation
-    , responsePeriod : Maybe ResponsePeriod
-    , ambulanceArrivalPeriod : Maybe ResponsePeriod
+    { called114 : Maybe Bool
+    , hcRecommendation : Maybe HCRecommendation
+    , hcRecommendationDirty : Bool
+    , contactedSite : Maybe Bool
+    , contactedSiteDirty : Bool
+    , siteRecommendation : Maybe SiteRecommendation
+    , siteRecommendationDirty : Bool
+    }
+
+
+emptyHCContactForm : HCContactForm
+emptyHCContactForm =
+    { called114 = Nothing
+    , hcRecommendation = Nothing
+    , hcRecommendationDirty = False
+    , contactedSite = Nothing
+    , contactedSiteDirty = False
+    , siteRecommendation = Nothing
+    , siteRecommendationDirty = False
     }
 
 
