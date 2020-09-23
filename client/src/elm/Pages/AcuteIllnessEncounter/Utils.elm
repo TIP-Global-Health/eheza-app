@@ -366,14 +366,17 @@ covid19Diagnosed measurements =
         signsIndicateCovid =
             totalSigns > 0
 
+        feverOnRecord =
+            feverRecorded measurements
+
         rdtResult =
             malariaRapidTestResult measurements
 
         feverAndRdtNotPositive =
-            feverRecorded measurements && isJust rdtResult && rdtResult /= Just RapidTestPositive
+            feverOnRecord && isJust rdtResult && rdtResult /= Just RapidTestPositive
     in
     ( (signsIndicateCovid && symptomsIndicateCovid)
-        || (signsIndicateCovid && feverAndRdtNotPositive)
+        || (signsIndicateCovid && feverOnRecord)
         || (not signsIndicateCovid && feverAndRdtNotPositive && respiratorySymptomsCount > 0)
         || (not signsIndicateCovid && feverAndRdtNotPositive && generalSymptomsCount > 1)
     , False
