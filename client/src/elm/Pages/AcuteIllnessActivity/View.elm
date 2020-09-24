@@ -1420,7 +1420,7 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                     let
                         tasksList =
                             if contactHCTaksDisplayed then
-                                [ NextStepsContactHC ]
+                                [ NextStepsCall114, NextStepsContactHC ]
 
                             else
                                 [ NextStepsCall114 ]
