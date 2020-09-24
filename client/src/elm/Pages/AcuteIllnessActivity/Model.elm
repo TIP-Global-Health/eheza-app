@@ -55,11 +55,16 @@ type Msg
     | SetSignOnDoor Bool
     | SetReasonForNotIsolating ReasonForNotIsolating
     | SaveIsolation PersonId (Maybe ( IsolationId, Isolation )) (Maybe NextStepsTask)
+    | SetContactedHC Bool
+    | SetHCRecommendation HCRecommendation
+    | SetResponsePeriod ResponsePeriod
+    | SetAmbulanceArrivalPeriod ResponsePeriod
+    | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe NextStepsTask)
     | SetCalled114 Bool
     | SetContactedSite Bool
-    | SetHCRecommendation HCRecommendation
-    | SetSiteRecommendation SiteRecommendation
-    | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe NextStepsTask)
+    | SetRecommendation114 Recommendation114
+    | SetRecommendationSite RecommendationSite
+    | SaveCall114 PersonId (Maybe ( Call114Id, Call114 )) (Maybe NextStepsTask)
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC ))
@@ -290,6 +295,7 @@ emptyTreatmentReviewForm =
 type alias NextStepsData =
     { isolationForm : IsolationForm
     , hcContactForm : HCContactForm
+    , call114Form : Call114Form
     , sendToHCForm : SendToHCForm
     , medicationDistributionForm : MedicationDistributionForm
     , activeTask : Maybe NextStepsTask
@@ -299,7 +305,8 @@ type alias NextStepsData =
 emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { isolationForm = IsolationForm Nothing Nothing Nothing Nothing
-    , hcContactForm = emptyHCContactForm
+    , hcContactForm = HCContactForm Nothing Nothing Nothing Nothing
+    , call114Form = emptyCall114Form
     , sendToHCForm = SendToHCForm Nothing Nothing
     , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
     , activeTask = Nothing
@@ -308,6 +315,7 @@ emptyNextStepsData =
 
 type NextStepsTask
     = NextStepsIsolation
+    | NextStepsContactHC
     | NextStepsCall114
     | NextStepsMedicationDistribution
     | NextStepsSendToHC
@@ -322,25 +330,33 @@ type alias IsolationForm =
 
 
 type alias HCContactForm =
-    { called114 : Maybe Bool
-    , hcRecommendation : Maybe HCRecommendation
-    , hcRecommendationDirty : Bool
-    , contactedSite : Maybe Bool
-    , contactedSiteDirty : Bool
-    , siteRecommendation : Maybe SiteRecommendation
-    , siteRecommendationDirty : Bool
+    { contactedHC : Maybe Bool
+    , recommendations : Maybe HCRecommendation
+    , responsePeriod : Maybe ResponsePeriod
+    , ambulanceArrivalPeriod : Maybe ResponsePeriod
     }
 
 
-emptyHCContactForm : HCContactForm
-emptyHCContactForm =
+type alias Call114Form =
+    { called114 : Maybe Bool
+    , recommendation114 : Maybe Recommendation114
+    , recommendation114Dirty : Bool
+    , contactedSite : Maybe Bool
+    , contactedSiteDirty : Bool
+    , recommendationSite : Maybe RecommendationSite
+    , recommendationSiteDirty : Bool
+    }
+
+
+emptyCall114Form : Call114Form
+emptyCall114Form =
     { called114 = Nothing
-    , hcRecommendation = Nothing
-    , hcRecommendationDirty = False
+    , recommendation114 = Nothing
+    , recommendation114Dirty = False
     , contactedSite = Nothing
     , contactedSiteDirty = False
-    , siteRecommendation = Nothing
-    , siteRecommendationDirty = False
+    , recommendationSite = Nothing
+    , recommendationSiteDirty = False
     }
 
 

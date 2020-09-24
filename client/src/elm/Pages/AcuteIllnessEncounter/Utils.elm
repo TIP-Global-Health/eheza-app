@@ -18,7 +18,8 @@ import Backend.Measurement.Model
         , IsolationValue
         , MalariaRapidTestResult(..)
         , ReasonForNotIsolating(..)
-        , SiteRecommendation(..)
+        , Recommendation114(..)
+        , RecommendationSite(..)
         , SymptomsGIDerivedSign(..)
         , SymptomsGISign(..)
         , SymptomsGeneralSign(..)
@@ -119,6 +120,9 @@ resolveNextStepsTasks currentDate person diagnosis =
         expectTask task =
             case task of
                 NextStepsIsolation ->
+                    diagnosis == Just DiagnosisCovid19
+
+                NextStepsContactHC ->
                     diagnosis == Just DiagnosisCovid19
 
                 NextStepsCall114 ->

@@ -909,6 +909,23 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                 -- When we see that needed data for suspected COVID 19 case was collected,
                 -- navigate to Progress Report page.
+                [ Call114Revision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateCovidFlowDataCollectedMsgs newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                -- When we see that needed data for suspected COVID 19 case was collected,
+                -- navigate to Progress Report page.
                 [ HCContactRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -1601,6 +1618,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        Call114Revision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | call114 = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         CatchmentAreaRevision uuid data ->
             noChange
 
@@ -2147,6 +2172,7 @@ generateCovidFlowDataCollectedMsgs db id =
         |> RemoteData.toMaybe
         |> Maybe.map
             (\measurements ->
+                -- @todo
                 if isJust measurements.isolation && isJust measurements.hcContact then
                     [ navigateToProgressReportPageMsg id ]
 

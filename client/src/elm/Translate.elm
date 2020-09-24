@@ -325,6 +325,8 @@ type TranslationId
     | CompleteHCReferralForm
     | CompletedHCReferralForm
     | Contacted114
+    | ContactedHC
+    | ContactedHCQuestion
     | ContactedRecommendedSiteQuestion
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
@@ -643,6 +645,8 @@ type TranslationId
     | ReceivedDewormingPill
     | ReceivedIronFolicAcid
     | ReceivedMosquitoNet
+    | Recommendation114 Recommendation114
+    | RecommendationSite RecommendationSite
     | RecordPregnancyOutcome
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
     | ReferredPatientToHealthCenterQuestion
@@ -670,8 +674,9 @@ type TranslationId
     | ResolveMonth Bool Month
     | ResolveMonthYY Int Bool Month
     | RespiratoryRate
-    | ResultOfContacting114 HCRecommendation
-    | ResultOfContactingRecommendedSite SiteRecommendation
+    | ResponsePeriod ResponsePeriod
+    | ResultOfContacting114 Recommendation114
+    | ResultOfContactingRecommendedSite RecommendationSite
     | Retry
     | ReviewCaseWith144Respondent
     | RhNegative
@@ -719,7 +724,6 @@ type TranslationId
     | ServiceWorkerStatus
     | SevereHemorrhagingPreviousDelivery
     | SignOnDoorPostedQuestion
-    | SiteRecommendation SiteRecommendation
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | StillbornPreviousDelivery
     | SubsequentAntenatalVisit
@@ -1840,6 +1844,16 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ContactedHC ->
+            { english = "Contacted health center"
+            , kinyarwanda = Just "Yamenyesheje ikigo nderabuzima"
+            }
+
+        ContactedHCQuestion ->
+            { english = "Have you contacted the health center"
+            , kinyarwanda = Just "Wamenyesheje ikigo nderabuzima"
+            }
+
         ContactedRecommendedSiteQuestion ->
             { english = "Did you contact the recommended site"
             , kinyarwanda = Nothing
@@ -2662,39 +2676,29 @@ translationSet trans =
 
         HCRecommendation recommendation ->
             case recommendation of
-                SendToHealthCenter ->
-                    { english = "Send Patient to the nearest health center"
-                    , kinyarwanda = Nothing
+                SendAmbulance ->
+                    { english = "agreed to call the District Hospital to send an ambulance"
+                    , kinyarwanda = Just "wemeye guhamagare ibitaro ngo byohereza imbangukiragitabara"
                     }
 
-                SendToRRTCenter ->
-                    { english = "Send patient to the Rapid Response Team center"
-                    , kinyarwanda = Nothing
+                HomeIsolation ->
+                    { english = "advised patient to stay home in isolation"
+                    , kinyarwanda = Just "wagiriye inama umurwayi yo kuguma mu rugo ahantu ari wenyine"
                     }
 
-                SendToHospital ->
-                    { english = "Send patient to the nearest hospital"
-                    , kinyarwanda = Nothing
+                ComeToHealthCenter ->
+                    { english = "advised patient to go to the health center for further evaluation"
+                    , kinyarwanda = Just "kimugira inama yo kujya ku kigo nderabuzima gukoresha isuzuma ryimbitse"
                     }
 
-                OtherHCRecommendation ->
-                    { english = "Other"
-                    , kinyarwanda = Nothing
+                ChwMonitoring ->
+                    { english = "CHW should continue to monitor"
+                    , kinyarwanda = Just "Umujyanama w'ubuzima agomba gukomeza gukurikirana umurwayi"
                     }
 
-                NoneNoAnswer ->
-                    { english = "No answer"
-                    , kinyarwanda = Nothing
-                    }
-
-                NoneBusySignal ->
-                    { english = "Busy Signal"
-                    , kinyarwanda = Nothing
-                    }
-
-                NoneOtherHCRecommendation ->
-                    { english = "Other"
-                    , kinyarwanda = Nothing
+                HCRecommendationNotApplicable ->
+                    { english = "Not Applicable"
+                    , kinyarwanda = Just "Ibi ntibikorwa"
                     }
 
         HCResponseQuestion ->
@@ -3599,6 +3603,11 @@ translationSet trans =
                     , kinyarwanda = Just "Shyira umurwayi mu kato"
                     }
 
+                NextStepsContactHC ->
+                    { english = "Contact Health Center"
+                    , kinyarwanda = Just "Menyesha ikigo nderabuzima"
+                    }
+
                 NextStepsCall114 ->
                     { english = "Call 114"
                     , kinyarwanda = Nothing
@@ -4352,6 +4361,80 @@ translationSet trans =
             , kinyarwanda = Just "Umubyeyi yahawe inzitiramubu?"
             }
 
+        Recommendation114 recommendation ->
+            case recommendation of
+                SendToHealthCenter ->
+                    { english = "Send Patient to the nearest health center"
+                    , kinyarwanda = Nothing
+                    }
+
+                SendToRRTCenter ->
+                    { english = "Send patient to the Rapid Response Team center"
+                    , kinyarwanda = Nothing
+                    }
+
+                SendToHospital ->
+                    { english = "Send patient to the nearest hospital"
+                    , kinyarwanda = Nothing
+                    }
+
+                OtherRecommendation114 ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoneNoAnswer ->
+                    { english = "No answer"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoneBusySignal ->
+                    { english = "Busy Signal"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoneOtherRecommendation114 ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
+        RecommendationSite recommendation ->
+            case recommendation of
+                TeamComeToVillage ->
+                    { english = "Team will come to village"
+                    , kinyarwanda = Nothing
+                    }
+
+                SendToSiteWithForm ->
+                    { english = "Advised to send patient to site with referral form"
+                    , kinyarwanda = Nothing
+                    }
+
+                OtherRecommendationSite ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoneSentWithForm ->
+                    { english = "No response. Sent patient with referral form."
+                    , kinyarwanda = Nothing
+                    }
+
+                NonePatientRefused ->
+                    { english = "Patient refused"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoneOtherRecommendationSite ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
+                RecommendationSiteNotApplicable ->
+                    { english = "Not Applicable"
+                    , kinyarwanda = Just "Ibi ntibikorwa"
+                    }
+
         RecordPregnancyOutcome ->
             { english = "Record Pregnancy Outcome"
             , kinyarwanda = Just "Andika iherezo ry'inda"
@@ -4492,6 +4575,33 @@ translationSet trans =
             , kinyarwanda = Just "Inshuro ahumeka"
             }
 
+        ResponsePeriod period ->
+            case period of
+                LessThan30Min ->
+                    { english = "Less than 30 min"
+                    , kinyarwanda = Just "Munsi y'iminota mirongo itatu"
+                    }
+
+                Between30min1Hour ->
+                    { english = "30 min - 1 hour"
+                    , kinyarwanda = Just "Hagati y’iminota mirongo itatu n’isaha"
+                    }
+
+                Between1Hour2Hour ->
+                    { english = "1 hour - 2 hours"
+                    , kinyarwanda = Just "Hagati y'isaha n'amasaha abiri"
+                    }
+
+                Between2Hour1Day ->
+                    { english = "2 hours - 1 day"
+                    , kinyarwanda = Just "Hagati y'amasaha abiri n'umunsi"
+                    }
+
+                ResponsePeriodNotApplicable ->
+                    { english = "Not Applicable"
+                    , kinyarwanda = Just "Ibi ntibikorwa"
+                    }
+
         ResultOfContacting114 recommendation ->
             case recommendation of
                 SendToHealthCenter ->
@@ -4509,8 +4619,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                OtherHCRecommendation ->
-                    { english = "114 recommended did not recommended to send patient to site"
+                OtherRecommendation114 ->
+                    { english = "114 did not recommended to send patient to site"
                     , kinyarwanda = Nothing
                     }
 
@@ -4524,7 +4634,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NoneOtherHCRecommendation ->
+                NoneOtherRecommendation114 ->
                     { english = "Not able to talk to 114 - other reason"
                     , kinyarwanda = Nothing
                     }
@@ -4541,7 +4651,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                OtherSiteRecommendation ->
+                OtherRecommendationSite ->
                     { english = "Site recommendation: Other"
                     , kinyarwanda = Nothing
                     }
@@ -4556,12 +4666,12 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NoneOtherSiteRecommendation ->
+                NoneOtherRecommendationSite ->
                     { english = "Not able to talk to site - other reason"
                     , kinyarwanda = Nothing
                     }
 
-                SiteRecommendationNotApplicable ->
+                RecommendationSiteNotApplicable ->
                     { english = "Not Applicable"
                     , kinyarwanda = Just "Ibi ntibikorwa"
                     }
@@ -4883,43 +4993,6 @@ translationSet trans =
             { english = "Have you posted signs on the door indicating that the space is an isolation area"
             , kinyarwanda = Just "Waba washyize ibimenyetso ku rugi byerekana ko iki cyumba ari ikijyamo abantu bari mu kato"
             }
-
-        SiteRecommendation recommendation ->
-            case recommendation of
-                TeamComeToVillage ->
-                    { english = "Team will come to village"
-                    , kinyarwanda = Nothing
-                    }
-
-                SendToSiteWithForm ->
-                    { english = "Advised to send patient to site with referral form"
-                    , kinyarwanda = Nothing
-                    }
-
-                OtherSiteRecommendation ->
-                    { english = "Other"
-                    , kinyarwanda = Nothing
-                    }
-
-                NoneSentWithForm ->
-                    { english = "No response. Sent patient with referral form."
-                    , kinyarwanda = Nothing
-                    }
-
-                NonePatientRefused ->
-                    { english = "Patient refused"
-                    , kinyarwanda = Nothing
-                    }
-
-                NoneOtherSiteRecommendation ->
-                    { english = "Other"
-                    , kinyarwanda = Nothing
-                    }
-
-                SiteRecommendationNotApplicable ->
-                    { english = "Not Applicable"
-                    , kinyarwanda = Just "Ibi ntibikorwa"
-                    }
 
         SocialHistoryHivTestingResult result ->
             case result of
