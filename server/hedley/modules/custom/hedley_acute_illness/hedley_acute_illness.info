@@ -85,6 +85,7 @@ features[field_instance][] = node-acute_illness_vitals-field_shards
 features[field_instance][] = node-acute_illness_vitals-field_uuid
 features[field_instance][] = node-call_114-field_114_contact
 features[field_instance][] = node-call_114-field_114_recommendation
+features[field_instance][] = node-call_114-field_acute_illness_encounter
 features[field_instance][] = node-call_114-field_date_measured
 features[field_instance][] = node-call_114-field_nurse
 features[field_instance][] = node-call_114-field_person
