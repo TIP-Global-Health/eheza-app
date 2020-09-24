@@ -1422,9 +1422,6 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
         contactHCTaskDisplayed =
             call114Form.called114 == Just False
 
-        _ =
-            Debug.log "call114Form" call114Form
-
         getNextTask currentTask =
             case currentTask of
                 NextStepsIsolation ->
