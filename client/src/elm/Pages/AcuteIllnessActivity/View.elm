@@ -1411,15 +1411,26 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                 Nothing ->
                     emptyNode
 
-        contactHCTaksDisplayed =
-            isJust measurements.call114 && talkedTo114 measurements
+        call114Form =
+            measurements.call114
+                |> Maybe.map
+                    (Tuple.second
+                        >> .value
+                    )
+                |> call114FormWithDefault data.call114Form
+
+        contactHCTaskDisplayed =
+            call114Form.called114 == Just False
+
+        _ =
+            Debug.log "call114Form" call114Form
 
         getNextTask currentTask =
             case currentTask of
                 NextStepsIsolation ->
                     let
                         tasksList =
-                            if contactHCTaksDisplayed then
+                            if contactHCTaskDisplayed then
                                 [ NextStepsCall114, NextStepsContactHC ]
 
                             else
@@ -1432,7 +1443,7 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                 NextStepsCall114 ->
                     let
                         tasksList =
-                            if contactHCTaksDisplayed then
+                            if contactHCTaskDisplayed then
                                 [ NextStepsContactHC ]
 
                             else
