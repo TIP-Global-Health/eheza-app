@@ -36,11 +36,11 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (OutMsgMother(..))
 import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessEncounter.Model
-import Pages.AcuteIllnessEncounter.Utils exposing (resolveAcuteIllnessDiagnosis, resolveNextStepByDiagnosis)
+import Pages.AcuteIllnessEncounter.Utils exposing (resolveAcuteIllnessDiagnosis, resolveNextStepByDiagnosis, talkedTo114)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
@@ -2172,8 +2172,15 @@ generateCovidFlowDataCollectedMsgs db id =
         |> RemoteData.toMaybe
         |> Maybe.map
             (\measurements ->
-                -- @todo
-                if isJust measurements.isolation && isJust measurements.hcContact then
+                --Isolation measurement not taken => incomplete data.
+                if isNothing measurements.isolation then
+                    []
+
+                else if
+                    -- CHW first calls 114. If he managed to talk to them, it's enough to have Call 114 measurement taken.
+                    -- If not, CHW needs to call Health Center => we need to have HC Contact measurement taken.
+                    isJust measurements.call114 && (talkedTo114 measurements || isJust measurements.hcContact)
+                then
                     [ navigateToProgressReportPageMsg id ]
 
                 else

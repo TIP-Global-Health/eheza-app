@@ -1310,7 +1310,7 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
             AcuteIllnessNextSteps
 
         tasks =
-            resolveNextStepsTasks currentDate person diagnosis
+            resolveNextStepsTasks currentDate person diagnosis measurements
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -1325,12 +1325,12 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                             )
 
                         NextStepsContactHC ->
-                            ( "next-steps-contact-hc"
+                            ( "next-steps-call"
                             , isJust measurements.hcContact
                             )
 
                         NextStepsCall114 ->
-                            ( "next-steps-call-114"
+                            ( "next-steps-call"
                             , isJust measurements.call114
                             )
 
@@ -1411,21 +1411,39 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                 Nothing ->
                     emptyNode
 
+        contactHCTaksDisplayed =
+            isJust measurements.call114 && talkedTo114 measurements
+
         getNextTask currentTask =
             case currentTask of
                 NextStepsIsolation ->
-                    [ NextStepsContactHC ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
+                    let
+                        tasksList =
+                            if contactHCTaksDisplayed then
+                                [ NextStepsContactHC ]
 
-                -- @todo
-                NextStepsContactHC ->
-                    [ NextStepsIsolation ]
+                            else
+                                [ NextStepsCall114 ]
+                    in
+                    tasksList
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
                 NextStepsCall114 ->
-                    [ NextStepsIsolation ]
+                    let
+                        tasksList =
+                            if contactHCTaksDisplayed then
+                                [ NextStepsContactHC ]
+
+                            else
+                                [ NextStepsIsolation ]
+                    in
+                    tasksList
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                NextStepsContactHC ->
+                    [ NextStepsIsolation, NextStepsCall114 ]
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 

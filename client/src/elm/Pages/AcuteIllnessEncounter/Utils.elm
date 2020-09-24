@@ -10,6 +10,7 @@ import Backend.Measurement.Model
         , AcuteFindingsRespiratorySign(..)
         , AcuteIllnessMeasurements
         , AcuteIllnessVitalsValue
+        , Call114Sign(..)
         , ExposureSign(..)
         , HCContactSign(..)
         , HCContactValue
@@ -109,8 +110,8 @@ generatePreviousMeasurements currentEncounterId participantId db =
             )
 
 
-resolveNextStepsTasks : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> List NextStepsTask
-resolveNextStepsTasks currentDate person diagnosis =
+resolveNextStepsTasks : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> List NextStepsTask
+resolveNextStepsTasks currentDate person diagnosis measurements =
     let
         ( ageMonths0To2, ageMonths0To6, ageMonths2To60 ) =
             ageInMonths currentDate person
@@ -122,11 +123,11 @@ resolveNextStepsTasks currentDate person diagnosis =
                 NextStepsIsolation ->
                     diagnosis == Just DiagnosisCovid19
 
-                NextStepsContactHC ->
-                    diagnosis == Just DiagnosisCovid19
-
                 NextStepsCall114 ->
                     diagnosis == Just DiagnosisCovid19
+
+                NextStepsContactHC ->
+                    diagnosis == Just DiagnosisCovid19 && isJust measurements.call114 && (not <| talkedTo114 measurements)
 
                 NextStepsMedicationDistribution ->
                     (diagnosis == Just DiagnosisMalariaUncomplicated && not ageMonths0To6)
@@ -145,8 +146,20 @@ resolveNextStepsTasks currentDate person diagnosis =
                         || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
                         || (diagnosis == Just DiagnosisUndeterminedMoreEvaluationNeeded)
     in
-    [ NextStepsIsolation, NextStepsCall114, NextStepsMedicationDistribution, NextStepsSendToHC ]
+    [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
         |> List.filter expectTask
+
+
+talkedTo114 : AcuteIllnessMeasurements -> Bool
+talkedTo114 measurements =
+    measurements.call114
+        |> Maybe.map
+            (Tuple.second
+                >> .value
+                >> .signs
+                >> EverySet.member Call114
+            )
+        |> Maybe.withDefault False
 
 
 expectActivity : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessActivity -> Bool
@@ -183,7 +196,7 @@ activityCompleted currentDate person measurements diagnosis activity =
             mandatoryActivityCompleted measurements AcuteIllnessExposure
 
         AcuteIllnessNextSteps ->
-            case resolveNextStepsTasks currentDate person diagnosis of
+            case resolveNextStepsTasks currentDate person diagnosis measurements of
                 [ NextStepsIsolation, NextStepsCall114 ] ->
                     isJust measurements.isolation
                         && isJust measurements.hcContact
