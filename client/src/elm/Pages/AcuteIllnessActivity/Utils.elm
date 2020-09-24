@@ -1125,7 +1125,9 @@ toMedicationDistributionValue form =
 
         nonAdministrationSigns =
             form.nonAdministrationSigns
-                |> Maybe.map (ifEverySetEmpty NoMedicationNonAdministrationSigns)
+                |> Maybe.withDefault EverySet.empty
+                |> ifEverySetEmpty NoMedicationNonAdministrationSigns
+                |> Just
     in
     Maybe.map MedicationDistributionValue distributionSigns
         |> andMap nonAdministrationSigns
