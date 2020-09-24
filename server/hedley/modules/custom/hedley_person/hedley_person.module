@@ -600,7 +600,9 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
 }
 
 /**
- * Creates patient using supplied data.
+ * Temporary - fixes Province and Birth Date for imported patients.
+ *
+ * Will be removed after the fix is applied.
  *
  * @param string $patient_type
  *   Child oe Adult.
@@ -659,24 +661,28 @@ function hedley_person_import_patient($patient_type, array $values) {
   $result = $query->execute();
 
   if (empty($result['node'])) {
-    $error = "Can't locate person $title";
+    $error = "Can't locate person $title. Likely a duplicate.";
     watchdog('debug', $error);
-    return $error;
+    // This is ok, because it's a duplicate, and was fixed when
+    // the original was handled.
+    return TRUE;
   }
 
-  $count = count($result['node']);
-  if ($count > 1) {
-    $error = "Person $title exists $count times";
+  $ids = array_keys($result['node']);
+
+  if (count($ids) > 1) {
+    $uids = implode(',', $ids);
+    $error = "Person $title exists multiple times times, UIDs: $uids.";
     watchdog('debug', $error);
-    return $error;
   }
 
-  $wrapper = entity_metadata_wrapper('node', key($result['node']));
-  $wrapper->field_province->set('Amajyaruguru');
-  $birth_date = hedley_person_date_process($birth_date);
-  $wrapper->field_birth_date->set($birth_date);
-
-  $wrapper->save();
+  foreach ($ids as $id) {
+    $wrapper = entity_metadata_wrapper('node', $id);
+    $wrapper->field_province->set('Amajyaruguru');
+    $birth_date = hedley_person_date_process($birth_date);
+    $wrapper->field_birth_date->set($birth_date);
+    $wrapper->save();
+  }
 
   return TRUE;
 }
@@ -692,7 +698,7 @@ function hedley_person_import_patient($patient_type, array $values) {
  * @return bool|string
  *   TRUE on success, error message otherwise.
  */
-function hedley_person_import_patient2($patient_type, array $values) {
+function hedley_person_import_patient_orig($patient_type, array $values) {
   // Common logic.
   if ($patient_type == 'child') {
     $first_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_FIRST_NAME]);
