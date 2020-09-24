@@ -11,6 +11,62 @@
 function hedley_acute_illness_field_default_field_bases() {
   $field_bases = array();
 
+  // Exported field_base: 'field_114_contact'.
+  $field_bases['field_114_contact'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_114_contact',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'call-114' => 'Call 114',
+        'contact-site' => 'Contact recommended site',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_114_recommendation'.
+  $field_bases['field_114_recommendation'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_114_recommendation',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'send-to-hc' => 'Send Patient to the nearest health center',
+        'send-to-rrtc' => 'Send patient to the Rapid Response Team center',
+        'send-to-hospital' => 'Send patient to the nearest hospital',
+        'other' => 'Other recommendation',
+        'none-no-answer' => 'None - no answer',
+        'none-busy-signal' => 'None - busy Signal',
+        'none-other' => 'None - other',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_abdominal_pain_period'.
   $field_bases['field_abdominal_pain_period'] = array(
     'active' => 1,
