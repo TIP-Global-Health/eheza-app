@@ -678,6 +678,10 @@ function hedley_person_import_patient($patient_type, array $values) {
     $wrapper->field_birth_date->set($birth_date);
     $wrapper->save();
 
+    if ($patient_type != 'child') {
+      continue;
+    }
+
     $participants_ids = hedley_person_pmtct_participants_for_child($id);
     if (empty($participants_ids)) {
       continue;
