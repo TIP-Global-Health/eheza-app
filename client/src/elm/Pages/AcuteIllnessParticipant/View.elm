@@ -118,18 +118,18 @@ viewActions language currentDate selectedHealthCenter id db sessions =
                                     |> onClick
                                 ]
                             )
-                -- If session does not exist, create it.
-                |> Maybe.withDefault
-                    [ IndividualEncounterParticipant id
-                        Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
-                        currentDate
-                        Nothing
-                        Nothing
-                        (Just selectedHealthCenter)
-                        |> Backend.Model.PostIndividualSession
-                        |> App.Model.MsgIndexedDb
-                        |> onClick
-                    ]
+                        -- If session does not exist, create it.
+                        |> Maybe.withDefault
+                            [ IndividualEncounterParticipant id
+                                Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                                currentDate
+                                Nothing
+                                Nothing
+                                (Just selectedHealthCenter)
+                                |> Backend.Model.PostIndividualSession
+                                |> App.Model.MsgIndexedDb
+                                |> onClick
+                            ]
                     )
 
         navigateToEncounterAction id_ =
