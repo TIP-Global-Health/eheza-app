@@ -11,6 +11,62 @@
 function hedley_acute_illness_field_default_field_bases() {
   $field_bases = array();
 
+  // Exported field_base: 'field_114_contact'.
+  $field_bases['field_114_contact'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_114_contact',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'call-114' => 'Call 114',
+        'contact-site' => 'Contact recommended site',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_114_recommendation'.
+  $field_bases['field_114_recommendation'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_114_recommendation',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'send-to-hc' => 'Send Patient to the nearest health center',
+        'send-to-rrtc' => 'Send patient to the Rapid Response Team center',
+        'send-to-hospital' => 'Send patient to the nearest hospital',
+        'other' => 'Other recommendation',
+        'none-no-answer' => 'None - no answer',
+        'none-busy-signal' => 'None - busy Signal',
+        'none-other' => 'None - other',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_abdominal_pain_period'.
   $field_bases['field_abdominal_pain_period'] = array(
     'active' => 1,
@@ -59,6 +115,34 @@ function hedley_acute_illness_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'entityreference',
+  );
+
+  // Exported field_base: 'field_ambulance_arrival_time'.
+  $field_bases['field_ambulance_arrival_time'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_ambulance_arrival_time',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'less-than-30m' => 'Less than 30 min',
+        '30m-1h' => '30 min - 1 hour',
+        '1h-2h' => '1 hour- 2 hours',
+        '2h-1d' => '2hours - 1 day',
+        'n-a' => 'Not applicable',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_blood_in_sputum_period'.
@@ -294,8 +378,7 @@ function hedley_acute_illness_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'call-114' => 'Call 114',
-        'contact-site' => 'Contact recommended site',
+        'contact-hc' => 'Contact HC',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',
@@ -320,13 +403,39 @@ function hedley_acute_illness_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'send-to-hc' => 'Send Patient to the nearest health center',
-        'send-to-rrtc' => 'Send patient to the Rapid Response Team center',
-        'send-to-hospital' => 'Send patient to the nearest hospital',
-        'other' => 'Other recommendation',
-        'none-no-answer' => 'None - no answer',
-        'none-busy-signal' => 'None - busy Signal',
-        'none-other' => 'None - other',
+        'send-ambulance' => 'Send ambulance',
+        'home-isolation' => 'Home isolation',
+        'come-to-hc' => 'Come to HC',
+        'chw-monitoring' => 'CHW monitoring',
+        'n-a' => 'Not applicable',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_hc_response_time'.
+  $field_bases['field_hc_response_time'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_hc_response_time',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'less-than-30m' => 'Less than 30 min',
+        '30m-1h' => '30 min - 1 hour',
+        '1h-2h' => '1 hour- 2 hours',
+        '2h-1d' => '2hours - 1 day',
+        'n-a' => 'Not applicable',
       ),
       'allowed_values_function' => '',
     ),
@@ -512,19 +621,19 @@ function hedley_acute_illness_field_default_field_bases() {
       'allowed_values' => array(
         'amoxicillin-lack-of-stock' => 'Amoxicillin - Lack of stock',
         'amoxicillin-known-allergy' => 'Amoxicillin - Known allergy',
-        'amoxicillin-patient-decline' => 'Amoxicillin - Patient declined',
+        'amoxicillin-patient-declined' => 'Amoxicillin - Patient declined',
         'amoxicillin-other' => 'Amoxicillin - Other',
         'coartem-lack-of-stock' => 'Coartem - Lack of stock',
         'coartem-known-allergy' => 'Coartem - Known allergy',
-        'coartem-patient-decline' => 'Coartem - Patient declined',
+        'coartem-patient-declined' => 'Coartem - Patient declined',
         'coartem-other' => 'Coartem - Other',
         'ors-lack-of-stock' => 'ORS  - Lack of stock',
         'ors-known-allergy' => 'ORS - Known allergy',
-        'ors-patient-decline' => 'ORS - Patient declined',
+        'ors-patient-declined' => 'ORS - Patient declined',
         'ors-other' => 'ORS - Other',
         'zinc-lack-of-stock' => 'Zinc - Lack of stock',
         'zinc-known-allergy' => 'Zinc - Known allergy',
-        'zinc-patient-decline' => 'Zinc - Patient declined',
+        'zinc-patient-declined' => 'Zinc - Patient declined',
         'zinc-other' => 'Zinc - Other',
         'none' => 'None',
       ),

@@ -15,7 +15,9 @@ import Backend.Measurement.Model
         , MedicationDistributionSign(..)
         , MedicationNonAdministrationSign(..)
         , ReasonForNotIsolating(..)
-        , SiteRecommendation(..)
+        , Recommendation114(..)
+        , RecommendationSite(..)
+        , ResponsePeriod(..)
         , SymptomsGISign(..)
         , SymptomsGeneralSign(..)
         , SymptomsRespiratorySign(..)
@@ -932,21 +934,13 @@ update currentDate id db msg model =
             , appMsgs
             )
 
-        SetCalled114 value ->
+        SetContactedHC value ->
             let
                 form =
                     model.nextStepsData.hcContactForm
 
                 updatedForm =
-                    { form
-                        | called114 = Just value
-                        , hcRecommendation = Nothing
-                        , hcRecommendationDirty = True
-                        , contactedSite = Nothing
-                        , contactedSiteDirty = True
-                        , siteRecommendation = Nothing
-                        , siteRecommendationDirty = True
-                    }
+                    { form | contactedHC = Just value }
 
                 updatedData =
                     model.nextStepsData
@@ -963,37 +957,16 @@ update currentDate id db msg model =
                     model.nextStepsData.hcContactForm
 
                 updatedForm =
-                    case form.hcRecommendation of
+                    case form.recommendations of
                         Just period ->
                             if period == value then
-                                { form
-                                    | hcRecommendation = Nothing
-                                    , hcRecommendationDirty = True
-                                    , contactedSite = Nothing
-                                    , contactedSiteDirty = True
-                                    , siteRecommendation = Nothing
-                                    , siteRecommendationDirty = True
-                                }
+                                { form | recommendations = Nothing }
 
                             else
-                                { form
-                                    | hcRecommendation = Just value
-                                    , hcRecommendationDirty = True
-                                    , contactedSite = Nothing
-                                    , contactedSiteDirty = True
-                                    , siteRecommendation = Nothing
-                                    , siteRecommendationDirty = True
-                                }
+                                { form | recommendations = Just value }
 
                         Nothing ->
-                            { form
-                                | hcRecommendation = Just value
-                                , hcRecommendationDirty = True
-                                , contactedSite = Nothing
-                                , contactedSiteDirty = True
-                                , siteRecommendation = Nothing
-                                , siteRecommendationDirty = True
-                            }
+                            { form | recommendations = Just value }
 
                 updatedData =
                     model.nextStepsData
@@ -1004,18 +977,22 @@ update currentDate id db msg model =
             , []
             )
 
-        SetContactedSite value ->
+        SetResponsePeriod value ->
             let
                 form =
                     model.nextStepsData.hcContactForm
 
                 updatedForm =
-                    { form
-                        | contactedSite = Just value
-                        , contactedSiteDirty = True
-                        , siteRecommendation = Nothing
-                        , siteRecommendationDirty = True
-                    }
+                    case form.responsePeriod of
+                        Just period ->
+                            if period == value then
+                                { form | responsePeriod = Nothing }
+
+                            else
+                                { form | responsePeriod = Just value }
+
+                        Nothing ->
+                            { form | responsePeriod = Just value }
 
                 updatedData =
                     model.nextStepsData
@@ -1026,22 +1003,22 @@ update currentDate id db msg model =
             , []
             )
 
-        SetSiteRecommendation value ->
+        SetAmbulanceArrivalPeriod value ->
             let
                 form =
                     model.nextStepsData.hcContactForm
 
                 updatedForm =
-                    case form.siteRecommendation of
+                    case form.ambulanceArrivalPeriod of
                         Just period ->
                             if period == value then
-                                { form | siteRecommendation = Nothing, siteRecommendationDirty = True }
+                                { form | ambulanceArrivalPeriod = Nothing }
 
                             else
-                                { form | siteRecommendation = Just value, siteRecommendationDirty = True }
+                                { form | ambulanceArrivalPeriod = Just value }
 
                         Nothing ->
-                            { form | siteRecommendation = Just value, siteRecommendationDirty = True }
+                            { form | ambulanceArrivalPeriod = Just value }
 
                 updatedData =
                     model.nextStepsData
@@ -1075,6 +1052,164 @@ update currentDate id db msg model =
                             []
                             (\value ->
                                 (Backend.AcuteIllnessEncounter.Model.SaveHCContact personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = Just nextTask })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetCalled114 value ->
+            let
+                form =
+                    model.nextStepsData.call114Form
+
+                updatedForm =
+                    { form
+                        | called114 = Just value
+                        , recommendation114 = Nothing
+                        , recommendation114Dirty = True
+                        , contactedSite = Nothing
+                        , contactedSiteDirty = True
+                        , recommendationSite = Nothing
+                        , recommendationSiteDirty = True
+                    }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | call114Form = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetRecommendation114 value ->
+            let
+                form =
+                    model.nextStepsData.call114Form
+
+                updatedForm =
+                    case form.recommendation114 of
+                        Just period ->
+                            if period == value then
+                                { form
+                                    | recommendation114 = Nothing
+                                    , recommendation114Dirty = True
+                                    , contactedSite = Nothing
+                                    , contactedSiteDirty = True
+                                    , recommendationSite = Nothing
+                                    , recommendationSiteDirty = True
+                                }
+
+                            else
+                                { form
+                                    | recommendation114 = Just value
+                                    , recommendation114Dirty = True
+                                    , contactedSite = Nothing
+                                    , contactedSiteDirty = True
+                                    , recommendationSite = Nothing
+                                    , recommendationSiteDirty = True
+                                }
+
+                        Nothing ->
+                            { form
+                                | recommendation114 = Just value
+                                , recommendation114Dirty = True
+                                , contactedSite = Nothing
+                                , contactedSiteDirty = True
+                                , recommendationSite = Nothing
+                                , recommendationSiteDirty = True
+                            }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | call114Form = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetContactedSite value ->
+            let
+                form =
+                    model.nextStepsData.call114Form
+
+                updatedForm =
+                    { form
+                        | contactedSite = Just value
+                        , contactedSiteDirty = True
+                        , recommendationSite = Nothing
+                        , recommendationSiteDirty = True
+                    }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | call114Form = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetRecommendationSite value ->
+            let
+                form =
+                    model.nextStepsData.call114Form
+
+                updatedForm =
+                    case form.recommendationSite of
+                        Just period ->
+                            if period == value then
+                                { form | recommendationSite = Nothing, recommendationSiteDirty = True }
+
+                            else
+                                { form | recommendationSite = Just value, recommendationSiteDirty = True }
+
+                        Nothing ->
+                            { form | recommendationSite = Just value, recommendationSiteDirty = True }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | call114Form = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveCall114 personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+                            , NextStepsIsolation
+                            )
+
+                appMsgs =
+                    model.nextStepsData.call114Form
+                        |> toCall114ValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.AcuteIllnessEncounter.Model.SaveCall114 personId measurementId value
                                     |> Backend.Model.MsgAcuteIllnessEncounter id
                                     |> App.Model.MsgIndexedDb
                                 )

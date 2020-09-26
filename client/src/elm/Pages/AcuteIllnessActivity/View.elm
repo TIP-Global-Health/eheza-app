@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.View exposing (view, viewAdministeredMedicationLabel, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
+module Pages.AcuteIllnessActivity.View exposing (view, viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -1048,6 +1048,34 @@ viewExposureForm language currentDate measurements form =
         ]
 
 
+viewHCRecommendation : Language -> HCRecommendation -> Html any
+viewHCRecommendation language recommendation =
+    let
+        riskLevel =
+            case recommendation of
+                SendAmbulance ->
+                    Translate.HighRiskCase
+
+                HomeIsolation ->
+                    Translate.HighRiskCase
+
+                ComeToHealthCenter ->
+                    Translate.LowRiskCase
+
+                ChwMonitoring ->
+                    Translate.LowRiskCase
+
+                HCRecommendationNotApplicable ->
+                    Translate.LowRiskCase
+    in
+    label []
+        [ translate language Translate.HealthCenterDetermined |> text
+        , span [ class "strong" ] [ translate language riskLevel |> text ]
+        , translate language Translate.And |> text
+        , span [ class "strong" ] [ Translate.HCRecommendation recommendation |> translate language |> text ]
+        ]
+
+
 viewAcuteIllnessPriorTreatment : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> PriorTreatmentData -> List (Html Msg)
 viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) data =
     let
@@ -1282,7 +1310,7 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
             AcuteIllnessNextSteps
 
         tasks =
-            resolveNextStepsTasks currentDate person diagnosis
+            resolveNextStepsTasks currentDate person diagnosis measurements
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -1296,9 +1324,14 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                             , isJust measurements.isolation
                             )
 
-                        NextStepsCall114 ->
-                            ( "next-steps-contact-hc"
+                        NextStepsContactHC ->
+                            ( "next-steps-call"
                             , isJust measurements.hcContact
+                            )
+
+                        NextStepsCall114 ->
+                            ( "next-steps-call"
+                            , isJust measurements.call114
                             )
 
                         NextStepsMedicationDistribution ->
@@ -1351,10 +1384,16 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                         |> isolationFormWithDefault data.isolationForm
                         |> viewIsolationForm language currentDate measurements
 
-                Just NextStepsCall114 ->
+                Just NextStepsContactHC ->
                     measurements.hcContact
                         |> Maybe.map (Tuple.second >> .value)
                         |> hcContactFormWithDefault data.hcContactForm
+                        |> viewHCContactForm language currentDate measurements
+
+                Just NextStepsCall114 ->
+                    measurements.call114
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> call114FormWithDefault data.call114Form
                         |> viewCall114Form language currentDate measurements
 
                 Just NextStepsMedicationDistribution ->
@@ -1372,15 +1411,47 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                 Nothing ->
                     emptyNode
 
+        call114Form =
+            measurements.call114
+                |> Maybe.map
+                    (Tuple.second
+                        >> .value
+                    )
+                |> call114FormWithDefault data.call114Form
+
+        contactHCTaskDisplayed =
+            call114Form.called114 == Just False
+
         getNextTask currentTask =
             case currentTask of
                 NextStepsIsolation ->
-                    [ NextStepsCall114 ]
+                    let
+                        tasksList =
+                            if contactHCTaskDisplayed then
+                                [ NextStepsCall114, NextStepsContactHC ]
+
+                            else
+                                [ NextStepsCall114 ]
+                    in
+                    tasksList
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
                 NextStepsCall114 ->
-                    [ NextStepsIsolation ]
+                    let
+                        tasksList =
+                            if contactHCTaskDisplayed then
+                                [ NextStepsContactHC ]
+
+                            else
+                                [ NextStepsIsolation ]
+                    in
+                    tasksList
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                NextStepsContactHC ->
+                    [ NextStepsIsolation, NextStepsCall114 ]
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
@@ -1403,8 +1474,11 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                                     NextStepsIsolation ->
                                         SaveIsolation personId measurements.isolation nextTask
 
-                                    NextStepsCall114 ->
+                                    NextStepsContactHC ->
                                         SaveHCContact personId measurements.hcContact nextTask
+
+                                    NextStepsCall114 ->
+                                        SaveCall114 personId measurements.call114 nextTask
 
                                     NextStepsSendToHC ->
                                         SaveSendToHC personId measurements.sendToHC
@@ -1493,7 +1567,73 @@ viewIsolationForm language currentDate measurements form =
         |> div [ class "ui form next-steps isolation" ]
 
 
-viewCall114Form : Language -> NominalDate -> AcuteIllnessMeasurements -> HCContactForm -> Html Msg
+viewHCContactForm : Language -> NominalDate -> AcuteIllnessMeasurements -> HCContactForm -> Html Msg
+viewHCContactForm language currentDate measurements form =
+    let
+        contactedHCInput =
+            [ viewQuestionLabel language Translate.ContactedHCQuestion
+            , viewBoolInput
+                language
+                form.contactedHC
+                SetContactedHC
+                "contacted-hc"
+                Nothing
+            ]
+
+        derivedInputs =
+            case form.contactedHC of
+                Just True ->
+                    let
+                        hcRespnonseInput =
+                            [ viewQuestionLabel language Translate.HCResponseQuestion
+                            , viewCheckBoxSelectCustomInput language
+                                [ SendAmbulance, HomeIsolation, ComeToHealthCenter, ChwMonitoring ]
+                                []
+                                form.recommendations
+                                SetHCRecommendation
+                                (viewHCRecommendation language)
+                            ]
+
+                        hcRespnonsePeriodInput =
+                            [ viewQuestionLabel language Translate.HCResponsePeriodQuestion
+                            , viewCheckBoxSelectInput language
+                                [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
+                                []
+                                form.responsePeriod
+                                SetResponsePeriod
+                                Translate.ResponsePeriod
+                            ]
+
+                        derivedInput =
+                            form.recommendations
+                                |> Maybe.map
+                                    (\recommendations ->
+                                        if recommendations == SendAmbulance then
+                                            [ viewQuestionLabel language Translate.AmbulancArrivalPeriodQuestion
+                                            , viewCheckBoxSelectInput language
+                                                [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
+                                                []
+                                                form.ambulanceArrivalPeriod
+                                                SetAmbulanceArrivalPeriod
+                                                Translate.ResponsePeriod
+                                            ]
+
+                                        else
+                                            []
+                                    )
+                                |> Maybe.withDefault []
+                    in
+                    hcRespnonseInput ++ hcRespnonsePeriodInput ++ derivedInput
+
+                _ ->
+                    []
+    in
+    contactedHCInput
+        ++ derivedInputs
+        |> div [ class "ui form exposure hc-contact" ]
+
+
+viewCall114Form : Language -> NominalDate -> AcuteIllnessMeasurements -> Call114Form -> Html Msg
 viewCall114Form language currentDate measurements form =
     let
         header =
@@ -1523,18 +1663,18 @@ viewCall114Form language currentDate measurements form =
                     (\called114 ->
                         if called114 then
                             let
-                                hcRecommendationInput =
+                                recommendation114Input =
                                     [ viewQuestionLabel language Translate.WhatWasTheirResponse
                                     , viewCheckBoxSelectInput language
-                                        [ SendToHealthCenter, SendToRRTCenter, SendToHospital, OtherHCRecommendation ]
+                                        [ SendToHealthCenter, SendToRRTCenter, SendToHospital, OtherRecommendation114 ]
                                         []
-                                        form.hcRecommendation
-                                        SetHCRecommendation
-                                        Translate.HCRecommendation
+                                        form.recommendation114
+                                        SetRecommendation114
+                                        Translate.Recommendation114
                                     ]
 
                                 derrivedSiteInputs =
-                                    if isJust form.hcRecommendation && form.hcRecommendation /= Just OtherHCRecommendation then
+                                    if isJust form.recommendation114 && form.recommendation114 /= Just OtherRecommendation114 then
                                         let
                                             contactedSiteInput =
                                                 [ viewQuestionLabel language Translate.ContactedRecommendedSiteQuestion
@@ -1546,47 +1686,47 @@ viewCall114Form language currentDate measurements form =
                                                     Nothing
                                                 ]
 
-                                            siteRecommndationInput =
+                                            recommndationSiteInput =
                                                 form.contactedSite
                                                     |> Maybe.map
                                                         (\contactedSite ->
                                                             if contactedSite then
                                                                 [ viewQuestionLabel language Translate.WhatWasTheirResponse
                                                                 , viewCheckBoxSelectInput language
-                                                                    [ TeamComeToVillage, SendToSiteWithForm, OtherSiteRecommendation ]
+                                                                    [ TeamComeToVillage, SendToSiteWithForm, OtherRecommendationSite ]
                                                                     []
-                                                                    form.siteRecommendation
-                                                                    SetSiteRecommendation
-                                                                    Translate.SiteRecommendation
+                                                                    form.recommendationSite
+                                                                    SetRecommendationSite
+                                                                    Translate.RecommendationSite
                                                                 ]
 
                                                             else
                                                                 [ viewQuestionLabel language Translate.WhyNot
                                                                 , viewCheckBoxSelectInput language
-                                                                    [ NoneSentWithForm, NonePatientRefused, NoneOtherSiteRecommendation ]
+                                                                    [ NoneSentWithForm, NonePatientRefused, NoneOtherRecommendationSite ]
                                                                     []
-                                                                    form.siteRecommendation
-                                                                    SetSiteRecommendation
-                                                                    Translate.SiteRecommendation
+                                                                    form.recommendationSite
+                                                                    SetRecommendationSite
+                                                                    Translate.RecommendationSite
                                                                 ]
                                                         )
                                                     |> Maybe.withDefault []
                                         in
-                                        contactedSiteInput ++ siteRecommndationInput
+                                        contactedSiteInput ++ recommndationSiteInput
 
                                     else
                                         []
                             in
-                            hcRecommendationInput ++ derrivedSiteInputs
+                            recommendation114Input ++ derrivedSiteInputs
 
                         else
                             [ viewQuestionLabel language Translate.WhyNot
                             , viewCheckBoxSelectInput language
-                                [ NoneNoAnswer, NoneBusySignal, NoneOtherHCRecommendation ]
+                                [ NoneNoAnswer, NoneBusySignal, NoneOtherRecommendation114 ]
                                 []
-                                form.hcRecommendation
-                                SetHCRecommendation
-                                Translate.HCRecommendation
+                                form.recommendation114
+                                SetRecommendation114
+                                Translate.Recommendation114
                             ]
                     )
                 |> Maybe.withDefault []

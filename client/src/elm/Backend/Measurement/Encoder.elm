@@ -1375,13 +1375,78 @@ encodeHCContact =
 encodeHCContactValue : HCContactValue -> List ( String, Value )
 encodeHCContactValue value =
     [ ( "hc_contact", encodeEverySet encodeHCContactSign value.signs )
-    , ( "hc_recommendation", encodeEverySet encodeHCRecommendation value.hcRecommendations )
-    , ( "site_recommendation", encodeEverySet encodeSiteRecommendation value.siteRecommendations )
+    , ( "hc_recommendation", encodeEverySet encodeHCRecommendation value.recommendations )
+    , ( "hc_response_time", encodeEverySet encodeResponsePeriod value.responsePeriod )
+    , ( "ambulance_arrival_time", encodeEverySet encodeResponsePeriod value.ambulanceArrivalPeriod )
     ]
 
 
 encodeHCContactSign : HCContactSign -> Value
 encodeHCContactSign sign =
+    string <|
+        case sign of
+            ContactedHealthCenter ->
+                "contact-hc"
+
+            NoHCContactSigns ->
+                "none"
+
+
+encodeHCRecommendation : HCRecommendation -> Value
+encodeHCRecommendation recommendation =
+    string <|
+        case recommendation of
+            SendAmbulance ->
+                "send-ambulance"
+
+            HomeIsolation ->
+                "home-isolation"
+
+            ComeToHealthCenter ->
+                "come-to-hc"
+
+            ChwMonitoring ->
+                "chw-monitoring"
+
+            HCRecommendationNotApplicable ->
+                "n-a"
+
+
+encodeResponsePeriod : ResponsePeriod -> Value
+encodeResponsePeriod period =
+    string <|
+        case period of
+            LessThan30Min ->
+                "less-than-30m"
+
+            Between30min1Hour ->
+                "30m-1h"
+
+            Between1Hour2Hour ->
+                "1h-2h"
+
+            Between2Hour1Day ->
+                "2h-1d"
+
+            ResponsePeriodNotApplicable ->
+                "n-a"
+
+
+encodeCall114 : Call114 -> List ( String, Value )
+encodeCall114 =
+    encodeAcuteIllnessMeasurement encodeCall114Value
+
+
+encodeCall114Value : Call114Value -> List ( String, Value )
+encodeCall114Value value =
+    [ ( "114_contact", encodeEverySet encodeCall114Sign value.signs )
+    , ( "114_recommendation", encodeEverySet encodeRecommendation114 value.recommendations114 )
+    , ( "site_recommendation", encodeEverySet encodeRecommendationSite value.recommendationsSite )
+    ]
+
+
+encodeCall114Sign : Call114Sign -> Value
+encodeCall114Sign sign =
     string <|
         case sign of
             Call114 ->
@@ -1390,12 +1455,12 @@ encodeHCContactSign sign =
             ContactSite ->
                 "contact-site"
 
-            NoHCContactSigns ->
+            NoCall114Signs ->
                 "none"
 
 
-encodeHCRecommendation : HCRecommendation -> Value
-encodeHCRecommendation recommendation =
+encodeRecommendation114 : Recommendation114 -> Value
+encodeRecommendation114 recommendation =
     string <|
         case recommendation of
             SendToHealthCenter ->
@@ -1407,7 +1472,7 @@ encodeHCRecommendation recommendation =
             SendToHospital ->
                 "send-to-hospital"
 
-            OtherHCRecommendation ->
+            OtherRecommendation114 ->
                 "other"
 
             NoneNoAnswer ->
@@ -1416,12 +1481,12 @@ encodeHCRecommendation recommendation =
             NoneBusySignal ->
                 "none-busy-signal"
 
-            NoneOtherHCRecommendation ->
+            NoneOtherRecommendation114 ->
                 "none-other"
 
 
-encodeSiteRecommendation : SiteRecommendation -> Value
-encodeSiteRecommendation period =
+encodeRecommendationSite : RecommendationSite -> Value
+encodeRecommendationSite period =
     string <|
         case period of
             TeamComeToVillage ->
@@ -1430,7 +1495,7 @@ encodeSiteRecommendation period =
             SendToSiteWithForm ->
                 "send-with-form"
 
-            OtherSiteRecommendation ->
+            OtherRecommendationSite ->
                 "other"
 
             NoneSentWithForm ->
@@ -1439,8 +1504,8 @@ encodeSiteRecommendation period =
             NonePatientRefused ->
                 "none-patient-refused"
 
-            NoneOtherSiteRecommendation ->
+            NoneOtherRecommendationSite ->
                 "none-other"
 
-            SiteRecommendationNotApplicable ->
+            RecommendationSiteNotApplicable ->
                 "n-a"

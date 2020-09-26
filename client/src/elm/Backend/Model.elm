@@ -313,6 +313,7 @@ type Revision
     | ExposureRevision ExposureId Exposure
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | HCContactRevision HCContactId HCContact
+    | Call114Revision Call114Id Call114
     | HealthCenterRevision HealthCenterId HealthCenter
     | HeightRevision HeightId Height
     | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant

@@ -706,40 +706,73 @@ type alias Isolation =
 
 
 type HCContactSign
-    = Call114
-    | ContactSite
+    = ContactedHealthCenter
     | NoHCContactSigns
 
 
 type HCRecommendation
-    = SendToHealthCenter
-    | SendToRRTCenter
-    | SendToHospital
-    | OtherHCRecommendation
-    | NoneNoAnswer
-    | NoneBusySignal
-    | NoneOtherHCRecommendation
+    = SendAmbulance
+    | HomeIsolation
+    | ComeToHealthCenter
+    | ChwMonitoring
+    | HCRecommendationNotApplicable
 
 
-type SiteRecommendation
-    = TeamComeToVillage
-    | SendToSiteWithForm
-    | OtherSiteRecommendation
-    | NoneSentWithForm
-    | NonePatientRefused
-    | NoneOtherSiteRecommendation
-    | SiteRecommendationNotApplicable
+type ResponsePeriod
+    = LessThan30Min
+    | Between30min1Hour
+    | Between1Hour2Hour
+    | Between2Hour1Day
+    | ResponsePeriodNotApplicable
 
 
 type alias HCContactValue =
     { signs : EverySet HCContactSign
-    , hcRecommendations : EverySet HCRecommendation
-    , siteRecommendations : EverySet SiteRecommendation
+    , recommendations : EverySet HCRecommendation
+    , responsePeriod : EverySet ResponsePeriod
+    , ambulanceArrivalPeriod : EverySet ResponsePeriod
     }
 
 
 type alias HCContact =
     AcuteIllnessMeasurement HCContactValue
+
+
+type Call114Sign
+    = Call114
+    | ContactSite
+    | NoCall114Signs
+
+
+type Recommendation114
+    = SendToHealthCenter
+    | SendToRRTCenter
+    | SendToHospital
+    | OtherRecommendation114
+    | NoneNoAnswer
+    | NoneBusySignal
+    | NoneOtherRecommendation114
+
+
+type RecommendationSite
+    = TeamComeToVillage
+    | SendToSiteWithForm
+    | OtherRecommendationSite
+    | NoneSentWithForm
+    | NonePatientRefused
+    | NoneOtherRecommendationSite
+    | RecommendationSiteNotApplicable
+
+
+type alias Call114Value =
+    { signs : EverySet Call114Sign
+    , recommendations114 : EverySet Recommendation114
+    , recommendationsSite : EverySet RecommendationSite
+    }
+
+
+type alias Call114 =
+    AcuteIllnessMeasurement Call114Value
 
 
 type SendToHCSign
@@ -908,6 +941,7 @@ type alias AcuteIllnessMeasurements =
     , exposure : Maybe ( ExposureId, Exposure )
     , isolation : Maybe ( IsolationId, Isolation )
     , hcContact : Maybe ( HCContactId, HCContact )
+    , call114 : Maybe ( Call114Id, Call114 )
     , treatmentReview : Maybe ( TreatmentReviewId, TreatmentReview )
     , sendToHC : Maybe ( SendToHCId, SendToHC )
     , medicationDistribution : Maybe ( MedicationDistributionId, MedicationDistribution )

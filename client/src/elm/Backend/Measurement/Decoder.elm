@@ -117,6 +117,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "exposure" (decodeHead decodeExposure) Nothing
         |> optional "isolation" (decodeHead decodeIsolation) Nothing
         |> optional "hc_contact" (decodeHead decodeHCContact) Nothing
+        |> optional "call_114" (decodeHead decodeCall114) Nothing
         |> optional "treatment_history" (decodeHead decodeTreatmentReview) Nothing
         |> optional "send_to_hc" (decodeHead decodeSendToHC) Nothing
         |> optional "medication_distribution" (decodeHead decodeMedicationDistribution) Nothing
@@ -1580,7 +1581,8 @@ decodeHCContact =
     succeed HCContactValue
         |> required "hc_contact" (decodeEverySet decodeHCContactSign)
         |> required "hc_recommendation" (decodeEverySet decodeHCRecommendation)
-        |> required "site_recommendation" (decodeEverySet decodeSiteRecommendation)
+        |> required "hc_response_time" (decodeEverySet decodeResponsePeriod)
+        |> required "ambulance_arrival_time" (decodeEverySet decodeResponsePeriod)
         |> decodeAcuteIllnessMeasurement
 
 
@@ -1590,11 +1592,8 @@ decodeHCContactSign =
         |> andThen
             (\sign ->
                 case sign of
-                    "call-114" ->
-                        succeed Call114
-
-                    "contact-site" ->
-                        succeed ContactSite
+                    "contact-hc" ->
+                        succeed ContactedHealthCenter
 
                     "none" ->
                         succeed NoHCContactSigns
@@ -1612,6 +1611,93 @@ decodeHCRecommendation =
         |> andThen
             (\sign ->
                 case sign of
+                    "send-ambulance" ->
+                        succeed SendAmbulance
+
+                    "home-isolation" ->
+                        succeed HomeIsolation
+
+                    "come-to-hc" ->
+                        succeed ComeToHealthCenter
+
+                    "chw-monitoring" ->
+                        succeed ChwMonitoring
+
+                    "n-a" ->
+                        succeed HCRecommendationNotApplicable
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized HCRecommendation"
+            )
+
+
+decodeResponsePeriod : Decoder ResponsePeriod
+decodeResponsePeriod =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "less-than-30m" ->
+                        succeed LessThan30Min
+
+                    "30m-1h" ->
+                        succeed Between30min1Hour
+
+                    "1h-2h" ->
+                        succeed Between1Hour2Hour
+
+                    "2h-1d" ->
+                        succeed Between2Hour1Day
+
+                    "n-a" ->
+                        succeed ResponsePeriodNotApplicable
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized ResponsePeriod"
+            )
+
+
+decodeCall114 : Decoder Call114
+decodeCall114 =
+    succeed Call114Value
+        |> required "114_contact" (decodeEverySet decodeCall114Sign)
+        |> required "114_recommendation" (decodeEverySet decodeRecommendation114)
+        |> required "site_recommendation" (decodeEverySet decodeRecommendationSite)
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeCall114Sign : Decoder Call114Sign
+decodeCall114Sign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "call-114" ->
+                        succeed Call114
+
+                    "contact-site" ->
+                        succeed ContactSite
+
+                    "none" ->
+                        succeed NoCall114Signs
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized Call114Sign"
+            )
+
+
+decodeRecommendation114 : Decoder Recommendation114
+decodeRecommendation114 =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
                     "send-to-hc" ->
                         succeed SendToHealthCenter
 
@@ -1622,7 +1708,7 @@ decodeHCRecommendation =
                         succeed SendToHospital
 
                     "other" ->
-                        succeed OtherHCRecommendation
+                        succeed OtherRecommendation114
 
                     "none-no-answer" ->
                         succeed NoneNoAnswer
@@ -1631,17 +1717,17 @@ decodeHCRecommendation =
                         succeed NoneBusySignal
 
                     "none-other" ->
-                        succeed NoneOtherHCRecommendation
+                        succeed NoneOtherRecommendation114
 
                     _ ->
                         fail <|
                             sign
-                                ++ " is not a recognized HCRecommendation"
+                                ++ " is not a recognized Recommendation114"
             )
 
 
-decodeSiteRecommendation : Decoder SiteRecommendation
-decodeSiteRecommendation =
+decodeRecommendationSite : Decoder RecommendationSite
+decodeRecommendationSite =
     string
         |> andThen
             (\sign ->
@@ -1653,7 +1739,7 @@ decodeSiteRecommendation =
                         succeed SendToSiteWithForm
 
                     "other" ->
-                        succeed OtherSiteRecommendation
+                        succeed OtherRecommendationSite
 
                     "none-sent-with-form" ->
                         succeed NoneSentWithForm
@@ -1662,13 +1748,13 @@ decodeSiteRecommendation =
                         succeed NonePatientRefused
 
                     "none-other" ->
-                        succeed NoneOtherSiteRecommendation
+                        succeed NoneOtherRecommendationSite
 
                     "n-a" ->
-                        succeed SiteRecommendationNotApplicable
+                        succeed RecommendationSiteNotApplicable
 
                     _ ->
                         fail <|
                             sign
-                                ++ " is not a recognized SiteRecommendation"
+                                ++ " is not a recognized RecommendationSite"
             )
