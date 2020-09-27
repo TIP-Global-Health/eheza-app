@@ -600,119 +600,6 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
 }
 
 /**
- * Temporary - fixes Province and Birth Date for imported patients.
- *
- * Will be removed after the fix is applied.
- *
- * @param string $patient_type
- *   Child oe Adult.
- * @param array $values
- *   Data values.
- *
- * @return bool|string
- *   TRUE on success, error message otherwise.
- */
-function hedley_person_import_patient($patient_type, array $values) {
-  // Common logic.
-  if ($patient_type == 'child') {
-    $first_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_FIRST_NAME]);
-    $second_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_SECOND_NAME]);
-    $birth_date = trim($values[HEDLEY_PERSON_COLUMN_CHILD_BIRTH_DATE]);
-    $national_id = trim($values[HEDLEY_PERSON_COLUMN_CHILD_NATIONAL_ID]);
-    $district = trim($values[HEDLEY_PERSON_COLUMN_CHILD_DISTRICT]);
-    $sector = trim($values[HEDLEY_PERSON_COLUMN_CHILD_SECTOR]);
-    $cell = trim($values[HEDLEY_PERSON_COLUMN_CHILD_CELL]);
-  }
-  else {
-    $first_name = trim($values[HEDLEY_PERSON_COLUMN_ADULT_FIRST_NAME]);
-    $second_name = trim($values[HEDLEY_PERSON_COLUMN_ADULT_SECOND_NAME]);
-    $birth_date = trim($values[HEDLEY_PERSON_COLUMN_ADULT_BIRTH_DATE]);
-    $national_id = trim($values[HEDLEY_PERSON_COLUMN_ADULT_NATIONAL_ID]);
-    $district = trim($values[HEDLEY_PERSON_COLUMN_ADULT_DISTRICT]);
-    $sector = trim($values[HEDLEY_PERSON_COLUMN_ADULT_SECTOR]);
-    $cell = trim($values[HEDLEY_PERSON_COLUMN_ADULT_CELL]);
-  }
-
-  // Title.
-  $title = empty($first_name) ? $second_name : "$second_name $first_name";
-
-  $query = new EntityFieldQuery();
-  $query->entityCondition('entity_type', 'node')
-    ->propertyCondition('type', 'person')
-    ->propertyCondition('nid', 300000, '>')
-    ->propertyCondition('status', 1);
-
-  if (!empty($national_id)) {
-    $query->fieldCondition('field_national_id_number', 'value', $national_id);
-  }
-  else {
-    $query->propertyCondition('title', $title)
-      ->fieldCondition('field_district', 'value', $district)
-      ->fieldCondition('field_sector', 'value', $sector)
-      ->fieldCondition('field_cell', 'value', $cell);
-  }
-
-  $return = TRUE;
-
-  $result = $query->execute();
-
-  if (empty($result['node'])) {
-    $error = "Can't locate $title.";
-    watchdog('debug', $error);
-    return $error;
-  }
-
-  $ids = array_keys($result['node']);
-
-  if (count($ids) > 1) {
-    $uids = implode(',', $ids);
-    $error = "$title, UIDs: $uids.";
-    watchdog('debug', $error);
-    $return = $error;
-  }
-
-  $birth_date = hedley_person_date_process($birth_date);
-  foreach ($ids as $id) {
-    $wrapper = entity_metadata_wrapper('node', $id);
-    $wrapper->field_province->set('Amajyaruguru');
-    $wrapper->field_birth_date->set($birth_date);
-    $wrapper->save();
-
-    if ($patient_type != 'child') {
-      continue;
-    }
-
-    $participants_ids = hedley_person_pmtct_participants_for_child($id);
-    if (empty($participants_ids)) {
-      continue;
-    }
-
-    $participants = node_load_multiple($participants_ids);
-    foreach ($participants as $participant) {
-      $participant_wrapper = entity_metadata_wrapper('node', $participant);
-
-      $expected = $participant_wrapper->field_expected->value();
-      $expected_new_start_date = date('Y-m-d', $birth_date);
-      $expected_new_end_date = date('Y-m-d', strtotime("+26 month", $birth_date));
-
-      $clinic_type = $participant_wrapper->field_clinic->field_group_type->value();
-      // We do not change graduation date for 'Sorwathe' group participants.
-      if (empty($clinic_type) || $clinic_type == HEDLEY_PERSON_CLINIC_TYPE_SORWATHE) {
-        $expected_new_end_date = $expected['value2'];
-      }
-
-      $participant_wrapper->field_expected->set([
-        'value' => $expected_new_start_date,
-        'value2' => $expected_new_end_date,
-      ]);
-      $participant_wrapper->save();
-    }
-  }
-
-  return $return;
-}
-
-/**
  * Creates patient using supplied data.
  *
  * @param string $patient_type
@@ -723,7 +610,7 @@ function hedley_person_import_patient($patient_type, array $values) {
  * @return bool|string
  *   TRUE on success, error message otherwise.
  */
-function hedley_person_import_patient_orig($patient_type, array $values) {
+function hedley_person_import_patient($patient_type, array $values) {
   // Common logic.
   if ($patient_type == 'child') {
     $first_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_FIRST_NAME]);
