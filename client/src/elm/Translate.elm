@@ -4407,7 +4407,7 @@ translationSet trans =
 
                 SendToSiteWithForm ->
                     { english = "Advised to send patient to site with referral form"
-                    , kinyarwanda = Just "Nagiriwe inama yo kohereza umurwayi ku rwego rubishinzwe yitwaje impapuro zimwohereza."
+                    , kinyarwanda = Just "Nagiriwe inama yo kohereza umurwayi ku rwego rubishinzwe yitwaje impapuro zimwohereza"
                     }
 
                 OtherRecommendationSite ->
@@ -4611,12 +4611,12 @@ translationSet trans =
 
                 SendToRRTCenter ->
                     { english = "114 recommended to send patient to Rapid Response Team center"
-                    , kinyarwanda = Just "Ku 114 Bangiriye inama yo kohereza umurwayi ku itsinda rishinzwe gutanga ubuvuzi bwihuse "
+                    , kinyarwanda = Just "Ku 114 Bangiriye inama yo kohereza umurwayi ku itsinda rishinzwe gutanga ubuvuzi bwihuse"
                     }
 
                 SendToHospital ->
                     { english = "114 recommended to send patient to the nearest hospital"
-                    , kinyarwanda = Just "Ku 114 bangiriye inama yo kohereza umurwayi ku bitaro binyegereye."
+                    , kinyarwanda = Just "Ku 114 bangiriye inama yo kohereza umurwayi ku bitaro binyegereye"
                     }
 
                 OtherRecommendation114 ->
@@ -4658,12 +4658,12 @@ translationSet trans =
 
                 NoneSentWithForm ->
                     { english = "Not able to talk to site due - no response. Sent patient with referral form"
-                    , kinyarwanda = Just "Ntibyakunze kuvugana n’urwego rubishinzwe kubera- nta gisubizo cyabonetse. Nohereje umurwayi yitwaje impapuro zimwohereza."
+                    , kinyarwanda = Just "Ntibyakunze kuvugana n’urwego rubishinzwe kubera- nta gisubizo cyabonetse. Nohereje umurwayi yitwaje impapuro zimwohereza"
                     }
 
                 NonePatientRefused ->
                     { english = "Did not talk to site as patient has refused"
-                    , kinyarwanda = Just "Ntibyakunze kuvugana n’urwego rubishinzwe kubera umurwayi yanze."
+                    , kinyarwanda = Just "Ntibyakunze kuvugana n’urwego rubishinzwe kubera umurwayi yanze"
                     }
 
                 NoneOtherRecommendationSite ->
