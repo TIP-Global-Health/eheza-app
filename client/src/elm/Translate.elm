@@ -948,7 +948,7 @@ translationSet trans =
         AcuteIllnessDiagnosis diagnosis ->
             case diagnosis of
                 DiagnosisCovid19 ->
-                    { english = "Suspected COVID-19 case"
+                    { english = "Suspected COVID-19"
                     , kinyarwanda = Just "Aracyekwaho indwara ya COVID-19"
                     }
 
