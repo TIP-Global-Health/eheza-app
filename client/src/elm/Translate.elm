@@ -607,7 +607,7 @@ type TranslationId
     | PersistentStorage Bool
     | Person
     | PersonHasBeenSaved
-    | PerinentSymptoms
+    | PertinentSymptoms
     | PhysicalExam
     | PhysicalExamTask PhysicalExamTask
     | PlaceholderEnterHeight
@@ -4064,8 +4064,8 @@ translationSet trans =
             , kinyarwanda = Just "Amakuru kuri uyu muntu yabitswe"
             }
 
-        PerinentSymptoms ->
-            { english = "Perinent Symptoms"
+        PertinentSymptoms ->
+            { english = "Pertinent Symptoms"
             , kinyarwanda = Nothing
             }
 
