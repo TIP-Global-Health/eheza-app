@@ -1632,7 +1632,7 @@ translationSet trans =
 
         Called114Question ->
             { english = "Were you able to talk with 114"
-            , kinyarwanda = Just "Wabashije kuvugana n’abantu bo kuri 114?"
+            , kinyarwanda = Just "Wabashije kuvugana n’abantu bo kuri 114"
             }
 
         Cancel ->
@@ -1856,7 +1856,7 @@ translationSet trans =
 
         ContactedRecommendedSiteQuestion ->
             { english = "Did you contact the recommended site"
-            , kinyarwanda = Just "Wamenyesheje urwego rushinzwe gukurikirana umurwayi?"
+            , kinyarwanda = Just "Wamenyesheje urwego rushinzwe gukurikirana umurwayi"
             }
 
         ContactWithCOVID19SymptomsHelper ->
@@ -4621,7 +4621,7 @@ translationSet trans =
 
                 OtherRecommendation114 ->
                     { english = "114 did not recommended to send patient to site"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ku 114 bansabye kutohereza umurwayi"
                     }
 
                 NoneNoAnswer ->
@@ -5548,7 +5548,7 @@ translationSet trans =
 
         WhatWasTheirResponse ->
             { english = "What was their response"
-            , kinyarwanda = Just "Ni iki bagusubije?"
+            , kinyarwanda = Just "Ni iki bagusubije"
             }
 
         WhyNot ->
