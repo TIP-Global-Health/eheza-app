@@ -344,7 +344,7 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
             div [ class "ui active modal alerts-dialog" ]
                 [ div [ class "content" ]
                     [ div [ class "perinent-symptoms" ]
-                        [ sectionLabel Translate.PerinentSymptoms
+                        [ sectionLabel Translate.PertinentSymptoms
                         , content
                             |> div [ class "section-items" ]
                         ]
