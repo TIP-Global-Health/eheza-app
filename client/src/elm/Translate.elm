@@ -948,8 +948,8 @@ translationSet trans =
         AcuteIllnessDiagnosis diagnosis ->
             case diagnosis of
                 DiagnosisCovid19 ->
-                    { english = "COVID-19"
-                    , kinyarwanda = Just "Indwara iterwa na Corona Virus ya 2019"
+                    { english = "Suspected COVID-19 case"
+                    , kinyarwanda = Just "Aracyekwaho indwara ya COVID-19"
                     }
 
                 DiagnosisMalariaComplicated ->
