@@ -1627,12 +1627,12 @@ translationSet trans =
 
         Call114 ->
             { english = "Call 114"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hamagara 114"
             }
 
         Called114Question ->
             { english = "Were you able to talk with 114"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Wabashije kuvugana n’abantu bo kuri 114?"
             }
 
         Cancel ->
@@ -1841,7 +1841,7 @@ translationSet trans =
 
         Contacted114 ->
             { english = "Contacted 114"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Namenyesheje 114"
             }
 
         ContactedHC ->
@@ -1856,7 +1856,7 @@ translationSet trans =
 
         ContactedRecommendedSiteQuestion ->
             { english = "Did you contact the recommended site"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Wamenyesheje urwego rushinzwe gukurikirana umurwayi?"
             }
 
         ContactWithCOVID19SymptomsHelper ->
@@ -3610,7 +3610,7 @@ translationSet trans =
 
                 NextStepsCall114 ->
                     { english = "Call 114"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hamagara 114"
                     }
 
                 NextStepsMedicationDistribution ->
@@ -4365,69 +4365,69 @@ translationSet trans =
             case recommendation of
                 SendToHealthCenter ->
                     { english = "Send Patient to the nearest health center"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ohereza umurwayi ku kigo nderabuzima kikwegereye"
                     }
 
                 SendToRRTCenter ->
                     { english = "Send patient to the Rapid Response Team center"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ohereza umurwayi ku itsinda rishinzwe gutanga ubuvuzi bwihuse"
                     }
 
                 SendToHospital ->
                     { english = "Send patient to the nearest hospital"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ohereza umurwayi ku bitaro bikwegereye"
                     }
 
                 OtherRecommendation114 ->
                     { english = "Other"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibindi"
                     }
 
                 NoneNoAnswer ->
                     { english = "No answer"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta Gisubizo cyabonetse"
                     }
 
                 NoneBusySignal ->
                     { english = "Busy Signal"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umurongo bawuvugiragaho"
                     }
 
                 NoneOtherRecommendation114 ->
                     { english = "Other"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibindi"
                     }
 
         RecommendationSite recommendation ->
             case recommendation of
                 TeamComeToVillage ->
                     { english = "Team will come to village"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itsinda rizaza mu mudugudu"
                     }
 
                 SendToSiteWithForm ->
                     { english = "Advised to send patient to site with referral form"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nagiriwe inama yo kohereza umurwayi ku rwego rubishinzwe yitwaje impapuro zimwohereza."
                     }
 
                 OtherRecommendationSite ->
                     { english = "Other"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibindi"
                     }
 
                 NoneSentWithForm ->
                     { english = "No response. Sent patient with referral form."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta gisubizo. Nohereje umurwayi yitwaje impapuro zimwohereza."
                     }
 
                 NonePatientRefused ->
                     { english = "Patient refused"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umurwayi yabyanze"
                     }
 
                 NoneOtherRecommendationSite ->
                     { english = "Other"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibindi"
                     }
 
                 RecommendationSiteNotApplicable ->
@@ -4606,17 +4606,17 @@ translationSet trans =
             case recommendation of
                 SendToHealthCenter ->
                     { english = "114 recommended to send patient to the nearest health center"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ku 114 Bangiriye inama yo kohereza umurwayi ku kigo nderabuzima kinyegereye"
                     }
 
                 SendToRRTCenter ->
                     { english = "114 recommended to send patient to Rapid Response Team center"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ku 114 Bangiriye inama yo kohereza umurwayi ku itsinda rishinzwe gutanga ubuvuzi bwihuse "
                     }
 
                 SendToHospital ->
                     { english = "114 recommended to send patient to the nearest hospital"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ku 114 bangiriye inama yo kohereza umurwayi ku bitaro binyegereye."
                     }
 
                 OtherRecommendation114 ->
@@ -4626,49 +4626,49 @@ translationSet trans =
 
                 NoneNoAnswer ->
                     { english = "Not able to talk to 114 - no answer"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibyakunze kuvugana ku 114- nta gisubizo"
                     }
 
                 NoneBusySignal ->
                     { english = "Not able to talk to 114 - busy signal"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibyakunze kuvugana ku 114- umurongo bawuvugiragaho"
                     }
 
                 NoneOtherRecommendation114 ->
                     { english = "Not able to talk to 114 - other reason"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibyakunze kuvugana ku 114- Izindi mpamvu"
                     }
 
         ResultOfContactingRecommendedSite recommendation ->
             case recommendation of
                 TeamComeToVillage ->
                     { english = "Site recommendation: Team will come to village"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imyanzuro y’urwego rubishinzwe: Itsinda rizaza mu mudugudu"
                     }
 
                 SendToSiteWithForm ->
                     { english = "Site recommendation: Send patient to site with referral form"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imyanzuro y’urwego rubishinzwe: Twohereze umurwayi yitwaje impapuro zimwohereza"
                     }
 
                 OtherRecommendationSite ->
                     { english = "Site recommendation: Other"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imyanzuro y’urwego rubishinzwe: Ibindi"
                     }
 
                 NoneSentWithForm ->
                     { english = "Not able to talk to site due - no response. Sent patient with referral form"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibyakunze kuvugana n’urwego rubishinzwe kubera- nta gisubizo cyabonetse. Nohereje umurwayi yitwaje impapuro zimwohereza."
                     }
 
                 NonePatientRefused ->
                     { english = "Did not talk to site as patient has refused"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibyakunze kuvugana n’urwego rubishinzwe kubera umurwayi yanze."
                     }
 
                 NoneOtherRecommendationSite ->
                     { english = "Not able to talk to site - other reason"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibyakunze kuvugana n’urwego rubishinzwe- Izindi mpamvu"
                     }
 
                 RecommendationSiteNotApplicable ->
@@ -4683,7 +4683,7 @@ translationSet trans =
 
         ReviewCaseWith144Respondent ->
             { english = "Review case with 114 Respondent"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ongera ukore isuzuma ufatanije n’ukwitabye kuri 114"
             }
 
         RhNegative ->
@@ -5548,7 +5548,7 @@ translationSet trans =
 
         WhatWasTheirResponse ->
             { english = "What was their response"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ni iki bagusubije?"
             }
 
         WhyNot ->
@@ -5867,7 +5867,7 @@ translateActivePage page =
 
                 AcuteIllnessProgressReportPage _ ->
                     { english = "Acute Illness Progress Report"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Raporo y’ibyakozwe ku ndwara zifatiyeho"
                     }
 
 
