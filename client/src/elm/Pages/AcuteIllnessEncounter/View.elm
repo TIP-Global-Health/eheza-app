@@ -309,7 +309,8 @@ viewEndEncounterButton language measurements pendingActivities diagnosis setDial
     let
         allowEndEcounter =
             if diagnosis == Just DiagnosisCovid19 then
-                isJust measurements.isolation && isJust measurements.hcContact
+                isJust measurements.isolation
+                    && (talkedTo114 measurements || isJust measurements.hcContact)
 
             else if isJust diagnosis then
                 case pendingActivities of
