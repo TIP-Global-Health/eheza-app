@@ -1378,47 +1378,51 @@ decodeMedicationNonAdministrationSign =
     string
         |> andThen
             (\sign ->
-                let
-                    parts =
-                        String.split "-" sign
+                if sign == "none" then
+                    succeed NoMedicationNonAdministrationSigns
 
-                    failure =
-                        fail <| sign ++ " is not a recognized MedicationNonAdministrationSign"
-                in
-                List.head parts
-                    |> Maybe.map
-                        (\prefix ->
-                            let
-                                medicationNonAdministrationReason =
-                                    List.tail parts
-                                        |> Maybe.map (List.intersperse "-" >> String.concat)
-                                        |> Maybe.andThen medicationNonAdministrationReasonFromString
-                            in
-                            case prefix of
-                                "amoxicillin" ->
-                                    medicationNonAdministrationReason
-                                        |> Maybe.map (MedicationAmoxicillin >> succeed)
-                                        |> Maybe.withDefault failure
+                else
+                    let
+                        parts =
+                            String.split "-" sign
 
-                                "coartem" ->
-                                    medicationNonAdministrationReason
-                                        |> Maybe.map (MedicationCoartem >> succeed)
-                                        |> Maybe.withDefault failure
+                        failure =
+                            fail <| sign ++ " is not a recognized MedicationNonAdministrationSign"
+                    in
+                    List.head parts
+                        |> Maybe.map
+                            (\prefix ->
+                                let
+                                    medicationNonAdministrationReason =
+                                        List.tail parts
+                                            |> Maybe.map (List.intersperse "-" >> String.concat)
+                                            |> Maybe.andThen medicationNonAdministrationReasonFromString
+                                in
+                                case prefix of
+                                    "amoxicillin" ->
+                                        medicationNonAdministrationReason
+                                            |> Maybe.map (MedicationAmoxicillin >> succeed)
+                                            |> Maybe.withDefault failure
 
-                                "ors" ->
-                                    medicationNonAdministrationReason
-                                        |> Maybe.map (MedicationORS >> succeed)
-                                        |> Maybe.withDefault failure
+                                    "coartem" ->
+                                        medicationNonAdministrationReason
+                                            |> Maybe.map (MedicationCoartem >> succeed)
+                                            |> Maybe.withDefault failure
 
-                                "zinc" ->
-                                    medicationNonAdministrationReason
-                                        |> Maybe.map (MedicationZinc >> succeed)
-                                        |> Maybe.withDefault failure
+                                    "ors" ->
+                                        medicationNonAdministrationReason
+                                            |> Maybe.map (MedicationORS >> succeed)
+                                            |> Maybe.withDefault failure
 
-                                _ ->
-                                    failure
-                        )
-                    |> Maybe.withDefault failure
+                                    "zinc" ->
+                                        medicationNonAdministrationReason
+                                            |> Maybe.map (MedicationZinc >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    _ ->
+                                        failure
+                            )
+                        |> Maybe.withDefault failure
             )
 
 
