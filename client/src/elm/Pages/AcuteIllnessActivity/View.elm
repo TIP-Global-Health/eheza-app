@@ -1071,7 +1071,7 @@ viewHCRecommendation language recommendation =
     label []
         [ translate language Translate.HealthCenterDetermined |> text
         , span [ class "strong" ] [ translate language riskLevel |> text ]
-        , translate language Translate.And |> text
+        , translate language Translate.AndSentence |> text
         , span [ class "strong" ] [ Translate.HCRecommendation recommendation |> translate language |> text ]
         ]
 

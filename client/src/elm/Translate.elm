@@ -267,6 +267,7 @@ type TranslationId
     | AllowedValuesRangeHelper FloatInputConstraints
     | AmbulancArrivalPeriodQuestion
     | And
+    | AndSentence
     | AppName
     | AreYouSure
     | Assessment
@@ -1453,6 +1454,11 @@ translationSet trans =
         And ->
             { english = "and"
             , kinyarwanda = Just "na"
+            }
+
+        AndSentence ->
+            { english = "and"
+            , kinyarwanda = Just "maze"
             }
 
         AmbulancArrivalPeriodQuestion ->
@@ -2678,12 +2684,12 @@ translationSet trans =
             case recommendation of
                 SendAmbulance ->
                     { english = "agreed to call the District Hospital to send an ambulance"
-                    , kinyarwanda = Just "wemeye guhamagare ibitaro ngo byohereza imbangukiragitabara"
+                    , kinyarwanda = Just "bemeranya guhamagara ibitaro ngo byohereze imbangukiragutabara"
                     }
 
                 HomeIsolation ->
                     { english = "advised patient to stay home in isolation"
-                    , kinyarwanda = Just "wagiriye inama umurwayi yo kuguma mu rugo ahantu ari wenyine"
+                    , kinyarwanda = Just "bagira inama umurwayi yo kuguma mu rugo mu kato"
                     }
 
                 ComeToHealthCenter ->
@@ -2693,7 +2699,7 @@ translationSet trans =
 
                 ChwMonitoring ->
                     { english = "CHW should continue to monitor"
-                    , kinyarwanda = Just "Umujyanama w'ubuzima agomba gukomeza gukurikirana umurwayi"
+                    , kinyarwanda = Just "cyemeza ko umujyanama w’ubuzima agomba gukomeza gukurikirana umurwayi"
                     }
 
                 HCRecommendationNotApplicable ->
@@ -3199,7 +3205,7 @@ translationSet trans =
 
         LowRiskCase ->
             { english = "low-risk case"
-            , kinyarwanda = Just "Nta byago byinshi afite byo kwandura"
+            , kinyarwanda = Just "afite ibyago bike byo kuba yaranduye"
             }
 
         Lungs ->
