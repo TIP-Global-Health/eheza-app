@@ -1,6 +1,7 @@
-module Pages.AcuteIllnessActivity.Utils exposing (acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromAcuteFindingsValue, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromMedicationDistributionValue, fromSendToHCValue, fromTravelHistoryValue, fromTreatmentReviewValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, medicationDistributionFormWithDefault, naListTaskCompleted, naTaskCompleted, nextStepsTasksCompletedFromTotal, physicalExamTasksCompletedFromTotal, resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage, sendToHCFormWithDefault, symptomsGIFormWithDefault, symptomsGeneralDangerSigns, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toAcuteFindingsValue, toAcuteFindingsValueWithDefault, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toMedicationDistributionValue, toMedicationDistributionValueWithDefault, toSendToHCValue, toSendToHCValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
+module Pages.AcuteIllnessActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Measurement.Model
     exposing
         ( AcuteFindingsGeneralSign(..)
@@ -8,15 +9,22 @@ import Backend.Measurement.Model
         , AcuteFindingsValue
         , AcuteIllnessMeasurements
         , AcuteIllnessVitalsValue
+        , Call114Sign(..)
+        , Call114Value
         , ExposureSign(..)
         , HCContactSign(..)
         , HCContactValue
-        , HCRecomendation(..)
+        , HCRecommendation(..)
         , IsolationSign(..)
         , IsolationValue
         , MalariaRapidTestResult(..)
         , MedicationDistributionSign(..)
+        , MedicationDistributionValue
+        , MedicationNonAdministrationReason(..)
+        , MedicationNonAdministrationSign(..)
         , ReasonForNotIsolating(..)
+        , Recommendation114(..)
+        , RecommendationSite(..)
         , ResponsePeriod(..)
         , SendToHCSign(..)
         , SymptomsGIDerivedSign(..)
@@ -33,9 +41,8 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
-import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Pages.PrenatalActivity.Utils exposing (ifNullableTrue, ifTrue)
-import Pages.Utils exposing (ifEverySetEmpty, taskCompleted, valueConsideringIsDirtyField)
+import Pages.Utils exposing (ifEverySetEmpty, maybeValueConsideringIsDirtyField, taskCompleted, valueConsideringIsDirtyField)
 
 
 symptomsGeneralDangerSigns : List SymptomsGeneralSign
@@ -328,14 +335,14 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                     (\contactedHC ->
                         if contactedHC then
                             let
-                                recomendationsCompleted =
-                                    naTaskCompleted HCRecomendationNotApplicable form.recomendations
+                                recommendationsCompleted =
+                                    naTaskCompleted HCRecommendationNotApplicable form.recommendations
 
                                 ( ambulanceActive, ambulanceCompleted ) =
-                                    form.recomendations
+                                    form.recommendations
                                         |> Maybe.map
-                                            (\recomendations ->
-                                                if recomendations == SendAmbulance then
+                                            (\recommendations ->
+                                                if recommendations == SendAmbulance then
                                                     ( naTaskCompleted ResponsePeriodNotApplicable form.ambulanceArrivalPeriod
                                                     , naTaskCompleted ResponsePeriodNotApplicable form.ambulanceArrivalPeriod
                                                     )
@@ -345,12 +352,53 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                                             )
                                         |> Maybe.withDefault ( 0, 0 )
                             in
-                            ( 1 + recomendationsCompleted + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceCompleted
+                            ( 1 + recommendationsCompleted + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceCompleted
                             , 2 + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceActive
                             )
 
                         else
                             ( 1, 1 )
+                    )
+                |> Maybe.withDefault ( 0, 1 )
+
+        NextStepsCall114 ->
+            let
+                form =
+                    measurements.call114
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> call114FormWithDefault data.call114Form
+            in
+            form.called114
+                |> Maybe.map
+                    (\called114 ->
+                        if called114 then
+                            form.recommendation114
+                                |> Maybe.map
+                                    (\recommendation114 ->
+                                        -- We do not show qustions about contacting site, if
+                                        -- 114 did not recommend to contact a site.
+                                        if List.member recommendation114 [ OtherRecommendation114, NoneNoAnswer, NoneBusySignal, NoneOtherRecommendation114 ] then
+                                            ( 2, 2 )
+
+                                        else
+                                            form.contactedSite
+                                                |> Maybe.map
+                                                    (\contactedSite ->
+                                                        if isJust form.recommendationSite then
+                                                            ( 4, 4 )
+
+                                                        else
+                                                            ( 3, 4 )
+                                                    )
+                                                |> Maybe.withDefault ( 2, 3 )
+                                    )
+                                |> Maybe.withDefault ( 1, 2 )
+
+                        else if isJust form.recommendation114 then
+                            ( 2, 2 )
+
+                        else
+                            ( 1, 2 )
                     )
                 |> Maybe.withDefault ( 0, 1 )
 
@@ -360,17 +408,47 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                     measurements.medicationDistribution
                         |> Maybe.map (Tuple.second >> .value)
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
+
+                derivedQuestionExists formValue =
+                    if formValue == Just False then
+                        1
+
+                    else
+                        0
+
+                derivedQuestionCompleted medication reasonToSignFunc formValue =
+                    if formValue /= Just False then
+                        0
+
+                    else
+                        let
+                            nonAdministrationSigns =
+                                form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
+
+                            valueSet =
+                                getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form
+                                    |> isJust
+                        in
+                        if valueSet then
+                            1
+
+                        else
+                            0
             in
             case diagnosis of
                 Just DiagnosisMalariaUncomplicated ->
-                    ( taskCompleted form.coartem
-                    , 1
+                    ( taskCompleted form.coartem + derivedQuestionCompleted Coartem MedicationCoartem form.coartem
+                    , 1 + derivedQuestionExists form.coartem
                     )
 
                 Just DiagnosisGastrointestinalInfectionUncomplicated ->
                     ( taskCompleted form.ors
                         + taskCompleted form.zinc
+                        + derivedQuestionCompleted ORS MedicationORS form.ors
+                        + derivedQuestionCompleted Zinc MedicationZinc form.zinc
                     , 2
+                        + derivedQuestionExists form.ors
+                        + derivedQuestionExists form.zinc
                     )
 
                 Just DiagnosisSimpleColdAndCough ->
@@ -380,8 +458,8 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
 
                 -- This is for child form 2 month old, to 5 years old.
                 Just DiagnosisRespiratoryInfectionUncomplicated ->
-                    ( taskCompleted form.amoxicillin
-                    , 1
+                    ( taskCompleted form.amoxicillin + derivedQuestionCompleted Amoxicillin MedicationAmoxicillin form.amoxicillin
+                    , 1 + derivedQuestionExists form.amoxicillin
                     )
 
                 _ ->
@@ -780,7 +858,7 @@ isolationValuePostProcess saved =
 fromHCContactValue : Maybe HCContactValue -> HCContactForm
 fromHCContactValue saved =
     { contactedHC = Maybe.map (.signs >> EverySet.member ContactedHealthCenter) saved
-    , recomendations = Maybe.andThen (.recomendations >> EverySet.toList >> List.head) saved
+    , recommendations = Maybe.andThen (.recommendations >> EverySet.toList >> List.head) saved
     , responsePeriod = Maybe.andThen (.responsePeriod >> EverySet.toList >> List.head) saved
     , ambulanceArrivalPeriod = Maybe.andThen (.ambulanceArrivalPeriod >> EverySet.toList >> List.head) saved
     }
@@ -793,7 +871,7 @@ hcContactFormWithDefault form saved =
             form
             (\value ->
                 { contactedHC = or form.contactedHC (EverySet.member ContactedHealthCenter value.signs |> Just)
-                , recomendations = or form.recomendations (value.recomendations |> EverySet.toList |> List.head)
+                , recommendations = or form.recommendations (value.recommendations |> EverySet.toList |> List.head)
                 , responsePeriod = or form.responsePeriod (value.responsePeriod |> EverySet.toList |> List.head)
                 , ambulanceArrivalPeriod = or form.ambulanceArrivalPeriod (value.ambulanceArrivalPeriod |> EverySet.toList |> List.head)
                 }
@@ -816,7 +894,7 @@ toHCContactValue form =
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHCContactSigns)
     in
     Maybe.map HCContactValue signs
-        |> andMap (form.recomendations |> withDefaultValue HCRecomendationNotApplicable |> Just)
+        |> andMap (form.recommendations |> withDefaultValue HCRecommendationNotApplicable |> Just)
         |> andMap (form.responsePeriod |> withDefaultValue ResponsePeriodNotApplicable |> Just)
         |> andMap (form.ambulanceArrivalPeriod |> withDefaultValue ResponsePeriodNotApplicable |> Just)
 
@@ -827,7 +905,7 @@ hcContactValuePostProcess saved =
         |> Maybe.map
             (\value ->
                 if EverySet.member ContactedHealthCenter value.signs then
-                    if EverySet.member SendAmbulance value.recomendations then
+                    if EverySet.member SendAmbulance value.recommendations then
                         value
 
                     else
@@ -835,10 +913,87 @@ hcContactValuePostProcess saved =
 
                 else
                     { value
-                        | recomendations = EverySet.singleton HCRecomendationNotApplicable
+                        | recommendations = EverySet.singleton HCRecommendationNotApplicable
                         , responsePeriod = EverySet.singleton ResponsePeriodNotApplicable
                         , ambulanceArrivalPeriod = EverySet.singleton ResponsePeriodNotApplicable
                     }
+            )
+
+
+fromCall114Value : Maybe Call114Value -> Call114Form
+fromCall114Value saved =
+    { called114 = Maybe.map (.signs >> EverySet.member Call114) saved
+    , recommendation114 = Maybe.andThen (.recommendations114 >> EverySet.toList >> List.head) saved
+    , recommendation114Dirty = False
+    , contactedSite = Maybe.map (.signs >> EverySet.member ContactSite) saved
+    , contactedSiteDirty = False
+    , recommendationSite = Maybe.andThen (.recommendationsSite >> EverySet.toList >> List.head) saved
+    , recommendationSiteDirty = False
+    }
+
+
+call114FormWithDefault : Call114Form -> Maybe Call114Value -> Call114Form
+call114FormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { called114 = or form.called114 (EverySet.member Call114 value.signs |> Just)
+                , recommendation114 =
+                    maybeValueConsideringIsDirtyField form.recommendation114Dirty form.recommendation114 (value.recommendations114 |> EverySet.toList |> List.head)
+                , recommendation114Dirty = form.recommendation114Dirty
+                , contactedSite =
+                    valueConsideringIsDirtyField form.contactedSiteDirty form.contactedSite (EverySet.member ContactSite value.signs)
+                , contactedSiteDirty = form.contactedSiteDirty
+                , recommendationSite =
+                    maybeValueConsideringIsDirtyField form.recommendationSiteDirty form.recommendationSite (value.recommendationsSite |> EverySet.toList |> List.head)
+                , recommendationSiteDirty = form.recommendationSiteDirty
+                }
+            )
+
+
+toCall114ValueWithDefault : Maybe Call114Value -> Call114Form -> Maybe Call114Value
+toCall114ValueWithDefault saved form =
+    call114FormWithDefault form saved
+        |> toCall114Value
+        |> call114ValuePostProcess
+
+
+toCall114Value : Call114Form -> Maybe Call114Value
+toCall114Value form =
+    let
+        signs =
+            [ Maybe.map (ifTrue Call114) form.called114
+            , ifNullableTrue ContactSite form.contactedSite
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoCall114Signs)
+    in
+    Maybe.map Call114Value signs
+        |> andMap (form.recommendation114 |> withDefaultValue NoneOtherRecommendation114 |> Just)
+        |> andMap (form.recommendationSite |> withDefaultValue RecommendationSiteNotApplicable |> Just)
+
+
+call114ValuePostProcess : Maybe Call114Value -> Maybe Call114Value
+call114ValuePostProcess saved =
+    saved
+        |> Maybe.map
+            (\value ->
+                let
+                    recommendationSiteNotApplicable =
+                        { value | recommendationsSite = EverySet.singleton RecommendationSiteNotApplicable }
+                in
+                if EverySet.member Call114 value.signs then
+                    --  114 did not recomment to contact a site.
+                    if EverySet.member OtherRecommendation114 value.recommendations114 then
+                        recommendationSiteNotApplicable
+
+                    else
+                        value
+
+                else
+                    -- There was no attempt to contact 114.
+                    recommendationSiteNotApplicable
             )
 
 
@@ -922,47 +1077,60 @@ toSendToHCValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
 
 
-fromMedicationDistributionValue : Maybe (EverySet MedicationDistributionSign) -> MedicationDistributionForm
+fromMedicationDistributionValue : Maybe MedicationDistributionValue -> MedicationDistributionForm
 fromMedicationDistributionValue saved =
-    { amoxicillin = Maybe.map (EverySet.member Amoxicillin) saved
-    , coartem = Maybe.map (EverySet.member Coartem) saved
-    , ors = Maybe.map (EverySet.member ORS) saved
-    , zinc = Maybe.map (EverySet.member Zinc) saved
-    , lemonJuiceOrHoney = Maybe.map (EverySet.member LemonJuiceOrHoney) saved
+    { amoxicillin = Maybe.map (.distributionSigns >> EverySet.member Amoxicillin) saved
+    , coartem = Maybe.map (.distributionSigns >> EverySet.member Coartem) saved
+    , ors = Maybe.map (.distributionSigns >> EverySet.member ORS) saved
+    , zinc = Maybe.map (.distributionSigns >> EverySet.member Zinc) saved
+    , lemonJuiceOrHoney = Maybe.map (.distributionSigns >> EverySet.member LemonJuiceOrHoney) saved
+    , nonAdministrationSigns = Maybe.map .nonAdministrationSigns saved
     }
 
 
-medicationDistributionFormWithDefault : MedicationDistributionForm -> Maybe (EverySet MedicationDistributionSign) -> MedicationDistributionForm
+medicationDistributionFormWithDefault : MedicationDistributionForm -> Maybe MedicationDistributionValue -> MedicationDistributionForm
 medicationDistributionFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { amoxicillin = or form.amoxicillin (EverySet.member Amoxicillin value |> Just)
-                , coartem = or form.coartem (EverySet.member Coartem value |> Just)
-                , ors = or form.ors (EverySet.member ORS value |> Just)
-                , zinc = or form.zinc (EverySet.member Zinc value |> Just)
-                , lemonJuiceOrHoney = or form.lemonJuiceOrHoney (EverySet.member LemonJuiceOrHoney value |> Just)
+                { amoxicillin = or form.amoxicillin (EverySet.member Amoxicillin value.distributionSigns |> Just)
+                , coartem = or form.coartem (EverySet.member Coartem value.distributionSigns |> Just)
+                , ors = or form.ors (EverySet.member ORS value.distributionSigns |> Just)
+                , zinc = or form.zinc (EverySet.member Zinc value.distributionSigns |> Just)
+                , lemonJuiceOrHoney = or form.lemonJuiceOrHoney (EverySet.member LemonJuiceOrHoney value.distributionSigns |> Just)
+                , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
                 }
             )
 
 
-toMedicationDistributionValueWithDefault : Maybe (EverySet MedicationDistributionSign) -> MedicationDistributionForm -> Maybe (EverySet MedicationDistributionSign)
+toMedicationDistributionValueWithDefault : Maybe MedicationDistributionValue -> MedicationDistributionForm -> Maybe MedicationDistributionValue
 toMedicationDistributionValueWithDefault saved form =
     medicationDistributionFormWithDefault form saved
         |> toMedicationDistributionValue
 
 
-toMedicationDistributionValue : MedicationDistributionForm -> Maybe (EverySet MedicationDistributionSign)
+toMedicationDistributionValue : MedicationDistributionForm -> Maybe MedicationDistributionValue
 toMedicationDistributionValue form =
-    [ ifNullableTrue Amoxicillin form.amoxicillin
-    , ifNullableTrue Coartem form.coartem
-    , ifNullableTrue ORS form.ors
-    , ifNullableTrue Zinc form.zinc
-    , ifNullableTrue LemonJuiceOrHoney form.lemonJuiceOrHoney
-    ]
-        |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationDistributionSigns)
+    let
+        distributionSigns =
+            [ ifNullableTrue Amoxicillin form.amoxicillin
+            , ifNullableTrue Coartem form.coartem
+            , ifNullableTrue ORS form.ors
+            , ifNullableTrue Zinc form.zinc
+            , ifNullableTrue LemonJuiceOrHoney form.lemonJuiceOrHoney
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationDistributionSigns)
+
+        nonAdministrationSigns =
+            form.nonAdministrationSigns
+                |> Maybe.withDefault EverySet.empty
+                |> ifEverySetEmpty NoMedicationNonAdministrationSigns
+                |> Just
+    in
+    Maybe.map MedicationDistributionValue distributionSigns
+        |> andMap nonAdministrationSigns
 
 
 resolveCoartemDosage : NominalDate -> Person -> Maybe String
@@ -1033,6 +1201,46 @@ resolveAmoxicillinDosage currentDate person =
                 else
                     Nothing
             )
+
+
+getCurrentReasonForMedicaitonNonAdministration :
+    (MedicationNonAdministrationReason -> MedicationNonAdministrationSign)
+    -> MedicationDistributionForm
+    -> Maybe MedicationNonAdministrationReason
+getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form =
+    let
+        nonAdministrationSigns =
+            form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
+    in
+    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientDeclined, NonAdministrationOther ]
+        |> List.filterMap
+            (\reason ->
+                if EverySet.member (reasonToSignFunc reason) nonAdministrationSigns then
+                    Just reason
+
+                else
+                    Nothing
+            )
+        |> List.head
+
+
+nonAdministrationReasonToSign : MedicationDistributionSign -> MedicationNonAdministrationReason -> MedicationNonAdministrationSign
+nonAdministrationReasonToSign sign reason =
+    case sign of
+        Amoxicillin ->
+            MedicationAmoxicillin reason
+
+        Coartem ->
+            MedicationCoartem reason
+
+        ORS ->
+            MedicationORS reason
+
+        Zinc ->
+            MedicationZinc reason
+
+        _ ->
+            NoMedicationNonAdministrationSigns
 
 
 

@@ -77,6 +77,9 @@ decodeRevision =
                     "hc_contact" ->
                         decodeWithUuid HCContactRevision decodeHCContact
 
+                    "call_114" ->
+                        decodeWithUuid Call114Revision decodeCall114
+
                     "health_center" ->
                         decodeWithUuid HealthCenterRevision decodeHealthCenter
 

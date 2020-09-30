@@ -3,7 +3,7 @@ module Pages.AcuteIllnessEncounter.View exposing (splitActivities, view, viewEnd
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (AcuteIllnessMeasurements)
@@ -73,23 +73,22 @@ warningPopup language maybeDiagnosis setStateMsg =
 
                     warningHeading =
                         [ img [ src "assets/images/exclamation-red.png" ] []
-                        , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
+                        , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
                         ]
 
-                    ( heading, content, color ) =
+                    ( heading, content ) =
                         case diagnosis of
                             DiagnosisCovid19 ->
                                 ( warningHeading
                                 , [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
                                   , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
                                   ]
-                                , "red"
                                 )
 
                             _ ->
-                                ( infoHeading, [], "blue" )
+                                ( infoHeading, [] )
                 in
-                div [ class <| "ui active modal diagnosis-popup " ++ color ]
+                div [ class "ui active modal diagnosis-popup" ]
                     [ div [ class "content" ] <|
                         [ div [ class "popup-heading-wrapper" ] heading
                         , div [ class "popup-title" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
@@ -98,7 +97,7 @@ warningPopup language maybeDiagnosis setStateMsg =
                     , div
                         [ class "actions" ]
                         [ button
-                            [ class <| "ui primary fluid button " ++ color
+                            [ class "ui primary fluid button"
                             , onClick <| setStateMsg Nothing
                             ]
                             [ text <| translate language Translate.Continue ]
@@ -132,7 +131,7 @@ viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> Ass
 viewContent language currentDate id model data =
     let
         diagnosis =
-            resolveAcuteIllnessDiagnosis currentDate data.person data.measurements
+            acuteIllnessDiagnosisToMaybe data.encounter.diagnosis
     in
     (viewPersonDetailsWithAlert language currentDate data.person diagnosis model.showAlertsDialog SetAlertsDialogState
         :: viewMainPageContent language currentDate id data diagnosis model
@@ -310,7 +309,8 @@ viewEndEncounterButton language measurements pendingActivities diagnosis setDial
     let
         allowEndEcounter =
             if diagnosis == Just DiagnosisCovid19 then
-                isJust measurements.isolation && isJust measurements.hcContact
+                isJust measurements.isolation
+                    && (talkedTo114 measurements || isJust measurements.hcContact)
 
             else if isJust diagnosis then
                 case pendingActivities of

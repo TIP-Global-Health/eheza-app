@@ -5,7 +5,7 @@ import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, m
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import App.Model
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), emptyAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Update
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
@@ -36,11 +36,11 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (OutMsgMother(..))
 import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessEncounter.Model
-import Pages.AcuteIllnessEncounter.Utils exposing (resolveAcuteIllnessDiagnosis, resolveNextStepByDiagnosis)
+import Pages.AcuteIllnessEncounter.Utils exposing (resolveAcuteIllnessDiagnosis, resolveNextStepByDiagnosis, talkedTo114)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
@@ -909,6 +909,23 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                 -- When we see that needed data for suspected COVID 19 case was collected,
                 -- navigate to Progress Report page.
+                [ Call114Revision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateCovidFlowDataCollectedMsgs newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                -- When we see that needed data for suspected COVID 19 case was collected,
+                -- navigate to Progress Report page.
                 [ HCContactRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -1455,7 +1472,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                         (\( sessionId, _ ) ->
                             case encounterType of
                                 AcuteIllnessEncounter ->
-                                    [ Backend.AcuteIllnessEncounter.Model.AcuteIllnessEncounter sessionId currentDate Nothing healthCenterId
+                                    [ emptyAcuteIllnessEncounter sessionId currentDate healthCenterId
                                         |> Backend.Model.PostAcuteIllnessEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
@@ -1597,6 +1614,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | breastExam = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        Call114Revision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | call114 = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -2095,37 +2120,46 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
                 |> RemoteData.toMaybe
                 |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person)
 
-        turnOnNewDiagnosisMsgs =
-            diagnosisAfterChange
-                |> Maybe.map
-                    (\newDiagnosis ->
-                        case resolveNextStepByDiagnosis currentDate person (Just newDiagnosis) of
-                            Just nextStep ->
-                                [ -- Navigate to Acute Ilness NextSteps activty page.
-                                  App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
-                                , -- Focus on firs task on that page.
-                                  Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask nextStep
-                                    |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
-                                    |> App.Model.MsgLoggedIn
-                                , -- Show warning popup with new diagnosis.
-                                  Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just newDiagnosis)
-                                    |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
-                                    |> App.Model.MsgLoggedIn
-                                ]
+        updateDiagnosisMsg diagnosis =
+            Backend.AcuteIllnessEncounter.Model.SetAcuteIllnessDiagnosis diagnosis
+                |> Backend.Model.MsgAcuteIllnessEncounter id
+                |> App.Model.MsgIndexedDb
 
-                            Nothing ->
-                                [ -- Navigate to Acute Ilness encounter page.
-                                  App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
-                                , -- Show warning popup with new diagnosis.
-                                  Pages.AcuteIllnessEncounter.Model.SetWarningPopupState (Just newDiagnosis)
-                                    |> App.Model.MsgPageAcuteIllnessEncounter id
-                                    |> App.Model.MsgLoggedIn
-                                ]
-                    )
-                |> Maybe.withDefault []
+        msgsForDiagnosisChange =
+            case diagnosisAfterChange of
+                Just newDiagnosis ->
+                    updateDiagnosisMsg newDiagnosis
+                        :: (case resolveNextStepByDiagnosis currentDate person (Just newDiagnosis) of
+                                Just nextStep ->
+                                    [ -- Navigate to Acute Ilness NextSteps activty page.
+                                      App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
+                                    , -- Focus on firs task on that page.
+                                      Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask nextStep
+                                        |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
+                                        |> App.Model.MsgLoggedIn
+
+                                    -- Show warning popup with new diagnosis.
+                                    , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just newDiagnosis)
+                                        |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
+                                        |> App.Model.MsgLoggedIn
+                                    ]
+
+                                Nothing ->
+                                    [ -- Navigate to Acute Ilness encounter page.
+                                      App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
+
+                                    -- Show warning popup with new diagnosis.
+                                    , Pages.AcuteIllnessEncounter.Model.SetWarningPopupState (Just newDiagnosis)
+                                        |> App.Model.MsgPageAcuteIllnessEncounter id
+                                        |> App.Model.MsgLoggedIn
+                                    ]
+                           )
+
+                Nothing ->
+                    [ updateDiagnosisMsg NoAcuteIllnessDiagnosis ]
     in
     if diagnosisBeforeChange /= diagnosisAfterChange then
-        turnOnNewDiagnosisMsgs
+        msgsForDiagnosisChange
 
     else
         []
@@ -2138,7 +2172,15 @@ generateCovidFlowDataCollectedMsgs db id =
         |> RemoteData.toMaybe
         |> Maybe.map
             (\measurements ->
-                if isJust measurements.isolation && isJust measurements.hcContact then
+                --Isolation measurement not taken => incomplete data.
+                if isNothing measurements.isolation then
+                    []
+
+                else if
+                    -- CHW first calls 114. If he managed to talk to them, it's enough to have Call 114 measurement taken.
+                    -- If not, CHW needs to call Health Center => we need to have HC Contact measurement taken.
+                    isJust measurements.call114 && (talkedTo114 measurements || isJust measurements.hcContact)
+                then
                     [ navigateToProgressReportPageMsg id ]
 
                 else
