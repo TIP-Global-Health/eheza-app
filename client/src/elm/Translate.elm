@@ -4072,7 +4072,7 @@ translationSet trans =
 
         PertinentSymptoms ->
             { english = "Pertinent Symptoms"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just " Ibimenyetso by'ingenzi"
             }
 
         PhysicalExam ->
@@ -5428,7 +5428,7 @@ translationSet trans =
 
         TravelHistory ->
             { english = "Travel History"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amukuru ku ngendo"
             }
 
         PriorTreatmentTask task ->
