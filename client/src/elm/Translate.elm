@@ -2163,12 +2163,12 @@ translationSet trans =
         DaysSinglePlural value ->
             if value == 1 then
                 { english = "1 day"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Umunsi 1"
                 }
 
             else
                 { english = String.fromInt value ++ " days"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just <| "Iminsi " ++ String.fromInt value
                 }
 
         Delete ->
