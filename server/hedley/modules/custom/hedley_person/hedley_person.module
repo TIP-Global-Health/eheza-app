@@ -430,11 +430,11 @@ function hedley_person_date_process($trimmed) {
     return FALSE;
   }
 
-  if (!preg_match('@^\\d\\d?/\\d\\d?/\\d\\d\\d\\d@', $trimmed)) {
+  if (!preg_match('@^\\d\\d?-\\d\\d-\\d\\d\\d\\d$', $trimmed)) {
     return FALSE;
   }
 
-  return DateTime::createFromFormat('!m/d/Y', $trimmed)->getTimestamp();
+  return DateTime::createFromFormat('!d/m/Y', $trimmed)->getTimestamp();
 }
 
 /**
