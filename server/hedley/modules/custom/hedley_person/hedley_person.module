@@ -908,7 +908,7 @@ function hedley_person_create_pmtct_participant($child_id, $adult_id, $relation,
   $clinic_type = $wrapper_clinic->field_group_type->value();
 
   $expected_start_date = date('Y-m-d', $birth_date);
-  $expected_end_date = $clinic_type == HEDLEY_PERSON_CLINIC_TYPE_SORWATHE ? null : date('Y-m-d', strtotime("+26 month", $birth_date));
+  $expected_end_date = ($clinic_type == HEDLEY_PERSON_CLINIC_TYPE_SORWATHE) ? NULL : date('Y-m-d', strtotime("+26 month", $birth_date));
 
   $wrapper->field_expected->set([
     'value' => $expected_start_date,
