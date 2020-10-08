@@ -774,7 +774,7 @@ function hedley_person_import_patient($patient_type, array $values) {
       $group_id = hedley_person_resolve_content_by_name('clinic', $group);
 
       if (!empty($group_id)) {
-        if (!hedley_person_create_pmtct_participant($wrapper->getIdentifier(), $adult_id, $group_id)) {
+        if (!hedley_person_create_pmtct_participant($wrapper->getIdentifier(), $adult_id, $relation, $group_id)) {
           return "Import was successful, but failed to add adult-child pair to $group group.";
         }
       }
@@ -876,13 +876,15 @@ function hedley_person_create_relationship($child_id, $adult_id, $relation) {
  *   Child node ID.
  * @param int $adult_id
  *   Adult node ID.
+ * @param string $relation
+ *   Either 'parent' or 'caregiver'.
  * @param int $group_id
  *   Group node ID.
  *
  * @return bool
  *   TRUE on success, FALSE otherwise.
  */
-function hedley_person_create_pmtct_participant($child_id, $adult_id, $group_id) {
+function hedley_person_create_pmtct_participant($child_id, $adult_id, $relation, $group_id) {
   try {
     $pmtct_participant = hedley_person_create_basic_node('pmtct_participant');
   }
@@ -894,6 +896,24 @@ function hedley_person_create_pmtct_participant($child_id, $adult_id, $group_id)
   $wrapper->field_person->set($child_id);
   $wrapper->field_adult->set($adult_id);
   $wrapper->field_clinic->set($group_id);
+
+  if ($relation == 'parent') {
+    $relation = 'mother';
+  }
+  $wrapper->field_adult_activities->set($relation);
+
+  $wrapper_child = entity_metadata_wrapper('node', $child_id);
+  $wrapper_clinic = entity_metadata_wrapper('node', $group_id);
+  $birth_date = $wrapper_child->field_birth_date->value();
+  $clinic_type = $wrapper_clinic->field_group_type->value();
+
+  $expected_start_date = date('Y-m-d', $birth_date);
+  $expected_end_date = $clinic_type == HEDLEY_PERSON_CLINIC_TYPE_SORWATHE ? null : date('Y-m-d', strtotime("+26 month", $birth_date));
+
+  $wrapper->field_expected->set([
+    'value' => $expected_start_date,
+    'value2' => $expected_end_date,
+  ]);
 
   $wrapper->save();
 
@@ -921,6 +941,8 @@ function hedley_person_create_basic_node($type) {
   $node->language = LANGUAGE_NONE;
   $node->uid = $user->uid;
   $node->status = 1;
+  // Mark node as imported, to be able to identify it at hook_insert().
+  $node->imported = 1;
   $node = node_submit($node);
   node_save($node);
 
@@ -1015,7 +1037,7 @@ function hedley_person_resolve_person_by_national_id($national_id) {
   $result = $query->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'person')
     ->propertyCondition('status', 1)
-    ->fieldCondition('field_national_id', 'value', $national_id)
+    ->fieldCondition('field_national_id_number', 'value', $national_id)
     ->propertyOrderBy('nid', 'DESC')
     ->range(0, 1)
     ->execute();
