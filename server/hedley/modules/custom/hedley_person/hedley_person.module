@@ -784,7 +784,6 @@ function hedley_person_import_patient($patient_type, array $values) {
   }
 
   // Type specific logic - adult.
-
   $national_id = trim($values[HEDLEY_PERSON_COLUMN_ADULT_NATIONAL_ID]);
   if (!empty($national_id)) {
     $wrapper->field_national_id_number->set($national_id);
@@ -971,7 +970,7 @@ function hedley_person_resolve_content_by_name($type, $health_center) {
 }
 
 /**
- * Resolves Person's node ID by it's name.
+ * Resolves Person's node ID by its name.
  *
  * If multiple instances exist, last one that was created will be returned.
  *
@@ -996,7 +995,7 @@ function hedley_person_resolve_person_by_name($name) {
 }
 
 /**
- * Resolves Person's node ID by his national ID.
+ * Resolves Person's node ID by its national ID.
  *
  * If multiple instances exist, last one that was created will be returned.
  *
