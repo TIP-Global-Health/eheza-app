@@ -23,7 +23,7 @@ function hedley_patient_node_insert($node) {
     return;
   }
 
-  if ($node->imported) {
+  if (isset($node->imported)) {
     // No need to run recalculations for person during import.
     return;
   }
