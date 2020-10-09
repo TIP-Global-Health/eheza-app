@@ -430,7 +430,9 @@ function hedley_person_date_process($trimmed) {
     return FALSE;
   }
 
-  if (!preg_match('/^\\d\\d-\\d\\d-\\d\\d\\d\\d$/', $trimmed)) {
+  // Regular expression for validating 'dd-mm-YYYY' dates.
+  $regex = '/^([0]?[1-9]|[1|2][0-9]|[3][0|1])[-]([0]?[1-9]|[1][0-2])[-]([0-9]{4}|[0-9]{2})$/';
+  if (!preg_match($regex, $trimmed)) {
     return FALSE;
   }
 
