@@ -34,6 +34,6 @@ emptyCreateModel =
 
 emptyEditModel : Model
 emptyEditModel =
-    { form = Backend.Person.Form.emptyCreateForm
+    { form = Backend.Person.Form.emptyEditForm
     , isDateSelectorOpen = False
     }
