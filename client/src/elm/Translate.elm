@@ -3668,22 +3668,22 @@ translationSet trans =
             case reason of
                 NonAdministrationLackOfStock ->
                     { english = "Lack of Stock"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta miti iri mu bubiko"
                     }
 
                 NonAdministrationKnownAllergy ->
                     { english = "Known Allergy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uyu muti usanzwe umutera ifurutwa"
                     }
 
                 NonAdministrationPatientDeclined ->
                     { english = "Patient Declined"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umurwayi yanze"
                     }
 
                 NonAdministrationOther ->
                     { english = "Other"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibindi"
                     }
 
         NoParticipantsCompleted ->
