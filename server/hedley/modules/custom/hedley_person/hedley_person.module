@@ -44,7 +44,7 @@ define('HEDLEY_PERSON_COLUMN_CHILD_FIRST_NAME', 1);
 define('HEDLEY_PERSON_COLUMN_CHILD_SECOND_NAME', 2);
 define('HEDLEY_PERSON_COLUMN_CHILD_BIRTH_DATE', 3);
 define('HEDLEY_PERSON_COLUMN_CHILD_ESTIMATED', 4);
-define('HEDLEY_PERSON_COLUMN_CHILD_NATIONAL_ID', 5);
+define('HEDLEY_PERSON_COLUMN_CHILD_MOTHER_NATIONAL_ID', 5);
 define('HEDLEY_PERSON_COLUMN_CHILD_GENDER', 6);
 define('HEDLEY_PERSON_COLUMN_CHILD_UBUDEHE', 7);
 define('HEDLEY_PERSON_COLUMN_CHILD_HIV_STATUS', 8);
@@ -430,11 +430,13 @@ function hedley_person_date_process($trimmed) {
     return FALSE;
   }
 
-  if (!preg_match('@^\\d\\d?/\\d\\d?/\\d\\d\\d\\d@', $trimmed)) {
+  // Regular expression for validating 'dd-mm-YYYY' dates.
+  $regex = '/^([0]?[1-9]|[1|2][0-9]|[3][0|1])[-]([0]?[1-9]|[1][0-2])[-]([0-9]{4}|[0-9]{2})$/';
+  if (!preg_match($regex, $trimmed)) {
     return FALSE;
   }
 
-  return DateTime::createFromFormat('!m/d/Y', $trimmed)->getTimestamp();
+  return DateTime::createFromFormat('!d-m-Y', $trimmed)->getTimestamp();
 }
 
 /**
@@ -457,7 +459,8 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
     $second_name = $values[HEDLEY_PERSON_COLUMN_CHILD_SECOND_NAME];
     $birth_date = trim($values[HEDLEY_PERSON_COLUMN_CHILD_BIRTH_DATE]);
     $estimated = trim($values[HEDLEY_PERSON_COLUMN_CHILD_ESTIMATED]);
-    $national_id = (string) trim($values[HEDLEY_PERSON_COLUMN_CHILD_NATIONAL_ID]);
+    // National ID belongs to the mother of the child.
+    $national_id = (string) trim($values[HEDLEY_PERSON_COLUMN_CHILD_MOTHER_NATIONAL_ID]);
     $gender = trim($values[HEDLEY_PERSON_COLUMN_CHILD_GENDER]);
     $ubudehe = trim($values[HEDLEY_PERSON_COLUMN_CHILD_UBUDEHE]);
     $hiv_status = trim($values[HEDLEY_PERSON_COLUMN_CHILD_HIV_STATUS]);
@@ -541,12 +544,14 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
 
     // Resolve mother.
     $adult_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_PARENT_NAME]);
+
     if (empty($relation) && !empty($adult_name)) {
       $warnings[] = "Relation is not specified, therefore, relationship with $adult_name will not be created";
     }
 
     if (!empty($relation) && in_array($relation, ['parent', 'caregiver'])) {
-      $adult_id = hedley_person_resolve_person_by_name($adult_name);
+      $adult_national_id = trim($values[HEDLEY_PERSON_COLUMN_CHILD_MOTHER_NATIONAL_ID]);
+      $adult_id = hedley_person_resolve_adult_for_child($adult_national_id, $adult_name);
 
       if (empty($adult_id)) {
         $warnings[] = "Failed to resolve $relation for child, therefore, relationship with $adult_name will not be created";
@@ -617,7 +622,6 @@ function hedley_person_import_patient($patient_type, array $values) {
     $second_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_SECOND_NAME]);
     $birth_date = trim($values[HEDLEY_PERSON_COLUMN_CHILD_BIRTH_DATE]);
     $estimated = trim($values[HEDLEY_PERSON_COLUMN_CHILD_ESTIMATED]);
-    $national_id = trim($values[HEDLEY_PERSON_COLUMN_CHILD_NATIONAL_ID]);
     $gender = trim($values[HEDLEY_PERSON_COLUMN_CHILD_GENDER]);
     $ubudehe = trim($values[HEDLEY_PERSON_COLUMN_CHILD_UBUDEHE]);
     $hiv_status = trim($values[HEDLEY_PERSON_COLUMN_CHILD_HIV_STATUS]);
@@ -633,7 +637,6 @@ function hedley_person_import_patient($patient_type, array $values) {
     $second_name = trim($values[HEDLEY_PERSON_COLUMN_ADULT_SECOND_NAME]);
     $birth_date = trim($values[HEDLEY_PERSON_COLUMN_ADULT_BIRTH_DATE]);
     $estimated = trim($values[HEDLEY_PERSON_COLUMN_ADULT_ESTIMATED]);
-    $national_id = trim($values[HEDLEY_PERSON_COLUMN_ADULT_NATIONAL_ID]);
     $gender = trim($values[HEDLEY_PERSON_COLUMN_ADULT_GENDER]);
     $ubudehe = trim($values[HEDLEY_PERSON_COLUMN_ADULT_UBUDEHE]);
     $hiv_status = trim($values[HEDLEY_PERSON_COLUMN_ADULT_HIV_STATUS]);
@@ -679,11 +682,6 @@ function hedley_person_import_patient($patient_type, array $values) {
     case 'n':
       $wrapper->field_birth_date_estimated->set(FALSE);
       break;
-  }
-
-  // National ID.
-  if (!empty($national_id)) {
-    $wrapper->field_national_id_number->set($national_id);
   }
 
   // Gender.
@@ -763,10 +761,11 @@ function hedley_person_import_patient($patient_type, array $values) {
 
     // Try to create relationship with parent/caregiver.
     $relation = strtolower(trim($values[HEDLEY_PERSON_COLUMN_CHILD_RELATION]));
-    $adult_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_PARENT_NAME]);
 
     // Resolve parent/caregiver.
-    $adult_id = hedley_person_resolve_person_by_name($adult_name);
+    $adult_national_id = trim($values[HEDLEY_PERSON_COLUMN_CHILD_MOTHER_NATIONAL_ID]);
+    $adult_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_PARENT_NAME]);
+    $adult_id = hedley_person_resolve_adult_for_child($adult_national_id, $adult_name);
 
     if (!empty($adult_id)) {
       if (!hedley_person_create_relationship($wrapper->getIdentifier(), $adult_id, $relation)) {
@@ -777,7 +776,7 @@ function hedley_person_import_patient($patient_type, array $values) {
       $group_id = hedley_person_resolve_content_by_name('clinic', $group);
 
       if (!empty($group_id)) {
-        if (!hedley_person_create_pmtct_participant($wrapper->getIdentifier(), $adult_id, $group_id)) {
+        if (!hedley_person_create_pmtct_participant($wrapper->getIdentifier(), $adult_id, $relation, $group_id)) {
           return "Import was successful, but failed to add adult-child pair to $group group.";
         }
       }
@@ -787,6 +786,11 @@ function hedley_person_import_patient($patient_type, array $values) {
   }
 
   // Type specific logic - adult.
+  $national_id = trim($values[HEDLEY_PERSON_COLUMN_ADULT_NATIONAL_ID]);
+  if (!empty($national_id)) {
+    $wrapper->field_national_id_number->set($national_id);
+  }
+
   $education_level = strtolower(trim($values[HEDLEY_PERSON_COLUMN_ADULT_EDUCATION_LEVEL]));
   switch (strtolower($education_level)) {
     case 'no schooling':
@@ -874,13 +878,15 @@ function hedley_person_create_relationship($child_id, $adult_id, $relation) {
  *   Child node ID.
  * @param int $adult_id
  *   Adult node ID.
+ * @param string $relation
+ *   Either 'parent' or 'caregiver'.
  * @param int $group_id
  *   Group node ID.
  *
  * @return bool
  *   TRUE on success, FALSE otherwise.
  */
-function hedley_person_create_pmtct_participant($child_id, $adult_id, $group_id) {
+function hedley_person_create_pmtct_participant($child_id, $adult_id, $relation, $group_id) {
   try {
     $pmtct_participant = hedley_person_create_basic_node('pmtct_participant');
   }
@@ -892,6 +898,24 @@ function hedley_person_create_pmtct_participant($child_id, $adult_id, $group_id)
   $wrapper->field_person->set($child_id);
   $wrapper->field_adult->set($adult_id);
   $wrapper->field_clinic->set($group_id);
+
+  if ($relation == 'parent') {
+    $relation = 'mother';
+  }
+  $wrapper->field_adult_activities->set($relation);
+
+  $wrapper_child = entity_metadata_wrapper('node', $child_id);
+  $wrapper_clinic = entity_metadata_wrapper('node', $group_id);
+  $birth_date = $wrapper_child->field_birth_date->value();
+  $clinic_type = $wrapper_clinic->field_group_type->value();
+
+  $expected_start_date = date('Y-m-d', $birth_date);
+  $expected_end_date = ($clinic_type == HEDLEY_PERSON_CLINIC_TYPE_SORWATHE) ? NULL : date('Y-m-d', strtotime("+26 month", $birth_date));
+
+  $wrapper->field_expected->set([
+    'value' => $expected_start_date,
+    'value2' => $expected_end_date,
+  ]);
 
   $wrapper->save();
 
@@ -919,10 +943,29 @@ function hedley_person_create_basic_node($type) {
   $node->language = LANGUAGE_NONE;
   $node->uid = $user->uid;
   $node->status = 1;
+  // Mark node as imported, to be able to identify it at hook_insert().
+  $node->imported = 1;
   $node = node_submit($node);
   node_save($node);
 
   return $node;
+}
+
+/**
+ * Resolves node ID of adult, with which child is to be associated.
+ *
+ * @param string $adult_national_id
+ *   National ID of the adult.
+ * @param string $adult_name
+ *   Name of the adult.
+ *
+ * @return int|null
+ *   Node ID. Null, if not found.
+ */
+function hedley_person_resolve_adult_for_child($adult_national_id, $adult_name) {
+  $adult_id = hedley_person_resolve_person_by_national_id($adult_national_id);
+
+  return empty($adult_id) ? hedley_person_resolve_person_by_name($adult_name) : $adult_id;
 }
 
 /**
@@ -951,7 +994,9 @@ function hedley_person_resolve_content_by_name($type, $health_center) {
 }
 
 /**
- * Resolves Person's node ID by it's name.
+ * Resolves Person's node ID by its name.
+ *
+ * If multiple instances exist, last one that was created will be returned.
  *
  * @param string $name
  *   Name of person.
@@ -967,6 +1012,36 @@ function hedley_person_resolve_person_by_name($name) {
     ->propertyCondition('title', $name)
     ->propertyCondition('status', 1)
     ->propertyOrderBy('nid', 'DESC')
+    ->range(0, 1)
+    ->execute();
+
+  return empty($result['node']) ? NULL : key($result['node']);
+}
+
+/**
+ * Resolves Person's node ID by its national ID.
+ *
+ * If multiple instances exist, last one that was created will be returned.
+ *
+ * @param string $national_id
+ *   National ID of the person.
+ *
+ * @return int|null
+ *   Node ID. Null, if not found.
+ */
+function hedley_person_resolve_person_by_national_id($national_id) {
+  if (empty($national_id)) {
+    return NULL;
+  }
+
+  $query = new EntityFieldQuery();
+
+  $result = $query->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', 'person')
+    ->propertyCondition('status', 1)
+    ->fieldCondition('field_national_id_number', 'value', $national_id)
+    ->propertyOrderBy('nid', 'DESC')
+    ->range(0, 1)
     ->execute();
 
   return empty($result['node']) ? NULL : key($result['node']);

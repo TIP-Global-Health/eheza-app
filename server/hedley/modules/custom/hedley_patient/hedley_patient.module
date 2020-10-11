@@ -23,6 +23,11 @@ function hedley_patient_node_insert($node) {
     return;
   }
 
+  if (isset($node->imported)) {
+    // No need to run recalculations for person during import.
+    return;
+  }
+
   $wrapper = entity_metadata_wrapper('node', $node);
   hedley_patient_recalculate_shards_for_person($wrapper->field_person->getIdentifier());
   hedley_patient_recalculate_shards_for_person($wrapper->field_adult->getIdentifier());

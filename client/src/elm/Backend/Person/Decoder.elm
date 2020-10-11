@@ -6,6 +6,7 @@ import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)
+import String.Extra exposing (toTitleCase)
 
 
 decodePerson : Decoder Person
@@ -26,11 +27,11 @@ decodePerson =
         |> optional "ubudehe" (nullable decodeUbudehe) Nothing
         |> optional "education_level" (nullable decodeEducationLevel) Nothing
         |> optional "marital_status" (nullable decodeMaritalStatus) Nothing
-        |> optional "province" (nullable string) Nothing
-        |> optional "district" (nullable string) Nothing
-        |> optional "sector" (nullable string) Nothing
-        |> optional "cell" (nullable string) Nothing
-        |> optional "village" (nullable string) Nothing
+        |> optional "province" (nullable decodeGeoField) Nothing
+        |> optional "district" (nullable decodeGeoField) Nothing
+        |> optional "sector" (nullable decodeGeoField) Nothing
+        |> optional "cell" (nullable decodeGeoField) Nothing
+        |> optional "village" (nullable decodeGeoField) Nothing
         |> optional "phone_number" (nullable string) Nothing
         |> optional "health_center" (nullable decodeEntityUuid) Nothing
         |> hardcoded Nothing
@@ -179,3 +180,9 @@ decodeMaritalStatus =
                     _ ->
                         fail (status ++ " is not a recognized MaritalStatus")
             )
+
+
+decodeGeoField : Decoder String
+decodeGeoField =
+    string
+        |> andThen (String.toLower >> toTitleCase >> succeed)

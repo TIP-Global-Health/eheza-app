@@ -1069,10 +1069,10 @@ viewHCRecommendation language recommendation =
                     Translate.LowRiskCase
     in
     label []
-        [ translate language Translate.HealthCenterDetermined |> text
-        , span [ class "strong" ] [ translate language riskLevel |> text ]
-        , translate language Translate.And |> text
-        , span [ class "strong" ] [ Translate.HCRecommendation recommendation |> translate language |> text ]
+        [ text <| translate language Translate.HealthCenterDetermined
+        , span [ class "strong" ] [ text <| translate language riskLevel ]
+        , text <| translate language Translate.AndSentence
+        , span [ class "strong" ] [ text <| translate language <| Translate.HCRecommendation recommendation ]
         ]
 
 
