@@ -31,6 +31,7 @@
             "elm-community/json-extra": "4.0.0",
             "elm-community/list-extra": "8.1.0",
             "elm-community/maybe-extra": "5.0.0",
+            "elm-community/string-extra": "4.0.1",
             "elm-community/typed-svg": "5.1.0",
             "elm-explorations/test": "1.2.1",
             "etaque/elm-form": "4.0.0",
