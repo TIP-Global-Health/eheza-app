@@ -9,10 +9,8 @@
         "direct": {
             "Gizra/elm-all-set": "1.0.1",
             "Gizra/elm-debouncer": "2.0.0",
-            "Gizra/elm-editable-webdata": "2.0.1",
             "Gizra/elm-storage-key": "1.1.1",
             "NoRedInk/elm-json-decode-pipeline": "1.0.0",
-            "NoRedInk/elm-rollbar": "1.0.1",
             "RomanErnst/erl": "2.1.1",
             "avh4/elm-color": "1.0.0",
             "ccapndave/elm-update-extra": "4.0.0",
@@ -49,7 +47,6 @@
             "truqu/elm-base64": "2.0.4"
         },
         "indirect": {
-            "Skinney/murmur3": "2.0.8",
             "elm/random": "1.0.0",
             "elm/virtual-dom": "1.0.2",
             "folkertdev/elm-deque": "3.0.1",

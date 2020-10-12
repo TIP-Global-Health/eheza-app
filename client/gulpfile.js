@@ -426,7 +426,6 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function() {
       'nodes.js',
       'statistics.js',
       'photos.js',
-      'rollbar.js',
       'sync.js'
     ]
   });
@@ -452,7 +451,6 @@ gulp.task('pwa:prod', function() {
       'lifecycle.js',
       'nodes.js',
       'photos.js',
-      'rollbar.js',
       'sync.js'
     ]
   });
