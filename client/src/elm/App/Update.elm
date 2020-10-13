@@ -30,6 +30,7 @@ import Pages.AcuteIllnessEncounter.Update
 import Pages.AcuteIllnessProgressReport.Model
 import Pages.AcuteIllnessProgressReport.Update
 import Pages.Clinics.Update
+import Pages.Dashboard.Update
 import Pages.Device.Model
 import Pages.Device.Update
 import Pages.IndividualEncounterParticipants.Update
@@ -57,7 +58,6 @@ import Pages.Session.Update
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
-import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
 import SyncManager.Update
@@ -237,6 +237,16 @@ update msg model =
                             in
                             ( { data | createPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageDashboard subPage subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.Dashboard.Update.update subMsg subPage data.dashboardPage
+                            in
+                            ( { data | dashboardPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageDashboard subPage) subCmd
                             , appMsgs
                             )
 
@@ -562,37 +572,6 @@ update msg model =
             , cmd
             )
                 |> sequence update extraMsgs
-
-        SendRollbar level message data ->
-            updateConfigured
-                (\configured ->
-                    let
-                        version =
-                            Version.version
-                                |> .build
-                                |> Json.Encode.string
-
-                        cmd =
-                            Rollbar.send
-                                configured.config.rollbarToken
-                                (Rollbar.scope "user")
-                                (Rollbar.environment configured.config.name)
-                                0
-                                level
-                                message
-                                (Dict.insert "build" version data |> Dict.toList |> LegacyDict.fromList)
-                                |> Task.attempt HandleRollbar
-                    in
-                    ( configured
-                    , cmd
-                    , []
-                    )
-                )
-                model
-
-        HandleRollbar result ->
-            -- For now, we do nothing
-            ( model, Cmd.none )
 
         SetLanguage language ->
             ( { model | language = language }

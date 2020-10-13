@@ -1,10 +1,11 @@
-module Backend.Measurement.Encoder exposing (encodeAbdomenCPESign, encodeAcuteFindings, encodeAcuteFindingsGeneralSign, encodeAcuteFindingsRespiratorySign, encodeAcuteFindingsValue, encodeAcuteIllnessMeasurement, encodeAcuteIllnessVitals, encodeAcuteIllnessVitalsValue, encodeAttendance, encodeAttendanceValue, encodeBreastExam, encodeBreastExamSign, encodeBreastExamValue, encodeCSectionReason, encodeCSectionScar, encodeCorePhysicalExam, encodeCorePhysicalExamValue, encodeCounselingSession, encodeCounselingSessionValue, encodeDangerSign, encodeDangerSigns, encodeDangerSignsValue, encodeDistributionNotice, encodeDistributionNoticeAsString, encodeEverySet, encodeExposure, encodeExposureSign, encodeExposureValue, encodeEyesCPESign, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeFamilyPlanningValueWithType, encodeFbf, encodeFbfValue, encodeFetalPresentation, encodeGroupMeasurement, encodeHCContact, encodeHCContactSign, encodeHCContactValue, encodeHCRecomendation, encodeHairHeadCPESign, encodeHandsCPESign, encodeHeartCPESign, encodeHeight, encodeHeightInCm, encodeHeightValue, encodeHeightValueWithType, encodeIsolation, encodeIsolationSign, encodeIsolationValue, encodeLactation, encodeLactationSign, encodeLactationValue, encodeLastMenstrualPeriod, encodeLastMenstrualPeriodValue, encodeLegsCPESign, encodeLungsCPESign, encodeMalariaRapidTestResult, encodeMalariaTesting, encodeMalariaTestingValue, encodeMeasurement, encodeMedicalHistory, encodeMedicalHistorySign, encodeMedicalHistoryValue, encodeMedication, encodeMedicationDistribution, encodeMedicationDistributionValue, encodeMedicationSign, encodeMedicationValue, encodeMuac, encodeMuacInCm, encodeMuacValue, encodeMuacValueWithType, encodeNeckCPESign, encodeNutrition, encodeNutritionHeight, encodeNutritionHeightValue, encodeNutritionMeasurement, encodeNutritionMuac, encodeNutritionMuacValue, encodeNutritionNutrition, encodeNutritionNutritionValue, encodeNutritionPhoto, encodeNutritionPhotoUrl, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeNutritionWeight, encodeNutritionWeightValue, encodeObstetricHistory, encodeObstetricHistorySign, encodeObstetricHistoryStep2, encodeObstetricHistoryStep2Value, encodeObstetricHistoryValue, encodeObstetricalExam, encodeObstetricalExamValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodePrenatalFamilyPlanning, encodePrenatalFamilyPlanningValue, encodePrenatalMeasurement, encodePrenatalNutrition, encodePrenatalNutritionValue, encodePrenatalPhoto, encodePrenatalPhotoUrl, encodePreviousDeliveryPeriod, encodePreviousDeliverySign, encodeReasonForNotIsolating, encodeResource, encodeResourceSign, encodeResourceValue, encodeResponsePeriod, encodeSendToHC, encodeSendToHCValue, encodeSocialHistory, encodeSocialHistoryHivTestingResult, encodeSocialHistorySign, encodeSocialHistoryValue, encodeSymptomsGI, encodeSymptomsGIDerivedSigns, encodeSymptomsGIValue, encodeSymptomsGeneral, encodeSymptomsGeneralValue, encodeSymptomsRespiratory, encodeSymptomsRespiratoryValue, encodeTravelHistory, encodeTravelHistorySign, encodeTravelHistoryValue, encodeTreatmentReview, encodeTreatmentReviewSign, encodeTreatmentReviewValue, encodeVitals, encodeVitalsValue, encodeWeight, encodeWeightInKg, encodeWeightValue, encodeWeightValueWithType, encondeMedicationDistributionSign, encondeSendToHCSign, malariaRapidTestResultAsString, socialHistoryHivTestingResultToString)
+module Backend.Measurement.Encoder exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate
 import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, string)
@@ -1011,9 +1012,6 @@ encodeSymptomsGeneralValue signs =
         headache =
             Dict.get Headache signs |> Maybe.withDefault 0
 
-        lossOfSmell =
-            Dict.get LossOfSmell signs |> Maybe.withDefault 0
-
         lethargy =
             Dict.get Lethargy signs |> Maybe.withDefault 0
 
@@ -1052,7 +1050,6 @@ encodeSymptomsGeneralValue signs =
     , ( "night_sweats_period", int nightSweats )
     , ( "body_aches_period", int bodyAches )
     , ( "headache_period", int headache )
-    , ( "loss_of_smell_period", int lossOfSmell )
     , ( "coke_colored_urine_period", int cokeColoredUrine )
     , ( "convulsions_period", int convulsions )
     , ( "dry_mouth_period", int dryMouth )
@@ -1091,6 +1088,9 @@ encodeSymptomsRespiratoryValue signs =
         soreThroat =
             Dict.get SoreThroat signs |> Maybe.withDefault 0
 
+        lossOfSmell =
+            Dict.get LossOfSmell signs |> Maybe.withDefault 0
+
         stabbingChestPain =
             Dict.get StabbingChestPain signs |> Maybe.withDefault 0
     in
@@ -1099,6 +1099,7 @@ encodeSymptomsRespiratoryValue signs =
     , ( "nasal_congestion_period", int nasalCongestion )
     , ( "blood_in_sputum_period", int bloodInSputum )
     , ( "sore_throat_period", int soreThroat )
+    , ( "loss_of_smell_period", int lossOfSmell )
     , ( "stabbing_chest_pain_period", int stabbingChestPain )
     , ( "type", string "symptoms_respiratory" )
     ]
@@ -1284,10 +1285,10 @@ encodeMedicationDistribution =
     encodeAcuteIllnessMeasurement encodeMedicationDistributionValue
 
 
-encodeMedicationDistributionValue : EverySet MedicationDistributionSign -> List ( String, Value )
+encodeMedicationDistributionValue : MedicationDistributionValue -> List ( String, Value )
 encodeMedicationDistributionValue value =
-    [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value )
-    , ( "type", string "medication_distribution" )
+    [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value.distributionSigns )
+    , ( "non_administration_reason", encodeEverySet encodeMedicationNonAdministrationSign value.nonAdministrationSigns )
     ]
 
 
@@ -1311,6 +1312,26 @@ encondeMedicationDistributionSign sign =
                 "lemon-juice-or-honey"
 
             NoMedicationDistributionSigns ->
+                "none"
+
+
+encodeMedicationNonAdministrationSign : MedicationNonAdministrationSign -> Value
+encodeMedicationNonAdministrationSign sign =
+    string <|
+        case sign of
+            MedicationAmoxicillin reason ->
+                "amoxicillin-" ++ medicationNonAdministrationReasonToString reason
+
+            MedicationCoartem reason ->
+                "coartem-" ++ medicationNonAdministrationReasonToString reason
+
+            MedicationORS reason ->
+                "ors-" ++ medicationNonAdministrationReasonToString reason
+
+            MedicationZinc reason ->
+                "zinc-" ++ medicationNonAdministrationReasonToString reason
+
+            NoMedicationNonAdministrationSigns ->
                 "none"
 
 
@@ -1456,7 +1477,7 @@ encodeHCContact =
 encodeHCContactValue : HCContactValue -> List ( String, Value )
 encodeHCContactValue value =
     [ ( "hc_contact", encodeEverySet encodeHCContactSign value.signs )
-    , ( "hc_recommendation", encodeEverySet encodeHCRecomendation value.recomendations )
+    , ( "hc_recommendation", encodeEverySet encodeHCRecommendation value.recommendations )
     , ( "hc_response_time", encodeEverySet encodeResponsePeriod value.responsePeriod )
     , ( "ambulance_arrival_time", encodeEverySet encodeResponsePeriod value.ambulanceArrivalPeriod )
     , ( "type", string "hc_contact" )
@@ -1474,10 +1495,10 @@ encodeHCContactSign sign =
                 "none"
 
 
-encodeHCRecomendation : HCRecomendation -> Value
-encodeHCRecomendation recomendation =
+encodeHCRecommendation : HCRecommendation -> Value
+encodeHCRecommendation recommendation =
     string <|
-        case recomendation of
+        case recommendation of
             SendAmbulance ->
                 "send-ambulance"
 
@@ -1490,7 +1511,7 @@ encodeHCRecomendation recomendation =
             ChwMonitoring ->
                 "chw-monitoring"
 
-            HCRecomendationNotApplicable ->
+            HCRecommendationNotApplicable ->
                 "n-a"
 
 
@@ -1511,4 +1532,83 @@ encodeResponsePeriod period =
                 "2h-1d"
 
             ResponsePeriodNotApplicable ->
+                "n-a"
+
+
+encodeCall114 : Call114 -> List ( String, Value )
+encodeCall114 =
+    encodeAcuteIllnessMeasurement encodeCall114Value
+
+
+encodeCall114Value : Call114Value -> List ( String, Value )
+encodeCall114Value value =
+    [ ( "114_contact", encodeEverySet encodeCall114Sign value.signs )
+    , ( "114_recommendation", encodeEverySet encodeRecommendation114 value.recommendations114 )
+    , ( "site_recommendation", encodeEverySet encodeRecommendationSite value.recommendationsSite )
+    ]
+
+
+encodeCall114Sign : Call114Sign -> Value
+encodeCall114Sign sign =
+    string <|
+        case sign of
+            Call114 ->
+                "call-114"
+
+            ContactSite ->
+                "contact-site"
+
+            NoCall114Signs ->
+                "none"
+
+
+encodeRecommendation114 : Recommendation114 -> Value
+encodeRecommendation114 recommendation =
+    string <|
+        case recommendation of
+            SendToHealthCenter ->
+                "send-to-hc"
+
+            SendToRRTCenter ->
+                "send-to-rrtc"
+
+            SendToHospital ->
+                "send-to-hospital"
+
+            OtherRecommendation114 ->
+                "other"
+
+            NoneNoAnswer ->
+                "none-no-answer"
+
+            NoneBusySignal ->
+                "none-busy-signal"
+
+            NoneOtherRecommendation114 ->
+                "none-other"
+
+
+encodeRecommendationSite : RecommendationSite -> Value
+encodeRecommendationSite period =
+    string <|
+        case period of
+            TeamComeToVillage ->
+                "team-to-village"
+
+            SendToSiteWithForm ->
+                "send-with-form"
+
+            OtherRecommendationSite ->
+                "other"
+
+            NoneSentWithForm ->
+                "none-sent-with-form"
+
+            NonePatientRefused ->
+                "none-patient-refused"
+
+            NoneOtherRecommendationSite ->
+                "none-other"
+
+            RecommendationSiteNotApplicable ->
                 "n-a"

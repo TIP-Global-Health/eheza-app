@@ -1,4 +1,4 @@
-module Pages.Utils exposing (backFromSessionPage, filterDependentNoResultsMessage, ifEverySetEmpty, isTaskCompleted, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, tasksBarId, valueConsideringIsDirtyField, viewBoolInput, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxSelectInputItem, viewCheckBoxValueInput, viewCheckBoxValueInputItem, viewCheckBoxValueInputNone, viewCustomLabel, viewEndEncounterDialog, viewLabel, viewMeasurementInput, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement, viewQuestionLabel)
+module Pages.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PersonId)
@@ -15,7 +15,30 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, or, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Time exposing (Month(..))
 import Translate exposing (Language, TranslationId, translate)
+
+
+calculatePercentage : Int -> Int -> Float
+calculatePercentage now before =
+    -- Avoid dividing by zero and getting "NaN", just return 0.
+    -- Besides, if the total is 0, then we don't need to calculate anything here.
+    if before == 0 && now == 0 then
+        0
+
+    else if before == 0 && now > 0 then
+        100
+
+    else
+        let
+            diff =
+                abs (now - before)
+        in
+        if now > before then
+            (toFloat diff / toFloat before) * 100
+
+        else
+            (toFloat diff / toFloat before) * -100
 
 
 filterDependentNoResultsMessage : Language -> String -> TranslationId -> String
@@ -440,11 +463,16 @@ ifEverySetEmpty value set =
 
 valueConsideringIsDirtyField : Bool -> Maybe a -> a -> Maybe a
 valueConsideringIsDirtyField isDirty formVariant valueVariant =
+    maybeValueConsideringIsDirtyField isDirty formVariant (Just valueVariant)
+
+
+maybeValueConsideringIsDirtyField : Bool -> Maybe a -> Maybe a -> Maybe a
+maybeValueConsideringIsDirtyField isDirty formVariant maybeValueVariant =
     if isDirty then
         formVariant
 
     else
-        or formVariant (Just valueVariant)
+        or formVariant maybeValueVariant
 
 
 {-| Show a photo thumbnail.

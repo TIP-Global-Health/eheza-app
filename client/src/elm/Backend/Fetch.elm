@@ -31,6 +31,10 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchComputedDashboard healthCenterId ->
+            Dict.member healthCenterId model.computedDashboard
+                |> not
+
         FetchChildrenMeasurements ids ->
             if List.isEmpty ids then
                 False

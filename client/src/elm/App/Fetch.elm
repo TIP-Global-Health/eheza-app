@@ -12,6 +12,7 @@ import Pages.AcuteIllnessProgressReport.Fetch
 import Pages.Clinical.Fetch
 import Pages.ClinicalProgressReport.Fetch
 import Pages.Clinics.Fetch
+import Pages.Dashboard.Fetch
 import Pages.DemographicsReport.Fetch
 import Pages.Device.Fetch
 import Pages.IndividualEncounterParticipants.Fetch
@@ -77,6 +78,15 @@ fetch model =
         UserPage (ClinicsPage clinicId) ->
             Pages.Clinics.Fetch.fetch clinicId
                 |> List.map MsgIndexedDb
+
+        UserPage (DashboardPage subPage) ->
+            getLoggedInData model
+                |> Maybe.map
+                    (\( healthCenterId, loggedIn ) ->
+                        Pages.Dashboard.Fetch.fetch healthCenterId loggedIn.dashboardPage
+                            |> List.map MsgIndexedDb
+                    )
+                |> Maybe.withDefault []
 
         UserPage (ClinicalProgressReportPage prenatalEncounterId) ->
             Pages.ClinicalProgressReport.Fetch.fetch prenatalEncounterId model.indexedDb

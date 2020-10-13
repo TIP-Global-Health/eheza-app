@@ -64,7 +64,6 @@ jobs:
         - "$TRAVIS_BUILD_DIR/ci-scripts/install_ddev.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_deploy.sh"
         - "cd $TRAVIS_BUILD_DIR/server && ddev robo deploy:pantheon qa --no-interaction"
-
 cache:
   directories:
   - client/elm-stuff/packages

@@ -1,7 +1,8 @@
-module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, ageDependentARINextStep, covid19Diagnosed, expectActivity, feverAtPhysicalExam, feverAtSymptoms, feverRecorded, generateAssembledData, generatePreviousMeasurements, malariaRapidTestResult, malarialDangerSignsPresent, mandatoryActivitiesCompleted, nonBloodyDiarrheaAtSymptoms, poorSuckAtSymptoms, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByLaboratoryResults, resolveNextStepByDiagnosis, resolveNextStepsTasks, resolveNonCovid19AcuteIllnessDiagnosis, respiratoryInfectionDangerSignsPresent, respiratoryRateElevated, symptomAppearsAtSymptomsDict)
+module Pages.AcuteIllnessEncounter.Utils exposing (..)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model
     exposing
@@ -9,15 +10,17 @@ import Backend.Measurement.Model
         , AcuteFindingsRespiratorySign(..)
         , AcuteIllnessMeasurements
         , AcuteIllnessVitalsValue
+        , Call114Sign(..)
         , ExposureSign(..)
         , HCContactSign(..)
         , HCContactValue
-        , HCRecomendation(..)
+        , HCRecommendation(..)
         , IsolationSign(..)
         , IsolationValue
         , MalariaRapidTestResult(..)
         , ReasonForNotIsolating(..)
-        , ResponsePeriod(..)
+        , Recommendation114(..)
+        , RecommendationSite(..)
         , SymptomsGIDerivedSign(..)
         , SymptomsGISign(..)
         , SymptomsGeneralSign(..)
@@ -107,8 +110,8 @@ generatePreviousMeasurements currentEncounterId participantId db =
             )
 
 
-resolveNextStepsTasks : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> List NextStepsTask
-resolveNextStepsTasks currentDate person diagnosis =
+resolveNextStepsTasks : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> List NextStepsTask
+resolveNextStepsTasks currentDate person diagnosis measurements =
     let
         ( ageMonths0To2, ageMonths0To6, ageMonths2To60 ) =
             ageInMonths currentDate person
@@ -120,8 +123,11 @@ resolveNextStepsTasks currentDate person diagnosis =
                 NextStepsIsolation ->
                     diagnosis == Just DiagnosisCovid19
 
-                NextStepsContactHC ->
+                NextStepsCall114 ->
                     diagnosis == Just DiagnosisCovid19
+
+                NextStepsContactHC ->
+                    diagnosis == Just DiagnosisCovid19 && isJust measurements.call114 && (not <| talkedTo114 measurements)
 
                 NextStepsMedicationDistribution ->
                     (diagnosis == Just DiagnosisMalariaUncomplicated && not ageMonths0To6)
@@ -138,17 +144,29 @@ resolveNextStepsTasks currentDate person diagnosis =
                         || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths0To2)
                         || (diagnosis == Just DiagnosisRespiratoryInfectionComplicated)
                         || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
+                        || (diagnosis == Just DiagnosisUndeterminedMoreEvaluationNeeded)
     in
-    [ NextStepsIsolation, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
+    [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
         |> List.filter expectTask
+
+
+talkedTo114 : AcuteIllnessMeasurements -> Bool
+talkedTo114 measurements =
+    measurements.call114
+        |> Maybe.map
+            (Tuple.second
+                >> .value
+                >> .signs
+                >> EverySet.member Call114
+            )
+        |> Maybe.withDefault False
 
 
 expectActivity : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessActivity -> Bool
 expectActivity currentDate person measurements diagnosis activity =
     case activity of
         AcuteIllnessLaboratory ->
-            (diagnosis /= Just DiagnosisCovid19)
-                && mandatoryActivitiesCompleted measurements
+            mandatoryActivitiesCompleted measurements
                 && feverRecorded measurements
 
         AcuteIllnessNextSteps ->
@@ -178,8 +196,8 @@ activityCompleted currentDate person measurements diagnosis activity =
             mandatoryActivityCompleted measurements AcuteIllnessExposure
 
         AcuteIllnessNextSteps ->
-            case resolveNextStepsTasks currentDate person diagnosis of
-                [ NextStepsIsolation, NextStepsContactHC ] ->
+            case resolveNextStepsTasks currentDate person diagnosis measurements of
+                [ NextStepsIsolation, NextStepsCall114 ] ->
                     isJust measurements.isolation
                         && isJust measurements.hcContact
 
@@ -228,35 +246,41 @@ resolveNextStepByDiagnosis currentDate person maybeDiagnosis =
         |> Maybe.andThen
             (\diagnosis ->
                 case diagnosis of
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19 ->
+                    DiagnosisCovid19 ->
                         Just NextStepsIsolation
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated ->
+                    DiagnosisMalariaUncomplicated ->
                         ageDependentUncomplicatedMalariaNextStep currentDate person
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicatedAndPregnant ->
+                    DiagnosisMalariaUncomplicatedAndPregnant ->
                         Just NextStepsSendToHC
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaComplicated ->
+                    DiagnosisMalariaComplicated ->
                         Just NextStepsSendToHC
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionUncomplicated ->
+                    DiagnosisGastrointestinalInfectionUncomplicated ->
                         Just NextStepsMedicationDistribution
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionComplicated ->
+                    DiagnosisGastrointestinalInfectionComplicated ->
                         Just NextStepsSendToHC
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisSimpleColdAndCough ->
+                    DiagnosisSimpleColdAndCough ->
                         ageDependentARINextStep currentDate person
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisRespiratoryInfectionUncomplicated ->
+                    DiagnosisRespiratoryInfectionUncomplicated ->
                         ageDependentARINextStep currentDate person
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisRespiratoryInfectionComplicated ->
+                    DiagnosisRespiratoryInfectionComplicated ->
                         Just NextStepsSendToHC
 
-                    Pages.AcuteIllnessEncounter.Model.DiagnosisFeverOfUnknownOrigin ->
+                    DiagnosisFeverOfUnknownOrigin ->
                         Just NextStepsSendToHC
+
+                    DiagnosisUndeterminedMoreEvaluationNeeded ->
+                        Just NextStepsSendToHC
+
+                    NoAcuteIllnessDiagnosis ->
+                        Nothing
             )
 
 
@@ -291,15 +315,19 @@ ageDependentARINextStep currentDate person =
 
 resolveAcuteIllnessDiagnosis : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
 resolveAcuteIllnessDiagnosis currentDate person measurements =
+    let
+        ( covid19ByCompleteSet, covid19ByPartialSet ) =
+            covid19Diagnosed measurements
+    in
     -- First we check for Covid19.
-    if covid19Diagnosed measurements then
+    if covid19ByCompleteSet then
         Just DiagnosisCovid19
 
     else
-        resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements
+        resolveNonCovid19AcuteIllnessDiagnosis currentDate person covid19ByPartialSet measurements
 
 
-covid19Diagnosed : AcuteIllnessMeasurements -> Bool
+covid19Diagnosed : AcuteIllnessMeasurements -> ( Bool, Bool )
 covid19Diagnosed measurements =
     let
         countSigns measurement_ exclusion =
@@ -333,7 +361,7 @@ covid19Diagnosed measurements =
             countSymptoms measurements.symptomsGeneral .value excludesGeneral
 
         respiratorySymptomsCount =
-            countRespiratorySymptoms measurements [ StabbingChestPain ]
+            countRespiratorySymptoms measurements []
 
         giSymptomsCount =
             countGISymptoms measurements []
@@ -355,18 +383,29 @@ covid19Diagnosed measurements =
         signsIndicateCovid =
             totalSigns > 0
 
-        rdtDoneAndNegative =
-            malariaRapidTestResult measurements == Just RapidTestNegative
+        feverOnRecord =
+            feverRecorded measurements
+
+        rdtResult =
+            malariaRapidTestResult measurements
+
+        feverAndRdtNotPositive =
+            feverOnRecord && isJust rdtResult && rdtResult /= Just RapidTestPositive
     in
-    signsIndicateCovid && (symptomsIndicateCovid || rdtDoneAndNegative)
+    ( (signsIndicateCovid && symptomsIndicateCovid)
+        || (signsIndicateCovid && feverOnRecord)
+        || (not signsIndicateCovid && feverAndRdtNotPositive && respiratorySymptomsCount > 0)
+        || (not signsIndicateCovid && feverAndRdtNotPositive && generalSymptomsCount > 1)
+    , False
+    )
 
 
-resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements =
+resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveNonCovid19AcuteIllnessDiagnosis currentDate person covid19ByPartialSet measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
     if mandatoryActivitiesCompleted measurements then
         if feverRecorded measurements then
-            resolveAcuteIllnessDiagnosisByLaboratoryResults measurements
+            resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements
 
         else if respiratoryInfectionDangerSignsPresent measurements then
             Just DiagnosisRespiratoryInfectionComplicated
@@ -382,9 +421,11 @@ resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements =
                 Just DiagnosisSimpleColdAndCough
 
         else if nonBloodyDiarrheaAtSymptoms measurements then
-            -- Non Bloody Diarrhea is the only GI symptom that is diagnosed as Uncomplicated.
-            -- All others are considered to be Complicates, and diagnosed earlier.
+            -- Non Bloody Diarrhea is the only GI symptom that is diagnosed as Uncomplicated, when fever is  not recorded.
             Just DiagnosisGastrointestinalInfectionUncomplicated
+
+        else if mildGastrointestinalInfectionSymptomsPresent measurements then
+            Just DiagnosisUndeterminedMoreEvaluationNeeded
 
         else
             Nothing
@@ -393,22 +434,12 @@ resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements =
         Nothing
 
 
-resolveAcuteIllnessDiagnosisByLaboratoryResults : AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
+resolveAcuteIllnessDiagnosisByLaboratoryResults : Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements =
     malariaRapidTestResult measurements
         |> Maybe.andThen
             (\testResult ->
                 case testResult of
-                    RapidTestNegative ->
-                        if respiratoryInfectionDangerSignsPresent measurements then
-                            Just DiagnosisRespiratoryInfectionComplicated
-
-                        else if gastrointestinalInfectionDangerSignsPresent measurements then
-                            Just DiagnosisGastrointestinalInfectionComplicated
-
-                        else
-                            Just DiagnosisFeverOfUnknownOrigin
-
                     RapidTestPositive ->
                         if malarialDangerSignsPresent measurements then
                             Just DiagnosisMalariaComplicated
@@ -423,11 +454,19 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
                         else
                             Just DiagnosisMalariaUncomplicatedAndPregnant
 
-                    RapidTestIndeterminate ->
-                        Just DiagnosisFeverOfUnknownOrigin
+                    _ ->
+                        if respiratoryInfectionDangerSignsPresent measurements then
+                            Just DiagnosisRespiratoryInfectionComplicated
 
-                    RapidTestUnableToRun ->
-                        Just DiagnosisFeverOfUnknownOrigin
+                        else if nonBloodyDiarrheaAtSymptoms measurements then
+                            -- Fever with Diarrhea is considered to be a complicated case.
+                            Just DiagnosisGastrointestinalInfectionComplicated
+
+                        else if covid19ByPartialSet then
+                            Just DiagnosisCovid19
+
+                        else
+                            Just DiagnosisFeverOfUnknownOrigin
             )
 
 
@@ -456,7 +495,7 @@ countGISymptoms measurements exclusions =
 
 feverRecorded : AcuteIllnessMeasurements -> Bool
 feverRecorded measurements =
-    feverAtSymptoms measurements || feverAtPhysicalExam measurements
+    feverAtSymptoms measurements || isJust (feverAtPhysicalExam measurements)
 
 
 feverAtSymptoms : AcuteIllnessMeasurements -> Bool
@@ -466,10 +505,10 @@ feverAtSymptoms measurements =
         |> Maybe.withDefault False
 
 
-feverAtPhysicalExam : AcuteIllnessMeasurements -> Bool
+feverAtPhysicalExam : AcuteIllnessMeasurements -> Maybe Float
 feverAtPhysicalExam measurements =
     measurements.vitals
-        |> Maybe.map
+        |> Maybe.andThen
             (\measurement ->
                 let
                     bodyTemperature =
@@ -477,9 +516,12 @@ feverAtPhysicalExam measurements =
                             |> .value
                             |> .bodyTemperature
                 in
-                bodyTemperature >= 37.5
+                if bodyTemperature >= 37.5 then
+                    Just bodyTemperature
+
+                else
+                    Nothing
             )
-        |> Maybe.withDefault False
 
 
 respiratoryRateElevated : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
@@ -506,51 +548,6 @@ respiratoryRateElevated currentDate person measurements =
         )
         measurements.vitals
         (ageInMonths currentDate person)
-        |> Maybe.withDefault False
-
-
-nonBloodyDiarrheaAtSymptoms : AcuteIllnessMeasurements -> Bool
-nonBloodyDiarrheaAtSymptoms measurements =
-    measurements.symptomsGI
-        |> Maybe.map (Tuple.second >> .value >> .signs >> symptomAppearsAtSymptomsDict NonBloodyDiarrhea)
-        |> Maybe.withDefault False
-
-
-poorSuckAtSymptoms : AcuteIllnessMeasurements -> Bool
-poorSuckAtSymptoms measurements =
-    Maybe.map2
-        (\symptomsGeneral acuteFindings ->
-            let
-                symptomsGeneralDict =
-                    Tuple.second symptomsGeneral |> .value
-
-                acuteFindingsValue =
-                    Tuple.second acuteFindings |> .value
-            in
-            symptomAppearsAtSymptomsDict PoorSuck symptomsGeneralDict
-                || EverySet.member AcuteFindingsPoorSuck acuteFindingsValue.signsGeneral
-        )
-        measurements.symptomsGeneral
-        measurements.acuteFindings
-        |> Maybe.withDefault False
-
-
-lethargyAtSymptoms : AcuteIllnessMeasurements -> Bool
-lethargyAtSymptoms measurements =
-    Maybe.map2
-        (\symptomsGeneral acuteFindings ->
-            let
-                symptomsGeneralDict =
-                    Tuple.second symptomsGeneral |> .value
-
-                acuteFindingsValue =
-                    Tuple.second acuteFindings |> .value
-            in
-            symptomAppearsAtSymptomsDict Lethargy symptomsGeneralDict
-                || EverySet.member LethargicOrUnconscious acuteFindingsValue.signsGeneral
-        )
-        measurements.symptomsGeneral
-        measurements.acuteFindings
         |> Maybe.withDefault False
 
 
@@ -625,7 +622,7 @@ malarialDangerSignsPresent measurements =
                     symptomAppearsAtSymptomsDict Vomiting symptomsGIDict
 
                 intractableVomiting =
-                    EverySet.member IntractableVomiting symptomsGISet
+                    vomiting && EverySet.member IntractableVomiting symptomsGISet
 
                 increasedThirst =
                     symptomAppearsAtSymptomsDict IncreasedThirst symptomsGeneralDict
@@ -661,7 +658,7 @@ malarialDangerSignsPresent measurements =
 
 respiratoryInfectionSymptomsPresent : AcuteIllnessMeasurements -> Bool
 respiratoryInfectionSymptomsPresent measurements =
-    countRespiratorySymptoms measurements [ ShortnessOfBreath, StabbingChestPain ] > 0
+    countRespiratorySymptoms measurements [ LossOfSmell, ShortnessOfBreath, StabbingChestPain ] > 0
 
 
 respiratoryInfectionDangerSignsPresent : AcuteIllnessMeasurements -> Bool
@@ -707,7 +704,59 @@ respiratoryInfectionDangerSignsPresent measurements =
 
 gastrointestinalInfectionDangerSignsPresent : AcuteIllnessMeasurements -> Bool
 gastrointestinalInfectionDangerSignsPresent measurements =
-    countGISymptoms measurements [ NonBloodyDiarrhea ] > 0
+    Maybe.map
+        (\symptomsGI ->
+            let
+                symptomsGIDict =
+                    Tuple.second symptomsGI |> .value |> .signs
+
+                symptomsGISet =
+                    Tuple.second symptomsGI |> .value |> .derivedSigns
+
+                bloodyDiarrhea =
+                    symptomAppearsAtSymptomsDict BloodyDiarrhea symptomsGIDict
+
+                nonBloodyDiarrhea =
+                    symptomAppearsAtSymptomsDict NonBloodyDiarrhea symptomsGIDict
+
+                intractableVomiting =
+                    symptomAppearsAtSymptomsDict Vomiting symptomsGIDict
+                        && EverySet.member IntractableVomiting symptomsGISet
+            in
+            bloodyDiarrhea || (nonBloodyDiarrhea && intractableVomiting)
+        )
+        measurements.symptomsGI
+        |> Maybe.withDefault False
+
+
+mildGastrointestinalInfectionSymptomsPresent : AcuteIllnessMeasurements -> Bool
+mildGastrointestinalInfectionSymptomsPresent measurements =
+    Maybe.map
+        (\symptomsGI ->
+            let
+                symptomsGIDict =
+                    Tuple.second symptomsGI |> .value |> .signs
+            in
+            symptomAppearsAtSymptomsDict SymptomGIAbdominalPain symptomsGIDict
+                || symptomAppearsAtSymptomsDict Nausea symptomsGIDict
+                || symptomAppearsAtSymptomsDict Vomiting symptomsGIDict
+        )
+        measurements.symptomsGI
+        |> Maybe.withDefault False
+
+
+nonBloodyDiarrheaAtSymptoms : AcuteIllnessMeasurements -> Bool
+nonBloodyDiarrheaAtSymptoms measurements =
+    measurements.symptomsGI
+        |> Maybe.map (Tuple.second >> .value >> .signs >> symptomAppearsAtSymptomsDict NonBloodyDiarrhea)
+        |> Maybe.withDefault False
+
+
+vomitingAtSymptoms : AcuteIllnessMeasurements -> Bool
+vomitingAtSymptoms measurements =
+    measurements.symptomsGI
+        |> Maybe.map (Tuple.second >> .value >> .signs >> symptomAppearsAtSymptomsDict Vomiting)
+        |> Maybe.withDefault False
 
 
 symptomAppearsAtSymptomsDict : a -> Dict a Int -> Bool
@@ -715,3 +764,12 @@ symptomAppearsAtSymptomsDict symptom dict =
     Dict.get symptom dict
         |> Maybe.map ((<) 0)
         |> Maybe.withDefault False
+
+
+acuteIllnessDiagnosisToMaybe : AcuteIllnessDiagnosis -> Maybe AcuteIllnessDiagnosis
+acuteIllnessDiagnosisToMaybe diagnosis =
+    if diagnosis == NoAcuteIllnessDiagnosis then
+        Nothing
+
+    else
+        Just diagnosis
