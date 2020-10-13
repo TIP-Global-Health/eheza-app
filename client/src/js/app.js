@@ -136,6 +136,10 @@ dbSync.version(11).stores({
 });
 
 dbSync.version(12).stores({
+    statistics: '&uuid',
+});
+
+dbSync.version(13).stores({
   // Add `isSynced` and `uuid` indices so we would have an indication to when we
   // can delete local changes. Only after we download from the backend, we'd
   // want to delete the records.
@@ -183,7 +187,7 @@ dbSync.version(12).stores({
  *
  * @type {number}
  */
-const dbVersion = 12;
+const dbVersion = 13;
 
 /**
  * Return saved info for General sync.

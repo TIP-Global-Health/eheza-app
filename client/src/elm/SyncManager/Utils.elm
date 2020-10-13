@@ -279,6 +279,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityBreastExam identifier ->
             getIdentifier identifier "breast_exam"
 
+        BackendAuthorityCall114 identifier ->
+            getIdentifier identifier "call_114"
+
         BackendAuthorityClinic identifier ->
             getIdentifier identifier "clinic"
 
@@ -580,6 +583,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityBreastExam identifier ->
             encode Backend.Measurement.Encoder.encodeBreastExam identifier
+
+        BackendAuthorityCall114 identifier ->
+            encode Backend.Measurement.Encoder.encodeCall114 identifier
 
         BackendAuthorityClinic identifier ->
             encode Backend.Clinic.Encoder.encodeClinic identifier

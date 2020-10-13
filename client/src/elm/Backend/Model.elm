@@ -21,6 +21,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.Clinic.Model exposing (Clinic, ClinicType)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
+import Backend.Dashboard.Model exposing (DashboardStats)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
@@ -46,6 +47,7 @@ type alias ModelIndexedDb =
     -- actually need all the clinics at once, but there should be a reasonable
     -- number.
     { clinics : WebData (Dict ClinicId Clinic)
+    , computedDashboard : Dict HealthCenterId DashboardStats
     , everyCounselingSchedule : WebData EveryCounselingSchedule
     , healthCenters : WebData (Dict HealthCenterId HealthCenter)
     , villages : WebData (Dict VillageId Village)
@@ -130,6 +132,7 @@ emptyModelIndexedDb : ModelIndexedDb
 emptyModelIndexedDb =
     { childMeasurements = Dict.empty
     , clinics = NotAsked
+    , computedDashboard = Dict.empty
     , editableSessions = Dict.empty
     , everyCounselingSchedule = NotAsked
     , expectedParticipants = Dict.empty
@@ -179,6 +182,7 @@ type MsgIndexedDb
     | FetchChildMeasurements PersonId
     | FetchChildrenMeasurements (List PersonId)
     | FetchClinics
+    | FetchComputedDashboard HealthCenterId
       -- For `FetchEditableSession`, you'll also need to send the messages
       -- you get from `Backend.Session.Fetch.fetchEditableSession`
     | FetchEditableSession SessionId (List MsgIndexedDb)
@@ -214,6 +218,7 @@ type MsgIndexedDb
     | HandleFetchedAcuteIllnessEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
     | HandleFetchedAcuteIllnessMeasurements AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
     | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
+    | HandleFetchedComputedDashboard HealthCenterId (WebData (Dict HealthCenterId DashboardStats))
     | HandleFetchedChildrenMeasurements (WebData (Dict PersonId ChildMeasurementList))
     | HandleFetchedClinics (WebData (Dict ClinicId Clinic))
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
@@ -289,9 +294,11 @@ type Revision
     | CounselingSessionRevision CounselingSessionId CounselingSession
     | CounselingTopicRevision CounselingTopicId CounselingTopic
     | DangerSignsRevision DangerSignsId DangerSigns
+    | DashboardStatsRevision HealthCenterId DashboardStats
     | ExposureRevision ExposureId Exposure
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | HCContactRevision HCContactId HCContact
+    | Call114Revision Call114Id Call114
     | HealthCenterRevision HealthCenterId HealthCenter
     | HeightRevision HeightId Height
     | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant

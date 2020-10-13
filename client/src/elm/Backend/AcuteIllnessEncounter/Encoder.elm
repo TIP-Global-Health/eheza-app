@@ -1,6 +1,7 @@
 module Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessEncounter)
 
 import Backend.AcuteIllnessEncounter.Model exposing (..)
+import Backend.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisToString)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
@@ -18,6 +19,12 @@ encodeAcuteIllnessEncounter session =
             ]
       )
     , ( "individual_participant", encodeEntityUuid session.participant )
+    , ( "acute_illness_diagnosis", encodeAcuteIllnessDiagnosis session.diagnosis )
     , ( "shard", maybe encodeEntityUuid session.shard )
     , ( "type", string "acute_illness_encounter" )
     ]
+
+
+encodeAcuteIllnessDiagnosis : AcuteIllnessDiagnosis -> Value
+encodeAcuteIllnessDiagnosis diagnosis =
+    acuteIllnessDiagnosisToString diagnosis |> string

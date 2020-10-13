@@ -50,6 +50,7 @@ type BackendAuthorityEntity
     | BackendAuthorityAttendance (BackendEntity Attendance)
     | BackendAuthorityBreastExam (BackendEntity BreastExam)
     | BackendAuthorityChildFbf (BackendEntity Fbf)
+    | BackendAuthorityCall114 (BackendEntity Call114)
     | BackendAuthorityClinic (BackendEntity Clinic)
     | BackendAuthorityCorePhysicalExam (BackendEntity CorePhysicalExam)
     | BackendAuthorityCounselingSession (BackendEntity CounselingSession)

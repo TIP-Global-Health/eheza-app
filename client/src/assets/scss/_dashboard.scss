@@ -1,0 +1,663 @@
+.dashboard {
+  margin-top: -15px;
+
+  .ui.segment {
+    padding: 1.5rem 2rem;
+
+    &.filters {
+      background-color: $color-light-background;
+      padding: 15px 20px;
+
+      .ui.button {
+        font-size: 22px;
+        line-height: 30px;
+        text-transform: none;
+        font-weight: normal;
+        padding: 0 4px;
+        border-radius: 3px;
+
+        &:link,
+        &:focus,
+        &:active,
+        &:hover {
+          background-color: $color-primary;
+        }
+
+        &.inactive {
+          background-color: transparent;
+          color: $color-background;
+        }
+      }
+    }
+
+    .content {
+
+      .very.basic.table {
+        width: 100%;
+
+        thead {
+
+          th {
+            font-size: 16px;
+            line-height: 24px;
+            font-weight: normal;
+            padding: 2px 4px 2px;
+            border-left: 0 none;
+            border-right: 0 none;
+            border-bottom: 1px solid $color-text;
+            color: $color-text;
+            text-transform: uppercase;
+
+            &.phone-number {
+              width: 26%;
+            }
+          }
+        }
+
+        tbody {
+
+          td {
+            font-weight: normal;
+            font-size: 20px;
+            line-height: 24px;
+            border: 0 none;
+            color: black;
+            padding: 4px 4px 24px;
+            vertical-align: top;
+
+            &.phone-number {
+              justify-content: center;
+              text-align-last: center;
+            }
+          }
+        }
+      }
+    }
+
+    &.family-planning {
+      margin-bottom: 40px;
+
+      .header {
+
+        .title {
+          font-size: 30px;
+          line-height: 35px;
+          max-width: 40%;
+          font-weight: normal;
+          font-family: Nunito;
+        }
+      }
+
+      .row {
+        position: relative;
+
+        .no-data-message {
+          margin-top: 40px;
+        }
+
+        .content {
+          width: 100%;
+          text-align: center;
+          padding: 0 1rem;
+
+          .in-chart {
+            font-family: Nunito;
+            position: relative;
+            top: 70px;
+            width: 100%;
+
+            .stats {
+              width: 107px;
+              margin: 0 auto;
+
+              .percentage {
+                display: block;
+                font-style: normal;
+                font-weight: bold;
+                font-size: 40px;
+                line-height: 28px;
+              }
+
+              .use-label {
+                font-style: normal;
+                font-size: 20px;
+                line-height: 20px;
+                display: block;
+                margin: 8px auto;
+              }
+
+              .count {
+                font-size: 12px;
+                line-height: 12px;
+                display: block;
+              }
+            }
+          }
+
+          svg.pie-chart {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            top: 35px;
+            left: 55px;
+          }
+
+          .legend {
+            width: 50%;
+            display: flex;
+            justify-content: left;
+            flex-flow: column wrap;
+            align-content: stretch;
+            margin: 140px auto 0;
+            max-height: 285px;
+
+            .legend-item {
+              margin-bottom: 5px;
+              text-align: left;
+
+              span {
+                font-family: Nunito;
+                font-style: normal;
+                font-weight: 600;
+                font-size: 15px;
+                line-height: 22px;
+                margin-left: 9px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  &.stats {
+
+    .ui.grid {
+      margin-bottom: 25px;
+    }
+
+    .overlay {
+
+      .ui.modal {
+        margin-left: -365px !important;
+        width: 730px !important;
+        height: 400px;
+        overflow: scroll;
+
+        .header {
+          padding: 0;
+
+          .title {
+            font-size: 30px;
+            line-height: 35px;
+            font-weight: normal;
+            font-family: Nunito;
+            text-transform: none;
+            text-align: left;
+          }
+
+          .overlay-close {
+            position: absolute;
+            top: 4px;
+            right: 15px;
+            cursor: pointer;
+            font-weight: normal;
+            text-transform: none;
+            font-size: 20px;
+          }
+        }
+
+        .content {
+          padding: 1rem 0 2.5rem 0;
+        }
+      }
+    }
+  }
+
+  &.case {
+
+    .ui.segment {
+
+      .header {
+        float: none;
+      }
+
+      .content {
+        overflow-x: hidden;
+        overflow-y: visible;
+        width: 100%;
+
+        .very.basic.table {
+          width: 100%;
+
+          th, td {
+            border: 0 none;
+            line-height: 24px;
+            width: 90px;
+          }
+
+          th {
+            border-bottom: 1px solid $color-text;
+            color: $color-text;
+            font-size: 16px;
+            padding: 0 3px;
+            text-align: center;
+            text-transform: uppercase;
+
+            &.name {
+              height: 25px;
+              text-align: left;
+            }
+          }
+
+          td {
+            font-size: 20px;
+            padding: 8px 10px;
+
+            &.name {
+              border-right: 1px solid $color-text;
+              height: 45px;
+              padding: 16px 8px;
+            }
+
+            span {
+              border-radius: 6px;
+              color: $color-white;
+              display: block;
+              padding: 2px 5px;
+              text-align: center;
+            }
+
+            &.neutral {
+
+              span {
+                background-color: $color-text;
+              }
+            }
+
+            &.severe {
+
+              span {
+                background-color: $color-velvet;
+              }
+            }
+
+            &.moderate {
+
+              span {
+                background-color: $color-orange;
+              }
+            }
+
+            &.good {
+
+              span {
+                background-color: $color-green;
+              }
+            }
+          }
+
+          // Create the table's vertical scroll.
+          th.name,
+          td.name {
+            background-color: $color-white;
+            left: 25px;
+            position: absolute;
+            width: 407px;
+            word-break: break-all;
+          }
+        }
+      }
+    }
+  }
+
+  .severity {
+
+    &.severity-neutral {
+      color: $color-light-background;
+    }
+
+    &.severity-good {
+      color: $color-green;
+    }
+
+    &.severity-moderate {
+      color: $color-orange;
+    }
+
+    &.severity-severe {
+      color: $color-velvet;
+    }
+  }
+
+  .stats {
+
+    .neutral {
+      color: $color-light-background;
+    }
+  }
+
+  .dashboard-cards {
+    padding: 1.5rem 3rem;
+    border-radius: 1px;
+    min-height: 130px;
+
+    .header {
+      font-size: 20px;
+      text-align: center;
+      line-height: 20px;
+    }
+
+    .this-year {
+      font-size: 40px;
+      line-height: 28px;
+      font-weight: 700;
+      text-align: center;
+      margin-top: 18px;
+    }
+
+    .last-year {
+      position: absolute;
+      right: 20px;
+      top: 60px;
+      max-width: 80px;
+
+      .percentage {
+        display: block;
+        text-align: center;
+        font-size: 20px;
+        line-height: 16px;
+        position: relative;
+
+        .arrow {
+          display: inline-block;
+          height: 15px;
+          margin-right: 2px;
+        }
+      }
+
+      .percentage-label {
+        display: block;
+        font-size: 12px;
+        line-height: 12px;
+        color: $color-background;
+      }
+    }
+
+    .new-cases {
+      display: block;
+      width: 100%;
+      text-align: center;
+      font-size: 12px;
+      line-height: 13px;
+      margin: 15px 0 -15px;
+
+      .new-cases-value {
+
+        &:before {
+          content: ":";
+          margin-right: 2px;
+        }
+      }
+    }
+
+    &.link {
+      cursor: pointer;
+      background: white url(#{$img-path}icon-card-link.svg) no-repeat 97% 7px;
+    }
+
+    &.stats-card {
+      min-height: 135px;
+      padding: 1.5rem 2.5rem;
+
+      .header {
+        padding: 0 10px;
+      }
+
+      .last-year {
+        right: 5px;
+        top: 76px;
+        max-width: 65px;
+        text-align: center;
+
+        .percentage {
+          font-size: 16px;
+        }
+
+        .percentage-label {
+          font-size: 10px;
+          line-height: 10px;
+        }
+      }
+    }
+  }
+
+  .dashboards-monthly-chart,
+  .fbf-beneficiaries,
+  .case-management {
+
+    .header {
+      float: left;
+      clear: both;
+      width: 100%;
+
+      .title {
+        font-size: 30px;
+        line-height: 35px;
+        float: left;
+        max-width: 38%;
+        font-weight: normal;
+        font-family: Nunito;
+
+        .helper {
+          font-size: 20px;
+          margin-top: -5px;
+        }
+      }
+
+      .filters {
+        float: right;
+        font-size: 20px;
+        line-height: 27px;
+        color: $color-background;
+        margin-top: 6px;
+
+        .dashboard-filter {
+          padding: 4px 5px;
+          cursor: pointer;
+
+          &.active {
+            background-color: $color-primary;
+            color: white;
+            border-radius: 3px;
+          }
+        }
+      }
+
+      .filters.secondary {
+        margin-top: 5px;
+        margin-bottom: 15px;
+
+        .dashboard-filter {
+          padding: 5px 30px;
+        }
+      }
+    }
+
+    .content {
+
+      .legend {
+        float: right;
+        clear: both;
+
+        > div {
+          display: inline-block;
+          font-size: 15px;
+          line-height: 22px;
+          color: $color-light-grey;
+          padding: 2px 10px;
+
+          svg {
+            margin-right: 6px;
+
+            circle {
+
+              &.moderate {
+                fill: $color-orange;
+              }
+
+              &.severe {
+                fill: $color-velvet;
+              }
+            }
+          }
+        }
+      }
+
+      svg {
+
+        g {
+
+          line {
+            display: none;
+          }
+
+          path {
+            stroke: $color-light-blue;
+          }
+
+          text {
+            fill: $color-light-grey;
+            font-size: 20px;
+            text-transform: uppercase;
+            line-height: 22px;
+            font-weight: 600;
+          }
+
+          &.grid {
+            overflow: hidden;
+
+            line {
+              display: initial;
+              stroke: $color-svg-grid;
+              opacity: 0.7;
+            }
+          }
+        }
+
+        .column rect {
+          width: 10px;
+        }
+
+        .column.moderate rect {
+          fill: $color-orange;
+        }
+
+        .column.severe rect {
+          fill: $color-velvet;
+        }
+
+        .column text {
+          display: none;
+        }
+      }
+    }
+  }
+
+  .fbf-beneficiaries {
+
+    .header {
+
+      .filters {
+
+        :first-child {
+          margin-right: 10px;
+        }
+
+        .dashboard-filter {
+          padding: 0 5px;
+        }
+      }
+    }
+
+    .content {
+
+      .table {
+        margin-top: 60px;
+
+        th,
+        td {
+          text-align: center;
+
+          &.label {
+            text-align: left;
+          }
+        }
+
+        th {
+          min-width: 55px;
+        }
+      }
+    }
+  }
+
+  .case-management .header .filters {
+    margin-bottom: 10px;
+    margin-top: 0;
+
+    &.secondary {
+
+    }
+  }
+
+  .dashboards-links {
+
+    > div {
+      font-size: 30px;
+      line-height: 20px;
+      color: $color-dark-background;
+      display: block;
+      padding: 11px 20px 11px 15px;
+      cursor: pointer;
+
+      i.icon {
+        width: 82px;
+        height: 82px;
+      }
+
+      > span {
+        padding: 30px 0 0 26px;
+        vertical-align: top;
+        display: inline-block;
+
+        .bold {
+          font-weight: bold;
+          padding-right: 6px;
+        }
+      }
+
+      .arrow {
+        background: transparent url(#{$img-path}icon-arrow.svg) no-repeat center center;
+        width: 10px;
+        height: 15px;
+        display: inline-block;
+        float: right;
+        margin-top: 35px;
+      }
+
+      &.stats {
+
+        i.icon {
+          background: transparent url(#{$img-path}icon-stats.svg) no-repeat center center;
+        }
+      }
+
+      &.case {
+
+        i.icon {
+          background: transparent url(#{$img-path}icon-baby-link.svg) no-repeat center center;
+        }
+      }
+    }
+  }
+}

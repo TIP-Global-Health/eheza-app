@@ -337,6 +337,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeAttendance
                             BackendAuthorityAttendance
 
+                    "call_114" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeCall114
+                            BackendAuthorityCall114
+
                     "child_fbf" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeFbf

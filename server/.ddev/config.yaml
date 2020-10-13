@@ -12,7 +12,6 @@ mariadb_version: "10.2"
 provider: default
 use_dns_when_possible: true
 
-
 # This config.yaml was created with ddev version v1.14.1
 # webimage: drud/ddev-webserver:v1.14.1
 # dbimage: drud/ddev-dbserver-mariadb-10.2:v1.14.1

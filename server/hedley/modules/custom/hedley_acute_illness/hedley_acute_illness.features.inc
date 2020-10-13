@@ -35,6 +35,14 @@ function hedley_acute_illness_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'call_114' => array(
+      'name' => t('Call 114'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'exposure' => array(
       'name' => t('Exposure'),
       'base' => 'node_content',

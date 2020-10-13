@@ -25,6 +25,7 @@ import Pages.AcuteIllnessProgressReport.View
 import Pages.Clinical.View
 import Pages.ClinicalProgressReport.View
 import Pages.Clinics.View
+import Pages.Dashboard.View
 import Pages.DemographicsReport.View
 import Pages.Device.View
 import Pages.IndividualEncounterParticipants.View
@@ -51,13 +52,13 @@ import Pages.PrenatalParticipant.View
 import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
-import Pages.Session.View exposing (view)
+import Pages.Session.View
 import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
 import SyncManager.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
-import Utils.Html exposing (spinner, wrapPage)
+import Utils.Html exposing (viewLoading)
 import Version
 
 
@@ -276,6 +277,11 @@ viewUserPage page model configured =
                             |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
                             |> flexPageWrapper model
 
+                    DashboardPage subPage ->
+                        Pages.Dashboard.View.view model.language subPage currentDate healthCenterId loggedInModel.dashboardPage model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageDashboard subPage)
+                            |> flexPageWrapper model
+
                     DemographicsReportPage prenatalEncounterId ->
                         Pages.DemographicsReport.View.view model.language currentDate prenatalEncounterId model.indexedDb
                             |> flexPageWrapper model
@@ -470,16 +476,3 @@ viewUserPage page model configured =
                 model.indexedDb
                 |> Html.map MsgPagePinCode
                 |> flexPageWrapper model
-
-
-{-| Just show a generic loading indicator, for cases that will resolve soon,
-where we don't need to show any progress.
--}
-viewLoading : Html any
-viewLoading =
-    div
-        [ class "wrap wrap-alt-2" ]
-        [ div
-            [ class "ui segment center aligned" ]
-            [ spinner ]
-        ]

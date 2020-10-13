@@ -1,0 +1,469 @@
+<?php
+
+/**
+ * @file
+ * Test Z-Score calculations.
+ */
+
+/**
+ * HedleyStats calculation tests.
+ */
+class HedleyStatsCalculation extends HedleyWebTestBase {
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'HedleyStatsCalculation tests',
+      'description' => 'Tests Stats calculations.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * The health center ID.
+   *
+   * @var int
+   */
+  protected $healthCenterId;
+
+  /**
+   * The clinic ID.
+   *
+   * @var int
+   */
+  protected $clinicId;
+
+  /**
+   * The nurse.
+   *
+   * @var object
+   */
+  protected $nurse;
+
+  /**
+   * Add a main health center and clinic for all the tests.
+   *
+   * @inheritdoc
+   */
+  public function setUp() {
+    parent::setUp(['hedley_device']);
+
+    // Create the base data for the test.
+    $this->healthCenterId = $this->createHealthCenter();
+    // Type FBF because stats are only for FBF Clinics.
+    $this->clinicId = $this->createClinic($this->healthCenterId, 'fbf');
+  }
+
+  /**
+   * Testing the total encounters stats.
+   */
+  public function testTotalEncounters() {
+    $attendance_last_year = 10;
+    $attendance_this_year = 5;
+    $this->createSessionsWithAttendance($attendance_last_year, $attendance_this_year);
+
+    // Get total encounters from the stats function.
+    $total_encounters = hedley_stats_get_total_encounters($this->healthCenterId);
+
+    // Assert the amount of attendance for last year.
+    $this->assertEqual($attendance_last_year, $total_encounters['last_year']);
+
+    // Assert the amount of attendance for this year.
+    $this->assertEqual($attendance_this_year, $total_encounters['this_year']);
+  }
+
+  /**
+   * Testing the good nutrition stats.
+   */
+  public function testGoodNutrition() {
+    // Define needed measurements for the test.
+    $measurements = [
+      'good' => [
+        'nutrition' => 'none',
+        'weight' => 10,
+        'height' => 75,
+        'muac' => 13,
+      ],
+      'bad' => [
+        'nutrition' => 'edema',
+        'weight' => 5,
+        'height' => 60,
+        'muac' => 11,
+      ],
+    ];
+
+    $attendance = 10;
+    $sessions = $this->createSessionsWithAttendance($attendance, $attendance);
+
+    foreach ($sessions as $session) {
+      $measurements_state = 'bad';
+      $session_data = $session['session_data'];
+      $session_nid = $session_data['session_nid'];
+
+      foreach ($session_data['children'] as $child_nid) {
+        // Reverse the state of measurements for each child so would get equal
+        // number of good and bad measurements.
+        $measurements_state = $measurements_state == 'good' ? 'bad' : 'good';
+
+        // Create measurements.
+        $this->createNutrition($session_nid, $child_nid, $measurements[$measurements_state]['nutrition'], $session['date']);;
+        $this->createWeight($session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
+        $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
+        $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
+      }
+    }
+
+    $good_nutrition = hedley_stats_get_good_nutrition($this->healthCenterId);
+
+    // Assert the amount of good nutrition for last year.
+    $this->assertEqual(10, $good_nutrition['all']['last_year']);
+    $this->assertEqual(5, $good_nutrition['good']['last_year']);
+
+    // Assert the amount of good nutrition for this year.
+    $this->assertEqual(10, $good_nutrition['all']['this_year']);
+    $this->assertEqual(5, $good_nutrition['good']['this_year']);
+  }
+
+  /**
+   * Testing the "case management" stats.
+   */
+  public function testCaseManagement() {
+    // Define needed measurements for the test.
+    $measurements = [
+      HEDLEY_STATS_MODERATE => [
+        'weight' => 8,
+        'height' => 75,
+        'muac' => 12,
+      ],
+      HEDLEY_STATS_SEVERE => [
+        'weight' => 5,
+        'height' => 72,
+        'muac' => 11,
+      ],
+    ];
+
+    $attendance = 20;
+    $sessions = $this->createSessionsWithAttendance(0, $attendance, '0', '-5 months');
+
+    foreach ($sessions as $session) {
+      if (!isset($session['session_data'])) {
+        continue;
+      }
+
+      $session_data = $session['session_data'];
+      $session_nid = $session_data['session_nid'];
+      $measurements_state = HEDLEY_STATS_MODERATE;
+
+      foreach ($session_data['children'] as $child_nid) {
+        // We want to reach the amount of severe and moderate distrubtion that
+        // has been set above the loop.
+        $measurements_state = $measurements_state == HEDLEY_STATS_MODERATE ? HEDLEY_STATS_SEVERE : HEDLEY_STATS_MODERATE;
+
+        // Create measurements.
+        $this->createWeight($session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
+        $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
+        $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
+      }
+
+      $month = date('n', $session['date']);
+
+      $case_management = hedley_stats_get_case_management($this->healthCenterId);
+
+      // Assert the amount of case management.
+      $this->assertEqual(20, count($case_management));
+
+      // First person should have all severe nutrition.
+      $this->assertEqual(HEDLEY_STATS_SEVERE, $case_management[0]['nutrition']['stunting'][$month]['class']);
+      $this->assertEqual(HEDLEY_STATS_SEVERE, $case_management[0]['nutrition']['underweight'][$month]['class']);
+      $this->assertEqual(HEDLEY_STATS_SEVERE, $case_management[0]['nutrition']['wasting'][$month]['class']);
+      $this->assertEqual(HEDLEY_STATS_SEVERE, $case_management[0]['nutrition']['muac'][$month]['class']);
+
+      // Second person should have all moderate nutrition.
+      $this->assertEqual(HEDLEY_STATS_MODERATE, $case_management[1]['nutrition']['stunting'][$month]['class']);
+      $this->assertEqual(HEDLEY_STATS_MODERATE, $case_management[1]['nutrition']['underweight'][$month]['class']);
+      $this->assertEqual(HEDLEY_STATS_MODERATE, $case_management[1]['nutrition']['wasting'][$month]['class']);
+      $this->assertEqual(HEDLEY_STATS_MODERATE, $case_management[1]['nutrition']['muac'][$month]['class']);
+    }
+  }
+
+  /**
+   * Testing the total beneficiaries stats.
+   */
+  public function testSessionsAttendance() {
+    $attendance = 30;
+    $this->createSessionsWithAttendance(0, $attendance, '-1 year', '-1 week', strtotime('-24 months'));
+
+    $this_month = [
+      'start' => strtotime("-1 month"),
+      'end' => time(),
+    ];
+    $fbf_clinics = hedley_health_center_get_clinics_by_health_center($this->healthCenterId, 'fbf');
+    list($completed_programs, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_health_center($this->healthCenterId, $fbf_clinics);
+
+    // Filter missed sessions.
+    $count_missed_sessions = 0;
+    foreach ($missed_sessions as $missed_session) {
+      $expected_date = strtotime($missed_session['expected_date']);
+      if ($expected_date >= $this_month['start'] && $expected_date <= $this_month['end']) {
+        $count_missed_sessions++;
+      }
+    }
+
+    // Filter completed programs.
+    $count_completed_programs = 0;
+    foreach ($completed_programs as $completed_program) {
+      $expected_date = strtotime($completed_program['expected_date']);
+      if ($expected_date >= $this_month['start'] && $expected_date <= $this_month['end']) {
+        $count_completed_programs++;
+      }
+    }
+  }
+
+  /**
+   * Testing the syncing and caching.
+   */
+  public function testSyncAndCache() {
+    // Define needed measurements for the test.
+    $measurements = [
+      HEDLEY_STATS_MODERATE => [
+        'weight' => 8,
+        'height' => 75,
+        'muac' => 12,
+        'nutrition' => 'none',
+      ],
+      HEDLEY_STATS_SEVERE => [
+        'weight' => 5,
+        'height' => 72,
+        'muac' => 11,
+        'nutrition' => 'edema',
+      ],
+    ];
+
+    $attendance = 40;
+    $sessions = $this->createSessionsWithAttendance($attendance, $attendance);
+
+    foreach ($sessions as $session) {
+      if (!isset($session['session_data'])) {
+        continue;
+      }
+
+      $session_data = $session['session_data'];
+      $session_nid = $session_data['session_nid'];
+
+      foreach ($session_data['children'] as $child_nid) {
+        // We want to reach the amount of severe and moderate distribution that
+        // has been set above the loop.
+        $measurements_state = HEDLEY_STATS_MODERATE ? HEDLEY_STATS_SEVERE : HEDLEY_STATS_MODERATE;
+
+        // Create measurements.
+        $this->createWeight($session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
+        $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
+        $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
+        $this->createNutrition($session_nid, $child_nid, $measurements[$measurements_state]['nutrition'], $session['date']);;
+      }
+    }
+
+    $health_center_wrapper = entity_metadata_wrapper('node', $this->healthCenterId);
+
+    /** @var RestfulEntityBaseNode $handler */
+    $handler = restful_get_restful_handler('sync');
+
+    // Make sure anonymous user doesn't get the content.
+    $handler->setAccount($this->nurse);
+    $request = [
+      'base_revision' => 0,
+      'db_version' => HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION,
+    ];
+
+    // First request will create the AQ item and get all the data for the HC.
+    $handler->get($health_center_wrapper->field_uuid->value(), $request);
+
+    $aq_item = $this->loadAqItemByTitle(HEDLEY_STATS_CALCULATE_STATS . '_' . $this->healthCenterId);
+    $this->processAqItem($aq_item);
+
+    // Then, send the second request to get the stats.
+    $results = $handler->get($health_center_wrapper->field_uuid->value(), $request);
+
+    $stats = end($results['batch']);
+
+    if (!is_array($stats)) {
+      // No need to check the rest if it's not an array, the above test will
+      // fail and this will be enough to know something went wrong.
+      return;
+    }
+
+    // Check that we got the stats.
+    $this->assertEqual($stats['type'], 'statistics');
+
+    // Check that the stats are not empty.
+    $this->assertEqual($stats['uuid'], $health_center_wrapper->field_uuid->value());
+    $this->assertFalse(empty($stats['case_management']));
+    $this->assertFalse(empty($stats['good_nutrition']));
+    $this->assertFalse(empty($stats['total_encounters']));
+
+    // Call again with cache hash to make sure we don't get the results this
+    // time.
+    $request['stats_cache_hash'] = $stats['stats_cache_hash'];
+    $results2 = $handler->get($health_center_wrapper->field_uuid->value(), $request);
+
+    // Check the results are empty which means that it is cached and won't sent
+    // it again to the frontend.
+    $stats2 = end($results2['batch']);
+    // We establish this by making sure the stats are not an array and therefore
+    // they are an entity from the sync, so it was not sent back this time.
+    $this->assertFalse(is_array($stats2));
+
+    // Send with a random hash to dummy an old cache hash.
+    $request['stats_cache_hash'] = 'some-old-cache';
+    $handler->get($health_center_wrapper->field_uuid->value(), $request);
+
+    $aq_item = $this->loadAqItemByTitle(HEDLEY_STATS_CALCULATE_STATS . '_' . $this->healthCenterId);
+    $this->processAqItem($aq_item);
+
+    $results3 = $handler->get($health_center_wrapper->field_uuid->value(), $request);
+    $stats3 = end($results3['batch']);
+
+    // Check that we got the stats.
+    $this->assertEqual($stats3['type'], 'statistics');
+    $this->assertEqual($stats3['uuid'], $health_center_wrapper->field_uuid->value());
+
+    // Remove the cache hash and expect to get the stats again.
+    unset($request['stats_cache_hash']);
+    $handler->get($health_center_wrapper->field_uuid->value(), $request);
+
+    $aq_item = $this->loadAqItemByTitle(HEDLEY_STATS_CALCULATE_STATS . '_' . $this->healthCenterId);
+    $this->processAqItem($aq_item);
+
+    $results4 = $handler->get($health_center_wrapper->field_uuid->value(), $request);
+    $stats4 = end($results4['batch']);
+
+    // Check that we got the stats.
+    $this->assertTrue(is_array($stats4));
+  }
+
+  /**
+   * Create sessions with attendance.
+   *
+   * @param int $attendance_last_year
+   *   The number of attendances last year.
+   * @param int $attendance_this_year
+   *   The number of attendances this year.
+   * @param string $last_year_session_date
+   *   The date in string for last year's session.
+   * @param string $this_year_session_date
+   *   The date in string for this year's session.
+   * @param string|bool $children_bd
+   *   The birthday of the children created in the sessions.
+   *
+   * @return array
+   *   The sessions created with all the data created related to the session.
+   */
+  protected function createSessionsWithAttendance($attendance_last_year, $attendance_this_year, $last_year_session_date = '-18 months', $this_year_session_date = '-9 months', $children_bd = FALSE) {
+    $sessions = [
+      [
+        'date' => strtotime($last_year_session_date),
+        'number_of_attendance' => $attendance_last_year,
+      ],
+      [
+        'date' => strtotime($this_year_session_date),
+        'number_of_attendance' => $attendance_this_year,
+      ],
+    ];
+
+    foreach ($sessions as $key => $session) {
+      if ($session['number_of_attendance'] <= 0) {
+        // No need to create any data if the number of attendance is 0.
+        continue;
+      }
+
+      $session_nid = $this->createSession($this->clinicId, $session['date']);
+      $this->nurse = $this->createNurse($this->clinicId);
+
+      $children = [];
+      for ($i = 1; $i <= $session['number_of_attendance']; $i++) {
+        $mother_nid = $this->createMother($this->clinicId);
+        $child_bd = $children_bd ? $children_bd : strtotime('-23 months');
+        $child_nid = $this->createChild($mother_nid, $this->healthCenterId, $child_bd, strtotime('-23 months'));
+        $children[] = $child_nid;
+
+        // Create this because the health centers are assigned to "attendance"
+        // by the "PMTCT Participant" connection.
+        $this->createPMTCT($child_nid, $mother_nid, $this->clinicId, $session['date']);
+
+        $this->createAttendance($this->healthCenterId, $session_nid, $this->nurse->uid, $child_nid, TRUE, $session['date']);
+      }
+
+      $sessions[$key]['session_data'] = [
+        'session_nid' => $session_nid,
+        'nurse_uid' => $this->nurse->uid,
+        'children' => $children,
+      ];
+    }
+
+    return $sessions;
+  }
+
+  /**
+   * Assert the stats coming back from the "total beneficiaries" function.
+   *
+   * @param array $beneficiaries
+   *   The data from the stats function.
+   * @param int $severe_count
+   *   The expected "severe" count.
+   * @param int $moderate_count
+   *   The expected "moderate" count.
+   * @param int $session_month
+   *   The session month, in order to know where to look in the data.
+   */
+  protected function assertTotalBeneficiaries(array $beneficiaries, $severe_count, $moderate_count, $session_month) {
+    // Make sure number match the number of people added this year.
+    $this->assertEqual($severe_count, $beneficiaries[$session_month]['stunting'][HEDLEY_STATS_SEVERE]);
+    $this->assertEqual($moderate_count, $beneficiaries[$session_month]['stunting'][HEDLEY_STATS_MODERATE]);
+    $this->assertEqual($severe_count, $beneficiaries[$session_month]['underweight'][HEDLEY_STATS_SEVERE]);
+    $this->assertEqual($moderate_count, $beneficiaries[$session_month]['underweight'][HEDLEY_STATS_MODERATE]);
+    $this->assertEqual($severe_count, $beneficiaries[$session_month]['wasting'][HEDLEY_STATS_SEVERE]);
+    $this->assertEqual($moderate_count, $beneficiaries[$session_month]['wasting'][HEDLEY_STATS_MODERATE]);
+    $this->assertEqual($severe_count, $beneficiaries[$session_month]['muac'][HEDLEY_STATS_SEVERE]);
+    $this->assertEqual($moderate_count, $beneficiaries[$session_month]['muac'][HEDLEY_STATS_MODERATE]);
+  }
+
+  /**
+   * Load an AQ Item.
+   *
+   * @param string $item_title
+   *   The AQ item unique title.
+   *
+   * @return mixed
+   *   The loaded AQ item, or FALSE if none found.
+   */
+  protected function loadAqItemByTitle($item_title) {
+    $aq_item_id = hedley_general_get_aq_item_by_title($item_title, TRUE);
+    if (!$aq_item_id) {
+      return FALSE;
+    }
+
+    entity_get_controller('advancedqueue_item')->resetCache();
+    return entity_load_single('advancedqueue_item', $aq_item_id);
+  }
+
+  /**
+   * Process AQ item.
+   *
+   * @param object $aq_item
+   *   The AQ item.
+   * @param array $queue_info_overrides
+   *   Array that will override existing Queue info. Defaults to empty array.
+   */
+  protected function processAqItem($aq_item, array $queue_info_overrides = []) {
+    $queues = advancedqueue_get_queues_info();
+
+    $queue_name = $aq_item->name;
+    $queue_info = $queue_info_overrides + $queues[$queue_name];
+    $queue = DrupalQueue::get($queue_name);
+
+    advancedqueue_process_item($queue, $queue_name, $queue_info, $aq_item);
+  }
+
+}

@@ -1676,8 +1676,8 @@ viewVitalsForm language currentDate assembled form =
             (Maybe.map toFloat form.heartRate)
             (SetVitalsIntMeasurement heartRateUpdateFunc)
             "heart-rate"
-            Translate.BpmUnit
-        , viewPreviousMeasurement language heartRatePreviousValue Translate.BpmUnit
+            Translate.BpmUnitLabel
+        , viewPreviousMeasurement language heartRatePreviousValue Translate.BpmUnitLabel
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
@@ -1693,8 +1693,8 @@ viewVitalsForm language currentDate assembled form =
             (Maybe.map toFloat form.respiratoryRate)
             (SetVitalsIntMeasurement respiratoryRateUpdateFunc)
             "respiratory-rate"
-            Translate.BpmUnit
-        , viewPreviousMeasurement language respiratoryRatePreviousValue Translate.BpmUnit
+            Translate.BpmUnitLabel
+        , viewPreviousMeasurement language respiratoryRatePreviousValue Translate.BpmUnitLabel
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
@@ -2111,8 +2111,8 @@ viewObstetricalExamForm language currentDate assembled form =
             (Maybe.map toFloat form.fetalHeartRate)
             (SetObstetricalExamIntMeasurement fetalHeartRateUpdateFunc)
             "fetal-heart-rate"
-            Translate.BpmUnit
-        , viewPreviousMeasurement language fetalHeartRatePreviousValue Translate.BpmUnit
+            Translate.BpmUnitLabel
+        , viewPreviousMeasurement language fetalHeartRatePreviousValue Translate.BpmUnitLabel
         , div [ class "separator" ] []
         , viewLabel language Translate.PreviousCSectionScar
         , viewCheckBoxSelectInput language
