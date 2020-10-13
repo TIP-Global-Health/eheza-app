@@ -513,11 +513,25 @@
                         });
 
                         modifyQuery = modifyQuery.then(function () {
-                            // We search for results that start with any of input words (apply 'OR' condition).
-                            query = table.where('name_search').startsWithAnyOf(words).distinct();
+                            // We search for resulting persons that start with any of input words (apply 'OR' condition).
+                            query = table.where('name_search').startsWithAnyOf(words).distinct().and(function (person) {
+                              // Now, we check that each word we got as search input is a prefix
+                              // of any of person name parts (applying 'AND condition').
+                              return words.every(function (word) {
+                                return person.name_search.some(function (nameSearchWord) {
+                                  return nameSearchWord.startsWith(word);
+                                });
+                              });
+                            });
 
                             // Cloning doesn't seem to work for this one.
-                            countQuery = table.where('name_search').startsWithAnyOf(words).distinct();
+                            countQuery = table.where('name_search').startsWithAnyOf(words).distinct().and(function (person) {
+                              return words.every(function (word) {
+                                return person.name_search.some(function (nameSearchWord) {
+                                  return nameSearchWord.startsWith(word);
+                                });
+                              });
+                            });
 
                             sortBy = 'label';
 
