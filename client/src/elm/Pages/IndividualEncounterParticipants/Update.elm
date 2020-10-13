@@ -51,10 +51,6 @@ update msg model =
             )
 
         SetInput input ->
-            let
-                _ =
-                    Debug.log "input" input
-            in
             ( { model | input = input }
             , Cmd.none
             , []
