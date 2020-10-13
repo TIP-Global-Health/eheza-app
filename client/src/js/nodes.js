@@ -503,12 +503,21 @@
 
                 if (type === 'person') {
                     var nameContains = params.get('name_contains');
+
                     if (nameContains) {
+                        // For case when there's more than one word as an input,
+                        // we generate array of lowercase words.
+                        var words = nameContains.split(' ');
+                        words.forEach(function (word, index) {
+                          words[index] = word.toLowerCase();
+                        });
+
                         modifyQuery = modifyQuery.then(function () {
-                            query = table.where('name_search').startsWith(nameContains.toLowerCase()).distinct();
+                            // We search for results that start with any of input words (apply 'OR' condition).
+                            query = table.where('name_search').startsWithAnyOf(words).distinct();
 
                             // Cloning doesn't seem to work for this one.
-                            countQuery = table.where('name_search').startsWith(nameContains.toLowerCase()).distinct();
+                            countQuery = table.where('name_search').startsWithAnyOf(words).distinct();
 
                             sortBy = 'label';
 
