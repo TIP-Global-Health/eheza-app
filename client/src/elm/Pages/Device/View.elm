@@ -118,7 +118,7 @@ viewSyncInfo language info =
 
                     month =
                         Time.toMonth Time.utc time
-                            |> Translate.ResolveMonth
+                            |> Translate.ResolveMonth True
                             |> translate language
 
                     day =
