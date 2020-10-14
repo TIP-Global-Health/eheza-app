@@ -28,4 +28,4 @@ fetch relation initiator model =
                 |> Maybe.map FetchPerson
                 |> Maybe.Extra.toList
     in
-    fetchPeople ++ fetchRelation ++ [ FetchVillages ]
+    fetchPeople ++ fetchRelation ++ [ FetchHealthCenters, FetchVillages ]
