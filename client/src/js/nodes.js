@@ -513,7 +513,7 @@
                         });
 
                         modifyQuery = modifyQuery.then(function () {
-                            // We search for resulting persons that start with any of input words (apply 'OR' condition).
+                            // We search for resulting persons that start with any of the input words (apply 'OR' condition).
                             query = table.where('name_search').startsWithAnyOf(words).distinct().and(function (person) {
                               // Now, we check that each word we got as search input is a prefix
                               // of any of person name parts (applying 'AND condition').
