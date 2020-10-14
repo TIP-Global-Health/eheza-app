@@ -79,7 +79,12 @@ viewSearchForm : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) 
 viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db =
     let
         searchForm =
-            Html.form []
+            Html.form
+                [ -- These attribites are blocking 'Submit' action on HTML form,
+                  -- as it is not needed, and causes application to reload.
+                  action "javascript:void(0);"
+                , onSubmit NoOp
+                ]
                 [ div
                     [ class "ui search form" ]
                     [ div []
