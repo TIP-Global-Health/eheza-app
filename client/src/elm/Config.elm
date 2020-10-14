@@ -49,7 +49,7 @@ ehezaGlobal =
 ***REMOVED*** : Model
 ***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
-    , name = "eheza-global"
+    , name = "live-aos"
     , pusherKey = PusherAppKey "***REMOVED***" UsEast1
     , debug = False
     , sandbox = False
