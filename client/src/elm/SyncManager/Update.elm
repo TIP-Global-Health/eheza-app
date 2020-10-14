@@ -1126,6 +1126,9 @@ update currentDate currentTime dbVersion device msg model =
 
         QueryIndexDb indexDbQueryType ->
             let
+                _ =
+                    Debug.log "QueryIndexDb" indexDbQueryType
+
                 record =
                     case indexDbQueryType of
                         IndexDbQueryUploadPhotoAuthority ->
@@ -1372,7 +1375,7 @@ subscriptions model =
                     Sub.none
 
                 _ ->
-                    Time.every (getSyncSpeedForSubscriptions model) (\_ -> TrySyncing)
+                    Time.every (getSyncSpeedForSubscriptions model) (\_ -> BackendFetchMain)
     in
     Sub.batch
         [ backendFetchMain
