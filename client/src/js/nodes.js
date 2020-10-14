@@ -505,7 +505,7 @@
                     var nameContains = params.get('name_contains');
 
                     if (nameContains) {
-                        // For case when there's more than one word as an input,
+                        // For the case when there's more than one word as an input,
                         // we generate an array of lowercase words.
                         var words = nameContains.split(' ');
                         words.forEach(function (word, index) {
