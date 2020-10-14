@@ -17,5 +17,6 @@ fetch encounterType model =
         ++ (if String.isEmpty trimmed then
                 []
 
-    else
-        [ FetchPeopleByName trimmed ]
+            else
+                [ FetchPeopleByName trimmed ]
+           )
