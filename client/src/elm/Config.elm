@@ -49,6 +49,16 @@ ehezaGlobal =
 ***REMOVED*** : Model
 ***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
+    , name = "eheza-global"
+    , pusherKey = PusherAppKey "***REMOVED***" UsEast1
+    , debug = False
+    , sandbox = False
+    }
+
+
+***REMOVED*** : Model
+***REMOVED*** =
+    { backendUrl = "https://***REMOVED***"
     , name = "***REMOVED***"
     , pusherKey = PusherAppKey "" UsEast1
     , debug = False
@@ -116,6 +126,7 @@ configs =
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", livePantheon )
         , ( "***REMOVED***", ehezaGlobal )
+        , ( "aos-backend-ihangane.pantheonsite.io", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
