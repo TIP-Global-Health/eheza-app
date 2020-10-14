@@ -76,7 +76,7 @@ viewContent language currentDate id model data =
             [ class "ui report unstackable items" ]
             [ viewHeader language currentDate id
             , viewPersonInfo language currentDate data.person data.measurements
-            , viewAssessmentPane language currentDate diagnosis
+            , viewAssessmentPane language currentDate diagnosis data.measurements
             , viewSymptomsPane language currentDate data.measurements
             , viewPhysicalExamPane language currentDate data.measurements
             , viewActionsTakenPane language currentDate diagnosis data
@@ -161,9 +161,30 @@ viewPersonInfo language currentDate person measurements =
         ]
 
 
-viewAssessmentPane : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> Html Msg
-viewAssessmentPane language currentDate diagnosis =
+viewAssessmentPane : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> Html Msg
+viewAssessmentPane language currentDate diagnosis measurements =
     let
+        treatmentReview =
+            measurements.treatmentReview
+                |> Maybe.map (Tuple.second >> .value)
+
+        viewTreatmentSignInfo sign signHelped signTransId =
+            treatmentReview
+                |> Maybe.map
+                    (\signs ->
+                        if EverySet.member sign signs then
+                            EverySet.member signHelped signs
+                                |> signTransId
+                                |> translate language
+                                |> text
+                                |> List.singleton
+                                |> div []
+
+                        else
+                            emptyNode
+                    )
+                |> Maybe.withDefault emptyNode
+
         assessment =
             diagnosis
                 |> Maybe.map (Translate.AcuteIllnessDiagnosisWarning >> translate language >> text >> List.singleton >> div [ class "pane-content" ])
@@ -172,6 +193,9 @@ viewAssessmentPane language currentDate diagnosis =
     div [ class "pane assessment" ]
         [ viewItemHeading language Translate.Assessment "blue"
         , assessment
+        , viewTreatmentSignInfo FeverPast6Hours FeverPast6HoursHelped Translate.MedicationForFeverPast6Hours
+        , viewTreatmentSignInfo MalariaToday MalariaTodayHelped Translate.MedicationForMalariaToday
+        , viewTreatmentSignInfo MalariaWithinPastMonth MalariaWithinPastMonthHelped Translate.MedicationForMalariaPastMonth
         ]
 
 
