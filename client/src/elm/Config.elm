@@ -50,7 +50,7 @@ ehezaGlobal =
 ***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
     , name = "eheza-global"
-    , pusherKey = PusherAppKey "***REMOVED***" UsEast1
+    , pusherKey = PusherAppKey "***REMOVED***" EuWest1
     , debug = False
     , sandbox = False
     }
