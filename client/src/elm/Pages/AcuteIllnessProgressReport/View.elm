@@ -176,9 +176,10 @@ viewAssessmentPane language currentDate diagnosis measurements =
                             EverySet.member signHelped signs
                                 |> signTransId
                                 |> translate language
+                                |> (\treatmentComment -> treatmentComment ++ ".")
                                 |> text
                                 |> List.singleton
-                                |> div []
+                                |> div [ class "treatment-comment" ]
 
                         else
                             emptyNode
@@ -187,15 +188,17 @@ viewAssessmentPane language currentDate diagnosis measurements =
 
         assessment =
             diagnosis
-                |> Maybe.map (Translate.AcuteIllnessDiagnosisWarning >> translate language >> text >> List.singleton >> div [ class "pane-content" ])
+                |> Maybe.map (Translate.AcuteIllnessDiagnosisWarning >> translate language >> text >> List.singleton >> div [ class "diagnosis" ])
                 |> Maybe.withDefault emptyNode
     in
     div [ class "pane assessment" ]
         [ viewItemHeading language Translate.Assessment "blue"
-        , assessment
-        , viewTreatmentSignInfo FeverPast6Hours FeverPast6HoursHelped Translate.MedicationForFeverPast6Hours
-        , viewTreatmentSignInfo MalariaToday MalariaTodayHelped Translate.MedicationForMalariaToday
-        , viewTreatmentSignInfo MalariaWithinPastMonth MalariaWithinPastMonthHelped Translate.MedicationForMalariaPastMonth
+        , div [ class "pane-content" ]
+            [ assessment
+            , viewTreatmentSignInfo FeverPast6Hours FeverPast6HoursHelped Translate.MedicationForFeverPast6Hours
+            , viewTreatmentSignInfo MalariaToday MalariaTodayHelped Translate.MedicationForMalariaToday
+            , viewTreatmentSignInfo MalariaWithinPastMonth MalariaWithinPastMonthHelped Translate.MedicationForMalariaPastMonth
+            ]
         ]
 
 
