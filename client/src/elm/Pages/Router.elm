@@ -5,7 +5,7 @@ import Activity.Utils
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AcuteIllnessActivity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encoudeIndividualEncounterTypeAsString)
+import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encodeIndividualEncounterTypeAsString)
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (initiatorFromUrlFragmemt, initiatorToUrlFragmemt)
 import NutritionActivity.Model exposing (NutritionActivity(..))
@@ -127,7 +127,7 @@ pageToFragment current =
                     Just <| "acute-illness-participant/" ++ fromEntityUuid id
 
                 IndividualEncounterParticipantsPage encounterType ->
-                    Just <| "individual-participants/" ++ encoudeIndividualEncounterTypeAsString encounterType
+                    Just <| "individual-participants/" ++ encodeIndividualEncounterTypeAsString encounterType
 
                 RelationshipPage id1 id2 initiator ->
                     let

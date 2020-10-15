@@ -6,7 +6,7 @@ module Backend.IndividualEncounterParticipant.Encoder exposing
     )
 
 import Backend.IndividualEncounterParticipant.Model exposing (..)
-import Backend.IndividualEncounterParticipant.Utils exposing (encoudeIndividualEncounterTypeAsString)
+import Backend.IndividualEncounterParticipant.Utils exposing (encodeIndividualEncounterTypeAsString)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
@@ -34,7 +34,7 @@ encodeIndividualEncounterParticipant data =
 
 encodeIndividualEncounterType : IndividualEncounterType -> Value
 encodeIndividualEncounterType type_ =
-    encoudeIndividualEncounterTypeAsString type_ |> string
+    encodeIndividualEncounterTypeAsString type_ |> string
 
 
 encodePregnancyOutcome : PregnancyOutcome -> Value
