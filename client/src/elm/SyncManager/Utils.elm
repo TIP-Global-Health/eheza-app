@@ -14,6 +14,7 @@ module SyncManager.Utils exposing
 import Backend.AcuteIllnessEncounter.Encoder
 import Backend.Clinic.Encoder
 import Backend.Counseling.Encoder
+import Backend.Dashboard.Encoder
 import Backend.HealthCenter.Encoder
 import Backend.IndividualEncounterParticipant.Encoder
 import Backend.Measurement.Encoder
