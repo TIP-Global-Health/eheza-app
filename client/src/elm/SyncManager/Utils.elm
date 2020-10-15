@@ -298,6 +298,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityDangerSigns identifier ->
             getIdentifier identifier "danger_signs"
 
+        BackendAuthorityDashboardStats identifier ->
+            getIdentifier identifier "statistics"
+
         BackendAuthorityExposure identifier ->
             getIdentifier identifier "exposure"
 
@@ -602,6 +605,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityDangerSigns identifier ->
             encode Backend.Measurement.Encoder.encodeDangerSigns identifier
+
+        BackendAuthorityDashboardStats identifier ->
+            encode Backend.Dashboard.Encoder.encodeDashboardStats identifier
 
         BackendAuthorityExposure identifier ->
             encode Backend.Measurement.Encoder.encodeExposure identifier

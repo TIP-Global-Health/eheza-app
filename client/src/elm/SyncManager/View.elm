@@ -416,6 +416,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityDangerSigns identifier ->
                 viewMeasurement identifier "Danger Signs"
 
+            BackendAuthorityDashboardStats identifier ->
+                text "Dashboard Statistics"
+
             BackendAuthorityExposure identifier ->
                 viewMeasurement identifier "Exposure"
 

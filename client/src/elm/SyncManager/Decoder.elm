@@ -8,6 +8,7 @@ import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Decoder
 import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
+import Backend.Dashboard.Decoder
 import Backend.HealthCenter.Decoder
 import Backend.IndividualEncounterParticipant.Decoder
 import Backend.Measurement.Decoder
@@ -554,6 +555,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeSocialHistory
                             BackendAuthoritySocialHistory
+
+                    "statistics" ->
+                        doDecode
+                            Backend.Dashboard.Decoder.decodeDashboardStats
+                            BackendAuthorityDashboardStats
 
                     "symptoms_general" ->
                         doDecode

@@ -56,7 +56,7 @@ type BackendAuthorityEntity
     | BackendAuthorityCorePhysicalExam (BackendEntity CorePhysicalExam)
     | BackendAuthorityCounselingSession (BackendEntity CounselingSession)
     | BackendAuthorityDangerSigns (BackendEntity DangerSigns)
-      -- | BackendAuthorityDashboardStats (BackendEntity DashboardStats)
+    | BackendAuthorityDashboardStats (BackendEntity DashboardStats)
     | BackendAuthorityExposure (BackendEntity Exposure)
     | BackendAuthorityFamilyPlanning (BackendEntity FamilyPlanning)
     | BackendAuthorityHCContact (BackendEntity HCContact)
