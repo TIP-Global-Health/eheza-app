@@ -513,9 +513,10 @@ type TranslationId
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
     | MedicationDistributionSign MedicationDistributionSign
-    | MedicationForFeverPast6Hours Bool
-    | MedicationForMalariaToday Bool
-    | MedicationForMalariaPastMonth Bool
+    | MedicationForFeverPast6Hours
+    | MedicationHelpedEnding Bool
+    | MedicationForMalariaToday
+    | MedicationForMalariaPastMonth
     | MedicalFormHelper
     | MedicationForFeverPast6HoursQuestion
     | MedicationForMalariaTodayQuestion
@@ -3399,38 +3400,31 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        MedicationForFeverPast6Hours helped ->
+        MedicationForFeverPast6Hours ->
+            { english = "Patient took medication to treat a fever in the past six hours"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationHelpedEnding helped ->
             if helped then
-                { english = "Patient took medication to treat a fever in the past six hours and improved"
+                { english = "and improved"
                 , kinyarwanda = Nothing
                 }
 
             else
-                { english = "Patient took medication to treat a fever in the past six hours but no improvement"
+                { english = "but no improvement"
                 , kinyarwanda = Nothing
                 }
 
-        MedicationForMalariaToday helped ->
-            if helped then
-                { english = "Patient received medication for malaria today before this visit and improved"
-                , kinyarwanda = Nothing
-                }
+        MedicationForMalariaToday ->
+            { english = "Patient received medication for malaria today before this visit"
+            , kinyarwanda = Nothing
+            }
 
-            else
-                { english = "Patient received medication for malaria today before this visit but no improvement"
-                , kinyarwanda = Nothing
-                }
-
-        MedicationForMalariaPastMonth helped ->
-            if helped then
-                { english = "Patient received medication for malaria within the past month before today's visit and improved"
-                , kinyarwanda = Nothing
-                }
-
-            else
-                { english = "Patient received medication for malaria within the past month before today's visit but no improvement"
-                , kinyarwanda = Nothing
-                }
+        MedicationForMalariaPastMonth ->
+            { english = "Patient received medication for malaria within the past month before today's visit"
+            , kinyarwanda = Nothing
+            }
 
         MedicalFormHelper ->
             { english = "Please record if the mother was diagnosed with the following medical issues"

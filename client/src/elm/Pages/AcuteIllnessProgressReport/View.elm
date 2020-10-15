@@ -173,13 +173,18 @@ viewAssessmentPane language currentDate diagnosis measurements =
                 |> Maybe.map
                     (\signs ->
                         if EverySet.member sign signs then
-                            EverySet.member signHelped signs
-                                |> signTransId
-                                |> translate language
-                                |> (\treatmentComment -> treatmentComment ++ ".")
-                                |> text
-                                |> List.singleton
-                                |> div [ class "treatment-comment" ]
+                            let
+                                medicationHelpedEndiln =
+                                    EverySet.member signHelped signs
+                                        |> Translate.MedicationHelpedEnding
+                                        |> translate language
+                            in
+                            div [ class "treatment-comment" ]
+                                [ text <| translate language signTransId
+                                , text ","
+                                , b [] [ text medicationHelpedEndiln ]
+                                , text "."
+                                ]
 
                         else
                             emptyNode
