@@ -141,7 +141,7 @@ function hedley_person_get_data(array $form, array $form_state) {
 
   $instructions = '<div>Before uploading new patients, make sure you followed <a href="https://github.com/Gizra/ihangane/wiki/Importing-bulk-data" target="_blank">these guidelines</a>.</div>';
   $instructions .= '<br>';
-  $instructions .= '<div style="font-style: italic;">Note: You\'ll need to import the mother/caregiver data first, then the children data in order to create relationships between the two.</div>';
+  $instructions .= '<div style="font-style: italic;">Note: You\'ll need to import the mother/caregiver data first, then the children data, in order to create relationships between the two.</div>';
 
   $form['instructions'] = [
     '#markup' => $instructions,
@@ -373,8 +373,10 @@ function hedley_person_execute_import(array $form, array &$form_state) {
 
   $patients_count = count($lines);
   // Create import batch.
+  $message = "Executing import of $patients_count $patient_type patients...";
+  watchdog('import', $message);
   $batch = array(
-    'title' => "Executing import of $patients_count $patient_type patients...",
+    'title' => $message,
     'operations' => array(
       array('hedley_person_execute_batch_import', array($patient_type, $lines)),
     ),
@@ -419,6 +421,7 @@ function hedley_person_execute_batch_import($patient_type, array $lines, array &
           $message .= "Unique ID $id: $err" . PHP_EOL;
         }
       }
+      watchdog('import', "Import of $patients_count $patient_type patients completed. Errors: $errors_count");
       drupal_set_message($message);
 
       // Indicate that import is completed.
