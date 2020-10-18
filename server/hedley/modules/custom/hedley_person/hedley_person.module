@@ -190,11 +190,6 @@ function hedley_person_confirmation(array $form, array $form_state) {
     '#value'  => t('Yes'),
     '#submit' => ['hedley_person_execute_import'],
     '#limit_validation_errors' => [],
-    '#ajax' => array(
-      'wrapper' => 'confirmation-form-wrapper',
-      'callback' => 'hedley_person_import_form_callback',
-      'effect' => 'fade',
-    ),
   ];
 
   $form['actions']['cancel'] = [
@@ -346,8 +341,7 @@ function hedley_person_import_get_data(array $form, array &$form_state) {
 /**
  * Submit callback for step 2.
  *
- * Performs import of patients.
- * When completed, forwards form to'Summary' step.
+ * Creates BATCH operation that performs import of patients.
  *
  * @param array $form
  *   Form API form.
@@ -355,50 +349,90 @@ function hedley_person_import_get_data(array $form, array &$form_state) {
  *   Form API form.
  */
 function hedley_person_execute_import(array $form, array &$form_state) {
-  $file_uri = $form_state['storage']['file_uri'];
   $patient_type = $form_state['storage']['$patient_type'];
+  $file_uri = $form_state['storage']['file_uri'];
 
   $fp = fopen($file_uri, 'r');
   // Skip field names line.
   fgets($fp);
-
-  $patients_count = 0;
-  $errors = [];
+  $lines = [];
+  // Read lines from file into an array.
   while (($line = fgets($fp)) !== FALSE) {
-    $values = explode(',', $line);
-    $unique_id = trim($values[HEDLEY_PERSON_COLUMN_UNIQUE_ID]);
-
-    $result = hedley_person_import_patient($patient_type, $values);
-    if ($result !== TRUE) {
-      $errors[$unique_id] = $result;
-    }
-
-    $patients_count++;
+    $lines[] = $line;
   }
-
   fclose($fp);
 
-  $errors_count = count($errors);
-  $patients = $patient_type == 'child' ? 'children' : 'adults';
-  $summary_message = "Completed import for $patients_count $patients.";
-  if ($errors_count > 0) {
-    $summary_message .= " $errors_count $patients generated following notices:";
+  $patients_count = count($lines);
+  // Create import batch.
+  $batch = array(
+    'title' => "Executing import of $patients_count $patient_type patients...",
+    'operations' => array(
+      array('hedley_person_execute_batch_import', array($patient_type, $lines)),
+    ),
+    'progress_message' => '',
+  );
+  // Execute import batch.
+  batch_set($batch);
+}
+
+/**
+ * Batch API patients import callback.
+ *
+ * @param string $patient_type
+ *   The type of imported patients - 'adult' / 'child'.
+ * @param array $lines
+ *   List of lines read form CSV file, where each represents a single patient.
+ * @param array $context
+ *   Batch API context.
+ */
+function hedley_person_execute_batch_import($patient_type, array $lines, array &$context) {
+  if (empty($context['sandbox'])) {
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['errors'] = [];
+    $context['sandbox']['total'] = count($lines);
   }
 
-  $message = "<div style=\"margin-bottom: 20px\">$summary_message</div>";
+  // Set the size of batch chunks. Each chunk should be executed within 60
+  // seconds, to make sure we don't get a timeout error from Pantheon.
+  $limit = variable_get('hedley_import_batch_size', 10);
 
-  if (!empty($errors)) {
-    $error_message = '';
-    foreach ($errors as $id => $err) {
-      $error_message .= "<div style=\"margin-left: 10px\">Unique ID $id: $err</div>";
+  for ($index = 0; $index < $limit; $index++) {
+    // Check if we've completed processing all patients.
+    if ($context['sandbox']['progress'] > ($context['sandbox']['total'] - 1)) {
+      // Set the summary message, reporting on errors that happened
+      // during the import (if any).
+      $errors_count = count($context['sandbox']['errors']);
+      $patients_count = $context['sandbox']['progress'];
+      $message = "Completed import of $patients_count $patient_type patients." . PHP_EOL;
+      if ($errors_count > 0) {
+        $message .= " $errors_count patients generated following notices:" . PHP_EOL;
+        foreach ($context['sandbox']['errors'] as $id => $err) {
+          $message .= "Unique ID $id: $err" . PHP_EOL;
+        }
+      }
+      drupal_set_message($message);
+
+      // Indicate that import is completed.
+      $context['finished'] = 1;
+      return;
     }
 
-    $message .= $error_message;
+    // Read next patient data.
+    $values = explode(',', $lines[$context['sandbox']['progress']]);
+    // Perform patient import.
+    $result = hedley_person_import_patient($patient_type, $values);
+    // Handle error.
+    if ($result !== TRUE) {
+      $unique_id = trim($values[HEDLEY_PERSON_COLUMN_UNIQUE_ID]);
+      $context['sandbox']['errors'][$unique_id] = $result;
+      // Log the error at watchdog.
+      watchdog('import', "Unique ID $unique_id: $result");
+    }
+    // Move on to next patient.
+    $context['sandbox']['progress']++;
   }
 
-  $form_state['storage']['message'] = $message;
-  $form_state['storage']['step'] = 'summary';
-  $form_state['rebuild'] = TRUE;
+  $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['total'];
 }
 
 /**
@@ -488,7 +522,7 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
 
   // Birth date estimated.
   if (!empty($estimated) && !in_array(strtolower($estimated), ['y', 'n'])) {
-    $errors[] = 'Birth Date Estimated: invalid value - $estimated';
+    $errors[] = "Birth Date Estimated: invalid value - $estimated";
   }
 
   // National ID.
@@ -599,7 +633,7 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
 
   $number_of_children = $values[HEDLEY_PERSON_COLUMN_ADULT_NUMBER_OF_CHILDREN];
   if (!empty($number_of_children) &&
-      !in_array($number_of_children, ['0', '1', '2', '3', '4', '5'])) {
+    !in_array($number_of_children, ['0', '1', '2', '3', '4', '5'])) {
     $errors[] = "Number of children under 5: Invalid value - $number_of_children";
   }
 }
