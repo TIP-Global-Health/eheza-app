@@ -121,21 +121,17 @@ determineSyncStatus model =
                         case ( model.syncInfoAuthorities, webData ) of
                             ( Nothing, _ ) ->
                                 -- There are no authorities, so we can set the next
-                                -- status.
+                                -- status, skipping statistics download.
                                 ( SyncDownloadPhotos model.downloadPhotos
                                 , syncInfoAuthorities
                                 )
 
                             ( Just zipper, RemoteData.Success data ) ->
-                                let
-                                    syncDownloadPhotos =
-                                        resetDownloadPhotosBatchCounter model
-                                in
                                 if List.isEmpty data.entities then
                                     -- We tried to fetch, but there was no more data.
                                     -- Check if this is the last element.
                                     if Zipper.isLast zipper then
-                                        ( syncDownloadPhotos
+                                        ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
                                         , Just (Zipper.first zipper)
                                         )
 
@@ -152,13 +148,52 @@ determineSyncStatus model =
                                                 -- We've reached the last element
                                                 -- so reset it back, and rotate
                                                 -- to the next status.
-                                                ( syncDownloadPhotos
+                                                ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
                                                 , Just (Zipper.first zipper)
                                                 )
 
                                 else
                                     -- Still have data to download.
                                     noChange
+
+                            _ ->
+                                noChange
+
+                    SyncDownloadAuthorityDashboardStats webData ->
+                        case ( model.syncInfoAuthorities, webData ) of
+                            ( Nothing, _ ) ->
+                                -- There are no authorities, so we can set the next
+                                -- status.
+                                ( SyncDownloadPhotos model.downloadPhotos
+                                , syncInfoAuthorities
+                                )
+
+                            ( Just zipper, RemoteData.Success data ) ->
+                                let
+                                    syncDownloadPhotos =
+                                        resetDownloadPhotosBatchCounter model
+                                in
+                                if Zipper.isLast zipper then
+                                    ( syncDownloadPhotos
+                                    , Just (Zipper.first zipper)
+                                    )
+
+                                else
+                                    -- Go to the next authority if there is
+                                    -- otherwise, to the next status
+                                    case Zipper.next zipper of
+                                        Just nextZipper ->
+                                            ( SyncDownloadAuthority RemoteData.NotAsked
+                                            , Just nextZipper
+                                            )
+
+                                        Nothing ->
+                                            -- We've reached the last element
+                                            -- so reset it back, and rotate
+                                            -- to the next status.
+                                            ( syncDownloadPhotos
+                                            , Just (Zipper.first zipper)
+                                            )
 
                             _ ->
                                 noChange

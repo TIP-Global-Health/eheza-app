@@ -51,46 +51,41 @@ update currentDate currentTime dbVersion device msg model =
                                 returnDetermineSyncStatus
 
                             Just zipper ->
-                                if RemoteData.isLoading webData then
-                                    -- We are already loading.
-                                    noChange
+                                let
+                                    currentZipper =
+                                        Zipper.current zipper
 
-                                else
-                                    let
-                                        currentZipper =
-                                            Zipper.current zipper
+                                    zipperUpdated =
+                                        if currentZipper.status == "Downloading" then
+                                            zipper
 
-                                        zipperUpdated =
-                                            if currentZipper.status == "Downloading" then
+                                        else
+                                            Zipper.mapCurrent
+                                                (\old -> { old | status = "Downloading" })
                                                 zipper
 
-                                            else
-                                                Zipper.mapCurrent
-                                                    (\old -> { old | status = "Downloading" })
-                                                    zipper
+                                    ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
+                                        if currentZipper.status == "Downloading" then
+                                            ( model.syncInfoAuthorities, Cmd.none )
 
-                                        ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
-                                            if currentZipper.status == "Downloading" then
-                                                ( model.syncInfoAuthorities, Cmd.none )
+                                        else
+                                            ( Just zipperUpdated, sendSyncInfoAuthorities (Zipper.toList zipperUpdated) )
 
-                                            else
-                                                ( Just zipperUpdated, sendSyncInfoAuthorities (Zipper.toList zipperUpdated) )
-
-                                        cmd =
-                                            HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
-                                                |> withQueryParams
-                                                    [ ( "access_token", device.accessToken )
-                                                    , ( "db_version", String.fromInt dbVersion )
-                                                    , ( "base_revision", String.fromInt currentZipper.lastFetchedRevisionId )
-                                                    ]
-                                                |> withExpectJson decodeDownloadSyncResponseAuthority
-                                                |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipperUpdated)
-                                    in
-                                    SubModelReturn
-                                        { model | syncStatus = SyncDownloadAuthority RemoteData.Loading, syncInfoAuthorities = syncInfoAuthorities }
-                                        (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
-                                        noError
-                                        []
+                                    cmd =
+                                        HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
+                                            |> withQueryParams
+                                                [ ( "access_token", device.accessToken )
+                                                , ( "db_version", String.fromInt dbVersion )
+                                                , ( "base_revision", String.fromInt currentZipper.lastFetchedRevisionId )
+                                                ]
+                                            |> withExpectJson decodeDownloadSyncResponseAuthority
+                                            |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipperUpdated)
+                                in
+                                SubModelReturn
+                                    { model | syncStatus = SyncDownloadAuthority RemoteData.Loading, syncInfoAuthorities = syncInfoAuthorities }
+                                    (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
+                                    noError
+                                    []
 
                 _ ->
                     returnDetermineSyncStatus
@@ -202,6 +197,111 @@ update currentDate currentTime dbVersion device msg model =
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
                 []
 
+        BackendAuthorityDashboardStatsFetch ->
+            case model.syncStatus of
+                SyncDownloadAuthorityDashboardStats webData ->
+                    if RemoteData.isLoading webData then
+                        -- We are already loading.
+                        noChange
+
+                    else
+                        case model.syncInfoAuthorities of
+                            Nothing ->
+                                -- No zipper, means not subscribed yet to any
+                                -- authority. `determineSyncStatus` will take care of
+                                -- rotating if we're not on automatic sync.
+                                returnDetermineSyncStatus
+
+                            Just zipper ->
+                                let
+                                    currentZipper =
+                                        Zipper.current zipper
+
+                                    zipperUpdated =
+                                        if currentZipper.status == "DownloadingStats" then
+                                            zipper
+
+                                        else
+                                            Zipper.mapCurrent
+                                                (\old -> { old | status = "DownloadingStats" })
+                                                zipper
+
+                                    ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
+                                        if currentZipper.status == "DownloadingStats" then
+                                            ( model.syncInfoAuthorities, Cmd.none )
+
+                                        else
+                                            ( Just zipperUpdated, sendSyncInfoAuthorities (Zipper.toList zipperUpdated) )
+
+                                    cmd =
+                                        HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
+                                            |> withQueryParams
+                                                [ ( "access_token", device.accessToken )
+                                                , ( "db_version", String.fromInt dbVersion )
+                                                , ( "statistics", "1" )
+                                                ]
+                                            |> withExpectJson decodeDownloadSyncResponseAuthority
+                                            |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityDashboardStatsFetchHandle zipperUpdated)
+                                in
+                                SubModelReturn
+                                    { model | syncStatus = SyncDownloadAuthorityDashboardStats RemoteData.Loading, syncInfoAuthorities = syncInfoAuthorities }
+                                    (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
+                                    noError
+                                    []
+
+                _ ->
+                    returnDetermineSyncStatus
+
+        BackendAuthorityDashboardStatsFetchHandle zipper webData ->
+            let
+                currentZipper =
+                    Zipper.current zipper
+
+                cmd =
+                    case RemoteData.toMaybe webData of
+                        Just data ->
+                            let
+                                dataToSend =
+                                    data.entities
+                                        |> List.foldl
+                                            (\entity accum -> SyncManager.Utils.getDataToSendAuthority entity accum)
+                                            []
+                                        |> List.reverse
+                            in
+                            sendSyncedDataToIndexDb { table = "Statistics", data = dataToSend, shard = currentZipper.uuid }
+
+                        Nothing ->
+                            Cmd.none
+
+                syncInfoAuthorities =
+                    case RemoteData.toMaybe webData of
+                        Just data ->
+                            Zipper.mapCurrent
+                                (\old ->
+                                    { old
+                                        | lastSuccesfulContact = Time.posixToMillis currentTime
+                                        , remainingToDownload = data.revisionCount
+                                        , status = "Success"
+                                    }
+                                )
+                                zipper
+
+                        Nothing ->
+                            zipper
+
+                modelWithSyncStatus =
+                    SyncManager.Utils.determineSyncStatus
+                        { model
+                            | syncStatus = SyncDownloadAuthorityDashboardStats webData
+                            , syncInfoAuthorities = Just syncInfoAuthorities
+                        }
+            in
+            SubModelReturn
+                modelWithSyncStatus
+                cmd
+                (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityDashboardStatsFetchHandle")
+                []
+
         BackendFetchMain ->
             case model.syncStatus of
                 SyncIdle ->
@@ -250,6 +350,15 @@ update currentDate currentTime dbVersion device msg model =
                         dbVersion
                         device
                         BackendAuthorityFetch
+                        model
+
+                SyncDownloadAuthorityDashboardStats _ ->
+                    update
+                        currentDate
+                        currentTime
+                        dbVersion
+                        device
+                        BackendAuthorityDashboardStatsFetch
                         model
 
                 SyncDownloadPhotos _ ->

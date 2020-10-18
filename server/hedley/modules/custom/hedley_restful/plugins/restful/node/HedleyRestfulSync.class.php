@@ -236,6 +236,16 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $request = $this->getRequest();
     $handlers_by_types = $this->entitiesForHealthCenters();
 
+    $db_version = intval($request['db_version']);
+
+    if ($db_version < HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION) {
+      throw new RestfulBadRequestException('Must update your client before syncing further.');
+    }
+
+    if (isset($request['statistics'])) {
+      return self::getForHealthCenterStatistics($uuid);
+    }
+
     // Note that 0 is fine, so we can't use `empty`.
     if (!isset($request['base_revision'])) {
       // Must specify the last revision which the client already knows about.
@@ -249,16 +259,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     // they upgrade.
     if (!isset($request['db_version'])) {
       throw new RestfulBadRequestException('Must provide db_version, indicating the version of your local IndexedDB.');
-    }
-
-    $db_version = intval($request['db_version']);
-
-    if ($db_version < HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION) {
-      throw new RestfulBadRequestException('Must update your client before syncing further.');
-    }
-
-    if (isset($request['statistics'])) {
-      return self::getForHealthCenterStatistics($uuid);
     }
 
     $query = db_select('node', 'node');

@@ -303,6 +303,7 @@ type SyncStatus
     | SyncUploadAuthority (UploadRec IndexDbQueryUploadAuthorityResultRecord)
     | SyncDownloadGeneral (WebData (DownloadSyncResponse BackendGeneralEntity))
     | SyncDownloadAuthority (WebData (DownloadSyncResponse BackendAuthorityEntity))
+    | SyncDownloadAuthorityDashboardStats (WebData (DownloadSyncResponse BackendAuthorityEntity))
     | SyncDownloadPhotos DownloadPhotos
 
 
@@ -400,6 +401,8 @@ type alias IndexDbQueryDeferredPhotoResultRecord =
 type Msg
     = BackendAuthorityFetch
     | BackendAuthorityFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
+    | BackendAuthorityDashboardStatsFetch
+    | BackendAuthorityDashboardStatsFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
       -- This is the main entry point for the Sync loop. This will dispatch a call
       -- according to the `syncStatus`.
     | BackendFetchMain
