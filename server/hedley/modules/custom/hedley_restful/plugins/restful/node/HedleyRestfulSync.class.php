@@ -257,6 +257,10 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       throw new RestfulBadRequestException('Must update your client before syncing further.');
     }
 
+    if (isset($request['statistics'])) {
+      return self::getForHealthCenterStatistics($uuid);
+    }
+
     $query = db_select('node', 'node');
 
     // Filter by Shards.
@@ -374,21 +378,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'health_center_nid' => $health_center_id,
         ]);
       }
-
-      // Here we check if the output is empty OR that is less than a full
-      // output response (Meaning sync is done), this means the HC has
-      // finished syncing all data, now we have to send the stats which
-      // should be already calculated by the worker.
-      if (!empty($cache_data) && (empty($output) || count($output) < self::HEDLEY_RESTFUL_DB_QUERY_RANGE)) {
-        // This means the stats already have been calculated and cached.
-        // The cache is set in the calculating function itself.
-        if (!isset($request['stats_cache_hash']) || (isset($request['stats_cache_hash']) && $cache_data != $request['stats_cache_hash'])) {
-          $stats = hedley_stats_calculate_stats_for_health_center($health_center_id);
-
-          $output[] = $stats;
-          $count++;
-        }
-      }
     }
 
     return [
@@ -397,6 +386,36 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'revision_count' => $count,
       'batch' => $output,
     ];
+  }
+
+  /**
+   * Download statistics for Health Center.
+   *
+   * @param string $uuid
+   *   The UUID of the health center.
+   *
+   * @return array
+   *   A representation of the required revisions
+   */
+  public function getForHealthCenterStatistics($uuid) {
+    if (!empty($cache_data)) {
+      return [];
+    }
+
+    $health_center_id = hedley_restful_resolve_nid_for_uuid($uuid);
+    if (!$health_center_id) {
+      return [];
+    }
+
+    $request = $this->getRequest();
+    $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id);
+
+    $return = [];
+    if (!isset($request['stats_cache_hash']) || $cache_data != $request['stats_cache_hash']) {
+      $return[] = hedley_stats_calculate_stats_for_health_center($health_center_id);
+    }
+
+    return $return;
   }
 
   /**
