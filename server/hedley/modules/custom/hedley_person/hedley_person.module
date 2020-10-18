@@ -139,6 +139,15 @@ function hedley_person_get_data(array $form, array $form_state) {
   $form['#suffix'] = '</div>';
   $form['#tree'] = TRUE;
 
+  $instructions = '<div>Before uploading new patients, make sure you followed <a href="https://github.com/Gizra/ihangane/wiki/Importing-bulk-data" target="_blank">these guidelines</a>.</div>';
+  $instructions .= '<br>';
+  $instructions .= '<div style="font-style: italic;">Note: You\'ll need to import the mother/caregiver data first, then the children data in order to create relationships between the two.</div>';
+
+  $form['instructions'] = [
+    '#markup' => $instructions,
+    '#type' => 'item',
+  ];
+
   $form['spreadsheet_id'] = [
     '#title' => 'Please enter Google spreadsheet ID you wish to import',
     '#type' => 'textfield',
