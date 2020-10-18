@@ -366,6 +366,10 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
       table = dbSync.shards;
       break;
 
+    case 'AuthorityStats':
+      table = dbSync.statistics;
+      break;
+
     case 'General':
       table = dbSync.nodes;
       break;

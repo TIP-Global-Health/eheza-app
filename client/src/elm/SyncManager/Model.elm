@@ -141,6 +141,7 @@ type alias SyncInfoAuthority =
     , remainingToUpload : Int
     , remainingToDownload : Int
     , status : String
+    , statsCacheHash : String
     }
 
 
@@ -152,6 +153,7 @@ emptySyncInfoAuthority uuid =
     , remainingToUpload = 0
     , remainingToDownload = 0
     , status = "Not Available"
+    , statsCacheHash = ""
     }
 
 

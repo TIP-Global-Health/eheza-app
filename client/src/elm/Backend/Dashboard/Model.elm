@@ -42,6 +42,7 @@ type alias DashboardStats =
     , maybeGoodNutrition : Maybe GoodNutrition
     , missedSessions : List ParticipantStats
     , totalEncounters : Periods
+    , cacheHash : String
     }
 
 
@@ -54,6 +55,7 @@ emptyModel =
     , maybeGoodNutrition = Nothing
     , missedSessions = []
     , totalEncounters = Periods 0 0
+    , cacheHash = ""
     }
 
 

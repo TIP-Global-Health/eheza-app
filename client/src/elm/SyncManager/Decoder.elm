@@ -1,5 +1,6 @@
 module SyncManager.Decoder exposing
     ( decodeDownloadSyncResponseAuthority
+    , decodeDownloadSyncResponseAuthorityStats
     , decodeDownloadSyncResponseGeneral
     , decodeIndexDbQueryTypeResult
     )
@@ -287,6 +288,16 @@ decodeDownloadSyncResponseAuthority =
             |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
             |> required "last_timestamp" decodeDate
             |> required "revision_count" decodeInt
+        )
+
+
+decodeDownloadSyncResponseAuthorityStats : Decoder (DownloadSyncResponse BackendAuthorityEntity)
+decodeDownloadSyncResponseAuthorityStats =
+    field "data"
+        (succeed DownloadSyncResponse
+            |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
+            |> hardcoded (Time.millisToPosix 0)
+            |> hardcoded 0
         )
 
 

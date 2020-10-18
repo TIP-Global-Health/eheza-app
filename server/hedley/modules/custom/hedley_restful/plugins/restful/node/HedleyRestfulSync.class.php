@@ -398,21 +398,25 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    *   A representation of the required revisions
    */
   public function getForHealthCenterStatistics($uuid) {
+    $empty_batch = [
+      'batch' => [],
+    ];
+    $return = $empty_batch;
+
     if (!empty($cache_data)) {
-      return [];
+      return $return;
     }
 
     $health_center_id = hedley_restful_resolve_nid_for_uuid($uuid);
     if (!$health_center_id) {
-      return [];
+      return $return;
     }
 
     $request = $this->getRequest();
     $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id);
 
-    $return = [];
     if (!isset($request['stats_cache_hash']) || $cache_data != $request['stats_cache_hash']) {
-      $return[] = hedley_stats_calculate_stats_for_health_center($health_center_id);
+      $return['batch'][] = hedley_stats_calculate_stats_for_health_center($health_center_id);
     }
 
     return $return;

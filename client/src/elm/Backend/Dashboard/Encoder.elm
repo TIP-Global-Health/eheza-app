@@ -32,6 +32,7 @@ encodeDashboardStats stats =
     , encodeFamilyPlanning stats.familyPlanning
     , encodeMissedSessions stats.missedSessions
     , encodeTotalEncounters stats.totalEncounters
+    , ( "stats_cache_hash", string stats.cacheHash )
     ]
         ++ (encodeGoodNutrition stats.maybeGoodNutrition
                 |> Maybe.map List.singleton

@@ -13,7 +13,7 @@ import Json.Encode
 import List.Zipper as Zipper
 import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid)
-import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseGeneral)
+import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseAuthorityStats, decodeDownloadSyncResponseGeneral)
 import SyncManager.Encoder
 import SyncManager.Model exposing (..)
 import SyncManager.Utils exposing (getSyncSpeedForSubscriptions)
@@ -239,8 +239,9 @@ update currentDate currentTime dbVersion device msg model =
                                                 [ ( "access_token", device.accessToken )
                                                 , ( "db_version", String.fromInt dbVersion )
                                                 , ( "statistics", "1" )
+                                                , ( "stats_cache_hash", currentZipper.statsCacheHash )
                                                 ]
-                                            |> withExpectJson decodeDownloadSyncResponseAuthority
+                                            |> withExpectJson decodeDownloadSyncResponseAuthorityStats
                                             |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityDashboardStatsFetchHandle zipperUpdated)
                                 in
                                 SubModelReturn
@@ -257,21 +258,41 @@ update currentDate currentTime dbVersion device msg model =
                 currentZipper =
                     Zipper.current zipper
 
-                cmd =
+                ( cmd, statsCacheHash ) =
                     case RemoteData.toMaybe webData of
                         Just data ->
-                            let
-                                dataToSend =
-                                    data.entities
-                                        |> List.foldl
-                                            (\entity accum -> SyncManager.Utils.getDataToSendAuthority entity accum)
-                                            []
-                                        |> List.reverse
-                            in
-                            sendSyncedDataToIndexDb { table = "Statistics", data = dataToSend, shard = currentZipper.uuid }
+                            if List.isEmpty data.entities then
+                                ( Cmd.none, currentZipper.statsCacheHash )
+
+                            else
+                                let
+                                    dataToSend =
+                                        data.entities
+                                            |> List.foldl
+                                                (\entity accum -> SyncManager.Utils.getDataToSendAuthority entity accum)
+                                                []
+                                            |> List.reverse
+
+                                    cacheHash =
+                                        data.entities
+                                            |> List.head
+                                            |> Maybe.map
+                                                (\backendAuthorityEntity ->
+                                                    case backendAuthorityEntity of
+                                                        BackendAuthorityDashboardStats statsEntity ->
+                                                            statsEntity.entity.cacheHash
+
+                                                        _ ->
+                                                            currentZipper.statsCacheHash
+                                                )
+                                            |> Maybe.withDefault currentZipper.statsCacheHash
+                                in
+                                ( sendSyncedDataToIndexDb { table = "AuthorityStats", data = dataToSend, shard = currentZipper.uuid }
+                                , cacheHash
+                                )
 
                         Nothing ->
-                            Cmd.none
+                            ( Cmd.none, currentZipper.statsCacheHash )
 
                 syncInfoAuthorities =
                     case RemoteData.toMaybe webData of
@@ -282,6 +303,7 @@ update currentDate currentTime dbVersion device msg model =
                                         | lastSuccesfulContact = Time.posixToMillis currentTime
                                         , remainingToDownload = data.revisionCount
                                         , status = "Success"
+                                        , statsCacheHash = statsCacheHash
                                     }
                                 )
                                 zipper
@@ -298,7 +320,12 @@ update currentDate currentTime dbVersion device msg model =
             in
             SubModelReturn
                 modelWithSyncStatus
-                cmd
+                (Cmd.batch
+                    [ cmd
+                    , -- Send to JS the updated revision ID. We send the entire list.
+                      sendSyncInfoAuthorities (Zipper.toList syncInfoAuthorities)
+                    ]
+                )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityDashboardStatsFetchHandle")
                 []
 
