@@ -183,7 +183,7 @@ determineSyncStatus model =
                                     -- otherwise, to the next status
                                     case Zipper.next zipper of
                                         Just nextZipper ->
-                                            ( SyncDownloadAuthority RemoteData.NotAsked
+                                            ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
                                             , Just nextZipper
                                             )
 

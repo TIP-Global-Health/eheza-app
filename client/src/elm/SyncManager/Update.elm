@@ -77,6 +77,7 @@ update currentDate currentTime dbVersion device msg model =
                                                 [ ( "access_token", device.accessToken )
                                                 , ( "db_version", String.fromInt dbVersion )
                                                 , ( "base_revision", String.fromInt currentZipper.lastFetchedRevisionId )
+                                                , ( "stats_cache_hash", currentZipper.statsCacheHash )
                                                 ]
                                             |> withExpectJson decodeDownloadSyncResponseAuthority
                                             |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipperUpdated)
@@ -238,8 +239,8 @@ update currentDate currentTime dbVersion device msg model =
                                             |> withQueryParams
                                                 [ ( "access_token", device.accessToken )
                                                 , ( "db_version", String.fromInt dbVersion )
-                                                , ( "statistics", "1" )
                                                 , ( "stats_cache_hash", currentZipper.statsCacheHash )
+                                                , ( "statistics", "1" )
                                                 ]
                                             |> withExpectJson decodeDownloadSyncResponseAuthorityStats
                                             |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityDashboardStatsFetchHandle zipperUpdated)
