@@ -1312,7 +1312,7 @@ encodeExposureSign sign =
     string <|
         case sign of
             COVID19Symptoms ->
-                "covid19-symptioms"
+                "covid19-symptoms"
 
             NoExposureSigns ->
                 "none"
