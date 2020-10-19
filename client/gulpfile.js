@@ -449,6 +449,7 @@ gulp.task('pwa:prod', function() {
       'config.js',
       'lifecycle.js',
       'nodes.js',
+      'statistics.js',
       'photos.js',
     ]
   });
