@@ -15,7 +15,7 @@ decodeAcuteIllnessEncounter =
         |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
         |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
         |> required "acute_illness_diagnosis" decodeAcuteIllnessDiagnosis
-        |> required "shard" (nullable decodeEntityUuid)
+        |> optional "shard" (nullable decodeEntityUuid) Nothing
 
 
 decodeAcuteIllnessDiagnosis : Decoder AcuteIllnessDiagnosis
