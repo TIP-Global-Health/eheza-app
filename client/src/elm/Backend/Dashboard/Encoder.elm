@@ -101,7 +101,8 @@ encodeChildrenBeneficiaries statsList =
 
 encodeChildrenBeneficiariesStats : ChildrenBeneficiariesStats -> List ( String, Value )
 encodeChildrenBeneficiariesStats stats =
-    [ ( "field_birth_dategender", encodeGender stats.gender )
+    [ ( "name", string stats.name )
+    , ( "field_gender", encodeGender stats.gender )
     , ( "field_birth_date", encodeYYYYMMDD stats.birthDate )
     , ( "created", encodeYYYYMMDD stats.memberSince )
     , ( "mother_name", string stats.motherName )
