@@ -46,6 +46,7 @@ type alias Model =
     , saveHCContact : WebData ()
     , saveCall114 : WebData ()
     , saveTreatmentReview : WebData ()
+    , saveBarcodePhoto : WebData ()
     }
 
 
@@ -66,6 +67,7 @@ emptyModel =
     , saveHCContact = NotAsked
     , saveCall114 = NotAsked
     , saveTreatmentReview = NotAsked
+    , saveBarcodePhoto = NotAsked
     }
 
 
@@ -116,3 +118,5 @@ type Msg
     | HandleSavedCall114 (WebData ())
     | SaveTreatmentReview PersonId (Maybe TreatmentReviewId) (EverySet TreatmentReviewSign)
     | HandleSavedTreatmentReview (WebData ())
+    | SaveBarcodePhoto PersonId (Maybe BarcodePhotoId) PhotoUrl
+    | HandleSavedBarcodePhoto (WebData ())
