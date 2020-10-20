@@ -777,6 +777,9 @@ update msg model =
                 activePage =
                     activePageByUrl url
 
+                _ =
+                    Debug.log "UrlChanged " activePage
+
                 cmd =
                     case activePage of
                         UserPage (SessionPage _ (ChildPage _)) ->

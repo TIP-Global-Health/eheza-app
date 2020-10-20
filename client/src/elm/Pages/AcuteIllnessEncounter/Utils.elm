@@ -190,7 +190,12 @@ activityCompleted currentDate person measurements diagnosis activity =
             isJust measurements.treatmentReview
 
         AcuteIllnessLaboratory ->
+            let
+                rdtExecuted =
+                    malariaRapidTestResultExecuted measurements
+            in
             isJust measurements.malariaTesting
+                && (not rdtExecuted || (rdtExecuted && isJust measurements.barcodePhoto))
 
         AcuteIllnessExposure ->
             mandatoryActivityCompleted measurements AcuteIllnessExposure
@@ -555,6 +560,15 @@ malariaRapidTestResult : AcuteIllnessMeasurements -> Maybe MalariaRapidTestResul
 malariaRapidTestResult measurements =
     measurements.malariaTesting
         |> Maybe.map (Tuple.second >> .value)
+
+
+malariaRapidTestResultExecuted : AcuteIllnessMeasurements -> Bool
+malariaRapidTestResultExecuted measurements =
+    let
+        rdtResult =
+            malariaRapidTestResult measurements
+    in
+    isJust rdtResult && rdtResult /= Just RapidTestUnableToRun
 
 
 malarialDangerSignsPresent : AcuteIllnessMeasurements -> Bool

@@ -771,7 +771,13 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
             AcuteIllnessLaboratory
 
         tasks =
-            [ LaboratoryMalariaTesting, LaboratoryBarcodePhoto ]
+            LaboratoryMalariaTesting
+                :: (if rdtExecuted then
+                        [ LaboratoryBarcodePhoto ]
+
+                    else
+                        []
+                   )
 
         viewTask task =
             let
@@ -830,21 +836,13 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                     measurements.barcodePhoto
                         |> Maybe.map (Tuple.second >> .value)
                         |> barcodePhotoFormWithDefault data.barcodePhotoForm
-                        |> viewBarcodePhotoForm language currentDate person
+                        |> viewBarcodePhotoForm language currentDate
 
-        getNextTask currentTask =
-            case currentTask of
-                LaboratoryMalariaTesting ->
-                    Nothing
-
-                LaboratoryBarcodePhoto ->
-                    Nothing
+        rdtExecuted =
+            malariaRapidTestResultExecuted measurements
 
         actions =
             let
-                nextTask =
-                    getNextTask data.activeTask
-
                 saveMsg =
                     case data.activeTask of
                         LaboratoryMalariaTesting ->
@@ -927,8 +925,8 @@ viewMalariaTestingForm language currentDate person form =
             ++ isPregnantInput
 
 
-viewBarcodePhotoForm : Language -> NominalDate -> Person -> BarcodePhotoForm -> Html Msg
-viewBarcodePhotoForm language currentDate person form =
+viewBarcodePhotoForm : Language -> NominalDate -> BarcodePhotoForm -> Html Msg
+viewBarcodePhotoForm language currentDate form =
     div [ class "ui form laboratory barcode-photo" ]
         [ divKeyed [ class "ui full segment photo" ]
             [ keyedDivKeyed "content"

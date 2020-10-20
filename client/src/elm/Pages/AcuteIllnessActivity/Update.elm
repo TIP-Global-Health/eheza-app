@@ -27,6 +27,7 @@ import Backend.Measurement.Model
 import Backend.Model exposing (ModelIndexedDb)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
+import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
@@ -617,29 +618,45 @@ update currentDate id db msg model =
 
         SaveMalariaTesting personId saved ->
             let
+                nextTask_ =
+                    Nothing
+
                 measurementId =
                     Maybe.map Tuple.first saved
 
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
-                appMsgs =
+                newValue =
                     model.laboratoryData.malariaTestingForm
                         |> toMalariaTestingValueWithDefault measurement
+
+                saveMsg =
+                    newValue
                         |> unwrap
                             []
-                            (\value ->
-                                [ Backend.AcuteIllnessEncounter.Model.SaveMalariaTesting personId measurementId value
-                                    |> Backend.Model.MsgAcuteIllnessEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
-                                ]
+                            (Backend.AcuteIllnessEncounter.Model.SaveMalariaTesting personId measurementId
+                                >> Backend.Model.MsgAcuteIllnessEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
             in
-            ( model
-            , Cmd.none
-            , appMsgs
-            )
+            if newValue == Just RapidTestUnableToRun then
+                let
+                    navigationMsg =
+                        App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
+                in
+                ( model
+                , Cmd.none
+                , navigationMsg :: saveMsg
+                )
+
+            else
+                ( model
+                , Cmd.none
+                , saveMsg
+                )
+                    |> sequenceExtra (update currentDate id db) [ SetActiveLaboratoryTask LaboratoryBarcodePhoto ]
 
         SaveBarcodePhoto personId saved ->
             let
