@@ -618,9 +618,6 @@ update currentDate id db msg model =
 
         SaveMalariaTesting personId saved ->
             let
-                nextTask_ =
-                    Nothing
-
                 measurementId =
                     Maybe.map Tuple.first saved
 
@@ -643,6 +640,8 @@ update currentDate id db msg model =
             in
             if newValue == Just RapidTestUnableToRun then
                 let
+                    -- Navigate to Encounter page, as RDT did not run,
+                    -- and we don't need to take photo of it's barcode.
                     navigationMsg =
                         App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
                 in
@@ -656,6 +655,7 @@ update currentDate id db msg model =
                 , Cmd.none
                 , saveMsg
                 )
+                    -- RDT ran, therfore, we move to 'Barcode photo' task.
                     |> sequenceExtra (update currentDate id db) [ SetActiveLaboratoryTask LaboratoryBarcodePhoto ]
 
         SaveBarcodePhoto personId saved ->
