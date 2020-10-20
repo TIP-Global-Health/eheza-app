@@ -577,3 +577,9 @@ call114Endpoint : ReadWriteEndPoint Error Call114Id Call114 Call114 ()
 call114Endpoint =
     swEndpoint "nodes/call_114" decodeCall114
         |> withValueEncoder (object << encodeCall114)
+
+
+barcodePhotoEndpoint : ReadWriteEndPoint Error BarcodePhotoId BarcodePhoto BarcodePhoto ()
+barcodePhotoEndpoint =
+    swEndpoint "nodes/barcode_photo" decodeBarcodePhoto
+        |> withValueEncoder (object << encodeBarcodePhoto)

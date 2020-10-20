@@ -581,3 +581,11 @@ type alias MedicationDistributionId =
 
 type MedicationDistributionIdUuidType
     = MedicationDistributionIdUuidType
+
+
+type alias BarcodePhotoId =
+    EntityUuid BarcodePhotoUuidType
+
+
+type BarcodePhotoUuidType
+    = BarcodePhotoUuidType

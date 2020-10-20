@@ -1509,3 +1509,8 @@ encodeRecommendationSite period =
 
             RecommendationSiteNotApplicable ->
                 "n-a"
+
+
+encodeBarcodePhoto : BarcodePhoto -> List ( String, Value )
+encodeBarcodePhoto =
+    encodeAcuteIllnessMeasurement encodePhotoUrl

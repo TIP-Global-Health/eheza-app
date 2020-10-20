@@ -819,6 +819,10 @@ type alias MedicationDistribution =
     AcuteIllnessMeasurement MedicationDistributionValue
 
 
+type alias BarcodePhoto =
+    AcuteIllnessMeasurement PhotoUrl
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -945,6 +949,7 @@ type alias AcuteIllnessMeasurements =
     , treatmentReview : Maybe ( TreatmentReviewId, TreatmentReview )
     , sendToHC : Maybe ( SendToHCId, SendToHC )
     , medicationDistribution : Maybe ( MedicationDistributionId, MedicationDistribution )
+    , barcodePhoto : Maybe ( BarcodePhotoId, BarcodePhoto )
     }
 
 
