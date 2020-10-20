@@ -22,6 +22,7 @@ import Backend.Measurement.Model
         , MedicationDistributionValue
         , MedicationNonAdministrationReason(..)
         , MedicationNonAdministrationSign(..)
+        , PhotoUrl(..)
         , ReasonForNotIsolating(..)
         , Recommendation114(..)
         , RecommendationSite(..)
@@ -205,6 +206,17 @@ laboratoryTasksCompletedFromTotal measurements data task =
                         |> malariaTestingFormWithDefault data.malariaTestingForm
             in
             ( taskCompleted form.rapidTestResult
+            , 1
+            )
+
+        LaboratoryBarcodePhoto ->
+            let
+                form =
+                    measurements.barcodePhoto
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> barcodePhotoFormWithDefault data.barcodePhotoForm
+            in
+            ( taskCompleted form.url
             , 1
             )
 
@@ -730,6 +742,20 @@ toMalariaTestingValueWithDefault saved form =
 toMalariaTestingValue : MalariaTestingForm -> Maybe MalariaRapidTestResult
 toMalariaTestingValue form =
     form.rapidTestResult
+
+
+barcodePhotoFormWithDefault : BarcodePhotoForm -> Maybe PhotoUrl -> BarcodePhotoForm
+barcodePhotoFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\savedUrl -> { url = or form.url (Just savedUrl) })
+
+
+toBarcodePhotoValueWithDefault : Maybe PhotoUrl -> BarcodePhotoForm -> Maybe PhotoUrl
+toBarcodePhotoValueWithDefault saved form =
+    barcodePhotoFormWithDefault form saved
+        |> .url
 
 
 fromTravelHistoryValue : Maybe (EverySet TravelHistorySign) -> TravelHistoryForm

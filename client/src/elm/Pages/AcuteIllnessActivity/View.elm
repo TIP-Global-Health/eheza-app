@@ -770,7 +770,7 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
             AcuteIllnessLaboratory
 
         tasks =
-            [ LaboratoryMalariaTesting ]
+            [ LaboratoryMalariaTesting, LaboratoryBarcodePhoto ]
 
         viewTask task =
             let
@@ -779,6 +779,11 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                         LaboratoryMalariaTesting ->
                             ( "laboratory-malaria-testing"
                             , isJust measurements.malariaTesting
+                            )
+
+                        LaboratoryBarcodePhoto ->
+                            ( "laboratory-barcode-photo"
+                            , isJust measurements.barcodePhoto
                             )
 
                 isActive =
@@ -820,17 +825,32 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                         |> malariaTestingFormWithDefault data.malariaTestingForm
                         |> viewMalariaTestingForm language currentDate person
 
+                LaboratoryBarcodePhoto ->
+                    measurements.barcodePhoto
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> barcodePhotoFormWithDefault data.barcodePhotoForm
+                        |> viewBarcodePhotoForm language currentDate person
+
         getNextTask currentTask =
             case currentTask of
                 LaboratoryMalariaTesting ->
-                    []
+                    Nothing
+
+                LaboratoryBarcodePhoto ->
+                    Nothing
 
         actions =
             let
+                nextTask =
+                    getNextTask data.activeTask
+
                 saveMsg =
                     case data.activeTask of
                         LaboratoryMalariaTesting ->
                             SaveMalariaTesting personId measurements.malariaTesting
+
+                        LaboratoryBarcodePhoto ->
+                            SaveBarcodePhoto personId measurements.barcodePhoto
             in
             div [ class "actions malaria-testing" ]
                 [ button
@@ -904,6 +924,11 @@ viewMalariaTestingForm language currentDate person form =
         , resultInput
         ]
             ++ isPregnantInput
+
+
+viewBarcodePhotoForm : Language -> NominalDate -> Person -> BarcodePhotoForm -> Html Msg
+viewBarcodePhotoForm language currentDate person form =
+    text "Hello"
 
 
 viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> ExposureData -> List (Html Msg)
@@ -1136,7 +1161,7 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
         getNextTask currentTask =
             case currentTask of
                 TreatmentReview ->
-                    []
+                    Nothing
 
         actions =
             let

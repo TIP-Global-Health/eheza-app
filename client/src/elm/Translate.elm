@@ -3085,6 +3085,11 @@ translationSet trans =
                     , kinyarwanda = Just "Malariya"
                     }
 
+                LaboratoryBarcodePhoto ->
+                    { english = "Barcode Photo"
+                    , kinyarwanda = Nothing
+                    }
+
         LastChecked ->
             { english = "Last checked"
             , kinyarwanda = Just "Isuzuma riheruka"

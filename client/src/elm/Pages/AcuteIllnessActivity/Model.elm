@@ -5,11 +5,13 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
+import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)
 
 
 type Msg
-    = SetActivePage Page
+    = DropZoneComplete DropZoneFile
+    | SetActivePage Page
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe AcuteIllnessDiagnosis)
     | SetPertinentSymptomsPopupState Bool
@@ -38,6 +40,7 @@ type Msg
     | SetRapidTestResult String
     | SetIsPregnant Bool
     | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
+    | SaveBarcodePhoto PersonId (Maybe ( BarcodePhotoId, BarcodePhoto ))
       -- EXPOSURE Msgs
     | SetActiveExposureTask ExposureTask
     | SetCovid19Country Bool
@@ -191,6 +194,7 @@ type alias AcuteFindingsForm =
 
 type alias LaboratoryData =
     { malariaTestingForm : MalariaTestingForm
+    , barcodePhotoForm : BarcodePhotoForm
     , activeTask : LaboratoryTask
     }
 
@@ -198,18 +202,24 @@ type alias LaboratoryData =
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { malariaTestingForm = MalariaTestingForm Nothing Nothing
+    , barcodePhotoForm = BarcodePhotoForm Nothing
     , activeTask = LaboratoryMalariaTesting
     }
 
 
 type LaboratoryTask
     = LaboratoryMalariaTesting
+    | LaboratoryBarcodePhoto
 
 
 type alias MalariaTestingForm =
     { rapidTestResult : Maybe MalariaRapidTestResult
     , isPregnant : Maybe Bool
     }
+
+
+type alias BarcodePhotoForm =
+    { url : Maybe PhotoUrl }
 
 
 
