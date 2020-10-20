@@ -1,6 +1,7 @@
 module Pages.AcuteIllnessActivity.Update exposing (update)
 
 import App.Model
+import App.Ports
 import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model
 import Backend.Entities exposing (..)
@@ -566,9 +567,17 @@ update currentDate id db msg model =
                 updatedData =
                     model.laboratoryData
                         |> (\data -> { data | activeTask = task })
+
+                cmd =
+                    case task of
+                        LaboratoryMalariaTesting ->
+                            Cmd.none
+
+                        LaboratoryBarcodePhoto ->
+                            App.Ports.bindDropZone ()
             in
             ( { model | laboratoryData = updatedData }
-            , Cmd.none
+            , cmd
             , []
             )
 
