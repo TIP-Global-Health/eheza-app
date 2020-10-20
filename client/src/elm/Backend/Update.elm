@@ -1618,6 +1618,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        BarcodePhotoRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | barcodePhoto = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         Call114Revision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
