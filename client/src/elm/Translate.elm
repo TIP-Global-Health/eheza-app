@@ -278,6 +278,7 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
+    | BarcodePhotoHelper
     | BeginNewEncounter
     | BloodPressure
     | BloodPressureElevatedOcassions
@@ -1526,6 +1527,11 @@ translationSet trans =
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
+        BarcodePhotoHelper ->
+            { english = "Take a picture of the barcode on the Malaria medication"
+            , kinyarwanda = Nothing
+            }
+
         BeginNewEncounter ->
             { english = "Begin a New Encounter"
             , kinyarwanda = Just "Tangira igikorwa gishya"
@@ -2244,7 +2250,7 @@ translationSet trans =
             }
 
         DropzoneDefaultMessage ->
-            { english = "Touch here to take a photo, or drop a photo file here."
+            { english = "Touch here to take a photo"
             , kinyarwanda = Just "Kanda hano niba ushaka gufotora cg ukure ifoto mu bubiko hano."
             }
 
@@ -3086,7 +3092,7 @@ translationSet trans =
                     }
 
                 LaboratoryBarcodePhoto ->
-                    { english = "Barcode Photo"
+                    { english = "Photo of Bar Code"
                     , kinyarwanda = Nothing
                     }
 

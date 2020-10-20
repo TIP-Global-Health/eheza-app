@@ -11,13 +11,14 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (isPersonAFertileWoman)
 import EverySet
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
@@ -928,7 +929,38 @@ viewMalariaTestingForm language currentDate person form =
 
 viewBarcodePhotoForm : Language -> NominalDate -> Person -> BarcodePhotoForm -> Html Msg
 viewBarcodePhotoForm language currentDate person form =
-    text "Hello"
+    div [ class "ui form laboratory barcode-photo" ]
+        [ divKeyed [ class "ui full segment photo" ]
+            [ keyedDivKeyed "content"
+                [ class "content" ]
+                [ p [] [ text <| translate language Translate.BarcodePhotoHelper ++ "." ]
+                    |> keyed "help"
+                , keyedDivKeyed "grid"
+                    [ class "ui grid" ]
+                    [ Maybe.map viewPhotoThumbFromPhotoUrl form.url
+                        |> showMaybe
+                        |> List.singleton
+                        |> div [ class "eight wide column" ]
+                        |> keyed "thumbnail"
+                    , div
+                        [ id "dropzone"
+                        , class "eight wide column dropzone"
+                        , on "dropzonecomplete" (Json.Decode.map DropZoneComplete decodeDropZoneFile)
+                        ]
+                        [ div
+                            [ class "dz-message"
+                            , attribute "data-dz-message" ""
+                            ]
+                            [ span
+                                []
+                                [ text <| translate language Translate.DropzoneDefaultMessage ]
+                            ]
+                        ]
+                        |> keyed "dropzone"
+                    ]
+                ]
+            ]
+        ]
 
 
 viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> ExposureData -> List (Html Msg)
