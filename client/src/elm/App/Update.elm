@@ -1,5 +1,6 @@
 module App.Update exposing (init, subscriptions, updateAndThenFetch)
 
+import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import App.Fetch
 import App.Model exposing (..)
 import App.Ports exposing (..)
@@ -777,9 +778,6 @@ update msg model =
                 activePage =
                     activePageByUrl url
 
-                _ =
-                    Debug.log "UrlChanged " activePage
-
                 cmd =
                     case activePage of
                         UserPage (SessionPage _ (ChildPage _)) ->
@@ -795,6 +793,9 @@ update msg model =
                             App.Ports.bindDropZone ()
 
                         UserPage (NutritionActivityPage _ Photo) ->
+                            App.Ports.bindDropZone ()
+
+                        UserPage (AcuteIllnessActivityPage _ AcuteIllnessLaboratory) ->
                             App.Ports.bindDropZone ()
 
                         _ ->

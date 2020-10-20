@@ -779,6 +779,9 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                         []
                    )
 
+        rdtExecuted =
+            malariaRapidTestResultExecuted measurements
+
         viewTask task =
             let
                 ( iconClass, isCompleted ) =
@@ -837,9 +840,6 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                         |> Maybe.map (Tuple.second >> .value)
                         |> barcodePhotoFormWithDefault data.barcodePhotoForm
                         |> viewBarcodePhotoForm language currentDate
-
-        rdtExecuted =
-            malariaRapidTestResultExecuted measurements
 
         actions =
             let

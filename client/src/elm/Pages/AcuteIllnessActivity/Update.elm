@@ -67,23 +67,6 @@ update currentDate id db msg model =
             resolveFormWithDefaults .acuteFindings acuteFindingsFormWithDefault model.physicalExamData.acuteFindingsForm
     in
     case msg of
-        DropZoneComplete result ->
-            let
-                form =
-                    model.laboratoryData.barcodePhotoForm
-
-                updatedForm =
-                    { form | url = Just (PhotoUrl result.url) }
-
-                updatedData =
-                    model.laboratoryData
-                        |> (\data -> { data | barcodePhotoForm = updatedForm })
-            in
-            ( { model | laboratoryData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SetActivePage page ->
             ( model
             , Cmd.none
@@ -657,6 +640,23 @@ update currentDate id db msg model =
                 )
                     -- RDT ran, therfore, we move to 'Barcode photo' task.
                     |> sequenceExtra (update currentDate id db) [ SetActiveLaboratoryTask LaboratoryBarcodePhoto ]
+
+        DropZoneComplete result ->
+            let
+                form =
+                    model.laboratoryData.barcodePhotoForm
+
+                updatedForm =
+                    { form | url = Just (PhotoUrl result.url) }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | barcodePhotoForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SaveBarcodePhoto personId saved ->
             let

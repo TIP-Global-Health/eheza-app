@@ -10,8 +10,7 @@ import Pages.Page exposing (Page)
 
 
 type Msg
-    = DropZoneComplete DropZoneFile
-    | SetActivePage Page
+    = SetActivePage Page
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe AcuteIllnessDiagnosis)
     | SetPertinentSymptomsPopupState Bool
@@ -40,6 +39,7 @@ type Msg
     | SetRapidTestResult String
     | SetIsPregnant Bool
     | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
+    | DropZoneComplete DropZoneFile
     | SaveBarcodePhoto PersonId (Maybe ( BarcodePhotoId, BarcodePhoto ))
       -- EXPOSURE Msgs
     | SetActiveExposureTask ExposureTask

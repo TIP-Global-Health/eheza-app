@@ -32,7 +32,7 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, isNothing)
 import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..), NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (symptomsGeneralDangerSigns)
 import Pages.AcuteIllnessEncounter.Model exposing (..)
@@ -441,38 +441,43 @@ resolveNonCovid19AcuteIllnessDiagnosis currentDate person covid19ByPartialSet me
 
 resolveAcuteIllnessDiagnosisByLaboratoryResults : Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
 resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements =
-    malariaRapidTestResult measurements
-        |> Maybe.andThen
-            (\testResult ->
-                case testResult of
-                    RapidTestPositive ->
-                        if malarialDangerSignsPresent measurements then
-                            Just DiagnosisMalariaComplicated
+    if malariaRapidTestResultExecuted measurements && isNothing measurements.barcodePhoto then
+        -- We want nurse to take photo of bar code, before determining the diagnosis.
+        Nothing
 
-                        else
-                            Just DiagnosisMalariaUncomplicated
+    else
+        malariaRapidTestResult measurements
+            |> Maybe.andThen
+                (\testResult ->
+                    case testResult of
+                        RapidTestPositive ->
+                            if malarialDangerSignsPresent measurements then
+                                Just DiagnosisMalariaComplicated
 
-                    RapidTestPositiveAndPregnant ->
-                        if malarialDangerSignsPresent measurements then
-                            Just DiagnosisMalariaComplicated
+                            else
+                                Just DiagnosisMalariaUncomplicated
 
-                        else
-                            Just DiagnosisMalariaUncomplicatedAndPregnant
+                        RapidTestPositiveAndPregnant ->
+                            if malarialDangerSignsPresent measurements then
+                                Just DiagnosisMalariaComplicated
 
-                    _ ->
-                        if respiratoryInfectionDangerSignsPresent measurements then
-                            Just DiagnosisRespiratoryInfectionComplicated
+                            else
+                                Just DiagnosisMalariaUncomplicatedAndPregnant
 
-                        else if nonBloodyDiarrheaAtSymptoms measurements then
-                            -- Fever with Diarrhea is considered to be a complicated case.
-                            Just DiagnosisGastrointestinalInfectionComplicated
+                        _ ->
+                            if respiratoryInfectionDangerSignsPresent measurements then
+                                Just DiagnosisRespiratoryInfectionComplicated
 
-                        else if covid19ByPartialSet then
-                            Just DiagnosisCovid19
+                            else if nonBloodyDiarrheaAtSymptoms measurements then
+                                -- Fever with Diarrhea is considered to be a complicated case.
+                                Just DiagnosisGastrointestinalInfectionComplicated
 
-                        else
-                            Just DiagnosisFeverOfUnknownOrigin
-            )
+                            else if covid19ByPartialSet then
+                                Just DiagnosisCovid19
+
+                            else
+                                Just DiagnosisFeverOfUnknownOrigin
+                )
 
 
 countSymptoms : Maybe ( id, m ) -> (m -> Dict k v) -> List k -> Int

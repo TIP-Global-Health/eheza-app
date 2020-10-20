@@ -890,6 +890,16 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     , extraMsgs
                     )
 
+                [ BarcodePhotoRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 -- When we see that needed data for suspected COVID 19 case was collected,
                 -- navigate to Progress Report page.
                 [ IsolationRevision uuid data ] ->
