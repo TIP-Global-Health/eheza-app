@@ -1764,6 +1764,23 @@ input::placeholder {
   }
 }
 
+.icon-laboratory-barcode-photo {
+  .active &:after {
+    background-image: url(#{$img-path}icon-barcode-photo-white.svg), url(#{$img-path}icon-selected-circle.svg);
+    background-size: cover;
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-barcode-photo-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-size: cover;
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-barcode-photo-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-size: cover;
+  }
+}
+
 .icon-exposure-travel {
   .active &:after {
     background-image: url(#{$img-path}icon-travel-white.svg), url(#{$img-path}icon-selected-circle.svg);
