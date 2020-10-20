@@ -1529,7 +1529,7 @@ translationSet trans =
 
         BarcodePhotoHelper ->
             { english = "Take a picture of the barcode on the Malaria medication"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Fata ifoto ya kodi ndangamuti ku muti wa malariya"
             }
 
         BeginNewEncounter ->
@@ -2251,7 +2251,7 @@ translationSet trans =
 
         DropzoneDefaultMessage ->
             { english = "Touch here to take a photo"
-            , kinyarwanda = Just "Kanda hano niba ushaka gufotora cg ukure ifoto mu bubiko hano."
+            , kinyarwanda = Just "Kora hano kugira ngo ufate ifoto ya kodi ndangamuti"
             }
 
         DueDate ->
@@ -3093,7 +3093,7 @@ translationSet trans =
 
                 LaboratoryBarcodePhoto ->
                     { english = "Photo of Bar Code"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ifoto ya kodi ndangamuti"
                     }
 
         LastChecked ->
