@@ -3402,28 +3402,28 @@ translationSet trans =
 
         MedicationForFeverPast6Hours ->
             { english = "Patient took medication to treat a fever in the past six hours"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi yanyoye imiti y’umuriro mu masaha atandatu ashize"
             }
 
         MedicationHelpedEnding helped ->
             if helped then
                 { english = "and improved"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "none yorohewe"
                 }
 
             else
                 { english = "but no improvement"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "ariko ntiyorohewe"
                 }
 
         MedicationForMalariaToday ->
             { english = "Patient received medication for malaria today before this visit"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi yahawe imiti ya malariya uyu munsi mbere yuko aza mu isuzuma"
             }
 
         MedicationForMalariaPastMonth ->
             { english = "Patient received medication for malaria within the past month before today's visit"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi yahawe imiti ya malariya mu kwezi gushize mbere yuko aza mu isuzuma uyu munsi "
             }
 
         MedicalFormHelper ->
