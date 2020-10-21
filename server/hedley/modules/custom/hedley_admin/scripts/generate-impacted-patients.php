@@ -50,6 +50,7 @@ $impacted_patients = [
 ];
 $processed = 0;
 $measurement_types = hedley_admin_get_measurement_types();
+$measurements_count = 0;
 
 while ($processed < $total) {
   // Free up memory.
@@ -76,6 +77,8 @@ while ($processed < $total) {
     if (empty($measurements_ids)) {
       continue;
     }
+
+    $measurements_count += count($measurements_ids);
 
     // When there're more than 50 measurements, we classify patient as
     // affected, without further checks, as this amount of measurements
@@ -113,7 +116,9 @@ while ($processed < $total) {
   drush_print("$processed persons processed.");
 }
 
-drush_print('Done! Impacted patients:');
+drush_print('Done!');
+drush_print("Total measurements: $measurements_count");
+drush_print('Impacted patients:');
 $count = $impacted_patients['lt1m'];
 drush_print("* 0 - 1 month: $count");
 $count = $impacted_patients['lt2y'];
