@@ -33,11 +33,11 @@ $count_query->propertyCondition('nid', $nid, '>');
 $total = $count_query->count()->execute();
 
 if ($total == 0) {
-  drush_print("There are no people in DB.");
+  drush_print("There are no patients in DB.");
   exit;
 }
 
-drush_print("$total people located.");
+drush_print("$total patients located.");
 
 $impacted_patients = [
   'lt1m' => 0,
@@ -72,10 +72,14 @@ while ($processed < $total) {
   $ids = array_keys($result['node']);
   foreach ($ids as $id) {
     $measurements_ids = hedley_admin_get_person_measurements($id, $measurement_types);
+    // If patient got no measurements, move on to next patient.
     if (empty($measurements_ids)) {
       continue;
     }
 
+    // When there're more than 50 measurements, we classify patient as
+    // affected, without further checks, as this amount of measurements
+    // can't belong to single encounter.
     if (count($measurements_ids) > 50) {
       $classification = classify_by_age($id);
       $impacted_patients[$classification]++;
@@ -83,9 +87,12 @@ while ($processed < $total) {
     }
 
     $measurements = node_load_multiple($measurements_ids);
+    // Creation timestamp of first measurement.
     $first_timestamp = array_shift($measurements)->created;
-
     foreach($measurements as $measurement) {
+      // When we find 2 measurements that are at least taken week apart,
+      // we classify the patient as impacted, as these 2 measurements
+      // were taken in different encounters.
       if (abs($first_timestamp - $measurement->created) > 7*24*3600) {
         $classification = classify_by_age($id);
         $impacted_patients[$classification]++;
@@ -122,6 +129,9 @@ drush_print("* 20 years - 50 years: $count");
 $count = $impacted_patients['mt50y'];
 drush_print("* Older than 50 years: $count");
 
+/**
+ * Resolve age indication, according to person's birth date.
+ */
 function classify_by_age($person_id) {
   $wrapper = entity_metadata_wrapper('node', $person_id);
   $birth_date = $wrapper->field_birth_date->value();

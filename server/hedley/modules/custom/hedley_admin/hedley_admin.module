@@ -277,7 +277,18 @@ function hedley_admin_health_center_access($account = FALSE) {
   }
 }
 
-function hedley_admin_get_person_measurements($person_id, $measurement_types) {
+/**
+ * Returns a list of measurements IDs that were taken for certain person.
+ *
+ * @param int $person_id
+ *   The ID of person we query for measurements.
+ * @param array $measurement_types
+ *   List of content types that are considered as measurements.
+ *
+ * @return array
+ *   List of measurements IDs.
+ */
+function hedley_admin_get_person_measurements($person_id, array $measurement_types) {
   $query = db_select('field_data_field_person', 'fp');
   $query->addField('fp', 'entity_id');
   $query->condition('bundle', $measurement_types, 'IN');
@@ -286,7 +297,14 @@ function hedley_admin_get_person_measurements($person_id, $measurement_types) {
   return $query->execute()->fetchCol();
 }
 
-
+/**
+ * Returns list of content types that are considered as measurements.
+ *
+ * We return both group and individual encounters measurements.
+ *
+ * @return array
+ *   List of content types that are considered as measurements.
+ */
 function hedley_admin_get_measurement_types() {
   $measurement_types = [];
   $content_types = array_keys(node_type_get_types());
@@ -294,6 +312,8 @@ function hedley_admin_get_measurement_types() {
   foreach ($content_types as $type) {
     $fields = hedley_admin_get_content_type_fields($type);
 
+    // Group encounter measurements got the 'session' field.
+    // Individual encounter measurements measurements got named field.
     $measurement_indicator_fields = [
       'field_session',
       'field_nutrition_encounter',
@@ -312,6 +332,15 @@ function hedley_admin_get_measurement_types() {
   return $measurement_types;
 }
 
+/**
+ * Returns list of fields names on certain content type.
+ *
+ * @param string $type
+ *   Content type bundle.
+ *
+ * @return array
+ *   List of fields names.
+ */
 function hedley_admin_get_content_type_fields($type) {
   $query = db_select('field_config_instance', 'ci');
   $query->addField('ci', 'field_name');
