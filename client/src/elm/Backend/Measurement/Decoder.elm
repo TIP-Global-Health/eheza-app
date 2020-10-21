@@ -1506,7 +1506,7 @@ decodeExposureSign =
         |> andThen
             (\sign ->
                 case sign of
-                    "covid19-symptioms" ->
+                    "covid19-symptoms" ->
                         succeed COVID19Symptoms
 
                     "none" ->

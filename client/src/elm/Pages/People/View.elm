@@ -100,7 +100,12 @@ viewSearchForm : Language -> NominalDate -> Maybe VillageId -> Bool -> Initiator
 viewSearchForm language currentDate maybeVillageId isChw initiator relation model db =
     let
         searchForm =
-            Html.form []
+            Html.form
+                [ -- These attribites are blocking 'Submit' action on HTML form,
+                  -- as it is not needed, and causes application to reload.
+                  action "javascript:void(0);"
+                , onSubmit NoOp
+                ]
                 [ div
                     [ class "ui search form" ]
                     [ div []

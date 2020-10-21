@@ -27,6 +27,7 @@ emptyModel =
 
 type Msg
     = MsgDebouncer (Debouncer.Msg Msg)
+    | NoOp
     | SetInput String
     | SetSearch String
     | SetActivePage Page

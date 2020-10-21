@@ -1257,7 +1257,7 @@ viewTreatmentReviewForm language currentDate measurements form =
                     else
                         []
             in
-            [ viewQuestionLabel language Translate.MedicationForMalariaWithinPastMonthQuestion
+            [ viewQuestionLabel language Translate.MedicationForMalariaTodayQuestion
             , viewBoolInput
                 language
                 form.malariaToday
@@ -1267,7 +1267,7 @@ viewTreatmentReviewForm language currentDate measurements form =
             ]
                 ++ malariaTodayHelpedInput
 
-        malariaWithinPastMonth =
+        malariaWithinPastMonthSection =
             let
                 malariaWithinPastMonthPositive =
                     form.malariaWithinPastMonth
@@ -1287,7 +1287,7 @@ viewTreatmentReviewForm language currentDate measurements form =
                     else
                         []
             in
-            [ viewQuestionLabel language Translate.MedicationForMalariaTodayQuestion
+            [ viewQuestionLabel language Translate.MedicationForMalariaWithinPastMonthQuestion
             , viewBoolInput
                 language
                 form.malariaWithinPastMonth
@@ -1299,7 +1299,7 @@ viewTreatmentReviewForm language currentDate measurements form =
     in
     feverPast6HoursSection
         ++ malariaTodaySection
-        ++ malariaWithinPastMonth
+        ++ malariaWithinPastMonthSection
         |> div [ class "ui form treatment-review" ]
 
 

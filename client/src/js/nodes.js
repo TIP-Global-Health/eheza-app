@@ -503,12 +503,35 @@
 
                 if (type === 'person') {
                     var nameContains = params.get('name_contains');
+
                     if (nameContains) {
+                        // For the case when there's more than one word as an input,
+                        // we generate an array of lowercase words.
+                        var words = nameContains.split(' ');
+                        words.forEach(function (word, index) {
+                          words[index] = word.toLowerCase();
+                        });
+
                         modifyQuery = modifyQuery.then(function () {
-                            query = table.where('name_search').startsWith(nameContains.toLowerCase()).distinct();
+                            // We search for resulting persons that start with any of the input words (apply 'OR' condition).
+                            query = table.where('name_search').startsWithAnyOf(words).distinct().and(function (person) {
+                              // Now, we check that each word we got as search input is a prefix
+                              // of any of person name parts (applying 'AND condition').
+                              return words.every(function (word) {
+                                return person.name_search.some(function (nameSearchWord) {
+                                  return nameSearchWord.startsWith(word);
+                                });
+                              });
+                            });
 
                             // Cloning doesn't seem to work for this one.
-                            countQuery = table.where('name_search').startsWith(nameContains.toLowerCase()).distinct();
+                            countQuery = table.where('name_search').startsWithAnyOf(words).distinct().and(function (person) {
+                              return words.every(function (word) {
+                                return person.name_search.some(function (nameSearchWord) {
+                                  return nameSearchWord.startsWith(word);
+                                });
+                              });
+                            });
 
                             sortBy = 'label';
 
