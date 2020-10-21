@@ -2,7 +2,10 @@
 
 /**
  * @file
- * Recalculate all shards.
+ * Generate 'Impacted Patients' report.
+ * Patient is considered impacted if attended at least 2 encounters.
+ * Code criteria for considering patient as imported:
+ * A person that has at least 2 measurements, taken with interval of one week, or more.
  *
  * Drush scr
  * profiles/hedley/modules/custom/hedley_admin/scripts/generate-impacted-patients.php.
@@ -110,7 +113,7 @@ while ($processed < $total) {
     $measurements = node_load_multiple($measurements_ids);
     // Creation timestamp of first measurement.
     $first_timestamp = array_shift($measurements)->created;
-    foreach($measurements as $measurement) {
+    foreach ($measurements as $measurement) {
       // When we find 2 measurements that are at least taken week apart,
       // we classify the patient as impacted, as these 2 measurements
       // were taken in different encounters.
@@ -170,19 +173,19 @@ function classify_by_age_and_gender($person_id) {
   if ($birth_date > strtotime('-1 month')) {
     $age = 'lt1m';
   }
-  else if ($birth_date > strtotime('-2 year')) {
+  elseif ($birth_date > strtotime('-2 year')) {
     $age = 'lt2y';
   }
-  else if ($birth_date > strtotime('-5 year')) {
+  elseif ($birth_date > strtotime('-5 year')) {
     $age = 'lt5y';
   }
-  else if ($birth_date > strtotime('-10 year')) {
+  elseif ($birth_date > strtotime('-10 year')) {
     $age = 'lt10y';
   }
-  else if ($birth_date > strtotime('-20 year')) {
+  elseif ($birth_date > strtotime('-20 year')) {
     $age = 'lt20y';
   }
-  else if ($birth_date > strtotime('-50 year')) {
+  elseif ($birth_date > strtotime('-50 year')) {
     $age = 'lt50y';
   }
   else {
