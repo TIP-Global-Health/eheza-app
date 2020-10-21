@@ -5,7 +5,8 @@
  * Generate 'Impacted Patients' report.
  * Patient is considered impacted if attended at least 2 encounters.
  * Code criteria for considering patient as imported:
- * A person that has at least 2 measurements, taken with interval of one week, or more.
+ * A person that has at least 2 measurements, taken with interval of one week,
+ * or more.
  *
  * Drush scr
  * profiles/hedley/modules/custom/hedley_admin/scripts/generate-impacted-patients.php.
@@ -45,31 +46,31 @@ drush_print("$total patients located.");
 $impacted_patients = [
   'lt1m' => [
     'male' => 0,
-    'female' => 0
+    'female' => 0,
   ],
   'lt2y' => [
     'male' => 0,
-    'female' => 0
+    'female' => 0,
   ],
   'lt5y' => [
     'male' => 0,
-    'female' => 0
+    'female' => 0,
   ],
   'lt10y' => [
     'male' => 0,
-    'female' => 0
+    'female' => 0,
   ],
   'lt20y' => [
     'male' => 0,
-    'female' => 0
+    'female' => 0,
   ],
   'lt50y' => [
     'male' => 0,
-    'female' => 0
+    'female' => 0,
   ],
   'mt50y' => [
     'male' => 0,
-    'female' => 0
+    'female' => 0,
   ],
 ];
 $processed = 0;
@@ -117,7 +118,7 @@ while ($processed < $total) {
       // When we find 2 measurements that are at least taken week apart,
       // we classify the patient as impacted, as these 2 measurements
       // were taken in different encounters.
-      if (abs($first_timestamp - $measurement->created) > 7*24*3600) {
+      if (abs($first_timestamp - $measurement->created) > 7 * 24 * 3600) {
         list($age, $gender) = classify_by_age_and_gender($id);
         $impacted_patients[$age][$gender]++;
         break;
