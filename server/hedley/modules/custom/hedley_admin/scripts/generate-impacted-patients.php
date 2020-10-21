@@ -39,10 +39,18 @@ if ($total == 0) {
 
 drush_print("$total people located.");
 
-$measurement_types = hedley_admin_get_measurement_types();
-$impacted_patients = [];
-
+$impacted_patients = [
+  'lt1m' => 0,
+  'lt2y' => 0,
+  'lt5y' => 0,
+  'lt10y' => 0,
+  'lt20' => 0,
+  'lt50y' => 0,
+  'mt50y' => 0,
+];
 $processed = 0;
+$measurement_types = hedley_admin_get_measurement_types();
+
 while ($processed < $total) {
   // Free up memory.
   drupal_static_reset();
@@ -69,7 +77,8 @@ while ($processed < $total) {
     }
 
     if (count($measurements_ids) > 50) {
-      $impacted_patients[] = $id;
+      $classification = classify_by_age($id);
+      $impacted_patients[$classification]++;
       continue;
     }
 
@@ -77,8 +86,9 @@ while ($processed < $total) {
     $first_timestamp = array_shift($measurements)->created;
 
     foreach($measurements as $measurement) {
-      if (abs($first_timestamp - $measurement->created) > 14*24*3600) {
-        $impacted_patients[] = $id;
+      if (abs($first_timestamp - $measurement->created) > 7*24*3600) {
+        $classification = classify_by_age($id);
+        $impacted_patients[$classification]++;
         break;
       }
     }
@@ -96,7 +106,44 @@ while ($processed < $total) {
   drush_print("$processed persons processed.");
 }
 
-drush_print('Done!');
-$count = count($impacted_patients);
-drush_print("$count patients impacted.");
+drush_print('Done! Impacted patients:');
+$count = $impacted_patients['lt1m'];
+drush_print("* 0 - 1 month: $count");
+$count = $impacted_patients['lt2y'];
+drush_print("* 1 month - 2 years: $count");
+$count = $impacted_patients['lt5y'];
+drush_print("* 2 years - 5 years: $count");
+$count = $impacted_patients['lt10y'];
+drush_print("* 5 years - 10 years: $count");
+$count = $impacted_patients['lt20y'];
+drush_print("* 10 years - 20 years: $count");
+$count = $impacted_patients['lt50y'];
+drush_print("* 20 years - 50 years: $count");
+$count = $impacted_patients['mt50y'];
+drush_print("* Older than 50 years: $count");
 
+function classify_by_age($person_id) {
+  $wrapper = entity_metadata_wrapper('node', $person_id);
+  $birth_date = $wrapper->field_birth_date->value();
+
+  if ($birth_date < strtotime('-1 month')) {
+    return 'lt1m';
+  }
+  else if ($birth_date < strtotime('-2 year')) {
+    return 'lt2y';
+  }
+  else if ($birth_date < strtotime('-5 year')) {
+    return 'lt5y';
+  }
+  else if ($birth_date < strtotime('-10 year')) {
+    return 'lt10y';
+  }
+  else if ($birth_date < strtotime('-20 year')) {
+    return 'lt20y';
+  }
+  else if ($birth_date < strtotime('-50 year')) {
+    return 'lt50y';
+  }
+
+  return 'mt50y';
+}
