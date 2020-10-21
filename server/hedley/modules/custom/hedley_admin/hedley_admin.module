@@ -276,3 +276,46 @@ function hedley_admin_health_center_access($account = FALSE) {
     return FALSE;
   }
 }
+
+function hedley_admin_get_person_measurements($person_id, $measurement_types) {
+  $query = db_select('field_data_field_person', 'fp');
+  $query->addField('fp', 'entity_id');
+  $query->condition('bundle', $measurement_types, 'IN');
+  $query->condition('field_person_target_id', $person_id);
+
+  return $query->execute()->fetchCol();
+}
+
+
+function hedley_admin_get_measurement_types() {
+  $measurement_types = [];
+  $content_types = array_keys(node_type_get_types());
+
+  foreach ($content_types as $type) {
+    $fields = hedley_admin_get_content_type_fields($type);
+
+    $measurement_indicator_fields = [
+      'field_session',
+      'field_nutrition_encounter',
+      'field_prenatal_encounter',
+      'field_acute_illness_encounter',
+    ];
+
+    foreach ($measurement_indicator_fields as $indicator) {
+      if (in_array($indicator, $fields)) {
+        $measurement_types[] = $type;
+        break;
+      }
+    }
+  }
+
+  return $measurement_types;
+}
+
+function hedley_admin_get_content_type_fields($type) {
+  $query = db_select('field_config_instance', 'ci');
+  $query->addField('ci', 'field_name');
+  $query->condition('bundle', $type);
+
+  return $query->execute()->fetchCol();
+}
