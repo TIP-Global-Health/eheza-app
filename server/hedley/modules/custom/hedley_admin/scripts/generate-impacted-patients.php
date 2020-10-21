@@ -40,17 +40,37 @@ if ($total == 0) {
 drush_print("$total patients located.");
 
 $impacted_patients = [
-  'lt1m' => 0,
-  'lt2y' => 0,
-  'lt5y' => 0,
-  'lt10y' => 0,
-  'lt20y' => 0,
-  'lt50y' => 0,
-  'mt50y' => 0,
+  'lt1m' => [
+    'male' => 0,
+    'female' => 0
+  ],
+  'lt2y' => [
+    'male' => 0,
+    'female' => 0
+  ],
+  'lt5y' => [
+    'male' => 0,
+    'female' => 0
+  ],
+  'lt10y' => [
+    'male' => 0,
+    'female' => 0
+  ],
+  'lt20y' => [
+    'male' => 0,
+    'female' => 0
+  ],
+  'lt50y' => [
+    'male' => 0,
+    'female' => 0
+  ],
+  'mt50y' => [
+    'male' => 0,
+    'female' => 0
+  ],
 ];
 $processed = 0;
 $measurement_types = hedley_admin_get_measurement_types();
-$measurements_count = 0;
 
 while ($processed < $total) {
   // Free up memory.
@@ -78,14 +98,12 @@ while ($processed < $total) {
       continue;
     }
 
-    $measurements_count += count($measurements_ids);
-
-    // When there're more than 50 measurements, we classify patient as
+    // When there are more than 50 measurements, we classify patient as
     // affected, without further checks, as this amount of measurements
     // can't belong to single encounter.
     if (count($measurements_ids) > 50) {
-      $classification = classify_by_age($id);
-      $impacted_patients[$classification]++;
+      list($age, $gender) = classify_by_age_and_gender($id);
+      $impacted_patients[$age][$gender]++;
       continue;
     }
 
@@ -97,8 +115,8 @@ while ($processed < $total) {
       // we classify the patient as impacted, as these 2 measurements
       // were taken in different encounters.
       if (abs($first_timestamp - $measurement->created) > 7*24*3600) {
-        $classification = classify_by_age($id);
-        $impacted_patients[$classification]++;
+        list($age, $gender) = classify_by_age_and_gender($id);
+        $impacted_patients[$age][$gender]++;
         break;
       }
     }
@@ -117,48 +135,59 @@ while ($processed < $total) {
 }
 
 drush_print('Done!');
-drush_print("Total measurements: $measurements_count");
-drush_print('Impacted patients:');
-$count = $impacted_patients['lt1m'];
-drush_print("* 0 - 1 month: $count");
-$count = $impacted_patients['lt2y'];
-drush_print("* 1 month - 2 years: $count");
-$count = $impacted_patients['lt5y'];
-drush_print("* 2 years - 5 years: $count");
-$count = $impacted_patients['lt10y'];
-drush_print("* 5 years - 10 years: $count");
-$count = $impacted_patients['lt20y'];
-drush_print("* 10 years - 20 years: $count");
-$count = $impacted_patients['lt50y'];
-drush_print("* 20 years - 50 years: $count");
-$count = $impacted_patients['mt50y'];
-drush_print("* Older than 50 years: $count");
+drush_print('Impacted patients report:');
+$male = $impacted_patients['lt1m']['male'];
+$female = $impacted_patients['lt1m']['female'];
+drush_print("* 0 - 1 month: Male - $male, Female - $female");
+$male = $impacted_patients['lt2y']['male'];
+$female = $impacted_patients['lt2y']['female'];
+drush_print("* 1 month - 2 years: Male - $male, Female - $female");
+$male = $impacted_patients['lt5y']['male'];
+$female = $impacted_patients['lt5y']['female'];
+drush_print("* 2 years - 5 years: Male - $male, Female - $female");
+$male = $impacted_patients['lt10y']['male'];
+$female = $impacted_patients['lt10y']['female'];
+drush_print("* 5 years - 10 years: Male - $male, Female - $female");
+$male = $impacted_patients['lt20y']['male'];
+$female = $impacted_patients['lt20y']['female'];
+drush_print("* 10 years - 20 years: Male - $male, Female - $female");
+$male = $impacted_patients['lt50y']['male'];
+$female = $impacted_patients['lt50y']['female'];
+drush_print("* 20 years - 50 years: Male - $male, Female - $female");
+$male = $impacted_patients['mt50y']['male'];
+$female = $impacted_patients['mt50y']['female'];
+drush_print("* Older than 50 years: Male - $male, Female - $female");
 
 /**
  * Resolve age indication, according to person's birth date.
  */
-function classify_by_age($person_id) {
+function classify_by_age_and_gender($person_id) {
   $wrapper = entity_metadata_wrapper('node', $person_id);
+  $gender = $wrapper->field_gender->value();
+
   $birth_date = $wrapper->field_birth_date->value();
 
   if ($birth_date > strtotime('-1 month')) {
-    return 'lt1m';
+    $age = 'lt1m';
   }
   else if ($birth_date > strtotime('-2 year')) {
-    return 'lt2y';
+    $age = 'lt2y';
   }
   else if ($birth_date > strtotime('-5 year')) {
-    return 'lt5y';
+    $age = 'lt5y';
   }
   else if ($birth_date > strtotime('-10 year')) {
-    return 'lt10y';
+    $age = 'lt10y';
   }
   else if ($birth_date > strtotime('-20 year')) {
-    return 'lt20y';
+    $age = 'lt20y';
   }
   else if ($birth_date > strtotime('-50 year')) {
-    return 'lt50y';
+    $age = 'lt50y';
+  }
+  else {
+    $age = 'mt50y';
   }
 
-  return 'mt50y';
+  return [$age, $gender];
 }
