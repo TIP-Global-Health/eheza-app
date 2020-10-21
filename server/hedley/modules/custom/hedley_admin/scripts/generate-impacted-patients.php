@@ -44,7 +44,7 @@ if ($total == 0) {
 
 drush_print("$total patients located.");
 
-$impacted_patients = [
+$all_patients = $impacted_patients = [
   'lt1m' => [
     'male' => 0,
     'female' => 0,
@@ -97,6 +97,9 @@ while ($processed < $total) {
 
   $ids = array_keys($result['node']);
   foreach ($ids as $id) {
+    list($age, $gender) = classify_by_age_and_gender($id);
+    $all_patients[$age][$gender]++;
+
     $measurements_ids = hedley_admin_get_person_measurements($id, $measurement_types);
     // If patient got no measurements, move on to next patient.
     if (empty($measurements_ids)) {
@@ -107,7 +110,6 @@ while ($processed < $total) {
     // affected, without further checks, as this amount of measurements
     // can't belong to single encounter.
     if (count($measurements_ids) > 50) {
-      list($age, $gender) = classify_by_age_and_gender($id);
       $impacted_patients[$age][$gender]++;
       continue;
     }
@@ -120,7 +122,6 @@ while ($processed < $total) {
       // we classify the patient as impacted, as these 2 measurements
       // were taken in different encounters.
       if (abs($first_timestamp - $measurement->created) > 7 * 24 * 3600) {
-        list($age, $gender) = classify_by_age_and_gender($id);
         $impacted_patients[$age][$gender]++;
         break;
       }
@@ -140,6 +141,33 @@ while ($processed < $total) {
 }
 
 drush_print('Done!');
+
+drush_print('Registered patients report:');
+$male = $all_patients['lt1m']['male'];
+$female = $all_patients['lt1m']['female'];
+drush_print("* 0 - 1 month: Male - $male, Female - $female");
+$male = $all_patients['lt2y']['male'];
+$female = $all_patients['lt2y']['female'];
+drush_print("* 1 month - 2 years: Male - $male, Female - $female");
+$male = $all_patients['lt5y']['male'];
+$female = $all_patients['lt5y']['female'];
+drush_print("* 2 years - 5 years: Male - $male, Female - $female");
+$male = $all_patients['lt10y']['male'];
+$female = $all_patients['lt10y']['female'];
+drush_print("* 5 years - 10 years: Male - $male, Female - $female");
+$male = $all_patients['lt20y']['male'];
+$female = $all_patients['lt20y']['female'];
+drush_print("* 10 years - 20 years: Male - $male, Female - $female");
+$male = $all_patients['lt50y']['male'];
+$female = $all_patients['lt50y']['female'];
+drush_print("* 20 years - 50 years: Male - $male, Female - $female");
+$male = $all_patients['mt50y']['male'];
+$female = $all_patients['mt50y']['female'];
+drush_print("* Older than 50 years: Male - $male, Female - $female");
+
+drush_print('');
+drush_print('');
+
 drush_print('Impacted patients report:');
 $male = $impacted_patients['lt1m']['male'];
 $female = $impacted_patients['lt1m']['female'];
