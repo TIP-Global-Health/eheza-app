@@ -44,7 +44,7 @@ $impacted_patients = [
   'lt2y' => 0,
   'lt5y' => 0,
   'lt10y' => 0,
-  'lt20' => 0,
+  'lt20y' => 0,
   'lt50y' => 0,
   'mt50y' => 0,
 ];
@@ -126,22 +126,22 @@ function classify_by_age($person_id) {
   $wrapper = entity_metadata_wrapper('node', $person_id);
   $birth_date = $wrapper->field_birth_date->value();
 
-  if ($birth_date < strtotime('-1 month')) {
+  if ($birth_date > strtotime('-1 month')) {
     return 'lt1m';
   }
-  else if ($birth_date < strtotime('-2 year')) {
+  else if ($birth_date > strtotime('-2 year')) {
     return 'lt2y';
   }
-  else if ($birth_date < strtotime('-5 year')) {
+  else if ($birth_date > strtotime('-5 year')) {
     return 'lt5y';
   }
-  else if ($birth_date < strtotime('-10 year')) {
+  else if ($birth_date > strtotime('-10 year')) {
     return 'lt10y';
   }
-  else if ($birth_date < strtotime('-20 year')) {
+  else if ($birth_date > strtotime('-20 year')) {
     return 'lt20y';
   }
-  else if ($birth_date < strtotime('-50 year')) {
+  else if ($birth_date > strtotime('-50 year')) {
     return 'lt50y';
   }
 
