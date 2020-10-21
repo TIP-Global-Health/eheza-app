@@ -3,6 +3,7 @@
 /**
  * @file
  * Generate 'Impacted Patients' report.
+ *
  * Patient is considered impacted if attended at least 2 encounters.
  * Code criteria for considering patient as imported:
  * A person that has at least 2 measurements, taken with interval of one week,
