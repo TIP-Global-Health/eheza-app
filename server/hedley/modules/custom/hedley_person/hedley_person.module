@@ -560,7 +560,8 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
     'positive',
     'unknown',
   ];
-  if (!in_array(strtolower($hiv_status), $valid_values)) {
+  // Optional field - allowing empty value.
+  if (!empty($hiv_status) && !in_array(strtolower($hiv_status), $valid_values)) {
     $errors[] = "HIV status: Invalid value - $hiv_status";
   }
 
@@ -579,7 +580,8 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
       'vaginal delivery with vacuum extraction',
       'cesarean delivery',
     ];
-    if (!in_array(strtolower($mode_of_delivery), $valid_values)) {
+    // Optional field - allowing empty value.
+    if (!empty($mode_of_delivery) && !in_array(strtolower($mode_of_delivery), $valid_values)) {
       $errors[] = "Mode of delivery: Invalid value - $mode_of_delivery";
     }
 
@@ -744,27 +746,29 @@ function hedley_person_import_patient($patient_type, array $values) {
   // Ubudehe.
   $wrapper->field_ubudehe->set((int) $ubudehe);
 
-  // HIV status.
-  switch (strtolower($hiv_status)) {
-    case 'hiv-exposed infant':
-      $wrapper->field_hiv_status->set('hiv-exposed-infant');
-      break;
+  // HIV status (optional field).
+  if (!empty($hiv_status)) {
+    switch (strtolower($hiv_status)) {
+      case 'hiv-exposed infant':
+        $wrapper->field_hiv_status->set('hiv-exposed-infant');
+        break;
 
-    case 'negative':
-      $wrapper->field_hiv_status->set('negative');
-      break;
+      case 'negative':
+        $wrapper->field_hiv_status->set('negative');
+        break;
 
-    case 'negative - discordant couple':
-      $wrapper->field_hiv_status->set('negative-dc');
-      break;
+      case 'negative - discordant couple':
+        $wrapper->field_hiv_status->set('negative-dc');
+        break;
 
-    case 'positive':
-      $wrapper->field_hiv_status->set('positive');
-      break;
+      case 'positive':
+        $wrapper->field_hiv_status->set('positive');
+        break;
 
-    case 'unknown':
-      $wrapper->field_hiv_status->set('unknown');
-      break;
+      case 'unknown':
+        $wrapper->field_hiv_status->set('unknown');
+        break;
+    }
   }
 
   // Location.
@@ -785,22 +789,25 @@ function hedley_person_import_patient($patient_type, array $values) {
   if ($patient_type == 'child') {
     $mode_of_delivery = trim($values[HEDLEY_PERSON_COLUMN_CHILD_MODE_OF_DELIVERY]);
 
-    switch (strtolower($mode_of_delivery)) {
-      case 'spontaneous vaginal delivery with episiotomy':
-        $wrapper->field_mode_of_delivery->set('svd-episiotomy');
-        break;
+    // Optional field.
+    if (!empty($mode_of_delivery)) {
+      switch (strtolower($mode_of_delivery)) {
+        case 'spontaneous vaginal delivery with episiotomy':
+          $wrapper->field_mode_of_delivery->set('svd-episiotomy');
+          break;
 
-      case 'spontaneous vaginal delivery without episiotomy':
-        $wrapper->field_mode_of_delivery->set('svd-no-episiotomy');
-        break;
+        case 'spontaneous vaginal delivery without episiotomy':
+          $wrapper->field_mode_of_delivery->set('svd-no-episiotomy');
+          break;
 
-      case 'vaginal delivery with vacuum extraction':
-        $wrapper->field_mode_of_delivery->set('vd-vacuum');
-        break;
+        case 'vaginal delivery with vacuum extraction':
+          $wrapper->field_mode_of_delivery->set('vd-vacuum');
+          break;
 
-      case 'cesarean delivery':
-        $wrapper->field_mode_of_delivery->set('cesarean-delivery');
-        break;
+        case 'cesarean delivery':
+          $wrapper->field_mode_of_delivery->set('cesarean-delivery');
+          break;
+      }
     }
 
     $wrapper->save();
