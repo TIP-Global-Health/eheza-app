@@ -36,81 +36,79 @@ import Utils.WebData
 
 
 view : Language -> RemoteData String ConfiguredModel -> ModelIndexedDb -> Model -> Html Msg
-view language configuration db model =
-    let
-        htmlContent =
-            details [ property "open" (Json.Encode.bool True) ]
-                [ summary [] [ text "Sync Status" ]
+view language configuredModel db model =
+    case RemoteData.toMaybe configuredModel of
+        Just configuration ->
+            if not configuration.config.debug then
+                emptyNode
 
-                -- button [ onClick <| SyncManager.Model.FetchFromIndexDb SyncManager.Model.IndexDbQueryHealthCenters ] [ text "Fetch Health Centers" ]
-                , div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
-                , case model.syncStatus of
-                    SyncDownloadGeneral webData ->
-                        viewSyncDownloadGeneral language model webData
+            else
+                let
+                    htmlContent =
+                        details [ property "open" (Json.Encode.bool True) ]
+                            [ summary [] [ text "Sync Status" ]
+                            , div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
+                            , case model.syncStatus of
+                                SyncDownloadGeneral webData ->
+                                    viewSyncDownloadGeneral language model webData
 
-                    SyncDownloadAuthority webData ->
-                        viewSyncDownloadAuthority language db model webData
+                                SyncDownloadAuthority webData ->
+                                    viewSyncDownloadAuthority language db model webData
 
-                    --
-                    -- SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
-                    --     viewDownloadPhotosBatch language model deferredPhoto
-                    _ ->
-                        emptyNode
-                ]
-    in
-    div []
-        [ viewDeviceInfo language configuration
-        , viewHealthCentersForSync language db model
-        , viewSyncSettings language model
-        , pre [ class "ui segment sync-status" ] [ htmlContent ]
-        ]
+                                _ ->
+                                    emptyNode
+                            ]
+                in
+                details
+                    [ property "open" (Json.Encode.bool False)
+                    , style "padding" "15px"
+                    ]
+                    [ summary [] [ text "Sync Manager" ]
+                    , viewDeviceInfo language configuration
+                    , viewHealthCentersForSync language db model
+                    , viewSyncSettings language model
+                    , pre [ class "ui segment sync-status" ] [ htmlContent ]
+                    ]
+
+        Nothing ->
+            emptyNode
 
 
 {-| Helper to see the device UUID, and current nurse, if logged in.
 -}
-viewDeviceInfo : Language -> RemoteData String ConfiguredModel -> Html Msg
+viewDeviceInfo : Language -> ConfiguredModel -> Html Msg
 viewDeviceInfo language configuration =
     let
         loggedInNurse =
-            case RemoteData.toMaybe configuration of
-                Just config ->
-                    case RemoteData.toMaybe config.loggedIn of
-                        Just loggedIn ->
-                            let
-                                nurse =
-                                    Tuple.second loggedIn.nurse
-                            in
-                            div [] [ text <| "Nurse: " ++ nurse.name ]
-
-                        Nothing ->
-                            div [] [ text "Nurse not logged in" ]
+            case RemoteData.toMaybe configuration.loggedIn of
+                Just loggedIn ->
+                    let
+                        nurse =
+                            Tuple.second loggedIn.nurse
+                    in
+                    div [] [ text <| "Nurse: " ++ nurse.name ]
 
                 Nothing ->
-                    emptyNode
+                    div [] [ text "Nurse not logged in" ]
 
         deviceIdInfo =
-            case RemoteData.toMaybe configuration of
-                Just config ->
-                    case RemoteData.toMaybe config.device of
-                        Just device ->
-                            case device.deviceId of
-                                Just deviceId ->
-                                    div [] [ text <| "Device ID: " ++ String.fromInt deviceId ]
+            case RemoteData.toMaybe configuration.device of
+                Just device ->
+                    case device.deviceId of
+                        Just deviceId ->
+                            div [] [ text <| "Device ID: " ++ String.fromInt deviceId ]
 
-                                Nothing ->
-                                    div []
-                                        [ text """
+                        Nothing ->
+                            div []
+                                [ text """
                                     Device ID not set as device was paired before June 2020.
                                     You may re-pair to get a new ID, but in general this is not a problem -
                                     it just makes troubleshooting a bit easier.
                                     """
-                                        ]
-
-                        Nothing ->
-                            div [] [ text "Device ID not set, either not paired, or a pair before June 2020" ]
+                                ]
 
                 Nothing ->
-                    emptyNode
+                    div [] [ text "Device ID not set, either not paired, or a pair before June 2020" ]
     in
     details
         [ class "segment ui"
@@ -183,8 +181,7 @@ viewSyncSettings language model =
     in
     details
         [ property "open" (Json.Encode.bool False)
-        , style "border" "1px solid black"
-        , class "html ui top attached segment"
+        , class "segment ui"
         ]
         [ summary [] [ text "Sync Settings" ]
         , fieldset []
