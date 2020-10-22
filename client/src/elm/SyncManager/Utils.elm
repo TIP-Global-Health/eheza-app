@@ -1,11 +1,13 @@
 module SyncManager.Utils exposing
-    ( determineSyncStatus
+    ( determineDownloadPhotosStatus
+    , determineSyncStatus
     , encodeBackendAuthorityEntity
     , encodeBackendGeneralEntity
     , getBackendAuthorityEntityIdentifier
     , getBackendGeneralEntityIdentifier
     , getDataToSendAuthority
     , getDataToSendGeneral
+    , getDownloadPhotosSpeedForSubscriptions
     , getPhotoFromBackendAuthorityEntity
     , getSyncSpeedForSubscriptions
     , getSyncedHealthCenters
@@ -32,7 +34,19 @@ import Editable
 import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
 import RemoteData
-import SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), DownloadPhotos(..), Model, SyncStatus(..), emptyDownloadPhotosBatchRec, emptyUploadRec)
+import SyncManager.Model
+    exposing
+        ( BackendAuthorityEntity(..)
+        , BackendEntity
+        , BackendEntityIdentifier
+        , BackendGeneralEntity(..)
+        , DownloadPhotos(..)
+        , DownloadPhotosStatus(..)
+        , Model
+        , SyncStatus(..)
+        , emptyDownloadPhotosBatchRec
+        , emptyUploadRec
+        )
 import Utils.WebData
 
 
@@ -232,6 +246,65 @@ determineSyncStatus model =
             | syncStatus = syncStatusUpdated
             , syncInfoAuthorities = syncInfoAuthoritiesUpdated
         }
+
+    else
+        -- No change.
+        model
+
+
+determineDownloadPhotosStatus : Model -> Model
+determineDownloadPhotosStatus model =
+    let
+        syncCycleRotate =
+            case model.syncCycle of
+                SyncManager.Model.SyncCycleOn ->
+                    True
+
+                _ ->
+                    False
+    in
+    if syncCycleRotate then
+        let
+            currentStatus =
+                model.downloadPhotosStatus
+
+            statusUpdated =
+                -- Cases are ordered by the cycle order.
+                case currentStatus of
+                    DownloadPhotosIdle ->
+                        DownloadPhotosInProcess model.downloadPhotos
+
+                    DownloadPhotosInProcess record ->
+                        case record of
+                            DownloadPhotosNone ->
+                                DownloadPhotosIdle
+
+                            DownloadPhotosBatch deferredPhoto ->
+                                if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
+                                    -- We tried to fetch deferred photos from IndexDB,
+                                    -- but there we non matching the query.
+                                    DownloadPhotosIdle
+
+                                else if deferredPhoto.batchCounter < 1 then
+                                    -- We've reached the end of the batch, so we
+                                    -- need to rotate.
+                                    DownloadPhotosIdle
+
+                                else
+                                    currentStatus
+
+                            DownloadPhotosAll deferredPhoto ->
+                                if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
+                                    -- We tried to fetch deferred photos from IndexDB,
+                                    -- but there we non matching the query.
+                                    DownloadPhotosIdle
+
+                                else
+                                    -- There are still deferred photos in IndexDB
+                                    -- that match out query.
+                                    currentStatus
+        in
+        { model | downloadPhotosStatus = statusUpdated }
 
     else
         -- No change.
@@ -516,8 +589,8 @@ getSyncSpeedForSubscriptions model =
         checkWebData webData =
             if RemoteData.isFailure webData then
                 -- We got an error, so don't hammer the server.
-                if syncSpeed.offline < 1000 then
-                    1000
+                if syncSpeed.offline < 10000 then
+                    10000
 
                 else
                     toFloat syncSpeed.offline
@@ -560,6 +633,9 @@ getSyncSpeedForSubscriptions model =
         SyncDownloadAuthority webData ->
             checkWebData webData
 
+        SyncDownloadAuthorityDashboardStats webData ->
+            checkWebData webData
+
         SyncDownloadPhotos downloadPhotos ->
             case downloadPhotos of
                 DownloadPhotosNone ->
@@ -573,6 +649,63 @@ getSyncSpeedForSubscriptions model =
 
         _ ->
             syncCycle
+
+
+getDownloadPhotosSpeedForSubscriptions : Model -> Float
+getDownloadPhotosSpeedForSubscriptions model =
+    let
+        syncSpeed =
+            model.syncSpeed
+                -- Take the original values.
+                |> Editable.cancel
+                |> Editable.value
+
+        syncCycle =
+            if syncSpeed.cycle < 50 then
+                -- Safeguard against too quick iterations, in case someone
+                -- changed values directly on localStorage.
+                50
+
+            else
+                toFloat syncSpeed.cycle
+
+        checkWebData webData =
+            case webData of
+                RemoteData.Failure error ->
+                    if Utils.WebData.isNetworkError error then
+                        -- It's a network error, so slow things down.
+                        if syncSpeed.offline < 10000 then
+                            10000
+
+                        else
+                            toFloat syncSpeed.offline
+
+                    else
+                        syncCycle
+
+                _ ->
+                    syncCycle
+    in
+    case model.downloadPhotosStatus of
+        DownloadPhotosIdle ->
+            -- Rest until the next sync loop.
+            if syncSpeed.idle < 3000 then
+                -- Safeguard against too quick iterations.
+                3000
+
+            else
+                toFloat syncSpeed.idle
+
+        DownloadPhotosInProcess downloadPhotos ->
+            case downloadPhotos of
+                DownloadPhotosNone ->
+                    syncCycle
+
+                DownloadPhotosBatch record ->
+                    checkWebData record.backendRemoteData
+
+                DownloadPhotosAll record ->
+                    checkWebData record.backendRemoteData
 
 
 encode : (a -> List ( String, Value )) -> BackendEntity a -> Value

@@ -16,7 +16,7 @@ import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseAuthorityStats, decodeDownloadSyncResponseGeneral)
 import SyncManager.Encoder
 import SyncManager.Model exposing (..)
-import SyncManager.Utils exposing (getSyncSpeedForSubscriptions)
+import SyncManager.Utils exposing (getDownloadPhotosSpeedForSubscriptions, getSyncSpeedForSubscriptions)
 import Time
 import Utils.WebData
 
@@ -390,6 +390,24 @@ update currentDate currentTime dbVersion device msg model =
                         model
 
                 SyncDownloadPhotos _ ->
+                    update
+                        currentDate
+                        currentTime
+                        dbVersion
+                        device
+                        FetchFromIndexDbDeferredPhoto
+                        model
+
+        BackendFetchPhotos ->
+            case model.downloadPhotosStatus of
+                DownloadPhotosIdle ->
+                    SubModelReturn
+                        (SyncManager.Utils.determineDownloadPhotosStatus model)
+                        Cmd.none
+                        noError
+                        []
+
+                DownloadPhotosInProcess _ ->
                     update
                         currentDate
                         currentTime
@@ -1506,6 +1524,9 @@ update currentDate currentTime dbVersion device msg model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
+        _ =
+            getSyncSpeedForSubscriptions model |> Debug.log ""
+
         backendFetchMain =
             case model.syncCycle of
                 SyncManager.Model.SyncCyclePause ->
@@ -1513,9 +1534,18 @@ subscriptions model =
 
                 _ ->
                     Time.every (getSyncSpeedForSubscriptions model) (\_ -> BackendFetchMain)
+
+        backendFetchPhotos =
+            case model.syncCycle of
+                SyncManager.Model.SyncCyclePause ->
+                    Sub.none
+
+                _ ->
+                    Time.every (getDownloadPhotosSpeedForSubscriptions model) (\_ -> BackendFetchPhotos)
     in
     Sub.batch
         [ backendFetchMain
+        , backendFetchPhotos
         , getFromIndexDb QueryIndexDbHandle
         ]
 

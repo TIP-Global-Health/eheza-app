@@ -1,4 +1,38 @@
-module SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), DownloadPhotos(..), DownloadPhotosAllRec, DownloadPhotosBatchRec, DownloadSyncResponse, Flags, IndexDbDeferredPhotoRemoteData, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryType(..), IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, IndexDbUploadRemoteData, Model, Msg(..), SyncCycle(..), SyncInfoAuthority, SyncInfoAuthorityZipper, SyncInfoGeneral, SyncSpeed, SyncStatus(..), UploadMethod(..), UploadPhotoError(..), UploadRec, emptyDownloadPhotosBatchRec, emptyModel, emptySyncInfoAuthority, emptyUploadRec)
+module SyncManager.Model exposing
+    ( BackendAuthorityEntity(..)
+    , BackendEntity
+    , BackendEntityIdentifier
+    , BackendGeneralEntity(..)
+    , DownloadPhotos(..)
+    , DownloadPhotosAllRec
+    , DownloadPhotosBatchRec
+    , DownloadPhotosStatus(..)
+    , DownloadSyncResponse
+    , Flags
+    , IndexDbDeferredPhotoRemoteData
+    , IndexDbQueryDeferredPhotoResultRecord
+    , IndexDbQueryType(..)
+    , IndexDbQueryTypeResult(..)
+    , IndexDbQueryUploadAuthorityResultRecord
+    , IndexDbQueryUploadGeneralResultRecord
+    , IndexDbQueryUploadPhotoResultRecord
+    , IndexDbUploadRemoteData
+    , Model
+    , Msg(..)
+    , SyncCycle(..)
+    , SyncInfoAuthority
+    , SyncInfoAuthorityZipper
+    , SyncInfoGeneral
+    , SyncSpeed
+    , SyncStatus(..)
+    , UploadMethod(..)
+    , UploadPhotoError(..)
+    , UploadRec
+    , emptyDownloadPhotosBatchRec
+    , emptyModel
+    , emptySyncInfoAuthority
+    , emptyUploadRec
+    )
 
 import AssocList exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
@@ -163,6 +197,7 @@ type alias SyncInfoAuthorityZipper =
 
 type alias Model =
     { syncStatus : SyncStatus
+    , downloadPhotosStatus : DownloadPhotosStatus
     , syncInfoGeneral : SyncInfoGeneral
     , syncInfoAuthorities : SyncInfoAuthorityZipper
     , lastTryBackendGeneralDownloadTime : Time.Posix
@@ -189,6 +224,7 @@ type alias Model =
 emptyModel : Flags -> Model
 emptyModel flags =
     { syncStatus = SyncIdle
+    , downloadPhotosStatus = DownloadPhotosIdle
     , syncInfoGeneral = flags.syncInfoGeneral
     , syncInfoAuthorities = flags.syncInfoAuthorities
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
@@ -309,6 +345,11 @@ type SyncStatus
     | SyncDownloadPhotos DownloadPhotos
 
 
+type DownloadPhotosStatus
+    = DownloadPhotosIdle
+    | DownloadPhotosInProcess DownloadPhotos
+
+
 type SyncCycle
     = -- Work normally.
       SyncCycleOn
@@ -408,6 +449,7 @@ type Msg
       -- This is the main entry point for the Sync loop. This will dispatch a call
       -- according to the `syncStatus`.
     | BackendFetchMain
+    | BackendFetchPhotos
     | BackendGeneralFetch
     | BackendGeneralFetchHandle (WebData (DownloadSyncResponse BackendGeneralEntity))
       -- Fetch a deferred photo from the server.
