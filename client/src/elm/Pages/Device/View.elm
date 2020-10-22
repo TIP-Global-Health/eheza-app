@@ -192,7 +192,7 @@ viewDownloadPhotosInfo language status =
     in
     div
         [ class "download-photos" ]
-        [ h2 [] [ text "Photos Download" ]
+        [ h2 [] [ text "Photos Download Status" ]
         , statusHtml
         ]
 
