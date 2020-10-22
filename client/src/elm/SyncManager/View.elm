@@ -51,9 +51,9 @@ view language configuration db model =
                     SyncDownloadAuthority webData ->
                         viewSyncDownloadAuthority language db model webData
 
-                    SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
-                        viewDownloadPhotosBatch language model deferredPhoto
-
+                    --
+                    -- SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
+                    --     viewDownloadPhotosBatch language model deferredPhoto
                     _ ->
                         emptyNode
                 ]

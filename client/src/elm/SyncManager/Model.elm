@@ -342,7 +342,6 @@ type SyncStatus
     | SyncDownloadGeneral (WebData (DownloadSyncResponse BackendGeneralEntity))
     | SyncDownloadAuthority (WebData (DownloadSyncResponse BackendAuthorityEntity))
     | SyncDownloadAuthorityDashboardStats (WebData (DownloadSyncResponse BackendAuthorityEntity))
-    | SyncDownloadPhotos DownloadPhotos
 
 
 type DownloadPhotosStatus
