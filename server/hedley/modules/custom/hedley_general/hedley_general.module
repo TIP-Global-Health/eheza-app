@@ -137,7 +137,7 @@ function hedley_general_get_aq_item_by_title($item_title, $all_status = FALSE) {
  *
  * @param int $encounter_id
  *   ID of individual encounter.
- * @param $encounter_type
+ * @param string $encounter_type
  *   Type of individual encounter.
  *
  * @return array

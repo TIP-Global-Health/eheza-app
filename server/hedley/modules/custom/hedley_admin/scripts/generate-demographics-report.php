@@ -279,7 +279,7 @@ function classify_by_age_and_gender($person_id) {
 }
 
 /**
- * Generates a report for certain type of individual encounter:
+ * Generates a report for certain type of individual encounter.
  *
  * Reported info:
  *   - Number of completed encounters.
@@ -373,7 +373,9 @@ function generate_individual_encounter_report($encounter_type, $batch, $memory_l
   drush_print('');
 }
 
-/** Generate base query. */
+/**
+ * Generate base query.
+ */
 function base_query_for_bundle($bundle) {
   $query = new EntityFieldQuery();
   $query
@@ -384,7 +386,9 @@ function base_query_for_bundle($bundle) {
   return $query;
 }
 
-/** Prints log based on verbosity option. */
+/**
+ * Prints log based on verbosity option.
+ */
 function wlog($message) {
   // Get the option that will determine if output should be verbose or not.
   $verbose = drush_get_option('verbose', FALSE);
