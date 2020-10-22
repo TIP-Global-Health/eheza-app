@@ -16,7 +16,7 @@ import Pages.Device.Model exposing (..)
 import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
-import SyncManager.Model exposing (DownloadPhotos(..), DownloadPhotosStatus(..), SyncInfoAuthorityZipper, SyncInfoGeneral)
+import SyncManager.Model exposing (DownloadPhotosMode(..), DownloadPhotosStatus(..), SyncInfoAuthorityZipper, SyncInfoGeneral)
 import Time
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
@@ -66,10 +66,6 @@ viewDeviceStatus language device app model =
                     [ class "general-sync" ]
                     [ h2 [] [ text <| translate language Translate.SyncGeneral ]
                     , viewSyncInfo language app.syncManager.syncInfoGeneral
-                    ]
-                , div
-                    [ class "download-photos" ]
-                    [ h2 [] [ text "Photos Download" ]
                     , viewDownloadPhotosInfo language app.syncManager.downloadPhotosStatus
                     ]
                 , viewHealthCenters language app.syncManager.syncInfoAuthorities app.indexedDb
@@ -153,36 +149,52 @@ viewSyncInfo language info =
 
 viewDownloadPhotosInfo : Language -> DownloadPhotosStatus -> Html Msg
 viewDownloadPhotosInfo language status =
-    case status of
-        DownloadPhotosIdle ->
-            div [] [ text "Remaining: 0" ]
+    let
+        statusHtml =
+            case status of
+                DownloadPhotosIdle ->
+                    div [] [ text <| translate language Translate.RemainingForDownloadLabel ++ ": 0" ]
 
-        DownloadPhotosInProcess DownloadPhotosNone ->
-            div [] [ text "Disabled" ]
+                DownloadPhotosInProcess DownloadPhotosNone ->
+                    div [] [ text "Disabled" ]
 
-        DownloadPhotosInProcess (DownloadPhotosBatch rect) ->
-            case rect.indexDbRemoteData of
-                RemoteData.Success (Just result) ->
-                    div []
-                        [ text <|
-                            "Photos batch download ("
-                                ++ String.fromInt (rect.batchCounter + 1)
-                                ++ " out of "
-                                ++ String.fromInt rect.batchSize
-                                ++ "), Remianing: "
-                                ++ String.fromInt result.remaining
-                        ]
+                DownloadPhotosInProcess (DownloadPhotosBatch rect) ->
+                    case rect.indexDbRemoteData of
+                        RemoteData.Success (Just result) ->
+                            div []
+                                [ text <|
+                                    "Photos batch download ("
+                                        ++ String.fromInt (rect.batchCounter + 1)
+                                        ++ " out of "
+                                        ++ String.fromInt rect.batchSize
+                                        ++ "), "
+                                , text <|
+                                    translate language Translate.RemainingForDownloadLabel
+                                        ++ ": "
+                                        ++ String.fromInt result.remaining
+                                ]
 
-                _ ->
-                    div [] [ text "Not available" ]
+                        _ ->
+                            div [] [ text "Loading ..." ]
 
-        DownloadPhotosInProcess (DownloadPhotosAll rect) ->
-            case rect.indexDbRemoteData of
-                RemoteData.Success (Just result) ->
-                    div [] [ text <| "Remianing: " ++ String.fromInt result.remaining ]
+                DownloadPhotosInProcess (DownloadPhotosAll rect) ->
+                    case rect.indexDbRemoteData of
+                        RemoteData.Success (Just result) ->
+                            div []
+                                [ text <|
+                                    translate language Translate.RemainingForDownloadLabel
+                                        ++ ": "
+                                        ++ String.fromInt result.remaining
+                                ]
 
-                _ ->
-                    div [] [ text "Not available" ]
+                        _ ->
+                            div [] [ text "Loading ..." ]
+    in
+    div
+        [ class "download-photos" ]
+        [ h2 [] [ text "Photos Download" ]
+        , statusHtml
+        ]
 
 
 viewHealthCenters : Language -> SyncInfoAuthorityZipper -> ModelIndexedDb -> Html Msg

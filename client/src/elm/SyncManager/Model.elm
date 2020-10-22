@@ -3,9 +3,9 @@ module SyncManager.Model exposing
     , BackendEntity
     , BackendEntityIdentifier
     , BackendGeneralEntity(..)
-    , DownloadPhotos(..)
     , DownloadPhotosAllRec
     , DownloadPhotosBatchRec
+    , DownloadPhotosMode(..)
     , DownloadPhotosStatus(..)
     , DownloadSyncResponse
     , Flags
@@ -203,7 +203,7 @@ type alias Model =
     , lastTryBackendGeneralDownloadTime : Time.Posix
 
     -- Determine how we're going to download photos.
-    , downloadPhotos : DownloadPhotos
+    , downloadPhotosMode : DownloadPhotosMode
 
     -- If `DownloadPhotosBatch` is selected as download mechanism, indicate what's
     -- the batch size.
@@ -228,7 +228,7 @@ emptyModel flags =
     , syncInfoGeneral = flags.syncInfoGeneral
     , syncInfoAuthorities = flags.syncInfoAuthorities
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
-    , downloadPhotos = DownloadPhotosAll emptyDownloadPhotosAllRec
+    , downloadPhotosMode = DownloadPhotosAll emptyDownloadPhotosAllRec
     , downloadPhotosBatchSize = flags.batchSize
     , syncCycle = SyncCycleOn
     , syncSpeed = Editable.ReadOnly flags.syncSpeed
@@ -269,7 +269,7 @@ type alias DownloadSyncResponse a =
 
 {-| Determine how photos are going to be downloaded.
 -}
-type DownloadPhotos
+type DownloadPhotosMode
     = -- Don't download any photos at all.
       DownloadPhotosNone
       -- Download up to a number of photos, and then skip to the next Sync status,
@@ -353,7 +353,7 @@ type SyncStatus
 
 type DownloadPhotosStatus
     = DownloadPhotosIdle
-    | DownloadPhotosInProcess DownloadPhotos
+    | DownloadPhotosInProcess DownloadPhotosMode
 
 
 type SyncCycle

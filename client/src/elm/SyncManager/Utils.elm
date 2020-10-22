@@ -40,7 +40,7 @@ import SyncManager.Model
         , BackendEntity
         , BackendEntityIdentifier
         , BackendGeneralEntity(..)
-        , DownloadPhotos(..)
+        , DownloadPhotosMode(..)
         , DownloadPhotosStatus(..)
         , Model
         , SyncStatus(..)
@@ -238,7 +238,7 @@ determineDownloadPhotosStatus model =
                 -- Cases are ordered by the cycle order.
                 case currentStatus of
                     DownloadPhotosIdle ->
-                        DownloadPhotosInProcess model.downloadPhotos
+                        DownloadPhotosInProcess model.downloadPhotosMode
 
                     DownloadPhotosInProcess record ->
                         case record of
@@ -279,7 +279,7 @@ determineDownloadPhotosStatus model =
 
 resetDownloadPhotosBatchCounter : Model -> DownloadPhotosStatus
 resetDownloadPhotosBatchCounter model =
-    case model.downloadPhotos of
+    case model.downloadPhotosMode of
         DownloadPhotosBatch deferredPhoto ->
             let
                 deferredPhotoUpdated =
@@ -288,7 +288,7 @@ resetDownloadPhotosBatchCounter model =
             DownloadPhotosInProcess (DownloadPhotosBatch deferredPhotoUpdated)
 
         _ ->
-            DownloadPhotosInProcess model.downloadPhotos
+            DownloadPhotosInProcess model.downloadPhotosMode
 
 
 {-| Get info about an entity. `revision` would be the Drupal revision

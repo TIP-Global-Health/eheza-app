@@ -592,6 +592,15 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             // Get attempts sorted, so we won't always grab the same one.
             .sortBy('attempts');
 
+        // Add the number of remaining photos to download.
+        if (result.length == 1) {
+            let totalEntites = await dbSync
+                .deferredPhotos
+                .count();
+
+            result[0].remaining = totalEntites;
+        }
+
         return sendResultToElm(queryType, result);
 
       })();

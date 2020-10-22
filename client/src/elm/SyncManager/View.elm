@@ -20,8 +20,8 @@ import SyncManager.Model
     exposing
         ( BackendAuthorityEntity(..)
         , BackendGeneralEntity(..)
-        , DownloadPhotos(..)
         , DownloadPhotosBatchRec
+        , DownloadPhotosMode(..)
         , DownloadSyncResponse
         , Model
         , Msg(..)
