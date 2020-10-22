@@ -228,7 +228,7 @@ emptyModel flags =
     , syncInfoGeneral = flags.syncInfoGeneral
     , syncInfoAuthorities = flags.syncInfoAuthorities
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
-    , downloadPhotos = DownloadPhotosBatch (emptyDownloadPhotosBatchRec flags.batchSize)
+    , downloadPhotos = DownloadPhotosAll emptyDownloadPhotosAllRec
     , downloadPhotosBatchSize = flags.batchSize
     , syncCycle = SyncCycleOn
     , syncSpeed = Editable.ReadOnly flags.syncSpeed
@@ -317,6 +317,13 @@ emptyDownloadPhotosBatchRec batchSize =
 type alias DownloadPhotosAllRec =
     { indexDbRemoteData : IndexDbDeferredPhotoRemoteData
     , backendRemoteData : WebData ()
+    }
+
+
+emptyDownloadPhotosAllRec : DownloadPhotosAllRec
+emptyDownloadPhotosAllRec =
+    { indexDbRemoteData = RemoteData.NotAsked
+    , backendRemoteData = RemoteData.NotAsked
     }
 
 
@@ -437,6 +444,9 @@ type alias IndexDbQueryDeferredPhotoResultRecord =
 
     -- The number of attempts we've tried to get the image.
     , attempts : Int
+
+    -- The number of photos remaining at deferredPhotos table.
+    , remaining : Int
     }
 
 

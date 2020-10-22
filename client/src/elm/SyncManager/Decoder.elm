@@ -215,6 +215,7 @@ decodeIndexDbQueryDeferredPhotoResult =
         |> requiredAt [ "0", "uuid" ] string
         |> requiredAt [ "0", "photo" ] string
         |> requiredAt [ "0", "attempts" ] int
+        |> requiredAt [ "0", "remaining" ] int
 
 
 decodeDownloadSyncResponseGeneral : Decoder (DownloadSyncResponse BackendGeneralEntity)
