@@ -598,6 +598,7 @@ update currentDate currentTime dbVersion device msg model =
                                             | lastFetchedRevisionId = lastFetchedRevisionId
                                             , lastSuccesfulContact = Time.posixToMillis currentTime
                                             , remainingToDownload = data.revisionCount
+                                            , deviceName = data.deviceName
                                             , status = status
                                         }
                                    )

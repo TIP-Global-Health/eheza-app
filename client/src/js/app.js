@@ -201,11 +201,12 @@ const getSyncInfoGeneral = function() {
     storageArr.lastSuccesfulContact = parseInt(storageArr.lastSuccesfulContact);
     storageArr.remainingToUpload = parseInt(storageArr.remainingToDownload);
     storageArr.remainingToDownload = parseInt(storageArr.remainingToDownload);
+    storageArr.deviceName = storageArr.deviceName;
     storageArr.status = storageArr.status;
     return storageArr;
   }
 
-  return {lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, status: "Not Available"};
+  return {lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: "", status: "Not Available"};
 };
 
 /**

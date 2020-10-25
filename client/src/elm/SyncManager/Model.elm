@@ -164,6 +164,7 @@ type alias SyncInfoGeneral =
     , lastSuccesfulContact : Int
     , remainingToUpload : Int
     , remainingToDownload : Int
+    , deviceName : String
     , status : String
     }
 
@@ -264,7 +265,7 @@ type alias DownloadSyncResponse a =
     { entities : List a
     , lastTimestampOfLastRevision : Time.Posix
     , revisionCount : Int
-    , deviceName : Maybe String
+    , deviceName : String
     }
 
 

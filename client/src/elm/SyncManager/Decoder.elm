@@ -225,7 +225,7 @@ decodeDownloadSyncResponseGeneral =
             |> required "batch" (list <| decodeBackendGeneralEntity (required "uuid" string) (required "vid" decodeInt))
             |> required "last_timestamp" decodeDate
             |> required "revision_count" decodeInt
-            |> optional "device_name" (nullable string) Nothing
+            |> optional "device_name" string ""
         )
 
 
@@ -290,7 +290,7 @@ decodeDownloadSyncResponseAuthority =
             |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
             |> required "last_timestamp" decodeDate
             |> required "revision_count" decodeInt
-            |> hardcoded Nothing
+            |> hardcoded ""
         )
 
 
@@ -301,7 +301,7 @@ decodeDownloadSyncResponseAuthorityStats =
             |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
             |> hardcoded (Time.millisToPosix 0)
             |> hardcoded 0
-            |> hardcoded Nothing
+            |> hardcoded ""
         )
 
 
