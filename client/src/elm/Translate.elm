@@ -3092,7 +3092,7 @@ translationSet trans =
                     }
 
                 LaboratoryBarcodePhoto ->
-                    { english = "Photo of Bar Code"
+                    { english = "Photo of Barcode"
                     , kinyarwanda = Just "Ifoto ya kodi ndangamuti"
                     }
 
