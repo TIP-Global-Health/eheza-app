@@ -45,7 +45,7 @@ view language configuredModel db model =
             else
                 let
                     htmlContent =
-                        details [ property "open" (Json.Encode.bool True) ]
+                        details [ property "open" (Json.Encode.bool False) ]
                             [ summary [] [ text "Sync Status" ]
                             , div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
                             , case model.syncStatus of
@@ -61,13 +61,13 @@ view language configuredModel db model =
                 in
                 details
                     [ property "open" (Json.Encode.bool False)
-                    , style "padding" "15px"
+                    , class "sync-manager"
                     ]
                     [ summary [] [ text "Sync Manager" ]
                     , viewDeviceInfo language configuration
                     , viewHealthCentersForSync language db model
                     , viewSyncSettings language model
-                    , pre [ class "ui segment sync-status" ] [ htmlContent ]
+                    , viewSyncStatus language db model
                     ]
 
         Nothing ->
@@ -612,26 +612,27 @@ viewHealthCentersForSync language db model =
     case db.healthCenters of
         RemoteData.Success healthCenters ->
             if Dict.isEmpty healthCenters then
-                div [ class "segment ui health-center" ] [ text "No health centers synced yet" ]
+                details [ class "segment ui" ]
+                    [ summary [] [ text "No health centers synced yet" ] ]
 
             else
-                div
-                    [ class "segment ui health-center" ]
-                    [ details [ property "open" (Json.Encode.bool False) ]
-                        [ summary [] [ text "Health Centers" ]
-                        , ul []
-                            (List.map
-                                (\( healthCenterId, healthCenter ) ->
-                                    let
-                                        isSynced =
-                                            List.Extra.find (\selectedUuid -> selectedUuid == fromEntityUuid healthCenterId) selectedHealthCentersUuid
-                                                |> isJust
-                                    in
-                                    viewHealthCenter language ( healthCenterId, healthCenter ) isSynced
-                                )
-                                (Dict.toList healthCenters)
+                details
+                    [ class "segment ui"
+                    , property "open" (Json.Encode.bool False)
+                    ]
+                    [ summary [] [ text "Health Centers" ]
+                    , ul []
+                        (List.map
+                            (\( healthCenterId, healthCenter ) ->
+                                let
+                                    isSynced =
+                                        List.Extra.find (\selectedUuid -> selectedUuid == fromEntityUuid healthCenterId) selectedHealthCentersUuid
+                                            |> isJust
+                                in
+                                viewHealthCenter language ( healthCenterId, healthCenter ) isSynced
                             )
-                        ]
+                            (Dict.toList healthCenters)
+                        )
                     ]
 
         RemoteData.Failure error ->
@@ -657,4 +658,24 @@ viewHealthCenter language ( healthCenterId, healthCenter ) isSynced =
     li []
         [ text <| healthCenter.name
         , button [ onClick syncMsg ] [ text syncLabel ]
+        ]
+
+
+viewSyncStatus : Language -> ModelIndexedDb -> Model -> Html Msg
+viewSyncStatus language db model =
+    details
+        [ property "open" (Json.Encode.bool False)
+        , class "segment ui"
+        ]
+        [ summary [] [ text "Sync Status" ]
+        , div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
+        , case model.syncStatus of
+            SyncDownloadGeneral webData ->
+                viewSyncDownloadGeneral language model webData
+
+            SyncDownloadAuthority webData ->
+                viewSyncDownloadAuthority language db model webData
+
+            _ ->
+                emptyNode
         ]
