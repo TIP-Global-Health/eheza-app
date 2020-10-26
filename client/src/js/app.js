@@ -167,7 +167,7 @@ dbSync.version(13).stores({
 }).upgrade(function (tx) {
   // Get the data from the deprecated `syncMetadata` and move to local storage.
   (async () => {
-    const collection = await dbSync.syncMetadata.toCollection().toArray();
+    const collection = await tx.syncMetadata.toCollection().toArray();
 
     var syncInfoAuthorities = [];
     collection.forEach(async function(row, index) {
