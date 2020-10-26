@@ -1941,7 +1941,24 @@ div.page-report.acute-illness {
     }
 
     div.pane.assessment .pane-content {
-      color: $color-red-alert;
+
+      .diagnosis {
+        color: $color-red-alert;
+        margin-bottom: 10px;
+      }
+
+      .treatment-comment {
+        color: $color-text;
+        font-size: 20px;
+        font-weight: normal;
+        line-height: 22px;
+        margin-bottom: 7px;
+        text-transform: none;
+
+        b {
+          margin-left: 5px;
+        }
+      }
     }
 
     div.pane.symptoms .symptoms-table .symptoms-table-row {

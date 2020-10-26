@@ -271,6 +271,7 @@ const getSyncInfoAuthorities = function() {
       value.lastSuccesfulContact = parseInt(value.lastSuccesfulContact);
       value.remainingToUpload = parseInt(value.remainingToDownload);
       value.remainingToDownload = parseInt(value.remainingToDownload);
+      value.statsCacheHash = value.statsCacheHash;
       value.status = value.status;
       this[index] = value;
     }, storageArr);
@@ -297,7 +298,7 @@ const getSyncSpeed = function() {
     return storageArr;
   }
 
-  return {idle: (10 * 1000), cycle: 50, offline: 3000};
+  return {idle: (5 * 60 * 1000), cycle: 50, offline: (30 * 1000)};
 }
 
 // Start up our Elm app.

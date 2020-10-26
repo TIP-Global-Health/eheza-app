@@ -513,6 +513,10 @@ type TranslationId
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
     | MedicationDistributionSign MedicationDistributionSign
+    | MedicationForFeverPast6Hours
+    | MedicationHelpedEnding Bool
+    | MedicationForMalariaToday
+    | MedicationForMalariaPastMonth
     | MedicalFormHelper
     | MedicationForFeverPast6HoursQuestion
     | MedicationForMalariaTodayQuestion
@@ -3395,6 +3399,32 @@ translationSet trans =
                     { english = ""
                     , kinyarwanda = Nothing
                     }
+
+        MedicationForFeverPast6Hours ->
+            { english = "Patient took medication to treat a fever in the past six hours"
+            , kinyarwanda = Just "Umurwayi yanyoye imiti y’umuriro mu masaha atandatu ashize"
+            }
+
+        MedicationHelpedEnding helped ->
+            if helped then
+                { english = "and improved"
+                , kinyarwanda = Just "none yorohewe"
+                }
+
+            else
+                { english = "but no improvement"
+                , kinyarwanda = Just "ariko ntiyorohewe"
+                }
+
+        MedicationForMalariaToday ->
+            { english = "Patient received medication for malaria today before this visit"
+            , kinyarwanda = Just "Umurwayi yahawe imiti ya malariya uyu munsi mbere yuko aza mu isuzuma"
+            }
+
+        MedicationForMalariaPastMonth ->
+            { english = "Patient received medication for malaria within the past month before today's visit"
+            , kinyarwanda = Just "Umurwayi yahawe imiti ya malariya mu kwezi gushize mbere yuko aza mu isuzuma uyu munsi "
+            }
 
         MedicalFormHelper ->
             { english = "Please record if the mother was diagnosed with the following medical issues"
