@@ -180,6 +180,14 @@ dbSync.version(13).stores({
   })();
 });
 
+async function test() {
+  const collection = await dbSync.syncMetadata.toCollection().toArray();
+
+  collection.forEach(function(row) {
+    console.log(row);
+  });
+}
+
 /**
  * The DB version on the backend.
  *
