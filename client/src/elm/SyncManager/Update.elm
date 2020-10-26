@@ -390,10 +390,6 @@ update currentDate currentTime dbVersion device msg model =
                         model
 
         BackendFetchPhotos ->
-            let
-                _ =
-                    Debug.log "BackendFetchPhotos" "BackendFetchPhotos"
-            in
             case model.downloadPhotosStatus of
                 DownloadPhotosIdle ->
                     SubModelReturn
@@ -1115,9 +1111,6 @@ update currentDate currentTime dbVersion device msg model =
 
         BackendDeferredPhotoFetch Nothing ->
             let
-                _ =
-                    Debug.log "BackendDeferredPhotoFetch" "Nothing"
-
                 downloadPhotosStatus =
                     -- There are no deferred photos matching the query.
                     case model.downloadPhotosStatus of
@@ -1138,9 +1131,6 @@ update currentDate currentTime dbVersion device msg model =
 
         BackendDeferredPhotoFetch (Just result) ->
             let
-                _ =
-                    Debug.log "BackendDeferredPhotoFetch" result
-
                 isLoading =
                     case model.downloadPhotosStatus of
                         DownloadPhotosInProcess (DownloadPhotosBatch record) ->
@@ -1283,9 +1273,6 @@ update currentDate currentTime dbVersion device msg model =
 
         QueryIndexDb indexDbQueryType ->
             let
-                _ =
-                    Debug.log "QueryIndexDb" indexDbQueryType
-
                 record =
                     case indexDbQueryType of
                         IndexDbQueryUploadPhotoAuthority ->
@@ -1401,9 +1388,9 @@ update currentDate currentTime dbVersion device msg model =
         ResetSettings ->
             let
                 syncSpeed =
-                    { idle = 10000
+                    { idle = 5 * 60 1000
                     , cycle = 50
-                    , offline = 3000
+                    , offline = 30 * 1000
                     }
             in
             SubModelReturn
