@@ -167,62 +167,62 @@ dbSync.version(13).stores({
 }).upgrade(function (tx) {
   // Get the data from the deprecated `syncMetadata` and move to local storage.
   (async () => {
-    const collection = await tx.syncMetadata.toCollection().toArray();
+    const collection = await dbSync.syncMetadata.toCollection().toArray();
 
-    var revisionIdPerAuthority = [];
-    collection.forEach(function(row) {
-      revisionIdPerAuthority.push({'uuid': row.uuid, 'revisionId': 0})
+    var syncInfoGeneral = {lastFetchedRevisionId: 0, remainingToUpload:0, remainingToDownload: 0, status: "Not Available"};;
+    var syncInfoAuthorities = [];
+
+    await collection.forEach(async function(row, index) {
+        if (row.uuid == '78cf21d1-b3f4-496a-b312-d8ae73041f09') {
+            syncInfoGeneral.deviceName = row.download.device_name;
+            syncInfoGeneral.lastSuccesfulContact = row.download.last_contact;
+
+            let result = await dbSync
+              .nodes
+              .where('vid')
+              .above(0)
+              .reverse()
+              .limit(1)
+              .sortBy('vid');
+
+            if (result.length == 1) {
+                syncInfoGeneral.lastFetchedRevisionId = result[0].vid;
+                syncInfoGeneral.status = "Success";
+            }
+
+            localStorage.setItem('syncInfoGeneral', JSON.stringify(syncInfoGeneral));
+        }
+        else {
+            var syncInfoAuthority = {lastFetchedRevisionId: 0, remainingToUpload:0, remainingToDownload: 0, status: "Not Available"};
+            syncInfoAuthority.lastSuccesfulContact = row.download.last_contact;
+            syncInfoAuthority.statsCacheHash = "";
+            syncInfoAuthority.uuid = row.uuid;
+
+            let result = await dbSync
+              .shards
+              .where('[shard+vid]').between(
+                  [row.uuid, Dexie.minKey],
+                  [row.uuid, Dexie.maxKey]
+              )
+              .reverse()
+              .limit(1)
+              .sortBy('vid');
+
+            if (result.length == 1) {
+                syncInfoAuthority.lastFetchedRevisionId = result[0].vid;
+                syncInfoAuthority.status = "Success";
+            }
+
+            syncInfoAuthorities.push(syncInfoAuthority);
+            if (index == (collection.length - 1) ) {
+                localStorage.setItem('syncInfoAuthorities', JSON.stringify(syncInfoAuthorities));
+            }
+        }
     });
-
-    localStorage.setItem('revisionIdPerAuthority', JSON.stringify(revisionIdPerAuthority));
 
     return Promise.resolve();
   })();
 });
-
-async function test() {
-  const collection = await dbSync.syncMetadata.toCollection().toArray();
-
-  var syncInfoGeneral = initialSyncInfoGeneral;
-
-  collection.forEach(async function(row) {
-    if (row.uuid == '78cf21d1-b3f4-496a-b312-d8ae73041f09') {
-      syncInfoGeneral.deviceName = row.download.device_name;
-      syncInfoGeneral.lastSuccesfulContact = row.download.last_contact;
-
-      let result = await dbSync
-          .nodes
-          .where('vid')
-          .above(0)
-          .reverse()
-          .limit(1)
-          .sortBy('vid');
-
-      if (result.length == 1) {
-          syncInfoGeneral.lastFetchedRevisionId = result[0].vid;
-          syncInfoGeneral.status = "Success";
-      }
-    }
-    else {
-      let result = await dbSync
-          .shards
-          .where('[shard+vid]').between(
-              [row.uuid, Dexie.minKey],
-              [row.uuid, Dexie.maxKey]
-          )
-          .reverse()
-          .limit(1)
-          .sortBy('vid');
-
-      if (result.length == 1) {
-          console.log('Shard ' + row.uuid + ": " + result[0].vid);
-      }
-    }
-
-    console.log(syncInfoGeneral);
-    return Promise.resolve();
-  });
-}
 
 /**
  * The DB version on the backend.
@@ -232,8 +232,6 @@ async function test() {
  * @type {number}
  */
 const dbVersion = 13;
-
-const initialSyncInfoGeneral = {lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: "", status: "Not Available"};
 
 /**
  * Return saved info for General sync.
@@ -252,7 +250,7 @@ const getSyncInfoGeneral = function() {
     return storageArr;
   }
 
-  return initialSyncInfoGeneral;
+  return {lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: "", status: "Not Available"};
 };
 
 /**
