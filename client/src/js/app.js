@@ -171,11 +171,13 @@ dbSync.version(13).stores({
 
     var syncInfoAuthorities = [];
     collection.forEach(async function(row, index) {
+        // Genral sync UUID is 78cf21d1-b3f4-496a-b312-d8ae73041f09.
         if (row.uuid == '78cf21d1-b3f4-496a-b312-d8ae73041f09') {
             var syncInfoGeneral = {lastFetchedRevisionId: 0, remainingToUpload:0, remainingToDownload: 0, status: "Not Available"};
             syncInfoGeneral.deviceName = row.download.device_name;
             syncInfoGeneral.lastSuccesfulContact = row.download.last_contact;
 
+            // Pulling latest revision that was synced.
             let result = await dbSync
               .nodes
               .where('vid')
@@ -191,6 +193,7 @@ dbSync.version(13).stores({
 
             localStorage.setItem('syncInfoGeneral', JSON.stringify(syncInfoGeneral));
         }
+        // This is sync data of a health center.
         else {
             var syncInfoAuthority = {lastFetchedRevisionId: 0, remainingToUpload:0, remainingToDownload: 0, status: "Not Available"};
             syncInfoAuthority.lastSuccesfulContact = row.download.last_contact;
@@ -219,6 +222,7 @@ dbSync.version(13).stores({
         }
     });
 
+    // Perform a refresh, for the APP to read generated sync data (from local storage).
     location.reload();
     return Promise.resolve();
   })();
