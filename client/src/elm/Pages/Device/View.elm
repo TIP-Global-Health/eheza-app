@@ -1,11 +1,13 @@
 module Pages.Device.View exposing (view)
 
 import App.Model
+import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Model exposing (ModelIndexedDb)
 import Device.Model exposing (..)
+import EverySet
 import Gizra.Html exposing (showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -68,7 +70,7 @@ viewDeviceStatus language device app model =
                     , viewSyncInfo language app.syncManager.syncInfoGeneral
                     , viewDownloadPhotosInfo language app.syncManager.downloadPhotosStatus
                     ]
-                , viewHealthCenters language app.syncManager.syncInfoAuthorities app.indexedDb
+                , viewHealthCenters language app
                 ]
 
         _ ->
@@ -156,7 +158,7 @@ viewDownloadPhotosInfo language status =
                     div [] [ text <| translate language Translate.RemainingForDownloadLabel ++ ": 0" ]
 
                 DownloadPhotosInProcess DownloadPhotosNone ->
-                    div [] [ text "Disabled" ]
+                    div [] [ text <| translate language Translate.Disabled ]
 
                 DownloadPhotosInProcess (DownloadPhotosBatch rect) ->
                     let
@@ -170,11 +172,10 @@ viewDownloadPhotosInfo language status =
                     in
                     div []
                         [ text <|
-                            "Photos batch download ("
-                                ++ String.fromInt (rect.batchCounter + 1)
-                                ++ " out of "
+                            String.fromInt (rect.batchCounter + 1)
+                                ++ " / "
                                 ++ String.fromInt rect.batchSize
-                                ++ "), "
+                                ++ " , "
                         , text <|
                             translate language Translate.RemainingForDownloadLabel
                                 ++ ": "
@@ -200,23 +201,34 @@ viewDownloadPhotosInfo language status =
     in
     div
         [ class "download-photos" ]
-        [ h2 [] [ text "Photos Download Status" ]
+        [ h2 [] [ text <| translate language Translate.PhotosDownloadStatus ]
         , statusHtml
         ]
 
 
-viewHealthCenters : Language -> SyncInfoAuthorityZipper -> ModelIndexedDb -> Html Msg
-viewHealthCenters language zipper db =
-    db.healthCenters
-        |> RemoteData.map
-            (\data ->
-                data
-                    |> Dict.toList
-                    |> List.sortBy (Tuple.second >> .name)
-                    |> List.map (viewHealthCenter language zipper)
-                    |> div [ class "health-centers" ]
+viewHealthCenters : Language -> App.Model.Model -> Html Msg
+viewHealthCenters language app =
+    getLoggedInData app
+        |> Maybe.map
+            (\( _, loggedInModel ) ->
+                let
+                    allowedHealthCenters =
+                        Tuple.second loggedInModel.nurse
+                            |> .healthCenters
+                in
+                app.indexedDb.healthCenters
+                    |> RemoteData.map
+                        (\data ->
+                            data
+                                |> Dict.toList
+                                |> List.filter (\( healthCenterId, _ ) -> EverySet.member healthCenterId allowedHealthCenters)
+                                |> List.sortBy (Tuple.second >> .name)
+                                |> List.map (viewHealthCenter language app.syncManager.syncInfoAuthorities)
+                                |> div [ class "health-centers" ]
+                        )
+                    |> RemoteData.withDefault spinner
             )
-        |> RemoteData.withDefault spinner
+        |> Maybe.withDefault (div [ class "login-request" ] [ text <| translate language <| Translate.LoginPhrase Translate.LoginToSyncHealthCenters ])
 
 
 viewHealthCenter : Language -> SyncInfoAuthorityZipper -> ( HealthCenterId, HealthCenter ) -> Html Msg

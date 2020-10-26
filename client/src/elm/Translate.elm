@@ -120,7 +120,7 @@ type LoginPhrase
     | LoggedInAs
     | LoginError Http.Error
     | LoginRejected LoginMethod
-    | LoginOrWorkOffline
+    | LoginToSyncHealthCenters
     | Logout
     | LogoutInProgress
     | LogoutFailed
@@ -382,6 +382,7 @@ type TranslationId
     | DeviceStatus
     | Diabetes
     | Diagnosis
+    | Disabled
     | DistributionNotice DistributionNotice
     | District
     | DOB
@@ -613,6 +614,7 @@ type TranslationId
     | Person
     | PersonHasBeenSaved
     | PertinentSymptoms
+    | PhotosDownloadStatus
     | PhysicalExam
     | PhysicalExamTask PhysicalExamTask
     | PlaceholderEnterHeight
@@ -2218,6 +2220,11 @@ translationSet trans =
         Diagnosis ->
             { english = "Diagnosis"
             , kinyarwanda = Just "Uburwayi bwabonetse"
+            }
+
+        Disabled ->
+            { english = "Disabled"
+            , kinyarwanda = Nothing
             }
 
         DistributionNotice notice ->
@@ -4103,6 +4110,11 @@ translationSet trans =
         PertinentSymptoms ->
             { english = "Pertinent Symptoms"
             , kinyarwanda = Just " Ibimenyetso by'ingenzi"
+            }
+
+        PhotosDownloadStatus ->
+            { english = "Photos Download Status"
+            , kinyarwanda = Nothing
             }
 
         PhysicalExam ->
@@ -6366,8 +6378,8 @@ translateLoginPhrase phrase =
         LoginError error ->
             translateHttpError error
 
-        LoginOrWorkOffline ->
-            { english = "Either login below, or work offline without logging in."
+        LoginToSyncHealthCenters ->
+            { english = "Please log in before syncing health centers"
             , kinyarwanda = Nothing
             }
 
