@@ -219,6 +219,7 @@ dbSync.version(13).stores({
         }
     });
 
+    location.reload();
     return Promise.resolve();
   })();
 });
