@@ -1388,7 +1388,7 @@ update currentDate currentTime dbVersion device msg model =
         ResetSettings ->
             let
                 syncSpeed =
-                    { idle = 5 * 60 1000
+                    { idle = 5 * 60 * 1000
                     , cycle = 50
                     , offline = 30 * 1000
                     }
