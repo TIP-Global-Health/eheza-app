@@ -183,8 +183,44 @@ dbSync.version(13).stores({
 async function test() {
   const collection = await dbSync.syncMetadata.toCollection().toArray();
 
-  collection.forEach(function(row) {
-    console.log(row);
+  var syncInfoGeneral = initialSyncInfoGeneral;
+
+  collection.forEach(async function(row) {
+    if (row.uuid == '78cf21d1-b3f4-496a-b312-d8ae73041f09') {
+      syncInfoGeneral.deviceName = row.download.device_name;
+      syncInfoGeneral.lastSuccesfulContact = row.download.last_contact;
+
+      let result = await dbSync
+          .nodes
+          .where('vid')
+          .above(0)
+          .reverse()
+          .limit(1)
+          .sortBy('vid');
+
+      if (result.length == 1) {
+          syncInfoGeneral.lastFetchedRevisionId = result[0].vid;
+          syncInfoGeneral.status = "Success";
+      }
+    }
+    else {
+      let result = await dbSync
+          .shards
+          .where('[shard+vid]').between(
+              [row.uuid, Dexie.minKey],
+              [row.uuid, Dexie.maxKey]
+          )
+          .reverse()
+          .limit(1)
+          .sortBy('vid');
+
+      if (result.length == 1) {
+          console.log('Shard ' + row.uuid + ": " + result[0].vid);
+      }
+    }
+
+    console.log(syncInfoGeneral);
+    return Promise.resolve();
   });
 }
 
@@ -196,6 +232,8 @@ async function test() {
  * @type {number}
  */
 const dbVersion = 13;
+
+const initialSyncInfoGeneral = {lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: "", status: "Not Available"};
 
 /**
  * Return saved info for General sync.
@@ -214,7 +252,7 @@ const getSyncInfoGeneral = function() {
     return storageArr;
   }
 
-  return {lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: "", status: "Not Available"};
+  return initialSyncInfoGeneral;
 };
 
 /**
