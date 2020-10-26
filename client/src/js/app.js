@@ -169,11 +169,10 @@ dbSync.version(13).stores({
   (async () => {
     const collection = await dbSync.syncMetadata.toCollection().toArray();
 
-    var syncInfoGeneral = {lastFetchedRevisionId: 0, remainingToUpload:0, remainingToDownload: 0, status: "Not Available"};;
     var syncInfoAuthorities = [];
-
-    await collection.forEach(async function(row, index) {
+    collection.forEach(async function(row, index) {
         if (row.uuid == '78cf21d1-b3f4-496a-b312-d8ae73041f09') {
+            var syncInfoGeneral = {lastFetchedRevisionId: 0, remainingToUpload:0, remainingToDownload: 0, status: "Not Available"};
             syncInfoGeneral.deviceName = row.download.device_name;
             syncInfoGeneral.lastSuccesfulContact = row.download.last_contact;
 
