@@ -222,6 +222,7 @@ const getSyncInfoAuthorities = function() {
       value.lastSuccesfulContact = parseInt(value.lastSuccesfulContact);
       value.remainingToUpload = parseInt(value.remainingToDownload);
       value.remainingToDownload = parseInt(value.remainingToDownload);
+      value.statsCacheHash = value.statsCacheHash;
       value.status = value.status;
       this[index] = value;
     }, storageArr);
