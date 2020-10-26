@@ -198,7 +198,7 @@ update currentDate currentTime dbVersion device msg model =
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
                 []
-                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ BackendFetchPhotos ]
+                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ TryDownloadingPhotos ]
 
         BackendAuthorityDashboardStatsFetch ->
             case model.syncStatus of
@@ -443,6 +443,7 @@ update currentDate currentTime dbVersion device msg model =
                 cmd
                 noError
                 []
+                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ TrySyncing ]
 
         RevisionIdAuthorityRemove uuid ->
             -- Remove authority from Local storage.
