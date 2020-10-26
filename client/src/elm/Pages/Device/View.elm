@@ -159,36 +159,44 @@ viewDownloadPhotosInfo language status =
                     div [] [ text "Disabled" ]
 
                 DownloadPhotosInProcess (DownloadPhotosBatch rect) ->
-                    case rect.indexDbRemoteData of
-                        RemoteData.Success (Just result) ->
-                            div []
-                                [ text <|
-                                    "Photos batch download ("
-                                        ++ String.fromInt (rect.batchCounter + 1)
-                                        ++ " out of "
-                                        ++ String.fromInt rect.batchSize
-                                        ++ "), "
-                                , text <|
-                                    translate language Translate.RemainingForDownloadLabel
-                                        ++ ": "
-                                        ++ String.fromInt result.remaining
-                                ]
+                    let
+                        remaining =
+                            case rect.indexDbRemoteData of
+                                RemoteData.Success (Just result) ->
+                                    String.fromInt result.remaining
 
-                        _ ->
-                            div [] [ text "Loading ..." ]
+                                _ ->
+                                    ""
+                    in
+                    div []
+                        [ text <|
+                            "Photos batch download ("
+                                ++ String.fromInt (rect.batchCounter + 1)
+                                ++ " out of "
+                                ++ String.fromInt rect.batchSize
+                                ++ "), "
+                        , text <|
+                            translate language Translate.RemainingForDownloadLabel
+                                ++ ": "
+                                ++ remaining
+                        ]
 
                 DownloadPhotosInProcess (DownloadPhotosAll rect) ->
-                    case rect.indexDbRemoteData of
-                        RemoteData.Success (Just result) ->
-                            div []
-                                [ text <|
-                                    translate language Translate.RemainingForDownloadLabel
-                                        ++ ": "
-                                        ++ String.fromInt result.remaining
-                                ]
+                    let
+                        remaining =
+                            case rect.indexDbRemoteData of
+                                RemoteData.Success (Just result) ->
+                                    String.fromInt result.remaining
 
-                        _ ->
-                            div [] [ text "Loading ..." ]
+                                _ ->
+                                    ""
+                    in
+                    div []
+                        [ text <|
+                            translate language Translate.RemainingForDownloadLabel
+                                ++ ": "
+                                ++ remaining
+                        ]
     in
     div
         [ class "download-photos" ]

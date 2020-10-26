@@ -523,7 +523,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         };
 
         return sendResultToElm(queryType, resultToSend);
-
       })();
       break;
 
@@ -598,13 +597,14 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         if (result.length == 1) {
             let totalEntites = await dbSync
                 .deferredPhotos
+                .where('attempts')
+                .belowOrEqual(2)
                 .count();
 
             result[0].remaining = totalEntites;
         }
 
         return sendResultToElm(queryType, result);
-
       })();
       break;
 
@@ -616,7 +616,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         // eventually the number of attempts will make sure it's never picked
         // up again.
         await dbSync.deferredPhotos.delete(data);
-
       })();
       break;
 
@@ -627,15 +626,12 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         // We don't need to send back the result, as it's an update operation.
         await dbSync.deferredPhotos.update(dataArr.uuid, {'attempts': dataArr.attempts});
-
       })();
       break;
 
     default:
       throw queryType + ' is not a known Query type for `askFromIndexDb`';
-
   }
-
 
   /**
    * Prepare and send the result.

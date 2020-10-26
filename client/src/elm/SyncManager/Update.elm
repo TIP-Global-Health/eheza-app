@@ -1,6 +1,7 @@
 port module SyncManager.Update exposing (subscriptions, update)
 
 import App.Model exposing (SubModelReturn)
+import App.Utils exposing (sequenceSubModelReturn)
 import Backend.Model
 import Device.Encoder
 import Device.Model exposing (Device)
@@ -197,6 +198,7 @@ update currentDate currentTime dbVersion device msg model =
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
                 []
+                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ BackendFetchPhotos ]
 
         BackendAuthorityDashboardStatsFetch ->
             case model.syncStatus of
@@ -1509,31 +1511,38 @@ update currentDate currentTime dbVersion device msg model =
                     -- Sync is already in progress.
                     noChange
 
+        TryDownloadingPhotos ->
+            case model.downloadPhotosStatus of
+                DownloadPhotosIdle ->
+                    update
+                        currentDate
+                        currentTime
+                        dbVersion
+                        device
+                        BackendFetchPhotos
+                        model
+
+                _ ->
+                    -- Sync is already in progress.
+                    noChange
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
-        backendFetchMain =
+        backendFetchCmds =
             case model.syncCycle of
                 SyncManager.Model.SyncCyclePause ->
-                    Sub.none
+                    []
 
                 _ ->
-                    Time.every (getSyncSpeedForSubscriptions model) (\_ -> BackendFetchMain)
-
-        backendFetchPhotos =
-            case model.syncCycle of
-                SyncManager.Model.SyncCyclePause ->
-                    Sub.none
-
-                _ ->
-                    Time.every (getDownloadPhotosSpeedForSubscriptions model) (\_ -> BackendFetchPhotos)
+                    [ Time.every (getSyncSpeedForSubscriptions model) (always BackendFetchMain)
+                    , Time.every (getDownloadPhotosSpeedForSubscriptions model) (always BackendFetchPhotos)
+                    ]
     in
-    Sub.batch
-        [ backendFetchMain
-        , backendFetchPhotos
-        , getFromIndexDb QueryIndexDbHandle
-        ]
+    Sub.batch <|
+        getFromIndexDb QueryIndexDbHandle
+            :: backendFetchCmds
 
 
 {-| Send to JS data we have synced, e.g. `person`, `health center`, etc.

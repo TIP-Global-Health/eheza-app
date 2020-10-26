@@ -493,3 +493,4 @@ type Msg
     | SetSyncSpeedCycle String
     | SetSyncSpeedOffline String
     | TrySyncing
+    | TryDownloadingPhotos
