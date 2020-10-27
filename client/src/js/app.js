@@ -425,7 +425,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         const cache = await caches.open(photosUploadCache);
 
-        result.forEach(async function(row) {
+        result.forEach(async function(row, index) {
             const cachedResponse = await cache.match(row.photo);
             if (!cachedResponse) {
               // Photo is registered in IndexDB, but doesn't appear in the cache.
@@ -486,10 +486,13 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
               // photoUploadChanges table, the same photo local URL will appear.
               await dbSync.authorityPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
             }
+
+            if (index == (result.length -1)) {
+              // As we've got async operations withing the loop, we must verify that all
+              // rows were processed before sending a response.
+              return sendResultToElm(queryType, {tag: 'Success', result: "!"});
+            }
         });
-        // @todo: figure out the response.
-        // const completedResult = Object.assign(row, changes);
-        return sendResultToElm(queryType, {tag: 'Success', result: "!"});
       })();
       break;
 
