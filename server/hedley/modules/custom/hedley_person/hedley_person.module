@@ -465,6 +465,9 @@ function hedley_person_reset_form(array $form, array &$form_state) {
 /**
  * Convert a date string to a timestamp.
  *
+ * Format we expect is dd-[MON]-yyyy.
+ * [MON] is JAN, FEB, ..., DEC.
+ *
  * @param string $trimmed
  *   A string containing a date.
  *
@@ -475,6 +478,34 @@ function hedley_person_date_process($trimmed) {
   if (empty($trimmed)) {
     return FALSE;
   }
+
+  $parts = explode('-', $trimmed);
+  if (count($parts) != 3) {
+    return FALSE;
+  }
+
+  $months = [
+    'jan' => '01',
+    'feb' => '02',
+    'mar' => '03',
+    'apr' => '04',
+    'may' => '05',
+    'jun' => '06',
+    'jul' => '07',
+    'aug' => '08',
+    'sep' => '09',
+    'oct' => '10',
+    'nov' => '11',
+    'dec' => '12',
+  ];
+
+  $month_part = strtolower($parts[1]);
+  if (!in_array($month_part, array_keys($months))) {
+    return FALSE;
+  }
+
+  $parts[1] = $months[$month_part];
+  $trimmed = implode('-', $parts);
 
   // Regular expression for validating 'dd-mm-YYYY' dates.
   $regex = '/^([0]?[1-9]|[1|2][0-9]|[3][0|1])[-]([0]?[1-9]|[1][0-2])[-]([0-9]{4}|[0-9]{2})$/';
