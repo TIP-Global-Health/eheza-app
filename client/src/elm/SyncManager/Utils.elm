@@ -105,6 +105,15 @@ determineSyncStatus model =
                         else
                             noChange
 
+                    SyncUploadAuthority record ->
+                        if record.indexDbRemoteData == RemoteData.Success Nothing then
+                            -- We tried to fetch entities for upload from IndexDB,
+                            -- but there we non matching the query.
+                            ( SyncDownloadGeneral RemoteData.NotAsked, syncInfoAuthorities )
+
+                        else
+                            noChange
+
                     SyncDownloadGeneral webData ->
                         case webData of
                             RemoteData.Success data ->
@@ -121,15 +130,6 @@ determineSyncStatus model =
 
                             _ ->
                                 noChange
-
-                    SyncUploadAuthority record ->
-                        if record.indexDbRemoteData == RemoteData.Success Nothing then
-                            -- We tried to fetch entities for upload from IndexDB,
-                            -- but there we non matching the query.
-                            ( SyncDownloadGeneral RemoteData.NotAsked, syncInfoAuthorities )
-
-                        else
-                            noChange
 
                     SyncDownloadAuthority webData ->
                         case ( model.syncInfoAuthorities, webData ) of

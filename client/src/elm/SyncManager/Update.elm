@@ -765,6 +765,21 @@ update currentDate currentTime dbVersion device msg model =
                 _ ->
                     noChange
 
+        BackendUploadPhotoAuthorityHandle remoteData ->
+            -- Uploading of photos happened through JS, since it involves working
+            -- with file blobs. This handler however is for post upload attempt
+            -- (success or not), to set RemoteData accordingly.
+            case model.syncStatus of
+                SyncUploadPhotoAuthority _ ->
+                    SubModelReturn
+                        (SyncManager.Utils.determineSyncStatus { model | syncStatus = SyncUploadPhotoAuthority remoteData })
+                        Cmd.none
+                        noError
+                        []
+
+                _ ->
+                    noChange
+
         BackendUploadAuthority Nothing ->
             let
                 syncStatus =
@@ -1093,21 +1108,6 @@ update currentDate currentTime dbVersion device msg model =
                         _ ->
                             -- Satisfy the compiler.
                             noChange
-
-                _ ->
-                    noChange
-
-        BackendUploadPhotoAuthorityHandle remoteData ->
-            -- Uploading of photos happened through JS, since it involves working
-            -- with file blobs. This handler however is for post upload attempt
-            -- (success or not), to set RemoteData accordingly.
-            case model.syncStatus of
-                SyncUploadPhotoAuthority _ ->
-                    SubModelReturn
-                        (SyncManager.Utils.determineSyncStatus { model | syncStatus = SyncUploadPhotoAuthority remoteData })
-                        Cmd.none
-                        noError
-                        []
 
                 _ ->
                     noChange
