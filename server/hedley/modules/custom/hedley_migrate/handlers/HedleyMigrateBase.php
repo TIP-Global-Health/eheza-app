@@ -132,6 +132,10 @@ abstract class HedleyMigrateBase extends Migration {
       elseif (in_array('title_field', $this->csvColumns)) {
         $this->addFieldMapping('title', 'title_field');
       }
+
+      if (in_array('created', $this->csvColumns)) {
+        $this->addFieldMapping('created', 'created');
+      }
     }
     elseif ($this->entityType == 'taxonomy_term') {
       // Map the translated name field to the default term name.

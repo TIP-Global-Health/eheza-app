@@ -16,7 +16,7 @@ import Html.Events exposing (onClick)
 import LocalData
 import Maybe.Extra
 import Measurement.Model
-import Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getMotherForm)
+import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Measurement.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
@@ -182,7 +182,7 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                     Nothing ->
                         []
     in
-    divKeyed [ class "wrap" ] <|
+    divKeyed [ class "wrap page-participant" ] <|
         List.concat
             [ [ viewHeader language sessionId |> keyed "header"
               , div [ class "ui unstackable items participant-page child" ]
@@ -240,7 +240,7 @@ viewFoundMother language currentDate isChw ( motherId, mother ) ( sessionId, ses
             getChildren motherId session.offlineSession
                 |> List.indexedMap
                     (\index ( _, child ) ->
-                        text <| translate language Translate.Baby ++ " " ++ Debug.toString (index + 1) ++ ": " ++ child.name
+                        text <| translate language Translate.Baby ++ " " ++ String.fromInt (index + 1) ++ ": " ++ child.name
                     )
                 |> List.intersperse break
 
@@ -289,7 +289,7 @@ viewFoundMother language currentDate isChw ( motherId, mother ) ( sessionId, ses
                         |> LocalData.unwrap
                             []
                             (\measurements ->
-                                [ Measurement.View.viewMother language activity measurements form
+                                [ Measurement.View.viewMother language currentDate mother activity measurements form
                                     |> Html.map MsgMeasurement
                                     |> keyed "content"
                                 ]
@@ -298,7 +298,7 @@ viewFoundMother language currentDate isChw ( motherId, mother ) ( sessionId, ses
                 Nothing ->
                     []
     in
-    divKeyed [ class "wrap" ] <|
+    divKeyed [ class "wrap page-participant" ] <|
         List.concat
             [ [ viewHeader language sessionId |> keyed "header"
               , div
@@ -484,7 +484,7 @@ viewFamilyLinks config language participantId ( sessionId, session ) =
                     [ span [ class "icon-baby" ] []
                     , span
                         [ class "count" ]
-                        [ text <| Debug.toString (index + 1) ]
+                        [ text <| String.fromInt (index + 1) ]
                     ]
                 ]
 

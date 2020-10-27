@@ -64,6 +64,11 @@ viewMotherMeasurements language currentDate motherId activity pages session =
         |> LocalData.unwrap
             emptyNode
             (\measurements ->
-                Measurement.View.viewMother language activity measurements form
-                    |> Html.map MsgMeasurement
+                getMother motherId session.offlineSession
+                    |> Maybe.map
+                        (\mother ->
+                            Measurement.View.viewMother language currentDate mother activity measurements form
+                                |> Html.map MsgMeasurement
+                        )
+                    |> Maybe.withDefault emptyNode
             )

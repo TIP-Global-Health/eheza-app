@@ -4,10 +4,11 @@ import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.Person.Model exposing (Initiator(..), Person)
+import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, Relationship)
+import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (getVillageClinicId)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -28,19 +29,23 @@ import Utils.WebData exposing (viewError, viewWebData)
 {-| Offer to edit the relationship between these persons, from the point of
 view of the first person.
 -}
-view : Language -> NominalDate -> Maybe VillageId -> Bool -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate maybeVillageId isChw id1 id2 db model =
+view : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> Initiator -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate ( healthCenterId, maybeVillageId ) isChw initiator id1 id2 db model =
     div
         [ class "page-relationship" ]
-        [ viewHeader language
+        [ viewHeader language initiator id1
         , div
             [ class "ui full segment blue" ]
-            [ viewContent language currentDate maybeVillageId isChw id1 id2 db model ]
+            [ viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw initiator id1 id2 db model ]
         ]
 
 
-viewHeader : Language -> Html Msg
-viewHeader language =
+viewHeader : Language -> Initiator -> PersonId -> Html Msg
+viewHeader language initiator id1 =
+    let
+        goBackPage =
+            UserPage (PersonPage id1 initiator)
+    in
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -48,7 +53,7 @@ viewHeader language =
             [ text <| translate language Translate.CreateRelationship ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage PinCodePage
+            , onClick <| SetActivePage goBackPage
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -56,8 +61,8 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> Maybe VillageId -> Bool -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
-viewContent language currentDate maybeVillageId isChw id1 id2 db model =
+viewContent : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> Initiator -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
+viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw initiator id1 id2 db model =
     let
         person1 =
             Dict.get id1 db.people
@@ -93,7 +98,7 @@ viewContent language currentDate maybeVillageId isChw id1 id2 db model =
             maybeVillageId
                 |> Maybe.andThen (\villageId -> getVillageClinicId villageId db)
     in
-    viewWebData language (viewFetchedContent language currentDate maybeVillageGroupId isChw id1 id2 model request) identity fetched
+    viewWebData language (viewFetchedContent language currentDate healthCenterId maybeVillageGroupId isChw initiator id1 id2 model request db) identity fetched
 
 
 type alias FetchedData =
@@ -105,8 +110,8 @@ type alias FetchedData =
     }
 
 
-viewFetchedContent : Language -> NominalDate -> Maybe ClinicId -> Bool -> PersonId -> PersonId -> Model -> WebData MyRelationship -> FetchedData -> Html Msg
-viewFetchedContent language currentDate maybeVillageGroupId isChw id1 id2 model request data =
+viewFetchedContent : Language -> NominalDate -> HealthCenterId -> Maybe ClinicId -> Bool -> Initiator -> PersonId -> PersonId -> Model -> WebData MyRelationship -> ModelIndexedDb -> FetchedData -> Html Msg
+viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId isChw initiator id1 id2 model request db data =
     let
         savedRelationship =
             data.relationships
@@ -166,7 +171,7 @@ viewFetchedContent language currentDate maybeVillageGroupId isChw id1 id2 model 
                     viewedRelationship == Just possible
 
                 inputId =
-                    "input-relationship-" ++ Debug.toString index
+                    "input-relationship-" ++ String.fromInt index
             in
             div
                 [ class "field" ]
@@ -226,11 +231,28 @@ viewFetchedContent language currentDate maybeVillageGroupId isChw id1 id2 model 
                     viewGroupSelector =
                         let
                             emptyOption =
-                                option
-                                    [ value ""
-                                    , selected (model.assignToGroup == Nothing)
-                                    ]
-                                    [ text "" ]
+                                case initiator of
+                                    GroupEncounterOrigin _ ->
+                                        emptyNode
+
+                                    _ ->
+                                        option
+                                            [ value ""
+                                            , selected (model.assignToGroup == Nothing)
+                                            ]
+                                            [ text "" ]
+
+                            initiatorCondition clinicId =
+                                case initiator of
+                                    -- When we're in session context, allow only
+                                    -- the group to which session blongs.
+                                    GroupEncounterOrigin sessionId ->
+                                        getSession sessionId db
+                                            |> Maybe.map (.clinicId >> (==) clinicId)
+                                            |> Maybe.withDefault False
+
+                                    _ ->
+                                        True
 
                             selector =
                                 data.clinics
@@ -240,22 +262,10 @@ viewFetchedContent language currentDate maybeVillageGroupId isChw id1 id2 model 
                                             (not <| List.member clinicId currentGroupsIds)
                                                 -- It's not a CHW clinic.
                                                 && (clinic.clinicType /= Chw)
-                                                && -- If both persons are assigned to a health
-                                                   -- center, show the clinic if it is
-                                                   -- assigned to one or the other.  If one of
-                                                   -- the persons has no health center, show
-                                                   -- all clinics.
-                                                   (Maybe.map2
-                                                        (\hc1 hc2 ->
-                                                            clinic.healthCenterId
-                                                                == hc1
-                                                                || clinic.healthCenterId
-                                                                == hc2
-                                                        )
-                                                        data.person1.healthCenterId
-                                                        data.person2.healthCenterId
-                                                        |> Maybe.withDefault True
-                                                   )
+                                                -- Clinic belongs to selected health center.
+                                                && (clinic.healthCenterId == selectedHealthCenter)
+                                                -- Intiator based condition.
+                                                && initiatorCondition clinicId
                                         )
                                     |> Dict.map
                                         (\clinicId clinic ->
@@ -301,7 +311,7 @@ viewFetchedContent language currentDate maybeVillageGroupId isChw id1 id2 model 
                     [ class "six wide column" ]
                     [ button
                         [ class "ui button secondary fluid"
-                        , onClick Reset
+                        , onClick <| Reset initiator
                         ]
                         [ text <| translate language Translate.Cancel ]
                     ]
@@ -316,7 +326,7 @@ viewFetchedContent language currentDate maybeVillageGroupId isChw id1 id2 model 
                             , ( "loading", RemoteData.isLoading request )
                             , ( "disabled", RemoteData.isLoading request || isNothing assignToGroup || isNothing viewedRelationship )
                             ]
-                        , onClick <| Save viewedRelationship assignToGroup
+                        , onClick <| Save viewedRelationship assignToGroup initiator
                         ]
                         [ text <| translate language Translate.Save ]
                     ]
@@ -358,15 +368,7 @@ viewParticipant : Language -> NominalDate -> PersonId -> Person -> Html Msg
 viewParticipant language currentDate id person =
     let
         typeForThumbnail =
-            case isPersonAnAdult currentDate person of
-                Just True ->
-                    "mother"
-
-                Just False ->
-                    "child"
-
-                Nothing ->
-                    "mother"
+            defaultIconForPerson currentDate person
 
         content =
             div [ class "content" ]

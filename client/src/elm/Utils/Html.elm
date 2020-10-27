@@ -58,8 +58,8 @@ thumbnailImage subClass maybeAvatarUrl label height width =
         Nothing ->
             span
                 [ class <| "icon-participant " ++ subClass
-                , style "height" (Debug.toString height ++ "px")
-                , style "width" (Debug.toString width ++ "px")
+                , style "height" (String.fromInt height ++ "px")
+                , style "width" (String.fromInt width ++ "px")
                 ]
                 []
 
@@ -67,8 +67,8 @@ thumbnailImage subClass maybeAvatarUrl label height width =
             img
                 [ src source
                 , attribute "alt" label
-                , style "height" (Debug.toString height ++ "px")
-                , style "width" (Debug.toString width ++ "px")
+                , style "height" (String.fromInt height ++ "px")
+                , style "width" (String.fromInt width ++ "px")
                 , class <| "photo-participant " ++ subClass ++ " orientation"
                 ]
                 []
@@ -80,8 +80,11 @@ where we don't need to show any progress.
 viewLoading : Html any
 viewLoading =
     div
-        [ class "ui basic segment" ]
-        [ spinner ]
+        [ class "wrap wrap-alt-2" ]
+        [ div
+            [ class "ui segment center aligned" ]
+            [ spinner ]
+        ]
 
 
 {-| Takes some HTML with a "modal" class, and puts it in an overlay

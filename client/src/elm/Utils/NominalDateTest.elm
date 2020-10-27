@@ -125,27 +125,27 @@ renderDateTest =
             \() ->
                 date 2017 7 30
                     |> renderDate English
-                    |> Expect.equal "30 July 2017"
+                    |> Expect.equal "30 July, 2017"
         , test "for March" <|
             \() ->
                 date 2017 3 29
                     |> renderDate English
-                    |> Expect.equal "29 March 2017"
+                    |> Expect.equal "29 March, 2017"
         , test "for January" <|
             \() ->
                 date 2017 1 21
                     |> renderDate English
-                    |> Expect.equal "21 January 2017"
+                    |> Expect.equal "21 January, 2017"
         , test "for August 2014" <|
             \() ->
                 date 2014 8 25
                     |> renderDate English
-                    |> Expect.equal "25 August 2014"
+                    |> Expect.equal "25 August, 2014"
         , test "for May 2017" <|
             \() ->
                 date 2017 5 6
                     |> renderDate English
-                    |> Expect.equal "06 May 2017"
+                    |> Expect.equal "06 May, 2017"
         ]
 
 

@@ -14,9 +14,1235 @@ define('HEDLEY_PERSON_EDUCATION_SECONDARY', 3);
 define('HEDLEY_PERSON_EDUCATION_DIPLOMA', 4);
 define('HEDLEY_PERSON_EDUCATION_UNIVERSITY', 5);
 define('HEDLEY_PERSON_EDUCATION_ADVANCED', 6);
-
 define('HEDLEY_PERSON_GENDER_MALE', 'male');
 define('HEDLEY_PERSON_GENDER_FEMALE', 'female');
-
 define('HEDLEY_PERSON_RELATED_BY_PARENT_OF', 'parent');
 define('HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR', 'caregiver');
+define('HEDLEY_PERSON_CLINIC_TYPE_SORWATHE', 'sorwathe');
+
+// Import CSV column mapping:
+define('HEDLEY_PERSON_COLUMN_UNIQUE_ID', 0);
+define('HEDLEY_PERSON_COLUMN_ADULT_FIRST_NAME', 1);
+define('HEDLEY_PERSON_COLUMN_ADULT_SECOND_NAME', 2);
+define('HEDLEY_PERSON_COLUMN_ADULT_BIRTH_DATE', 3);
+define('HEDLEY_PERSON_COLUMN_ADULT_ESTIMATED', 4);
+define('HEDLEY_PERSON_COLUMN_ADULT_NATIONAL_ID', 5);
+define('HEDLEY_PERSON_COLUMN_ADULT_GENDER', 6);
+define('HEDLEY_PERSON_COLUMN_ADULT_UBUDEHE', 7);
+define('HEDLEY_PERSON_COLUMN_ADULT_EDUCATION_LEVEL', 8);
+define('HEDLEY_PERSON_COLUMN_ADULT_MARITAL_STATUS', 9);
+define('HEDLEY_PERSON_COLUMN_ADULT_HIV_STATUS', 10);
+define('HEDLEY_PERSON_COLUMN_ADULT_NUMBER_OF_CHILDREN', 11);
+define('HEDLEY_PERSON_COLUMN_ADULT_PHONE', 12);
+define('HEDLEY_PERSON_COLUMN_ADULT_PROVINCE', 13);
+define('HEDLEY_PERSON_COLUMN_ADULT_DISTRICT', 14);
+define('HEDLEY_PERSON_COLUMN_ADULT_SECTOR', 15);
+define('HEDLEY_PERSON_COLUMN_ADULT_CELL', 16);
+define('HEDLEY_PERSON_COLUMN_ADULT_VILLAGE', 17);
+define('HEDLEY_PERSON_COLUMN_ADULT_HEALTH_CENTER', 18);
+define('HEDLEY_PERSON_COLUMN_CHILD_FIRST_NAME', 1);
+define('HEDLEY_PERSON_COLUMN_CHILD_SECOND_NAME', 2);
+define('HEDLEY_PERSON_COLUMN_CHILD_BIRTH_DATE', 3);
+define('HEDLEY_PERSON_COLUMN_CHILD_ESTIMATED', 4);
+define('HEDLEY_PERSON_COLUMN_CHILD_MOTHER_NATIONAL_ID', 5);
+define('HEDLEY_PERSON_COLUMN_CHILD_GENDER', 6);
+define('HEDLEY_PERSON_COLUMN_CHILD_UBUDEHE', 7);
+define('HEDLEY_PERSON_COLUMN_CHILD_HIV_STATUS', 8);
+define('HEDLEY_PERSON_COLUMN_CHILD_MODE_OF_DELIVERY', 9);
+define('HEDLEY_PERSON_COLUMN_CHILD_PARENT_NAME', 10);
+define('HEDLEY_PERSON_COLUMN_CHILD_RELATION', 11);
+define('HEDLEY_PERSON_COLUMN_CHILD_PROVINCE', 12);
+define('HEDLEY_PERSON_COLUMN_CHILD_DISTRICT', 13);
+define('HEDLEY_PERSON_COLUMN_CHILD_SECTOR', 14);
+define('HEDLEY_PERSON_COLUMN_CHILD_CELL', 15);
+define('HEDLEY_PERSON_COLUMN_CHILD_VILLAGE', 16);
+define('HEDLEY_PERSON_COLUMN_CHILD_HEALTH_CENTER', 17);
+define('HEDLEY_PERSON_COLUMN_CHILD_GROUP', 18);
+
+/**
+ * Implements hook_menu().
+ */
+function hedley_person_menu() {
+  $items = [];
+
+  $items['admin/content/import'] = [
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'Import patients',
+    'description' => 'Import participants form spreadsheet on Google Drive',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['hedley_person_import_form'],
+    'access callback' => 'hedley_person_import_form_access',
+  ];
+
+  return $items;
+}
+
+/**
+ * Determines if the user may perform patients import. Only Admins are allowed.
+ *
+ * @return bool
+ *   TRUE if allowed, FALSE otherwise.
+ */
+function hedley_person_import_form_access() {
+  global $user;
+
+  // Always give access to the admin user.
+  if ($user->uid == 1) {
+    return TRUE;
+  }
+
+  $admin_role = user_role_load_by_name('administrator');
+
+  return user_has_role($admin_role->rid);
+}
+
+/**
+ * Patients import form. Form content changes based on step we're at.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ *
+ * @return array
+ *   Form array.
+ */
+function hedley_person_import_form(array $form, array &$form_state) {
+  if (empty($form_state['storage'])) {
+    return hedley_person_get_data($form, $form_state);
+  }
+
+  switch ($form_state['storage']['step']) {
+    case 'confirmation':
+      return hedley_person_confirmation($form, $form_state);
+
+    case 'summary':
+      return hedley_person_summary($form, $form_state);
+  }
+}
+
+/**
+ * Patients import form - step 1.
+ *
+ * Presents input for Google spreadsheet ID, with patients data.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ *
+ * @return array
+ *   Form array.
+ */
+function hedley_person_get_data(array $form, array $form_state) {
+  $form['#prefix'] = '<div id="get-data-form-wrapper">';
+  $form['#suffix'] = '</div>';
+  $form['#tree'] = TRUE;
+
+  $import_instructions_uri = variable_get('hedley_import_instructions_uri', 'https://gizra.github.io/eheza-guide/docs/importing-patient-data-in-bulk-backend');
+
+  $instructions = "<div>Before uploading new patients, make sure you followed <a href=\"$import_instructions_uri\" target=\"_blank\">these guidelines</a>.</div>";
+  $instructions .= '<br>';
+  $instructions .= '<div style="font-style: italic;">Note: You\'ll need to import the mother/caregiver data first, then the children data, in order to create relationships between the two.</div>';
+
+  $form['instructions'] = [
+    '#markup' => $instructions,
+    '#type' => 'item',
+  ];
+
+  $form['spreadsheet_id'] = [
+    '#title' => 'Please enter Google spreadsheet ID you wish to import',
+    '#type' => 'textfield',
+    '#default_value' => '',
+    '#maxlength' => 60,
+    '#required' => TRUE,
+  ];
+
+  $form['actions']['submit'] = [
+    '#type' => 'submit',
+    '#value' => t('Process'),
+    '#submit' => ['hedley_person_import_get_data'],
+    '#limit_validation_errors' => [],
+    '#ajax' => array(
+      'wrapper' => 'get-data-form-wrapper',
+      'callback' => 'hedley_person_import_form_callback',
+      'effect' => 'fade',
+    ),
+  ];
+
+  return $form;
+}
+
+/**
+ * Patients import form - step 2.
+ *
+ * Presents summary of fetched CSV, and asks for confirmation to proceed.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ *
+ * @return array
+ *   Form array.
+ */
+function hedley_person_confirmation(array $form, array $form_state) {
+  $form['#prefix'] = '<div id="confirmation-form-wrapper">';
+  $form['#suffix'] = '</div>';
+  $form['#tree'] = TRUE;
+
+  $form['message'] = [
+    '#markup' => $form_state['storage']['message'],
+    '#type' => 'item',
+  ];
+
+  $form['actions']['submit'] = [
+    '#type'   => 'submit',
+    '#value'  => t('Yes'),
+    '#submit' => ['hedley_person_execute_import'],
+    '#limit_validation_errors' => [],
+  ];
+
+  $form['actions']['cancel'] = [
+    '#type'   => 'submit',
+    '#value'  => t('No'),
+    '#submit' => ['hedley_person_reset_form'],
+    '#limit_validation_errors' => [],
+  ];
+
+  return $form;
+}
+
+/**
+ * Patients import form - step 3.
+ *
+ * Presents summary for result of performed import.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ *
+ * @return array
+ *   Form array.
+ */
+function hedley_person_summary(array $form, array $form_state) {
+  $form['message'] = [
+    '#markup' => $form_state['storage']['message'],
+    '#type' => 'item',
+  ];
+
+  $form['actions']['submit'] = [
+    '#type'   => 'submit',
+    '#value'  => t('Ok'),
+    '#submit' => ['hedley_person_reset_form'],
+    '#limit_validation_errors' => [],
+  ];
+
+  return $form;
+}
+
+/**
+ * Submit callback for first step.
+ *
+ * - Pulls the spreadsheet as a CSV file.
+ * - Validates CSV file structure.
+ * - Validates rows (patients data), and returns errors & warnings.
+ * - When there're errors, forwards form to 'Summary' step.
+ * - If there're no errors, forwards form to 'Confirmation' step.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ */
+function hedley_person_import_get_data(array $form, array &$form_state) {
+  $spreadsheet_id = $form['spreadsheet_id']['#value'];
+  $spreadsheet_uri = "https://docs.google.com/spreadsheets/d/" . $spreadsheet_id . "/export?format=csv";
+
+  $file_content = file_get_contents($spreadsheet_uri);
+  if (!$file_content) {
+    form_set_error('spreadsheet_id', t('Failed to fetch Google spreadsheet as CSV.'));
+    return;
+  }
+
+  $spreadsheet_destination = 'temporary://import_' . '_' . date('h-i-s-j-m-Y') . '.csv';
+  $file = file_save_data($file_content, $spreadsheet_destination);
+
+  $fp = fopen($file->uri, 'r');
+  $line = fgets($fp);
+
+  $fields = explode(',', $line);
+  $fields_count = count($fields);
+
+  if ($fields_count == 19 && $fields[HEDLEY_PERSON_COLUMN_CHILD_RELATION] == 'Relation') {
+    $patient_type = 'child';
+  }
+  elseif ($fields_count == 19 && $fields[HEDLEY_PERSON_COLUMN_ADULT_EDUCATION_LEVEL] == 'Education level') {
+    $patient_type = 'adult';
+  }
+  else {
+    form_set_error('spreadsheet_id', t('Spreadsheet is improperly formatted.'));
+    return;
+  }
+
+  $patients_count = 0;
+  $errors = $warnings = [];
+  while (($line = fgets($fp)) !== FALSE) {
+    $values = explode(',', $line);
+    $unique_id = trim($values[HEDLEY_PERSON_COLUMN_UNIQUE_ID]);
+
+    // If there are errors, we'll not allow performing the import.
+    // If there are warning, we'll notify about them, but allow the import.
+    $patient_errors = $patient_warnings = [];
+    hedley_person_validate_patient_fields($patient_type, $values, $patient_errors, $patient_warnings);
+
+    if (!empty($patient_errors)) {
+      $errors[$unique_id] = $patient_errors;
+    }
+
+    if (!empty($patient_warnings)) {
+      $warnings[$unique_id] = $patient_warnings;
+    }
+
+    $patients_count++;
+  }
+
+  fclose($fp);
+
+  $error_message = '';
+  if (!empty($errors)) {
+    foreach ($errors as $id => $errs) {
+      $error_message .= "<div style=\"margin-left: 10px\">Unique ID $id:</div>";
+      foreach ($errs as $err) {
+        $error_message .= "<div style=\"margin-left: 20px\">$err</div>";
+      }
+    }
+  }
+
+  $warning_message = '';
+  if (!empty($warnings)) {
+    foreach ($warnings as $id => $wrns) {
+      $warning_message .= "<div style=\"margin-left: 10px\">Unique ID $id:</div>";
+      foreach ($wrns as $wrn) {
+        $warning_message .= "<div style=\"margin-left: 20px\">$wrn</div>";
+      }
+    }
+  }
+
+  $patients = $patient_type == 'child' ? 'children' : 'adults';
+
+  if (empty($errors)) {
+    $confirmation_message = "You are about to import $patients_count $patients. ";
+    $confirmation_message .= empty($warning_message) ? 'Proceed?' : 'Proceed despite WARNINGS above?';
+    $form_state['storage']['message'] = $warning_message . "<div style=\"margin-top: 20px\">$confirmation_message</div>";
+    $form_state['storage']['$patient_type'] = $patient_type;
+    $form_state['storage']['file_uri'] = $file->uri;
+    $form_state['storage']['step'] = 'confirmation';
+  }
+  else {
+    $summary_message = "Please fix following ERRORS before importing $patients_count $patients:";
+    $form_state['storage']['message'] = "<div style=\"margin-bottom: 20px\">$summary_message</div>" . $error_message;
+    $form_state['storage']['step'] = 'summary';
+  }
+
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Submit callback for step 2.
+ *
+ * Creates BATCH operation that performs import of patients.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ */
+function hedley_person_execute_import(array $form, array &$form_state) {
+  $patient_type = $form_state['storage']['$patient_type'];
+  $file_uri = $form_state['storage']['file_uri'];
+
+  $fp = fopen($file_uri, 'r');
+  // Skip field names line.
+  fgets($fp);
+  $lines = [];
+  // Read lines from file into an array.
+  while (($line = fgets($fp)) !== FALSE) {
+    $lines[] = $line;
+  }
+  fclose($fp);
+
+  $patients_count = count($lines);
+  // Create import batch.
+  $message = "Executing import of $patients_count $patient_type patients...";
+  watchdog('import', $message);
+  $batch = array(
+    'title' => $message,
+    'operations' => array(
+      array('hedley_person_execute_batch_import', array($patient_type, $lines)),
+    ),
+    'progress_message' => '',
+  );
+  // Execute import batch.
+  batch_set($batch);
+}
+
+/**
+ * Batch API patients import callback.
+ *
+ * @param string $patient_type
+ *   The type of imported patients - 'adult' / 'child'.
+ * @param array $lines
+ *   List of lines read form CSV file, where each represents a single patient.
+ * @param array $context
+ *   Batch API context.
+ */
+function hedley_person_execute_batch_import($patient_type, array $lines, array &$context) {
+  if (empty($context['sandbox'])) {
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['errors'] = [];
+    $context['sandbox']['total'] = count($lines);
+  }
+
+  // Set the size of batch chunks. Each chunk should be executed within 60
+  // seconds, to make sure we don't get a timeout error from Pantheon.
+  $limit = variable_get('hedley_import_batch_size', 10);
+
+  for ($index = 0; $index < $limit; $index++) {
+    // Check if we've completed processing all patients.
+    if ($context['sandbox']['progress'] > ($context['sandbox']['total'] - 1)) {
+      // Set the summary message, reporting on errors that happened
+      // during the import (if any).
+      $errors_count = count($context['sandbox']['errors']);
+      $patients_count = $context['sandbox']['progress'];
+      $message = "Completed import of $patients_count $patient_type patients." . PHP_EOL;
+      if ($errors_count > 0) {
+        $message .= " $errors_count patients generated following notices:" . PHP_EOL;
+        foreach ($context['sandbox']['errors'] as $id => $err) {
+          $message .= "Unique ID $id: $err" . PHP_EOL;
+        }
+      }
+      watchdog('import', "Import of $patients_count $patient_type patients completed. Errors: $errors_count");
+      drupal_set_message($message);
+
+      // Indicate that import is completed.
+      $context['finished'] = 1;
+      return;
+    }
+
+    // Read next patient data.
+    $values = explode(',', $lines[$context['sandbox']['progress']]);
+    // Perform patient import.
+    $result = hedley_person_import_patient($patient_type, $values);
+    // Handle error.
+    if ($result !== TRUE) {
+      $unique_id = trim($values[HEDLEY_PERSON_COLUMN_UNIQUE_ID]);
+      $context['sandbox']['errors'][$unique_id] = $result;
+      // Log the error at watchdog.
+      watchdog('import', "Unique ID $unique_id: $result");
+    }
+    // Move on to next patient.
+    $context['sandbox']['progress']++;
+  }
+
+  $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['total'];
+}
+
+/**
+ * Reset form callback.
+ *
+ * Used for confirmation decline ('No' button), and summary 'Ok' submit.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ */
+function hedley_person_reset_form(array $form, array &$form_state) {
+  $form_state['storage'] = [];
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Convert a date string to a timestamp.
+ *
+ * Format we expect is dd-[MON]-yyyy.
+ * [MON] is JAN, FEB, ..., DEC.
+ *
+ * @param string $trimmed
+ *   A string containing a date.
+ *
+ * @return bool|int
+ *   FALSE on failure, timestamp on success.
+ */
+function hedley_person_date_process($trimmed) {
+  if (empty($trimmed)) {
+    return FALSE;
+  }
+
+  $parts = explode('-', $trimmed);
+  if (count($parts) != 3) {
+    return FALSE;
+  }
+
+  $months = [
+    'jan' => '01',
+    'feb' => '02',
+    'mar' => '03',
+    'apr' => '04',
+    'may' => '05',
+    'jun' => '06',
+    'jul' => '07',
+    'aug' => '08',
+    'sep' => '09',
+    'oct' => '10',
+    'nov' => '11',
+    'dec' => '12',
+  ];
+
+  $month_part = strtolower($parts[1]);
+  if (!in_array($month_part, array_keys($months))) {
+    return FALSE;
+  }
+
+  $parts[1] = $months[$month_part];
+  $trimmed = implode('-', $parts);
+
+  // Regular expression for validating 'dd-mm-YYYY' dates.
+  $regex = '/^([0]?[1-9]|[1|2][0-9]|[3][0|1])[-]([0]?[1-9]|[1][0-2])[-]([0-9]{4}|[0-9]{2})$/';
+  if (!preg_match($regex, $trimmed)) {
+    return FALSE;
+  }
+
+  return DateTime::createFromFormat('!d-m-Y', $trimmed)->getTimestamp();
+}
+
+/**
+ * Performs validation of patient data (row in CSV file).
+ *
+ * Accumulates all errors and warnings discovered during validation.
+ *
+ * @param string $patient_type
+ *   Child oe Adult.
+ * @param array $values
+ *   Data values.
+ * @param array $errors
+ *   Accumulating errors.
+ * @param array $warnings
+ *   Accumulating warnings.
+ */
+function hedley_person_validate_patient_fields($patient_type, array $values, array &$errors, array &$warnings) {
+  // Common logic.
+  if ($patient_type == 'child') {
+    $second_name = $values[HEDLEY_PERSON_COLUMN_CHILD_SECOND_NAME];
+    $birth_date = trim($values[HEDLEY_PERSON_COLUMN_CHILD_BIRTH_DATE]);
+    $estimated = trim($values[HEDLEY_PERSON_COLUMN_CHILD_ESTIMATED]);
+    // National ID belongs to the mother of the child.
+    $national_id = (string) trim($values[HEDLEY_PERSON_COLUMN_CHILD_MOTHER_NATIONAL_ID]);
+    $gender = trim($values[HEDLEY_PERSON_COLUMN_CHILD_GENDER]);
+    $ubudehe = trim($values[HEDLEY_PERSON_COLUMN_CHILD_UBUDEHE]);
+    $hiv_status = trim($values[HEDLEY_PERSON_COLUMN_CHILD_HIV_STATUS]);
+    $health_center = trim($values[HEDLEY_PERSON_COLUMN_CHILD_HEALTH_CENTER]);
+  }
+  else {
+    $second_name = $values[HEDLEY_PERSON_COLUMN_ADULT_SECOND_NAME];
+    $birth_date = trim($values[HEDLEY_PERSON_COLUMN_ADULT_BIRTH_DATE]);
+    $estimated = trim($values[HEDLEY_PERSON_COLUMN_ADULT_ESTIMATED]);
+    $national_id = (string) trim($values[HEDLEY_PERSON_COLUMN_ADULT_NATIONAL_ID]);
+    $gender = trim($values[HEDLEY_PERSON_COLUMN_ADULT_GENDER]);
+    $ubudehe = trim($values[HEDLEY_PERSON_COLUMN_ADULT_UBUDEHE]);
+    $hiv_status = trim($values[HEDLEY_PERSON_COLUMN_ADULT_HIV_STATUS]);
+    $health_center = trim($values[HEDLEY_PERSON_COLUMN_ADULT_HEALTH_CENTER]);
+  }
+
+  if (empty($second_name)) {
+    $errors[] = 'Second name: mandatory field, no value specified';
+  }
+
+  // Birth date.
+  if (!hedley_person_date_process($birth_date)) {
+    $errors[] = "Birth Date: unrecognized date format for $birth_date";
+  }
+
+  // Birth date estimated.
+  if (!empty($estimated) && !in_array(strtolower($estimated), ['y', 'n'])) {
+    $errors[] = "Birth Date Estimated: invalid value - $estimated";
+  }
+
+  // National ID.
+  if (!empty($national_id) && strlen($national_id) != 16) {
+    $errors[] = 'National ID: not 16 digits';
+  }
+
+  // Gender.
+  if (!in_array(strtolower($gender), ['male', 'female'])) {
+    $errors[] = "Gender: Invalid value - $gender";
+  }
+
+  // Ubudehe.
+  if (!in_array(strtolower($ubudehe), ['1', '2', '3', '4'])) {
+    $errors[] = "Ubudehe: Invalid value - $ubudehe";
+  }
+
+  // HIV status.
+  $valid_values = [
+    'hiv-exposed infant',
+    'negative',
+    'negative - discordant couple',
+    'positive',
+    'unknown',
+  ];
+  // Optional field - allowing empty value.
+  if (!empty($hiv_status) && !in_array(strtolower($hiv_status), $valid_values)) {
+    $errors[] = "HIV status: Invalid value - $hiv_status";
+  }
+
+  // Health center.
+  $health_center_id = hedley_person_resolve_content_by_name('health_center', $health_center);
+  if (empty($health_center_id)) {
+    $errors[] = "Health center: failed to resolve health center - $health_center";
+  }
+
+  // Type specific logic - child.
+  if ($patient_type == 'child') {
+    $mode_of_delivery = trim($values[HEDLEY_PERSON_COLUMN_CHILD_MODE_OF_DELIVERY]);
+    $valid_values = [
+      'spontaneous vaginal delivery with episiotomy',
+      'spontaneous vaginal delivery without episiotomy',
+      'vaginal delivery with vacuum extraction',
+      'cesarean delivery',
+    ];
+    // Optional field - allowing empty value.
+    if (!empty($mode_of_delivery) && !in_array(strtolower($mode_of_delivery), $valid_values)) {
+      $errors[] = "Mode of delivery: Invalid value - $mode_of_delivery";
+    }
+
+    $relation = strtolower(trim($values[HEDLEY_PERSON_COLUMN_CHILD_RELATION]));
+    if (!empty($relation) && !in_array($relation, ['parent', 'caregiver'])) {
+      $errors[] = "Relation: Invalid value - $relation";
+    }
+
+    // Resolve mother.
+    $adult_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_PARENT_NAME]);
+
+    if (empty($relation) && !empty($adult_name)) {
+      $warnings[] = "Relation is not specified, therefore, relationship with $adult_name will not be created";
+    }
+
+    if (!empty($relation) && in_array($relation, ['parent', 'caregiver'])) {
+      $adult_national_id = trim($values[HEDLEY_PERSON_COLUMN_CHILD_MOTHER_NATIONAL_ID]);
+      $adult_id = hedley_person_resolve_adult_for_child($adult_national_id, $adult_name);
+
+      if (empty($adult_id)) {
+        $warnings[] = "Failed to resolve $relation for child, therefore, relationship with $adult_name will not be created";
+        return;
+      }
+
+      $group = trim($values[HEDLEY_PERSON_COLUMN_CHILD_GROUP]);
+      if (!empty($group)) {
+        $group_id = hedley_person_resolve_content_by_name('clinic', $group);
+
+        if (empty($group_id)) {
+          $warnings[] = "Failed to resolve $group, therefore, it's impossible to join the group";
+          return;
+        }
+
+        $wrapper = entity_metadata_wrapper('node', $group_id);
+        if ($wrapper->field_health_center->getIdentifier() != $health_center_id) {
+          $errors[] = "Group: group $group does not belong to $health_center health center";
+        }
+      }
+    }
+
+    return;
+  }
+
+  // Type specific logic - adult.
+  $education_level = strtolower(trim($values[HEDLEY_PERSON_COLUMN_ADULT_EDUCATION_LEVEL]));
+  $valid_values = [
+    'no schooling',
+    'primary school',
+    'vocational training school',
+    'secondary school',
+    'diploma programs',
+    'higher education',
+    'advanced diploma',
+  ];
+  if (!in_array($education_level, $valid_values)) {
+    $errors[] = "Education level: Invalid value - $education_level";
+  }
+
+  $marital_status = strtolower($values[HEDLEY_PERSON_COLUMN_ADULT_MARITAL_STATUS]);
+  if (!in_array($marital_status, ['divorced', 'married', 'single', 'widowed'])) {
+    $errors[] = "Marital status: Invalid value - $marital_status";
+  }
+
+  $number_of_children = $values[HEDLEY_PERSON_COLUMN_ADULT_NUMBER_OF_CHILDREN];
+  if (!empty($number_of_children) &&
+    !in_array($number_of_children, ['0', '1', '2', '3', '4', '5'])) {
+    $errors[] = "Number of children under 5: Invalid value - $number_of_children";
+  }
+}
+
+/**
+ * Creates patient using supplied data.
+ *
+ * @param string $patient_type
+ *   Child or Adult.
+ * @param array $values
+ *   Data values.
+ *
+ * @return bool|string
+ *   TRUE on success, error message otherwise.
+ */
+function hedley_person_import_patient($patient_type, array $values) {
+  // Common logic.
+  if ($patient_type == 'child') {
+    $first_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_FIRST_NAME]);
+    $second_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_SECOND_NAME]);
+    $birth_date = trim($values[HEDLEY_PERSON_COLUMN_CHILD_BIRTH_DATE]);
+    $estimated = trim($values[HEDLEY_PERSON_COLUMN_CHILD_ESTIMATED]);
+    $gender = trim($values[HEDLEY_PERSON_COLUMN_CHILD_GENDER]);
+    $ubudehe = trim($values[HEDLEY_PERSON_COLUMN_CHILD_UBUDEHE]);
+    $hiv_status = trim($values[HEDLEY_PERSON_COLUMN_CHILD_HIV_STATUS]);
+    $province = trim($values[HEDLEY_PERSON_COLUMN_CHILD_PROVINCE]);
+    $district = trim($values[HEDLEY_PERSON_COLUMN_CHILD_DISTRICT]);
+    $sector = trim($values[HEDLEY_PERSON_COLUMN_CHILD_SECTOR]);
+    $cell = trim($values[HEDLEY_PERSON_COLUMN_CHILD_CELL]);
+    $village = trim($values[HEDLEY_PERSON_COLUMN_CHILD_VILLAGE]);
+    $health_center = trim($values[HEDLEY_PERSON_COLUMN_CHILD_HEALTH_CENTER]);
+  }
+  else {
+    $first_name = trim($values[HEDLEY_PERSON_COLUMN_ADULT_FIRST_NAME]);
+    $second_name = trim($values[HEDLEY_PERSON_COLUMN_ADULT_SECOND_NAME]);
+    $birth_date = trim($values[HEDLEY_PERSON_COLUMN_ADULT_BIRTH_DATE]);
+    $estimated = trim($values[HEDLEY_PERSON_COLUMN_ADULT_ESTIMATED]);
+    $gender = trim($values[HEDLEY_PERSON_COLUMN_ADULT_GENDER]);
+    $ubudehe = trim($values[HEDLEY_PERSON_COLUMN_ADULT_UBUDEHE]);
+    $hiv_status = trim($values[HEDLEY_PERSON_COLUMN_ADULT_HIV_STATUS]);
+    $province = trim($values[HEDLEY_PERSON_COLUMN_ADULT_PROVINCE]);
+    $district = trim($values[HEDLEY_PERSON_COLUMN_ADULT_DISTRICT]);
+    $sector = trim($values[HEDLEY_PERSON_COLUMN_ADULT_SECTOR]);
+    $cell = trim($values[HEDLEY_PERSON_COLUMN_ADULT_CELL]);
+    $village = trim($values[HEDLEY_PERSON_COLUMN_ADULT_VILLAGE]);
+    $health_center = trim($values[HEDLEY_PERSON_COLUMN_ADULT_HEALTH_CENTER]);
+  }
+
+  try {
+    $person = hedley_person_create_basic_node('person');
+  }
+  catch (Exception $e) {
+    return 'Failed to create person node';
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $person);
+
+  // Title.
+  $title = empty($first_name) ? $second_name : "$second_name $first_name";
+  $wrapper->title->set($title);
+
+  // First name.
+  if (!empty($first_name)) {
+    $wrapper->field_first_name->set($first_name);
+  }
+
+  // Second name.
+  $wrapper->field_second_name->set($second_name);
+
+  // Birth date.
+  $birth_date = hedley_person_date_process($birth_date);
+  $wrapper->field_birth_date->set($birth_date);
+
+  // Birth date estimated.
+  switch (strtolower($estimated)) {
+    case 'y':
+      $wrapper->field_birth_date_estimated->set(TRUE);
+      break;
+
+    case 'n':
+      $wrapper->field_birth_date_estimated->set(FALSE);
+      break;
+  }
+
+  // Gender.
+  switch (strtolower($gender)) {
+    case 'male':
+      $wrapper->field_gender->set('male');
+      break;
+
+    case 'female':
+      $wrapper->field_gender->set('female');
+      break;
+  }
+
+  // Ubudehe.
+  $wrapper->field_ubudehe->set((int) $ubudehe);
+
+  // HIV status (optional field).
+  if (!empty($hiv_status)) {
+    switch (strtolower($hiv_status)) {
+      case 'hiv-exposed infant':
+        $wrapper->field_hiv_status->set('hiv-exposed-infant');
+        break;
+
+      case 'negative':
+        $wrapper->field_hiv_status->set('negative');
+        break;
+
+      case 'negative - discordant couple':
+        $wrapper->field_hiv_status->set('negative-dc');
+        break;
+
+      case 'positive':
+        $wrapper->field_hiv_status->set('positive');
+        break;
+
+      case 'unknown':
+        $wrapper->field_hiv_status->set('unknown');
+        break;
+    }
+  }
+
+  // Location.
+  $wrapper->field_province->set($province);
+  $wrapper->field_district->set($district);
+  $wrapper->field_sector->set($sector);
+  $wrapper->field_cell->set($cell);
+  $wrapper->field_village->set($village);
+
+  // Health center.
+  $health_center_id = hedley_person_resolve_content_by_name('health_center', $health_center);
+  if (!empty($health_center_id)) {
+    $wrapper->field_health_center->set($health_center_id);
+    $wrapper->field_shards->set([$health_center_id]);
+  }
+
+  // Type specific logic - child.
+  if ($patient_type == 'child') {
+    $mode_of_delivery = trim($values[HEDLEY_PERSON_COLUMN_CHILD_MODE_OF_DELIVERY]);
+
+    // Optional field.
+    if (!empty($mode_of_delivery)) {
+      switch (strtolower($mode_of_delivery)) {
+        case 'spontaneous vaginal delivery with episiotomy':
+          $wrapper->field_mode_of_delivery->set('svd-episiotomy');
+          break;
+
+        case 'spontaneous vaginal delivery without episiotomy':
+          $wrapper->field_mode_of_delivery->set('svd-no-episiotomy');
+          break;
+
+        case 'vaginal delivery with vacuum extraction':
+          $wrapper->field_mode_of_delivery->set('vd-vacuum');
+          break;
+
+        case 'cesarean delivery':
+          $wrapper->field_mode_of_delivery->set('cesarean-delivery');
+          break;
+      }
+    }
+
+    $wrapper->save();
+
+    // Try to create relationship with parent/caregiver.
+    $relation = strtolower(trim($values[HEDLEY_PERSON_COLUMN_CHILD_RELATION]));
+
+    // Resolve parent/caregiver.
+    $adult_national_id = trim($values[HEDLEY_PERSON_COLUMN_CHILD_MOTHER_NATIONAL_ID]);
+    $adult_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_PARENT_NAME]);
+    $adult_id = hedley_person_resolve_adult_for_child($adult_national_id, $adult_name);
+
+    if (!empty($adult_id)) {
+      if (!hedley_person_create_relationship($wrapper->getIdentifier(), $adult_id, $relation)) {
+        return "Import was successful, but failed to create $relation relationship with $adult_name";
+      }
+
+      $group = trim($values[HEDLEY_PERSON_COLUMN_CHILD_GROUP]);
+      $group_id = hedley_person_resolve_content_by_name('clinic', $group);
+
+      if (!empty($group_id)) {
+        if (!hedley_person_create_pmtct_participant($wrapper->getIdentifier(), $adult_id, $relation, $group_id)) {
+          return "Import was successful, but failed to add adult-child pair to $group group.";
+        }
+      }
+    }
+
+    return TRUE;
+  }
+
+  // Type specific logic - adult.
+  $national_id = trim($values[HEDLEY_PERSON_COLUMN_ADULT_NATIONAL_ID]);
+  if (!empty($national_id)) {
+    $wrapper->field_national_id_number->set($national_id);
+  }
+
+  $education_level = strtolower(trim($values[HEDLEY_PERSON_COLUMN_ADULT_EDUCATION_LEVEL]));
+  switch (strtolower($education_level)) {
+    case 'no schooling':
+      $wrapper->field_education_level->set('0');
+      break;
+
+    case 'primary school':
+      $wrapper->field_education_level->set('1');
+      break;
+
+    case 'vocational training school':
+      $wrapper->field_education_level->set('2');
+      break;
+
+    case 'secondary school':
+      $wrapper->field_education_level->set('3');
+      break;
+
+    case 'diploma programs':
+      $wrapper->field_education_level->set('4');
+      break;
+
+    case 'higher education':
+      $wrapper->field_education_level->set('5');
+      break;
+
+    case 'advanced diploma':
+      $wrapper->field_education_level->set('6');
+      break;
+  }
+
+  $marital_status = strtolower($values[HEDLEY_PERSON_COLUMN_ADULT_MARITAL_STATUS]);
+  $wrapper->field_marital_status->set($marital_status);
+
+  $number_of_children = $values[HEDLEY_PERSON_COLUMN_ADULT_NUMBER_OF_CHILDREN];
+  if (!empty($number_of_children)) {
+    $wrapper->field_number_of_children->set((int) $number_of_children);
+  }
+
+  $phone_number = trim($values[HEDLEY_PERSON_COLUMN_ADULT_PHONE]);
+  if (!empty($phone_number)) {
+    $wrapper->field_phone_number->set($phone_number);
+  }
+
+  $wrapper->save();
+
+  return TRUE;
+}
+
+/**
+ * Creates a relationship between child and adult.
+ *
+ * @param int $child_id
+ *   Child node ID.
+ * @param int $adult_id
+ *   Adult node ID.
+ * @param string $relation
+ *   Parent or Caregiver.
+ *
+ * @return bool
+ *   TRUE on success, FALSE otherwise.
+ */
+function hedley_person_create_relationship($child_id, $adult_id, $relation) {
+  try {
+    $relationship = hedley_person_create_basic_node('relationship');
+  }
+  catch (Exception $e) {
+    return FALSE;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $relationship);
+  $wrapper->field_person->set($adult_id);
+  $wrapper->field_related_by->set($relation);
+  $wrapper->field_related_to->set($child_id);
+
+  $wrapper->save();
+
+  return TRUE;
+}
+
+/**
+ * Creates a pmtct_participant node for adult-child pair.
+ *
+ * @param int $child_id
+ *   Child node ID.
+ * @param int $adult_id
+ *   Adult node ID.
+ * @param string $relation
+ *   Either 'parent' or 'caregiver'.
+ * @param int $group_id
+ *   Group node ID.
+ *
+ * @return bool
+ *   TRUE on success, FALSE otherwise.
+ */
+function hedley_person_create_pmtct_participant($child_id, $adult_id, $relation, $group_id) {
+  try {
+    $pmtct_participant = hedley_person_create_basic_node('pmtct_participant');
+  }
+  catch (Exception $e) {
+    return FALSE;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $pmtct_participant);
+  $wrapper->field_person->set($child_id);
+  $wrapper->field_adult->set($adult_id);
+  $wrapper->field_clinic->set($group_id);
+
+  if ($relation == 'parent') {
+    $relation = 'mother';
+  }
+  $wrapper->field_adult_activities->set($relation);
+
+  $wrapper_child = entity_metadata_wrapper('node', $child_id);
+  $wrapper_clinic = entity_metadata_wrapper('node', $group_id);
+  $birth_date = $wrapper_child->field_birth_date->value();
+  $clinic_type = $wrapper_clinic->field_group_type->value();
+
+  $expected_start_date = date('Y-m-d', $birth_date);
+  $expected_end_date = ($clinic_type == HEDLEY_PERSON_CLINIC_TYPE_SORWATHE) ? NULL : date('Y-m-d', strtotime("+26 month", $birth_date));
+
+  $wrapper->field_expected->set([
+    'value' => $expected_start_date,
+    'value2' => $expected_end_date,
+  ]);
+
+  $wrapper->save();
+
+  return TRUE;
+}
+
+/**
+ * Creates a node of provided type.
+ *
+ * @param string $type
+ *   Node bundle.
+ *
+ * @return object
+ *   Neely created node.
+ *
+ * @throws \Exception
+ *   In case Save operation fails.
+ */
+function hedley_person_create_basic_node($type) {
+  global $user;
+
+  $node = new stdClass();
+  $node->type = $type;
+  node_object_prepare($node);
+  $node->language = LANGUAGE_NONE;
+  $node->uid = $user->uid;
+  $node->status = 1;
+  // Mark node as imported, to be able to identify it at hook_insert().
+  $node->imported = 1;
+  $node = node_submit($node);
+  node_save($node);
+
+  return $node;
+}
+
+/**
+ * Resolves node ID of adult, with which child is to be associated.
+ *
+ * @param string $adult_national_id
+ *   National ID of the adult.
+ * @param string $adult_name
+ *   Name of the adult.
+ *
+ * @return int|null
+ *   Node ID. Null, if not found.
+ */
+function hedley_person_resolve_adult_for_child($adult_national_id, $adult_name) {
+  $adult_id = hedley_person_resolve_person_by_national_id($adult_national_id);
+
+  return empty($adult_id) ? hedley_person_resolve_person_by_name($adult_name) : $adult_id;
+}
+
+/**
+ * Resolves content node ID by it's type and name.
+ *
+ * @param string $type
+ *   Content type.
+ * @param string $health_center
+ *   Health center name.
+ *
+ * @return int|null
+ *   Node ID. Null, if not found.
+ */
+function hedley_person_resolve_content_by_name($type, $health_center) {
+  $query = new EntityFieldQuery();
+
+  $result = $query->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', $type)
+    ->propertyCondition('title', $health_center)
+    ->propertyCondition('status', 1)
+    ->propertyOrderBy('nid', 'DESC')
+    ->range(0, 1)
+    ->execute();
+
+  return empty($result['node']) ? NULL : key($result['node']);
+}
+
+/**
+ * Resolves Person's node ID by its name.
+ *
+ * If multiple instances exist, last one that was created will be returned.
+ *
+ * @param string $name
+ *   Name of person.
+ *
+ * @return int|null
+ *   Node ID. Null, if not found.
+ */
+function hedley_person_resolve_person_by_name($name) {
+  $query = new EntityFieldQuery();
+
+  $result = $query->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', 'person')
+    ->propertyCondition('title', $name)
+    ->propertyCondition('status', 1)
+    ->propertyOrderBy('nid', 'DESC')
+    ->range(0, 1)
+    ->execute();
+
+  return empty($result['node']) ? NULL : key($result['node']);
+}
+
+/**
+ * Resolves Person's node ID by its national ID.
+ *
+ * If multiple instances exist, last one that was created will be returned.
+ *
+ * @param string $national_id
+ *   National ID of the person.
+ *
+ * @return int|null
+ *   Node ID. Null, if not found.
+ */
+function hedley_person_resolve_person_by_national_id($national_id) {
+  if (empty($national_id)) {
+    return NULL;
+  }
+
+  $query = new EntityFieldQuery();
+
+  $result = $query->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', 'person')
+    ->propertyCondition('status', 1)
+    ->fieldCondition('field_national_id_number', 'value', $national_id)
+    ->propertyOrderBy('nid', 'DESC')
+    ->range(0, 1)
+    ->execute();
+
+  return empty($result['node']) ? NULL : key($result['node']);
+}
+
+/**
+ * Import form AJAX callback.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ *
+ * @return array
+ *   The form.
+ */
+function hedley_person_import_form_callback(array $form, array $form_state) {
+  return $form;
+}
+
+/**
+ * Get a relationships by a person.
+ *
+ * @param int $person_id
+ *   The person node ID.
+ * @param string $relation_type
+ *   Optional; the type of the relation, can be either "parent" or "child".
+ *
+ * @return array
+ *   Node IDs if they exist or empty array if no nodes exist.
+ */
+function hedley_person_get_relationships($person_id, $relation_type = HEDLEY_PERSON_RELATED_BY_PARENT_OF) {
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', 'relationship')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->range(0, 1);
+
+  if ($relation_type == HEDLEY_PERSON_RELATED_BY_PARENT_OF) {
+    $query
+      ->fieldCondition('field_person', 'target_id', $person_id);
+  }
+  else {
+    $query
+      ->fieldCondition('field_related_to', 'target_id', $person_id);
+  }
+
+  $result = $query->execute();
+
+  return !empty($result['node']) ? array_keys($result['node']) : [];
+}
+
+/**
+ * Implements hook_node_update().
+ *
+ * When child age is edited, updates graduation date for all
+ * it's pmtct_participants.
+ */
+function hedley_person_node_update($node) {
+  if ($node->type != 'person') {
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $wrapper_orig = entity_metadata_wrapper('node', $node->original);
+
+  $birth_date = $wrapper->field_birth_date->value();
+  $birth_date_orig = $wrapper_orig->field_birth_date->value();
+
+  if (empty($birth_date) || $birth_date === $birth_date_orig) {
+    return;
+  }
+
+  $ids = hedley_person_pmtct_participants_for_child($node->nid);
+  if (empty($ids)) {
+    return;
+  }
+
+  $participants = node_load_multiple($ids);
+  foreach ($participants as $participant) {
+    $participant_wrapper = entity_metadata_wrapper('node', $participant);
+
+    $expected = $participant_wrapper->field_expected->value();
+    $expected_new_start_date = date('Y-m-d', $birth_date);
+    $expected_new_end_date = date('Y-m-d', strtotime("+26 month", $birth_date));
+
+    $clinic_type = $participant_wrapper->field_clinic->field_group_type->value();
+    // We do not change graduation date for 'Sorwathe' group participants.
+    if (empty($clinic_type) || $clinic_type == HEDLEY_PERSON_CLINIC_TYPE_SORWATHE) {
+      $expected_new_end_date = $expected['value2'];
+    }
+
+    $participant_wrapper->field_expected->set([
+      'value' => $expected_new_start_date,
+      'value2' => $expected_new_end_date,
+    ]);
+    $participant_wrapper->save();
+  }
+}
+
+/**
+ * Resolves all pmtct_participant nodes IDs for child.
+ *
+ * @param int $nid
+ *   Child node ID.
+ *
+ * @return array
+ *   List of pmtct_participant nodes IDs.
+ */
+function hedley_person_pmtct_participants_for_child($nid) {
+  $query = db_select('field_data_field_person', 'person');
+  $query->addField('person', 'entity_id');
+  $query->condition('bundle', 'pmtct_participant');
+  $query->condition('field_person_target_id', $nid);
+
+  return $query->execute()->fetchCol();
+}

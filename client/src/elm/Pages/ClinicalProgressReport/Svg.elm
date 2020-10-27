@@ -154,8 +154,8 @@ viewBMIForEGA language points =
             , drawPolyline measurements "child-data"
             ]
         , (referenceVerticalLines verticalParts
-            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> Debug.toString)
-            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> Debug.toString)
+            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)
+            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> String.fromFloat)
           )
             |> g []
         , referenceHorizontalLines 21 ++ referenceHorizontalNumbers 21 0 2 |> g []
@@ -274,8 +274,8 @@ viewFundalHeightForEGA language points =
             , drawPolyline measurements "child-data"
             ]
         , (referenceVerticalLines verticalParts
-            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> Debug.toString)
-            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> Debug.toString)
+            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)
+            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> String.fromFloat)
           )
             |> g []
         , referenceHorizontalLines horizontalParts ++ referenceHorizontalNumbers horizontalParts horizontalMin 2 |> g []
@@ -293,9 +293,9 @@ referenceHorizontalLines parts =
             (\index _ ->
                 let
                     posX =
-                        dimensionsPx.left + (toFloat (index + 1) * margin) |> Debug.toString
+                        dimensionsPx.left + (toFloat (index + 1) * margin) |> String.fromFloat
                 in
-                line [ class "refference-line", x1 posX, y1 (Debug.toString dimensionsPx.bottom), x2 posX, y2 (Debug.toString dimensionsPx.top) ] []
+                line [ class "refference-line", x1 posX, y1 (String.fromFloat dimensionsPx.bottom), x2 posX, y2 (String.fromFloat dimensionsPx.top) ] []
             )
 
 
@@ -322,10 +322,10 @@ referenceHorizontalNumbers parts min gap =
                          else
                             posX - 2.5
                         )
-                            |> Debug.toString
+                            |> String.fromFloat
 
                     number_ =
-                        number |> Debug.toString
+                        number |> String.fromInt
                 in
                 text_ [ transform <| "matrix(1 0 0 1 " ++ posX_ ++ " 520)", class "z-score-semibold st17" ] [ text number_ ]
             )
@@ -342,9 +342,9 @@ referenceVerticalLines parts =
             (\index _ ->
                 let
                     posY =
-                        dimensionsPx.top + (toFloat (index + 1) * margin) |> Debug.toString
+                        dimensionsPx.top + (toFloat (index + 1) * margin) |> String.fromFloat
                 in
-                line [ class "refference-line", x1 (Debug.toString dimensionsPx.left), y1 posY, x2 (Debug.toString dimensionsPx.right), y2 posY ] []
+                line [ class "refference-line", x1 (String.fromFloat dimensionsPx.left), y1 posY, x2 (String.fromFloat dimensionsPx.right), y2 posY ] []
             )
 
 
@@ -365,10 +365,10 @@ referenceVerticalNumbers parts min gap posX =
                         min + (parts - index - 1) * gap
 
                     posY_ =
-                        posY + 2 |> Debug.toString
+                        posY + 2 |> String.fromFloat
 
                     number_ =
-                        number |> Debug.toString
+                        number |> String.fromInt
                 in
                 text_ [ transform <| "matrix(1 0 0 1 " ++ posX ++ " " ++ posY_ ++ ")", class "z-score-semibold st17" ] [ text number_ ]
             )
@@ -388,7 +388,7 @@ drawPolyshape shape points_ class_ =
     points_
         |> List.map
             (\( x, y ) ->
-                Debug.toString x ++ "," ++ Debug.toString y
+                String.fromFloat x ++ "," ++ String.fromFloat y
             )
         |> String.join " "
         |> points

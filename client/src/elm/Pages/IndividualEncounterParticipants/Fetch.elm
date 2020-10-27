@@ -15,8 +15,8 @@ fetch encounterType model =
                 |> Maybe.withDefault ""
                 |> String.trim
     in
-    FetchSyncData
-        :: (if String.isEmpty trimmed then
+    [ FetchSyncData, FetchHealthCenters, FetchVillages ]
+        ++ (if String.isEmpty trimmed then
                 []
 
             else

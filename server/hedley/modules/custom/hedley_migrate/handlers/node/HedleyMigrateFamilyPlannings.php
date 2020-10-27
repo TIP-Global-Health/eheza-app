@@ -24,6 +24,7 @@ class HedleyMigrateFamilyPlannings extends HedleyMigrateMeasurementBase {
     'field_date_measured',
     'field_nurse',
     'field_session',
+    'created',
     'field_family_planning_signs',
   ];
 

@@ -31,6 +31,10 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchComputedDashboard healthCenterId ->
+            Dict.member healthCenterId model.computedDashboard
+                |> not
+
         FetchChildrenMeasurements ids ->
             if List.isEmpty ids then
                 False
@@ -179,6 +183,21 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchAcuteIllnessEncounter id ->
+            Dict.get id model.acuteIllnessEncounters
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchAcuteIllnessEncountersForParticipant id ->
+            Dict.get id model.acuteIllnessEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchAcuteIllnessMeasurements id ->
+            Dict.get id model.acuteIllnessMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchIndividualEncounterParticipant id ->
             Dict.get id model.individualParticipants
                 |> Maybe.withDefault NotAsked
@@ -276,6 +295,15 @@ forget msg model =
 
         FetchNutritionMeasurements id ->
             { model | nutritionMeasurements = Dict.remove id model.nutritionMeasurements }
+
+        FetchAcuteIllnessEncounter id ->
+            { model | acuteIllnessEncounters = Dict.remove id model.acuteIllnessEncounters }
+
+        FetchAcuteIllnessEncountersForParticipant id ->
+            { model | acuteIllnessEncountersByParticipant = Dict.remove id model.acuteIllnessEncountersByParticipant }
+
+        FetchAcuteIllnessMeasurements id ->
+            { model | acuteIllnessMeasurements = Dict.remove id model.acuteIllnessMeasurements }
 
         FetchIndividualEncounterParticipant id ->
             { model | individualParticipants = Dict.remove id model.individualParticipants }

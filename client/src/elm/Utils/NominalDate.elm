@@ -1,4 +1,4 @@
-module Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate, startField)
+module Utils.NominalDate exposing (Days(..), Months(..), diffDays, endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate, startField)
 
 {-| An extra utility for elm-community/elm-time ... should integrate with
 Gizra.NominalDate.
@@ -43,12 +43,6 @@ diffDays low high =
         |> Days
 
 
-diffMonths : NominalDate -> NominalDate -> Months
-diffMonths low high =
-    Gizra.NominalDate.diffMonths low high
-        |> Months
-
-
 {-| Shows the difference between the first date (the birthdate)
 and the second date, formatted in months and days.
 -}
@@ -89,8 +83,8 @@ renderAgeMonthsDays language birthDate now =
         translate language <| Translate.Age months days
 
 
-renderAgeMonthsDaysAbbrev : Language -> NominalDate -> NominalDate -> String
-renderAgeMonthsDaysAbbrev language birthDate now =
+renderAgeMonthsDaysParts : Language -> NominalDate -> NominalDate -> List (Maybe String)
+renderAgeMonthsDaysParts language birthDate now =
     let
         diff =
             diffCalendarMonthsAndDays birthDate now
@@ -108,13 +102,13 @@ renderAgeMonthsDaysAbbrev language birthDate now =
             else if days == 1 then
                 Just <|
                     "1 "
-                        ++ translate language Translate.Day
+                        ++ translate language Translate.DayAbbrev
 
             else
                 Just <|
-                    Debug.toString days
+                    String.fromInt days
                         ++ " "
-                        ++ translate language Translate.Days
+                        ++ translate language Translate.DaysAbbrev
 
         monthPart =
             if months == 0 then
@@ -122,53 +116,23 @@ renderAgeMonthsDaysAbbrev language birthDate now =
 
             else
                 Just <|
-                    Debug.toString months
+                    String.fromInt months
                         ++ " "
                         ++ translate language Translate.MonthAbbrev
     in
     [ monthPart, dayPart ]
+
+
+renderAgeMonthsDaysAbbrev : Language -> NominalDate -> NominalDate -> String
+renderAgeMonthsDaysAbbrev language birthDate now =
+    renderAgeMonthsDaysParts language birthDate now
         |> List.filterMap identity
         |> String.join " "
 
 
 renderAgeMonthsDaysHtml : Language -> NominalDate -> NominalDate -> List (Html any)
 renderAgeMonthsDaysHtml language birthDate now =
-    let
-        diff =
-            diffCalendarMonthsAndDays birthDate now
-
-        days =
-            diff.days
-
-        months =
-            diff.months
-
-        dayPart =
-            if days == 0 then
-                Nothing
-
-            else if days == 1 then
-                Just <|
-                    "1 "
-                        ++ translate language Translate.Day
-
-            else
-                Just <|
-                    Debug.toString days
-                        ++ " "
-                        ++ translate language Translate.Days
-
-        monthPart =
-            if months == 0 then
-                Nothing
-
-            else
-                Just <|
-                    Debug.toString months
-                        ++ " "
-                        ++ translate language Translate.MonthAbbrev
-    in
-    [ monthPart, dayPart ]
+    renderAgeMonthsDaysParts language birthDate now
         |> List.filterMap identity
         |> List.map Html.text
         |> List.intersperse (Html.br [] [])
@@ -181,9 +145,7 @@ renderDate language date =
             Date.day date
 
         month =
-            Date.month date
-                |> Translate.ResolveMonth
-                |> translate language
+            translate language <| Translate.ResolveMonth False (Date.month date)
 
         year =
             Date.year date
@@ -196,7 +158,7 @@ renderDate language date =
     )
         ++ " "
         ++ month
-        ++ " "
+        ++ ", "
         ++ String.fromInt year
 
 

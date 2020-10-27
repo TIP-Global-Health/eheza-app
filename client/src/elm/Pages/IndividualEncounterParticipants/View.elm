@@ -4,8 +4,8 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (ExpectedAge(..), Person, RegistrationInitiator(..))
-import Backend.Person.Utils exposing (ageInYears, isPersonAFertileWoman, isPersonAnAdult)
+import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
+import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isPersonAFertileWoman, isPersonAnAdult)
 import Backend.SyncData.Model
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -40,7 +40,7 @@ view language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType
             translate language Translate.SearchExistingParticipants
     in
     div
-        [ class "wrap wrap-alt-2 page-prenatal-participants" ]
+        [ class "wrap wrap-alt-2 page-participants" ]
         [ viewHeader title
         , viewBody language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db
         ]
@@ -119,7 +119,12 @@ viewSearchForm : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) 
 viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db =
     let
         searchForm =
-            Html.form []
+            Html.form
+                [ -- These attribites are blocking 'Submit' action on HTML form,
+                  -- as it is not needed, and causes application to reload.
+                  action "javascript:void(0);"
+                , onSubmit NoOp
+                ]
                 [ div
                     [ class "ui search form" ]
                     [ div []
@@ -142,6 +147,9 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
 
         encounterCondition person =
             case encounterType of
+                AcuteIllnessEncounter ->
+                    True
+
                 AntenatalEncounter ->
                     isPersonAFertileWoman currentDate person
 
@@ -242,6 +250,9 @@ viewParticipant language currentDate encounterType db id person =
     let
         action =
             case encounterType of
+                AcuteIllnessEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage id ]
+
                 AntenatalEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage id ]
 
@@ -282,11 +293,14 @@ viewParticipant language currentDate encounterType db id person =
                     ]
                 , viewAction
                 ]
+
+        defaultIcon =
+            defaultIconForPerson currentDate person
     in
     div
         [ class "item participant-view" ]
         [ div
             [ class "ui image" ]
-            [ thumbnailImage "mother" person.avatarUrl person.name 120 120 ]
+            [ thumbnailImage defaultIcon person.avatarUrl person.name 120 120 ]
         , viewContent
         ]

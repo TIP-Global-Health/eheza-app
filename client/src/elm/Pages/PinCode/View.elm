@@ -1,24 +1,26 @@
 module Pages.PinCode.View exposing (view)
 
 import AssocList as Dict
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse, Role(..))
 import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker)
+import Backend.Person.Model exposing (Initiator(..))
 import EverySet
-import Gizra.Html exposing (emptyNode, showIf, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner, viewLogo)
 
 
-view : Language -> Page -> WebData ( NurseId, Nurse ) -> ( Maybe HealthCenterId, Maybe VillageId ) -> Model -> ModelIndexedDb -> Html Msg
-view language activePage nurseData ( healthCenterId, villageId ) model db =
+view : Language -> Page -> WebData ( NurseId, Nurse ) -> ( Maybe HealthCenterId, Maybe VillageId ) -> Maybe String -> Model -> ModelIndexedDb -> Html Msg
+view language activePage nurseData ( healthCenterId, villageId ) deviceName model db =
     let
         ( header, content ) =
             case nurseData of
@@ -36,7 +38,7 @@ view language activePage nurseData ( healthCenterId, villageId ) model db =
                                     |> Maybe.withDefault False
                     in
                     ( viewLoggedInHeader language nurse selectedAuthorizedLocation
-                    , viewLoggedInContent language nurse ( healthCenterId, villageId ) selectedAuthorizedLocation db
+                    , viewLoggedInContent language nurse ( healthCenterId, villageId ) deviceName selectedAuthorizedLocation db
                     )
 
                 _ ->
@@ -142,8 +144,8 @@ viewAnonymousContent language activePage nurseData model =
     ]
 
 
-viewLoggedInContent : Language -> Nurse -> ( Maybe HealthCenterId, Maybe VillageId ) -> Bool -> ModelIndexedDb -> List (Html Msg)
-viewLoggedInContent language nurse ( healthCenterId, villageId ) selectedAuthorizedLocation db =
+viewLoggedInContent : Language -> Nurse -> ( Maybe HealthCenterId, Maybe VillageId ) -> Maybe String -> Bool -> ModelIndexedDb -> List (Html Msg)
+viewLoggedInContent language nurse ( healthCenterId, villageId ) deviceName selectedAuthorizedLocation db =
     let
         logoutButton =
             button
@@ -157,6 +159,17 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) selectedAuthori
     in
     if selectedAuthorizedLocation then
         let
+            deviceInfo =
+                deviceName
+                    |> Maybe.map
+                        (\name ->
+                            p [ class "device-info" ]
+                                [ text <| translate language Translate.Device
+                                , text <| ": " ++ name
+                                ]
+                        )
+                    |> Maybe.withDefault emptyNode
+
             loggedInAs =
                 p [ class "logged-in-as" ]
                     [ Translate.LoginPhrase Translate.LoggedInAs
@@ -178,6 +191,13 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) selectedAuthori
                         |> text
                     ]
 
+            generalInfo =
+                div [ class "general-info" ]
+                    [ deviceInfo
+                    , loggedInAs
+                    , viewLocationName nurse ( healthCenterId, villageId ) db
+                    ]
+
             clinicalButton =
                 button
                     [ class "ui primary button"
@@ -185,17 +205,44 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) selectedAuthori
                     ]
                     [ text <| translate language Translate.Clinical ]
 
+            healthCenterGotFbfClinic =
+                healthCenterId
+                    |> Maybe.andThen
+                        (\id ->
+                            db.clinics
+                                |> RemoteData.toMaybe
+                                |> Maybe.map
+                                    (Dict.values
+                                        >> List.filter (\clinic -> clinic.healthCenterId == id && clinic.clinicType == Fbf)
+                                        >> List.isEmpty
+                                        >> not
+                                    )
+                        )
+                    |> Maybe.withDefault False
+
+            dashboardButton =
+                if not (isCommunityHealthWorker nurse) && healthCenterGotFbfClinic then
+                    button
+                        [ class "ui primary button"
+                        , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
+                        ]
+                        [ text <| translate language Translate.DashboardLabel
+                        ]
+
+                else
+                    emptyNode
+
             participantDirectoryButton =
                 button
                     [ class "ui primary button"
-                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
+                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing ParticipantDirectoryOrigin
                     ]
                     [ text <| translate language Translate.ParticipantDirectory ]
         in
-        [ loggedInAs
-        , viewLocationName nurse ( healthCenterId, villageId ) db
+        [ generalInfo
         , clinicalButton
         , participantDirectoryButton
+        , dashboardButton
         , deviceStatusButton
         , logoutButton
         ]

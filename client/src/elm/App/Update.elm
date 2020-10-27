@@ -8,6 +8,8 @@ import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
+import Backend.Person.Model exposing (Initiator(..))
+import Backend.Session.Utils exposing (getSession)
 import Backend.Update
 import Browser
 import Browser.Navigation as Nav
@@ -22,7 +24,14 @@ import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
 import Maybe.Extra exposing (isJust)
 import NutritionActivity.Model exposing (NutritionActivity(..))
+import Pages.AcuteIllnessActivity.Model
+import Pages.AcuteIllnessActivity.Update
+import Pages.AcuteIllnessEncounter.Model
+import Pages.AcuteIllnessEncounter.Update
+import Pages.AcuteIllnessProgressReport.Model
+import Pages.AcuteIllnessProgressReport.Update
 import Pages.Clinics.Update
+import Pages.Dashboard.Update
 import Pages.Device.Model
 import Pages.Device.Update
 import Pages.IndividualEncounterParticipants.Update
@@ -50,7 +59,6 @@ import Pages.Session.Update
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
-import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
@@ -222,17 +230,27 @@ update msg model =
                         MsgPageCreatePerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update currentDate model.villageId isChw subMsg model.indexedDb data.createPersonPage
+                                    Pages.Person.Update.update currentDate model.healthCenterId model.villageId isChw subMsg model.indexedDb data.createPersonPage
                             in
                             ( { data | createPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd
                             , appMsgs
                             )
 
+                        MsgPageDashboard subPage subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.Dashboard.Update.update subMsg subPage data.dashboardPage
+                            in
+                            ( { data | dashboardPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageDashboard subPage) subCmd
+                            , appMsgs
+                            )
+
                         MsgPageEditPerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update currentDate model.villageId isChw subMsg model.indexedDb data.editPersonPage
+                                    Pages.Person.Update.update currentDate model.healthCenterId model.villageId isChw subMsg model.indexedDb data.editPersonPage
                             in
                             ( { data | editPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageEditPerson) subCmd
@@ -321,6 +339,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageAcuteIllnessEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.acuteIllnessEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.AcuteIllnessEncounter.Model.emptyModel
+                                        |> Pages.AcuteIllnessEncounter.Update.update subMsg
+                            in
+                            ( { data | acuteIllnessEncounterPages = Dict.insert id subModel data.acuteIllnessEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessEncounter id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePrenatalActivity id activity subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -347,6 +378,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageAcuteIllnessActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.acuteIllnessActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.AcuteIllnessActivity.Model.emptyModel
+                                        |> Pages.AcuteIllnessActivity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | acuteIllnessActivityPages = Dict.insert ( id, activity ) subModel data.acuteIllnessActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePregnancyOutcome id subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
@@ -358,6 +402,19 @@ update msg model =
                             ( { data | pregnancyOutcomePages = Dict.insert id subModel data.pregnancyOutcomePages }
                             , Cmd.map (MsgLoggedIn << MsgPagePregnancyOutcome id) subCmd
                             , appMsgs
+                            )
+
+                        MsgPageAcuteIllnessProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.acuteIllnessProgressReportPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.AcuteIllnessProgressReport.Model.emptyModel
+                                        |> Pages.AcuteIllnessProgressReport.Update.update subMsg
+                            in
+                            ( { data | acuteIllnessProgressReportPages = Dict.insert id subModel data.acuteIllnessProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport id) subCmd
+                            , extraMsgs
                             )
                 )
                 model
@@ -488,41 +545,30 @@ update msg model =
 
                 cmd =
                     Nav.pushUrl model.navigationKey (Url.toString redirectUrl)
+
+                extraMsgs =
+                    case page of
+                        -- When navigating to relationship page in group encounter context,
+                        -- we automaticaly select the clinic, to which the session belongs.
+                        UserPage (RelationshipPage id1 id2 (GroupEncounterOrigin sessionId)) ->
+                            getSession sessionId model.indexedDb
+                                |> Maybe.map
+                                    (.clinicId
+                                        >> fromEntityUuid
+                                        >> Pages.Relationship.Model.AssignToClinicId
+                                        >> MsgPageRelationship id1 id2
+                                        >> MsgLoggedIn
+                                        >> List.singleton
+                                    )
+                                |> Maybe.withDefault []
+
+                        _ ->
+                            []
             in
             ( { model | activePage = page }
             , cmd
             )
-
-        SendRollbar level message data ->
-            updateConfigured
-                (\configured ->
-                    let
-                        version =
-                            Version.version
-                                |> .build
-                                |> Json.Encode.string
-
-                        cmd =
-                            Rollbar.send
-                                configured.config.rollbarToken
-                                (Rollbar.scope "user")
-                                (Rollbar.environment configured.config.name)
-                                0
-                                level
-                                message
-                                (Dict.insert "build" version data |> Dict.toList |> LegacyDict.fromList)
-                                |> Task.attempt HandleRollbar
-                    in
-                    ( configured
-                    , cmd
-                    , []
-                    )
-                )
-                model
-
-        HandleRollbar result ->
-            -- For now, we do nothing
-            ( model, Cmd.none )
+                |> sequence update extraMsgs
 
         SetLanguage language ->
             ( { model | language = language }
@@ -573,6 +619,11 @@ update msg model =
                 |> cacheVillage
             )
                 |> sequence update extraMsgs
+
+        SetDeviceName name ->
+            ( { model | deviceName = name }
+            , Cmd.none
+            )
 
         Tick time ->
             let

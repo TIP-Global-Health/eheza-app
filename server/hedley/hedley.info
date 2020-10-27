@@ -42,15 +42,18 @@ dependencies[] = views_bulk_operations
 
 ; Hedley
 dependencies[] = hedley_activity
+dependencies[] = hedley_acute_illness
 dependencies[] = hedley_admin
 dependencies[] = hedley_chw
 dependencies[] = hedley_device
 dependencies[] = hedley_health_center
+dependencies[] = hedley_general
 dependencies[] = hedley_patient
 dependencies[] = hedley_person
 dependencies[] = hedley_pusher
 dependencies[] = hedley_restful
 dependencies[] = hedley_schedule
+dependencies[] = hedley_stats
 dependencies[] = hedley_user
 dependencies[] = hedley_view_export
 

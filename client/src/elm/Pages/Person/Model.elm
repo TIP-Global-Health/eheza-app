@@ -2,7 +2,7 @@ module Pages.Person.Model exposing (Model, Msg(..), emptyCreateModel, emptyEditM
 
 import Backend.Entities exposing (..)
 import Backend.Person.Form exposing (PersonForm)
-import Backend.Person.Model exposing (ParticipantDirectoryOperation, RegistrationInitiator)
+import Backend.Person.Model exposing (Initiator, ParticipantDirectoryOperation)
 import Date exposing (Date)
 import Form
 import Measurement.Model exposing (DropZoneFile)
@@ -16,13 +16,13 @@ type alias Model =
 
 
 type Msg
-    = MsgForm ParticipantDirectoryOperation RegistrationInitiator Form.Msg
+    = MsgForm ParticipantDirectoryOperation Initiator Form.Msg
     | ResetCreateForm
     | ResetEditForm
     | SetActivePage Page
-    | DropZoneComplete ParticipantDirectoryOperation RegistrationInitiator DropZoneFile
+    | DropZoneComplete ParticipantDirectoryOperation Initiator DropZoneFile
     | ToggleDateSelector
-    | DateSelected ParticipantDirectoryOperation RegistrationInitiator Date
+    | DateSelected ParticipantDirectoryOperation Initiator Date
 
 
 emptyCreateModel : Model
@@ -34,6 +34,6 @@ emptyCreateModel =
 
 emptyEditModel : Model
 emptyEditModel =
-    { form = Backend.Person.Form.emptyCreateForm
+    { form = Backend.Person.Form.emptyEditForm
     , isDateSelectorOpen = False
     }

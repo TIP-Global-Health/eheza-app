@@ -5,7 +5,7 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 9);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 12);
 
 /**
  * Nodes synced to all devices.
@@ -15,19 +15,11 @@ define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 9);
  */
 const HEDLEY_RESTFUL_ALL_DEVICES = [
   'catchment_area' => 'catchment_areas',
-  'clinic' => 'clinics',
   'counseling_schedule' => 'counseling-schedule',
   'counseling_topic' => 'counseling-topics',
   'health_center' => 'health_centers',
   'nurse' => 'nurses',
   'participant_form' => 'participants-form',
-  'person' => 'people',
-  'pmtct_participant' => 'pmtct-participants',
-  'individual_participant' => 'individual-participants',
-  'prenatal_encounter' => 'prenatal-encounters',
-  'nutrition_encounter' => 'nutrition-encounters',
-  'relationship' => 'relationships',
-  'session' => 'sessions',
   'village' => 'villages',
 ];
 
@@ -38,16 +30,37 @@ const HEDLEY_RESTFUL_ALL_DEVICES = [
  * we sync to just some devices.
  */
 const HEDLEY_RESTFUL_SHARDED = [
+  'clinic' => 'clinics',
+  'person' => 'people',
+  'pmtct_participant' => 'pmtct-participants',
+  'individual_participant' => 'individual-participants',
+  'prenatal_encounter' => 'prenatal-encounters',
+  'nutrition_encounter' => 'nutrition-encounters',
+  'acute_illness_encounter' => 'acute-illness-encounters',
+  'relationship' => 'relationships',
+  'session' => 'sessions',
+  // Measurements.
+  'acute_findings' => 'acute-findings',
+  'acute_illness_vitals' => 'acute-illness-vitals',
   'attendance' => 'attendances',
   'breast_exam' => 'breast-exams',
+  'call_114' => 'call-114s',
+  'child_fbf' => 'child-fbfs',
   'counseling_session' => 'counseling-sessions',
   'core_physical_exam' => 'core-physical-exams',
   'danger_signs' => 'danger-signs',
+  'exposure' => 'exposures',
   'family_planning' => 'family-plannings',
+  'hc_contact' => 'hc-contacts',
   'height' => 'heights',
+  'isolation' => 'isolations',
+  'lactation' => 'lactations',
   'last_menstrual_period' => 'last-menstrual-periods',
+  'malaria_testing' => 'malaria-testings',
   'medical_history' => 'medical-histories',
   'medication' => 'medications',
+  'medication_distribution' => 'medication-distributions',
+  'mother_fbf' => 'mother-fbfs',
   'muac' => 'muacs',
   'nutrition' => 'nutritions',
   'nutrition_height' => 'nutrition-heights',
@@ -65,6 +78,12 @@ const HEDLEY_RESTFUL_SHARDED = [
   'social_history' => 'social-histories',
   'photo' => 'photos',
   'prenatal_photo' => 'prenatal-photos',
+  'send_to_hc' => 'send-to-hcs',
+  'symptoms_general' => 'symptoms-general',
+  'symptoms_gi' => 'symptoms-gi',
+  'symptoms_respiratory' => 'symptoms-respiratory',
+  'travel_history' => 'travel-histories',
+  'treatment_history' => 'treatment-histories',
   'vitals' => 'vitals',
   'weight' => 'weights',
 ];
@@ -192,9 +211,11 @@ function hedley_restful_output_for_bundles($bundleHandlers, array $nids, $accoun
  *   The Node ID. False, if not found.
  */
 function hedley_restful_resolve_nid_for_uuid($uuid) {
-  $result = db_select('field_data_field_uuid', 'uuid')
-    ->fields('uuid', ['entity_id'])
-    ->condition('uuid.field_uuid_value', $uuid)
+  $query = db_select('field_data_field_uuid', 'uuid');
+  $query->condition('uuid.field_uuid_value', $uuid);
+  $query->addField('uuid', 'entity_id');
+
+  $result = $query
     ->execute()
     ->fetchField();
 
@@ -327,7 +348,6 @@ function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $f
 
     default:
       $column_suffix = 'value';
-
   }
 
   $field_alias = $field_alias ?: $field_name;
@@ -345,5 +365,31 @@ function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $f
   }
 
   $query->$join($table_name, $field_alias, implode(' AND ', $conditions), $arguments);
+}
 
+/**
+ * Resolves UID of user that owns the access token.
+ *
+ * @param string $token
+ *   The token.
+ *
+ * @return bool|int
+ *   UID of user that owns the access token. FALSE, if not found.
+ */
+function hedley_restful_resolve_device_by_token($token) {
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'restful_token_auth')
+    ->propertyCondition('token', $token)
+    ->range(0, 1)
+    ->execute();
+
+  if (empty($result['restful_token_auth'])) {
+    return FALSE;
+  }
+
+  $auth_token_id = key($result['restful_token_auth']);
+  $auth_token = entity_load_single('restful_token_auth', $auth_token_id);
+
+  return $auth_token->uid;
 }

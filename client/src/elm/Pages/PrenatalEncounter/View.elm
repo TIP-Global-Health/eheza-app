@@ -1,11 +1,12 @@
-module Pages.PrenatalEncounter.View exposing (view, viewMotherAndMeasurements)
+module Pages.PrenatalEncounter.View exposing (view, viewMotherAndMeasurements, viewPersonDetails)
 
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (ObstetricHistoryValue, PrenatalMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears)
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Date exposing (Interval(..))
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
@@ -29,6 +30,7 @@ import PrenatalActivity.Utils
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
+import Utils.NominalDate exposing (renderAgeMonthsDays)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -51,7 +53,7 @@ view language currentDate id db model =
         content =
             viewWebData language (viewContent language currentDate model) identity data
     in
-    div [ class "page-prenatal-encounter" ] <|
+    div [ class "page-encounter prenatal" ] <|
         [ header
         , content
         ]
@@ -142,23 +144,61 @@ viewMotherDetails language currentDate data alertsDialogData =
                 |> Maybe.withDefault []
     in
     div [ class "item" ] <|
-        [ div [ class "ui image" ]
-            [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
-        , div [ class "content" ]
-            [ h2 [ class "ui header" ]
-                [ text mother.name ]
-            , showMaybe <|
-                Maybe.map
-                    (\age ->
-                        p [ class "age-wrapper" ]
-                            [ span [ class "label" ] [ text <| translate language Translate.AgeWord ++ ":" ]
-                            , span [] [ text <| translate language <| Translate.YearsOld age ]
-                            ]
-                    )
-                    (ageInYears currentDate mother)
-            ]
-        ]
+        viewPersonDetails language currentDate mother Nothing
             ++ alertsDialogSection
+
+
+viewPersonDetails : Language -> NominalDate -> Person -> Maybe TranslationId -> List (Html msg)
+viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
+    let
+        isAdult =
+            isPersonAnAdult currentDate person
+                |> Maybe.withDefault True
+
+        ( thumbnailClass, maybeAge ) =
+            if isAdult then
+                ( "mother"
+                , ageInYears currentDate person
+                    |> Maybe.map (\age -> translate language <| Translate.YearsOld age)
+                )
+
+            else
+                ( "child"
+                , person.birthDate
+                    |> Maybe.map
+                        (\birthDate -> renderAgeMonthsDays language birthDate currentDate)
+                )
+    in
+    [ div [ class "ui image" ]
+        [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width ]
+    , div [ class "content person-details" ]
+        [ h2 [ class "ui header" ]
+            [ text person.name ]
+        , maybeAge
+            |> Maybe.map
+                (\age ->
+                    p [ class "age-wrapper" ]
+                        [ span [ class "label" ] [ text <| translate language Translate.AgeWord ++ ":" ]
+                        , span [] [ text age ]
+                        ]
+                )
+            |> Maybe.withDefault emptyNode
+        , maybeDiagnosisTranslationId
+            |> Maybe.map
+                (\diagnosis ->
+                    div
+                        [ classList
+                            [ ( "diagnosis-wrapper", True )
+                            , ( "covid-19", diagnosis == Translate.AcuteIllnessDiagnosis DiagnosisCovid19 )
+                            ]
+                        ]
+                        [ div [ class "label upper" ] [ text <| translate language Translate.Diagnosis ++ ":" ]
+                        , div [ class "diagnosis" ] [ text <| translate language diagnosis ]
+                        ]
+                )
+            |> Maybe.withDefault emptyNode
+        ]
+    ]
 
 
 alertsDialog :

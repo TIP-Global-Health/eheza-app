@@ -1,9 +1,12 @@
-module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, getCurrentAndPrevious, mapMeasurementData, muacIndication, socialHistoryHivTestingResultFromString, splitChildMeasurements, splitMotherMeasurements)
+module Backend.Measurement.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Gizra.NominalDate exposing (compare)
+import Backend.Person.Model exposing (Person, Ubudehe(..))
+import Backend.Person.Utils exposing (isAdult)
+import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate, compare, diffMonths)
 import Restful.Endpoint exposing (EntityUuid)
 
 
@@ -70,6 +73,12 @@ splitMotherMeasurements sessionId =
                 consent =
                     getCurrentAndPrevious sessionId list.consents
                         |> .current
+
+                lactation =
+                    getCurrentAndPrevious sessionId list.lactations
+
+                fbf =
+                    getCurrentAndPrevious sessionId list.fbfs
             in
             { current =
                 { attendance =
@@ -81,6 +90,14 @@ splitMotherMeasurements sessionId =
                         |> Dict.toList
                         |> List.head
                 , consent = consent
+                , lactation =
+                    lactation.current
+                        |> Dict.toList
+                        |> List.head
+                , fbf =
+                    fbf.current
+                        |> Dict.toList
+                        |> List.head
                 }
             , previous =
                 -- We don't "compare" consents, so previous doesn't mean
@@ -88,6 +105,8 @@ splitMotherMeasurements sessionId =
                 { attendance = attendance.previous
                 , familyPlanning = familyPlanning.previous
                 , consent = Dict.empty
+                , lactation = lactation.previous
+                , fbf = fbf.previous
                 }
             }
         )
@@ -115,6 +134,9 @@ splitChildMeasurements sessionId =
 
                 counselingSession =
                     getCurrentAndPrevious sessionId list.counselingSessions
+
+                fbf =
+                    getCurrentAndPrevious sessionId list.fbfs
             in
             { current =
                 -- We can only have one per session ... we enforce that here.
@@ -142,6 +164,10 @@ splitChildMeasurements sessionId =
                     counselingSession.current
                         |> Dict.toList
                         |> List.head
+                , fbf =
+                    fbf.current
+                        |> Dict.toList
+                        |> List.head
                 }
             , previous =
                 { height = height.previous
@@ -150,6 +176,7 @@ splitChildMeasurements sessionId =
                 , nutrition = nutrition.previous
                 , photo = photo.previous
                 , counselingSession = counselingSession.previous
+                , fbf = fbf.previous
                 }
             }
         )
@@ -192,6 +219,45 @@ getCurrentAndPrevious sessionId =
         }
 
 
+lactationSignsToForm : EverySet LactationSign -> LactationForm
+lactationSignsToForm signs =
+    EverySet.member Breastfeeding signs
+        |> Just
+        |> LactationForm
+
+
+lactationFormToSigns : LactationForm -> EverySet LactationSign
+lactationFormToSigns form =
+    form.breastfeeding
+        |> Maybe.map
+            (\breastfeeding ->
+                if breastfeeding then
+                    EverySet.singleton Breastfeeding
+
+                else
+                    EverySet.singleton NoLactationSigns
+            )
+        |> Maybe.withDefault (EverySet.singleton NoLactationSigns)
+
+
+fbfValueToForm : FbfValue -> FbfForm
+fbfValueToForm value =
+    FbfForm (Just value.distributedAmount) (Just value.distributionNotice)
+
+
+fbfFormToValue : FbfForm -> FbfValue
+fbfFormToValue form =
+    Maybe.map2
+        (\distributedAmount distributionNotice ->
+            FbfValue distributedAmount distributionNotice
+        )
+        form.distributedAmount
+        form.distributionNotice
+        -- We should never get here, as we always expect to have
+        -- these fields filled.
+        |> Maybe.withDefault (FbfValue 0 DistributedFully)
+
+
 socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
 socialHistoryHivTestingResultFromString result =
     case result of
@@ -209,3 +275,38 @@ socialHistoryHivTestingResultFromString result =
 
         _ ->
             Nothing
+
+
+medicationNonAdministrationReasonFromString : String -> Maybe MedicationNonAdministrationReason
+medicationNonAdministrationReasonFromString reason =
+    case reason of
+        "lack-of-stock" ->
+            Just NonAdministrationLackOfStock
+
+        "known-allergy" ->
+            Just NonAdministrationKnownAllergy
+
+        "patient-declined" ->
+            Just NonAdministrationPatientDeclined
+
+        "other" ->
+            Just NonAdministrationOther
+
+        _ ->
+            Nothing
+
+
+medicationNonAdministrationReasonToString : MedicationNonAdministrationReason -> String
+medicationNonAdministrationReasonToString reason =
+    case reason of
+        NonAdministrationLackOfStock ->
+            "lack-of-stock"
+
+        NonAdministrationKnownAllergy ->
+            "known-allergy"
+
+        NonAdministrationPatientDeclined ->
+            "patient-declined"
+
+        NonAdministrationOther ->
+            "other"

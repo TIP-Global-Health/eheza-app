@@ -5,7 +5,7 @@ module Gizra.NominalDate exposing
     , fromLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , compare, diffMonths, formatDDMMYYYY
+    , allMonths, compare, daysInMonth, diffCalendarMonths, diffMonths, diffYears, formatDDMMYY, formatDDMMYYYY, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -25,6 +25,7 @@ time zone information.
 -}
 
 import Date
+import Gizra.String exposing (addLeadingZero)
 import Json.Decode exposing (Decoder, andThen, field, map2, string)
 import Json.Decode.Extra exposing (fromResult)
 import Json.Encode exposing (Value, object)
@@ -72,6 +73,11 @@ formatMMDDYYYY =
 formatDDMMYYYY : NominalDate -> String
 formatDDMMYYYY =
     Date.format "dd-MM-yyyy"
+
+
+formatDDMMYY : NominalDate -> String
+formatDDMMYY =
+    Date.format "dd/MM/yy"
 
 
 {-| Convert nominal date to a formatted string..
@@ -185,6 +191,16 @@ diffMonths low high =
     Date.diff Date.Months low high
 
 
+diffYears : NominalDate -> NominalDate -> Int
+diffYears low high =
+    Date.diff Date.Years low high
+
+
+diffCalendarMonths : NominalDate -> NominalDate -> Int
+diffCalendarMonths low high =
+    diffCalendarMonthsAndDays low high |> .months
+
+
 {-| Difference between two dates, in terms of months and days. This is based on
 calendar months. So, if you're on the same day of the next month, you'd get {
 months : 1, days: 0 }. Now, you can't tell from this how many actual deys
@@ -251,6 +267,14 @@ diffCalendarMonthsAndDays low high =
         }
 
 
+{-| Indicate of diff of nominal is a Truth value.
+-}
+isDiffTruthy : NominalDate -> NominalDate -> ({ months : Int, days : Int } -> Bool) -> Bool
+isDiffTruthy low high func =
+    diffCalendarMonthsAndDays low high
+        |> func
+
+
 daysInMonth : Int -> Month -> Int
 daysInMonth y m =
     case m of
@@ -298,3 +322,37 @@ daysInMonth y m =
 isLeapYear : Int -> Bool
 isLeapYear y =
     modBy 4 y == 0 && modBy 100 y /= 0 || modBy 400 y == 0
+
+
+{-| A list of all the months, in the traditional order.
+-}
+allMonths : List Month
+allMonths =
+    [ Jan
+    , Feb
+    , Mar
+    , Apr
+    , May
+    , Jun
+    , Jul
+    , Aug
+    , Sep
+    , Oct
+    , Nov
+    , Dec
+    ]
+
+
+monthMM : NominalDate -> String
+monthMM =
+    Date.month >> Date.monthToNumber >> Debug.toString >> addLeadingZero
+
+
+yearYY : NominalDate -> String
+yearYY date =
+    yearYYNumber |> Debug.toString |> addLeadingZero
+
+
+yearYYNumber : NominalDate -> Int
+yearYYNumber date =
+    modBy 100 (Date.year date)

@@ -11,6 +11,16 @@
 function hedley_schedule_user_default_permissions() {
   $permissions = array();
 
+  // Exported permission: 'create acute_illness_encounter content'.
+  $permissions['create acute_illness_encounter content'] = array(
+    'name' => 'create acute_illness_encounter content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create clinic content'.
   $permissions['create clinic content'] = array(
     'name' => 'create clinic content',
@@ -102,6 +112,15 @@ function hedley_schedule_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any acute_illness_encounter content'.
+  $permissions['delete any acute_illness_encounter content'] = array(
+    'name' => 'delete any acute_illness_encounter content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any clinic content'.
   $permissions['delete any clinic content'] = array(
     'name' => 'delete any clinic content',
@@ -177,6 +196,15 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'delete any session content'.
   $permissions['delete any session content'] = array(
     'name' => 'delete any session content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own acute_illness_encounter content'.
+  $permissions['delete own acute_illness_encounter content'] = array(
+    'name' => 'delete own acute_illness_encounter content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -260,6 +288,16 @@ function hedley_schedule_user_default_permissions() {
     'name' => 'delete own session content',
     'roles' => array(
       'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any acute_illness_encounter content'.
+  $permissions['edit any acute_illness_encounter content'] = array(
+    'name' => 'edit any acute_illness_encounter content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -348,6 +386,16 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'edit any session content'.
   $permissions['edit any session content'] = array(
     'name' => 'edit any session content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own acute_illness_encounter content'.
+  $permissions['edit own acute_illness_encounter content'] = array(
+    'name' => 'edit own acute_illness_encounter content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

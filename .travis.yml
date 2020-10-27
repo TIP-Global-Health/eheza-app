@@ -12,9 +12,11 @@ stages:
   - lint
   - test
   - deploy
-  -
+
 before_install:
-- export PATH="$HOME/.config/composer/vendor/bin:$PATH"
+- openssl aes-256-cbc -K $encrypted_414fa4dd00a5_key -iv $encrypted_414fa4dd00a5_iv
+  -in deployment-robot-key.enc -out deployment-robot-key -d
+- export PATH="$HOME/.config/composer/vendor/bin:$HOME/vendor/bin:$PATH"
 - "([ ! -z $BUILD_WEBDRIVERIO ] && sudo pip install docker-compose) || :"
 
 jobs:
@@ -53,11 +55,22 @@ jobs:
       if: commit_message ~= [test client]
       script:
         - "$TRAVIS_BUILD_DIR/ci-scripts/install_client.sh"
-        - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_client.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/test_client.sh"
-
+    - stage: Deploy
+      name: "Deployment to Pantheon"
+      if: branch = develop
+      script:
+        - "export DEPLOY=1 && $TRAVIS_BUILD_DIR/ci-scripts/install_client.sh"
+        - "$TRAVIS_BUILD_DIR/ci-scripts/install_ddev.sh"
+        - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_deploy.sh"
+        - "cd $TRAVIS_BUILD_DIR/server && ddev robo deploy:pantheon qa --no-interaction"
 cache:
   directories:
   - client/elm-stuff/packages
   - client/sysconfcpus
   - travis-cache
+  - vendor
+
+env:
+  global:
+    secure: a2Z2hXYHeMFFWohx+o9/Zb/vFiTzNppvis+N0H/K0yJFpQkn3KpiaOPhYdwVcfyZk4fh/OANI+0iqzgcmOKhsnEkJ8W2v5AtUxi5rLKPriBYqI8Al1EnDPjkGLrurqazO2bH5CzNeiepbSEw038SVdNHGNCgq59HsH8Zv82TvTF24Htn4uNAfxyk0QkvofQWE5XqkZ61exfF0NszOIjTntZ/qKHBrxwynluDAQ5GDw/tDIbX6GBECF/T4G1PZop5KcT87HZc/qn5JCmyfTZqAwRbu1gVzutc6I19rOtuBCPMeYYRoKYop4eCsgQ9kyjEeXQyInTuydQ9MntWGz1VLazBzFTxxq0RXw2AI+t3YqT/WR3rHqoBlP8inBtwLPlJbxWIOu7uYcjZm2VbyHLu0JnzatOTqQC9SBEAJuZimBIM8MfaT402Ywi90zOp09Cc/Uc+jKQab8WvtEz0gwhiiALgCkJ80Prq3rpS1LSC1hyXrOjGFw7HuD6IRHyHTqrahKoY6yV6kbFih+33rADbxEgdCovY/B5JoYiYhsq9iu257smvn0EDTZO1G2Vd+rncj0YNip1zUJzwknZ68JDia9/pJUivAequ+EnhUl1eGkjbWnvIN4O5IDzqcH8+KJkd95anb+FSsfuvMBCTjBKW+tZoiuXGQltU9wXNjxqJUv0=

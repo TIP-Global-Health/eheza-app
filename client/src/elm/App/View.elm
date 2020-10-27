@@ -4,7 +4,7 @@ import App.Model exposing (..)
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
-import Backend.Person.Model exposing (ParticipantDirectoryOperation(..), RegistrationInitiator(..))
+import Backend.Person.Model exposing (Initiator(..), ParticipantDirectoryOperation(..))
 import Browser
 import Config.View
 import Date
@@ -13,9 +13,17 @@ import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
+import Pages.AcuteIllnessActivity.Model
+import Pages.AcuteIllnessActivity.View
+import Pages.AcuteIllnessEncounter.Model
+import Pages.AcuteIllnessEncounter.View
+import Pages.AcuteIllnessParticipant.View
+import Pages.AcuteIllnessProgressReport.Model
+import Pages.AcuteIllnessProgressReport.View
 import Pages.Clinical.View
 import Pages.ClinicalProgressReport.View
 import Pages.Clinics.View
+import Pages.Dashboard.View
 import Pages.DemographicsReport.View
 import Pages.Device.View
 import Pages.IndividualEncounterParticipants.View
@@ -42,12 +50,12 @@ import Pages.PrenatalParticipant.View
 import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
-import Pages.Session.View exposing (view)
+import Pages.Session.View
 import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
-import Utils.Html exposing (spinner, wrapPage)
+import Utils.Html exposing (viewLoading)
 import Version
 
 
@@ -180,6 +188,7 @@ viewConfiguredModel model configured =
                     model.activePage
                     (RemoteData.map .nurse configured.loggedIn)
                     ( model.healthCenterId, model.villageId )
+                    model.deviceName
                     configured.pinCodePage
                     model.indexedDb
                     |> Html.map MsgPagePinCode
@@ -246,6 +255,11 @@ viewUserPage page model configured =
                             |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
                             |> flexPageWrapper model
 
+                    DashboardPage subPage ->
+                        Pages.Dashboard.View.view model.language subPage currentDate healthCenterId loggedInModel.dashboardPage model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageDashboard subPage)
+                            |> flexPageWrapper model
+
                     DemographicsReportPage prenatalEncounterId ->
                         Pages.DemographicsReport.View.view model.language currentDate prenatalEncounterId model.indexedDb
                             |> flexPageWrapper model
@@ -262,21 +276,25 @@ viewUserPage page model configured =
                             |> Html.map (MsgLoggedIn << MsgPageEditPerson)
                             |> flexPageWrapper model
 
-                    PersonPage id ->
-                        Pages.Person.View.view model.language currentDate isChw id model.indexedDb
+                    PersonPage id initiator ->
+                        Pages.Person.View.view model.language currentDate isChw initiator id model.indexedDb
                             |> flexPageWrapper model
 
-                    PersonsPage relation ->
-                        Pages.People.View.view model.language currentDate model.villageId isChw relation loggedInModel.personsPage model.indexedDb
+                    PersonsPage relation initiator ->
+                        Pages.People.View.view model.language currentDate model.villageId isChw initiator relation loggedInModel.personsPage model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPagePersons)
                             |> flexPageWrapper model
 
                     PrenatalParticipantPage id ->
-                        Pages.PrenatalParticipant.View.view model.language currentDate id model.indexedDb
+                        Pages.PrenatalParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
                             |> flexPageWrapper model
 
                     NutritionParticipantPage id ->
-                        Pages.NutritionParticipant.View.view model.language currentDate id model.indexedDb
+                        Pages.NutritionParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
+                            |> flexPageWrapper model
+
+                    AcuteIllnessParticipantPage id ->
+                        Pages.AcuteIllnessParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
                             |> flexPageWrapper model
 
                     IndividualEncounterParticipantsPage encounterType ->
@@ -290,13 +308,21 @@ viewUserPage page model configured =
                             |> Html.map (MsgLoggedIn << MsgPageIndividualEncounterParticipants)
                             |> flexPageWrapper model
 
-                    RelationshipPage id1 id2 ->
+                    RelationshipPage id1 id2 initiator ->
                         let
                             page_ =
                                 Dict.get ( id1, id2 ) loggedInModel.relationshipPages
                                     |> Maybe.withDefault Pages.Relationship.Model.emptyModel
                         in
-                        Pages.Relationship.View.view model.language currentDate model.villageId isChw id1 id2 model.indexedDb page_
+                        Pages.Relationship.View.view model.language
+                            currentDate
+                            ( healthCenterId, model.villageId )
+                            isChw
+                            initiator
+                            id1
+                            id2
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPageRelationship id1 id2)
                             |> flexPageWrapper model
 
@@ -377,8 +403,44 @@ viewUserPage page model configured =
                         Pages.NutritionProgressReport.View.view model.language currentDate model.zscores encounterId model.indexedDb
                             |> oldPageWrapper model
 
+                    AcuteIllnessEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.acuteIllnessEncounterPages
+                                    |> Maybe.withDefault Pages.AcuteIllnessEncounter.Model.emptyModel
+                        in
+                        Pages.AcuteIllnessEncounter.View.view model.language currentDate id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessEncounter id)
+                            |> flexPageWrapper model
+
+                    AcuteIllnessActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.acuteIllnessActivityPages
+                                    |> Maybe.withDefault Pages.AcuteIllnessActivity.Model.emptyModel
+                        in
+                        Pages.AcuteIllnessActivity.View.view model.language currentDate id activity model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity)
+                            |> flexPageWrapper model
+
+                    AcuteIllnessProgressReportPage encounterId ->
+                        let
+                            page_ =
+                                Dict.get encounterId loggedInModel.acuteIllnessProgressReportPages
+                                    |> Maybe.withDefault Pages.AcuteIllnessProgressReport.Model.emptyModel
+                        in
+                        Pages.AcuteIllnessProgressReport.View.view model.language currentDate encounterId model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport encounterId)
+                            |> oldPageWrapper model
+
             else
-                Pages.PinCode.View.view model.language model.activePage (Success loggedInModel.nurse) ( model.healthCenterId, model.villageId ) configured.pinCodePage model.indexedDb
+                Pages.PinCode.View.view model.language
+                    model.activePage
+                    (Success loggedInModel.nurse)
+                    ( model.healthCenterId, model.villageId )
+                    model.deviceName
+                    configured.pinCodePage
+                    model.indexedDb
                     |> Html.map MsgPagePinCode
                     |> flexPageWrapper model
 
@@ -387,20 +449,8 @@ viewUserPage page model configured =
                 model.activePage
                 (RemoteData.map .nurse configured.loggedIn)
                 ( model.healthCenterId, model.villageId )
+                model.deviceName
                 configured.pinCodePage
                 model.indexedDb
                 |> Html.map MsgPagePinCode
                 |> flexPageWrapper model
-
-
-{-| Just show a generic loading indicator, for cases that will resolve soon,
-where we don't need to show any progress.
--}
-viewLoading : Html any
-viewLoading =
-    div
-        [ class "wrap wrap-alt-2" ]
-        [ div
-            [ class "ui segment center aligned" ]
-            [ spinner ]
-        ]

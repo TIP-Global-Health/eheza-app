@@ -20,6 +20,7 @@ type alias IndividualEncounterParticipant =
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , eddDate : Maybe NominalDate
+    , shard : Maybe HealthCenterId
     }
 
 
@@ -44,7 +45,8 @@ emptyModel =
 
 
 type IndividualEncounterType
-    = AntenatalEncounter
+    = AcuteIllnessEncounter
+    | AntenatalEncounter
     | InmmunizationEncounter
     | NutritionEncounter
 

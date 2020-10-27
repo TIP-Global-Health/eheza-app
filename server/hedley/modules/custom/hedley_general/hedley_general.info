@@ -1,0 +1,4 @@
+name = Hedley general
+description = General functions.
+core = 7.x
+package = Hedley

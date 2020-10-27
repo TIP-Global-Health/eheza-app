@@ -44,6 +44,9 @@
                     else if (type === 'nutrition-measurements') {
                         return event.respondWith(viewMeasurements('nutrition_encounter', uuid));
                     }
+                    else if (type === 'acute-illness-measurements') {
+                        return event.respondWith(viewMeasurements('acute_illness_encounter', uuid));
+                    }
                     else {
                         return event.respondWith(view(type, uuid));
                     }
@@ -85,54 +88,6 @@
         }
     });
 
-    var tableForType = {
-        attendance: 'shards',
-        breast_exam: 'shards',
-        catchment_area: 'nodes',
-        clinic: 'nodes',
-        counseling_schedule: 'nodes',
-        counseling_session: 'shards',
-        counseling_topic: 'nodes',
-        core_physical_exam: 'shards',
-        danger_signs: 'shards',
-        family_planning: 'shards',
-        health_center: 'nodes',
-        height: 'shards',
-        last_menstrual_period: 'shards',
-        medical_history: 'shards',
-        medication: 'shards',
-        muac: 'shards',
-        nurse: 'nodes',
-        nutrition: 'shards',
-        nutrition_encounter: 'nodes',
-        nutrition_height: 'shards',
-        nutrition_muac: 'shards',
-        nutrition_nutrition: 'shards',
-        nutrition_photo: 'shards',
-        nutrition_weight: 'shards',
-        obstetric_history: 'shards',
-        obstetric_history_step2: 'shards',
-        obstetrical_exam: 'shards',
-        participant_consent: 'shards',
-        participant_form: 'nodes',
-        person: 'nodes',
-        photo: 'shards',
-        prenatal_photo: 'shards',
-        pmtct_participant: 'nodes',
-        prenatal_family_planning: 'shards',
-        prenatal_nutrition: 'shards',
-        individual_participant: 'nodes',
-        prenatal_encounter: 'nodes',
-        relationship: 'nodes',
-        resource: 'shards',
-        session: 'nodes',
-        social_history: 'shards',
-        syncmetadata: 'syncMetadata',
-        village: 'nodes',
-        vitals: 'shards',
-        weight: 'shards'
-    };
-
     var Status = {
         published: 1,
         unpublished: 0
@@ -140,10 +95,9 @@
 
     function expectedOnDate (participation, sessionDate) {
         var joinedGroupBeforeSession = participation.expected.value <= sessionDate;
-        var notLeftGroup = !participation.expected.value2 || (participation.expected.value === participation.expected.value2);
-        var leftGroupAfterSession = participation.expected.value2 > sessionDate;
+        var notLeftGroup = !participation.expected.value2 || participation.expected.value2 > sessionDate;
 
-        return joinedGroupBeforeSession && (notLeftGroup || leftGroupAfterSession);
+        return joinedGroupBeforeSession && notLeftGroup;
     }
 
     function getTableForType (type) {
@@ -416,8 +370,11 @@
     var groupMeasurementTypes = [
       'attendance',
       'counseling_session',
+      'child_fbf',
       'family_planning',
       'height',
+      'lactation',
+      'mother_fbf',
       'muac',
       'nutrition',
       'participant_consent',
@@ -463,6 +420,9 @@
                     }
                     else if (key === 'nutrition_encounter') {
                         target = node.nutrition_encounter;
+                    }
+                    else if (key === 'acute_illness_encounter') {
+                      target = node.acute_illness_encounter;
                     }
 
                     data[target] = data[target] || {};
@@ -543,12 +503,35 @@
 
                 if (type === 'person') {
                     var nameContains = params.get('name_contains');
+
                     if (nameContains) {
+                        // For the case when there's more than one word as an input,
+                        // we generate an array of lowercase words.
+                        var words = nameContains.split(' ');
+                        words.forEach(function (word, index) {
+                          words[index] = word.toLowerCase();
+                        });
+
                         modifyQuery = modifyQuery.then(function () {
-                            query = table.where('name_search').startsWith(nameContains.toLowerCase()).distinct();
+                            // We search for resulting persons that start with any of the input words (apply 'OR' condition).
+                            query = table.where('name_search').startsWithAnyOf(words).distinct().and(function (person) {
+                              // Now, we check that each word we got as search input is a prefix
+                              // of any of person name parts (applying 'AND condition').
+                              return words.every(function (word) {
+                                return person.name_search.some(function (nameSearchWord) {
+                                  return nameSearchWord.startsWith(word);
+                                });
+                              });
+                            });
 
                             // Cloning doesn't seem to work for this one.
-                            countQuery = table.where('name_search').startsWith(nameContains.toLowerCase()).distinct();
+                            countQuery = table.where('name_search').startsWithAnyOf(words).distinct().and(function (person) {
+                              return words.every(function (word) {
+                                return person.name_search.some(function (nameSearchWord) {
+                                  return nameSearchWord.startsWith(word);
+                                });
+                              });
+                            });
 
                             sortBy = 'label';
 
@@ -583,7 +566,7 @@
                     }
                 }
 
-                if (type === 'prenatal_encounter' || type === 'nutrition_encounter') {
+                if (type === 'prenatal_encounter' || type === 'nutrition_encounter' || type === 'acute_illness_encounter') {
                   var individualSessionId = params.get('individual_participant');
                   if (individualSessionId) {
                     modifyQuery = modifyQuery.then(function () {
@@ -612,16 +595,12 @@
                                   clinics.push(['session', participation.clinic]);
                                 })
 
-                                if (clinics.length > 0) {
-                                    query = table.where('[type+clinic]').anyOf(clinics);
+                                query = table.where('[type+clinic]').anyOf(clinics);
 
-                                    // Cloning doesn't seem to work for this one.
-                                    countQuery = table.where('[type+clinic]').anyOf(clinics);
+                                // Cloning doesn't seem to work for this one.
+                                countQuery = table.where('[type+clinic]').anyOf(clinics);
 
-                                    return Promise.resolve();
-                                } else {
-                                    return Promise.reject('Could not find participation for child: ' + childId);
-                                }
+                                return Promise.resolve();
                             });
                         });
                     }
@@ -663,31 +642,49 @@
         }).catch(sendErrorResponses);
     }
 
-    // It's not entirely clear whose job it ought to be to figure out what
-    // shard a node should be assigned to. For now, it seems simplest to do it
-    // here, but we can revisit that.
     function determineShard (node) {
+        // Shraded nodes that specifically specify their shard.
+        // To be more precise, these are individual participants,
+        // individual encounters, persons and relationships.
+        // This check must be first, so the shard field would not get
+        // overriden by health_center field, when both of them exist
+        // at node - for example, at perosn node.
+        if (node.shard) {
+            return Promise.resolve(node.shard);
+        }
+
+        // Resolving for group measurements.
+        if (node.session) {
+            return dbSync.shards.get(node.session).then (function (session) {
+                return resolveShardByClinicId(session.clinic)
+            });
+        }
+
+        // Resolving for individual measurements.
         if (node.health_center) {
             return Promise.resolve(node.health_center);
         }
 
-        if (node.session) {
-            return dbSync.nodes.get(node.session).then (function (session) {
-                return dbSync.nodes.get(session.clinic).then(function (clinic) {
-                    if (clinic) {
-                        if (clinic.health_center) {
-                            return Promise.resolve(clinic.health_center);
-                        } else {
-                            return Promise.reject('Clinic had no health_center: ' + clinic.uuid);
-                        }
-                    } else {
-                        return Promise.reject('Could not find clinic: ' + session.clinic);
-                    }
-                });
-            });
-        } else {
-            return Promise.reject('Node had no session field: ' + node.uuid);
+        // Resolving for pmtct_participant.
+        if (node.clinic) {
+            return resolveShardByClinicId(node.clinic);
         }
+
+        return Promise.reject('Node ' + node.uuid + ' got no fields using which shard can be resolved!' );
+    }
+
+    function resolveShardByClinicId (clinicId) {
+      return dbSync.shards.get(clinicId).then(function (clinic) {
+          if (clinic) {
+              if (clinic.health_center) {
+                  return Promise.resolve(clinic.health_center);
+              } else {
+                  return Promise.reject('Clinic had no health_center: ' + clinic.uuid);
+              }
+          } else {
+              return Promise.reject('Could not find clinic: ' + session.clinic);
+          }
+      });
     }
 
     // This is meant for the end of a promise chain. If we've rejected with a

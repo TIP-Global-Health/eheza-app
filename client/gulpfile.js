@@ -235,7 +235,7 @@ gulp.task("minify", ["styles", "zscore", "copy:images", "copy:favicon"],
       // Concatenate JavaScript files and preserve important comments.
       // DropZone had a problem if we mangle
       // ... see <https://github.com/rowanwins/vue-dropzone/issues/119>
-      .pipe($.if("*.js", uglify({
+      .pipe($.if(["*.js", "!service-worker.js", "!workbox-*.js"], uglify({
         mangle: false
       }))).on('error', function(err) {
         console.error(err);
@@ -382,38 +382,38 @@ var precacheFileGlob =
 // We cache bower_components individually, since they often include things
 // we don't need.
 var precacheLocalDev = [
-  'serve/' + precacheFileGlob,
-  'serve/assets/**/' + precacheFileGlob,
-  'serve/bower_components/copy-button/bundled.min.js',
-  'serve/bower_components/dropzone/dist/min/dropzone.min.css',
-  'serve/bower_components/dropzone/dist/min/dropzone.min.js',
-  'serve/bower_components/dexie/dist/dexie.min.js',
-  'serve/bower_components/semantic/dist/themes/**/' + precacheFileGlob,
-  'serve/bower_components/semantic/dist/semantic.min.css'
+  precacheFileGlob,
+  'assets/**/' + precacheFileGlob,
+  'bower_components/copy-button/bundled.min.js',
+  'bower_components/dropzone/dist/min/dropzone.min.css',
+  'bower_components/dropzone/dist/min/dropzone.min.js',
+  'bower_components/dexie/dist/dexie.min.js',
+  'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
+  'bower_components/semantic/dist/semantic.min.css'
 ];
 
 // There may be a better way to do this, but for the moment we have some
 // slight duplication here.
 var precacheProd = [
-  'dist/' + precacheFileGlob,
-  'dist/assets/**/' + precacheFileGlob,
-  'dist/bower_components/copy-button/bundled.min.*.js',
-  'dist/bower_components/dropzone/dist/min/dropzone.min.*.css',
-  'dist/bower_components/dropzone/dist/min/dropzone.min.*.js',
-  'dist/bower_components/dexie/dist/dexie.min.*.js',
-  'dist/bower_components/semantic/dist/themes/**/' + precacheFileGlob,
-  'dist/bower_components/semantic/dist/semantic.min.*.css'
+  precacheFileGlob,
+  'assets/**/' + precacheFileGlob,
+  'bower_components/copy-button/bundled.min.*.js',
+  'bower_components/dropzone/dist/min/dropzone.min.*.css',
+  'bower_components/dropzone/dist/min/dropzone.min.*.js',
+  'bower_components/dexie/dist/dexie.min.*.js',
+  'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
+  'bower_components/semantic/dist/semantic.min.*.css'
 ];
 
 // For offline use while developing
-gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback) {
-  var swPrecache = require('sw-precache');
-  var rootDir = 'serve/';
+gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function() {
+  var workboxBuild = require('workbox-build');
 
-  swPrecache.write(`${rootDir}/service-worker.js`, {
+  return workboxBuild.generateSW({
+    swDest: 'serve/service-worker.js',
     cacheId: 'ihangane',
-    staticFileGlobs: precacheLocalDev,
-    stripPrefix: rootDir,
+    globDirectory: 'serve',
+    globPatterns: precacheLocalDev,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
     clientsClaim: true,
     skipWaiting: false,
@@ -424,22 +424,22 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback)
       'config.js',
       'lifecycle.js',
       'nodes.js',
+      'statistics.js',
       'photos.js',
-      'rollbar.js',
       'sync.js'
     ]
-  }, callback);
+  });
 });
 
 // Offline use in production.
-gulp.task('pwa:prod', function(callback) {
-  var swPrecache = require('sw-precache');
-  var rootDir = 'dist/';
+gulp.task('pwa:prod', function() {
+  var workboxBuild = require('workbox-build');
 
-  swPrecache.write(`${rootDir}/service-worker.js`, {
+  return workboxBuild.generateSW({
+    swDest: 'dist/service-worker.js',
     cacheId: 'ihangane',
-    staticFileGlobs: precacheProd,
-    stripPrefix: rootDir,
+    globDirectory: 'dist',
+    globPatterns: precacheProd,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
     clientsClaim: true,
     skipWaiting: false,
@@ -451,10 +451,9 @@ gulp.task('pwa:prod', function(callback) {
       'lifecycle.js',
       'nodes.js',
       'photos.js',
-      'rollbar.js',
       'sync.js'
     ]
-  }, callback);
+  });
 });
 
 // Serve for the Android emulator, then watch.

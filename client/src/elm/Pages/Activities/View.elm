@@ -14,7 +14,7 @@ import List as List
 import LocalData
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (backFromSessionPage)
+import Pages.Utils exposing (backFromSessionPage, viewEndEncounterDialog)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 
@@ -26,19 +26,15 @@ view language nurse ( sessionId, session ) model =
             session.summaryByActivity
                 |> LocalData.withDefault emptySummaryByActivity
 
-        pendingActivities =
-            getAllActivities
-                |> List.filter (\activity -> (getParticipantCountForActivity summary activity).pending > 0)
-
-        noPendingActivities =
-            getAllActivities
-                |> List.filter (\activity -> (getParticipantCountForActivity summary activity).completed > 0)
+        ( pendingActivities, completedActivities ) =
+            getAllActivities session.offlineSession
+                |> List.partition (\activity -> (getParticipantCountForActivity summary activity).pending > 0)
 
         pendingTabTitle =
             translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities
 
         completedTabTitle =
-            translate language <| Trans.ActivitiesCompleted <| List.length noPendingActivities
+            translate language <| Trans.ActivitiesCompleted <| List.length completedActivities
 
         tabs =
             div [ class "ui tabular menu" ]
@@ -78,32 +74,7 @@ view language nurse ( sessionId, session ) model =
         endSessionDialog =
             if model.showEndSessionDialog then
                 Just <|
-                    div [ class "ui tiny active modal" ]
-                        [ div
-                            [ class "header" ]
-                            [ text <| translate language Trans.AreYouSure ]
-                        , div
-                            [ class "content" ]
-                            [ p []
-                                [ text <| translate language Trans.OnceYouEndYourGroupEncounter ]
-                            ]
-                        , div
-                            [ class "actions" ]
-                            [ div
-                                [ class "two ui buttons" ]
-                                [ button
-                                    [ class "ui fluid button"
-                                    , onClick <| ShowEndSessionDialog False
-                                    ]
-                                    [ text <| translate language Trans.Cancel ]
-                                , button
-                                    [ class "ui primary fluid button"
-                                    , onClick CloseSession
-                                    ]
-                                    [ text <| translate language Trans.Continue ]
-                                ]
-                            ]
-                        ]
+                    viewEndEncounterDialog language Trans.AreYouSure Trans.OnceYouEndYourGroupEncounter CloseSession (ShowEndSessionDialog False)
 
             else
                 Nothing
@@ -114,7 +85,7 @@ view language nurse ( sessionId, session ) model =
                     ( pendingActivities, translate language Trans.NoActivitiesPending )
 
                 Completed ->
-                    ( noPendingActivities, translate language Trans.NoActivitiesCompleted )
+                    ( completedActivities, translate language Trans.NoActivitiesCompleted )
 
         goBackPage =
             backFromSessionPage nurse session.offlineSession

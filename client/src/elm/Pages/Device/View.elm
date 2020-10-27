@@ -6,6 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.SyncData.Model exposing (SyncData)
+import Backend.Utils exposing (nodesUuid)
 import Date
 import Device.Model exposing (..)
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -15,21 +16,10 @@ import Html.Events exposing (..)
 import Pages.Device.Model exposing (..)
 import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (toEntityUuid)
 import Time
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError)
-
-
-{-| We organize our SyncData by health center. However, there is also a bunch
-of nodes that we get no matter which health center we're interesting in. So,
-this is the "magic" UUID that represents "all the health centers" (or, "no
-health center", depending on how you look at it).
--}
-nodesUuid : HealthCenterId
-nodesUuid =
-    toEntityUuid "78cf21d1-b3f4-496a-b312-d8ae73041f09"
 
 
 {-| We call this if we have an active service worker. If the device is authorized,
@@ -141,9 +131,7 @@ viewSyncData language data =
                     Time.toYear Time.utc time |> String.fromInt
 
                 month =
-                    Time.toMonth Time.utc time
-                        |> Translate.ResolveMonth
-                        |> translate language
+                    translate language <| Translate.ResolveMonth False (Time.toMonth Time.utc time)
 
                 day =
                     Time.toDay Time.utc time |> normalize

@@ -9,6 +9,9 @@ import Maybe.Extra exposing (isNothing)
 encoudeIndividualEncounterTypeAsString : IndividualEncounterType -> String
 encoudeIndividualEncounterTypeAsString encounterType =
     case encounterType of
+        AcuteIllnessEncounter ->
+            "acute-illness"
+
         AntenatalEncounter ->
             "antenatal"
 
@@ -22,6 +25,9 @@ encoudeIndividualEncounterTypeAsString encounterType =
 decodeIndividualEncounterTypeFromString : String -> Maybe IndividualEncounterType
 decodeIndividualEncounterTypeFromString string =
     case string of
+        "acute-illness" ->
+            Just AcuteIllnessEncounter
+
         "antenatal" ->
             Just AntenatalEncounter
 
@@ -35,6 +41,6 @@ decodeIndividualEncounterTypeFromString string =
             Nothing
 
 
-isDailyEncounterActive : NominalDate -> { participant : a, startDate : NominalDate, endDate : Maybe NominalDate } -> Bool
+isDailyEncounterActive : NominalDate -> { a | startDate : NominalDate, endDate : Maybe NominalDate } -> Bool
 isDailyEncounterActive currentDate encounter =
     encounter.startDate == currentDate && isNothing encounter.endDate

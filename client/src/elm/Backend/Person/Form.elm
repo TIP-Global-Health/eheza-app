@@ -58,14 +58,14 @@ import Backend.Person.Encoder
         , encodeUbudehe
         )
 import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (diffInYears, expectedAgeByPerson, isAdult, isPersonAnAdult, resolveExpectedAge)
+import Backend.Person.Utils exposing (expectedAgeByPerson, isAdult, isPersonAnAdult, resolveExpectedAge)
 import Backend.Village.Model exposing (Village)
 import Date
 import Form exposing (..)
 import Form.Field
 import Form.Init exposing (..)
 import Form.Validate exposing (..)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, formatYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffYears, formatYYYYMMDD)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Regex exposing (Regex)
@@ -306,7 +306,7 @@ applyDefaultValues currentDate maybeVillage isChw maybeRelatedPerson operation f
                     if formFieldEmpty fieldName form_ then
                         Form.update
                             validation
-                            (Form.Input fieldName Form.Select (Form.Field.String (Debug.toString <| fromEntityId defaultId)))
+                            (Form.Input fieldName Form.Select (Form.Field.String (String.fromInt <| fromEntityId defaultId)))
                             form_
 
                     else
@@ -318,7 +318,7 @@ applyDefaultValues currentDate maybeVillage isChw maybeRelatedPerson operation f
     case operation of
         CreatePerson _ ->
             form
-                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> Debug.toString)
+                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> String.fromInt)
                 |> applyDefaultLocation province defaultProvinceId
                 |> applyDefaultLocation district defaultDistrictId
                 |> applyDefaultLocation sector defaultSectorId
@@ -337,11 +337,11 @@ applyDefaultValues currentDate maybeVillage isChw maybeRelatedPerson operation f
                 |> applyDefaultSelectInput hmisNumber defaultHmisNumber identity
                 |> applyDefaultGender
                 |> applyDefaultSelectInput hivStatus defaultHivStatus encodeHivStatus
-                |> applyDefaultSelectInput educationLevel defaultlEducationLevel (encodeEducationLevel >> Debug.toString)
+                |> applyDefaultSelectInput educationLevel defaultlEducationLevel (encodeEducationLevel >> String.fromInt)
                 |> applyDefaultSelectInput maritalStatus defaultMaritalStatus encodeMaritalStatus
                 |> applyDefaultSelectInput modeOfDelivery defaultModeOfDelivery encodeModeOfDelivery
-                |> applyDefaultSelectInput numberOfChildren defaultlNumberOfChildrenl Debug.toString
-                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> Debug.toString)
+                |> applyDefaultSelectInput numberOfChildren defaultlNumberOfChildrenl String.fromInt
+                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> String.fromInt)
                 |> applyDefaultLocation province defaultProvinceId
                 |> applyDefaultLocation district defaultDistrictId
                 |> applyDefaultLocation sector defaultSectorId
@@ -432,6 +432,7 @@ validatePerson maybeRelated operation maybeCurrentDate =
                 |> andMap (field village (validateVillage maybeRelated))
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
                 |> andMap (field healthCenter (validateHealthCenterId maybeRelated))
+                |> andMap (succeed Nothing)
     in
     andThen withFirstName (field firstName (oneOf [ string, emptyString ]))
 
@@ -578,18 +579,16 @@ validateBirthDate expectedAge maybeCurrentDate =
                         -- When we don't know current date, try to decode input value.
                         (fromDecoder DecoderError Nothing (Json.Decode.nullable decodeYYYYMMDD))
                         (\currentDate ->
-                            let
-                                -- Convert to NominalDate.
-                                maybeBirthDate =
-                                    Date.fromIsoString s
-                                        |> Result.toMaybe
-                            in
                             -- Calculate difference of years between input birth
                             -- date and current date.
-                            diffInYears currentDate maybeBirthDate
-                                |> unwrap
-                                    (fail <| customError InvalidBirthDate)
-                                    (\delta ->
+                            Date.fromIsoString s
+                                |> Result.toMaybe
+                                |> Maybe.map
+                                    (\birthDate_ ->
+                                        let
+                                            delta =
+                                                diffYears birthDate_ currentDate
+                                        in
                                         if delta > 12 && expectedAge == ExpectChild then
                                             fail <| customError InvalidBirthDateForChild
                                             -- Invalid age for child.
@@ -599,8 +598,9 @@ validateBirthDate expectedAge maybeCurrentDate =
                                             -- Invalid age for adult.
 
                                         else
-                                            succeed maybeBirthDate
+                                            succeed (Just birthDate_)
                                     )
+                                |> Maybe.withDefault (fail <| customError InvalidBirthDate)
                         )
             )
 
