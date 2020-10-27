@@ -2,6 +2,7 @@ port module SyncManager.Update exposing (subscriptions, update)
 
 import App.Model exposing (SubModelReturn)
 import App.Utils exposing (sequenceSubModelReturn)
+import AssocList as Dict exposing (Dict)
 import Backend.Model
 import Device.Encoder
 import Device.Model exposing (Device)
@@ -945,12 +946,26 @@ update currentDate currentTime dbVersion device msg model =
                                                 result.entities
                                     in
                                     deleteEntitiesThatWereUploaded { type_ = "Authority", localId = localIds }
+
+                                uploadPhotosToDelete =
+                                    Dict.keys result.uploadPhotos
+
+                                subModelReturn =
+                                    SubModelReturn
+                                        (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoAuthorities = syncInfoAuthorities })
+                                        (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
+                                        noError
+                                        []
                             in
-                            SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoAuthorities = syncInfoAuthorities })
-                                (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
-                                noError
-                                []
+                            if List.isEmpty uploadPhotosToDelete then
+                                subModelReturn
+
+                            else
+                                subModelReturn
+                                    |> sequenceSubModelReturn
+                                        (update currentDate currentTime dbVersion device)
+                                        [ QueryIndexDb <| IndexDbQueryRemoveUploadPhotos uploadPhotosToDelete
+                                        ]
 
                         _ ->
                             -- Satisfy the compiler.
@@ -1267,7 +1282,7 @@ update currentDate currentTime dbVersion device msg model =
                         currentTime
                         dbVersion
                         device
-                        (QueryIndexDb <| IndexDbQueryRemoveDeferredPhotoAttempts result.uuid)
+                        (QueryIndexDb <| IndexDbQueryRemoveDeferredPhoto result.uuid)
                         { model | downloadPhotosStatus = downloadPhotosStatus }
 
                 _ ->
@@ -1305,8 +1320,8 @@ update currentDate currentTime dbVersion device msg model =
                             , data = Nothing
                             }
 
-                        IndexDbQueryRemoveDeferredPhotoAttempts uuid ->
-                            { queryType = "IndexDbQueryRemoveDeferredPhotoAttempts"
+                        IndexDbQueryRemoveDeferredPhoto uuid ->
+                            { queryType = "IndexDbQueryRemoveDeferredPhoto"
                             , data = Just uuid
                             }
 
@@ -1322,6 +1337,18 @@ update currentDate currentTime dbVersion device msg model =
                             in
                             { queryType = "IndexDbQueryUpdateDeferredPhotoAttempts"
                             , data = Just encodedData
+                            }
+
+                        IndexDbQueryRemoveUploadPhotos uuids ->
+                            let
+                                uuidsAsString =
+                                    uuids
+                                        |> List.map String.fromInt
+                                        |> List.intersperse ","
+                                        |> String.concat
+                            in
+                            { queryType = "IndexDbQueryRemoveUploadPhotos"
+                            , data = Just uuidsAsString
                             }
             in
             SubModelReturn

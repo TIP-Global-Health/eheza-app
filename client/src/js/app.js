@@ -611,7 +611,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       })();
       break;
 
-    case 'IndexDbQueryRemoveDeferredPhotoAttempts':
+    case 'IndexDbQueryRemoveDeferredPhoto':
       (async () => {
 
         // We have nothing to send back. At this point we assume the record
@@ -629,6 +629,22 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         // We don't need to send back the result, as it's an update operation.
         await dbSync.deferredPhotos.update(dataArr.uuid, {'attempts': dataArr.attempts});
+      })();
+      break;
+
+    case 'IndexDbQueryRemoveUploadPhotos':
+      (async () => {
+
+        // We get uuids as a srting, seperated by commas.
+        // So, we convert it into array of numbers.
+        let uuids = data.split(',').map(Number);
+
+        // We have nothing to send back. At this point we assume the record
+        // was deleted properly.
+        await dbSync.authorityPhotoUploadChanges
+            .where('localId')
+            .anyOf(uuids)
+            .delete();
       })();
       break;
 
