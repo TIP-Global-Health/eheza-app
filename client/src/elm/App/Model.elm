@@ -38,6 +38,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import ServiceWorker.Model
 import SyncManager.Model
+import SyncManager.Utils
 import Time
 import Translate.Model exposing (Language(..))
 import Url exposing (Url)
@@ -278,8 +279,8 @@ type alias Flags =
     , pinCode : String
     , healthCenterId : String
     , villageId : String
-    , syncInfoGeneral : SyncManager.Model.SyncInfoGeneral
-    , syncInfoAuthorities : List SyncManager.Model.SyncInfoAuthority
+    , syncInfoGeneral : SyncManager.Model.SyncInfoGeneralForPort
+    , syncInfoAuthorities : List SyncManager.Model.SyncInfoAuthorityForPort
     , photoDownloadBatchSize : Int
     , syncSpeed : SyncManager.Model.SyncSpeed
     }
@@ -303,10 +304,12 @@ emptyModel key url flags =
                 Just (toEntityUuid flags.villageId)
 
         syncInfoAuthorities =
-            Zipper.fromList flags.syncInfoAuthorities
+            flags.syncInfoAuthorities
+                |> List.map SyncManager.Utils.syncInfoAuthorityFromPort
+                |> Zipper.fromList
 
         syncManagerFlags =
-            { syncInfoGeneral = flags.syncInfoGeneral
+            { syncInfoGeneral = SyncManager.Utils.syncInfoGeneralFromPort flags.syncInfoGeneral
             , syncInfoAuthorities = syncInfoAuthorities
             , batchSize = flags.photoDownloadBatchSize
             , syncSpeed = flags.syncSpeed

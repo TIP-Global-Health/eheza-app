@@ -549,6 +549,7 @@ type TranslationId
     | Neck
     | NeckCPESign NeckCPESign
     | NegativeLabel
+    | Never
     | Next
     | NextStepsTask NextStepsTask
     | No
@@ -3632,6 +3633,11 @@ translationSet trans =
         NegativeLabel ->
             { english = "Negative"
             , kinyarwanda = Just "Nta bwandu afite"
+            }
+
+        Never ->
+            { english = "Never"
+            , kinyarwanda = Nothing
             }
 
         Next ->
