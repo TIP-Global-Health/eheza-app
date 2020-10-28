@@ -261,6 +261,7 @@ const getSyncInfoGeneral = function() {
     return storageArr;
   }
 
+  // No sync info saved yet.
   return {lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available'};
 };
 
@@ -305,6 +306,9 @@ const getSyncSpeed = function() {
     return storageArr;
   }
 
+  // Idle time between sync is 5 min.
+  // Sync cicle last 50 milliseconds.
+  // When offline, we check network state every 30 secons.
   return {idle: (5 * 60 * 1000), cycle: 50, offline: (30 * 1000)};
 }
 
@@ -480,7 +484,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         const cache = await caches.open(photosUploadCache);
 
-        result.forEach(async function(row) {
+        result.forEach(async function(row, index) {
             const cachedResponse = await cache.match(row.photo);
             if (!cachedResponse) {
               // Photo is registered in IndexDB, but doesn't appear in the cache.
@@ -541,10 +545,13 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
               // photoUploadChanges table, the same photo local URL will appear.
               await dbSync.authorityPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
             }
+
+            if (index == (result.length -1)) {
+              // As we've got async operations within the loop, we must verify that all
+              // rows were processed before sending a response.
+              return sendResultToElm(queryType, {tag: 'Success', result: "!"});
+            }
         });
-        // @todo: figure out the response.
-        // const completedResult = Object.assign(row, changes);
-        return sendResultToElm(queryType, {tag: 'Success', result: "!"});
       })();
       break;
 
@@ -578,7 +585,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         };
 
         return sendResultToElm(queryType, resultToSend);
-
       })();
       break;
 
@@ -654,13 +660,14 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         if (result.length == 1) {
             let totalEntites = await dbSync
                 .deferredPhotos
+                .where('attempts')
+                .belowOrEqual(2)
                 .count();
 
             result[0].remaining = totalEntites;
         }
 
         return sendResultToElm(queryType, result);
-
       })();
       break;
 
@@ -672,7 +679,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         // eventually the number of attempts will make sure it's never picked
         // up again.
         await dbSync.deferredPhotos.delete(data);
-
       })();
       break;
 
@@ -683,15 +689,12 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         // We don't need to send back the result, as it's an update operation.
         await dbSync.deferredPhotos.update(dataArr.uuid, {'attempts': dataArr.attempts});
-
       })();
       break;
 
     default:
       throw queryType + ' is not a known Query type for `askFromIndexDb`';
-
   }
-
 
   /**
    * Prepare and send the result.

@@ -1,17 +1,4 @@
-module SyncManager.Utils exposing
-    ( determineDownloadPhotosStatus
-    , determineSyncStatus
-    , encodeBackendAuthorityEntity
-    , encodeBackendGeneralEntity
-    , getBackendAuthorityEntityIdentifier
-    , getBackendGeneralEntityIdentifier
-    , getDataToSendAuthority
-    , getDataToSendGeneral
-    , getDownloadPhotosSpeedForSubscriptions
-    , getPhotoFromBackendAuthorityEntity
-    , getSyncSpeedForSubscriptions
-    , getSyncedHealthCenters
-    )
+module SyncManager.Utils exposing (..)
 
 import Backend.AcuteIllnessEncounter.Encoder
 import Backend.Clinic.Encoder
@@ -34,19 +21,7 @@ import Editable
 import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
 import RemoteData
-import SyncManager.Model
-    exposing
-        ( BackendAuthorityEntity(..)
-        , BackendEntity
-        , BackendEntityIdentifier
-        , BackendGeneralEntity(..)
-        , DownloadPhotosMode(..)
-        , DownloadPhotosStatus(..)
-        , Model
-        , SyncStatus(..)
-        , emptyDownloadPhotosBatchRec
-        , emptyUploadRec
-        )
+import SyncManager.Model exposing (..)
 import Utils.WebData
 
 
@@ -105,6 +80,15 @@ determineSyncStatus model =
                         else
                             noChange
 
+                    SyncUploadAuthority record ->
+                        if record.indexDbRemoteData == RemoteData.Success Nothing then
+                            -- We tried to fetch entities for upload from IndexDB,
+                            -- but there we non matching the query.
+                            ( SyncDownloadGeneral RemoteData.NotAsked, syncInfoAuthorities )
+
+                        else
+                            noChange
+
                     SyncDownloadGeneral webData ->
                         case webData of
                             RemoteData.Success data ->
@@ -121,15 +105,6 @@ determineSyncStatus model =
 
                             _ ->
                                 noChange
-
-                    SyncUploadAuthority record ->
-                        if record.indexDbRemoteData == RemoteData.Success Nothing then
-                            -- We tried to fetch entities for upload from IndexDB,
-                            -- but there we non matching the query.
-                            ( SyncDownloadGeneral RemoteData.NotAsked, syncInfoAuthorities )
-
-                        else
-                            noChange
 
                     SyncDownloadAuthority webData ->
                         case ( model.syncInfoAuthorities, webData ) of
@@ -902,3 +877,90 @@ getSyncedHealthCenters model =
     model.syncInfoAuthorities
         |> Maybe.map (Zipper.toList >> List.map .uuid)
         |> Maybe.withDefault []
+
+
+syncInfoStatusToString : SyncInfoStatus -> String
+syncInfoStatusToString status =
+    case status of
+        Downloading ->
+            "Downloading"
+
+        Error ->
+            "Error"
+
+        NotAvailable ->
+            "Not NotAvailable"
+
+        Success ->
+            "Success"
+
+        Uploading ->
+            "Uploading"
+
+
+syncInfoStatusFromString : String -> Maybe SyncInfoStatus
+syncInfoStatusFromString status =
+    case status of
+        "Downloading" ->
+            Just Downloading
+
+        "Error" ->
+            Just Error
+
+        "Not NotAvailable" ->
+            Just NotAvailable
+
+        "Success" ->
+            Just Success
+
+        "Uploading" ->
+            Just Uploading
+
+        _ ->
+            Nothing
+
+
+syncInfoGeneralForPort : SyncInfoGeneral -> SyncInfoGeneralForPort
+syncInfoGeneralForPort info =
+    SyncInfoGeneralForPort
+        info.lastFetchedRevisionId
+        info.lastSuccesfulContact
+        info.remainingToUpload
+        info.remainingToDownload
+        info.deviceName
+        (syncInfoStatusToString info.status)
+
+
+syncInfoAuthorityForPort : SyncInfoAuthority -> SyncInfoAuthorityForPort
+syncInfoAuthorityForPort info =
+    SyncInfoAuthorityForPort
+        info.uuid
+        info.lastFetchedRevisionId
+        info.lastSuccesfulContact
+        info.remainingToUpload
+        info.remainingToDownload
+        info.statsCacheHash
+        (syncInfoStatusToString info.status)
+
+
+syncInfoGeneralFromPort : SyncInfoGeneralForPort -> SyncInfoGeneral
+syncInfoGeneralFromPort info =
+    SyncInfoGeneral
+        info.lastFetchedRevisionId
+        info.lastSuccesfulContact
+        info.remainingToUpload
+        info.remainingToDownload
+        info.deviceName
+        (syncInfoStatusFromString info.status |> Maybe.withDefault NotAvailable)
+
+
+syncInfoAuthorityFromPort : SyncInfoAuthorityForPort -> SyncInfoAuthority
+syncInfoAuthorityFromPort info =
+    SyncInfoAuthority
+        info.uuid
+        info.lastFetchedRevisionId
+        info.lastSuccesfulContact
+        info.remainingToUpload
+        info.remainingToDownload
+        info.statsCacheHash
+        (syncInfoStatusFromString info.status |> Maybe.withDefault NotAvailable)

@@ -43,28 +43,11 @@ view language configuredModel db model =
                 emptyNode
 
             else
-                let
-                    htmlContent =
-                        details [ property "open" (Json.Encode.bool False) ]
-                            [ summary [] [ text "Sync Status" ]
-                            , div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
-                            , case model.syncStatus of
-                                SyncDownloadGeneral webData ->
-                                    viewSyncDownloadGeneral language model webData
-
-                                SyncDownloadAuthority webData ->
-                                    viewSyncDownloadAuthority language db model webData
-
-                                _ ->
-                                    emptyNode
-                            ]
-                in
                 details
                     [ property "open" (Json.Encode.bool False)
                     , class "sync-manager"
                     ]
                     [ summary [] [ text "Sync Manager" ]
-                    , viewDeviceInfo language configuration
                     , viewHealthCentersForSync language db model
                     , viewSyncSettings language model
                     , viewSyncStatus language db model
@@ -655,9 +638,13 @@ viewHealthCenter language ( healthCenterId, healthCenter ) isSynced =
             else
                 ( "Add to Sync list", RevisionIdAuthorityAdd healthCenterId )
     in
-    li []
+    li [ style "margin-bottom" "5px" ]
         [ text <| healthCenter.name
-        , button [ onClick syncMsg ] [ text syncLabel ]
+        , button
+            [ onClick syncMsg
+            , style "margin-left" "20px"
+            ]
+            [ text syncLabel ]
         ]
 
 

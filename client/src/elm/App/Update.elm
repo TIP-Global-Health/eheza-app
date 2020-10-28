@@ -60,6 +60,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
 import ServiceWorker.Model
 import ServiceWorker.Update
+import SyncManager.Model
 import SyncManager.Update
 import Task
 import Time
@@ -476,6 +477,7 @@ update msg model =
                     )
                 )
                 model
+                |> sequence update [ MsgSyncManager SyncManager.Model.TrySyncing ]
 
         MsgPagePinCode subMsg ->
             updateConfigured
