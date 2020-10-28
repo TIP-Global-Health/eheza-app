@@ -489,7 +489,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             }
 
             if (index == (result.length -1)) {
-              // As we've got async operations withing the loop, we must verify that all
+              // As we've got async operations within the loop, we must verify that all
               // rows were processed before sending a response.
               return sendResultToElm(queryType, {tag: 'Success', result: "!"});
             }
