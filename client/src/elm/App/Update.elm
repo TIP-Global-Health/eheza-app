@@ -553,6 +553,10 @@ update msg model =
 
                 extraMsgs =
                     case page of
+                        -- When navigating to Device page (which is used for Sync management), trigger Sync.
+                        DevicePage ->
+                            [ MsgSyncManager SyncManager.Model.TrySyncing ]
+
                         -- When navigating to relationship page in group encounter context,
                         -- we automaticaly select the clinic, to which the session belongs.
                         UserPage (RelationshipPage id1 id2 (GroupEncounterOrigin sessionId)) ->
@@ -651,10 +655,6 @@ update msg model =
             , Cmd.none
             )
                 |> sequence update extraMsgs
-
-        TrySyncing ->
-            -- Normally handled automatically, but sometimes nice to trigger manually
-            ( model, trySyncing () )
 
         MsgSyncManager subMsg ->
             model.configuration

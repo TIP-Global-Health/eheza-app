@@ -221,7 +221,6 @@ type Msg
       -- worker
       MsgIndexedDb Backend.Model.MsgIndexedDb
     | MsgServiceWorker ServiceWorker.Model.Msg
-    | TrySyncing
     | MsgSyncManager SyncManager.Model.Msg
       -- Messages that require login, or manage the login process
     | MsgLoggedIn MsgLoggedIn

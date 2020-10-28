@@ -9,7 +9,6 @@ port module App.Ports exposing
     , scrollToElement
     , setLanguage
     , storageQuota
-    , trySyncing
     )
 
 import App.Model exposing (MemoryQuota, StorageQuota)
@@ -19,11 +18,6 @@ import App.Model exposing (MemoryQuota, StorageQuota)
 the browser is reloaded.
 -}
 port cachePinCode : String -> Cmd msg
-
-
-{-| Manually kick off a sync event. Normally, handled automatically.
--}
-port trySyncing : () -> Cmd msg
 
 
 {-| Send Pusher key and cluster to JS.
