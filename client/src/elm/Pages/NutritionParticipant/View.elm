@@ -147,19 +147,19 @@ viewActions language currentDate selectedHealthCenter id db sessions =
                     Translate.IndividualEncounterSelectVisit
                         Backend.IndividualEncounterParticipant.Model.NutritionEncounter
             ]
-        , button
+        , div
             (classList
                 [ ( "ui primary button", True )
                 , ( "disabled", encounterWasCompletedToday )
                 ]
                 :: action
             )
-            [ span [ class "text" ]
+            [ div [ class "button-label" ]
                 [ text <|
                     translate language <|
                         Translate.IndividualEncounterLabel
                             Backend.IndividualEncounterParticipant.Model.NutritionEncounter
                 ]
-            , span [ class "icon-back" ] []
+            , div [ class "icon-back" ] []
             ]
         ]

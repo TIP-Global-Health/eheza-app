@@ -1820,27 +1820,38 @@ div.page-participant.prenatal {
     margin-top: 105px;
   }
 
-  button.ui.primary.button {
-    height: 60px;
-    margin-bottom: 20px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 0;
-    width: 100%;
+  div.ui.primary.button {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
 
-    .text {
-      float: left;
-      line-height: 60px;
-      margin-left: 40px;
+    .button-label {
       text-align: left;
-      width: 80%;
+
+      .encounter-label {
+        margin-bottom: 15px;
+      }
     }
 
     .icon-back {
-      float: left;
-      margin-top: 17px;
       transform: rotate(180deg);
     }
+  }
+}
+
+div.page-participant.acute-illness {
+
+  .active-illnesses {
+    height: 250px;
+    overflow-y: auto;
+
+    .active-illness {
+      margin-bottom: 10px;
+    }
+  }
+
+  .start-new-encounter {
+    margin-top: 50px
   }
 }
 

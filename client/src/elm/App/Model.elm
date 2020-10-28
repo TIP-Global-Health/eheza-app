@@ -14,6 +14,7 @@ import Json.Encode exposing (Value)
 import NutritionActivity.Model exposing (NutritionActivity)
 import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessEncounter.Model
+import Pages.AcuteIllnessParticipant.Model
 import Pages.AcuteIllnessProgressReport.Model
 import Pages.Clinics.Model
 import Pages.Dashboard.Model
@@ -175,6 +176,7 @@ type alias LoggedInModel =
     , sessionPages : Dict SessionId Pages.Session.Model.Model
     , nutritionEncounterPages : Dict NutritionEncounterId Pages.NutritionEncounter.Model.Model
     , nutritionActivityPages : Dict ( NutritionEncounterId, NutritionActivity ) Pages.NutritionActivity.Model.Model
+    , acuteIllnessParticipantPages : Dict PersonId Pages.AcuteIllnessParticipant.Model.Model
     , acuteIllnessEncounterPages : Dict AcuteIllnessEncounterId Pages.AcuteIllnessEncounter.Model.Model
     , acuteIllnessActivityPages : Dict ( AcuteIllnessEncounterId, AcuteIllnessActivity ) Pages.AcuteIllnessActivity.Model.Model
     , acuteIllnessProgressReportPages : Dict AcuteIllnessEncounterId Pages.AcuteIllnessProgressReport.Model.Model
@@ -197,6 +199,7 @@ emptyLoggedInModel nurse =
     , sessionPages = Dict.empty
     , nutritionEncounterPages = Dict.empty
     , nutritionActivityPages = Dict.empty
+    , acuteIllnessParticipantPages = Dict.empty
     , acuteIllnessEncounterPages = Dict.empty
     , acuteIllnessActivityPages = Dict.empty
     , acuteIllnessProgressReportPages = Dict.empty
@@ -247,6 +250,7 @@ type MsgLoggedIn
     | MsgPagePrenatalParticipant PersonId Pages.PrenatalParticipant.Model.Msg
     | MsgPageIndividualEncounterParticipants Pages.IndividualEncounterParticipants.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
+    | MsgPageAcuteIllnessParticipant PersonId Pages.AcuteIllnessParticipant.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
     | MsgPagePrenatalEncounter PrenatalEncounterId Pages.PrenatalEncounter.Model.Msg
     | MsgPageNutritionEncounter NutritionEncounterId Pages.NutritionEncounter.Model.Msg

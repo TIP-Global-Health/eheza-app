@@ -323,6 +323,7 @@ type TranslationId
     | Clinical
     | Dashboard Dashboard
     | ClinicalProgressReport
+    | CloseAcuteIllnessLabel
     | CompleteHCReferralForm
     | CompletedHCReferralForm
     | Contacted114
@@ -652,6 +653,7 @@ type TranslationId
     | ReceivedMosquitoNet
     | Recommendation114 Recommendation114
     | RecommendationSite RecommendationSite
+    | RecordAcuteIllnessOutcome
     | RecordPregnancyOutcome
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
     | ReferredPatientToHealthCenterQuestion
@@ -701,6 +703,7 @@ type TranslationId
     | SelectAllSigns
     | SelectDangerSigns
     | SelectEncounterType
+    | SelectExistingAcuteIllness
     | SelectGroup
     | SelectProgram
     | SelectLanguage
@@ -753,6 +756,7 @@ type TranslationId
     | SentPatientToHC
     | ShowAll
     | StartEndDate
+    | StrartNewAcuteIllnessHelper
     | StartDate
     | EndDate
     | StartSyncing
@@ -1837,6 +1841,11 @@ translationSet trans =
         ClinicalProgressReport ->
             { english = "Clinical Progress Report"
             , kinyarwanda = Just "Erekana raporo yibyavuye mu isuzuma"
+            }
+
+        CloseAcuteIllnessLabel ->
+            { english = "or Close an Acute Illness"
+            , kinyarwanda = Nothing
             }
 
         CompleteHCReferralForm ->
@@ -2989,7 +2998,7 @@ translationSet trans =
             case encounterType of
                 AcuteIllnessEncounter ->
                     { english = "Subsequent Acute Illness Encounter"
-                    , kinyarwanda = Just "ibikorwa bikurikiyeho kuri ubwo burwayi butunguraye"
+                    , kinyarwanda = Just "Ibikorwa bikurikiyeho kuri ubwo burwayi butunguraye"
                     }
 
                 AntenatalEncounter ->
@@ -4471,6 +4480,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibi ntibikorwa"
                     }
 
+        RecordAcuteIllnessOutcome ->
+            { english = "Record Acute Illness Outcome"
+            , kinyarwanda = Nothing
+            }
+
         RecordPregnancyOutcome ->
             { english = "Record Pregnancy Outcome"
             , kinyarwanda = Just "Andika iherezo ry'inda"
@@ -4892,6 +4906,11 @@ translationSet trans =
 
         SelectLanguage ->
             { english = "Select language"
+            , kinyarwanda = Nothing
+            }
+
+        SelectExistingAcuteIllness ->
+            { english = "Select Existing Acute Illness"
             , kinyarwanda = Nothing
             }
 
@@ -5337,6 +5356,11 @@ translationSet trans =
 
         StartEndDate ->
             { english = "Start - End"
+            , kinyarwanda = Nothing
+            }
+
+        StrartNewAcuteIllnessHelper ->
+            { english = "If existing Acute Illness is not part of the list above, start a new encounter"
             , kinyarwanda = Nothing
             }
 

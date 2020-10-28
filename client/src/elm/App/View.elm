@@ -295,6 +295,7 @@ viewUserPage page model configured =
 
                     AcuteIllnessParticipantPage id ->
                         Pages.AcuteIllnessParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessParticipant id)
                             |> flexPageWrapper model
 
                     IndividualEncounterParticipantsPage encounterType ->
