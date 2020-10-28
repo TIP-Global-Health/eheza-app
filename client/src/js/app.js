@@ -169,12 +169,67 @@ dbSync.version(13).stores({
   (async () => {
     const collection = await tx.syncMetadata.toCollection().toArray();
 
-    var revisionIdPerAuthority = [];
-    collection.forEach(function(row) {
-      revisionIdPerAuthority.push({'uuid': row.uuid, 'revisionId': 0})
-    });
+    var syncInfoAuthorities = [];
+    collection.forEach(async function(row, index) {
+        // Check if this is the General sync UUID, and if so migrate syncMetadata into Local  storage.
+        if (row.uuid == '78cf21d1-b3f4-496a-b312-d8ae73041f09') {
+            var syncInfoGeneral = {lastFetchedRevisionId: 0, remainingToUpload:0, remainingToDownload: 0, status: 'Not Available'};
+            syncInfoGeneral.deviceName = row.download.device_name;
+            syncInfoGeneral.lastSuccesfulContact = row.download.last_contact;
 
-    localStorage.setItem('revisionIdPerAuthority', JSON.stringify(revisionIdPerAuthority));
+            // Pulling latest revision that was synced.
+            let result = await dbSync
+              .nodes
+              .where('vid')
+              .above(0)
+              .reverse()
+              .limit(1)
+              .sortBy('vid');
+
+              // If we managed to get non empty result from the query above (limited to 1 result),
+              // set latest synced revision to and set status to 'Success'.
+            if (result.length == 1) {
+                syncInfoGeneral.lastFetchedRevisionId = result[0].vid;
+                syncInfoGeneral.status = 'Success';
+            }
+
+            localStorage.setItem('syncInfoGeneral', JSON.stringify(syncInfoGeneral));
+        }
+        // This is sync data of a health center.
+        else {
+            var syncInfoAuthority = {lastFetchedRevisionId: 0, remainingToUpload:0, remainingToDownload: 0, status: 'Not Available'};
+            syncInfoAuthority.lastSuccesfulContact = row.download.last_contact;
+            syncInfoAuthority.statsCacheHash = '';
+            syncInfoAuthority.uuid = row.uuid;
+
+            let result = await dbSync
+              .shards
+              .where('[shard+vid]').between(
+                  [row.uuid, Dexie.minKey],
+                  [row.uuid, Dexie.maxKey]
+              )
+              .reverse()
+              .limit(1)
+              // Get the most recent record.
+              .sortBy('vid');
+
+              // If we managed to get non empty result from the query above (limited to 1 result),
+              // set latest synced revision to and set status to 'Success'.
+            if (result.length == 1) {
+                syncInfoAuthority.lastFetchedRevisionId = result[0].vid;
+                syncInfoAuthority.status = 'Success';
+            }
+
+            syncInfoAuthorities.push(syncInfoAuthority);
+            // If we've reached last item of collection, store Authorities
+            // sync info, and refresh, so that the APP reinitializes
+            // with the sync data from  Local Storage.
+            if (index == (collection.length - 1) ) {
+                localStorage.setItem('syncInfoAuthorities', JSON.stringify(syncInfoAuthorities));
+                location.reload();
+            }
+        }
+    });
 
     return Promise.resolve();
   })();
@@ -207,7 +262,7 @@ const getSyncInfoGeneral = function() {
   }
 
   // No sync info saved yet.
-  return {lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: "", status: "Not Available"};
+  return {lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available'};
 };
 
 /**
@@ -600,7 +655,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             // Get attempts sorted, so we won't always grab the same one.
             .sortBy('attempts');
 
-        // Add the number of remaining photos to download.
+        // If we managed to get non empty result from the query above (limited to 1 result),
+        // add to response the number of photos, remaining for download.
         if (result.length == 1) {
             let totalEntites = await dbSync
                 .deferredPhotos
