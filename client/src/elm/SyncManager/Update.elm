@@ -78,7 +78,7 @@ update currentDate currentTime dbVersion device msg model =
                                             ( model.syncInfoAuthorities, Cmd.none )
 
                                         else
-                                            ( Just zipperUpdated, Zipper.toList zipperUpdated |> List.map syncInfoAuthorityForPort |> sendSyncInfoAuthorities )
+                                            ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipperUpdated )
 
                                     cmd =
                                         HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
