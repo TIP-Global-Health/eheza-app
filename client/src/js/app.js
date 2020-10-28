@@ -656,7 +656,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .sortBy('attempts');
 
         // If we managed to get non empty result from the query above (limited to 1 result),
-        // add to respons the number of photos, remaining for download.
+        // add to response the number of photos, remaining for download.
         if (result.length == 1) {
             let totalEntites = await dbSync
                 .deferredPhotos
