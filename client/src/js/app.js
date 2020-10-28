@@ -171,7 +171,7 @@ dbSync.version(13).stores({
 
     var syncInfoAuthorities = [];
     collection.forEach(async function(row, index) {
-        // Genral sync UUID is 78cf21d1-b3f4-496a-b312-d8ae73041f09.
+        // Check if this is the General sync UUID, and if so migrate syncMetadata into Local  storage.
         if (row.uuid == '78cf21d1-b3f4-496a-b312-d8ae73041f09') {
             var syncInfoGeneral = {lastFetchedRevisionId: 0, remainingToUpload:0, remainingToDownload: 0, status: "Not Available"};
             syncInfoGeneral.deviceName = row.download.device_name;
@@ -197,7 +197,7 @@ dbSync.version(13).stores({
         else {
             var syncInfoAuthority = {lastFetchedRevisionId: 0, remainingToUpload:0, remainingToDownload: 0, status: "Not Available"};
             syncInfoAuthority.lastSuccesfulContact = row.download.last_contact;
-            syncInfoAuthority.statsCacheHash = "";
+            syncInfoAuthority.statsCacheHash = '';
             syncInfoAuthority.uuid = row.uuid;
 
             let result = await dbSync
@@ -208,11 +208,12 @@ dbSync.version(13).stores({
               )
               .reverse()
               .limit(1)
+              // Get the most recent record.
               .sortBy('vid');
 
             if (result.length == 1) {
                 syncInfoAuthority.lastFetchedRevisionId = result[0].vid;
-                syncInfoAuthority.status = "Success";
+                syncInfoAuthority.status = 'Success';
             }
 
             syncInfoAuthorities.push(syncInfoAuthority);
