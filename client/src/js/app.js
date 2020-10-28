@@ -226,7 +226,6 @@ dbSync.version(13).stores({
             // with the sync data from  Local Storage.
             if (index == (collection.length - 1) ) {
                 localStorage.setItem('syncInfoAuthorities', JSON.stringify(syncInfoAuthorities));
-                // Perform a refresh, for the APP to read generated sync data (from local storage).
                 location.reload();
             }
         }
