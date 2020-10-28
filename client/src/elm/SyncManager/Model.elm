@@ -376,10 +376,11 @@ type IndexDbQueryType
     | IndexDbQueryDeferredPhoto
       -- When we successfully download a photo, we remove it from the `deferredPhotos` table.
       -- We just need the UUID.
-    | IndexDbQueryRemoveDeferredPhotoAttempts String
+    | IndexDbQueryRemoveDeferredPhoto String
       -- Update the number of attempts, a deferred photos was un-successfully downloaded.
       -- We don't count cases where we were offline.
     | IndexDbQueryUpdateDeferredPhotoAttempts IndexDbQueryDeferredPhotoResultRecord
+    | IndexDbQueryRemoveUploadPhotos (List Int)
 
 
 type IndexDbQueryTypeResult
