@@ -36,7 +36,7 @@ update currentDate currentTime dbVersion device msg model =
                 |> List.map syncInfoAuthorityForPort
                 |> sendSyncInfoAuthorities
 
-        returnDetermineSyncStatus =
+        determineSyncStatus =
             SubModelReturn
                 (SyncManager.Utils.determineSyncStatus model)
                 Cmd.none
@@ -57,7 +57,7 @@ update currentDate currentTime dbVersion device msg model =
                                 -- No zipper, means not subscribed yet to any
                                 -- authority. `determineSyncStatus` will take care of
                                 -- rotating if we're not on automatic sync.
-                                returnDetermineSyncStatus
+                                determineSyncStatus
 
                             Just zipper ->
                                 let
@@ -98,7 +98,7 @@ update currentDate currentTime dbVersion device msg model =
                                     []
 
                 _ ->
-                    returnDetermineSyncStatus
+                    determineSyncStatus
 
         BackendAuthorityFetchHandle zipper webData ->
             let
@@ -220,7 +220,7 @@ update currentDate currentTime dbVersion device msg model =
                                 -- No zipper, means not subscribed yet to any
                                 -- authority. `determineSyncStatus` will take care of
                                 -- rotating if we're not on automatic sync.
-                                returnDetermineSyncStatus
+                                determineSyncStatus
 
                             Just zipper ->
                                 let
@@ -261,7 +261,7 @@ update currentDate currentTime dbVersion device msg model =
                                     []
 
                 _ ->
-                    returnDetermineSyncStatus
+                    determineSyncStatus
 
         BackendAuthorityDashboardStatsFetchHandle zipper webData ->
             let
@@ -342,7 +342,7 @@ update currentDate currentTime dbVersion device msg model =
         BackendFetchMain ->
             case model.syncStatus of
                 SyncIdle ->
-                    returnDetermineSyncStatus
+                    determineSyncStatus
 
                 SyncUploadGeneral _ ->
                     update
