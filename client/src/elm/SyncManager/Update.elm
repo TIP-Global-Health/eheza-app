@@ -16,7 +16,7 @@ import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseGeneral)
 import SyncManager.Encoder
 import SyncManager.Model exposing (..)
-import SyncManager.Utils exposing (getSyncSpeedForSubscriptions)
+import SyncManager.Utils exposing (getSyncSpeedForSubscriptions, syncInfoAuthorityForPort, syncInfoGeneralForPort)
 import Time
 import Utils.WebData
 
@@ -26,6 +26,15 @@ update currentDate currentTime dbVersion device msg model =
     let
         noChange =
             SubModelReturn model Cmd.none noError []
+
+        sendSyncInfoGeneralCmd info =
+            syncInfoGeneralForPort info
+                |> sendSyncInfoGeneral
+
+        sendSyncInfoAuthoritiesCmd zipper =
+            Zipper.toList zipper
+                |> List.map syncInfoAuthorityForPort
+                |> sendSyncInfoAuthorities
 
         returnDetermineSyncStatus =
             SubModelReturn
@@ -61,20 +70,20 @@ update currentDate currentTime dbVersion device msg model =
                                             Zipper.current zipper
 
                                         zipperUpdated =
-                                            if currentZipper.status == "Downloading" then
+                                            if currentZipper.status == Downloading then
                                                 zipper
 
                                             else
                                                 Zipper.mapCurrent
-                                                    (\old -> { old | status = "Downloading" })
+                                                    (\old -> { old | status = Downloading })
                                                     zipper
 
                                         ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
-                                            if currentZipper.status == "Downloading" then
+                                            if currentZipper.status == Downloading then
                                                 ( model.syncInfoAuthorities, Cmd.none )
 
                                             else
-                                                ( Just zipperUpdated, sendSyncInfoAuthorities (Zipper.toList zipperUpdated) )
+                                                ( Just zipperUpdated, Zipper.toList zipperUpdated |> List.map syncInfoAuthorityForPort |> sendSyncInfoAuthorities )
 
                                         cmd =
                                             HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
@@ -155,7 +164,7 @@ update currentDate currentTime dbVersion device msg model =
                             let
                                 status =
                                     if data.revisionCount == 0 then
-                                        "Success"
+                                        Success
 
                                     else
                                         currentZipper.status
@@ -196,7 +205,7 @@ update currentDate currentTime dbVersion device msg model =
                     , deferredPhotosCmd
 
                     -- Send to JS the updated revision ID. We send the entire list.
-                    , sendSyncInfoAuthorities (Zipper.toList syncInfoAuthorities)
+                    , sendSyncInfoAuthoritiesCmd syncInfoAuthorities
                     ]
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
@@ -285,7 +294,7 @@ update currentDate currentTime dbVersion device msg model =
                 cmd =
                     case syncInfoAuthorities of
                         Just zipper ->
-                            sendSyncInfoAuthorities (Zipper.toList zipper)
+                            sendSyncInfoAuthoritiesCmd zipper
 
                         Nothing ->
                             Cmd.none
@@ -318,7 +327,7 @@ update currentDate currentTime dbVersion device msg model =
                 cmd =
                     case syncInfoAuthorities of
                         Just zipper ->
-                            sendSyncInfoAuthorities (Zipper.toList zipper)
+                            sendSyncInfoAuthoritiesCmd zipper
 
                         Nothing ->
                             Cmd.none
@@ -339,19 +348,19 @@ update currentDate currentTime dbVersion device msg model =
                     else
                         let
                             syncInfoGeneral =
-                                if model.syncInfoGeneral.status == "Downloading" then
+                                if model.syncInfoGeneral.status == Downloading then
                                     model.syncInfoGeneral
 
                                 else
                                     model.syncInfoGeneral
-                                        |> (\info -> { info | status = "Downloading" })
+                                        |> (\info -> { info | status = Downloading })
 
                             setSyncInfoGeneralCmd =
-                                if model.syncInfoGeneral.status == "Downloading" then
+                                if model.syncInfoGeneral.status == Downloading then
                                     Cmd.none
 
                                 else
-                                    sendSyncInfoGeneral syncInfoGeneral
+                                    sendSyncInfoGeneralCmd syncInfoGeneral
 
                             cmd =
                                 HttpBuilder.get (device.backendUrl ++ "/api/sync")
@@ -429,7 +438,7 @@ update currentDate currentTime dbVersion device msg model =
                             let
                                 status =
                                     if data.revisionCount == 0 then
-                                        "Success"
+                                        Success
 
                                     else
                                         model.syncInfoGeneral.status
@@ -463,7 +472,7 @@ update currentDate currentTime dbVersion device msg model =
                 (Cmd.batch
                     [ cmd
                     , deleteLocalIdsCmd
-                    , sendSyncInfoGeneral syncInfoGeneral
+                    , sendSyncInfoGeneralCmd syncInfoGeneral
                     ]
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendGeneralFetchHandle")
@@ -662,19 +671,19 @@ update currentDate currentTime dbVersion device msg model =
                                                     Zipper.current zipper
 
                                                 zipperUpdated =
-                                                    if currentZipper.status == "Uploading" then
+                                                    if currentZipper.status == Uploading then
                                                         zipper
 
                                                     else
                                                         Zipper.mapCurrent
-                                                            (\old -> { old | status = "Uploading" })
+                                                            (\old -> { old | status = Uploading })
                                                             zipper
                                             in
-                                            if currentZipper.status == "Uploading" then
+                                            if currentZipper.status == Uploading then
                                                 ( model.syncInfoAuthorities, Cmd.none )
 
                                             else
-                                                ( Just zipperUpdated, sendSyncInfoAuthorities (Zipper.toList zipperUpdated) )
+                                                ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipper )
                                         )
                                     |> Maybe.withDefault ( model.syncInfoAuthorities, Cmd.none )
 
@@ -722,10 +731,10 @@ update currentDate currentTime dbVersion device msg model =
                                                 let
                                                     zipperUpdated =
                                                         Zipper.mapCurrent
-                                                            (\old -> { old | status = "Error" })
+                                                            (\old -> { old | status = Error })
                                                             zipper
                                                 in
-                                                ( Just zipperUpdated, sendSyncInfoAuthorities (Zipper.toList zipperUpdated) )
+                                                ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipperUpdated )
                                             )
                                         |> Maybe.withDefault ( model.syncInfoAuthorities, Cmd.none )
                             in
@@ -747,7 +756,7 @@ update currentDate currentTime dbVersion device msg model =
 
                                                     status =
                                                         if result.remaining == 0 then
-                                                            "Success"
+                                                            Success
 
                                                         else
                                                             currentZipper.status
@@ -757,7 +766,7 @@ update currentDate currentTime dbVersion device msg model =
                                                             (\old -> { old | status = status, remainingToUpload = result.remaining })
                                                             zipper
                                                 in
-                                                ( Just zipperUpdated, sendSyncInfoAuthorities (Zipper.toList zipperUpdated) )
+                                                ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipperUpdated )
                                             )
                                         |> Maybe.withDefault ( model.syncInfoAuthorities, Cmd.none )
 
@@ -833,19 +842,19 @@ update currentDate currentTime dbVersion device msg model =
                                 }
 
                             syncInfoGeneral =
-                                if model.syncInfoGeneral.status == "Uploading" then
+                                if model.syncInfoGeneral.status == Uploading then
                                     model.syncInfoGeneral
 
                                 else
                                     model.syncInfoGeneral
-                                        |> (\info -> { info | status = "Uploading" })
+                                        |> (\info -> { info | status = Uploading })
 
                             setSyncInfoGeneralCmd =
-                                if model.syncInfoGeneral.status == "Uploading" then
+                                if model.syncInfoGeneral.status == Uploading then
                                     Cmd.none
 
                                 else
-                                    sendSyncInfoGeneral syncInfoGeneral
+                                    sendSyncInfoGeneralCmd syncInfoGeneral
 
                             cmd =
                                 if List.isEmpty result.entities then
@@ -886,10 +895,10 @@ update currentDate currentTime dbVersion device msg model =
 
                                 syncInfoGeneral =
                                     model.syncInfoGeneral
-                                        |> (\info -> { info | status = "Error" })
+                                        |> (\info -> { info | status = Error })
 
                                 setSyncInfoGeneralCmd =
-                                    sendSyncInfoGeneral syncInfoGeneral
+                                    sendSyncInfoGeneralCmd syncInfoGeneral
                             in
                             SubModelReturn
                                 (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral })
@@ -906,7 +915,7 @@ update currentDate currentTime dbVersion device msg model =
                                     let
                                         status =
                                             if result.remaining == 0 then
-                                                "Success"
+                                                Success
 
                                             else
                                                 model.syncInfoGeneral.status
@@ -915,7 +924,7 @@ update currentDate currentTime dbVersion device msg model =
                                         |> (\info -> { info | remainingToUpload = result.remaining, status = status })
 
                                 setSyncInfoGeneralCmd =
-                                    sendSyncInfoGeneral syncInfoGeneral
+                                    sendSyncInfoGeneralCmd syncInfoGeneral
 
                                 -- We have successfully uploaded the entities, so
                                 -- we can mark them as `isSynced`.
@@ -1390,12 +1399,12 @@ port sendSyncedDataToIndexDb : { table : String, data : List String, shard : Str
 
 {-| Send to JS the information about General sync.
 -}
-port sendSyncInfoGeneral : SyncInfoGeneral -> Cmd msg
+port sendSyncInfoGeneral : SyncInfoGeneralForPort -> Cmd msg
 
 
 {-| Send to JS the information about Autohorities sync.
 -}
-port sendSyncInfoAuthorities : List SyncInfoAuthority -> Cmd msg
+port sendSyncInfoAuthorities : List SyncInfoAuthorityForPort -> Cmd msg
 
 
 {-| Send to JS a list of local ID that were uploaded.
