@@ -149,6 +149,7 @@ type alias SyncInfoAuthority =
     , lastSuccesfulContact : Int
     , remainingToUpload : Int
     , remainingToDownload : Int
+    , statsCacheHash : String
     , status : SyncInfoStatus
     }
 
@@ -159,8 +160,8 @@ type alias SyncInfoAuthorityForPort =
     , lastSuccesfulContact : Int
     , remainingToUpload : Int
     , remainingToDownload : Int
-    , status : String
     , statsCacheHash : String
+    , status : String
     }
 
 
@@ -179,8 +180,8 @@ emptySyncInfoAuthority uuid =
     , lastSuccesfulContact = 0
     , remainingToUpload = 0
     , remainingToDownload = 0
-    , status = NotAvailable
     , statsCacheHash = ""
+    , status = NotAvailable
     }
 
 

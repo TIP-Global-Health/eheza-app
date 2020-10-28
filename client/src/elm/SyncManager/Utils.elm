@@ -864,6 +864,7 @@ syncInfoAuthorityForPort info =
         info.lastSuccesfulContact
         info.remainingToUpload
         info.remainingToDownload
+        info.statsCacheHash
         (syncInfoStatusToString info.status)
 
 
@@ -885,4 +886,5 @@ syncInfoAuthorityFromPort info =
         info.lastSuccesfulContact
         info.remainingToUpload
         info.remainingToDownload
+        info.statsCacheHash
         (syncInfoStatusFromString info.status |> Maybe.withDefault NotAvailable)

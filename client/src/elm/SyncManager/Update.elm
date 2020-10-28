@@ -64,21 +64,21 @@ update currentDate currentTime dbVersion device msg model =
                                     currentZipper =
                                         Zipper.current zipper
 
-                                        zipperUpdated =
-                                            if currentZipper.status == Downloading then
+                                    zipperUpdated =
+                                        if currentZipper.status == Downloading then
+                                            zipper
+
+                                        else
+                                            Zipper.mapCurrent
+                                                (\old -> { old | status = Downloading })
                                                 zipper
 
-                                            else
-                                                Zipper.mapCurrent
-                                                    (\old -> { old | status = Downloading })
-                                                    zipper
+                                    ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
+                                        if currentZipper.status == Downloading then
+                                            ( model.syncInfoAuthorities, Cmd.none )
 
-                                        ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
-                                            if currentZipper.status == Downloading then
-                                                ( model.syncInfoAuthorities, Cmd.none )
-
-                                            else
-                                                ( Just zipperUpdated, Zipper.toList zipperUpdated |> List.map syncInfoAuthorityForPort |> sendSyncInfoAuthorities )
+                                        else
+                                            ( Just zipperUpdated, Zipper.toList zipperUpdated |> List.map syncInfoAuthorityForPort |> sendSyncInfoAuthorities )
 
                                     cmd =
                                         HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
@@ -228,20 +228,20 @@ update currentDate currentTime dbVersion device msg model =
                                         Zipper.current zipper
 
                                     zipperUpdated =
-                                        if currentZipper.status == "DownloadingStats" then
+                                        if currentZipper.status == Downloading then
                                             zipper
 
                                         else
                                             Zipper.mapCurrent
-                                                (\old -> { old | status = "DownloadingStats" })
+                                                (\old -> { old | status = Downloading })
                                                 zipper
 
                                     ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
-                                        if currentZipper.status == "DownloadingStats" then
+                                        if currentZipper.status == Downloading then
                                             ( model.syncInfoAuthorities, Cmd.none )
 
                                         else
-                                            ( Just zipperUpdated, sendSyncInfoAuthorities (Zipper.toList zipperUpdated) )
+                                            ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipperUpdated )
 
                                     cmd =
                                         HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
@@ -312,7 +312,7 @@ update currentDate currentTime dbVersion device msg model =
                                     { old
                                         | lastSuccesfulContact = Time.posixToMillis currentTime
                                         , remainingToDownload = data.revisionCount
-                                        , status = "Success"
+                                        , status = Success
                                         , statsCacheHash = statsCacheHash
                                     }
                                 )
@@ -333,7 +333,7 @@ update currentDate currentTime dbVersion device msg model =
                 (Cmd.batch
                     [ cmd
                     , -- Send to JS the updated revision ID. We send the entire list.
-                      sendSyncInfoAuthorities (Zipper.toList syncInfoAuthorities)
+                      sendSyncInfoAuthoritiesCmd syncInfoAuthorities
                     ]
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityDashboardStatsFetchHandle")
