@@ -215,6 +215,7 @@ decodeIndexDbQueryDeferredPhotoResult =
         |> requiredAt [ "0", "uuid" ] string
         |> requiredAt [ "0", "photo" ] string
         |> requiredAt [ "0", "attempts" ] int
+        |> requiredAt [ "0", "remaining" ] int
 
 
 decodeDownloadSyncResponseGeneral : Decoder (DownloadSyncResponse BackendGeneralEntity)
@@ -224,6 +225,7 @@ decodeDownloadSyncResponseGeneral =
             |> required "batch" (list <| decodeBackendGeneralEntity (required "uuid" string) (required "vid" decodeInt))
             |> required "last_timestamp" decodeDate
             |> required "revision_count" decodeInt
+            |> optional "device_name" string ""
         )
 
 
@@ -288,6 +290,7 @@ decodeDownloadSyncResponseAuthority =
             |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
             |> required "last_timestamp" decodeDate
             |> required "revision_count" decodeInt
+            |> hardcoded ""
         )
 
 
@@ -298,6 +301,7 @@ decodeDownloadSyncResponseAuthorityStats =
             |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
             |> hardcoded (Time.millisToPosix 0)
             |> hardcoded 0
+            |> hardcoded ""
         )
 
 

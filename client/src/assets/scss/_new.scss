@@ -209,6 +209,14 @@ div.language-switcher {
   }
 }
 
+details.sync-manager {
+  padding: 15px;
+
+  .segment.ui {
+    padding: 10px;
+  }
+}
+
 div.page-pincode {
   font-size: 1.72rem; //24px;
   text-align: center;
@@ -271,6 +279,16 @@ div.page-pincode {
 
   .general-sync {
     margin-bottom: 40px;
+  }
+
+  .general-sync .sync-status {
+    margin-bottom: 20px;
+  }
+
+  .login-request {
+    font-size: 30px;
+    font-weight: bold;
+    text-align: center;
   }
 
   .health-centers .health-center {

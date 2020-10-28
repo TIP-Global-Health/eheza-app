@@ -17,14 +17,12 @@ view language errors =
 
     else
         details
-            [ class "ui segment elm-errors alert debug-errors"
-            , style "min-height" "100px"
+            [ style "min-height" "100px"
             , style "max-height" "500px"
             , style "overflow" "auto"
-            , property "open" (Json.Encode.bool True)
+            , property "open" (Json.Encode.bool False)
             ]
             [ summary [] [ text "Error log" ]
-            , div [] [ text "Ordered descending (first error is the newest one)" ]
             , ol [] (List.map (viewError language) (List.reverse errors))
             ]
 

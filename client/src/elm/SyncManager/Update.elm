@@ -1,6 +1,8 @@
 port module SyncManager.Update exposing (subscriptions, update)
 
 import App.Model exposing (SubModelReturn)
+import App.Utils exposing (sequenceSubModelReturn)
+import AssocList as Dict exposing (Dict)
 import Backend.Model
 import Device.Encoder
 import Device.Model exposing (Device)
@@ -16,7 +18,7 @@ import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseAuthorityStats, decodeDownloadSyncResponseGeneral)
 import SyncManager.Encoder
 import SyncManager.Model exposing (..)
-import SyncManager.Utils exposing (getSyncSpeedForSubscriptions, syncInfoAuthorityForPort, syncInfoGeneralForPort)
+import SyncManager.Utils exposing (getDownloadPhotosSpeedForSubscriptions, getSyncSpeedForSubscriptions, syncInfoAuthorityForPort, syncInfoGeneralForPort)
 import Time
 import Utils.WebData
 
@@ -206,6 +208,7 @@ update currentDate currentTime dbVersion device msg model =
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
                 []
+                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ TryDownloadingPhotos ]
 
         BackendAuthorityDashboardStatsFetch ->
             case model.syncStatus of
@@ -399,7 +402,16 @@ update currentDate currentTime dbVersion device msg model =
                         BackendAuthorityDashboardStatsFetch
                         model
 
-                SyncDownloadPhotos _ ->
+        BackendFetchPhotos ->
+            case model.downloadPhotosStatus of
+                DownloadPhotosIdle ->
+                    SubModelReturn
+                        (SyncManager.Utils.determineDownloadPhotosStatus model)
+                        Cmd.none
+                        noError
+                        []
+
+                DownloadPhotosInProcess _ ->
                     update
                         currentDate
                         currentTime
@@ -442,6 +454,7 @@ update currentDate currentTime dbVersion device msg model =
                 cmd
                 noError
                 []
+                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ TrySyncing ]
 
         RevisionIdAuthorityRemove uuid ->
             -- Remove authority from Local storage.
@@ -595,6 +608,7 @@ update currentDate currentTime dbVersion device msg model =
                                             | lastFetchedRevisionId = lastFetchedRevisionId
                                             , lastSuccesfulContact = Time.posixToMillis currentTime
                                             , remainingToDownload = data.revisionCount
+                                            , deviceName = data.deviceName
                                             , status = status
                                         }
                                    )
@@ -641,11 +655,11 @@ update currentDate currentTime dbVersion device msg model =
 
         FetchFromIndexDbDeferredPhoto ->
             -- Get a deferred photo from IndexDB.
-            case model.syncStatus of
-                SyncDownloadPhotos DownloadPhotosNone ->
+            case model.downloadPhotosStatus of
+                DownloadPhotosInProcess DownloadPhotosNone ->
                     noChange
 
-                SyncDownloadPhotos (DownloadPhotosBatch record) ->
+                DownloadPhotosInProcess (DownloadPhotosBatch record) ->
                     if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
                         -- We are already loading.
                         noChange
@@ -664,9 +678,9 @@ update currentDate currentTime dbVersion device msg model =
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryDeferredPhoto)
-                            { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch recordUpdated) }
+                            { model | downloadPhotosStatus = DownloadPhotosInProcess (DownloadPhotosBatch recordUpdated) }
 
-                SyncDownloadPhotos (DownloadPhotosAll record) ->
+                DownloadPhotosInProcess (DownloadPhotosAll record) ->
                     if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
                         -- We are already loading.
                         noChange
@@ -685,7 +699,7 @@ update currentDate currentTime dbVersion device msg model =
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryDeferredPhoto)
-                            { model | syncStatus = SyncDownloadPhotos (DownloadPhotosAll recordUpdated) }
+                            { model | downloadPhotosStatus = DownloadPhotosInProcess (DownloadPhotosAll recordUpdated) }
 
                 _ ->
                     noChange
@@ -758,6 +772,21 @@ update currentDate currentTime dbVersion device msg model =
                             device
                             (QueryIndexDb IndexDbQueryUploadPhotoAuthority)
                             { model | syncStatus = SyncUploadPhotoAuthority RemoteData.Loading }
+
+                _ ->
+                    noChange
+
+        BackendUploadPhotoAuthorityHandle remoteData ->
+            -- Uploading of photos happened through JS, since it involves working
+            -- with file blobs. This handler however is for post upload attempt
+            -- (success or not), to set RemoteData accordingly.
+            case model.syncStatus of
+                SyncUploadPhotoAuthority _ ->
+                    SubModelReturn
+                        (SyncManager.Utils.determineSyncStatus { model | syncStatus = SyncUploadPhotoAuthority remoteData })
+                        Cmd.none
+                        noError
+                        []
 
                 _ ->
                     noChange
@@ -927,12 +956,26 @@ update currentDate currentTime dbVersion device msg model =
                                                 result.entities
                                     in
                                     deleteEntitiesThatWereUploaded { type_ = "Authority", localId = localIds }
+
+                                uploadPhotosToDelete =
+                                    Dict.keys result.uploadPhotos
+
+                                subModelReturn =
+                                    SubModelReturn
+                                        (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoAuthorities = syncInfoAuthorities })
+                                        (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
+                                        noError
+                                        []
                             in
-                            SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoAuthorities = syncInfoAuthorities })
-                                (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
-                                noError
-                                []
+                            if List.isEmpty uploadPhotosToDelete then
+                                subModelReturn
+
+                            else
+                                subModelReturn
+                                    |> sequenceSubModelReturn
+                                        (update currentDate currentTime dbVersion device)
+                                        [ QueryIndexDb <| IndexDbQueryRemoveUploadPhotos uploadPhotosToDelete
+                                        ]
 
                         _ ->
                             -- Satisfy the compiler.
@@ -1094,37 +1137,22 @@ update currentDate currentTime dbVersion device msg model =
                 _ ->
                     noChange
 
-        BackendUploadPhotoAuthorityHandle remoteData ->
-            -- Uploading of photos happened through JS, since it involves working
-            -- with file blobs. This handler however is for post upload attempt
-            -- (success or not), to set RemoteData accordingly.
-            case model.syncStatus of
-                SyncUploadPhotoAuthority _ ->
-                    SubModelReturn
-                        (SyncManager.Utils.determineSyncStatus { model | syncStatus = SyncUploadPhotoAuthority remoteData })
-                        Cmd.none
-                        noError
-                        []
-
-                _ ->
-                    noChange
-
         BackendDeferredPhotoFetch Nothing ->
             let
-                syncStatus =
+                downloadPhotosStatus =
                     -- There are no deferred photos matching the query.
-                    case model.syncStatus of
-                        SyncDownloadPhotos (DownloadPhotosBatch record) ->
-                            SyncDownloadPhotos (DownloadPhotosBatch { record | indexDbRemoteData = RemoteData.Success Nothing })
+                    case model.downloadPhotosStatus of
+                        DownloadPhotosInProcess (DownloadPhotosBatch record) ->
+                            DownloadPhotosInProcess (DownloadPhotosBatch { record | indexDbRemoteData = RemoteData.Success Nothing })
 
-                        SyncDownloadPhotos (DownloadPhotosAll record) ->
-                            SyncDownloadPhotos (DownloadPhotosAll { record | indexDbRemoteData = RemoteData.Success Nothing })
+                        DownloadPhotosInProcess (DownloadPhotosAll record) ->
+                            DownloadPhotosInProcess (DownloadPhotosAll { record | indexDbRemoteData = RemoteData.Success Nothing })
 
                         _ ->
-                            model.syncStatus
+                            model.downloadPhotosStatus
             in
             SubModelReturn
-                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                (SyncManager.Utils.determineDownloadPhotosStatus { model | downloadPhotosStatus = downloadPhotosStatus })
                 Cmd.none
                 noError
                 []
@@ -1132,11 +1160,11 @@ update currentDate currentTime dbVersion device msg model =
         BackendDeferredPhotoFetch (Just result) ->
             let
                 isLoading =
-                    case model.syncStatus of
-                        SyncDownloadPhotos (DownloadPhotosBatch record) ->
+                    case model.downloadPhotosStatus of
+                        DownloadPhotosInProcess (DownloadPhotosBatch record) ->
                             RemoteData.isLoading record.backendRemoteData
 
-                        SyncDownloadPhotos (DownloadPhotosAll record) ->
+                        DownloadPhotosInProcess (DownloadPhotosAll record) ->
                             RemoteData.isLoading record.backendRemoteData
 
                         _ ->
@@ -1147,9 +1175,9 @@ update currentDate currentTime dbVersion device msg model =
 
             else
                 let
-                    syncStatus =
-                        case model.syncStatus of
-                            SyncDownloadPhotos (DownloadPhotosBatch record) ->
+                    downloadPhotosStatus =
+                        case model.downloadPhotosStatus of
+                            DownloadPhotosInProcess (DownloadPhotosBatch record) ->
                                 let
                                     recordUpdated =
                                         { record
@@ -1157,9 +1185,9 @@ update currentDate currentTime dbVersion device msg model =
                                             , indexDbRemoteData = RemoteData.Success (Just result)
                                         }
                                 in
-                                SyncDownloadPhotos (DownloadPhotosBatch recordUpdated)
+                                DownloadPhotosInProcess (DownloadPhotosBatch recordUpdated)
 
-                            SyncDownloadPhotos (DownloadPhotosAll record) ->
+                            DownloadPhotosInProcess (DownloadPhotosAll record) ->
                                 let
                                     recordUpdated =
                                         { record
@@ -1167,13 +1195,13 @@ update currentDate currentTime dbVersion device msg model =
                                             , indexDbRemoteData = RemoteData.Success (Just result)
                                         }
                                 in
-                                SyncDownloadPhotos (DownloadPhotosAll recordUpdated)
+                                DownloadPhotosInProcess (DownloadPhotosAll recordUpdated)
 
                             _ ->
-                                model.syncStatus
+                                model.downloadPhotosStatus
 
                     modelUpdated =
-                        { model | syncStatus = syncStatus }
+                        { model | downloadPhotosStatus = downloadPhotosStatus }
 
                     cmd =
                         -- As the image is captured with the image token (`itok`), we
@@ -1187,7 +1215,7 @@ update currentDate currentTime dbVersion device msg model =
                             |> HttpBuilder.send (RemoteData.fromResult >> BackendDeferredPhotoFetchHandle result)
                 in
                 SubModelReturn
-                    (SyncManager.Utils.determineSyncStatus modelUpdated)
+                    (SyncManager.Utils.determineDownloadPhotosStatus modelUpdated)
                     cmd
                     noError
                     []
@@ -1201,9 +1229,9 @@ update currentDate currentTime dbVersion device msg model =
 
                     else
                         let
-                            syncStatus =
-                                case model.syncStatus of
-                                    SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
+                            downloadPhotosStatus =
+                                case model.downloadPhotosStatus of
+                                    DownloadPhotosInProcess (DownloadPhotosBatch deferredPhoto) ->
                                         let
                                             deferredPhotoUpdated =
                                                 { deferredPhoto
@@ -1212,17 +1240,17 @@ update currentDate currentTime dbVersion device msg model =
                                                     , backendRemoteData = RemoteData.Failure error
                                                 }
                                         in
-                                        SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated)
+                                        DownloadPhotosInProcess (DownloadPhotosBatch deferredPhotoUpdated)
 
-                                    SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
+                                    DownloadPhotosInProcess (DownloadPhotosAll deferredPhoto) ->
                                         let
                                             deferredPhotoUpdated =
                                                 { deferredPhoto | backendRemoteData = RemoteData.Failure error }
                                         in
-                                        SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated)
+                                        DownloadPhotosInProcess (DownloadPhotosAll deferredPhotoUpdated)
 
                                     _ ->
-                                        model.syncStatus
+                                        model.downloadPhotosStatus
                         in
                         update
                             currentDate
@@ -1230,13 +1258,13 @@ update currentDate currentTime dbVersion device msg model =
                             dbVersion
                             device
                             (QueryIndexDb <| IndexDbQueryUpdateDeferredPhotoAttempts result)
-                            { model | syncStatus = syncStatus }
+                            { model | downloadPhotosStatus = downloadPhotosStatus }
 
                 RemoteData.Success queryResult ->
                     let
-                        syncStatus =
-                            case model.syncStatus of
-                                SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
+                        downloadPhotosStatus =
+                            case model.downloadPhotosStatus of
+                                DownloadPhotosInProcess (DownloadPhotosBatch deferredPhoto) ->
                                     let
                                         deferredPhotoUpdated =
                                             { deferredPhoto
@@ -1245,17 +1273,17 @@ update currentDate currentTime dbVersion device msg model =
                                                 , backendRemoteData = RemoteData.Success queryResult
                                             }
                                     in
-                                    SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated)
+                                    DownloadPhotosInProcess (DownloadPhotosBatch deferredPhotoUpdated)
 
-                                SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
+                                DownloadPhotosInProcess (DownloadPhotosAll deferredPhoto) ->
                                     let
                                         deferredPhotoUpdated =
                                             { deferredPhoto | backendRemoteData = RemoteData.Success queryResult }
                                     in
-                                    SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated)
+                                    DownloadPhotosInProcess (DownloadPhotosAll deferredPhotoUpdated)
 
                                 _ ->
-                                    model.syncStatus
+                                    model.downloadPhotosStatus
                     in
                     -- We've fetched the image, so we can remove the record from
                     -- `deferredPhotos` table.
@@ -1264,8 +1292,8 @@ update currentDate currentTime dbVersion device msg model =
                         currentTime
                         dbVersion
                         device
-                        (QueryIndexDb <| IndexDbQueryRemoveDeferredPhotoAttempts result.uuid)
-                        { model | syncStatus = syncStatus }
+                        (QueryIndexDb <| IndexDbQueryRemoveDeferredPhoto result.uuid)
+                        { model | downloadPhotosStatus = downloadPhotosStatus }
 
                 _ ->
                     -- Satisfy the compiler.
@@ -1273,9 +1301,6 @@ update currentDate currentTime dbVersion device msg model =
 
         QueryIndexDb indexDbQueryType ->
             let
-                _ =
-                    Debug.log "QueryIndexDb" indexDbQueryType
-
                 record =
                     case indexDbQueryType of
                         IndexDbQueryUploadPhotoAuthority ->
@@ -1305,8 +1330,8 @@ update currentDate currentTime dbVersion device msg model =
                             , data = Nothing
                             }
 
-                        IndexDbQueryRemoveDeferredPhotoAttempts uuid ->
-                            { queryType = "IndexDbQueryRemoveDeferredPhotoAttempts"
+                        IndexDbQueryRemoveDeferredPhoto uuid ->
+                            { queryType = "IndexDbQueryRemoveDeferredPhoto"
                             , data = Just uuid
                             }
 
@@ -1322,6 +1347,18 @@ update currentDate currentTime dbVersion device msg model =
                             in
                             { queryType = "IndexDbQueryUpdateDeferredPhotoAttempts"
                             , data = Just encodedData
+                            }
+
+                        IndexDbQueryRemoveUploadPhotos uuids ->
+                            let
+                                uuidsAsString =
+                                    uuids
+                                        |> List.map String.fromInt
+                                        |> List.intersperse ","
+                                        |> String.concat
+                            in
+                            { queryType = "IndexDbQueryRemoveUploadPhotos"
+                            , data = Just uuidsAsString
                             }
             in
             SubModelReturn
@@ -1391,9 +1428,9 @@ update currentDate currentTime dbVersion device msg model =
         ResetSettings ->
             let
                 syncSpeed =
-                    { idle = 10000
+                    { idle = 5 * 60 * 1000
                     , cycle = 50
-                    , offline = 3000
+                    , offline = 30 * 1000
                     }
             in
             SubModelReturn
@@ -1512,22 +1549,38 @@ update currentDate currentTime dbVersion device msg model =
                     -- Sync is already in progress.
                     noChange
 
+        TryDownloadingPhotos ->
+            case model.downloadPhotosStatus of
+                DownloadPhotosIdle ->
+                    update
+                        currentDate
+                        currentTime
+                        dbVersion
+                        device
+                        BackendFetchPhotos
+                        model
+
+                _ ->
+                    -- Sync is already in progress.
+                    noChange
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
-        backendFetchMain =
+        backendFetchCmds =
             case model.syncCycle of
                 SyncManager.Model.SyncCyclePause ->
-                    Sub.none
+                    []
 
                 _ ->
-                    Time.every (getSyncSpeedForSubscriptions model) (\_ -> BackendFetchMain)
+                    [ Time.every (getSyncSpeedForSubscriptions model) (always BackendFetchMain)
+                    , Time.every (getDownloadPhotosSpeedForSubscriptions model) (always BackendFetchPhotos)
+                    ]
     in
-    Sub.batch
-        [ backendFetchMain
-        , getFromIndexDb QueryIndexDbHandle
-        ]
+    Sub.batch <|
+        getFromIndexDb QueryIndexDbHandle
+            :: backendFetchCmds
 
 
 {-| Send to JS data we have synced, e.g. `person`, `health center`, etc.

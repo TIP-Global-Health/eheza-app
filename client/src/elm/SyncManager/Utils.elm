@@ -80,6 +80,15 @@ determineSyncStatus model =
                         else
                             noChange
 
+                    SyncUploadAuthority record ->
+                        if record.indexDbRemoteData == RemoteData.Success Nothing then
+                            -- We tried to fetch entities for upload from IndexDB,
+                            -- but there we non matching the query.
+                            ( SyncDownloadGeneral RemoteData.NotAsked, syncInfoAuthorities )
+
+                        else
+                            noChange
+
                     SyncDownloadGeneral webData ->
                         case webData of
                             RemoteData.Success data ->
@@ -97,21 +106,12 @@ determineSyncStatus model =
                             _ ->
                                 noChange
 
-                    SyncUploadAuthority record ->
-                        if record.indexDbRemoteData == RemoteData.Success Nothing then
-                            -- We tried to fetch entities for upload from IndexDB,
-                            -- but there we non matching the query.
-                            ( SyncDownloadGeneral RemoteData.NotAsked, syncInfoAuthorities )
-
-                        else
-                            noChange
-
                     SyncDownloadAuthority webData ->
                         case ( model.syncInfoAuthorities, webData ) of
                             ( Nothing, _ ) ->
                                 -- There are no authorities, so we can set the next
                                 -- status, skipping statistics download.
-                                ( SyncDownloadPhotos model.downloadPhotos
+                                ( SyncIdle
                                 , syncInfoAuthorities
                                 )
 
@@ -153,17 +153,13 @@ determineSyncStatus model =
                             ( Nothing, _ ) ->
                                 -- There are no authorities, so we can set the next
                                 -- status.
-                                ( SyncDownloadPhotos model.downloadPhotos
+                                ( SyncIdle
                                 , syncInfoAuthorities
                                 )
 
                             ( Just zipper, RemoteData.Success data ) ->
-                                let
-                                    syncDownloadPhotos =
-                                        resetDownloadPhotosBatchCounter model
-                                in
                                 if Zipper.isLast zipper then
-                                    ( syncDownloadPhotos
+                                    ( SyncIdle
                                     , Just (Zipper.first zipper)
                                     )
 
@@ -180,42 +176,12 @@ determineSyncStatus model =
                                             -- We've reached the last element
                                             -- so reset it back, and rotate
                                             -- to the next status.
-                                            ( syncDownloadPhotos
+                                            ( SyncIdle
                                             , Just (Zipper.first zipper)
                                             )
 
                             _ ->
                                 noChange
-
-                    SyncDownloadPhotos record ->
-                        case record of
-                            DownloadPhotosNone ->
-                                ( SyncIdle, syncInfoAuthorities )
-
-                            DownloadPhotosBatch deferredPhoto ->
-                                if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
-                                    -- We tried to fetch deferred photos from IndexDB,
-                                    -- but there we non matching the query.
-                                    ( SyncIdle, syncInfoAuthorities )
-
-                                else if deferredPhoto.batchCounter < 1 then
-                                    -- We've reached the end of the batch, so we
-                                    -- need to rotate.
-                                    ( SyncIdle, syncInfoAuthorities )
-
-                                else
-                                    noChange
-
-                            DownloadPhotosAll deferredPhoto ->
-                                if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
-                                    -- We tried to fetch deferred photos from IndexDB,
-                                    -- but there we non matching the query.
-                                    ( SyncIdle, syncInfoAuthorities )
-
-                                else
-                                    -- There are still deferred photos in IndexDB
-                                    -- that match out query.
-                                    noChange
         in
         { model
             | syncStatus = syncStatusUpdated
@@ -227,18 +193,77 @@ determineSyncStatus model =
         model
 
 
-resetDownloadPhotosBatchCounter : Model -> SyncStatus
+determineDownloadPhotosStatus : Model -> Model
+determineDownloadPhotosStatus model =
+    let
+        syncCycleRotate =
+            case model.syncCycle of
+                SyncManager.Model.SyncCycleOn ->
+                    True
+
+                _ ->
+                    False
+    in
+    if syncCycleRotate then
+        let
+            currentStatus =
+                model.downloadPhotosStatus
+
+            statusUpdated =
+                -- Cases are ordered by the cycle order.
+                case currentStatus of
+                    DownloadPhotosIdle ->
+                        DownloadPhotosInProcess model.downloadPhotosMode
+
+                    DownloadPhotosInProcess record ->
+                        case record of
+                            DownloadPhotosNone ->
+                                DownloadPhotosIdle
+
+                            DownloadPhotosBatch deferredPhoto ->
+                                if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
+                                    -- We tried to fetch deferred photos from IndexDB,
+                                    -- but there we non matching the query.
+                                    DownloadPhotosIdle
+
+                                else if deferredPhoto.batchCounter < 1 then
+                                    -- We've reached the end of the batch, so we
+                                    -- need to rotate.
+                                    DownloadPhotosIdle
+
+                                else
+                                    currentStatus
+
+                            DownloadPhotosAll deferredPhoto ->
+                                if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
+                                    -- We tried to fetch deferred photos from IndexDB,
+                                    -- but there we non matching the query.
+                                    DownloadPhotosIdle
+
+                                else
+                                    -- There are still deferred photos in IndexDB
+                                    -- that match out query.
+                                    currentStatus
+        in
+        { model | downloadPhotosStatus = statusUpdated }
+
+    else
+        -- No change.
+        model
+
+
+resetDownloadPhotosBatchCounter : Model -> DownloadPhotosStatus
 resetDownloadPhotosBatchCounter model =
-    case model.downloadPhotos of
+    case model.downloadPhotosMode of
         DownloadPhotosBatch deferredPhoto ->
             let
                 deferredPhotoUpdated =
                     { deferredPhoto | batchCounter = deferredPhoto.batchSize }
             in
-            SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated)
+            DownloadPhotosInProcess (DownloadPhotosBatch deferredPhotoUpdated)
 
         _ ->
-            SyncDownloadPhotos model.downloadPhotos
+            DownloadPhotosInProcess model.downloadPhotosMode
 
 
 {-| Get info about an entity. `revision` would be the Drupal revision
@@ -505,8 +530,8 @@ getSyncSpeedForSubscriptions model =
         checkWebData webData =
             if RemoteData.isFailure webData then
                 -- We got an error, so don't hammer the server.
-                if syncSpeed.offline < 1000 then
-                    1000
+                if syncSpeed.offline < 10000 then
+                    10000
 
                 else
                     toFloat syncSpeed.offline
@@ -549,19 +574,68 @@ getSyncSpeedForSubscriptions model =
         SyncDownloadAuthority webData ->
             checkWebData webData
 
-        SyncDownloadPhotos downloadPhotos ->
+        SyncDownloadAuthorityDashboardStats webData ->
+            checkWebData webData
+
+        _ ->
+            syncCycle
+
+
+getDownloadPhotosSpeedForSubscriptions : Model -> Float
+getDownloadPhotosSpeedForSubscriptions model =
+    let
+        syncSpeed =
+            model.syncSpeed
+                -- Take the original values.
+                |> Editable.cancel
+                |> Editable.value
+
+        syncCycle =
+            if syncSpeed.cycle < 50 then
+                -- Safeguard against too quick iterations, in case someone
+                -- changed values directly on localStorage.
+                50
+
+            else
+                toFloat syncSpeed.cycle
+
+        checkWebData webData =
+            case webData of
+                RemoteData.Failure error ->
+                    if Utils.WebData.isNetworkError error then
+                        -- It's a network error, so slow things down.
+                        if syncSpeed.offline < 10000 then
+                            10000
+
+                        else
+                            toFloat syncSpeed.offline
+
+                    else
+                        syncCycle
+
+                _ ->
+                    syncCycle
+    in
+    case model.downloadPhotosStatus of
+        DownloadPhotosIdle ->
+            -- Rest until the next sync loop.
+            if syncSpeed.idle < 3000 then
+                -- Safeguard against too quick iterations.
+                3000
+
+            else
+                toFloat syncSpeed.idle
+
+        DownloadPhotosInProcess downloadPhotos ->
             case downloadPhotos of
                 DownloadPhotosNone ->
                     syncCycle
 
                 DownloadPhotosBatch record ->
-                    checkWebDataForPhotos record.backendRemoteData
+                    checkWebData record.backendRemoteData
 
                 DownloadPhotosAll record ->
-                    checkWebDataForPhotos record.backendRemoteData
-
-        _ ->
-            syncCycle
+                    checkWebData record.backendRemoteData
 
 
 encode : (a -> List ( String, Value )) -> BackendEntity a -> Value
@@ -853,6 +927,7 @@ syncInfoGeneralForPort info =
         info.lastSuccesfulContact
         info.remainingToUpload
         info.remainingToDownload
+        info.deviceName
         (syncInfoStatusToString info.status)
 
 
@@ -875,6 +950,7 @@ syncInfoGeneralFromPort info =
         info.lastSuccesfulContact
         info.remainingToUpload
         info.remainingToDownload
+        info.deviceName
         (syncInfoStatusFromString info.status |> Maybe.withDefault NotAvailable)
 
 
