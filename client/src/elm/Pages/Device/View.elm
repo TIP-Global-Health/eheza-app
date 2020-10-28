@@ -156,7 +156,7 @@ viewDownloadPhotosInfo language status =
         statusHtml =
             case status of
                 DownloadPhotosIdle ->
-                    div [] [ text <| translate language Translate.RemainingForDownloadLabel ++ ": 0" ]
+                    div [] [ text <| translate language Translate.IdleWaitingForSync ]
 
                 DownloadPhotosInProcess DownloadPhotosNone ->
                     div [] [ text <| translate language Translate.Disabled ]

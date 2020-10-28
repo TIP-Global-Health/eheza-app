@@ -470,6 +470,7 @@ type TranslationId
     | HouseholdSize
     | HttpError Http.Error
     | HypertensionBeforePregnancy
+    | IdleWaitingForSync
     | IncompleteCervixPreviousPregnancy
     | IndividualEncounter
     | IndividualEncounterFirstVisit IndividualEncounterType
@@ -2915,6 +2916,11 @@ translationSet trans =
         HypertensionBeforePregnancy ->
             { english = "Hypertension before pregnancy"
             , kinyarwanda = Just "Umuvuduko w'amaraso mbere yo gutwita"
+            }
+
+        IdleWaitingForSync ->
+            { english = "Idle, waiting for next Sync cycle"
+            , kinyarwanda = Nothing
             }
 
         IncompleteCervixPreviousPregnancy ->
