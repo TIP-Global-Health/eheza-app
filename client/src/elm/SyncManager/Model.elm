@@ -1,4 +1,4 @@
-module SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), DownloadPhotos(..), DownloadPhotosAllRec, DownloadPhotosBatchRec, DownloadSyncResponse, Flags, IndexDbDeferredPhotoRemoteData, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryType(..), IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, IndexDbUploadRemoteData, Model, Msg(..), SyncCycle(..), SyncInfoAuthority, SyncInfoAuthorityZipper, SyncInfoGeneral, SyncSpeed, SyncStatus(..), UploadMethod(..), UploadPhotoError(..), UploadRec, emptyDownloadPhotosBatchRec, emptyModel, emptySyncInfoAuthority, emptyUploadRec)
+module SyncManager.Model exposing (..)
 
 import AssocList exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
@@ -130,6 +130,15 @@ type alias SyncInfoGeneral =
     , lastSuccesfulContact : Int
     , remainingToUpload : Int
     , remainingToDownload : Int
+    , status : SyncInfoStatus
+    }
+
+
+type alias SyncInfoGeneralForPort =
+    { lastFetchedRevisionId : Int
+    , lastSuccesfulContact : Int
+    , remainingToUpload : Int
+    , remainingToDownload : Int
     , status : String
     }
 
@@ -140,9 +149,27 @@ type alias SyncInfoAuthority =
     , lastSuccesfulContact : Int
     , remainingToUpload : Int
     , remainingToDownload : Int
+    , status : SyncInfoStatus
+    }
+
+
+type alias SyncInfoAuthorityForPort =
+    { uuid : String
+    , lastFetchedRevisionId : Int
+    , lastSuccesfulContact : Int
+    , remainingToUpload : Int
+    , remainingToDownload : Int
     , status : String
     , statsCacheHash : String
     }
+
+
+type SyncInfoStatus
+    = Downloading
+    | Error
+    | NotAvailable
+    | Success
+    | Uploading
 
 
 emptySyncInfoAuthority : String -> SyncInfoAuthority
@@ -152,7 +179,7 @@ emptySyncInfoAuthority uuid =
     , lastSuccesfulContact = 0
     , remainingToUpload = 0
     , remainingToDownload = 0
-    , status = "Not Available"
+    , status = NotAvailable
     , statsCacheHash = ""
     }
 

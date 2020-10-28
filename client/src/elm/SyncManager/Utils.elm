@@ -1,15 +1,4 @@
-module SyncManager.Utils exposing
-    ( determineSyncStatus
-    , encodeBackendAuthorityEntity
-    , encodeBackendGeneralEntity
-    , getBackendAuthorityEntityIdentifier
-    , getBackendGeneralEntityIdentifier
-    , getDataToSendAuthority
-    , getDataToSendGeneral
-    , getPhotoFromBackendAuthorityEntity
-    , getSyncSpeedForSubscriptions
-    , getSyncedHealthCenters
-    )
+module SyncManager.Utils exposing (..)
 
 import Backend.AcuteIllnessEncounter.Encoder
 import Backend.Clinic.Encoder
@@ -32,7 +21,7 @@ import Editable
 import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
 import RemoteData
-import SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), DownloadPhotos(..), Model, SyncStatus(..), emptyDownloadPhotosBatchRec, emptyUploadRec)
+import SyncManager.Model exposing (..)
 import Utils.WebData
 
 
@@ -814,3 +803,86 @@ getSyncedHealthCenters model =
     model.syncInfoAuthorities
         |> Maybe.map (Zipper.toList >> List.map .uuid)
         |> Maybe.withDefault []
+
+
+syncInfoStatusToString : SyncInfoStatus -> String
+syncInfoStatusToString status =
+    case status of
+        Downloading ->
+            "Downloading"
+
+        Error ->
+            "Error"
+
+        NotAvailable ->
+            "Not NotAvailable"
+
+        Success ->
+            "Success"
+
+        Uploading ->
+            "Uploading"
+
+
+syncInfoStatusFromString : String -> Maybe SyncInfoStatus
+syncInfoStatusFromString status =
+    case status of
+        "Downloading" ->
+            Just Downloading
+
+        "Error" ->
+            Just Error
+
+        "Not NotAvailable" ->
+            Just NotAvailable
+
+        "Success" ->
+            Just Success
+
+        "Uploading" ->
+            Just Uploading
+
+        _ ->
+            Nothing
+
+
+syncInfoGeneralForPort : SyncInfoGeneral -> SyncInfoGeneralForPort
+syncInfoGeneralForPort info =
+    SyncInfoGeneralForPort
+        info.lastFetchedRevisionId
+        info.lastSuccesfulContact
+        info.remainingToUpload
+        info.remainingToDownload
+        (syncInfoStatusToString info.status)
+
+
+syncInfoAuthorityForPort : SyncInfoAuthority -> SyncInfoAuthorityForPort
+syncInfoAuthorityForPort info =
+    SyncInfoAuthorityForPort
+        info.uuid
+        info.lastFetchedRevisionId
+        info.lastSuccesfulContact
+        info.remainingToUpload
+        info.remainingToDownload
+        (syncInfoStatusToString info.status)
+
+
+syncInfoGeneralFromPort : SyncInfoGeneralForPort -> SyncInfoGeneral
+syncInfoGeneralFromPort info =
+    SyncInfoGeneral
+        info.lastFetchedRevisionId
+        info.lastSuccesfulContact
+        info.remainingToUpload
+        info.remainingToDownload
+        (syncInfoStatusFromString info.status |> Maybe.withDefault NotAvailable)
+
+
+syncInfoAuthorityFromPort : SyncInfoAuthorityForPort -> SyncInfoAuthority
+syncInfoAuthorityFromPort info =
+    SyncInfoAuthority
+        info.uuid
+        info.lastFetchedRevisionId
+        info.lastSuccesfulContact
+        info.remainingToUpload
+        info.remainingToDownload
+        (syncInfoStatusFromString info.status |> Maybe.withDefault NotAvailable)

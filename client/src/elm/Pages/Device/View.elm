@@ -16,7 +16,8 @@ import Pages.Device.Model exposing (..)
 import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
-import SyncManager.Model exposing (SyncInfoAuthorityZipper, SyncInfoGeneral)
+import SyncManager.Model exposing (SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoStatus)
+import SyncManager.Utils exposing (syncInfoStatusToString)
 import Time
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
@@ -97,12 +98,12 @@ viewStorageStatus language app =
         |> ul [ class "storage-dashboard" ]
 
 
-viewSyncInfo : Language -> { a | lastFetchedRevisionId : Int, lastSuccesfulContact : Int, remainingToUpload : Int, remainingToDownload : Int, status : String } -> Html Msg
+viewSyncInfo : Language -> { a | lastFetchedRevisionId : Int, lastSuccesfulContact : Int, remainingToUpload : Int, remainingToDownload : Int, status : SyncInfoStatus } -> Html Msg
 viewSyncInfo language info =
     let
         viewDateTime time =
             if Time.posixToMillis time == 0 then
-                "Never"
+                translate language Translate.Never
 
             else
                 let
@@ -142,7 +143,7 @@ viewSyncInfo language info =
         [ div [] [ text <| translate language Translate.LastSuccesfulContactLabel ++ ": " ++ lastSuccessfulContact ]
         , div [] [ text <| translate language Translate.RemainingForUploadLabel ++ ": " ++ String.fromInt info.remainingToUpload ]
         , div [] [ text <| translate language Translate.RemainingForDownloadLabel ++ ": " ++ String.fromInt info.remainingToDownload ]
-        , div [] [ text <| translate language Translate.StatusLabel ++ ": " ++ info.status ]
+        , div [] [ text <| translate language Translate.StatusLabel ++ ": " ++ syncInfoStatusToString info.status ]
         ]
 
 
