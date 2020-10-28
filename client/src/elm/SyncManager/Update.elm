@@ -283,6 +283,7 @@ update currentDate currentTime dbVersion device msg model =
                                                 []
                                             |> List.reverse
 
+                                    -- Grab the updated cache hash.
                                     cacheHash =
                                         data.entities
                                             |> List.head
