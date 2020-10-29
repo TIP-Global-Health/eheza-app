@@ -18,6 +18,7 @@
     // As we defined Dexie's store in app.js, we'll need to redefine tables properties here.
     // Since we don't know exactly when the DB will be ready, we define DB placeholder here.
     var dbSync = null;
+    var db = null;
 
     // This defines our URL scheme. A URL will look like
     //
@@ -42,7 +43,7 @@
 
             // Redefine tables properties.
             dbSync = new Dexie('sync');
-            var db = await dbSync.open();
+            db = await dbSync.open();
             db.tables.forEach(function(table) {
                 dbSync[table.name] = table;
             });

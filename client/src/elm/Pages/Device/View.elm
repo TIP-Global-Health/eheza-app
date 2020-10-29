@@ -1,15 +1,26 @@
 module Pages.Device.View exposing (view)
 
 import App.Model
+import App.Utils exposing (getLoggedInData)
+import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.HealthCenter.Model exposing (HealthCenter)
+import Backend.Model exposing (ModelIndexedDb)
 import Device.Model exposing (..)
+import EverySet
+import Gizra.Html exposing (showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import List.Extra
+import List.Zipper as Zipper
 import Pages.Device.Model exposing (..)
 import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (toEntityUuid)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
+import SyncManager.Model exposing (DownloadPhotosMode(..), DownloadPhotosStatus(..), SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoStatus)
+import SyncManager.Utils exposing (syncInfoStatusToString)
+import Time
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
 
@@ -45,7 +56,22 @@ viewDeviceStatus language device app model =
     case device of
         Success _ ->
             div [ class "device-status" ]
-                [ viewStorageStatus language app
+                [ button
+                    [ classList
+                        [ ( "ui fluid primary button", True )
+                        , ( "disabled", app.syncManager.syncStatus /= SyncManager.Model.SyncIdle )
+                        ]
+                    , onClick <| MsgSyncManager SyncManager.Model.TrySyncing
+                    ]
+                    [ text <| translate language Translate.TrySyncing ]
+                , viewStorageStatus language app
+                , div
+                    [ class "general-sync" ]
+                    [ h2 [] [ text <| translate language Translate.SyncGeneral ]
+                    , viewSyncInfo language app.syncManager.syncInfoGeneral
+                    , viewDownloadPhotosInfo language app.syncManager.downloadPhotosStatus
+                    ]
+                , viewHealthCenters language app
                 ]
 
         _ ->
@@ -73,6 +99,173 @@ viewStorageStatus language app =
     ]
         |> List.filterMap identity
         |> ul [ class "storage-dashboard" ]
+
+
+viewSyncInfo : Language -> { a | lastFetchedRevisionId : Int, lastSuccesfulContact : Int, remainingToUpload : Int, remainingToDownload : Int, status : SyncInfoStatus } -> Html Msg
+viewSyncInfo language info =
+    let
+        viewDateTime time =
+            if Time.posixToMillis time == 0 then
+                translate language Translate.Never
+
+            else
+                let
+                    normalize number =
+                        if number < 10 then
+                            "0" ++ String.fromInt number
+
+                        else
+                            String.fromInt number
+
+                    year =
+                        Time.toYear Time.utc time |> String.fromInt
+
+                    month =
+                        Time.toMonth Time.utc time
+                            |> Translate.ResolveMonth True
+                            |> translate language
+
+                    day =
+                        Time.toDay Time.utc time |> normalize
+
+                    hour =
+                        Time.toHour Time.utc time |> normalize
+
+                    minute =
+                        Time.toMinute Time.utc time |> normalize
+
+                    second =
+                        Time.toSecond Time.utc time |> normalize
+                in
+                day ++ " " ++ month ++ " " ++ year ++ " " ++ hour ++ ":" ++ minute ++ ":" ++ second ++ " UTC"
+
+        lastSuccessfulContact =
+            viewDateTime (Time.millisToPosix info.lastSuccesfulContact)
+    in
+    div [ class "sync-status" ]
+        [ div [] [ text <| translate language Translate.LastSuccesfulContactLabel ++ ": " ++ lastSuccessfulContact ]
+        , div [] [ text <| translate language Translate.RemainingForUploadLabel ++ ": " ++ String.fromInt info.remainingToUpload ]
+        , div [] [ text <| translate language Translate.RemainingForDownloadLabel ++ ": " ++ String.fromInt info.remainingToDownload ]
+        , div [] [ text <| translate language Translate.StatusLabel ++ ": " ++ syncInfoStatusToString info.status ]
+        ]
+
+
+viewDownloadPhotosInfo : Language -> DownloadPhotosStatus -> Html Msg
+viewDownloadPhotosInfo language status =
+    let
+        statusHtml =
+            case status of
+                DownloadPhotosIdle ->
+                    div [] [ text <| translate language Translate.IdleWaitingForSync ]
+
+                DownloadPhotosInProcess DownloadPhotosNone ->
+                    div [] [ text <| translate language Translate.Disabled ]
+
+                DownloadPhotosInProcess (DownloadPhotosBatch rect) ->
+                    let
+                        remaining =
+                            case rect.indexDbRemoteData of
+                                RemoteData.Success (Just result) ->
+                                    String.fromInt result.remaining
+
+                                _ ->
+                                    ""
+                    in
+                    div []
+                        [ text <|
+                            String.fromInt (rect.batchCounter + 1)
+                                ++ " / "
+                                ++ String.fromInt rect.batchSize
+                                ++ " , "
+                        , text <|
+                            translate language Translate.RemainingForDownloadLabel
+                                ++ ": "
+                                ++ remaining
+                        ]
+
+                DownloadPhotosInProcess (DownloadPhotosAll rect) ->
+                    let
+                        remaining =
+                            case rect.indexDbRemoteData of
+                                RemoteData.Success (Just result) ->
+                                    String.fromInt result.remaining
+
+                                _ ->
+                                    ""
+                    in
+                    div []
+                        [ text <|
+                            translate language Translate.RemainingForDownloadLabel
+                                ++ ": "
+                                ++ remaining
+                        ]
+    in
+    div
+        [ class "download-photos" ]
+        [ h2 [] [ text <| translate language Translate.PhotosDownloadStatus ]
+        , statusHtml
+        ]
+
+
+viewHealthCenters : Language -> App.Model.Model -> Html Msg
+viewHealthCenters language app =
+    getLoggedInData app
+        |> Maybe.map
+            (\( _, loggedInModel ) ->
+                let
+                    allowedHealthCenters =
+                        Tuple.second loggedInModel.nurse
+                            |> .healthCenters
+                in
+                app.indexedDb.healthCenters
+                    |> RemoteData.map
+                        (\data ->
+                            data
+                                |> Dict.toList
+                                |> List.filter (\( healthCenterId, _ ) -> EverySet.member healthCenterId allowedHealthCenters)
+                                |> List.sortBy (Tuple.second >> .name)
+                                |> List.map (viewHealthCenter language app.syncManager.syncInfoAuthorities)
+                                |> div [ class "health-centers" ]
+                        )
+                    |> RemoteData.withDefault spinner
+            )
+        |> Maybe.withDefault (div [ class "login-request" ] [ text <| translate language <| Translate.LoginPhrase Translate.LoginToSyncHealthCenters ])
+
+
+viewHealthCenter : Language -> SyncInfoAuthorityZipper -> ( HealthCenterId, HealthCenter ) -> Html Msg
+viewHealthCenter language zipper ( healthCenterId, healthCenter ) =
+    let
+        viewNotSyncedHealthCenter uuid =
+            button
+                [ class "ui button"
+                , onClick <| MsgSyncManager <| SyncManager.Model.RevisionIdAuthorityAdd uuid
+                ]
+                [ text <| translate language Translate.StartSyncing ]
+
+        viewSyncedAuthority authorityInfo =
+            div [ class "health-center-info" ]
+                [ viewSyncInfo language authorityInfo
+                , button
+                    [ class "ui button"
+                    , onClick <| MsgSyncManager <| SyncManager.Model.RevisionIdAuthorityRemove (toEntityUuid authorityInfo.uuid)
+                    ]
+                    [ text <| translate language Translate.StopSyncing ]
+                ]
+
+        content =
+            zipper
+                |> Maybe.map
+                    (Zipper.toList
+                        >> List.Extra.find (\authorityInfo -> authorityInfo.uuid == fromEntityUuid healthCenterId)
+                        >> Maybe.map viewSyncedAuthority
+                        >> Maybe.withDefault (viewNotSyncedHealthCenter healthCenterId)
+                    )
+                |> Maybe.withDefault (viewNotSyncedHealthCenter healthCenterId)
+    in
+    div [ class "health-center" ]
+        [ h2 [] [ text <| healthCenter.name ]
+        , content
+        ]
 
 
 viewPairingForm : Language -> WebData Device -> Model -> Html Msg

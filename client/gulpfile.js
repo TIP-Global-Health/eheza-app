@@ -235,7 +235,7 @@ gulp.task("minify", ["styles", "zscore", "copy:images", "copy:favicon"],
       // Concatenate JavaScript files and preserve important comments.
       // DropZone had a problem if we mangle
       // ... see <https://github.com/rowanwins/vue-dropzone/issues/119>
-      .pipe($.if(["*.js", "!service-worker.js", "!workbox-*.js", "!app.js", "!nodes.js", "!photos.js"], uglify({
+      .pipe($.if(["*.js", "!service-worker.js", "!workbox-*.js", "!app.js", "!nodes.js", "!photos.js", "!statistics.js"], uglify({
         mangle: false
       }))).on('error', function(err) {
         console.error(err);
@@ -449,6 +449,7 @@ gulp.task('pwa:prod', function() {
       'config.js',
       'lifecycle.js',
       'nodes.js',
+      'statistics.js',
       'photos.js',
     ]
   });

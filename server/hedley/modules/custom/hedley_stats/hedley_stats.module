@@ -219,6 +219,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
     if (empty($fbf_clinics)) {
       // We send empty stats so we don't upset the decoder in elm.
       return [
+        'vid' => 1,
         'type' => 'statistics',
         // UUID of the health center.
         'uuid' => $wrapper->field_uuid->value(),
@@ -235,6 +236,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
     // Calculate the stats.
     list($completed_program, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, $fbf_clinics);
     $stats = [
+      'vid' => 1,
       'type' => 'statistics',
       // UUID of the health center.
       'uuid' => $wrapper->field_uuid->value(),

@@ -20,12 +20,11 @@ import SyncManager.Model
     exposing
         ( BackendAuthorityEntity(..)
         , BackendGeneralEntity(..)
-        , DownloadPhotos(..)
         , DownloadPhotosBatchRec
+        , DownloadPhotosMode(..)
         , DownloadSyncResponse
         , Model
         , Msg(..)
-        , RevisionIdPerAuthorityZipper
         , SyncCycle(..)
         , SyncStatus(..)
         )
@@ -37,81 +36,62 @@ import Utils.WebData
 
 
 view : Language -> RemoteData String ConfiguredModel -> ModelIndexedDb -> Model -> Html Msg
-view language configuration db model =
-    let
-        htmlContent =
-            details [ property "open" (Json.Encode.bool True) ]
-                [ summary [] [ text "Sync Status" ]
+view language configuredModel db model =
+    case RemoteData.toMaybe configuredModel of
+        Just configuration ->
+            if not configuration.config.debug then
+                emptyNode
 
-                -- button [ onClick <| SyncManager.Model.FetchFromIndexDb SyncManager.Model.IndexDbQueryHealthCenters ] [ text "Fetch Health Centers" ]
-                , div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
-                , case model.syncStatus of
-                    SyncDownloadGeneral webData ->
-                        viewSyncDownloadGeneral language model webData
+            else
+                details
+                    [ property "open" (Json.Encode.bool False)
+                    , class "sync-manager"
+                    ]
+                    [ summary [] [ text "Sync Manager" ]
+                    , viewHealthCentersForSync language db model
+                    , viewSyncSettings language model
+                    , viewSyncStatus language db model
+                    ]
 
-                    SyncDownloadAuthority webData ->
-                        viewSyncDownloadAuthority language db model webData
-
-                    SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
-                        viewDownloadPhotosBatch language model deferredPhoto
-
-                    _ ->
-                        emptyNode
-                ]
-    in
-    div []
-        [ viewDeviceInfo language configuration
-        , viewHealthCentersForSync language db model
-        , viewSyncSettings language model
-        , pre [ class "ui segment sync-status" ] [ htmlContent ]
-        ]
+        Nothing ->
+            emptyNode
 
 
 {-| Helper to see the device UUID, and current nurse, if logged in.
 -}
-viewDeviceInfo : Language -> RemoteData String ConfiguredModel -> Html Msg
+viewDeviceInfo : Language -> ConfiguredModel -> Html Msg
 viewDeviceInfo language configuration =
     let
         loggedInNurse =
-            case RemoteData.toMaybe configuration of
-                Just config ->
-                    case RemoteData.toMaybe config.loggedIn of
-                        Just loggedIn ->
-                            let
-                                nurse =
-                                    Tuple.second loggedIn.nurse
-                            in
-                            div [] [ text <| "Nurse: " ++ nurse.name ]
-
-                        Nothing ->
-                            div [] [ text "Nurse not logged in" ]
+            case RemoteData.toMaybe configuration.loggedIn of
+                Just loggedIn ->
+                    let
+                        nurse =
+                            Tuple.second loggedIn.nurse
+                    in
+                    div [] [ text <| "Nurse: " ++ nurse.name ]
 
                 Nothing ->
-                    emptyNode
+                    div [] [ text "Nurse not logged in" ]
 
         deviceIdInfo =
-            case RemoteData.toMaybe configuration of
-                Just config ->
-                    case RemoteData.toMaybe config.device of
-                        Just device ->
-                            case device.deviceId of
-                                Just deviceId ->
-                                    div [] [ text <| "Device ID: " ++ String.fromInt deviceId ]
+            case RemoteData.toMaybe configuration.device of
+                Just device ->
+                    case device.deviceId of
+                        Just deviceId ->
+                            div [] [ text <| "Device ID: " ++ String.fromInt deviceId ]
 
-                                Nothing ->
-                                    div []
-                                        [ text """
+                        Nothing ->
+                            div []
+                                [ text """
                                     Device ID not set as device was paired before June 2020.
                                     You may re-pair to get a new ID, but in general this is not a problem -
                                     it just makes troubleshooting a bit easier.
                                     """
-                                        ]
-
-                        Nothing ->
-                            div [] [ text "Device ID not set, either not paired, or a pair before June 2020" ]
+                                ]
 
                 Nothing ->
-                    emptyNode
+                    div [] [ text "Device ID not set, either not paired, or a pair before June 2020" ]
     in
     details
         [ class "segment ui"
@@ -184,8 +164,7 @@ viewSyncSettings language model =
     in
     details
         [ property "open" (Json.Encode.bool False)
-        , style "border" "1px solid black"
-        , class "html ui top attached segment"
+        , class "segment ui"
         ]
         [ summary [] [ text "Sync Settings" ]
         , fieldset []
@@ -266,7 +245,7 @@ viewSyncSettings language model =
 viewSyncDownloadGeneral : Language -> Model -> WebData (DownloadSyncResponse BackendGeneralEntity) -> Html Msg
 viewSyncDownloadGeneral language model webData =
     div []
-        [ div [] [ text <| "Fetch from General from revision ID " ++ String.fromInt model.lastFetchedRevisionIdGeneral ]
+        [ div [] [ text <| "Fetch from General from revision ID " ++ String.fromInt model.syncInfoGeneral.lastFetchedRevisionId ]
         , button [ onClick <| SyncManager.Model.SetLastFetchedRevisionIdGeneral 0 ] [ text "Reset revision ID to 0" ]
         , div [] [ text "HTTP requests:" ]
         , case webData of
@@ -320,7 +299,7 @@ viewGeneralEntity language backendGeneralEntity =
 
 viewSyncDownloadAuthority : Language -> ModelIndexedDb -> Model -> WebData (DownloadSyncResponse BackendAuthorityEntity) -> Html Msg
 viewSyncDownloadAuthority language db model webData =
-    case model.revisionIdPerAuthorityZipper of
+    case model.syncInfoAuthorities of
         Nothing ->
             emptyNode
 
@@ -341,7 +320,7 @@ viewSyncDownloadAuthority language db model webData =
                         |> List.map
                             (\row ->
                                 if row.uuid == currentZipper.uuid then
-                                    li [ class "active" ] [ text <| getAuthorityName row.uuid ++ " (from revision ID " ++ String.fromInt row.revisionId ++ ")" ]
+                                    li [ class "active" ] [ text <| getAuthorityName row.uuid ++ " (from revision ID " ++ String.fromInt row.lastFetchedRevisionId ++ ")" ]
 
                                 else
                                     li [] [ text <| getAuthorityName row.uuid ]
@@ -416,6 +395,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityDangerSigns identifier ->
                 viewMeasurement identifier "Danger Signs"
+
+            BackendAuthorityDashboardStats identifier ->
+                text "Dashboard Statistics"
 
             BackendAuthorityExposure identifier ->
                 viewMeasurement identifier "Exposure"
@@ -613,26 +595,27 @@ viewHealthCentersForSync language db model =
     case db.healthCenters of
         RemoteData.Success healthCenters ->
             if Dict.isEmpty healthCenters then
-                div [ class "segment ui health-center" ] [ text "No health centers synced yet" ]
+                details [ class "segment ui" ]
+                    [ summary [] [ text "No health centers synced yet" ] ]
 
             else
-                div
-                    [ class "segment ui health-center" ]
-                    [ details [ property "open" (Json.Encode.bool False) ]
-                        [ summary [] [ text "Health Centers" ]
-                        , ul []
-                            (List.map
-                                (\( healthCenterId, healthCenter ) ->
-                                    let
-                                        isSynced =
-                                            List.Extra.find (\selectedUuid -> selectedUuid == fromEntityUuid healthCenterId) selectedHealthCentersUuid
-                                                |> isJust
-                                    in
-                                    viewHealthCenter language ( healthCenterId, healthCenter ) isSynced
-                                )
-                                (Dict.toList healthCenters)
+                details
+                    [ class "segment ui"
+                    , property "open" (Json.Encode.bool False)
+                    ]
+                    [ summary [] [ text "Health Centers" ]
+                    , ul []
+                        (List.map
+                            (\( healthCenterId, healthCenter ) ->
+                                let
+                                    isSynced =
+                                        List.Extra.find (\selectedUuid -> selectedUuid == fromEntityUuid healthCenterId) selectedHealthCentersUuid
+                                            |> isJust
+                                in
+                                viewHealthCenter language ( healthCenterId, healthCenter ) isSynced
                             )
-                        ]
+                            (Dict.toList healthCenters)
+                        )
                     ]
 
         RemoteData.Failure error ->
@@ -655,7 +638,31 @@ viewHealthCenter language ( healthCenterId, healthCenter ) isSynced =
             else
                 ( "Add to Sync list", RevisionIdAuthorityAdd healthCenterId )
     in
-    li []
+    li [ style "margin-bottom" "5px" ]
         [ text <| healthCenter.name
-        , button [ onClick syncMsg ] [ text syncLabel ]
+        , button
+            [ onClick syncMsg
+            , style "margin-left" "20px"
+            ]
+            [ text syncLabel ]
+        ]
+
+
+viewSyncStatus : Language -> ModelIndexedDb -> Model -> Html Msg
+viewSyncStatus language db model =
+    details
+        [ property "open" (Json.Encode.bool False)
+        , class "segment ui"
+        ]
+        [ summary [] [ text "Sync Status" ]
+        , div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
+        , case model.syncStatus of
+            SyncDownloadGeneral webData ->
+                viewSyncDownloadGeneral language model webData
+
+            SyncDownloadAuthority webData ->
+                viewSyncDownloadAuthority language db model webData
+
+            _ ->
+                emptyNode
         ]

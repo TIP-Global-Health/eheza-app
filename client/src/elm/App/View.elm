@@ -192,6 +192,14 @@ viewConfiguredModel model configured =
                     |> flexPageWrapper model
 
     else
+        let
+            deviceName =
+                if String.isEmpty model.syncManager.syncInfoGeneral.deviceName then
+                    Nothing
+
+                else
+                    Just model.syncManager.syncInfoGeneral.deviceName
+        in
         case model.activePage of
             DevicePage ->
                 Pages.Device.View.view model.language configured.device model configured.devicePage
@@ -203,7 +211,7 @@ viewConfiguredModel model configured =
                     model.activePage
                     (RemoteData.map .nurse configured.loggedIn)
                     ( model.healthCenterId, model.villageId )
-                    model.deviceName
+                    deviceName
                     configured.pinCodePage
                     model.indexedDb
                     |> Html.map MsgPagePinCode
@@ -219,11 +227,11 @@ viewConfiguredModel model configured =
                     |> flexPageWrapper model
 
             UserPage userPage ->
-                viewUserPage userPage model configured
+                viewUserPage userPage deviceName model configured
 
 
-viewUserPage : UserPage -> Model -> ConfiguredModel -> Html Msg
-viewUserPage page model configured =
+viewUserPage : UserPage -> Maybe String -> Model -> ConfiguredModel -> Html Msg
+viewUserPage page deviceName model configured =
     case getLoggedInData model of
         Just ( healthCenterId, loggedInModel ) ->
             let
@@ -460,7 +468,7 @@ viewUserPage page model configured =
                     model.activePage
                     (Success loggedInModel.nurse)
                     ( model.healthCenterId, model.villageId )
-                    model.deviceName
+                    deviceName
                     configured.pinCodePage
                     model.indexedDb
                     |> Html.map MsgPagePinCode
@@ -471,7 +479,7 @@ viewUserPage page model configured =
                 model.activePage
                 (RemoteData.map .nurse configured.loggedIn)
                 ( model.healthCenterId, model.villageId )
-                model.deviceName
+                deviceName
                 configured.pinCodePage
                 model.indexedDb
                 |> Html.map MsgPagePinCode

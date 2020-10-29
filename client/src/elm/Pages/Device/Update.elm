@@ -25,3 +25,9 @@ update msg model =
             , Cmd.none
             , [ App.Model.TryPairingCode model.code ]
             )
+
+        MsgSyncManager syncManagerMsg ->
+            ( model
+            , Cmd.none
+            , [ App.Model.MsgSyncManager syncManagerMsg ]
+            )

@@ -169,12 +169,67 @@ dbSync.version(13).stores({
   (async () => {
     const collection = await tx.syncMetadata.toCollection().toArray();
 
-    var revisionIdPerAuthority = [];
-    collection.forEach(function(row) {
-      revisionIdPerAuthority.push({'uuid': row.uuid, 'revisionId': 0})
-    });
+    var syncInfoAuthorities = [];
+    collection.forEach(async function(row, index) {
+        // Check if this is the General sync UUID, and if so migrate syncMetadata into Local  storage.
+        if (row.uuid == '78cf21d1-b3f4-496a-b312-d8ae73041f09') {
+            var syncInfoGeneral = {lastFetchedRevisionId: 0, remainingToUpload:0, remainingToDownload: 0, status: 'Not Available'};
+            syncInfoGeneral.deviceName = row.download.device_name;
+            syncInfoGeneral.lastSuccesfulContact = row.download.last_contact;
 
-    localStorage.setItem('revisionIdPerAuthority', JSON.stringify(revisionIdPerAuthority));
+            // Pulling latest revision that was synced.
+            let result = await dbSync
+              .nodes
+              .where('vid')
+              .above(0)
+              .reverse()
+              .limit(1)
+              .sortBy('vid');
+
+              // If we managed to get non empty result from the query above (limited to 1 result),
+              // set latest synced revision to and set status to 'Success'.
+            if (result.length == 1) {
+                syncInfoGeneral.lastFetchedRevisionId = result[0].vid;
+                syncInfoGeneral.status = 'Success';
+            }
+
+            localStorage.setItem('syncInfoGeneral', JSON.stringify(syncInfoGeneral));
+        }
+        // This is sync data of a health center.
+        else {
+            var syncInfoAuthority = {lastFetchedRevisionId: 0, remainingToUpload:0, remainingToDownload: 0, status: 'Not Available'};
+            syncInfoAuthority.lastSuccesfulContact = row.download.last_contact;
+            syncInfoAuthority.statsCacheHash = '';
+            syncInfoAuthority.uuid = row.uuid;
+
+            let result = await dbSync
+              .shards
+              .where('[shard+vid]').between(
+                  [row.uuid, Dexie.minKey],
+                  [row.uuid, Dexie.maxKey]
+              )
+              .reverse()
+              .limit(1)
+              // Get the most recent record.
+              .sortBy('vid');
+
+              // If we managed to get non empty result from the query above (limited to 1 result),
+              // set latest synced revision to and set status to 'Success'.
+            if (result.length == 1) {
+                syncInfoAuthority.lastFetchedRevisionId = result[0].vid;
+                syncInfoAuthority.status = 'Success';
+            }
+
+            syncInfoAuthorities.push(syncInfoAuthority);
+            // If we've reached last item of collection, store Authorities
+            // sync info, and refresh, so that the APP reinitializes
+            // with the sync data from  Local Storage.
+            if (index == (collection.length - 1) ) {
+                localStorage.setItem('syncInfoAuthorities', JSON.stringify(syncInfoAuthorities));
+                location.reload();
+            }
+        }
+    });
 
     return Promise.resolve();
   })();
@@ -190,16 +245,42 @@ dbSync.version(13).stores({
 const dbVersion = 13;
 
 /**
+ * Return saved info for General sync.
+ */
+const getSyncInfoGeneral = function() {
+  const storage = localStorage.getItem('syncInfoGeneral');
+
+  if (!!storage) {
+    let storageArr = JSON.parse(storage);
+    storageArr.lastFetchedRevisionId = parseInt(storageArr.lastFetchedRevisionId);
+    storageArr.lastSuccesfulContact = parseInt(storageArr.lastSuccesfulContact);
+    storageArr.remainingToUpload = parseInt(storageArr.remainingToDownload);
+    storageArr.remainingToDownload = parseInt(storageArr.remainingToDownload);
+    storageArr.deviceName = storageArr.deviceName;
+    storageArr.status = storageArr.status;
+    return storageArr;
+  }
+
+  // No sync info saved yet.
+  return {lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available'};
+};
+
+/**
  * Return saved authorities.
  */
-const getRevisionIdPerAuthority = function() {
-  const storage = localStorage.getItem('revisionIdPerAuthority');
+const getSyncInfoAuthorities = function() {
+  const storage = localStorage.getItem('syncInfoAuthorities');
 
   if (!!storage) {
     let storageArr = JSON.parse(storage);
     // Convert values to int.
     storageArr.forEach(function(value, index) {
-      value.revisionId = parseInt(value.revisionId);
+      value.lastFetchedRevisionId = parseInt(value.lastFetchedRevisionId);
+      value.lastSuccesfulContact = parseInt(value.lastSuccesfulContact);
+      value.remainingToUpload = parseInt(value.remainingToDownload);
+      value.remainingToDownload = parseInt(value.remainingToDownload);
+      value.statsCacheHash = value.statsCacheHash;
+      value.status = value.status;
       this[index] = value;
     }, storageArr);
 
@@ -225,7 +306,10 @@ const getSyncSpeed = function() {
     return storageArr;
   }
 
-  return {idle: (10 * 1000), cycle: 50, offline: 3000};
+  // Idle time between sync is 5 min.
+  // Sync cicle last 50 milliseconds.
+  // When offline, we check network state every 30 secons.
+  return {idle: (5 * 60 * 1000), cycle: 50, offline: (30 * 1000)};
 }
 
 // Start up our Elm app.
@@ -238,11 +322,8 @@ var elmApp = Elm.Main.init({
     activeLanguage: localStorage.getItem('language') || '',
     healthCenterId: localStorage.getItem('healthCenterId') || '',
     villageId: localStorage.getItem('villageId') || '',
-
-    // @todo: Instead of 0, we can check IndexDB for latest vid.
-    // Sync related.
-    lastFetchedRevisionIdGeneral: parseInt(localStorage.getItem('lastFetchedRevisionIdGeneral')) || 0,
-    revisionIdPerAuthority: getRevisionIdPerAuthority(),
+    syncInfoGeneral: getSyncInfoGeneral(),
+    syncInfoAuthorities: getSyncInfoAuthorities(),
     photoDownloadBatchSize: parseInt(localStorage.getItem('photoDownloadBatchSize')) || (10),
     syncSpeed: getSyncSpeed(),
   }
@@ -253,12 +334,10 @@ navigator.storage.persist().then(function(granted) {
   elmApp.ports.persistentStorage.send(granted);
 });
 
-
 // Milliseconds for the specified minutes
 function minutesToMillis(minutes) {
   return minutes * 60 * 1000;
 }
-
 
 // Report our quota status.
 function reportQuota() {
@@ -274,8 +353,6 @@ reportQuota();
 
 // And, then every minute.
 setInterval(reportQuota, minutesToMillis(1));
-
-
 
 elmApp.ports.cachePinCode.subscribe(function(pinCode) {
   localStorage.setItem('pinCode', pinCode);
@@ -303,18 +380,17 @@ elmApp.ports.scrollToElement.subscribe(function(elementId) {
 });
 
 /**
- * Set the last revision ID used to download General.
+ * Set the information about General sync.
  */
-elmApp.ports.sendLastFetchedRevisionIdGeneral.subscribe(function(lastFetchedRevisionIdGeneral) {
-  localStorage.setItem('lastFetchedRevisionIdGeneral', lastFetchedRevisionIdGeneral);
+elmApp.ports.sendSyncInfoGeneral.subscribe(function(syncInfoGeneral) {
+  localStorage.setItem('syncInfoGeneral', JSON.stringify(syncInfoGeneral));
 });
 
 /**
- * Set a list with the last revision ID used to download Authority, along with
- * their UUID.
+ * Set the information about Autohorities sync.
  */
-elmApp.ports.sendRevisionIdPerAuthority.subscribe(function(revisionIdPerAuthority) {
-  localStorage.setItem('revisionIdPerAuthority', JSON.stringify(revisionIdPerAuthority));
+elmApp.ports.sendSyncInfoAuthorities.subscribe(function(syncInfoAuthorities) {
+  localStorage.setItem('syncInfoAuthorities', JSON.stringify(syncInfoAuthorities));
 });
 
 /**
@@ -349,6 +425,10 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
   switch (info.table) {
     case 'Authority':
       table = dbSync.shards;
+      break;
+
+    case 'AuthorityStats':
+      table = dbSync.statistics;
       break;
 
     case 'General':
@@ -404,7 +484,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         const cache = await caches.open(photosUploadCache);
 
-        result.forEach(async function(row) {
+        result.forEach(async function(row, index) {
             const cachedResponse = await cache.match(row.photo);
             if (!cachedResponse) {
               // Photo is registered in IndexDB, but doesn't appear in the cache.
@@ -465,10 +545,13 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
               // photoUploadChanges table, the same photo local URL will appear.
               await dbSync.authorityPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
             }
+
+            if (index == (result.length -1)) {
+              // As we've got async operations within the loop, we must verify that all
+              // rows were processed before sending a response.
+              return sendResultToElm(queryType, {tag: 'Success', result: "!"});
+            }
         });
-        // @todo: figure out the response.
-        // const completedResult = Object.assign(row, changes);
-        return sendResultToElm(queryType, {tag: 'Success', result: "!"});
       })();
       break;
 
@@ -476,6 +559,17 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       (async () => {
 
         const batchSize = 50;
+
+        let totalEntites = await dbSync
+            .nodeChanges
+            .where('isSynced')
+            .notEqual(1)
+            .count();
+
+        if (totalEntites == 0) {
+          // No entities for upload found.
+          return sendResultToElm(queryType, null);
+        }
 
         let entitiesResult = await dbSync
             .nodeChanges
@@ -485,17 +579,12 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .limit(batchSize)
             .toArray();
 
-        if (!entitiesResult[0]) {
-          // No entities for upload found.
-          return sendResultToElm(queryType, null);
-        }
-
         const resultToSend = {
-          'entities': entitiesResult
+          'entities': entitiesResult,
+          'remaining': totalEntites - entitiesResult.length
         };
 
         return sendResultToElm(queryType, resultToSend);
-
       })();
       break;
 
@@ -503,6 +592,17 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       (async () => {
 
         const batchSize = 50;
+
+        let totalEntites = await dbSync
+            .shardChanges
+            .where('isSynced')
+            .notEqual(1)
+            .count();
+
+        if (totalEntites == 0) {
+          // No entities for upload found.
+          return sendResultToElm(queryType, null);
+        }
 
         let entitiesResult = await dbSync
             .shardChanges
@@ -512,10 +612,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .limit(batchSize)
             .toArray();
 
-        if (!entitiesResult[0]) {
-          // No entities for upload found.
-          return sendResultToElm(queryType, null);
-        }
+        let remaining = totalEntites - entitiesResult.length;
 
         // Query by the localId the `authorityUploadPhotos` to get the matching
         // file ID.
@@ -524,7 +621,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         });
 
         let resultToSend = {
-          'entities': entitiesResult
+          'entities': entitiesResult,
+          'remaining': remaining
         };
 
         let uploadPhotosResult = await dbSync
@@ -536,6 +634,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         if (uploadPhotosResult[0]) {
             resultToSend = {
               'entities': entitiesResult,
+              'remaining': remaining,
               'uploadPhotos': uploadPhotosResult
             };
         }
@@ -556,12 +655,23 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             // Get attempts sorted, so we won't always grab the same one.
             .sortBy('attempts');
 
-        return sendResultToElm(queryType, result);
+        // If we managed to get non empty result from the query above (limited to 1 result),
+        // add to response the number of photos, remaining for download.
+        if (result.length == 1) {
+            let totalEntites = await dbSync
+                .deferredPhotos
+                .where('attempts')
+                .belowOrEqual(2)
+                .count();
 
+            result[0].remaining = totalEntites;
+        }
+
+        return sendResultToElm(queryType, result);
       })();
       break;
 
-    case 'IndexDbQueryRemoveDeferredPhotoAttempts':
+    case 'IndexDbQueryRemoveDeferredPhoto':
       (async () => {
 
         // We have nothing to send back. At this point we assume the record
@@ -569,7 +679,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         // eventually the number of attempts will make sure it's never picked
         // up again.
         await dbSync.deferredPhotos.delete(data);
-
       })();
       break;
 
@@ -580,15 +689,28 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         // We don't need to send back the result, as it's an update operation.
         await dbSync.deferredPhotos.update(dataArr.uuid, {'attempts': dataArr.attempts});
+      })();
+      break;
 
+    case 'IndexDbQueryRemoveUploadPhotos':
+      (async () => {
+
+        // We get uuids as a srting, seperated by commas.
+        // So, we convert it into array of numbers.
+        let uuids = data.split(',').map(Number);
+
+        // We have nothing to send back. At this point we assume the record
+        // was deleted properly.
+        await dbSync.authorityPhotoUploadChanges
+            .where('localId')
+            .anyOf(uuids)
+            .delete();
       })();
       break;
 
     default:
       throw queryType + ' is not a known Query type for `askFromIndexDb`';
-
   }
-
 
   /**
    * Prepare and send the result.

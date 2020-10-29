@@ -1,37 +1,10 @@
-module SyncManager.Model exposing
-    ( BackendAuthorityEntity(..)
-    , BackendEntity
-    , BackendEntityIdentifier
-    , BackendGeneralEntity(..)
-    , DownloadPhotos(..)
-    , DownloadPhotosBatchRec
-    , DownloadSyncResponse
-    , Flags
-    , IndexDbQueryDeferredPhotoResultRecord
-    , IndexDbQueryType(..)
-    , IndexDbQueryTypeResult(..)
-    , IndexDbQueryUploadAuthorityResultRecord
-    , IndexDbQueryUploadGeneralResultRecord
-    , IndexDbQueryUploadPhotoResultRecord
-    , Model
-    , Msg(..)
-    , RevisionIdPerAuthority
-    , RevisionIdPerAuthorityZipper
-    , SyncCycle(..)
-    , SyncSpeed
-    , SyncStatus(..)
-    , UploadMethod(..)
-    , UploadPhotoError(..)
-    , emptyDownloadPhotosBatchRec
-    , emptyModel
-    , emptyRevisionIdPerAuthority
-    , emptyUploadRec
-    )
+module SyncManager.Model exposing (..)
 
 import AssocList exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
+import Backend.Dashboard.Model exposing (DashboardStats)
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
@@ -46,6 +19,7 @@ import Backend.Relationship.Model exposing (Relationship)
 import Backend.Session.Model exposing (Session)
 import Backend.Village.Model exposing (Village)
 import Editable exposing (Editable)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Json.Decode exposing (Value)
 import List.Zipper exposing (Zipper)
 import RemoteData exposing (RemoteData, WebData)
@@ -82,6 +56,7 @@ type BackendAuthorityEntity
     | BackendAuthorityCorePhysicalExam (BackendEntity CorePhysicalExam)
     | BackendAuthorityCounselingSession (BackendEntity CounselingSession)
     | BackendAuthorityDangerSigns (BackendEntity DangerSigns)
+    | BackendAuthorityDashboardStats (BackendEntity DashboardStats)
     | BackendAuthorityExposure (BackendEntity Exposure)
     | BackendAuthorityFamilyPlanning (BackendEntity FamilyPlanning)
     | BackendAuthorityHCContact (BackendEntity HCContact)
@@ -150,38 +125,81 @@ type alias BackendEntityIdentifier =
     { uuid : String, revision : Int, type_ : String }
 
 
-type alias LastFetchedRevisionIdGeneral =
-    Int
+type alias SyncInfoGeneral =
+    { lastFetchedRevisionId : Int
+    , lastSuccesfulContact : Int
+    , remainingToUpload : Int
+    , remainingToDownload : Int
+    , deviceName : String
+    , status : SyncInfoStatus
+    }
 
 
-type alias RevisionIdPerAuthority =
+type alias SyncInfoGeneralForPort =
+    { lastFetchedRevisionId : Int
+    , lastSuccesfulContact : Int
+    , remainingToUpload : Int
+    , remainingToDownload : Int
+    , deviceName : String
+    , status : String
+    }
+
+
+type alias SyncInfoAuthority =
     { uuid : String
-    , revisionId : Int
+    , lastFetchedRevisionId : Int
+    , lastSuccesfulContact : Int
+    , remainingToUpload : Int
+    , remainingToDownload : Int
+    , statsCacheHash : String
+    , status : SyncInfoStatus
     }
 
 
-emptyRevisionIdPerAuthority : String -> RevisionIdPerAuthority
-emptyRevisionIdPerAuthority uuid =
+type alias SyncInfoAuthorityForPort =
+    { uuid : String
+    , lastFetchedRevisionId : Int
+    , lastSuccesfulContact : Int
+    , remainingToUpload : Int
+    , remainingToDownload : Int
+    , statsCacheHash : String
+    , status : String
+    }
+
+
+type SyncInfoStatus
+    = Downloading
+    | Error
+    | NotAvailable
+    | Success
+    | Uploading
+
+
+emptySyncInfoAuthority : String -> SyncInfoAuthority
+emptySyncInfoAuthority uuid =
     { uuid = uuid
-    , revisionId = 0
+    , lastFetchedRevisionId = 0
+    , lastSuccesfulContact = 0
+    , remainingToUpload = 0
+    , remainingToDownload = 0
+    , statsCacheHash = ""
+    , status = NotAvailable
     }
 
 
-type alias RevisionIdPerAuthorityZipper =
-    Maybe (Zipper RevisionIdPerAuthority)
+type alias SyncInfoAuthorityZipper =
+    Maybe (Zipper SyncInfoAuthority)
 
 
 type alias Model =
     { syncStatus : SyncStatus
-    , lastFetchedRevisionIdGeneral : LastFetchedRevisionIdGeneral
-
-    -- We may have multiple authorities, and each one has its own revision ID to
-    -- fetch from.
-    , revisionIdPerAuthorityZipper : RevisionIdPerAuthorityZipper
+    , downloadPhotosStatus : DownloadPhotosStatus
+    , syncInfoGeneral : SyncInfoGeneral
+    , syncInfoAuthorities : SyncInfoAuthorityZipper
     , lastTryBackendGeneralDownloadTime : Time.Posix
 
     -- Determine how we're going to download photos.
-    , downloadPhotos : DownloadPhotos
+    , downloadPhotosMode : DownloadPhotosMode
 
     -- If `DownloadPhotosBatch` is selected as download mechanism, indicate what's
     -- the batch size.
@@ -202,10 +220,11 @@ type alias Model =
 emptyModel : Flags -> Model
 emptyModel flags =
     { syncStatus = SyncIdle
-    , lastFetchedRevisionIdGeneral = flags.lastFetchedRevisionIdGeneral
-    , revisionIdPerAuthorityZipper = flags.revisionIdPerAuthorityZipper
+    , downloadPhotosStatus = DownloadPhotosIdle
+    , syncInfoGeneral = flags.syncInfoGeneral
+    , syncInfoAuthorities = flags.syncInfoAuthorities
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
-    , downloadPhotos = DownloadPhotosBatch (emptyDownloadPhotosBatchRec flags.batchSize)
+    , downloadPhotosMode = DownloadPhotosAll emptyDownloadPhotosAllRec
     , downloadPhotosBatchSize = flags.batchSize
     , syncCycle = SyncCycleOn
     , syncSpeed = Editable.ReadOnly flags.syncSpeed
@@ -215,8 +234,8 @@ emptyModel flags =
 {-| The information we get initially from App.Model via flags.
 -}
 type alias Flags =
-    { lastFetchedRevisionIdGeneral : LastFetchedRevisionIdGeneral
-    , revisionIdPerAuthorityZipper : RevisionIdPerAuthorityZipper
+    { syncInfoGeneral : SyncInfoGeneral
+    , syncInfoAuthorities : SyncInfoAuthorityZipper
     , batchSize : Int
     , syncSpeed : SyncSpeed
     }
@@ -241,12 +260,13 @@ type alias DownloadSyncResponse a =
     { entities : List a
     , lastTimestampOfLastRevision : Time.Posix
     , revisionCount : Int
+    , deviceName : String
     }
 
 
 {-| Determine how photos are going to be downloaded.
 -}
-type DownloadPhotos
+type DownloadPhotosMode
     = -- Don't download any photos at all.
       DownloadPhotosNone
       -- Download up to a number of photos, and then skip to the next Sync status,
@@ -297,6 +317,13 @@ type alias DownloadPhotosAllRec =
     }
 
 
+emptyDownloadPhotosAllRec : DownloadPhotosAllRec
+emptyDownloadPhotosAllRec =
+    { indexDbRemoteData = RemoteData.NotAsked
+    , backendRemoteData = RemoteData.NotAsked
+    }
+
+
 {-| RemoteData to indicate fetching deferred photos info from IndexDB.
 -}
 type alias IndexDbDeferredPhotoRemoteData =
@@ -318,7 +345,12 @@ type SyncStatus
     | SyncUploadAuthority (UploadRec IndexDbQueryUploadAuthorityResultRecord)
     | SyncDownloadGeneral (WebData (DownloadSyncResponse BackendGeneralEntity))
     | SyncDownloadAuthority (WebData (DownloadSyncResponse BackendAuthorityEntity))
-    | SyncDownloadPhotos DownloadPhotos
+    | SyncDownloadAuthorityDashboardStats (WebData (DownloadSyncResponse BackendAuthorityEntity))
+
+
+type DownloadPhotosStatus
+    = DownloadPhotosIdle
+    | DownloadPhotosInProcess DownloadPhotosMode
 
 
 type SyncCycle
@@ -344,10 +376,11 @@ type IndexDbQueryType
     | IndexDbQueryDeferredPhoto
       -- When we successfully download a photo, we remove it from the `deferredPhotos` table.
       -- We just need the UUID.
-    | IndexDbQueryRemoveDeferredPhotoAttempts String
+    | IndexDbQueryRemoveDeferredPhoto String
       -- Update the number of attempts, a deferred photos was un-successfully downloaded.
       -- We don't count cases where we were offline.
     | IndexDbQueryUpdateDeferredPhotoAttempts IndexDbQueryDeferredPhotoResultRecord
+    | IndexDbQueryRemoveUploadPhotos (List Int)
 
 
 type IndexDbQueryTypeResult
@@ -386,11 +419,13 @@ type UploadMethod
 
 type alias IndexDbQueryUploadGeneralResultRecord =
     { entities : List ( BackendGeneralEntity, UploadMethod )
+    , remaining : Int
     }
 
 
 type alias IndexDbQueryUploadAuthorityResultRecord =
     { entities : List ( BackendAuthorityEntity, UploadMethod )
+    , remaining : Int
 
     -- Instead of list, it is be handier to get a Dict, keyed by the `localId`
     -- so when we would like to switch the photo URL with Drupal's file ID, we
@@ -407,15 +442,21 @@ type alias IndexDbQueryDeferredPhotoResultRecord =
 
     -- The number of attempts we've tried to get the image.
     , attempts : Int
+
+    -- The number of photos remaining at deferredPhotos table.
+    , remaining : Int
     }
 
 
 type Msg
     = BackendAuthorityFetch
-    | BackendAuthorityFetchHandle (Zipper RevisionIdPerAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
+    | BackendAuthorityFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
+    | BackendAuthorityDashboardStatsFetch
+    | BackendAuthorityDashboardStatsFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
       -- This is the main entry point for the Sync loop. This will dispatch a call
       -- according to the `syncStatus`.
     | BackendFetchMain
+    | BackendFetchPhotos
     | BackendGeneralFetch
     | BackendGeneralFetchHandle (WebData (DownloadSyncResponse BackendGeneralEntity))
       -- Fetch a deferred photo from the server.
@@ -438,7 +479,7 @@ type Msg
     | FetchFromIndexDbUploadAuthority
     | RevisionIdAuthorityAdd HealthCenterId
     | RevisionIdAuthorityRemove HealthCenterId
-    | SetLastFetchedRevisionIdAuthority (Zipper RevisionIdPerAuthority) Int
+    | SetLastFetchedRevisionIdAuthority (Zipper SyncInfoAuthority) Int
     | SetLastFetchedRevisionIdGeneral Int
       -- UI settings
     | ResetSettings
@@ -447,3 +488,5 @@ type Msg
     | SetSyncSpeedIdle String
     | SetSyncSpeedCycle String
     | SetSyncSpeedOffline String
+    | TrySyncing
+    | TryDownloadingPhotos

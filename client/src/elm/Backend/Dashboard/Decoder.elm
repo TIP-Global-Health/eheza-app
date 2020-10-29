@@ -21,6 +21,7 @@ decodeDashboardStats =
         |> optional "good_nutrition" (nullable decodeGoodNutrition) Nothing
         |> required "missed_sessions" (list decodeParticipantStats)
         |> required "total_encounters" decodePeriods
+        |> required "stats_cache_hash" string
 
 
 decodeCaseManagement : Decoder CaseManagement

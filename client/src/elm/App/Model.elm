@@ -37,7 +37,8 @@ import PrenatalActivity.Model exposing (PrenatalActivity)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import ServiceWorker.Model
-import SyncManager.Model exposing (RevisionIdPerAuthority)
+import SyncManager.Model
+import SyncManager.Utils
 import Time
 import Translate.Model exposing (Language(..))
 import Url exposing (Url)
@@ -114,10 +115,6 @@ type alias Model =
 
     -- List of errors we'll send to console.log
     , errors : List Error
-
-    -- The name of device nurse is working with.
-    -- @todo: Keep this, or the one implemented in Device.Model?
-    , deviceName : Maybe String
     }
 
 
@@ -224,7 +221,6 @@ type Msg
       -- worker
       MsgIndexedDb Backend.Model.MsgIndexedDb
     | MsgServiceWorker ServiceWorker.Model.Msg
-    | TrySyncing
     | MsgSyncManager SyncManager.Model.Msg
       -- Messages that require login, or manage the login process
     | MsgLoggedIn MsgLoggedIn
@@ -246,7 +242,6 @@ type Msg
     | SetMemoryQuota MemoryQuota
     | SetHealthCenter (Maybe HealthCenterId)
     | SetVillage (Maybe VillageId)
-    | SetDeviceName (Maybe String)
     | Tick Time.Posix
     | CheckDataWanted
     | UrlRequested Browser.UrlRequest
@@ -283,11 +278,8 @@ type alias Flags =
     , pinCode : String
     , healthCenterId : String
     , villageId : String
-    , lastFetchedRevisionIdGeneral : Int
-
-    -- We may have multiple authorities, and each one has its own revision ID to
-    -- fetch from.
-    , revisionIdPerAuthority : List SyncManager.Model.RevisionIdPerAuthority
+    , syncInfoGeneral : SyncManager.Model.SyncInfoGeneralForPort
+    , syncInfoAuthorities : List SyncManager.Model.SyncInfoAuthorityForPort
     , photoDownloadBatchSize : Int
     , syncSpeed : SyncManager.Model.SyncSpeed
     }
@@ -310,12 +302,14 @@ emptyModel key url flags =
             else
                 Just (toEntityUuid flags.villageId)
 
-        revisionIdPerAuthorityZipper =
-            Zipper.fromList flags.revisionIdPerAuthority
+        syncInfoAuthorities =
+            flags.syncInfoAuthorities
+                |> List.map SyncManager.Utils.syncInfoAuthorityFromPort
+                |> Zipper.fromList
 
         syncManagerFlags =
-            { lastFetchedRevisionIdGeneral = flags.lastFetchedRevisionIdGeneral
-            , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
+            { syncInfoGeneral = SyncManager.Utils.syncInfoGeneralFromPort flags.syncInfoGeneral
+            , syncInfoAuthorities = syncInfoAuthorities
             , batchSize = flags.photoDownloadBatchSize
             , syncSpeed = flags.syncSpeed
             }
@@ -339,7 +333,6 @@ emptyModel key url flags =
     , villageId = villageId
     , syncManager = SyncManager.Model.emptyModel syncManagerFlags
     , errors = []
-    , deviceName = Nothing
     }
 
 

@@ -1,6 +1,8 @@
 port module SyncManager.Update exposing (subscriptions, update)
 
 import App.Model exposing (SubModelReturn)
+import App.Utils exposing (sequenceSubModelReturn)
+import AssocList as Dict exposing (Dict)
 import Backend.Model
 import Device.Encoder
 import Device.Model exposing (Device)
@@ -13,21 +15,30 @@ import Json.Encode
 import List.Zipper as Zipper
 import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid)
-import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseGeneral)
+import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseAuthorityStats, decodeDownloadSyncResponseGeneral)
 import SyncManager.Encoder
-import SyncManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadPhotos(..), IndexDbQueryType(..), IndexDbQueryTypeResult(..), Model, Msg(..), SyncStatus(..), emptyRevisionIdPerAuthority)
-import SyncManager.Utils exposing (getSyncSpeedForSubscriptions)
+import SyncManager.Model exposing (..)
+import SyncManager.Utils exposing (getDownloadPhotosSpeedForSubscriptions, getSyncSpeedForSubscriptions, syncInfoAuthorityForPort, syncInfoGeneralForPort)
 import Time
 import Utils.WebData
 
 
-update : NominalDate -> Int -> Device -> Msg -> Model -> SubModelReturn Model Msg
-update currentDate dbVersion device msg model =
+update : NominalDate -> Time.Posix -> Int -> Device -> Msg -> Model -> SubModelReturn Model Msg
+update currentDate currentTime dbVersion device msg model =
     let
         noChange =
             SubModelReturn model Cmd.none noError []
 
-        returnDetermineSyncStatus =
+        sendSyncInfoGeneralCmd info =
+            syncInfoGeneralForPort info
+                |> sendSyncInfoGeneral
+
+        sendSyncInfoAuthoritiesCmd zipper =
+            Zipper.toList zipper
+                |> List.map syncInfoAuthorityForPort
+                |> sendSyncInfoAuthorities
+
+        determineSyncStatus =
             SubModelReturn
                 (SyncManager.Utils.determineSyncStatus model)
                 Cmd.none
@@ -43,41 +54,53 @@ update currentDate dbVersion device msg model =
                         noChange
 
                     else
-                        case model.revisionIdPerAuthorityZipper of
+                        case model.syncInfoAuthorities of
                             Nothing ->
                                 -- No zipper, means not subscribed yet to any
                                 -- authority. `determineSyncStatus` will take care of
                                 -- rotating if we're not on automatic sync.
-                                returnDetermineSyncStatus
+                                determineSyncStatus
 
                             Just zipper ->
-                                if RemoteData.isLoading webData then
-                                    -- We are already loading.
-                                    noChange
+                                let
+                                    currentZipper =
+                                        Zipper.current zipper
 
-                                else
-                                    let
-                                        currentZipper =
-                                            Zipper.current zipper
+                                    zipperUpdated =
+                                        if currentZipper.status == Downloading then
+                                            zipper
 
-                                        cmd =
-                                            HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
-                                                |> withQueryParams
-                                                    [ ( "access_token", device.accessToken )
-                                                    , ( "db_version", String.fromInt dbVersion )
-                                                    , ( "base_revision", String.fromInt currentZipper.revisionId )
-                                                    ]
-                                                |> withExpectJson decodeDownloadSyncResponseAuthority
-                                                |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipper)
-                                    in
-                                    SubModelReturn
-                                        { model | syncStatus = SyncDownloadAuthority RemoteData.Loading }
-                                        cmd
-                                        noError
-                                        []
+                                        else
+                                            Zipper.mapCurrent
+                                                (\old -> { old | status = Downloading })
+                                                zipper
+
+                                    ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
+                                        if currentZipper.status == Downloading then
+                                            ( model.syncInfoAuthorities, Cmd.none )
+
+                                        else
+                                            ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipperUpdated )
+
+                                    cmd =
+                                        HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
+                                            |> withQueryParams
+                                                [ ( "access_token", device.accessToken )
+                                                , ( "db_version", String.fromInt dbVersion )
+                                                , ( "base_revision", String.fromInt currentZipper.lastFetchedRevisionId )
+                                                , ( "stats_cache_hash", currentZipper.statsCacheHash )
+                                                ]
+                                            |> withExpectJson decodeDownloadSyncResponseAuthority
+                                            |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipperUpdated)
+                                in
+                                SubModelReturn
+                                    { model | syncStatus = SyncDownloadAuthority RemoteData.Loading, syncInfoAuthorities = syncInfoAuthorities }
+                                    (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
+                                    noError
+                                    []
 
                 _ ->
-                    returnDetermineSyncStatus
+                    determineSyncStatus
 
         BackendAuthorityFetchHandle zipper webData ->
             let
@@ -133,31 +156,44 @@ update currentDate dbVersion device msg model =
                         Nothing ->
                             Cmd.none
 
-                lastFetchedRevisionId =
+                syncInfoAuthorities =
                     case RemoteData.toMaybe webData of
                         Just data ->
-                            -- Get the last item.
-                            data.entities
-                                |> List.reverse
-                                |> List.head
-                                |> Maybe.map
-                                    (\entity ->
-                                        SyncManager.Utils.getBackendAuthorityEntityIdentifier entity
-                                            |> (\entityIdentifier -> entityIdentifier.revision)
-                                    )
-                                |> Maybe.withDefault currentZipper.revisionId
+                            let
+                                status =
+                                    if data.revisionCount == 0 then
+                                        Success
+
+                                    else
+                                        currentZipper.status
+
+                                lastFetchedRevisionId =
+                                    data.entities
+                                        |> List.sortBy (SyncManager.Utils.getBackendAuthorityEntityIdentifier >> .revision)
+                                        |> List.reverse
+                                        |> List.head
+                                        |> Maybe.map (SyncManager.Utils.getBackendAuthorityEntityIdentifier >> .revision)
+                                        |> Maybe.withDefault currentZipper.lastFetchedRevisionId
+                            in
+                            Zipper.mapCurrent
+                                (\old ->
+                                    { old
+                                        | lastFetchedRevisionId = lastFetchedRevisionId
+                                        , lastSuccesfulContact = Time.posixToMillis currentTime
+                                        , remainingToDownload = data.revisionCount
+                                        , status = status
+                                    }
+                                )
+                                zipper
 
                         Nothing ->
-                            currentZipper.revisionId
-
-                zipperUpdated =
-                    Zipper.mapCurrent (\old -> { old | revisionId = lastFetchedRevisionId }) zipper
+                            zipper
 
                 modelWithSyncStatus =
                     SyncManager.Utils.determineSyncStatus
                         { model
                             | syncStatus = SyncDownloadAuthority webData
-                            , revisionIdPerAuthorityZipper = Just zipperUpdated
+                            , syncInfoAuthorities = Just syncInfoAuthorities
                         }
             in
             SubModelReturn
@@ -166,22 +202,156 @@ update currentDate dbVersion device msg model =
                     [ cmd
                     , deferredPhotosCmd
 
-                    -- Send to JS the updated revision ID. We send the entire
-                    -- list.
-                    , sendRevisionIdPerAuthority (Zipper.toList zipperUpdated)
+                    -- Send to JS the updated revision ID. We send the entire list.
+                    , sendSyncInfoAuthoritiesCmd syncInfoAuthorities
                     ]
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
+                []
+                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ TryDownloadingPhotos ]
+
+        BackendAuthorityDashboardStatsFetch ->
+            case model.syncStatus of
+                SyncDownloadAuthorityDashboardStats webData ->
+                    if RemoteData.isLoading webData then
+                        -- We are already loading.
+                        noChange
+
+                    else
+                        case model.syncInfoAuthorities of
+                            Nothing ->
+                                -- No zipper, means not subscribed yet to any
+                                -- authority. `determineSyncStatus` will take care of
+                                -- rotating if we're not on automatic sync.
+                                determineSyncStatus
+
+                            Just zipper ->
+                                let
+                                    currentZipper =
+                                        Zipper.current zipper
+
+                                    zipperUpdated =
+                                        if currentZipper.status == Downloading then
+                                            zipper
+
+                                        else
+                                            Zipper.mapCurrent
+                                                (\old -> { old | status = Downloading })
+                                                zipper
+
+                                    ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
+                                        if currentZipper.status == Downloading then
+                                            ( model.syncInfoAuthorities, Cmd.none )
+
+                                        else
+                                            ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipperUpdated )
+
+                                    cmd =
+                                        HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
+                                            |> withQueryParams
+                                                [ ( "access_token", device.accessToken )
+                                                , ( "db_version", String.fromInt dbVersion )
+                                                , ( "stats_cache_hash", currentZipper.statsCacheHash )
+                                                , ( "statistics", "1" )
+                                                ]
+                                            |> withExpectJson decodeDownloadSyncResponseAuthorityStats
+                                            |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityDashboardStatsFetchHandle zipperUpdated)
+                                in
+                                SubModelReturn
+                                    { model | syncStatus = SyncDownloadAuthorityDashboardStats RemoteData.Loading, syncInfoAuthorities = syncInfoAuthorities }
+                                    (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
+                                    noError
+                                    []
+
+                _ ->
+                    determineSyncStatus
+
+        BackendAuthorityDashboardStatsFetchHandle zipper webData ->
+            let
+                currentZipper =
+                    Zipper.current zipper
+
+                ( cmd, statsCacheHash ) =
+                    case RemoteData.toMaybe webData of
+                        Just data ->
+                            if List.isEmpty data.entities then
+                                ( Cmd.none, currentZipper.statsCacheHash )
+
+                            else
+                                let
+                                    dataToSend =
+                                        data.entities
+                                            |> List.foldl
+                                                (\entity accum -> SyncManager.Utils.getDataToSendAuthority entity accum)
+                                                []
+                                            |> List.reverse
+
+                                    -- Grab the updated cache hash.
+                                    cacheHash =
+                                        data.entities
+                                            |> List.head
+                                            |> Maybe.map
+                                                (\backendAuthorityEntity ->
+                                                    case backendAuthorityEntity of
+                                                        BackendAuthorityDashboardStats statsEntity ->
+                                                            statsEntity.entity.cacheHash
+
+                                                        _ ->
+                                                            currentZipper.statsCacheHash
+                                                )
+                                            |> Maybe.withDefault currentZipper.statsCacheHash
+                                in
+                                ( sendSyncedDataToIndexDb { table = "AuthorityStats", data = dataToSend, shard = currentZipper.uuid }
+                                , cacheHash
+                                )
+
+                        Nothing ->
+                            ( Cmd.none, currentZipper.statsCacheHash )
+
+                syncInfoAuthorities =
+                    case RemoteData.toMaybe webData of
+                        Just data ->
+                            Zipper.mapCurrent
+                                (\old ->
+                                    { old
+                                        | lastSuccesfulContact = Time.posixToMillis currentTime
+                                        , remainingToDownload = data.revisionCount
+                                        , status = Success
+                                        , statsCacheHash = statsCacheHash
+                                    }
+                                )
+                                zipper
+
+                        Nothing ->
+                            zipper
+
+                modelWithSyncStatus =
+                    SyncManager.Utils.determineSyncStatus
+                        { model
+                            | syncStatus = SyncDownloadAuthorityDashboardStats webData
+                            , syncInfoAuthorities = Just syncInfoAuthorities
+                        }
+            in
+            SubModelReturn
+                modelWithSyncStatus
+                (Cmd.batch
+                    [ cmd
+                    , -- Send to JS the updated revision ID. We send the entire list.
+                      sendSyncInfoAuthoritiesCmd syncInfoAuthorities
+                    ]
+                )
+                (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityDashboardStatsFetchHandle")
                 []
 
         BackendFetchMain ->
             case model.syncStatus of
                 SyncIdle ->
-                    returnDetermineSyncStatus
+                    determineSyncStatus
 
                 SyncUploadGeneral _ ->
                     update
                         currentDate
+                        currentTime
                         dbVersion
                         device
                         FetchFromIndexDbUploadGeneral
@@ -190,6 +360,7 @@ update currentDate dbVersion device msg model =
                 SyncUploadPhotoAuthority _ ->
                     update
                         currentDate
+                        currentTime
                         dbVersion
                         device
                         BackendPhotoUploadAuthority
@@ -198,6 +369,7 @@ update currentDate dbVersion device msg model =
                 SyncUploadAuthority _ ->
                     update
                         currentDate
+                        currentTime
                         dbVersion
                         device
                         FetchFromIndexDbUploadAuthority
@@ -206,6 +378,7 @@ update currentDate dbVersion device msg model =
                 SyncDownloadGeneral _ ->
                     update
                         currentDate
+                        currentTime
                         dbVersion
                         device
                         BackendGeneralFetch
@@ -214,14 +387,34 @@ update currentDate dbVersion device msg model =
                 SyncDownloadAuthority _ ->
                     update
                         currentDate
+                        currentTime
                         dbVersion
                         device
                         BackendAuthorityFetch
                         model
 
-                SyncDownloadPhotos _ ->
+                SyncDownloadAuthorityDashboardStats _ ->
                     update
                         currentDate
+                        currentTime
+                        dbVersion
+                        device
+                        BackendAuthorityDashboardStatsFetch
+                        model
+
+        BackendFetchPhotos ->
+            case model.downloadPhotosStatus of
+                DownloadPhotosIdle ->
+                    SubModelReturn
+                        (SyncManager.Utils.determineDownloadPhotosStatus model)
+                        Cmd.none
+                        noError
+                        []
+
+                DownloadPhotosInProcess _ ->
+                    update
+                        currentDate
+                        currentTime
                         dbVersion
                         device
                         FetchFromIndexDbDeferredPhoto
@@ -233,34 +426,35 @@ update currentDate dbVersion device msg model =
                 uuidAsString =
                     fromEntityUuid uuid
 
-                revisionIdPerAuthorityZipper =
-                    case model.revisionIdPerAuthorityZipper of
+                syncInfoAuthorities =
+                    case model.syncInfoAuthorities of
                         Just zipper ->
                             zipper
                                 |> Zipper.toList
                                 -- Before adding, lets remove the same UUID, so in case it's already
                                 -- we won't have duplicates.
                                 |> List.filter (\row -> row.uuid /= uuidAsString)
-                                |> (\list -> emptyRevisionIdPerAuthority uuidAsString :: list)
+                                |> (\list -> emptySyncInfoAuthority uuidAsString :: list)
                                 |> Zipper.fromList
 
                         Nothing ->
-                            [ emptyRevisionIdPerAuthority uuidAsString ]
+                            [ emptySyncInfoAuthority uuidAsString ]
                                 |> Zipper.fromList
 
                 cmd =
-                    case revisionIdPerAuthorityZipper of
+                    case syncInfoAuthorities of
                         Just zipper ->
-                            sendRevisionIdPerAuthority (Zipper.toList zipper)
+                            sendSyncInfoAuthoritiesCmd zipper
 
                         Nothing ->
                             Cmd.none
             in
             SubModelReturn
-                { model | revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper }
+                { model | syncInfoAuthorities = syncInfoAuthorities }
                 cmd
                 noError
                 []
+                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ TrySyncing ]
 
         RevisionIdAuthorityRemove uuid ->
             -- Remove authority from Local storage.
@@ -268,8 +462,8 @@ update currentDate dbVersion device msg model =
                 uuidAsString =
                     fromEntityUuid uuid
 
-                revisionIdPerAuthorityZipper =
-                    case model.revisionIdPerAuthorityZipper of
+                syncInfoAuthorities =
+                    case model.syncInfoAuthorities of
                         Just zipper ->
                             zipper
                                 |> Zipper.toList
@@ -282,15 +476,15 @@ update currentDate dbVersion device msg model =
                             Nothing
 
                 cmd =
-                    case revisionIdPerAuthorityZipper of
+                    case syncInfoAuthorities of
                         Just zipper ->
-                            sendRevisionIdPerAuthority (Zipper.toList zipper)
+                            sendSyncInfoAuthoritiesCmd zipper
 
                         Nothing ->
                             Cmd.none
             in
             SubModelReturn
-                { model | revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper }
+                { model | syncInfoAuthorities = syncInfoAuthorities }
                 cmd
                 noError
                 []
@@ -304,19 +498,34 @@ update currentDate dbVersion device msg model =
 
                     else
                         let
+                            syncInfoGeneral =
+                                if model.syncInfoGeneral.status == Downloading then
+                                    model.syncInfoGeneral
+
+                                else
+                                    model.syncInfoGeneral
+                                        |> (\info -> { info | status = Downloading })
+
+                            setSyncInfoGeneralCmd =
+                                if model.syncInfoGeneral.status == Downloading then
+                                    Cmd.none
+
+                                else
+                                    sendSyncInfoGeneralCmd syncInfoGeneral
+
                             cmd =
                                 HttpBuilder.get (device.backendUrl ++ "/api/sync")
                                     |> withQueryParams
                                         [ ( "access_token", device.accessToken )
                                         , ( "db_version", String.fromInt dbVersion )
-                                        , ( "base_revision", String.fromInt model.lastFetchedRevisionIdGeneral )
+                                        , ( "base_revision", String.fromInt model.syncInfoGeneral.lastFetchedRevisionId )
                                         ]
                                     |> withExpectJson decodeDownloadSyncResponseGeneral
                                     |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle)
                         in
                         SubModelReturn
-                            { model | syncStatus = SyncDownloadGeneral RemoteData.Loading }
-                            cmd
+                            { model | syncStatus = SyncDownloadGeneral RemoteData.Loading, syncInfoGeneral = syncInfoGeneral }
+                            (Cmd.batch [ cmd, setSyncInfoGeneralCmd ])
                             noError
                             []
 
@@ -374,35 +583,48 @@ update currentDate dbVersion device msg model =
                         _ ->
                             Cmd.none
 
-                lastFetchedRevisionIdGeneral =
+                syncInfoGeneral =
                     case RemoteData.toMaybe webData of
                         Just data ->
-                            -- Get the last item.
-                            data.entities
-                                |> List.reverse
-                                |> List.head
-                                |> Maybe.map
-                                    (\entity ->
-                                        let
-                                            identifier =
-                                                SyncManager.Utils.getBackendGeneralEntityIdentifier entity
-                                        in
-                                        identifier.revision
-                                    )
-                                |> Maybe.withDefault model.lastFetchedRevisionIdGeneral
+                            let
+                                status =
+                                    if data.revisionCount == 0 then
+                                        Success
+
+                                    else
+                                        model.syncInfoGeneral.status
+
+                                lastFetchedRevisionId =
+                                    data.entities
+                                        |> List.sortBy (SyncManager.Utils.getBackendGeneralEntityIdentifier >> .revision)
+                                        |> List.reverse
+                                        |> List.head
+                                        |> Maybe.map (SyncManager.Utils.getBackendGeneralEntityIdentifier >> .revision)
+                                        |> Maybe.withDefault model.syncInfoGeneral.lastFetchedRevisionId
+                            in
+                            model.syncInfoGeneral
+                                |> (\info ->
+                                        { info
+                                            | lastFetchedRevisionId = lastFetchedRevisionId
+                                            , lastSuccesfulContact = Time.posixToMillis currentTime
+                                            , remainingToDownload = data.revisionCount
+                                            , deviceName = data.deviceName
+                                            , status = status
+                                        }
+                                   )
 
                         Nothing ->
-                            model.lastFetchedRevisionIdGeneral
+                            model.syncInfoGeneral
 
                 modelWithSyncStatus =
                     SyncManager.Utils.determineSyncStatus { model | syncStatus = SyncDownloadGeneral webData }
             in
             SubModelReturn
-                { modelWithSyncStatus | lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral }
+                { modelWithSyncStatus | syncInfoGeneral = syncInfoGeneral }
                 (Cmd.batch
                     [ cmd
                     , deleteLocalIdsCmd
-                    , sendLastFetchedRevisionIdGeneral lastFetchedRevisionIdGeneral
+                    , sendSyncInfoGeneralCmd syncInfoGeneral
                     ]
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendGeneralFetchHandle")
@@ -411,28 +633,33 @@ update currentDate dbVersion device msg model =
         SetLastFetchedRevisionIdAuthority zipper revisionId ->
             let
                 zipperUpdated =
-                    Zipper.mapCurrent (\old -> { old | revisionId = revisionId }) zipper
+                    Zipper.mapCurrent (\old -> { old | lastFetchedRevisionId = revisionId }) zipper
             in
             SubModelReturn
-                { model | revisionIdPerAuthorityZipper = Just zipperUpdated }
+                { model | syncInfoAuthorities = Just zipperUpdated }
                 Cmd.none
                 noError
                 []
 
         SetLastFetchedRevisionIdGeneral revisionId ->
+            let
+                infoUpdated =
+                    model.syncInfoGeneral
+                        |> (\info -> { info | lastFetchedRevisionId = revisionId })
+            in
             SubModelReturn
-                { model | lastFetchedRevisionIdGeneral = revisionId }
+                { model | syncInfoGeneral = infoUpdated }
                 Cmd.none
                 noError
                 []
 
         FetchFromIndexDbDeferredPhoto ->
             -- Get a deferred photo from IndexDB.
-            case model.syncStatus of
-                SyncDownloadPhotos DownloadPhotosNone ->
+            case model.downloadPhotosStatus of
+                DownloadPhotosInProcess DownloadPhotosNone ->
                     noChange
 
-                SyncDownloadPhotos (DownloadPhotosBatch record) ->
+                DownloadPhotosInProcess (DownloadPhotosBatch record) ->
                     if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
                         -- We are already loading.
                         noChange
@@ -447,12 +674,13 @@ update currentDate dbVersion device msg model =
                         in
                         update
                             currentDate
+                            currentTime
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryDeferredPhoto)
-                            { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch recordUpdated) }
+                            { model | downloadPhotosStatus = DownloadPhotosInProcess (DownloadPhotosBatch recordUpdated) }
 
-                SyncDownloadPhotos (DownloadPhotosAll record) ->
+                DownloadPhotosInProcess (DownloadPhotosAll record) ->
                     if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
                         -- We are already loading.
                         noChange
@@ -467,10 +695,11 @@ update currentDate dbVersion device msg model =
                         in
                         update
                             currentDate
+                            currentTime
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryDeferredPhoto)
-                            { model | syncStatus = SyncDownloadPhotos (DownloadPhotosAll recordUpdated) }
+                            { model | downloadPhotosStatus = DownloadPhotosInProcess (DownloadPhotosAll recordUpdated) }
 
                 _ ->
                     noChange
@@ -493,6 +722,7 @@ update currentDate dbVersion device msg model =
                         in
                         update
                             currentDate
+                            currentTime
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryUploadGeneral)
@@ -519,6 +749,7 @@ update currentDate dbVersion device msg model =
                         in
                         update
                             currentDate
+                            currentTime
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryUploadAuthority)
@@ -536,10 +767,26 @@ update currentDate dbVersion device msg model =
                     else
                         update
                             currentDate
+                            currentTime
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryUploadPhotoAuthority)
                             { model | syncStatus = SyncUploadPhotoAuthority RemoteData.Loading }
+
+                _ ->
+                    noChange
+
+        BackendUploadPhotoAuthorityHandle remoteData ->
+            -- Uploading of photos happened through JS, since it involves working
+            -- with file blobs. This handler however is for post upload attempt
+            -- (success or not), to set RemoteData accordingly.
+            case model.syncStatus of
+                SyncUploadPhotoAuthority _ ->
+                    SubModelReturn
+                        (SyncManager.Utils.determineSyncStatus { model | syncStatus = SyncUploadPhotoAuthority remoteData })
+                        Cmd.none
+                        noError
+                        []
 
                 _ ->
                     noChange
@@ -582,8 +829,30 @@ update currentDate dbVersion device msg model =
                                     , indexDbRemoteData = RemoteData.Success (Just result)
                                 }
 
-                            modelUpdated =
-                                { model | syncStatus = SyncUploadAuthority recordUpdated }
+                            ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
+                                model.syncInfoAuthorities
+                                    |> Maybe.map
+                                        (\zipper ->
+                                            let
+                                                currentZipper =
+                                                    Zipper.current zipper
+
+                                                zipperUpdated =
+                                                    if currentZipper.status == Uploading then
+                                                        zipper
+
+                                                    else
+                                                        Zipper.mapCurrent
+                                                            (\old -> { old | status = Uploading })
+                                                            zipper
+                                            in
+                                            if currentZipper.status == Uploading then
+                                                ( model.syncInfoAuthorities, Cmd.none )
+
+                                            else
+                                                ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipper )
+                                        )
+                                    |> Maybe.withDefault ( model.syncInfoAuthorities, Cmd.none )
 
                             cmd =
                                 if List.isEmpty result.entities then
@@ -600,10 +869,13 @@ update currentDate dbVersion device msg model =
                                         -- We don't need to decode anything, as we just want to have
                                         -- the browser download it.
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadAuthorityHandle result)
+
+                            modelUpdated =
+                                { model | syncStatus = SyncUploadAuthority recordUpdated, syncInfoAuthorities = syncInfoAuthorities }
                         in
                         SubModelReturn
                             (SyncManager.Utils.determineSyncStatus modelUpdated)
-                            cmd
+                            (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
                             noError
                             []
 
@@ -618,15 +890,53 @@ update currentDate dbVersion device msg model =
                             let
                                 syncStatus =
                                     SyncUploadAuthority { record | backendRemoteData = RemoteData.Failure error }
+
+                                ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
+                                    model.syncInfoAuthorities
+                                        |> Maybe.map
+                                            (\zipper ->
+                                                let
+                                                    zipperUpdated =
+                                                        Zipper.mapCurrent
+                                                            (\old -> { old | status = Error })
+                                                            zipper
+                                                in
+                                                ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipperUpdated )
+                                            )
+                                        |> Maybe.withDefault ( model.syncInfoAuthorities, Cmd.none )
                             in
                             SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
-                                Cmd.none
+                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoAuthorities = syncInfoAuthorities })
+                                setSyncInfoAurhoritiesCmd
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadAuthorityHandle")
                                 []
 
                         RemoteData.Success _ ->
                             let
+                                ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
+                                    model.syncInfoAuthorities
+                                        |> Maybe.map
+                                            (\zipper ->
+                                                let
+                                                    currentZipper =
+                                                        Zipper.current zipper
+
+                                                    status =
+                                                        if result.remaining == 0 then
+                                                            Success
+
+                                                        else
+                                                            currentZipper.status
+
+                                                    zipperUpdated =
+                                                        Zipper.mapCurrent
+                                                            (\old -> { old | status = status, remainingToUpload = result.remaining })
+                                                            zipper
+                                                in
+                                                ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipperUpdated )
+                                            )
+                                        |> Maybe.withDefault ( model.syncInfoAuthorities, Cmd.none )
+
                                 syncStatus =
                                     SyncUploadAuthority { record | backendRemoteData = RemoteData.Success () }
 
@@ -646,12 +956,26 @@ update currentDate dbVersion device msg model =
                                                 result.entities
                                     in
                                     deleteEntitiesThatWereUploaded { type_ = "Authority", localId = localIds }
+
+                                uploadPhotosToDelete =
+                                    Dict.keys result.uploadPhotos
+
+                                subModelReturn =
+                                    SubModelReturn
+                                        (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoAuthorities = syncInfoAuthorities })
+                                        (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
+                                        noError
+                                        []
                             in
-                            SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
-                                cmd
-                                noError
-                                []
+                            if List.isEmpty uploadPhotosToDelete then
+                                subModelReturn
+
+                            else
+                                subModelReturn
+                                    |> sequenceSubModelReturn
+                                        (update currentDate currentTime dbVersion device)
+                                        [ QueryIndexDb <| IndexDbQueryRemoveUploadPhotos uploadPhotosToDelete
+                                        ]
 
                         _ ->
                             -- Satisfy the compiler.
@@ -698,8 +1022,20 @@ update currentDate dbVersion device msg model =
                                     , indexDbRemoteData = RemoteData.Success (Just result)
                                 }
 
-                            modelUpdated =
-                                { model | syncStatus = SyncUploadGeneral recordUpdated }
+                            syncInfoGeneral =
+                                if model.syncInfoGeneral.status == Uploading then
+                                    model.syncInfoGeneral
+
+                                else
+                                    model.syncInfoGeneral
+                                        |> (\info -> { info | status = Uploading })
+
+                            setSyncInfoGeneralCmd =
+                                if model.syncInfoGeneral.status == Uploading then
+                                    Cmd.none
+
+                                else
+                                    sendSyncInfoGeneralCmd syncInfoGeneral
 
                             cmd =
                                 if List.isEmpty result.entities then
@@ -716,10 +1052,13 @@ update currentDate dbVersion device msg model =
                                         -- We don't need to decode anything, as we just want to have
                                         -- the browser download it.
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle result)
+
+                            modelUpdated =
+                                { model | syncStatus = SyncUploadGeneral recordUpdated, syncInfoGeneral = syncInfoGeneral }
                         in
                         SubModelReturn
                             (SyncManager.Utils.determineSyncStatus modelUpdated)
-                            cmd
+                            setSyncInfoGeneralCmd
                             noError
                             []
 
@@ -734,10 +1073,17 @@ update currentDate dbVersion device msg model =
                             let
                                 syncStatus =
                                     SyncUploadGeneral { record | backendRemoteData = RemoteData.Failure error }
+
+                                syncInfoGeneral =
+                                    model.syncInfoGeneral
+                                        |> (\info -> { info | status = Error })
+
+                                setSyncInfoGeneralCmd =
+                                    sendSyncInfoGeneralCmd syncInfoGeneral
                             in
                             SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
-                                Cmd.none
+                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral })
+                                setSyncInfoGeneralCmd
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadGeneralHandle")
                                 []
 
@@ -745,6 +1091,21 @@ update currentDate dbVersion device msg model =
                             let
                                 syncStatus =
                                     SyncUploadGeneral { record | backendRemoteData = RemoteData.Success () }
+
+                                syncInfoGeneral =
+                                    let
+                                        status =
+                                            if result.remaining == 0 then
+                                                Success
+
+                                            else
+                                                model.syncInfoGeneral.status
+                                    in
+                                    model.syncInfoGeneral
+                                        |> (\info -> { info | remainingToUpload = result.remaining, status = status })
+
+                                setSyncInfoGeneralCmd =
+                                    sendSyncInfoGeneralCmd syncInfoGeneral
 
                                 -- We have successfully uploaded the entities, so
                                 -- we can mark them as `isSynced`.
@@ -764,8 +1125,8 @@ update currentDate dbVersion device msg model =
                                     deleteEntitiesThatWereUploaded { type_ = "General", localId = localIds }
                             in
                             SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
-                                cmd
+                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral })
+                                (Cmd.batch [ cmd, setSyncInfoGeneralCmd ])
                                 noError
                                 []
 
@@ -776,37 +1137,22 @@ update currentDate dbVersion device msg model =
                 _ ->
                     noChange
 
-        BackendUploadPhotoAuthorityHandle remoteData ->
-            -- Uploading of photos happened through JS, since it involves working
-            -- with file blobs. This handler however is for post upload attempt
-            -- (success or not), to set RemoteData accordingly.
-            case model.syncStatus of
-                SyncUploadPhotoAuthority _ ->
-                    SubModelReturn
-                        (SyncManager.Utils.determineSyncStatus { model | syncStatus = SyncUploadPhotoAuthority remoteData })
-                        Cmd.none
-                        noError
-                        []
-
-                _ ->
-                    noChange
-
         BackendDeferredPhotoFetch Nothing ->
             let
-                syncStatus =
+                downloadPhotosStatus =
                     -- There are no deferred photos matching the query.
-                    case model.syncStatus of
-                        SyncDownloadPhotos (DownloadPhotosBatch record) ->
-                            SyncDownloadPhotos (DownloadPhotosBatch { record | indexDbRemoteData = RemoteData.Success Nothing })
+                    case model.downloadPhotosStatus of
+                        DownloadPhotosInProcess (DownloadPhotosBatch record) ->
+                            DownloadPhotosInProcess (DownloadPhotosBatch { record | indexDbRemoteData = RemoteData.Success Nothing })
 
-                        SyncDownloadPhotos (DownloadPhotosAll record) ->
-                            SyncDownloadPhotos (DownloadPhotosAll { record | indexDbRemoteData = RemoteData.Success Nothing })
+                        DownloadPhotosInProcess (DownloadPhotosAll record) ->
+                            DownloadPhotosInProcess (DownloadPhotosAll { record | indexDbRemoteData = RemoteData.Success Nothing })
 
                         _ ->
-                            model.syncStatus
+                            model.downloadPhotosStatus
             in
             SubModelReturn
-                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                (SyncManager.Utils.determineDownloadPhotosStatus { model | downloadPhotosStatus = downloadPhotosStatus })
                 Cmd.none
                 noError
                 []
@@ -814,11 +1160,11 @@ update currentDate dbVersion device msg model =
         BackendDeferredPhotoFetch (Just result) ->
             let
                 isLoading =
-                    case model.syncStatus of
-                        SyncDownloadPhotos (DownloadPhotosBatch record) ->
+                    case model.downloadPhotosStatus of
+                        DownloadPhotosInProcess (DownloadPhotosBatch record) ->
                             RemoteData.isLoading record.backendRemoteData
 
-                        SyncDownloadPhotos (DownloadPhotosAll record) ->
+                        DownloadPhotosInProcess (DownloadPhotosAll record) ->
                             RemoteData.isLoading record.backendRemoteData
 
                         _ ->
@@ -829,9 +1175,9 @@ update currentDate dbVersion device msg model =
 
             else
                 let
-                    syncStatus =
-                        case model.syncStatus of
-                            SyncDownloadPhotos (DownloadPhotosBatch record) ->
+                    downloadPhotosStatus =
+                        case model.downloadPhotosStatus of
+                            DownloadPhotosInProcess (DownloadPhotosBatch record) ->
                                 let
                                     recordUpdated =
                                         { record
@@ -839,9 +1185,9 @@ update currentDate dbVersion device msg model =
                                             , indexDbRemoteData = RemoteData.Success (Just result)
                                         }
                                 in
-                                SyncDownloadPhotos (DownloadPhotosBatch recordUpdated)
+                                DownloadPhotosInProcess (DownloadPhotosBatch recordUpdated)
 
-                            SyncDownloadPhotos (DownloadPhotosAll record) ->
+                            DownloadPhotosInProcess (DownloadPhotosAll record) ->
                                 let
                                     recordUpdated =
                                         { record
@@ -849,13 +1195,13 @@ update currentDate dbVersion device msg model =
                                             , indexDbRemoteData = RemoteData.Success (Just result)
                                         }
                                 in
-                                SyncDownloadPhotos (DownloadPhotosAll recordUpdated)
+                                DownloadPhotosInProcess (DownloadPhotosAll recordUpdated)
 
                             _ ->
-                                model.syncStatus
+                                model.downloadPhotosStatus
 
                     modelUpdated =
-                        { model | syncStatus = syncStatus }
+                        { model | downloadPhotosStatus = downloadPhotosStatus }
 
                     cmd =
                         -- As the image is captured with the image token (`itok`), we
@@ -869,7 +1215,7 @@ update currentDate dbVersion device msg model =
                             |> HttpBuilder.send (RemoteData.fromResult >> BackendDeferredPhotoFetchHandle result)
                 in
                 SubModelReturn
-                    (SyncManager.Utils.determineSyncStatus modelUpdated)
+                    (SyncManager.Utils.determineDownloadPhotosStatus modelUpdated)
                     cmd
                     noError
                     []
@@ -883,9 +1229,9 @@ update currentDate dbVersion device msg model =
 
                     else
                         let
-                            syncStatus =
-                                case model.syncStatus of
-                                    SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
+                            downloadPhotosStatus =
+                                case model.downloadPhotosStatus of
+                                    DownloadPhotosInProcess (DownloadPhotosBatch deferredPhoto) ->
                                         let
                                             deferredPhotoUpdated =
                                                 { deferredPhoto
@@ -894,30 +1240,31 @@ update currentDate dbVersion device msg model =
                                                     , backendRemoteData = RemoteData.Failure error
                                                 }
                                         in
-                                        SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated)
+                                        DownloadPhotosInProcess (DownloadPhotosBatch deferredPhotoUpdated)
 
-                                    SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
+                                    DownloadPhotosInProcess (DownloadPhotosAll deferredPhoto) ->
                                         let
                                             deferredPhotoUpdated =
                                                 { deferredPhoto | backendRemoteData = RemoteData.Failure error }
                                         in
-                                        SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated)
+                                        DownloadPhotosInProcess (DownloadPhotosAll deferredPhotoUpdated)
 
                                     _ ->
-                                        model.syncStatus
+                                        model.downloadPhotosStatus
                         in
                         update
                             currentDate
+                            currentTime
                             dbVersion
                             device
                             (QueryIndexDb <| IndexDbQueryUpdateDeferredPhotoAttempts result)
-                            { model | syncStatus = syncStatus }
+                            { model | downloadPhotosStatus = downloadPhotosStatus }
 
                 RemoteData.Success queryResult ->
                     let
-                        syncStatus =
-                            case model.syncStatus of
-                                SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
+                        downloadPhotosStatus =
+                            case model.downloadPhotosStatus of
+                                DownloadPhotosInProcess (DownloadPhotosBatch deferredPhoto) ->
                                     let
                                         deferredPhotoUpdated =
                                             { deferredPhoto
@@ -926,26 +1273,27 @@ update currentDate dbVersion device msg model =
                                                 , backendRemoteData = RemoteData.Success queryResult
                                             }
                                     in
-                                    SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated)
+                                    DownloadPhotosInProcess (DownloadPhotosBatch deferredPhotoUpdated)
 
-                                SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
+                                DownloadPhotosInProcess (DownloadPhotosAll deferredPhoto) ->
                                     let
                                         deferredPhotoUpdated =
                                             { deferredPhoto | backendRemoteData = RemoteData.Success queryResult }
                                     in
-                                    SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated)
+                                    DownloadPhotosInProcess (DownloadPhotosAll deferredPhotoUpdated)
 
                                 _ ->
-                                    model.syncStatus
+                                    model.downloadPhotosStatus
                     in
                     -- We've fetched the image, so we can remove the record from
                     -- `deferredPhotos` table.
                     update
                         currentDate
+                        currentTime
                         dbVersion
                         device
-                        (QueryIndexDb <| IndexDbQueryRemoveDeferredPhotoAttempts result.uuid)
-                        { model | syncStatus = syncStatus }
+                        (QueryIndexDb <| IndexDbQueryRemoveDeferredPhoto result.uuid)
+                        { model | downloadPhotosStatus = downloadPhotosStatus }
 
                 _ ->
                     -- Satisfy the compiler.
@@ -982,8 +1330,8 @@ update currentDate dbVersion device msg model =
                             , data = Nothing
                             }
 
-                        IndexDbQueryRemoveDeferredPhotoAttempts uuid ->
-                            { queryType = "IndexDbQueryRemoveDeferredPhotoAttempts"
+                        IndexDbQueryRemoveDeferredPhoto uuid ->
+                            { queryType = "IndexDbQueryRemoveDeferredPhoto"
                             , data = Just uuid
                             }
 
@@ -1000,6 +1348,18 @@ update currentDate dbVersion device msg model =
                             { queryType = "IndexDbQueryUpdateDeferredPhotoAttempts"
                             , data = Just encodedData
                             }
+
+                        IndexDbQueryRemoveUploadPhotos uuids ->
+                            let
+                                uuidsAsString =
+                                    uuids
+                                        |> List.map String.fromInt
+                                        |> List.intersperse ","
+                                        |> String.concat
+                            in
+                            { queryType = "IndexDbQueryRemoveUploadPhotos"
+                            , data = Just uuidsAsString
+                            }
             in
             SubModelReturn
                 model
@@ -1014,6 +1374,7 @@ update currentDate dbVersion device msg model =
                         IndexDbQueryUploadPhotoAuthorityResult remoteData ->
                             update
                                 currentDate
+                                currentTime
                                 dbVersion
                                 device
                                 (BackendUploadPhotoAuthorityHandle remoteData)
@@ -1022,6 +1383,7 @@ update currentDate dbVersion device msg model =
                         IndexDbQueryUploadAuthorityResult result ->
                             update
                                 currentDate
+                                currentTime
                                 dbVersion
                                 device
                                 (BackendUploadAuthority result)
@@ -1030,6 +1392,7 @@ update currentDate dbVersion device msg model =
                         IndexDbQueryUploadGeneralResult result ->
                             update
                                 currentDate
+                                currentTime
                                 dbVersion
                                 device
                                 (BackendUploadGeneral result)
@@ -1038,6 +1401,7 @@ update currentDate dbVersion device msg model =
                         IndexDbQueryDeferredPhotoResult result ->
                             update
                                 currentDate
+                                currentTime
                                 dbVersion
                                 device
                                 (BackendDeferredPhotoFetch result)
@@ -1064,9 +1428,9 @@ update currentDate dbVersion device msg model =
         ResetSettings ->
             let
                 syncSpeed =
-                    { idle = 10000
+                    { idle = 5 * 60 * 1000
                     , cycle = 50
-                    , offline = 3000
+                    , offline = 30 * 1000
                     }
             in
             SubModelReturn
@@ -1170,22 +1534,53 @@ update currentDate dbVersion device msg model =
                 _ ->
                     noChange
 
+        TrySyncing ->
+            case model.syncStatus of
+                SyncIdle ->
+                    update
+                        currentDate
+                        currentTime
+                        dbVersion
+                        device
+                        BackendFetchMain
+                        model
+
+                _ ->
+                    -- Sync is already in progress.
+                    noChange
+
+        TryDownloadingPhotos ->
+            case model.downloadPhotosStatus of
+                DownloadPhotosIdle ->
+                    update
+                        currentDate
+                        currentTime
+                        dbVersion
+                        device
+                        BackendFetchPhotos
+                        model
+
+                _ ->
+                    -- Sync is already in progress.
+                    noChange
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
-        backendFetchMain =
+        backendFetchCmds =
             case model.syncCycle of
                 SyncManager.Model.SyncCyclePause ->
-                    Sub.none
+                    []
 
                 _ ->
-                    Time.every (getSyncSpeedForSubscriptions model) (\_ -> BackendFetchMain)
+                    [ Time.every (getSyncSpeedForSubscriptions model) (always BackendFetchMain)
+                    , Time.every (getDownloadPhotosSpeedForSubscriptions model) (always BackendFetchPhotos)
+                    ]
     in
-    Sub.batch
-        [ backendFetchMain
-        , getFromIndexDb QueryIndexDbHandle
-        ]
+    Sub.batch <|
+        getFromIndexDb QueryIndexDbHandle
+            :: backendFetchCmds
 
 
 {-| Send to JS data we have synced, e.g. `person`, `health center`, etc.
@@ -1193,15 +1588,14 @@ subscriptions model =
 port sendSyncedDataToIndexDb : { table : String, data : List String, shard : String } -> Cmd msg
 
 
-{-| Send to JS the last revision ID used to download General.
+{-| Send to JS the information about General sync.
 -}
-port sendLastFetchedRevisionIdGeneral : Int -> Cmd msg
+port sendSyncInfoGeneral : SyncInfoGeneralForPort -> Cmd msg
 
 
-{-| Send to JS a list with the last revision ID used to download Authority,
-along with their UUID.
+{-| Send to JS the information about Autohorities sync.
 -}
-port sendRevisionIdPerAuthority : List { uuid : String, revisionId : Int } -> Cmd msg
+port sendSyncInfoAuthorities : List SyncInfoAuthorityForPort -> Cmd msg
 
 
 {-| Send to JS a list of local ID that were uploaded.

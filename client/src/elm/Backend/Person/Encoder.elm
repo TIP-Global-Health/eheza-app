@@ -1,4 +1,4 @@
-module Backend.Person.Encoder exposing (encodeEducationLevel, encodeGender, encodeHivStatus, encodeMaritalStatus, encodeModeOfDelivery, encodePerson, encodeUbudehe)
+module Backend.Person.Encoder exposing (encodeEducationLevel, encodeGender, encodeHivStatus, encodeMaritalStatus, encodeModeOfDelivery, encodePerson, encodeUbudehe, genderToString)
 
 import Backend.Person.Model exposing (..)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
@@ -17,7 +17,7 @@ encodePerson person =
     , ( "photo", maybe string person.avatarUrl )
     , ( "birth_date", maybe encodeYYYYMMDD person.birthDate )
     , ( "birth_date_estimated", bool person.isDateOfBirthEstimated )
-    , ( "gender", (encodeGender >> string) person.gender )
+    , ( "gender", encodeGender person.gender )
     , ( "hiv_status", maybe (encodeHivStatus >> string) person.hivStatus )
     , ( "number_of_children", maybe int person.numberOfChildren )
     , ( "mode_of_delivery", maybe (encodeModeOfDelivery >> string) person.modeOfDelivery )
@@ -73,8 +73,14 @@ encodeHivStatus status =
             "unknown"
 
 
-encodeGender : Gender -> String
+encodeGender : Gender -> Value
 encodeGender gender =
+    string <|
+        genderToString gender
+
+
+genderToString : Gender -> String
+genderToString gender =
     case gender of
         Male ->
             "male"

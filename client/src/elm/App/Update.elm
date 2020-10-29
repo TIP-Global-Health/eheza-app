@@ -60,6 +60,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
 import ServiceWorker.Model
 import ServiceWorker.Update
+import SyncManager.Model
 import SyncManager.Update
 import Task
 import Time
@@ -476,6 +477,7 @@ update msg model =
                     )
                 )
                 model
+                |> sequence update [ MsgSyncManager SyncManager.Model.TrySyncing ]
 
         MsgPagePinCode subMsg ->
             updateConfigured
@@ -551,6 +553,10 @@ update msg model =
 
                 extraMsgs =
                     case page of
+                        -- When navigating to Device page (which is used for Sync management), trigger Sync.
+                        DevicePage ->
+                            [ MsgSyncManager SyncManager.Model.TrySyncing ]
+
                         -- When navigating to relationship page in group encounter context,
                         -- we automaticaly select the clinic, to which the session belongs.
                         UserPage (RelationshipPage id1 id2 (GroupEncounterOrigin sessionId)) ->
@@ -623,11 +629,6 @@ update msg model =
             )
                 |> sequence update extraMsgs
 
-        SetDeviceName name ->
-            ( { model | deviceName = name }
-            , Cmd.none
-            )
-
         Tick time ->
             let
                 extraMsgs =
@@ -655,10 +656,6 @@ update msg model =
             )
                 |> sequence update extraMsgs
 
-        TrySyncing ->
-            -- Normally handled automatically, but sometimes nice to trigger manually
-            ( model, trySyncing () )
-
         MsgSyncManager subMsg ->
             model.configuration
                 |> RemoteData.toMaybe
@@ -668,7 +665,7 @@ update msg model =
                         updateSubModel
                             subMsg
                             model.syncManager
-                            (\subMsg_ subModel -> SyncManager.Update.update currentDate model.dbVersion device subMsg_ subModel)
+                            (\subMsg_ subModel -> SyncManager.Update.update currentDate model.currentTime model.dbVersion device subMsg_ subModel)
                             (\subModel model_ -> { model_ | syncManager = subModel })
                             (\subCmds -> MsgSyncManager subCmds)
                             model
@@ -900,7 +897,7 @@ subscriptions model =
                 []
     in
     Sub.batch
-        ([ Time.every 60000 Tick
+        ([ Time.every 10000 Tick
          , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
          , persistentStorage SetPersistentStorage
          , storageQuota SetStorageQuota

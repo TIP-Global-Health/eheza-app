@@ -1,5 +1,6 @@
 module SyncManager.Decoder exposing
     ( decodeDownloadSyncResponseAuthority
+    , decodeDownloadSyncResponseAuthorityStats
     , decodeDownloadSyncResponseGeneral
     , decodeIndexDbQueryTypeResult
     )
@@ -8,6 +9,7 @@ import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Decoder
 import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
+import Backend.Dashboard.Decoder
 import Backend.HealthCenter.Decoder
 import Backend.IndividualEncounterParticipant.Decoder
 import Backend.Measurement.Decoder
@@ -137,12 +139,14 @@ decodeIndexDbQueryUploadGeneralResultRecord : Decoder IndexDbQueryUploadGeneralR
 decodeIndexDbQueryUploadGeneralResultRecord =
     succeed IndexDbQueryUploadGeneralResultRecord
         |> required "entities" (list <| decodeBackendEntityAndUploadMethod (\uuid localId -> decodeBackendGeneralEntity (hardcoded uuid) (hardcoded localId)))
+        |> required "remaining" decodeInt
 
 
 decodeIndexDbQueryUploadAuthorityResultRecord : Decoder IndexDbQueryUploadAuthorityResultRecord
 decodeIndexDbQueryUploadAuthorityResultRecord =
     succeed IndexDbQueryUploadAuthorityResultRecord
         |> required "entities" (list <| decodeBackendEntityAndUploadMethod (\uuid localId -> decodeBackendAuthorityEntity (hardcoded uuid) (hardcoded localId)))
+        |> required "remaining" decodeInt
         |> optional "uploadPhotos"
             (list decodeIndexDbQueryUploadPhotoResultRecord
                 |> andThen
@@ -211,6 +215,7 @@ decodeIndexDbQueryDeferredPhotoResult =
         |> requiredAt [ "0", "uuid" ] string
         |> requiredAt [ "0", "photo" ] string
         |> requiredAt [ "0", "attempts" ] int
+        |> requiredAt [ "0", "remaining" ] int
 
 
 decodeDownloadSyncResponseGeneral : Decoder (DownloadSyncResponse BackendGeneralEntity)
@@ -220,6 +225,7 @@ decodeDownloadSyncResponseGeneral =
             |> required "batch" (list <| decodeBackendGeneralEntity (required "uuid" string) (required "vid" decodeInt))
             |> required "last_timestamp" decodeDate
             |> required "revision_count" decodeInt
+            |> optional "device_name" string ""
         )
 
 
@@ -284,6 +290,18 @@ decodeDownloadSyncResponseAuthority =
             |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
             |> required "last_timestamp" decodeDate
             |> required "revision_count" decodeInt
+            |> hardcoded ""
+        )
+
+
+decodeDownloadSyncResponseAuthorityStats : Decoder (DownloadSyncResponse BackendAuthorityEntity)
+decodeDownloadSyncResponseAuthorityStats =
+    field "data"
+        (succeed DownloadSyncResponse
+            |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
+            |> hardcoded (Time.millisToPosix 0)
+            |> hardcoded 0
+            |> hardcoded ""
         )
 
 
@@ -552,6 +570,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeSocialHistory
                             BackendAuthoritySocialHistory
+
+                    "statistics" ->
+                        doDecode
+                            Backend.Dashboard.Decoder.decodeDashboardStats
+                            BackendAuthorityDashboardStats
 
                     "symptoms_general" ->
                         doDecode
