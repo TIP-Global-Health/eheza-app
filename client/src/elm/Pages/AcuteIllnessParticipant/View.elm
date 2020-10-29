@@ -186,7 +186,7 @@ viewActiveIllness language currentDate selectedHealthCenter id db sessionId =
                                     |> SetActivePage
 
                             encounterLabel =
-                                if List.length encounters == 1 then
+                                if List.length encounters == 1 && isJust maybeActiveEncounterId then
                                     Translate.IndividualEncounterFirstVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
 
                                 else
