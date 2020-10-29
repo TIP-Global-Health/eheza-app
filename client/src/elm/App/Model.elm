@@ -115,10 +115,6 @@ type alias Model =
 
     -- List of errors we'll send to console.log
     , errors : List Error
-
-    -- The name of device nurse is working with.
-    -- @todo: Keep this, or the one implemented in Device.Model?
-    , deviceName : Maybe String
     }
 
 
@@ -225,7 +221,6 @@ type Msg
       -- worker
       MsgIndexedDb Backend.Model.MsgIndexedDb
     | MsgServiceWorker ServiceWorker.Model.Msg
-    | TrySyncing
     | MsgSyncManager SyncManager.Model.Msg
       -- Messages that require login, or manage the login process
     | MsgLoggedIn MsgLoggedIn
@@ -247,7 +242,6 @@ type Msg
     | SetMemoryQuota MemoryQuota
     | SetHealthCenter (Maybe HealthCenterId)
     | SetVillage (Maybe VillageId)
-    | SetDeviceName (Maybe String)
     | Tick Time.Posix
     | CheckDataWanted
     | UrlRequested Browser.UrlRequest
@@ -339,7 +333,6 @@ emptyModel key url flags =
     , villageId = villageId
     , syncManager = SyncManager.Model.emptyModel syncManagerFlags
     , errors = []
-    , deviceName = Nothing
     }
 
 

@@ -1,11 +1,13 @@
 module Pages.Device.View exposing (view)
 
 import App.Model
+import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Model exposing (ModelIndexedDb)
 import Device.Model exposing (..)
+import EverySet
 import Gizra.Html exposing (showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -16,7 +18,7 @@ import Pages.Device.Model exposing (..)
 import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
-import SyncManager.Model exposing (SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoStatus)
+import SyncManager.Model exposing (DownloadPhotosMode(..), DownloadPhotosStatus(..), SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoStatus)
 import SyncManager.Utils exposing (syncInfoStatusToString)
 import Time
 import Translate exposing (Language, translate)
@@ -67,8 +69,9 @@ viewDeviceStatus language device app model =
                     [ class "general-sync" ]
                     [ h2 [] [ text <| translate language Translate.SyncGeneral ]
                     , viewSyncInfo language app.syncManager.syncInfoGeneral
+                    , viewDownloadPhotosInfo language app.syncManager.downloadPhotosStatus
                     ]
-                , viewHealthCenters language app.syncManager.syncInfoAuthorities app.indexedDb
+                , viewHealthCenters language app
                 ]
 
         _ ->
@@ -147,18 +150,86 @@ viewSyncInfo language info =
         ]
 
 
-viewHealthCenters : Language -> SyncInfoAuthorityZipper -> ModelIndexedDb -> Html Msg
-viewHealthCenters language zipper db =
-    db.healthCenters
-        |> RemoteData.map
-            (\data ->
-                data
-                    |> Dict.toList
-                    |> List.sortBy (Tuple.second >> .name)
-                    |> List.map (viewHealthCenter language zipper)
-                    |> div [ class "health-centers" ]
+viewDownloadPhotosInfo : Language -> DownloadPhotosStatus -> Html Msg
+viewDownloadPhotosInfo language status =
+    let
+        statusHtml =
+            case status of
+                DownloadPhotosIdle ->
+                    div [] [ text <| translate language Translate.IdleWaitingForSync ]
+
+                DownloadPhotosInProcess DownloadPhotosNone ->
+                    div [] [ text <| translate language Translate.Disabled ]
+
+                DownloadPhotosInProcess (DownloadPhotosBatch rect) ->
+                    let
+                        remaining =
+                            case rect.indexDbRemoteData of
+                                RemoteData.Success (Just result) ->
+                                    String.fromInt result.remaining
+
+                                _ ->
+                                    ""
+                    in
+                    div []
+                        [ text <|
+                            String.fromInt (rect.batchCounter + 1)
+                                ++ " / "
+                                ++ String.fromInt rect.batchSize
+                                ++ " , "
+                        , text <|
+                            translate language Translate.RemainingForDownloadLabel
+                                ++ ": "
+                                ++ remaining
+                        ]
+
+                DownloadPhotosInProcess (DownloadPhotosAll rect) ->
+                    let
+                        remaining =
+                            case rect.indexDbRemoteData of
+                                RemoteData.Success (Just result) ->
+                                    String.fromInt result.remaining
+
+                                _ ->
+                                    ""
+                    in
+                    div []
+                        [ text <|
+                            translate language Translate.RemainingForDownloadLabel
+                                ++ ": "
+                                ++ remaining
+                        ]
+    in
+    div
+        [ class "download-photos" ]
+        [ h2 [] [ text <| translate language Translate.PhotosDownloadStatus ]
+        , statusHtml
+        ]
+
+
+viewHealthCenters : Language -> App.Model.Model -> Html Msg
+viewHealthCenters language app =
+    getLoggedInData app
+        |> Maybe.map
+            (\( _, loggedInModel ) ->
+                let
+                    allowedHealthCenters =
+                        Tuple.second loggedInModel.nurse
+                            |> .healthCenters
+                in
+                app.indexedDb.healthCenters
+                    |> RemoteData.map
+                        (\data ->
+                            data
+                                |> Dict.toList
+                                |> List.filter (\( healthCenterId, _ ) -> EverySet.member healthCenterId allowedHealthCenters)
+                                |> List.sortBy (Tuple.second >> .name)
+                                |> List.map (viewHealthCenter language app.syncManager.syncInfoAuthorities)
+                                |> div [ class "health-centers" ]
+                        )
+                    |> RemoteData.withDefault spinner
             )
-        |> RemoteData.withDefault spinner
+        |> Maybe.withDefault (div [ class "login-request" ] [ text <| translate language <| Translate.LoginPhrase Translate.LoginToSyncHealthCenters ])
 
 
 viewHealthCenter : Language -> SyncInfoAuthorityZipper -> ( HealthCenterId, HealthCenter ) -> Html Msg

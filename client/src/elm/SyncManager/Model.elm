@@ -4,6 +4,7 @@ import AssocList exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
+import Backend.Dashboard.Model exposing (DashboardStats)
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
@@ -55,6 +56,7 @@ type BackendAuthorityEntity
     | BackendAuthorityCorePhysicalExam (BackendEntity CorePhysicalExam)
     | BackendAuthorityCounselingSession (BackendEntity CounselingSession)
     | BackendAuthorityDangerSigns (BackendEntity DangerSigns)
+    | BackendAuthorityDashboardStats (BackendEntity DashboardStats)
     | BackendAuthorityExposure (BackendEntity Exposure)
     | BackendAuthorityFamilyPlanning (BackendEntity FamilyPlanning)
     | BackendAuthorityHCContact (BackendEntity HCContact)
@@ -128,6 +130,7 @@ type alias SyncInfoGeneral =
     , lastSuccesfulContact : Int
     , remainingToUpload : Int
     , remainingToDownload : Int
+    , deviceName : String
     , status : SyncInfoStatus
     }
 
@@ -137,6 +140,7 @@ type alias SyncInfoGeneralForPort =
     , lastSuccesfulContact : Int
     , remainingToUpload : Int
     , remainingToDownload : Int
+    , deviceName : String
     , status : String
     }
 
@@ -147,6 +151,7 @@ type alias SyncInfoAuthority =
     , lastSuccesfulContact : Int
     , remainingToUpload : Int
     , remainingToDownload : Int
+    , statsCacheHash : String
     , status : SyncInfoStatus
     }
 
@@ -157,6 +162,7 @@ type alias SyncInfoAuthorityForPort =
     , lastSuccesfulContact : Int
     , remainingToUpload : Int
     , remainingToDownload : Int
+    , statsCacheHash : String
     , status : String
     }
 
@@ -176,6 +182,7 @@ emptySyncInfoAuthority uuid =
     , lastSuccesfulContact = 0
     , remainingToUpload = 0
     , remainingToDownload = 0
+    , statsCacheHash = ""
     , status = NotAvailable
     }
 
@@ -186,12 +193,13 @@ type alias SyncInfoAuthorityZipper =
 
 type alias Model =
     { syncStatus : SyncStatus
+    , downloadPhotosStatus : DownloadPhotosStatus
     , syncInfoGeneral : SyncInfoGeneral
     , syncInfoAuthorities : SyncInfoAuthorityZipper
     , lastTryBackendGeneralDownloadTime : Time.Posix
 
     -- Determine how we're going to download photos.
-    , downloadPhotos : DownloadPhotos
+    , downloadPhotosMode : DownloadPhotosMode
 
     -- If `DownloadPhotosBatch` is selected as download mechanism, indicate what's
     -- the batch size.
@@ -212,10 +220,11 @@ type alias Model =
 emptyModel : Flags -> Model
 emptyModel flags =
     { syncStatus = SyncIdle
+    , downloadPhotosStatus = DownloadPhotosIdle
     , syncInfoGeneral = flags.syncInfoGeneral
     , syncInfoAuthorities = flags.syncInfoAuthorities
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
-    , downloadPhotos = DownloadPhotosBatch (emptyDownloadPhotosBatchRec flags.batchSize)
+    , downloadPhotosMode = DownloadPhotosAll emptyDownloadPhotosAllRec
     , downloadPhotosBatchSize = flags.batchSize
     , syncCycle = SyncCycleOn
     , syncSpeed = Editable.ReadOnly flags.syncSpeed
@@ -251,12 +260,13 @@ type alias DownloadSyncResponse a =
     { entities : List a
     , lastTimestampOfLastRevision : Time.Posix
     , revisionCount : Int
+    , deviceName : String
     }
 
 
 {-| Determine how photos are going to be downloaded.
 -}
-type DownloadPhotos
+type DownloadPhotosMode
     = -- Don't download any photos at all.
       DownloadPhotosNone
       -- Download up to a number of photos, and then skip to the next Sync status,
@@ -307,6 +317,13 @@ type alias DownloadPhotosAllRec =
     }
 
 
+emptyDownloadPhotosAllRec : DownloadPhotosAllRec
+emptyDownloadPhotosAllRec =
+    { indexDbRemoteData = RemoteData.NotAsked
+    , backendRemoteData = RemoteData.NotAsked
+    }
+
+
 {-| RemoteData to indicate fetching deferred photos info from IndexDB.
 -}
 type alias IndexDbDeferredPhotoRemoteData =
@@ -328,7 +345,12 @@ type SyncStatus
     | SyncUploadAuthority (UploadRec IndexDbQueryUploadAuthorityResultRecord)
     | SyncDownloadGeneral (WebData (DownloadSyncResponse BackendGeneralEntity))
     | SyncDownloadAuthority (WebData (DownloadSyncResponse BackendAuthorityEntity))
-    | SyncDownloadPhotos DownloadPhotos
+    | SyncDownloadAuthorityDashboardStats (WebData (DownloadSyncResponse BackendAuthorityEntity))
+
+
+type DownloadPhotosStatus
+    = DownloadPhotosIdle
+    | DownloadPhotosInProcess DownloadPhotosMode
 
 
 type SyncCycle
@@ -354,10 +376,11 @@ type IndexDbQueryType
     | IndexDbQueryDeferredPhoto
       -- When we successfully download a photo, we remove it from the `deferredPhotos` table.
       -- We just need the UUID.
-    | IndexDbQueryRemoveDeferredPhotoAttempts String
+    | IndexDbQueryRemoveDeferredPhoto String
       -- Update the number of attempts, a deferred photos was un-successfully downloaded.
       -- We don't count cases where we were offline.
     | IndexDbQueryUpdateDeferredPhotoAttempts IndexDbQueryDeferredPhotoResultRecord
+    | IndexDbQueryRemoveUploadPhotos (List Int)
 
 
 type IndexDbQueryTypeResult
@@ -419,15 +442,21 @@ type alias IndexDbQueryDeferredPhotoResultRecord =
 
     -- The number of attempts we've tried to get the image.
     , attempts : Int
+
+    -- The number of photos remaining at deferredPhotos table.
+    , remaining : Int
     }
 
 
 type Msg
     = BackendAuthorityFetch
     | BackendAuthorityFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
+    | BackendAuthorityDashboardStatsFetch
+    | BackendAuthorityDashboardStatsFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
       -- This is the main entry point for the Sync loop. This will dispatch a call
       -- according to the `syncStatus`.
     | BackendFetchMain
+    | BackendFetchPhotos
     | BackendGeneralFetch
     | BackendGeneralFetchHandle (WebData (DownloadSyncResponse BackendGeneralEntity))
       -- Fetch a deferred photo from the server.
@@ -460,3 +489,4 @@ type Msg
     | SetSyncSpeedCycle String
     | SetSyncSpeedOffline String
     | TrySyncing
+    | TryDownloadingPhotos

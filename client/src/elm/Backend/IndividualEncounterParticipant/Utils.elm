@@ -1,4 +1,4 @@
-module Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encoudeIndividualEncounterTypeAsString, isDailyEncounterActive)
+module Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encodeIndividualEncounterTypeAsString, isDailyEncounterActive)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
@@ -6,8 +6,8 @@ import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isNothing)
 
 
-encoudeIndividualEncounterTypeAsString : IndividualEncounterType -> String
-encoudeIndividualEncounterTypeAsString encounterType =
+encodeIndividualEncounterTypeAsString : IndividualEncounterType -> String
+encodeIndividualEncounterTypeAsString encounterType =
     case encounterType of
         AcuteIllnessEncounter ->
             "acute-illness"

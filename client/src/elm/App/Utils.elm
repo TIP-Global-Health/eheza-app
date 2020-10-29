@@ -1,4 +1,4 @@
-module App.Utils exposing (getLoggedInData, updateSubModel)
+module App.Utils exposing (getLoggedInData, sequenceSubModelReturn, updateSubModel)
 
 import App.Model exposing (..)
 import Backend.Entities exposing (HealthCenterId)
@@ -74,3 +74,29 @@ updateSubModel subMsg subModel updateFunc modelUpdateFunc msg model =
         , appCmds
         ]
     )
+
+
+{-| Like `Update.Extra.sequence`, but for `update` signatures that returns SubModelReturn.
+Essentially, this allows to recursively apply a whole sequence of messages, collecting their results.
+Note that the Error part of PagesReturn will contain first error that was encounterd.
+-}
+sequenceSubModelReturn :
+    (msg -> model -> SubModelReturn model msg)
+    -> List msg
+    -> SubModelReturn model msg
+    -> SubModelReturn model msg
+sequenceSubModelReturn updater msgs startingPoint =
+    List.foldl
+        (\eachMsg subModelReturnSoFar ->
+            let
+                newPagesReturn =
+                    updater eachMsg subModelReturnSoFar.model
+            in
+            SubModelReturn
+                newPagesReturn.model
+                (Cmd.batch [ subModelReturnSoFar.cmd, newPagesReturn.cmd ])
+                (Maybe.Extra.or subModelReturnSoFar.error newPagesReturn.error)
+                (subModelReturnSoFar.appMsgs ++ newPagesReturn.appMsgs)
+        )
+        startingPoint
+        msgs
