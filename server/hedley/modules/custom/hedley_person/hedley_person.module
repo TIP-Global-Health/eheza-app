@@ -139,7 +139,9 @@ function hedley_person_get_data(array $form, array $form_state) {
   $form['#suffix'] = '</div>';
   $form['#tree'] = TRUE;
 
-  $instructions = '<div>Before uploading new patients, make sure you followed <a href="https://github.com/Gizra/ihangane/wiki/Importing-bulk-data" target="_blank">these guidelines</a>.</div>';
+  $import_instructions_uri = variable_get('hedley_import_instructions_uri', 'https://gizra.github.io/eheza-guide/docs/importing-patient-data-in-bulk-backend');
+
+  $instructions = "<div>Before uploading new patients, make sure you followed <a href=\"$import_instructions_uri\" target=\"_blank\">these guidelines</a>.</div>";
   $instructions .= '<br>';
   $instructions .= '<div style="font-style: italic;">Note: You\'ll need to import the mother/caregiver data first, then the children data, in order to create relationships between the two.</div>';
 
@@ -465,6 +467,9 @@ function hedley_person_reset_form(array $form, array &$form_state) {
 /**
  * Convert a date string to a timestamp.
  *
+ * Format we expect is dd-[MON]-yyyy.
+ * [MON] is JAN, FEB, ..., DEC.
+ *
  * @param string $trimmed
  *   A string containing a date.
  *
@@ -475,6 +480,34 @@ function hedley_person_date_process($trimmed) {
   if (empty($trimmed)) {
     return FALSE;
   }
+
+  $parts = explode('-', $trimmed);
+  if (count($parts) != 3) {
+    return FALSE;
+  }
+
+  $months = [
+    'jan' => '01',
+    'feb' => '02',
+    'mar' => '03',
+    'apr' => '04',
+    'may' => '05',
+    'jun' => '06',
+    'jul' => '07',
+    'aug' => '08',
+    'sep' => '09',
+    'oct' => '10',
+    'nov' => '11',
+    'dec' => '12',
+  ];
+
+  $month_part = strtolower($parts[1]);
+  if (!in_array($month_part, array_keys($months))) {
+    return FALSE;
+  }
+
+  $parts[1] = $months[$month_part];
+  $trimmed = implode('-', $parts);
 
   // Regular expression for validating 'dd-mm-YYYY' dates.
   $regex = '/^([0]?[1-9]|[1|2][0-9]|[3][0|1])[-]([0]?[1-9]|[1][0-2])[-]([0-9]{4}|[0-9]{2})$/';
@@ -560,7 +593,8 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
     'positive',
     'unknown',
   ];
-  if (!in_array(strtolower($hiv_status), $valid_values)) {
+  // Optional field - allowing empty value.
+  if (!empty($hiv_status) && !in_array(strtolower($hiv_status), $valid_values)) {
     $errors[] = "HIV status: Invalid value - $hiv_status";
   }
 
@@ -579,7 +613,8 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
       'vaginal delivery with vacuum extraction',
       'cesarean delivery',
     ];
-    if (!in_array(strtolower($mode_of_delivery), $valid_values)) {
+    // Optional field - allowing empty value.
+    if (!empty($mode_of_delivery) && !in_array(strtolower($mode_of_delivery), $valid_values)) {
       $errors[] = "Mode of delivery: Invalid value - $mode_of_delivery";
     }
 
@@ -744,27 +779,29 @@ function hedley_person_import_patient($patient_type, array $values) {
   // Ubudehe.
   $wrapper->field_ubudehe->set((int) $ubudehe);
 
-  // HIV status.
-  switch (strtolower($hiv_status)) {
-    case 'hiv-exposed infant':
-      $wrapper->field_hiv_status->set('hiv-exposed-infant');
-      break;
+  // HIV status (optional field).
+  if (!empty($hiv_status)) {
+    switch (strtolower($hiv_status)) {
+      case 'hiv-exposed infant':
+        $wrapper->field_hiv_status->set('hiv-exposed-infant');
+        break;
 
-    case 'negative':
-      $wrapper->field_hiv_status->set('negative');
-      break;
+      case 'negative':
+        $wrapper->field_hiv_status->set('negative');
+        break;
 
-    case 'negative - discordant couple':
-      $wrapper->field_hiv_status->set('negative-dc');
-      break;
+      case 'negative - discordant couple':
+        $wrapper->field_hiv_status->set('negative-dc');
+        break;
 
-    case 'positive':
-      $wrapper->field_hiv_status->set('positive');
-      break;
+      case 'positive':
+        $wrapper->field_hiv_status->set('positive');
+        break;
 
-    case 'unknown':
-      $wrapper->field_hiv_status->set('unknown');
-      break;
+      case 'unknown':
+        $wrapper->field_hiv_status->set('unknown');
+        break;
+    }
   }
 
   // Location.
@@ -785,22 +822,25 @@ function hedley_person_import_patient($patient_type, array $values) {
   if ($patient_type == 'child') {
     $mode_of_delivery = trim($values[HEDLEY_PERSON_COLUMN_CHILD_MODE_OF_DELIVERY]);
 
-    switch (strtolower($mode_of_delivery)) {
-      case 'spontaneous vaginal delivery with episiotomy':
-        $wrapper->field_mode_of_delivery->set('svd-episiotomy');
-        break;
+    // Optional field.
+    if (!empty($mode_of_delivery)) {
+      switch (strtolower($mode_of_delivery)) {
+        case 'spontaneous vaginal delivery with episiotomy':
+          $wrapper->field_mode_of_delivery->set('svd-episiotomy');
+          break;
 
-      case 'spontaneous vaginal delivery without episiotomy':
-        $wrapper->field_mode_of_delivery->set('svd-no-episiotomy');
-        break;
+        case 'spontaneous vaginal delivery without episiotomy':
+          $wrapper->field_mode_of_delivery->set('svd-no-episiotomy');
+          break;
 
-      case 'vaginal delivery with vacuum extraction':
-        $wrapper->field_mode_of_delivery->set('vd-vacuum');
-        break;
+        case 'vaginal delivery with vacuum extraction':
+          $wrapper->field_mode_of_delivery->set('vd-vacuum');
+          break;
 
-      case 'cesarean delivery':
-        $wrapper->field_mode_of_delivery->set('cesarean-delivery');
-        break;
+        case 'cesarean delivery':
+          $wrapper->field_mode_of_delivery->set('cesarean-delivery');
+          break;
+      }
     }
 
     $wrapper->save();
