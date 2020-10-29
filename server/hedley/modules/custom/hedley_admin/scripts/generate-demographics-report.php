@@ -36,6 +36,9 @@ $batch = drush_get_option('batch', 50);
 // Get allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 500);
 
+$total_participation = count_total_group_attendances();
+drush_print("Total group participation: $total_participation");
+
 generate_individual_encounter_report('prenatal', $batch, $memory_limit);
 generate_individual_encounter_report('nutrition', $batch, $memory_limit);
 generate_individual_encounter_report('acute_illness', $batch, $memory_limit);
@@ -371,6 +374,18 @@ function generate_individual_encounter_report($encounter_type, $batch, $memory_l
   drush_print("Completed encounters: $encounters_with_measurements.");
   drush_print("Unique patients:      $unique_patients.");
   drush_print('');
+}
+
+/**
+ * Counts total number of participation for all types of groups.
+ *
+ * In other words, number of times mother with child attended group encounter.
+ */
+function count_total_group_attendances() {
+  $query = base_query_for_bundle('attendance');
+  $query->fieldCondition('field_attended', 'value', 1);
+
+  return $query->count()->execute();
 }
 
 /**
