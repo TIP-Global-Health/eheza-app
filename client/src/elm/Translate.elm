@@ -704,6 +704,7 @@ type TranslationId
     | SelectDangerSigns
     | SelectEncounterType
     | SelectExistingAcuteIllness
+    | SelectExistingAcuteIllnessToRecordOutcome
     | SelectGroup
     | SelectProgram
     | SelectLanguage
@@ -4911,6 +4912,11 @@ translationSet trans =
 
         SelectExistingAcuteIllness ->
             { english = "Select Existing Acute Illness"
+            , kinyarwanda = Nothing
+            }
+
+        SelectExistingAcuteIllnessToRecordOutcome ->
+            { english = "Select Existing Acute Illness to Record Outcome"
             , kinyarwanda = Nothing
             }
 

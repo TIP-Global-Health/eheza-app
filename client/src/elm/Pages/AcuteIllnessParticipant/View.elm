@@ -31,7 +31,7 @@ view language currentDate selectedHealthCenter id db model =
     in
     div
         [ class "wrap wrap-alt-2 page-participant acute-illness" ]
-        [ viewHeader language id
+        [ viewHeader language id model
         , div
             [ class "ui full segment" ]
             [ viewWebData language (viewContent language currentDate selectedHealthCenter id db model) identity sessions
@@ -39,23 +39,31 @@ view language currentDate selectedHealthCenter id db model =
         ]
 
 
-viewHeader : Language -> PersonId -> Html Msg
-viewHeader language id =
+viewHeader : Language -> PersonId -> Model -> Html Msg
+viewHeader language id model =
+    let
+        ( labelTransId, action ) =
+            case model.viewMode of
+                ManageParticipants ->
+                    ( Translate.IndividualEncounterLabel Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                    , SetActivePage <|
+                        UserPage <|
+                            IndividualEncounterParticipantsPage Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                    )
+
+                RecordOutcome ->
+                    ( Translate.RecordAcuteIllnessOutcome
+                    , SetViewMode ManageParticipants
+                    )
+    in
     div
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <|
-                translate language <|
-                    Translate.IndividualEncounterLabel
-                        Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
-            ]
+            [ text <| translate language labelTransId ]
         , a
             [ class "link-back"
-            , onClick <|
-                SetActivePage <|
-                    UserPage <|
-                        IndividualEncounterParticipantsPage Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+            , onClick action
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -65,16 +73,6 @@ viewHeader language id =
 
 viewContent : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Model -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html Msg
 viewContent language currentDate selectedHealthCenter id db model sessions =
-    case model.viewMode of
-        ManageParticipants ->
-            viewManageParticipantsContent language currentDate selectedHealthCenter id db sessions
-
-        RecordOutcome ->
-            text "RecordOutcome "
-
-
-viewManageParticipantsContent : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html Msg
-viewManageParticipantsContent language currentDate selectedHealthCenter id db sessions =
     let
         activeSessions =
             sessions
@@ -85,10 +83,28 @@ viewManageParticipantsContent language currentDate selectedHealthCenter id db se
                             && isAcuteIllnessActive currentDate session
                     )
                 |> List.sortWith (\( _, s1 ) ( _, s2 ) -> Gizra.NominalDate.compare s1.startDate s2.startDate)
+    in
+    case model.viewMode of
+        ManageParticipants ->
+            viewManageParticipantsContent language currentDate selectedHealthCenter id db activeSessions
 
+        RecordOutcome ->
+            viewRecordOutcomeContent language currentDate selectedHealthCenter id db activeSessions
+
+
+viewManageParticipantsContent :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> PersonId
+    -> ModelIndexedDb
+    -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
+    -> Html Msg
+viewManageParticipantsContent language currentDate selectedHealthCenter id db activeSessions =
+    let
         activeIllnesses =
             List.map Tuple.first activeSessions
-                |> List.filterMap (viewActiveIllness language currentDate selectedHealthCenter id db)
+                |> List.filterMap (viewActiveIllness language currentDate selectedHealthCenter db ManageParticipants)
 
         lastActiveSession =
             List.reverse activeSessions
@@ -148,48 +164,62 @@ viewManageParticipantsContent language currentDate selectedHealthCenter id db se
                 |> Backend.Model.PostIndividualSession
                 |> MsgBackend
 
-        viewLabel cssClass transId =
-            p [ class cssClass ] [ text <| translate language transId ]
-
         createIllnessNavigateToEncounterButton =
-            viewButton createIllnessNavigateToEncounterAction
+            viewButton language
+                createIllnessNavigateToEncounterAction
                 (Translate.IndividualEncounterFirstVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter)
                 createIllnessNavigateToEncounterButtonDisabled
 
         recordIllnessOutcomeButton =
-            viewButton (SetViewMode RecordOutcome) Translate.RecordAcuteIllnessOutcome False
-
-        viewButton action lablelTransId disabled =
-            div
-                [ class "ui primary button"
-                , classList [ ( "disabled", disabled ) ]
-                , onClick action
-                ]
-                [ div [ class "button-label" ]
-                    [ text <| translate language lablelTransId ]
-                , div [ class "icon-back" ] []
-                ]
+            viewButton language (SetViewMode RecordOutcome) Translate.RecordAcuteIllnessOutcome False
     in
     if List.isEmpty activeIllnesses then
         div []
-            [ viewLabel "select-visit" <| Translate.IndividualEncounterSelectVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+            [ viewLabel language "select-visit" <| Translate.IndividualEncounterSelectVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
             , createIllnessNavigateToEncounterButton
             ]
 
     else
         div []
-            [ viewLabel "select-illness" Translate.SelectExistingAcuteIllness
+            [ viewLabel language "select-illness" Translate.SelectExistingAcuteIllness
             , div [ class "active-illnesses" ] activeIllnesses
-            , viewLabel "start-new-encounter" Translate.StrartNewAcuteIllnessHelper
+            , viewLabel language "start-new-encounter" Translate.StrartNewAcuteIllnessHelper
             , createIllnessNavigateToEncounterButton
             , div [ class "separator" ] []
-            , viewLabel "" Translate.CloseAcuteIllnessLabel
+            , viewLabel language "" Translate.CloseAcuteIllnessLabel
             , recordIllnessOutcomeButton
             ]
 
 
-viewActiveIllness : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe (Html Msg)
-viewActiveIllness language currentDate selectedHealthCenter id db sessionId =
+viewRecordOutcomeContent :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> PersonId
+    -> ModelIndexedDb
+    -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
+    -> Html Msg
+viewRecordOutcomeContent language currentDate selectedHealthCenter id db activeSessions =
+    let
+        activeIllnesses =
+            List.map Tuple.first activeSessions
+                |> List.filterMap (viewActiveIllness language currentDate selectedHealthCenter db RecordOutcome)
+    in
+    div []
+        [ viewLabel language "select-illness" Translate.SelectExistingAcuteIllnessToRecordOutcome
+        , div [ class "active-illnesses" ] activeIllnesses
+        ]
+
+
+viewActiveIllness :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> ModelIndexedDb
+    -> AcuteIllnessParticipantViewMode
+    -> IndividualEncounterParticipantId
+    -> Maybe (Html Msg)
+viewActiveIllness language currentDate selectedHealthCenter db viewMode sessionId =
     let
         sessionEncounters =
             Dict.get sessionId db.acuteIllnessEncountersByParticipant
@@ -217,53 +247,100 @@ viewActiveIllness language currentDate selectedHealthCenter id db sessionId =
             sessionEncounters
                 |> Maybe.andThen
                     (\encounters ->
-                        let
-                            maybeActiveEncounterId =
-                                List.filter (Tuple.second >> isDailyEncounterActive currentDate) encounters
-                                    |> List.head
-                                    |> Maybe.map Tuple.first
+                        case viewMode of
+                            ManageParticipants ->
+                                viewActiveIllnessForManagement language currentDate selectedHealthCenter sessionId encounters diagnosis
 
-                            encounterWasCompletedToday =
-                                encounters
-                                    |> List.filter
-                                        (\( _, encounter ) ->
-                                            encounter.startDate == currentDate && encounter.endDate == Just currentDate
-                                        )
-                                    |> List.isEmpty
-                                    |> not
-
-                            action =
-                                maybeActiveEncounterId
-                                    |> Maybe.map navigateToEncounterAction
-                                    |> Maybe.withDefault
-                                        (emptyAcuteIllnessEncounter sessionId currentDate (Just selectedHealthCenter)
-                                            |> Backend.Model.PostAcuteIllnessEncounter
-                                            |> MsgBackend
-                                        )
-
-                            encounterLabel =
-                                if List.length encounters == 1 && isJust maybeActiveEncounterId then
-                                    Translate.IndividualEncounterFirstVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
-
-                                else
-                                    Translate.IndividualEncounterSubsequentVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
-                        in
-                        Just <|
-                            div
-                                [ classList
-                                    [ ( "ui primary button active-illness", True )
-                                    , ( "disabled", encounterWasCompletedToday )
-                                    ]
-                                , onClick action
-                                ]
-                                [ div [ class "button-label" ]
-                                    [ div [ class "encounter-label" ]
-                                        [ text <| translate language encounterLabel ]
-                                    , div [] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
-                                    ]
-                                , div [ class "icon-back" ] []
-                                ]
+                            RecordOutcome ->
+                                viewActiveIllnessForOutcome language currentDate sessionId encounters diagnosis
                     )
+
+
+viewActiveIllnessForManagement :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> IndividualEncounterParticipantId
+    -> List ( AcuteIllnessEncounterId, AcuteIllnessEncounter )
+    -> AcuteIllnessDiagnosis
+    -> Maybe (Html Msg)
+viewActiveIllnessForManagement language currentDate selectedHealthCenter sessionId encounters diagnosis =
+    let
+        maybeActiveEncounterId =
+            List.filter (Tuple.second >> isDailyEncounterActive currentDate) encounters
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        encounterWasCompletedToday =
+            encounters
+                |> List.filter
+                    (\( _, encounter ) ->
+                        encounter.startDate == currentDate && encounter.endDate == Just currentDate
+                    )
+                |> List.isEmpty
+                |> not
+
+        action =
+            maybeActiveEncounterId
+                |> Maybe.map navigateToEncounterAction
+                |> Maybe.withDefault
+                    (emptyAcuteIllnessEncounter sessionId currentDate (Just selectedHealthCenter)
+                        |> Backend.Model.PostAcuteIllnessEncounter
+                        |> MsgBackend
+                    )
+
+        encounterLabel =
+            if List.length encounters == 1 && isJust maybeActiveEncounterId then
+                Translate.IndividualEncounterFirstVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+
+            else
+                Translate.IndividualEncounterSubsequentVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+    in
+    Just <|
+        div
+            [ classList
+                [ ( "ui primary button active-illness", True )
+                , ( "disabled", encounterWasCompletedToday )
+                ]
+            , onClick action
+            ]
+            [ div [ class "button-label" ]
+                [ div [ class "encounter-label" ]
+                    [ text <| translate language encounterLabel ]
+                , div [] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
+                ]
+            , div [ class "icon-back" ] []
+            ]
+
+
+viewActiveIllnessForOutcome :
+    Language
+    -> NominalDate
+    -> IndividualEncounterParticipantId
+    -> List ( AcuteIllnessEncounterId, AcuteIllnessEncounter )
+    -> AcuteIllnessDiagnosis
+    -> Maybe (Html Msg)
+viewActiveIllnessForOutcome language currentDate sessionId encounters diagnosis =
+    Just <|
+        viewButton language (RecordIllnessOutcome sessionId) (Translate.AcuteIllnessDiagnosis diagnosis) False
+
+
+viewLabel : Language -> String -> TranslationId -> Html Msg
+viewLabel language cssClass transId =
+    p [ class cssClass ] [ text <| translate language transId ]
+
+
+viewButton : Language -> Msg -> TranslationId -> Bool -> Html Msg
+viewButton language action lablelTransId disabled =
+    div
+        [ class "ui primary button"
+        , classList [ ( "disabled", disabled ) ]
+        , onClick action
+        ]
+        [ div [ class "button-label" ]
+            [ text <| translate language lablelTransId ]
+        , div [ class "icon-back" ] []
+        ]
 
 
 navigateToEncounterAction : AcuteIllnessEncounterId -> Msg
