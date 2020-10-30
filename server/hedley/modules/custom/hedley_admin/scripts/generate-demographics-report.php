@@ -91,6 +91,7 @@ $skipped = $skipped_with_measurements = [
 ];
 
 $processed = 0;
+$total_encounters = 0;
 $measurement_types = hedley_general_get_measurement_types();
 
 while ($processed < $total) {
@@ -145,25 +146,13 @@ while ($processed < $total) {
       continue;
     }
 
-    // When there are more than 50 measurements, we classify patient as
-    // affected, without further checks, as this amount of measurements
-    // can't belong to single encounter.
-    if (count($measurements_ids) > 50) {
-      $impacted_patients[$age][$gender]++;
-      continue;
-    }
-
     $measurements = node_load_multiple($measurements_ids);
-    // Creation timestamp of first measurement.
-    $first_timestamp = array_shift($measurements)->created;
-    foreach ($measurements as $measurement) {
-      // When we find 2 measurements that are at least taken week apart,
-      // we classify the patient as impacted, as these 2 measurements
-      // were taken in different encounters.
-      if (abs($first_timestamp - $measurement->created) > 7 * 24 * 3600) {
-        $impacted_patients[$age][$gender]++;
-        break;
-      }
+    list($group, $nutrition, $prenatal, $acute_illness) = count_encounters($measurements);
+    $person_total_encounters = $group + $nutrition + $prenatal + $acute_illness;
+    $total_encounters += $person_total_encounters;
+
+    if ($person_total_encounters > 1) {
+      $impacted_patients[$age][$gender]++;
     }
   }
 
@@ -181,6 +170,8 @@ while ($processed < $total) {
 
 wlog('Done!');
 
+drush_print('');
+drush_print("Total participations: $total_encounters");
 drush_print('');
 
 drush_print('Registered patients report:');
@@ -279,6 +270,53 @@ function classify_by_age_and_gender($person_id) {
   }
 
   return [$age, $gender];
+}
+
+function count_encounters($measurements) {
+  $group_encounters = $nutrition_encounters = $prenatal_encounters = $acute_illness_encounters = [];
+
+  foreach ($measurements as $measurement) {
+    $wrapper = entity_metadata_wrapper('node', $measurement);
+
+    if ($wrapper->__isset('field_session')) {
+      $encounter = $wrapper->field_session->getIdentifier();
+      if (!in_array($encounter, $group_encounters)) {
+        $group_encounters[] = $encounter;
+      }
+      continue;
+    }
+
+    if ($wrapper->__isset('field_nutrition_encounter')) {
+      $encounter = $wrapper->field_nutrition_encounter->getIdentifier();
+      if (!in_array($encounter, $nutrition_encounters)) {
+        $nutrition_encounters[] = $encounter;
+      }
+      continue;
+    }
+
+    if ($wrapper->__isset('field_prenatal_encounter')) {
+      $encounter = $wrapper->field_prenatal_encounter->getIdentifier();
+      if (!in_array($encounter, $prenatal_encounters)) {
+        $prenatal_encounters[] = $encounter;
+      }
+      continue;
+    }
+
+    if ($wrapper->__isset('field_acute_illness_encounter')) {
+      $encounter = $wrapper->field_acute_illness_encounter->getIdentifier();
+      if (!in_array($encounter, $acute_illness_encounters)) {
+        $acute_illness_encounters[] = $encounter;
+      }
+      continue;
+    }
+  }
+
+  return [
+    count($group_encounters),
+    count($nutrition_encounters),
+    count($prenatal_encounters),
+    count($acute_illness_encounters),
+  ];
 }
 
 /**
