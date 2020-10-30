@@ -17,6 +17,7 @@ import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessActivity.View
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.View
+import Pages.AcuteIllnessParticipant.Model
 import Pages.AcuteIllnessParticipant.View
 import Pages.AcuteIllnessProgressReport.Model
 import Pages.AcuteIllnessProgressReport.View
@@ -294,7 +295,12 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     AcuteIllnessParticipantPage id ->
-                        Pages.AcuteIllnessParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.acuteIllnessParticipantPages
+                                    |> Maybe.withDefault Pages.AcuteIllnessParticipant.Model.emptyModel
+                        in
+                        Pages.AcuteIllnessParticipant.View.view model.language currentDate healthCenterId id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessParticipant id)
                             |> flexPageWrapper model
 

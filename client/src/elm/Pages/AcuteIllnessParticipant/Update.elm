@@ -15,8 +15,8 @@ update currentDate personId msg model =
             , [ App.Model.MsgIndexedDb msgBackend ]
             )
 
-        RecordIllnessOutcome ->
-            ( model
+        SetViewMode mode ->
+            ( { model | viewMode = mode }
             , Cmd.none
             , []
             )

@@ -22,8 +22,8 @@ import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Html Msg
-view language currentDate selectedHealthCenter id db =
+view : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate selectedHealthCenter id db model =
     let
         sessions =
             Dict.get id db.individualParticipantsByPerson
@@ -34,7 +34,7 @@ view language currentDate selectedHealthCenter id db =
         [ viewHeader language id
         , div
             [ class "ui full segment" ]
-            [ viewWebData language (viewContent language currentDate selectedHealthCenter id db) identity sessions
+            [ viewWebData language (viewContent language currentDate selectedHealthCenter id db model) identity sessions
             ]
         ]
 
@@ -63,8 +63,18 @@ viewHeader language id =
         ]
 
 
-viewContent : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html Msg
-viewContent language currentDate selectedHealthCenter id db sessions =
+viewContent : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Model -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html Msg
+viewContent language currentDate selectedHealthCenter id db model sessions =
+    case model.viewMode of
+        ManageParticipants ->
+            viewManageParticipantsContent language currentDate selectedHealthCenter id db sessions
+
+        RecordOutcome ->
+            text "RecordOutcome "
+
+
+viewManageParticipantsContent : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html Msg
+viewManageParticipantsContent language currentDate selectedHealthCenter id db sessions =
     let
         activeSessions =
             sessions
@@ -147,7 +157,7 @@ viewContent language currentDate selectedHealthCenter id db sessions =
                 createIllnessNavigateToEncounterButtonDisabled
 
         recordIllnessOutcomeButton =
-            viewButton RecordIllnessOutcome Translate.RecordAcuteIllnessOutcome False
+            viewButton (SetViewMode RecordOutcome) Translate.RecordAcuteIllnessOutcome False
 
         viewButton action lablelTransId disabled =
             div

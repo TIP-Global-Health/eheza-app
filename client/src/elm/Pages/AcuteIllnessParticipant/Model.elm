@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessParticipant.Model exposing (Model, Msg(..), emptyModel)
+module Pages.AcuteIllnessParticipant.Model exposing (AcuteIllnessParticipantViewMode(..), Model, Msg(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Model
@@ -7,15 +7,20 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    {}
-
-
-type Msg
-    = MsgBackend Backend.Model.MsgIndexedDb
-    | RecordIllnessOutcome
-    | SetActivePage Page
+    { viewMode : AcuteIllnessParticipantViewMode }
 
 
 emptyModel : Model
 emptyModel =
-    {}
+    { viewMode = ManageParticipants }
+
+
+type Msg
+    = MsgBackend Backend.Model.MsgIndexedDb
+    | SetViewMode AcuteIllnessParticipantViewMode
+    | SetActivePage Page
+
+
+type AcuteIllnessParticipantViewMode
+    = ManageParticipants
+    | RecordOutcome
