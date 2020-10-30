@@ -90,8 +90,8 @@ viewContent language currentDate selectedHealthCenter id db sessions =
                     (\( sessionId, session ) ->
                         if session.startDate /= currentDate then
                             -- Session was not started today, therefore, we know
-                            -- it's first encounter was not started todaym which indicates
-                            -- there should be a subsequent visit.
+                            -- it's first encounter was not started today, which indicates
+                            -- subsequent visit option is needed.
                             -- This option will be provided at `active Illnesses` section.
                             ( startIllnessAction, False )
 
@@ -120,7 +120,7 @@ viewContent language currentDate selectedHealthCenter id db sessions =
                             in
                             ( maybeActiveEncounterId
                                 |> Maybe.map navigateToEncounterAction
-                                |> Maybe.withDefault (startNewEncounterAction currentDate sessionId selectedHealthCenter)
+                                |> Maybe.withDefault startIllnessAction
                             , -- We do not allow to create multiple encounters for same illness on the same day.
                               -- Therefore, we disable the button.
                               encounterWasCompletedToday
@@ -225,7 +225,11 @@ viewActiveIllness language currentDate selectedHealthCenter id db sessionId =
                             action =
                                 maybeActiveEncounterId
                                     |> Maybe.map navigateToEncounterAction
-                                    |> Maybe.withDefault (startNewEncounterAction currentDate sessionId selectedHealthCenter)
+                                    |> Maybe.withDefault
+                                        (emptyAcuteIllnessEncounter sessionId currentDate (Just selectedHealthCenter)
+                                            |> Backend.Model.PostAcuteIllnessEncounter
+                                            |> MsgBackend
+                                        )
 
                             encounterLabel =
                                 if List.length encounters == 1 && isJust maybeActiveEncounterId then
@@ -250,13 +254,6 @@ viewActiveIllness language currentDate selectedHealthCenter id db sessionId =
                                 , div [ class "icon-back" ] []
                                 ]
                     )
-
-
-startNewEncounterAction : NominalDate -> IndividualEncounterParticipantId -> HealthCenterId -> Msg
-startNewEncounterAction currentDate sessionId selectedHealthCenter =
-    emptyAcuteIllnessEncounter sessionId currentDate (Just selectedHealthCenter)
-        |> Backend.Model.PostAcuteIllnessEncounter
-        |> MsgBackend
 
 
 navigateToEncounterAction : AcuteIllnessEncounterId -> Msg
