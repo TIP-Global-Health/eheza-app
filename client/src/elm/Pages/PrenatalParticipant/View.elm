@@ -70,9 +70,6 @@ viewPrenatalActions language currentDate selectedHealthCenter id db prenatalSess
                 |> List.head
                 |> Maybe.map Tuple.first
 
-        _ =
-            Debug.log "maybeSessionId" maybeSessionId
-
         -- Resolve active prenatal encounter for person. There should not be more than one.
         -- We count the number of completed encounters, so that we know if to
         -- allow 'Pregnancy Outcome' action.
