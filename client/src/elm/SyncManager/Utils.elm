@@ -342,7 +342,7 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
             getIdentifier identifier "counseling_session"
 
         BackendAuthorityCorePhysicalExam identifier ->
-            getIdentifier identifier "counseling_session"
+            getIdentifier identifier "core_physical_exam"
 
         BackendAuthorityDangerSigns identifier ->
             getIdentifier identifier "danger_signs"
