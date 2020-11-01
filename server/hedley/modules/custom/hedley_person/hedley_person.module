@@ -1192,6 +1192,17 @@ function hedley_person_node_update($node) {
     return;
   }
 
+  hedley_person_process_birth_date_update($node);
+  hedley_person_process_deleted_update($node);
+}
+
+/**
+ * Invoked from hook_node_update().
+ *
+ * When child age is edited, updates graduation date for all
+ * it's pmtct_participants.
+ */
+function hedley_person_process_birth_date_update($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
   $wrapper_orig = entity_metadata_wrapper('node', $node->original);
 
@@ -1230,6 +1241,36 @@ function hedley_person_node_update($node) {
 }
 
 /**
+ * Invoked from hook_node_update().
+ *
+ * When child age is edited, updates graduation date for all
+ * it's pmtct_participants.
+ */
+function hedley_person_process_deleted_update($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $wrapper_orig = entity_metadata_wrapper('node', $node->original);
+
+  $deleted = $wrapper->field_deleted->value();
+  $deleted_orig = $wrapper_orig->field_deleted->value();
+
+  if (!isset($deleted) || $deleted === $deleted_orig) {
+    return;
+  }
+
+  $ids = hedley_person_content_affected_by_deletion($node->nid);
+  if (empty($ids)) {
+    return;
+  }
+
+  $items = node_load_multiple($ids);
+  foreach ($items as $item) {
+    $item_wrapper = entity_metadata_wrapper('node', $item);
+    $item_wrapper->field_deleted->set($deleted);
+    $item_wrapper->save();
+  }
+}
+
+/**
  * Resolves all pmtct_participant nodes IDs for child.
  *
  * @param int $nid
@@ -1243,6 +1284,44 @@ function hedley_person_pmtct_participants_for_child($nid) {
   $query->addField('person', 'entity_id');
   $query->condition('bundle', 'pmtct_participant');
   $query->condition('field_person_target_id', $nid);
+
+  return $query->execute()->fetchCol();
+}
+
+/**
+ * Resolves all content that needs to be marked as 'deleted' for deleted person.
+ *
+ * We mark following bundles:
+ *   - PMTCT Participants.
+ *   - Individual Participants.
+ *   - Relationships.
+ *
+ * @param int $nid
+ *   Child node ID.
+ *
+ * @return array
+ *   List of nodes IDs to be marked as deleted..
+ */
+function hedley_person_content_affected_by_deletion($nid) {
+  $query = db_select('node', 'n');
+  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
+  $query->leftJoin('field_data_field_adult', 'a', 'a.entity_id = n.nid');
+  $query->leftJoin('field_data_field_related_to', 'rt', 'rt.entity_id = n.nid');
+
+  $person_or = db_or();
+  $person_or->condition('p.field_person_target_id', $nid);
+  $person_or->condition('a.field_adult_target_id', $nid);
+  $person_or->condition('rt.field_related_to_target_id', $nid);
+  $query->condition($person_or);
+
+  $bundles = [
+    'pmtct_participant',
+    'relationship',
+    'individual_participant',
+  ];
+  $query->condition('n.type', $bundles, 'IN');
+
+  $query->addField('n', 'nid');
 
   return $query->execute()->fetchCol();
 }
