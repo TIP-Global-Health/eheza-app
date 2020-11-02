@@ -1182,6 +1182,37 @@ function hedley_person_get_relationships($person_id, $relation_type = HEDLEY_PER
 }
 
 /**
+ * Implements hook_node_presave().
+ *
+ * If person is marked as deleted, verifies it got no measurements.
+ */
+function hedley_person_node_presave($node) {
+  if ($node->type != 'person') {
+    return;
+  }
+
+  // We don't make the check for newly created nodes.
+  if (empty($node->nid)) {
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $deleted = $wrapper->field_deleted->value();
+
+  if (!isset($deleted) || $deleted === FALSE) {
+    return;
+  }
+
+  $measurements = hedley_general_get_person_measurements($node->nid);
+  if (count($measurements) == 0) {
+    return;
+  }
+
+  $wrapper->field_deleted->set(FALSE);
+  drupal_set_message('Person got measurements. Can\'t be marked as Deleted.', 'error');
+}
+
+/**
  * Implements hook_node_update().
  *
  * When child age is edited, updates graduation date for all
@@ -1191,6 +1222,7 @@ function hedley_person_node_update($node) {
   if ($node->type != 'person') {
     return;
   }
+
 
   hedley_person_process_birth_date_update($node);
   hedley_person_process_deleted_update($node);
