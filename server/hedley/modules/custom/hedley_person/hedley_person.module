@@ -1209,7 +1209,7 @@ function hedley_person_node_presave($node) {
   }
 
   $wrapper->field_deleted->set(FALSE);
-  drupal_set_message(t('Person got measurements. Can\'t be marked as Deleted.'), 'error');
+  drupal_set_message(t('Person got measurements. Can not be marked as Deleted.'), 'error');
 }
 
 /**
