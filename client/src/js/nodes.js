@@ -212,6 +212,8 @@
                                         return Promise.resolve(response);
                                     });
                                 } else {
+                                    json.deleted = false;
+
                                     var change = {
                                         type: type,
                                         uuid: uuid,
@@ -261,6 +263,7 @@
                         json.uuid = uuid;
                         json.type = type;
                         json.status = Status.published;
+                        json.deleted = false;
 
                         // Not entirely clear whose job it should be to figure
                         // out the shard, but we'll do it here for now.
