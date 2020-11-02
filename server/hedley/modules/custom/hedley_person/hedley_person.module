@@ -1328,6 +1328,27 @@ function hedley_person_pmtct_participants_for_person($nid) {
 }
 
 /**
+ * Resolves person individual_participant nodes IDs, for given encounter type.
+ *
+ * @param int $nid
+ *   Child node ID.
+ * @param string $type
+ *   Encounter type.
+ *
+ * @return array
+ *   List of individual_participant nodes IDs.
+ */
+function hedley_person_individual_participants_for_person($nid, $type) {
+  $query = db_select('node', 'n');
+  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
+  $query->condition('n.type', $type);
+  $query->condition('p.field_person_target_id', $nid);
+  $query->addField('n', 'nid');
+
+  return $query->execute()->fetchCol();
+}
+
+/**
  * Resolves all content that needs to be marked as 'deleted' for deleted person.
  *
  * We mark following bundles:

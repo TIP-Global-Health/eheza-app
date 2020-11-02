@@ -140,6 +140,27 @@ function hedley_patient_process_group_measurements($wrappers, $original) {
 function hedley_patient_process_antenatal_measurements($wrappers, $original) {
   $count = count($wrappers);
   drush_print("Duplicate got $count Antenatal measurements.");
+
+  $encounters = $participations_of_duplicate = [];
+  foreach ($wrappers as $wrapper) {
+    $encounter = $wrapper->field_prenatal_encounter->getIdentifier();
+    if (empty($encounter)) {
+      continue;
+    }
+
+    if (!in_array($encounter, $encounters)) {
+      continue;
+    }
+
+    $encounters[] = $encounter;
+    $wrapper_encounter = entity_metadata_wrapper('node', $encounter);
+    $participation = $wrapper_encounter->field_individual_participant->getIdentifier();
+    if (!in_array($participation, $participations_of_duplicate)) {
+      $participations_of_duplicate[] = $participation;
+    }
+  }
+
+  $participations_of_original = hedley_person_individual_participants_for_person($original, 'antenatal');
 }
 
 function hedley_patient_process_nutrition_measurements($wrappers, $original) {
