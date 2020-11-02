@@ -1244,7 +1244,7 @@ function hedley_person_process_birth_date_update($node) {
     return;
   }
 
-  $ids = hedley_person_pmtct_participants_for_child($node->nid);
+  $ids = hedley_person_pmtct_participants_for_person($node->nid);
   if (empty($ids)) {
     return;
   }
@@ -1302,7 +1302,7 @@ function hedley_person_process_deleted_update($node) {
 }
 
 /**
- * Resolves all pmtct_participant nodes IDs for child.
+ * Resolves all pmtct_participant nodes IDs for person.
  *
  * @param int $nid
  *   Child node ID.
@@ -1310,11 +1310,19 @@ function hedley_person_process_deleted_update($node) {
  * @return array
  *   List of pmtct_participant nodes IDs.
  */
-function hedley_person_pmtct_participants_for_child($nid) {
-  $query = db_select('field_data_field_person', 'person');
-  $query->addField('person', 'entity_id');
-  $query->condition('bundle', 'pmtct_participant');
-  $query->condition('field_person_target_id', $nid);
+function hedley_person_pmtct_participants_for_person($nid) {
+  $query = db_select('node', 'n');
+  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
+  $query->leftJoin('field_data_field_adult', 'a', 'a.entity_id = n.nid');
+
+  $query->condition('n.type', 'pmtct_participant');
+
+  $person_or = db_or();
+  $person_or->condition('p.field_person_target_id', $nid);
+  $person_or->condition('a.field_adult_target_id', $nid);
+  $query->condition($person_or);
+
+  $query->addField('n', 'nid');
 
   return $query->execute()->fetchCol();
 }
