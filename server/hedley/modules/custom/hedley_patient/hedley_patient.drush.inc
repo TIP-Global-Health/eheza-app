@@ -36,17 +36,16 @@ function hedley_patient_consolidate_patients() {
   $wrapper_duplicate = entity_metadata_wrapper('node', $duplicate);
 
   if ($wrapper_original->getBundle() !== 'person') {
-    drush_print('Error! Original patient node type is not person. Please fix and try again.');
+    drush_print('Error! Original patient node type is not of a person. Please fix and try again.');
     return;
   }
 
   if ($wrapper_duplicate->getBundle() !== 'person') {
-    drush_print('Error! Duplicate patient node type is not person. Please fix and try again.');
+    drush_print('Error! Duplicate patient node type is not of a person. Please fix and try again.');
     return;
   }
 
   $measurements_of_duplicate = hedley_general_get_person_measurements($duplicate);
-
   if (count($measurements_of_duplicate) == 0) {
     drush_print("Duplicate got no measurements. Marking it as deleted.");
     $wrapper_duplicate->field_deleted->set(TRUE);
@@ -82,11 +81,19 @@ function hedley_patient_consolidate_patients() {
     }
   }
 
-  $count = count($group_measurements);
+  hedley_patient_preocess_group_measurements($group_measurements, $original);
+
+  // Mark duplicate as Deleted.
+//  $wrapper_duplicate->field_deleted->set(TRUE);
+//  $wrapper_duplicate->save();
+}
+
+function hedley_patient_preocess_group_measurements($wrappers, $original) {
+  $count = count($wrappers);
   drush_print("Duplicate got $count group measurements.");
 
   $clinics_duplicate = [];
-  foreach ($group_measurements as $wrapper) {
+  foreach ($wrappers as $wrapper) {
     $session = $wrapper->field_session->getIdentifier();
     if (empty($session)) {
       continue;
