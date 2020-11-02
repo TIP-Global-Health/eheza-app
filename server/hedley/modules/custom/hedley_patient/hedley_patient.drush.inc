@@ -81,14 +81,16 @@ function hedley_patient_consolidate_patients() {
     }
   }
 
-  hedley_patient_preocess_group_measurements($group_measurements, $original);
+  hedley_patient_process_group_measurements($group_measurements, $original);
+  hedley_patient_process_antenatal_measurements($antenatal_measurements, $original);
+
 
   // Mark duplicate as Deleted.
 //  $wrapper_duplicate->field_deleted->set(TRUE);
 //  $wrapper_duplicate->save();
 }
 
-function hedley_patient_preocess_group_measurements($wrappers, $original) {
+function hedley_patient_process_group_measurements($wrappers, $original) {
   $count = count($wrappers);
   drush_print("Duplicate got $count group measurements.");
 
@@ -129,9 +131,23 @@ function hedley_patient_preocess_group_measurements($wrappers, $original) {
   }
 
   // If we got this far, it's safe to transfer the measurements.
-  foreach ($group_measurements as $wrapper) {
+  foreach ($wrappers as $wrapper) {
     $wrapper->field_person->set($original);
     $wrapper->save();
   }
 }
 
+function hedley_patient_process_antenatal_measurements($wrappers, $original) {
+  $count = count($wrappers);
+  drush_print("Duplicate got $count Antenatal measurements.");
+}
+
+function hedley_patient_process_nutrition_measurements($wrappers, $original) {
+  $count = count($wrappers);
+  drush_print("Duplicate got $count Nutrition measurements.");
+}
+
+function hedley_patient_process_acute_illness_measurements($wrappers, $original) {
+  $count = count($wrappers);
+  drush_print("Duplicate got $count Acute Illness measurements.");
+}
