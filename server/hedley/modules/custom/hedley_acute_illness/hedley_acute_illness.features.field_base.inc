@@ -11,6 +11,62 @@
 function hedley_acute_illness_field_default_field_bases() {
   $field_bases = array();
 
+  // Exported field_base: 'field_114_contact'.
+  $field_bases['field_114_contact'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_114_contact',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'call-114' => 'Call 114',
+        'contact-site' => 'Contact recommended site',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_114_recommendation'.
+  $field_bases['field_114_recommendation'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_114_recommendation',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'send-to-hc' => 'Send Patient to the nearest health center',
+        'send-to-rrtc' => 'Send patient to the Rapid Response Team center',
+        'send-to-hospital' => 'Send patient to the nearest hospital',
+        'other' => 'Other recommendation',
+        'none-no-answer' => 'None - no answer',
+        'none-busy-signal' => 'None - busy Signal',
+        'none-other' => 'None - other',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_abdominal_pain_period'.
   $field_bases['field_abdominal_pain_period'] = array(
     'active' => 1,
@@ -225,7 +281,7 @@ function hedley_acute_illness_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'covid19-symptioms' => 'Others with COVID19 symptoms',
+        'covid19-symptoms' => 'Others with COVID19 symptoms',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',
@@ -547,6 +603,46 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_non_administration_reason'.
+  $field_bases['field_non_administration_reason'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_non_administration_reason',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'amoxicillin-lack-of-stock' => 'Amoxicillin - Lack of stock',
+        'amoxicillin-known-allergy' => 'Amoxicillin - Known allergy',
+        'amoxicillin-patient-declined' => 'Amoxicillin - Patient declined',
+        'amoxicillin-other' => 'Amoxicillin - Other',
+        'coartem-lack-of-stock' => 'Coartem - Lack of stock',
+        'coartem-known-allergy' => 'Coartem - Known allergy',
+        'coartem-patient-declined' => 'Coartem - Patient declined',
+        'coartem-other' => 'Coartem - Other',
+        'ors-lack-of-stock' => 'ORS  - Lack of stock',
+        'ors-known-allergy' => 'ORS - Known allergy',
+        'ors-patient-declined' => 'ORS - Patient declined',
+        'ors-other' => 'ORS - Other',
+        'zinc-lack-of-stock' => 'Zinc - Lack of stock',
+        'zinc-known-allergy' => 'Zinc - Known allergy',
+        'zinc-patient-declined' => 'Zinc - Patient declined',
+        'zinc-other' => 'Zinc - Other',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_non_bloody_diarrhea_period'.
   $field_bases['field_non_bloody_diarrhea_period'] = array(
     'active' => 1,
@@ -688,6 +784,36 @@ function hedley_acute_illness_field_default_field_bases() {
     'settings' => array(),
     'translatable' => 0,
     'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_site_recommendation'.
+  $field_bases['field_site_recommendation'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_site_recommendation',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'team-to-village' => 'Team will come to village',
+        'send-with-form' => 'Advised to send patient to site with referral form',
+        'other' => 'Other response',
+        'none-sent-with-form' => 'None - no response, sent patient with referral form',
+        'none-patient-refused' => 'None - patient refused',
+        'none-other' => 'None - other',
+        'n-a' => 'Not applicable',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_sore_throat_period'.

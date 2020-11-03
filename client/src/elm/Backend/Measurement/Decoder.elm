@@ -1,9 +1,10 @@
-module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAcuteFindings, decodeAcuteFindingsGeneralSign, decodeAcuteFindingsRespiratorySign, decodeAcuteIllnessMeasurement, decodeAcuteIllnessMeasurements, decodeAcuteIllnessVitals, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeDistributionNotice, decodeExposure, decodeExposureSign, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFbf, decodeFbfValue, decodeFetalPresentation, decodeGroupMeasurement, decodeHCContact, decodeHCContactSign, decodeHCRecomendation, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeIsolation, decodeIsolationSign, decodeLactation, decodeLactationSign, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMalariaRapidTestResult, decodeMalariaTesting, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationDistribution, decodeMedicationDistributionSign, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionHeight, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionMuac, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeReasonForNotIsolating, decodeResource, decodeResourceSign, decodeResponsePeriod, decodeSendToHC, decodeSendToHCSign, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeSymptomsGI, decodeSymptomsGIDerivedSign, decodeSymptomsGIDict, decodeSymptomsGeneral, decodeSymptomsRespiratory, decodeTravelHistory, decodeTravelHistorySign, decodeTreatmentReview, decodeTreatmentReviewSign, decodeVitals, decodeWeight, decodeWithEntityUuid, malariaRapidTestResultFromString, symptomsGIToDict, symptomsGeneralToDict, symptomsRespiratoryToDict)
+module Backend.Measurement.Decoder exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (..)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
@@ -116,6 +117,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "exposure" (decodeHead decodeExposure) Nothing
         |> optional "isolation" (decodeHead decodeIsolation) Nothing
         |> optional "hc_contact" (decodeHead decodeHCContact) Nothing
+        |> optional "call_114" (decodeHead decodeCall114) Nothing
         |> optional "treatment_history" (decodeHead decodeTreatmentReview) Nothing
         |> optional "send_to_hc" (decodeHead decodeSendToHC) Nothing
         |> optional "medication_distribution" (decodeHead decodeMedicationDistribution) Nothing
@@ -1336,8 +1338,9 @@ decodeSendToHCSign =
 
 decodeMedicationDistribution : Decoder MedicationDistribution
 decodeMedicationDistribution =
-    decodeEverySet decodeMedicationDistributionSign
-        |> field "prescribed_medication"
+    succeed MedicationDistributionValue
+        |> required "prescribed_medication" (decodeEverySet decodeMedicationDistributionSign)
+        |> required "non_administration_reason" (decodeEverySet decodeMedicationNonAdministrationSign)
         |> decodeAcuteIllnessMeasurement
 
 
@@ -1366,9 +1369,60 @@ decodeMedicationDistributionSign =
                         succeed NoMedicationDistributionSigns
 
                     _ ->
-                        fail <|
-                            sign
-                                ++ " is not a recognized MedicationDistributionSign"
+                        fail <| sign ++ " is not a recognized MedicationDistributionSign"
+            )
+
+
+decodeMedicationNonAdministrationSign : Decoder MedicationNonAdministrationSign
+decodeMedicationNonAdministrationSign =
+    string
+        |> andThen
+            (\sign ->
+                if sign == "none" then
+                    succeed NoMedicationNonAdministrationSigns
+
+                else
+                    let
+                        parts =
+                            String.split "-" sign
+
+                        failure =
+                            fail <| sign ++ " is not a recognized MedicationNonAdministrationSign"
+                    in
+                    List.head parts
+                        |> Maybe.map
+                            (\prefix ->
+                                let
+                                    medicationNonAdministrationReason =
+                                        List.tail parts
+                                            |> Maybe.map (List.intersperse "-" >> String.concat)
+                                            |> Maybe.andThen medicationNonAdministrationReasonFromString
+                                in
+                                case prefix of
+                                    "amoxicillin" ->
+                                        medicationNonAdministrationReason
+                                            |> Maybe.map (MedicationAmoxicillin >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "coartem" ->
+                                        medicationNonAdministrationReason
+                                            |> Maybe.map (MedicationCoartem >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "ors" ->
+                                        medicationNonAdministrationReason
+                                            |> Maybe.map (MedicationORS >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "zinc" ->
+                                        medicationNonAdministrationReason
+                                            |> Maybe.map (MedicationZinc >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    _ ->
+                                        failure
+                            )
+                        |> Maybe.withDefault failure
             )
 
 
@@ -1452,7 +1506,7 @@ decodeExposureSign =
         |> andThen
             (\sign ->
                 case sign of
-                    "covid19-symptioms" ->
+                    "covid19-symptoms" ->
                         succeed COVID19Symptoms
 
                     "none" ->
@@ -1530,7 +1584,7 @@ decodeHCContact : Decoder HCContact
 decodeHCContact =
     succeed HCContactValue
         |> required "hc_contact" (decodeEverySet decodeHCContactSign)
-        |> required "hc_recommendation" (decodeEverySet decodeHCRecomendation)
+        |> required "hc_recommendation" (decodeEverySet decodeHCRecommendation)
         |> required "hc_response_time" (decodeEverySet decodeResponsePeriod)
         |> required "ambulance_arrival_time" (decodeEverySet decodeResponsePeriod)
         |> decodeAcuteIllnessMeasurement
@@ -1555,8 +1609,8 @@ decodeHCContactSign =
             )
 
 
-decodeHCRecomendation : Decoder HCRecomendation
-decodeHCRecomendation =
+decodeHCRecommendation : Decoder HCRecommendation
+decodeHCRecommendation =
     string
         |> andThen
             (\sign ->
@@ -1574,12 +1628,12 @@ decodeHCRecomendation =
                         succeed ChwMonitoring
 
                     "n-a" ->
-                        succeed HCRecomendationNotApplicable
+                        succeed HCRecommendationNotApplicable
 
                     _ ->
                         fail <|
                             sign
-                                ++ " is not a recognized HCRecomendation"
+                                ++ " is not a recognized HCRecommendation"
             )
 
 
@@ -1608,4 +1662,103 @@ decodeResponsePeriod =
                         fail <|
                             sign
                                 ++ " is not a recognized ResponsePeriod"
+            )
+
+
+decodeCall114 : Decoder Call114
+decodeCall114 =
+    succeed Call114Value
+        |> required "114_contact" (decodeEverySet decodeCall114Sign)
+        |> required "114_recommendation" (decodeEverySet decodeRecommendation114)
+        |> required "site_recommendation" (decodeEverySet decodeRecommendationSite)
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeCall114Sign : Decoder Call114Sign
+decodeCall114Sign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "call-114" ->
+                        succeed Call114
+
+                    "contact-site" ->
+                        succeed ContactSite
+
+                    "none" ->
+                        succeed NoCall114Signs
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized Call114Sign"
+            )
+
+
+decodeRecommendation114 : Decoder Recommendation114
+decodeRecommendation114 =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "send-to-hc" ->
+                        succeed SendToHealthCenter
+
+                    "send-to-rrtc" ->
+                        succeed SendToRRTCenter
+
+                    "send-to-hospital" ->
+                        succeed SendToHospital
+
+                    "other" ->
+                        succeed OtherRecommendation114
+
+                    "none-no-answer" ->
+                        succeed NoneNoAnswer
+
+                    "none-busy-signal" ->
+                        succeed NoneBusySignal
+
+                    "none-other" ->
+                        succeed NoneOtherRecommendation114
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized Recommendation114"
+            )
+
+
+decodeRecommendationSite : Decoder RecommendationSite
+decodeRecommendationSite =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "team-to-village" ->
+                        succeed TeamComeToVillage
+
+                    "send-with-form" ->
+                        succeed SendToSiteWithForm
+
+                    "other" ->
+                        succeed OtherRecommendationSite
+
+                    "none-sent-with-form" ->
+                        succeed NoneSentWithForm
+
+                    "none-patient-refused" ->
+                        succeed NonePatientRefused
+
+                    "none-other" ->
+                        succeed NoneOtherRecommendationSite
+
+                    "n-a" ->
+                        succeed RecommendationSiteNotApplicable
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized RecommendationSite"
             )

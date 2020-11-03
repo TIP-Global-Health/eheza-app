@@ -44,6 +44,7 @@ type alias Model =
     , saveExposure : WebData ()
     , saveIsolation : WebData ()
     , saveHCContact : WebData ()
+    , saveCall114 : WebData ()
     , saveTreatmentReview : WebData ()
     }
 
@@ -63,6 +64,7 @@ emptyModel =
     , saveExposure = NotAsked
     , saveIsolation = NotAsked
     , saveHCContact = NotAsked
+    , saveCall114 = NotAsked
     , saveTreatmentReview = NotAsked
     }
 
@@ -100,7 +102,7 @@ type Msg
     | HandleSavedMalariaTesting (WebData ())
     | SaveSendToHC PersonId (Maybe SendToHCId) (EverySet SendToHCSign)
     | HandleSavedSendToHC (WebData ())
-    | SaveMedicationDistribution PersonId (Maybe MedicationDistributionId) (EverySet MedicationDistributionSign)
+    | SaveMedicationDistribution PersonId (Maybe MedicationDistributionId) MedicationDistributionValue
     | HandleSavedMedicationDistribution (WebData ())
     | SaveTravelHistory PersonId (Maybe TravelHistoryId) (EverySet TravelHistorySign)
     | HandleSavedTravelHistory (WebData ())
@@ -110,5 +112,7 @@ type Msg
     | HandleSavedIsolation (WebData ())
     | SaveHCContact PersonId (Maybe HCContactId) HCContactValue
     | HandleSavedHCContact (WebData ())
+    | SaveCall114 PersonId (Maybe Call114Id) Call114Value
+    | HandleSavedCall114 (WebData ())
     | SaveTreatmentReview PersonId (Maybe TreatmentReviewId) (EverySet TreatmentReviewSign)
     | HandleSavedTreatmentReview (WebData ())

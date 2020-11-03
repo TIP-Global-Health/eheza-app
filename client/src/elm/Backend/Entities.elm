@@ -551,6 +551,14 @@ type HCContactUuidType
     = HCContactUuidType
 
 
+type alias Call114Id =
+    EntityUuid Call114UuidType
+
+
+type Call114UuidType
+    = Call114UuidType
+
+
 type alias AcuteFindingsId =
     EntityUuid AcuteFindingsUuidType
 

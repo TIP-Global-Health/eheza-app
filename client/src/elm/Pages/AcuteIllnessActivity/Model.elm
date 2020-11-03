@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Model exposing (AcuteFindingsForm, ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, MedicationDistributionForm, Model, Msg(..), NextStepsData, NextStepsTask(..), PhysicalExamData, PhysicalExamTask(..), PriorTreatmentData, PriorTreatmentTask(..), SendToHCForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentReviewForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyNextStepsData, emptyPhysicalExamData, emptyPriorTreatmentData, emptySymptomsData, emptyTreatmentReviewForm)
+module Pages.AcuteIllnessActivity.Model exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
@@ -12,6 +12,7 @@ type Msg
     = SetActivePage Page
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe AcuteIllnessDiagnosis)
+    | SetPertinentSymptomsPopupState Bool
       -- SYMPTOMS Msgs
     | SetActiveSymptomsTask SymptomsTask
     | ToggleSymptomsGeneralSign SymptomsGeneralSign
@@ -55,14 +56,20 @@ type Msg
     | SetReasonForNotIsolating ReasonForNotIsolating
     | SaveIsolation PersonId (Maybe ( IsolationId, Isolation )) (Maybe NextStepsTask)
     | SetContactedHC Bool
-    | SetHCRecommendation HCRecomendation
+    | SetHCRecommendation HCRecommendation
     | SetResponsePeriod ResponsePeriod
     | SetAmbulanceArrivalPeriod ResponsePeriod
     | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe NextStepsTask)
+    | SetCalled114 Bool
+    | SetContactedSite Bool
+    | SetRecommendation114 Recommendation114
+    | SetRecommendationSite RecommendationSite
+    | SaveCall114 PersonId (Maybe ( Call114Id, Call114 )) (Maybe NextStepsTask)
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC ))
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
+    | SetMedicationDistributionMedicationNonAdministrationReason (Maybe MedicationNonAdministrationReason) MedicationDistributionSign MedicationNonAdministrationReason
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution ))
 
 
@@ -74,6 +81,7 @@ type alias Model =
     , priorTreatmentData : PriorTreatmentData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
+    , showPertinentSymptomsPopup : Bool
     , warningPopupState : Maybe AcuteIllnessDiagnosis
     }
 
@@ -87,6 +95,7 @@ emptyModel =
     , priorTreatmentData = emptyPriorTreatmentData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
+    , showPertinentSymptomsPopup = False
     , warningPopupState = Nothing
     }
 
@@ -286,6 +295,7 @@ emptyTreatmentReviewForm =
 type alias NextStepsData =
     { isolationForm : IsolationForm
     , hcContactForm : HCContactForm
+    , call114Form : Call114Form
     , sendToHCForm : SendToHCForm
     , medicationDistributionForm : MedicationDistributionForm
     , activeTask : Maybe NextStepsTask
@@ -296,8 +306,9 @@ emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { isolationForm = IsolationForm Nothing Nothing Nothing Nothing
     , hcContactForm = HCContactForm Nothing Nothing Nothing Nothing
+    , call114Form = emptyCall114Form
     , sendToHCForm = SendToHCForm Nothing Nothing
-    , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing
+    , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
     , activeTask = Nothing
     }
 
@@ -305,6 +316,7 @@ emptyNextStepsData =
 type NextStepsTask
     = NextStepsIsolation
     | NextStepsContactHC
+    | NextStepsCall114
     | NextStepsMedicationDistribution
     | NextStepsSendToHC
 
@@ -319,9 +331,32 @@ type alias IsolationForm =
 
 type alias HCContactForm =
     { contactedHC : Maybe Bool
-    , recomendations : Maybe HCRecomendation
+    , recommendations : Maybe HCRecommendation
     , responsePeriod : Maybe ResponsePeriod
     , ambulanceArrivalPeriod : Maybe ResponsePeriod
+    }
+
+
+type alias Call114Form =
+    { called114 : Maybe Bool
+    , recommendation114 : Maybe Recommendation114
+    , recommendation114Dirty : Bool
+    , contactedSite : Maybe Bool
+    , contactedSiteDirty : Bool
+    , recommendationSite : Maybe RecommendationSite
+    , recommendationSiteDirty : Bool
+    }
+
+
+emptyCall114Form : Call114Form
+emptyCall114Form =
+    { called114 = Nothing
+    , recommendation114 = Nothing
+    , recommendation114Dirty = False
+    , contactedSite = Nothing
+    , contactedSiteDirty = False
+    , recommendationSite = Nothing
+    , recommendationSiteDirty = False
     }
 
 
@@ -337,4 +372,5 @@ type alias MedicationDistributionForm =
     , ors : Maybe Bool
     , zinc : Maybe Bool
     , lemonJuiceOrHoney : Maybe Bool
+    , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
     }

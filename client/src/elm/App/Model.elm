@@ -34,7 +34,6 @@ import Pages.Session.Model
 import PrenatalActivity.Model exposing (PrenatalActivity)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
-import Rollbar
 import ServiceWorker.Model
 import Time
 import Translate.Model exposing (Language(..))
@@ -221,9 +220,6 @@ type Msg
     | HandlePairedDevice (WebData Device)
       -- Manage ZScore data
     | MsgZScore ZScore.Model.Msg
-      -- Communiating with Rollbar
-    | SendRollbar Rollbar.Level String (Dict String Value)
-    | HandleRollbar (Result Http.Error Uuid)
       -- Manage our own model
     | ScrollToElement String
     | SetActivePage Page

@@ -1,4 +1,4 @@
-module Backend.Measurement.Model exposing (AbdomenCPESign(..), AcuteFindings, AcuteFindingsGeneralSign(..), AcuteFindingsRespiratorySign(..), AcuteFindingsValue, AcuteIllnessMeasurement, AcuteIllnessMeasurements, AcuteIllnessVitals, AcuteIllnessVitalsValue, Attendance, BreastExam, BreastExamSign(..), BreastExamValue, CSectionReason(..), CSectionScar(..), ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CorePhysicalExam, CorePhysicalExamValue, CounselingSession, DangerSign(..), DangerSigns, DistributionNotice(..), Exposure, ExposureSign(..), EyesCPESign(..), FamilyPlanning, FamilyPlanningSign(..), Fbf, FbfForm, FbfValue, FetalPresentation(..), GroupMeasurement, HCContact, HCContactSign(..), HCContactValue, HCRecomendation(..), HairHeadCPESign(..), HandsCPESign(..), HeartCPESign(..), Height, HeightInCm(..), HistoricalMeasurements, Isolation, IsolationSign(..), IsolationValue, Lactation, LactationForm, LactationSign(..), LastMenstrualPeriod, LastMenstrualPeriodValue, LegsCPESign(..), LungsCPESign(..), MalariaRapidTestResult(..), MalariaTesting, Measurement, MeasurementData, Measurements, MedicalHistory, MedicalHistorySign(..), Medication, MedicationDistribution, MedicationDistributionSign(..), MedicationSign(..), MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), NeckCPESign(..), NutritionHeight, NutritionMeasurement, NutritionMeasurements, NutritionMuac, NutritionNutrition, NutritionPhoto, NutritionWeight, ObstetricHistory, ObstetricHistorySign(..), ObstetricHistoryStep2, ObstetricHistoryStep2Value, ObstetricHistoryValue, ObstetricalExam, ObstetricalExamValue, ParticipantConsent, ParticipantConsentValue, Photo, PhotoUrl(..), PrenatalFamilyPlanning, PrenatalMeasurement, PrenatalMeasurements, PrenatalNutrition, PrenatalNutritionValue, PrenatalPhoto, PreviousDeliveryPeriod(..), PreviousDeliverySign(..), PreviousMeasurementsValue, ReasonForNotIsolating(..), Resource, ResourceSign(..), ResponsePeriod(..), SendToHC, SendToHCSign(..), SocialHistory, SocialHistoryHivTestingResult(..), SocialHistorySign(..), SocialHistoryValue, SymptomsGI, SymptomsGIDerivedSign(..), SymptomsGISign(..), SymptomsGIValue, SymptomsGeneral, SymptomsGeneralSign(..), SymptomsGeneralValue, SymptomsRespiratory, SymptomsRespiratorySign(..), TravelHistory, TravelHistorySign(..), TreatmentReview, TreatmentReviewSign(..), Vitals, VitalsValue, Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
+module Backend.Measurement.Model exposing (..)
 
 {-| This module represents various measurements to be stored on the backend,
 and cached in local storage.
@@ -710,12 +710,12 @@ type HCContactSign
     | NoHCContactSigns
 
 
-type HCRecomendation
+type HCRecommendation
     = SendAmbulance
     | HomeIsolation
     | ComeToHealthCenter
     | ChwMonitoring
-    | HCRecomendationNotApplicable
+    | HCRecommendationNotApplicable
 
 
 type ResponsePeriod
@@ -728,7 +728,7 @@ type ResponsePeriod
 
 type alias HCContactValue =
     { signs : EverySet HCContactSign
-    , recomendations : EverySet HCRecomendation
+    , recommendations : EverySet HCRecommendation
     , responsePeriod : EverySet ResponsePeriod
     , ambulanceArrivalPeriod : EverySet ResponsePeriod
     }
@@ -736,6 +736,43 @@ type alias HCContactValue =
 
 type alias HCContact =
     AcuteIllnessMeasurement HCContactValue
+
+
+type Call114Sign
+    = Call114
+    | ContactSite
+    | NoCall114Signs
+
+
+type Recommendation114
+    = SendToHealthCenter
+    | SendToRRTCenter
+    | SendToHospital
+    | OtherRecommendation114
+    | NoneNoAnswer
+    | NoneBusySignal
+    | NoneOtherRecommendation114
+
+
+type RecommendationSite
+    = TeamComeToVillage
+    | SendToSiteWithForm
+    | OtherRecommendationSite
+    | NoneSentWithForm
+    | NonePatientRefused
+    | NoneOtherRecommendationSite
+    | RecommendationSiteNotApplicable
+
+
+type alias Call114Value =
+    { signs : EverySet Call114Sign
+    , recommendations114 : EverySet Recommendation114
+    , recommendationsSite : EverySet RecommendationSite
+    }
+
+
+type alias Call114 =
+    AcuteIllnessMeasurement Call114Value
 
 
 type SendToHCSign
@@ -757,8 +794,29 @@ type MedicationDistributionSign
     | NoMedicationDistributionSigns
 
 
+type MedicationNonAdministrationReason
+    = NonAdministrationLackOfStock
+    | NonAdministrationKnownAllergy
+    | NonAdministrationPatientDeclined
+    | NonAdministrationOther
+
+
+type MedicationNonAdministrationSign
+    = MedicationAmoxicillin MedicationNonAdministrationReason
+    | MedicationCoartem MedicationNonAdministrationReason
+    | MedicationORS MedicationNonAdministrationReason
+    | MedicationZinc MedicationNonAdministrationReason
+    | NoMedicationNonAdministrationSigns
+
+
+type alias MedicationDistributionValue =
+    { distributionSigns : EverySet MedicationDistributionSign
+    , nonAdministrationSigns : EverySet MedicationNonAdministrationSign
+    }
+
+
 type alias MedicationDistribution =
-    AcuteIllnessMeasurement (EverySet MedicationDistributionSign)
+    AcuteIllnessMeasurement MedicationDistributionValue
 
 
 
@@ -883,6 +941,7 @@ type alias AcuteIllnessMeasurements =
     , exposure : Maybe ( ExposureId, Exposure )
     , isolation : Maybe ( IsolationId, Isolation )
     , hcContact : Maybe ( HCContactId, HCContact )
+    , call114 : Maybe ( Call114Id, Call114 )
     , treatmentReview : Maybe ( TreatmentReviewId, TreatmentReview )
     , sendToHC : Maybe ( SendToHCId, SendToHC )
     , medicationDistribution : Maybe ( MedicationDistributionId, MedicationDistribution )

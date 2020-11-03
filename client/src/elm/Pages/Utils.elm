@@ -463,11 +463,16 @@ ifEverySetEmpty value set =
 
 valueConsideringIsDirtyField : Bool -> Maybe a -> a -> Maybe a
 valueConsideringIsDirtyField isDirty formVariant valueVariant =
+    maybeValueConsideringIsDirtyField isDirty formVariant (Just valueVariant)
+
+
+maybeValueConsideringIsDirtyField : Bool -> Maybe a -> Maybe a -> Maybe a
+maybeValueConsideringIsDirtyField isDirty formVariant maybeValueVariant =
     if isDirty then
         formVariant
 
     else
-        or formVariant (Just valueVariant)
+        or formVariant maybeValueVariant
 
 
 {-| Show a photo thumbnail.

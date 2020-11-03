@@ -71,7 +71,7 @@
   }
 }
 
-@mixin recomendation-label {
+@mixin recommendation-label {
 
   label {
     font-size: 24px;
@@ -723,22 +723,22 @@ div.page-activity.acute-illness {
 
         .label {
           float: left;
-          width: 24%;
+          max-width: 54%;
         }
 
         .diagnosis {
           float: left;
-          width: 75%;
+          max-width: 46%;
         }
 
         &.covid-19 {
 
           .label {
-            width: 26%;
+            max-width: 58%;
           }
 
           .diagnosis {
-            width: 73%;
+            max-width: 42%;
           }
         }
       }
@@ -782,6 +782,28 @@ div.page-activity.acute-illness {
       }
 
       @include next-steps;
+    }
+
+    .ui.form.next-steps.call-114 {
+
+      .helper.call-114 {
+        margin-bottom: 5px;
+      }
+
+      .review-case-wrapper {
+        display: flex;
+
+        .helper.review-case {
+          margin-bottom: 30px;
+        }
+
+        img {
+          height: 35px;
+          margin-left: 4px;
+          margin-top: -4px;
+        }
+      }
+
     }
 
     .label {
@@ -887,7 +909,7 @@ div.page-activity.acute-illness {
       .ui.checkbox.activity {
         margin-bottom: 10px;
 
-        @include recomendation-label;
+        @include recommendation-label;
       }
     }
 
@@ -1901,7 +1923,24 @@ div.page-report.acute-illness {
     }
 
     div.pane.assessment .pane-content {
-      color: $color-red-alert;
+
+      .diagnosis {
+        color: $color-red-alert;
+        margin-bottom: 10px;
+      }
+
+      .treatment-comment {
+        color: $color-text;
+        font-size: 20px;
+        font-weight: normal;
+        line-height: 22px;
+        margin-bottom: 7px;
+        text-transform: none;
+
+        b {
+          margin-left: 5px;
+        }
+      }
     }
 
     div.pane.symptoms .symptoms-table .symptoms-table-row {
@@ -2005,11 +2044,11 @@ div.page-report.acute-illness {
       margin-bottom: 0;
       padding: 20px;
 
-      .recomendation {
+      .recommendation {
         font-weight: normal;
         margin-left: 52px;
 
-        @include recomendation-label;
+        @include recommendation-label;
 
         > span {
           margin-left: -5px;

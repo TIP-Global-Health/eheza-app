@@ -462,6 +462,42 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
+        SaveCall114 personId valueId value ->
+            let
+                cmd =
+                    case valueId of
+                        Nothing ->
+                            { participantId = personId
+                            , dateMeasured = currentDate
+                            , encounterId = Just encounterId
+                            , nurse = nurseId
+                            , healthCenter = healthCenterId
+                            , value = value
+                            }
+                                |> sw.post call114Endpoint
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedCall114)
+
+                        Just id ->
+                            encodeCall114Value value
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
+                                |> object
+                                |> sw.patchAny call114Endpoint id
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedCall114)
+            in
+            ( { model | saveCall114 = Loading }
+            , cmd
+            )
+
+        HandleSavedCall114 data ->
+            ( { model | saveCall114 = data }
+            , Cmd.none
+            )
+
         SaveTreatmentReview personId valueId value ->
             let
                 cmd =

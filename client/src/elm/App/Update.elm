@@ -59,7 +59,6 @@ import Pages.Session.Update
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
-import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
@@ -570,37 +569,6 @@ update msg model =
             , cmd
             )
                 |> sequence update extraMsgs
-
-        SendRollbar level message data ->
-            updateConfigured
-                (\configured ->
-                    let
-                        version =
-                            Version.version
-                                |> .build
-                                |> Json.Encode.string
-
-                        cmd =
-                            Rollbar.send
-                                configured.config.rollbarToken
-                                (Rollbar.scope "user")
-                                (Rollbar.environment configured.config.name)
-                                0
-                                level
-                                message
-                                (Dict.insert "build" version data |> Dict.toList |> LegacyDict.fromList)
-                                |> Task.attempt HandleRollbar
-                    in
-                    ( configured
-                    , cmd
-                    , []
-                    )
-                )
-                model
-
-        HandleRollbar result ->
-            -- For now, we do nothing
-            ( model, Cmd.none )
 
         SetLanguage language ->
             ( { model | language = language }

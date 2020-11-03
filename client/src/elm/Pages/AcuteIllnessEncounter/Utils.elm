@@ -10,15 +10,17 @@ import Backend.Measurement.Model
         , AcuteFindingsRespiratorySign(..)
         , AcuteIllnessMeasurements
         , AcuteIllnessVitalsValue
+        , Call114Sign(..)
         , ExposureSign(..)
         , HCContactSign(..)
         , HCContactValue
-        , HCRecomendation(..)
+        , HCRecommendation(..)
         , IsolationSign(..)
         , IsolationValue
         , MalariaRapidTestResult(..)
         , ReasonForNotIsolating(..)
-        , ResponsePeriod(..)
+        , Recommendation114(..)
+        , RecommendationSite(..)
         , SymptomsGIDerivedSign(..)
         , SymptomsGISign(..)
         , SymptomsGeneralSign(..)
@@ -108,8 +110,8 @@ generatePreviousMeasurements currentEncounterId participantId db =
             )
 
 
-resolveNextStepsTasks : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> List NextStepsTask
-resolveNextStepsTasks currentDate person diagnosis =
+resolveNextStepsTasks : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> List NextStepsTask
+resolveNextStepsTasks currentDate person diagnosis measurements =
     let
         ( ageMonths0To2, ageMonths0To6, ageMonths2To60 ) =
             ageInMonths currentDate person
@@ -121,8 +123,11 @@ resolveNextStepsTasks currentDate person diagnosis =
                 NextStepsIsolation ->
                     diagnosis == Just DiagnosisCovid19
 
-                NextStepsContactHC ->
+                NextStepsCall114 ->
                     diagnosis == Just DiagnosisCovid19
+
+                NextStepsContactHC ->
+                    diagnosis == Just DiagnosisCovid19 && isJust measurements.call114 && (not <| talkedTo114 measurements)
 
                 NextStepsMedicationDistribution ->
                     (diagnosis == Just DiagnosisMalariaUncomplicated && not ageMonths0To6)
@@ -141,8 +146,20 @@ resolveNextStepsTasks currentDate person diagnosis =
                         || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
                         || (diagnosis == Just DiagnosisUndeterminedMoreEvaluationNeeded)
     in
-    [ NextStepsIsolation, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
+    [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
         |> List.filter expectTask
+
+
+talkedTo114 : AcuteIllnessMeasurements -> Bool
+talkedTo114 measurements =
+    measurements.call114
+        |> Maybe.map
+            (Tuple.second
+                >> .value
+                >> .signs
+                >> EverySet.member Call114
+            )
+        |> Maybe.withDefault False
 
 
 expectActivity : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessActivity -> Bool
@@ -179,8 +196,8 @@ activityCompleted currentDate person measurements diagnosis activity =
             mandatoryActivityCompleted measurements AcuteIllnessExposure
 
         AcuteIllnessNextSteps ->
-            case resolveNextStepsTasks currentDate person diagnosis of
-                [ NextStepsIsolation, NextStepsContactHC ] ->
+            case resolveNextStepsTasks currentDate person diagnosis measurements of
+                [ NextStepsIsolation, NextStepsCall114 ] ->
                     isJust measurements.isolation
                         && isJust measurements.hcContact
 
@@ -366,14 +383,17 @@ covid19Diagnosed measurements =
         signsIndicateCovid =
             totalSigns > 0
 
+        feverOnRecord =
+            feverRecorded measurements
+
         rdtResult =
             malariaRapidTestResult measurements
 
         feverAndRdtNotPositive =
-            feverRecorded measurements && isJust rdtResult && rdtResult /= Just RapidTestPositive
+            feverOnRecord && isJust rdtResult && rdtResult /= Just RapidTestPositive
     in
     ( (signsIndicateCovid && symptomsIndicateCovid)
-        || (signsIndicateCovid && feverAndRdtNotPositive)
+        || (signsIndicateCovid && feverOnRecord)
         || (not signsIndicateCovid && feverAndRdtNotPositive && respiratorySymptomsCount > 0)
         || (not signsIndicateCovid && feverAndRdtNotPositive && generalSymptomsCount > 1)
     , False
@@ -475,7 +495,7 @@ countGISymptoms measurements exclusions =
 
 feverRecorded : AcuteIllnessMeasurements -> Bool
 feverRecorded measurements =
-    feverAtSymptoms measurements || feverAtPhysicalExam measurements
+    feverAtSymptoms measurements || isJust (feverAtPhysicalExam measurements)
 
 
 feverAtSymptoms : AcuteIllnessMeasurements -> Bool
@@ -485,10 +505,10 @@ feverAtSymptoms measurements =
         |> Maybe.withDefault False
 
 
-feverAtPhysicalExam : AcuteIllnessMeasurements -> Bool
+feverAtPhysicalExam : AcuteIllnessMeasurements -> Maybe Float
 feverAtPhysicalExam measurements =
     measurements.vitals
-        |> Maybe.map
+        |> Maybe.andThen
             (\measurement ->
                 let
                     bodyTemperature =
@@ -496,9 +516,12 @@ feverAtPhysicalExam measurements =
                             |> .value
                             |> .bodyTemperature
                 in
-                bodyTemperature >= 37.5
+                if bodyTemperature >= 37.5 then
+                    Just bodyTemperature
+
+                else
+                    Nothing
             )
-        |> Maybe.withDefault False
 
 
 respiratoryRateElevated : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
@@ -726,6 +749,13 @@ nonBloodyDiarrheaAtSymptoms : AcuteIllnessMeasurements -> Bool
 nonBloodyDiarrheaAtSymptoms measurements =
     measurements.symptomsGI
         |> Maybe.map (Tuple.second >> .value >> .signs >> symptomAppearsAtSymptomsDict NonBloodyDiarrhea)
+        |> Maybe.withDefault False
+
+
+vomitingAtSymptoms : AcuteIllnessMeasurements -> Bool
+vomitingAtSymptoms measurements =
+    measurements.symptomsGI
+        |> Maybe.map (Tuple.second >> .value >> .signs >> symptomAppearsAtSymptomsDict Vomiting)
         |> Maybe.withDefault False
 
 

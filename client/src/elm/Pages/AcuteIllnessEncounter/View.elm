@@ -73,7 +73,7 @@ warningPopup language maybeDiagnosis setStateMsg =
 
                     warningHeading =
                         [ img [ src "assets/images/exclamation-red.png" ] []
-                        , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
+                        , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
                         ]
 
                     ( heading, content ) =
@@ -309,7 +309,8 @@ viewEndEncounterButton language measurements pendingActivities diagnosis setDial
     let
         allowEndEcounter =
             if diagnosis == Just DiagnosisCovid19 then
-                isJust measurements.isolation && isJust measurements.hcContact
+                isJust measurements.isolation
+                    && (talkedTo114 measurements || isJust measurements.hcContact)
 
             else if isJust diagnosis then
                 case pendingActivities of

@@ -4,7 +4,6 @@ import AssocList as Dict exposing (Dict)
 import Config.Model as Config exposing (Model)
 import LocalConfig exposing (localConfigs)
 import Pusher.Model exposing (Cluster(..), PusherAppKey)
-import Rollbar
 
 
 ***REMOVED*** : Model
@@ -13,7 +12,6 @@ import Rollbar
     , name = "***REMOVED***"
     , pusherKey = PusherAppKey "***REMOVED***" UsEast1
     , debug = False
-    , rollbarToken = Rollbar.token "***REMOVED***"
     , sandbox = False
     }
 
@@ -24,7 +22,6 @@ import Rollbar
     , name = "***REMOVED***"
     , pusherKey = PusherAppKey "***REMOVED***" UsEast1
     , debug = False
-    , rollbarToken = Rollbar.token "***REMOVED***"
     , sandbox = False
     }
 
@@ -35,7 +32,6 @@ livePantheon =
     , name = "livePantheon"
     , pusherKey = PusherAppKey "***REMOVED***" UsEast1
     , debug = False
-    , rollbarToken = Rollbar.token "***REMOVED***"
     , sandbox = False
     }
 
@@ -46,7 +42,16 @@ ehezaGlobal =
     , name = "eheza-global"
     , pusherKey = PusherAppKey "***REMOVED***" UsEast1
     , debug = False
-    , rollbarToken = Rollbar.token "***REMOVED***"
+    , sandbox = False
+    }
+
+
+***REMOVED*** : Model
+***REMOVED*** =
+    { backendUrl = "https://***REMOVED***"
+    , name = "live-aos"
+    , pusherKey = PusherAppKey "***REMOVED***" EuWest1
+    , debug = False
     , sandbox = False
     }
 
@@ -57,7 +62,6 @@ ehezaGlobal =
     , name = "***REMOVED***"
     , pusherKey = PusherAppKey "" UsEast1
     , debug = False
-    , rollbarToken = Rollbar.token "***REMOVED***"
     , sandbox = False
     }
 
@@ -68,7 +72,6 @@ ehezaGlobal =
     , name = "***REMOVED***"
     , pusherKey = PusherAppKey "" UsEast1
     , debug = False
-    , rollbarToken = Rollbar.token "***REMOVED***"
     , sandbox = False
     }
 
@@ -82,7 +85,6 @@ ehezaGlobal =
     -- blank key for now.
     , pusherKey = PusherAppKey "" UsEast1
     , debug = False
-    , rollbarToken = Rollbar.token "***REMOVED***"
     , sandbox = True
     }
 
@@ -93,7 +95,6 @@ ehezaGlobal =
     , name = "***REMOVED***"
     , pusherKey = PusherAppKey "" UsEast1
     , debug = False
-    , rollbarToken = Rollbar.token "***REMOVED***"
     , sandbox = False
     }
 
@@ -104,7 +105,6 @@ ehezaGlobal =
     , name = "***REMOVED***"
     , pusherKey = PusherAppKey "" UsEast1
     , debug = False
-    , rollbarToken = Rollbar.token "***REMOVED***"
     , sandbox = False
     }
 
@@ -115,7 +115,6 @@ ehezaGlobal =
     , name = "***REMOVED***"
     , pusherKey = PusherAppKey "" UsEast1
     , debug = False
-    , rollbarToken = Rollbar.token "***REMOVED***"
     , sandbox = False
     }
 
@@ -127,6 +126,7 @@ configs =
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", livePantheon )
         , ( "***REMOVED***", ehezaGlobal )
+        , ( "aos-backend-ihangane.pantheonsite.io", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
