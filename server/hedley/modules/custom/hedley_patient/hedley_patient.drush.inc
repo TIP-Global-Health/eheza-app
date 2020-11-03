@@ -225,11 +225,14 @@ function hedley_patient_consolidate_nutrition_content($measurements, $original, 
 
   $participants_original = hedley_person_individual_participants_for_person($original, 'nutrition', 'DESC');
   $count = count($participants_original);
-  drush_print("Original got $count Participants.");
+  $list = implode(',', $participants_original);
+  drush_print("Original got $count Participants: $list");
 
   $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'nutrition', 'DESC');
   $count = count($participants_duplicate);
-  drush_print("Duplicate got $count Participants.");
+  $list = implode(',', $participants_duplicate);
+
+  drush_print("Duplicate got $count Participants: $list");
 
   // Search for ongoing participant of original patient.
   // If found, record it's ID.
