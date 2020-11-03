@@ -62,45 +62,51 @@ function hedley_patient_consolidate_patients() {
     $wrapper = entity_metadata_wrapper('node', $measurement);
 
     if ($wrapper->__isset('field_session')) {
-      $group_measurements[] = $wrapper;
+      $group_measurements[] = $measurement;
       continue;
     }
 
     if ($wrapper->__isset('field_prenatal_encounter')) {
-      $antenatal_measurements[] = $wrapper;
+      $antenatal_measurements[] = $measurement;
       continue;
     }
 
     if ($wrapper->__isset('field_nutrition_encounter')) {
-      $nutrition_measurements[] = $wrapper;
+      $nutrition_measurements[] = $measurement;
       continue;
     }
 
     if ($wrapper->__isset('field_acute_illness_encounter')) {
-      $acute_illness_measurements[] = $wrapper;
+      $acute_illness_measurements[] = $measurement;
     }
   }
 
-  hedley_patient_process_group_measurements($group_measurements, $original);
-  hedley_patient_process_antenatal_measurements($antenatal_measurements, $original);
+  // Consolidate group measurements.
+  $success = hedley_patient_consolidate_group_content($group_measurements, $original);
+  // If consolidation failed, we make no changes, so that a fix could be
+  // applied, and command could be executed again.
+  if (!$success) {
+    return;
+  }
 
-
-  // Mark duplicate as Deleted.
-//  $wrapper_duplicate->field_deleted->set(TRUE);
-//  $wrapper_duplicate->save();
+  // Consolidate group measurements.
+  hedley_patient_consolidate_antenatal_content($antenatal_measurements, $original, $duplicate);
+  hedley_patient_consolidate_nutrition_content($nutrition_measurements, $original, $duplicate);
+  hedley_patient_consolidate_acute_illness_content($acute_illness_measurements, $original, $duplicate);
+  
+  // Mark duplicate patient as Deleted.
+  $wrapper_duplicate->field_deleted->set(TRUE);
+  $wrapper_duplicate->save();
 }
 
-function hedley_patient_process_group_measurements($wrappers, $original) {
-  $count = count($wrappers);
+function hedley_patient_consolidate_group_content($measurements, $original) {
+  $count = count($measurements);
   drush_print("Duplicate got $count group measurements.");
 
   $clinics_duplicate = [];
-  foreach ($wrappers as $wrapper) {
+  foreach ($measurements as $measurement) {
+    $wrapper = entity_metadata_wrapper('node', $measurement);
     $session = $wrapper->field_session->getIdentifier();
-    if (empty($session)) {
-      continue;
-    }
-
     $wrapper_session = entity_metadata_wrapper('node', $session);
     $clinic = $wrapper_session->field_clinic->getIdentifier();
     if (!in_array($clinic, $clinics_duplicate)) {
@@ -112,11 +118,11 @@ function hedley_patient_process_group_measurements($wrappers, $original) {
   $count = count($clinics_duplicate);
   drush_print("Measurements belong to $count clinics: $list");
 
-  $participations_of_original = hedley_person_pmtct_participants_for_person($original);
+  $participants_original = hedley_person_pmtct_participants_for_person($original);
   $clinics_original = [];
-  foreach ($participations_of_original as $participation) {
-    $wrapper_participation = entity_metadata_wrapper('node', $participation);
-    $clinics_original[] = $wrapper_participation->field_clinic->getIdentifier();
+  foreach ($participants_original as $participant) {
+    $wrapper_participant = entity_metadata_wrapper('node', $participant);
+    $clinics_original[] = $wrapper_participant->field_clinic->getIdentifier();
   }
 
   $list = implode(',', $clinics_original);
@@ -126,85 +132,134 @@ function hedley_patient_process_group_measurements($wrappers, $original) {
   foreach ($clinics_duplicate as $clinic) {
     if (!in_array($clinic, $clinics_original)) {
       drush_print("Error! Original is not participating in clinic $clinic. Please fix and try again.");
-      return;
+      return FALSE;
     }
   }
 
   // If we got this far, it's safe to transfer the measurements.
-  hedley_patient_associate_measurements_with_person($wrappers, $original);
+  hedley_patient_associate_content_by_field($measurements, 'field_person', $original);
+  
+  return TRUE;
 }
 
-function hedley_patient_associate_measurements_with_person($wrappers, $person_id) {
-  foreach ($wrappers as $wrapper) {
-    $wrapper->field_person->set($person_id);
-    $wrapper->save();
-  }
-}
-
-function hedley_patient_process_antenatal_measurements($wrappers_measurements, $original, $duplicate) {
-  $count = count($wrappers_measurements);
+function hedley_patient_consolidate_antenatal_content($measurements, $original, $duplicate) {
+  $count = count($measurements);
   drush_print("Duplicate got $count Antenatal measurements.");
 
   $participants_original = hedley_person_individual_participants_for_person($original, 'antenatal', 'DESC');
   $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'antenatal', 'DESC');
 
+  // Search for ongoing participant (pregnancy) of original patient.
+  // If found, record it's ID.
   $participant_original_ongoing = FALSE;
   foreach ($participants_original as $participant) {
     $wrapper_participant = entity_metadata_wrapper('node', $participant);
     if (empty($wrapper_participant->field_date_concluded->value())) {
       $participant_original_ongoing = $participant;
+      // There can be only one ongoing pregnancy, therefore, there's not
+      // point to continue.
       break;
     }
   }
 
+  // If original patient does not have an ongoing pregnancy, associate
+  // participants and measurements of duplicate with the original patient.
   if (!$participant_original_ongoing) {
-    foreach ($participants_duplicate as $participant) {
-      $wrapper_participant = entity_metadata_wrapper('node', $participant);
-      $wrapper_participant->field_person->set($original);
-      $wrapper_participant->save();
-    }
-  }
-  else {
-    $participant_duplicate_ongoing = FALSE;
-    foreach ($participants_duplicate as $index => $participant) {
-      $wrapper_participant = entity_metadata_wrapper('node', $participant);
-      if (empty($wrapper_participant->field_date_concluded->value())) {
-        $participant_duplicate_ongoing = $participant;
-        unset($participants_duplicate[$index]);
-        break;
-      }
-    }
-
-    foreach ($participants_duplicate as $participant) {
-      $wrapper_participant = entity_metadata_wrapper('node', $participant);
-      $wrapper_participant->field_person->set($original);
-      $wrapper_participant->save();
-    }
-
-    if ($participant_duplicate_ongoing) {
-      $encounters = hedley_person_encounters_for_individual_participant($participant_duplicate_ongoing, 'prenatal_encounter');
-      foreach ($encounters as $encounter) {
-        $wrapper_encounter = entity_metadata_wrapper('node', $encounter);
-        $wrapper_encounter->field_individual_participant->set($participant_original_ongoing);
-        $wrapper_encounter->save();
-      }
-
-      $wrapper_participant = entity_metadata_wrapper('node', $participant_duplicate_ongoing);
-      $wrapper_participant->field_deleted->set(TRUE);
-      $wrapper_participant->save();
-    }
-
+    hedley_patient_associate_content_by_field($participants_duplicate, 'field_person', $original);
+    hedley_patient_associate_content_by_field($measurements, 'field_person', $original);
+    return;
   }
 
-  hedley_patient_associate_measurements_with_person($wrappers_measurements, $original);
+  // If we got here, we know that original patient has an ongoing pregnancy.
+  // We search for ongoing pregnancy of duplicate patient.
+  // If it exists, we want to associate all it's encounters with ongoing
+  // pregnancy of original patient.
+  $participant_duplicate_ongoing = FALSE;
+  foreach ($participants_duplicate as $index => $participant) {
+    $wrapper_participant = entity_metadata_wrapper('node', $participant);
+    if (empty($wrapper_participant->field_date_concluded->value())) {
+      // We found ongoing pregnancy of duplicate patient. We record it and
+      // remove from the list of total pregnancies of the duplicate,
+      // because it requires different handling.
+      $participant_duplicate_ongoing = $participant;
+      unset($participants_duplicate[$index]);
+      break;
+    }
+  }
+
+  // If duplicate patient got an ongoing pregnancy, associate all it's
+  // encounters with ongoing pregnancy of original patient.
+  // Afterwards, mark ongoing pregnancy of duplicate as deleted.
+  if ($participant_duplicate_ongoing) {
+    $encounters = hedley_person_encounters_for_individual_participant($participant_duplicate_ongoing, 'prenatal_encounter');
+    hedley_patient_associate_content_by_field($encounters, 'field_individual_participant', $participant_original_ongoing);
+
+    $wrapper_participant = entity_metadata_wrapper('node', $participant_duplicate_ongoing);
+    $wrapper_participant->field_deleted->set(TRUE);
+    $wrapper_participant->save();
+  }
+
+  // Associate remaining  participants and measurements of duplicate,
+  // with the original patient.
+  hedley_patient_associate_content_by_field($participants_duplicate, 'field_person', $original);
+  hedley_patient_associate_content_by_field($measurements, 'field_person', $original);
 }
 
-function hedley_patient_process_nutrition_measurements($wrappers, $original) {
-  $count = count($wrappers);
+function hedley_patient_consolidate_nutrition_content($measurements, $original, $duplicate) {
+  $count = count($measurements);
   drush_print("Duplicate got $count Nutrition measurements.");
+
+  $participants_original = hedley_person_individual_participants_for_person($original, 'nutrition', 'DESC');
+  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'nutrition', 'DESC');
+
+  // Search for ongoing participant of original patient.
+  // If found, record it's ID.
+  $participant_original_ongoing = FALSE;
+  foreach ($participants_original as $participant) {
+    $wrapper_participant = entity_metadata_wrapper('node', $participant);
+    if (empty($wrapper_participant->field_date_concluded->value())) {
+      $participant_original_ongoing = $participant;
+      // There can be only one ongoing pregnancy, therefore, there's not
+      // point to continue.
+      break;
+    }
+  }
+
+  // If original patient does not have an ongoing participant, associate
+  // participants and measurements of duplicate with the original patient.
+  if (!$participant_original_ongoing) {
+    hedley_patient_associate_content_by_field($participants_duplicate, 'field_person', $original);
+    hedley_patient_associate_content_by_field($measurements, 'field_person', $original);
+    return;
+  }
+
+  // If we got here, we know that original patient has an ongoing participant.
+  // We associate all encounters of the duplicate with it.
+  // The participants of the duplicate are marked as deleted.
+  foreach ($participants_duplicate as $participant) {
+    $encounters = hedley_person_encounters_for_individual_participant($participant, 'nutrition_encounter');
+    hedley_patient_associate_content_by_field($encounters, 'field_individual_participant', $participant_original_ongoing);
+
+    $wrapper_participant = entity_metadata_wrapper('node', $participant);
+    $wrapper_participant->field_deleted->set(TRUE);
+    $wrapper_participant->save();
+  }
+  hedley_patient_associate_content_by_field($measurements, 'field_person', $original);
 }
 
-function hedley_patient_process_acute_illness_measurements($wrappers, $original) {
-  $count = count($wrappers);
+function hedley_patient_consolidate_acute_illness_content($measurements, $original, $duplicate) {
+  $count = count($measurements);
   drush_print("Duplicate got $count Acute Illness measurements.");
+
+  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'acute_illness', 'DESC');
+  hedley_patient_associate_content_by_field($participants_duplicate, 'field_person', $original);
+  hedley_patient_associate_content_by_field($measurements, 'field_person', $original);
+}
+
+function hedley_patient_associate_content_by_field($content_ids, $field, $target_id) {
+  foreach ($content_ids as $id) {
+    $wrapper = entity_metadata_wrapper('node', $id);
+    $wrapper->{$field}->set($target_id);
+    $wrapper->save();
+  }
 }
