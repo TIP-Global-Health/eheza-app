@@ -1334,15 +1334,28 @@ function hedley_person_pmtct_participants_for_person($nid) {
  *   Child node ID.
  * @param string $type
  *   Encounter type.
+ * @param string $order
+ *   Sorting order.
  *
  * @return array
  *   List of individual_participant nodes IDs.
  */
-function hedley_person_individual_participants_for_person($nid, $type) {
+function hedley_person_individual_participants_for_person($nid, $type, $order = 'ASC') {
   $query = db_select('node', 'n');
   $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
   $query->condition('n.type', $type);
   $query->condition('p.field_person_target_id', $nid);
+  $query->addField('n', 'nid');
+  $query->orderBy('n.nid', $order);
+
+  return $query->execute()->fetchCol();
+}
+
+function hedley_person_encounters_for_individual_participant($nid, $type) {
+  $query = db_select('node', 'n');
+  $query->join('field_individual_participant', 'p', 'p.entity_id = n.nid');
+  $query->condition('n.type', $type);
+  $query->condition('p.field_individual_participant_target_id', $nid);
   $query->addField('n', 'nid');
 
   return $query->execute()->fetchCol();

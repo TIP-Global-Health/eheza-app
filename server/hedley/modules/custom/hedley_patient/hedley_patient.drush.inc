@@ -131,36 +131,72 @@ function hedley_patient_process_group_measurements($wrappers, $original) {
   }
 
   // If we got this far, it's safe to transfer the measurements.
+  hedley_patient_associate_measurements_with_person($wrappers, $original);
+}
+
+function hedley_patient_associate_measurements_with_person($wrappers, $person_id) {
   foreach ($wrappers as $wrapper) {
-    $wrapper->field_person->set($original);
+    $wrapper->field_person->set($person_id);
     $wrapper->save();
   }
 }
 
-function hedley_patient_process_antenatal_measurements($wrappers, $original) {
-  $count = count($wrappers);
+function hedley_patient_process_antenatal_measurements($wrappers_measurements, $original, $duplicate) {
+  $count = count($wrappers_measurements);
   drush_print("Duplicate got $count Antenatal measurements.");
 
-  $encounters = $participations_of_duplicate = [];
-  foreach ($wrappers as $wrapper) {
-    $encounter = $wrapper->field_prenatal_encounter->getIdentifier();
-    if (empty($encounter)) {
-      continue;
-    }
+  $participants_original = hedley_person_individual_participants_for_person($original, 'antenatal', 'DESC');
+  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'antenatal', 'DESC');
 
-    if (!in_array($encounter, $encounters)) {
-      continue;
-    }
-
-    $encounters[] = $encounter;
-    $wrapper_encounter = entity_metadata_wrapper('node', $encounter);
-    $participation = $wrapper_encounter->field_individual_participant->getIdentifier();
-    if (!in_array($participation, $participations_of_duplicate)) {
-      $participations_of_duplicate[] = $participation;
+  $participant_original_ongoing = FALSE;
+  foreach ($participants_original as $participant) {
+    $wrapper_participant = entity_metadata_wrapper('node', $participant);
+    if (empty($wrapper_participant->field_date_concluded->value())) {
+      $participant_original_ongoing = $participant;
+      break;
     }
   }
 
-  $participations_of_original = hedley_person_individual_participants_for_person($original, 'antenatal');
+  if (!$participant_original_ongoing) {
+    foreach ($participants_duplicate as $participant) {
+      $wrapper_participant = entity_metadata_wrapper('node', $participant);
+      $wrapper_participant->field_person->set($original);
+      $wrapper_participant->save();
+    }
+  }
+  else {
+    $participant_duplicate_ongoing = FALSE;
+    foreach ($participants_duplicate as $index => $participant) {
+      $wrapper_participant = entity_metadata_wrapper('node', $participant);
+      if (empty($wrapper_participant->field_date_concluded->value())) {
+        $participant_duplicate_ongoing = $participant;
+        unset($participants_duplicate[$index]);
+        break;
+      }
+    }
+
+    foreach ($participants_duplicate as $participant) {
+      $wrapper_participant = entity_metadata_wrapper('node', $participant);
+      $wrapper_participant->field_person->set($original);
+      $wrapper_participant->save();
+    }
+
+    if ($participant_duplicate_ongoing) {
+      $encounters = hedley_person_encounters_for_individual_participant($participant_duplicate_ongoing, 'prenatal_encounter');
+      foreach ($encounters as $encounter) {
+        $wrapper_encounter = entity_metadata_wrapper('node', $encounter);
+        $wrapper_encounter->field_individual_participant->set($participant_original_ongoing);
+        $wrapper_encounter->save();
+      }
+
+      $wrapper_participant = entity_metadata_wrapper('node', $participant_duplicate_ongoing);
+      $wrapper_participant->field_deleted->set(TRUE);
+      $wrapper_participant->save();
+    }
+
+  }
+
+  hedley_patient_associate_measurements_with_person($wrappers_measurements, $original);
 }
 
 function hedley_patient_process_nutrition_measurements($wrappers, $original) {
