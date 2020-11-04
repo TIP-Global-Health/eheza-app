@@ -23,7 +23,7 @@ function hedley_patient_drush_command() {
     'description' => 'Consolidates data of 2 patient - used when there are duplicate instances of same patient.',
     'options' => [
       'original' => 'Node ID of the patient to which all data is consolidated.',
-      'duplicate' => 'Node ID of the patient which data is moved to the original patient.'
+      'duplicate' => 'Node ID of the patient which data is moved to the original patient.',
     ],
     'aliases' => ['cns-ptnts'],
   ];
@@ -141,7 +141,7 @@ function hedley_patient_consolidate_patients() {
   hedley_patient_consolidate_antenatal_content($antenatal_measurements, $original, $duplicate);
   hedley_patient_consolidate_nutrition_content($nutrition_measurements, $original, $duplicate);
   hedley_patient_consolidate_acute_illness_content($acute_illness_measurements, $original, $duplicate);
-  
+
   // Mark duplicate patient as Deleted.
   $wrapper_duplicate->field_deleted->set(TRUE);
   $wrapper_duplicate->save();
@@ -219,7 +219,7 @@ function hedley_patient_consolidate_group_content(array $measurements, $original
  * be treated as such).
  *
  * Algorithm:
-
+ *
  * 1. Closed participants are associated fully (participant itself, encounters
  *    of that participant, measurements taken at encounters).
  * 2. Ongoing participant:
@@ -322,7 +322,7 @@ function hedley_patient_consolidate_antenatal_content(array $measurements, $orig
  * So, in case original got a participant, we transfer all associate encounters
  * of duplicate with that participant. If not, we associate the participant
  * as well.
-
+ *
  * In both cases, we associate all measurements of duplicate with the original.
  *
  * @param array $measurements
@@ -426,7 +426,7 @@ function hedley_patient_consolidate_acute_illness_content(array $measurements, $
  *
  * @param array $measurements
  *   A list of measurements IDs.
- * 
+ *
  * @return array[]
  *   List of measurements, grouped by encounter type.
  */
@@ -482,7 +482,7 @@ function hedley_patient_group_measurements_by_encounter_type(array $measurements
  *
  * @throws \EntityMetadataWrapperException
  */
-function hedley_patient_associate_content_by_field($content_ids, $field, $target_id) {
+function hedley_patient_associate_content_by_field(array $content_ids, $field, $target_id) {
   foreach ($content_ids as $id) {
     $wrapper = entity_metadata_wrapper('node', $id);
     $wrapper->{$field}->set($target_id);
