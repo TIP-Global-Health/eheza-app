@@ -144,8 +144,13 @@ encodeNutrition =
 
 encodeNutritionValue : EverySet ChildNutritionSign -> List ( String, Value )
 encodeNutritionValue nutritions =
+    encodeNutritionValueWithType "nutrition" nutritions
+
+
+encodeNutritionValueWithType : String -> EverySet ChildNutritionSign -> List ( String, Value )
+encodeNutritionValueWithType type_ nutritions =
     [ ( "nutrition_signs", encodeEverySet encodeNutritionSign nutritions )
-    , ( "type", string "nutrition" )
+    , ( "type", string type_ )
     ]
 
 
@@ -156,9 +161,7 @@ encodeNutritionNutrition =
 
 encodeNutritionNutritionValue : EverySet ChildNutritionSign -> List ( String, Value )
 encodeNutritionNutritionValue nutritions =
-    [ ( "nutrition_signs", encodeEverySet encodeNutritionSign nutritions )
-    , ( "type", string "nutrition_nutrition" )
-    ]
+    encodeNutritionValueWithType "nutrition_nutrition" nutritions
 
 
 encodeParticipantConsentValue : ParticipantConsentValue -> List ( String, Value )
@@ -652,16 +655,23 @@ encodeMedication =
     encodePrenatalMeasurement encodeMedicationValue
 
 
-encodeFbf : Fbf -> List ( String, Value )
-encodeFbf =
-    encodeGroupMeasurement encodeFbfValue
+encodeChildFbf : Fbf -> List ( String, Value )
+encodeChildFbf =
+    encodeFbfValueWithType "child_fbf"
+        |> encodeGroupMeasurement
 
 
-encodeFbfValue : FbfValue -> List ( String, Value )
-encodeFbfValue value =
+encodeMotherFbf : Fbf -> List ( String, Value )
+encodeMotherFbf =
+    encodeFbfValueWithType "mother_fbf"
+        |> encodeGroupMeasurement
+
+
+encodeFbfValueWithType : String -> FbfValue -> List ( String, Value )
+encodeFbfValueWithType type_ value =
     [ ( "distributed_amount", float value.distributedAmount )
     , ( "distribution_notice", encodeDistributionNotice value.distributionNotice )
-    , ( "type", string "fbf" )
+    , ( "type", string type_ )
     ]
 
 

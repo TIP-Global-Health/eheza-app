@@ -696,7 +696,7 @@ encodeBackendAuthorityEntity entity =
             encode Backend.Clinic.Encoder.encodeClinic identifier
 
         BackendAuthorityChildFbf identifier ->
-            encode Backend.Measurement.Encoder.encodeFbf identifier
+            encode Backend.Measurement.Encoder.encodeChildFbf identifier
 
         BackendAuthorityCounselingSession identifier ->
             encode Backend.Measurement.Encoder.encodeCounselingSession identifier
@@ -747,7 +747,7 @@ encodeBackendAuthorityEntity entity =
             encode Backend.Measurement.Encoder.encodeMedicationDistribution identifier
 
         BackendAuthorityMotherFbf identifier ->
-            encode Backend.Measurement.Encoder.encodeFbf identifier
+            encode Backend.Measurement.Encoder.encodeMotherFbf identifier
 
         BackendAuthorityMuac identifier ->
             encode Backend.Measurement.Encoder.encodeMuac identifier

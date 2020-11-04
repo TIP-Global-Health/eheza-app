@@ -189,18 +189,14 @@ lactationEndpoint =
 
 childFbfEndpoint : ReadWriteEndPoint Error ChildFbfId Fbf Fbf ()
 childFbfEndpoint =
-    fbfEndpoint "nodes/child_fbf"
+    swEndpoint "nodes/child_fbf" decodeFbf
+        |> withValueEncoder (object << encodeChildFbf)
 
 
 motherFbfEndpoint : ReadWriteEndPoint Error MotherFbfId Fbf Fbf ()
 motherFbfEndpoint =
-    fbfEndpoint "nodes/mother_fbf"
-
-
-fbfEndpoint : String -> ReadWriteEndPoint Error (EntityUuid a) Fbf Fbf ()
-fbfEndpoint path =
-    swEndpoint path decodeFbf
-        |> withValueEncoder (object << encodeFbf)
+    swEndpoint "nodes/mother_fbf" decodeFbf
+        |> withValueEncoder (object << encodeMotherFbf)
 
 
 participantConsentEndpoint : ReadWriteEndPoint Error ParticipantConsentId ParticipantConsent ParticipantConsent ()
