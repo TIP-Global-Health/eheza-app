@@ -104,8 +104,6 @@ encodeRelationshipParams params =
         ]
 
 
-{-| @todo: For now we'll fetch only health center. Eventually, we'll get all the data, and compute inside Elm.
--}
 computedDashboardEndpoint : ReadOnlyEndPoint Error HealthCenterId DashboardStats ()
 computedDashboardEndpoint =
     swEndpoint "statistics" decodeDashboardStats

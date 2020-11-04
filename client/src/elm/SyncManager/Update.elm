@@ -18,7 +18,15 @@ import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseAuthorityStats, decodeDownloadSyncResponseGeneral)
 import SyncManager.Encoder
 import SyncManager.Model exposing (..)
-import SyncManager.Utils exposing (getDownloadPhotosSpeedForSubscriptions, getSyncSpeedForSubscriptions, syncInfoAuthorityForPort, syncInfoGeneralForPort)
+import SyncManager.Utils
+    exposing
+        ( backendAuthorityEntityToRevision
+        , backendGeneralEntityToRevision
+        , getDownloadPhotosSpeedForSubscriptions
+        , getSyncSpeedForSubscriptions
+        , syncInfoAuthorityForPort
+        , syncInfoGeneralForPort
+        )
 import Time
 import Utils.WebData
 
@@ -44,6 +52,11 @@ update currentDate currentTime dbVersion device msg model =
                 Cmd.none
                 noError
                 []
+
+        handleNewRevisionsMsg toRevisionFunc backendEntities =
+            List.map toRevisionFunc backendEntities
+                |> Backend.Model.HandleRevisions
+                |> App.Model.MsgIndexedDb
     in
     case msg of
         BackendAuthorityFetch ->
@@ -156,6 +169,14 @@ update currentDate currentTime dbVersion device msg model =
                         Nothing ->
                             Cmd.none
 
+                appMsgs =
+                    case RemoteData.toMaybe webData of
+                        Just data ->
+                            [ handleNewRevisionsMsg backendAuthorityEntityToRevision data.entities ]
+
+                        Nothing ->
+                            []
+
                 syncInfoAuthorities =
                     case RemoteData.toMaybe webData of
                         Just data ->
@@ -207,7 +228,7 @@ update currentDate currentTime dbVersion device msg model =
                     ]
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
-                []
+                appMsgs
                 |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ TryDownloadingPhotos ]
 
         BackendAuthorityDashboardStatsFetch ->
@@ -271,11 +292,11 @@ update currentDate currentTime dbVersion device msg model =
                 currentZipper =
                     Zipper.current zipper
 
-                ( cmd, statsCacheHash ) =
+                ( cmd, statsCacheHash, appMsgs ) =
                     case RemoteData.toMaybe webData of
                         Just data ->
                             if List.isEmpty data.entities then
-                                ( Cmd.none, currentZipper.statsCacheHash )
+                                ( Cmd.none, currentZipper.statsCacheHash, [] )
 
                             else
                                 let
@@ -303,10 +324,11 @@ update currentDate currentTime dbVersion device msg model =
                                 in
                                 ( sendSyncedDataToIndexDb { table = "AuthorityStats", data = dataToSend, shard = currentZipper.uuid }
                                 , cacheHash
+                                , [ handleNewRevisionsMsg backendAuthorityEntityToRevision data.entities ]
                                 )
 
                         Nothing ->
-                            ( Cmd.none, currentZipper.statsCacheHash )
+                            ( Cmd.none, currentZipper.statsCacheHash, [] )
 
                 syncInfoAuthorities =
                     case RemoteData.toMaybe webData of
@@ -341,7 +363,7 @@ update currentDate currentTime dbVersion device msg model =
                     ]
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityDashboardStatsFetchHandle")
-                []
+                appMsgs
 
         BackendFetchMain ->
             case model.syncStatus of
@@ -583,6 +605,16 @@ update currentDate currentTime dbVersion device msg model =
                         _ ->
                             Cmd.none
 
+                appMsgs =
+                    [ Backend.Model.ResetFailedToFetchAuthorities |> App.Model.MsgIndexedDb ]
+                        ++ (case RemoteData.toMaybe webData of
+                                Just data ->
+                                    [ handleNewRevisionsMsg backendGeneralEntityToRevision data.entities ]
+
+                                Nothing ->
+                                    []
+                           )
+
                 syncInfoGeneral =
                     case RemoteData.toMaybe webData of
                         Just data ->
@@ -628,7 +660,7 @@ update currentDate currentTime dbVersion device msg model =
                     ]
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendGeneralFetchHandle")
-                [ Backend.Model.ResetFailedToFetchAuthorities |> App.Model.MsgIndexedDb ]
+                appMsgs
 
         SetLastFetchedRevisionIdAuthority zipper revisionId ->
             let

@@ -8,6 +8,7 @@ import Backend.HealthCenter.Encoder
 import Backend.IndividualEncounterParticipant.Encoder
 import Backend.Measurement.Encoder
 import Backend.Measurement.Model exposing (PhotoUrl(..))
+import Backend.Model exposing (Revision(..))
 import Backend.Nurse.Encoder
 import Backend.NutritionEncounter.Encoder
 import Backend.ParticipantConsent.Encoder
@@ -21,6 +22,7 @@ import Editable
 import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
 import RemoteData
+import Restful.Endpoint exposing (toEntityUuid)
 import SyncManager.Model exposing (..)
 import Utils.WebData
 
@@ -967,3 +969,200 @@ syncInfoAuthorityFromPort info =
         info.remainingToDownload
         info.statsCacheHash
         (syncInfoStatusFromString info.status |> Maybe.withDefault NotAvailable)
+
+
+backendGeneralEntityToRevision : BackendGeneralEntity -> Revision
+backendGeneralEntityToRevision backendGeneralEntity =
+    case backendGeneralEntity of
+        BackendGeneralCatchmentArea identifier ->
+            CatchmentAreaRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendGeneralCounselingSchedule identifier ->
+            CounselingScheduleRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendGeneralCounselingTopic identifier ->
+            CounselingTopicRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendGeneralHealthCenter identifier ->
+            HealthCenterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendGeneralNurse identifier ->
+            NurseRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendGeneralParticipantForm identifier ->
+            ParticipantFormRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendGeneralVillage identifier ->
+            VillageRevision (toEntityUuid identifier.uuid) identifier.entity
+
+
+backendAuthorityEntityToRevision : BackendAuthorityEntity -> Revision
+backendAuthorityEntityToRevision backendAuthorityEntity =
+    case backendAuthorityEntity of
+        BackendAuthorityAcuteFindings identifier ->
+            AcuteFindingsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityAcuteIllnessEncounter identifier ->
+            AcuteIllnessEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityAcuteIllnessVitals identifier ->
+            AcuteIllnessVitalsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityAttendance identifier ->
+            AttendanceRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityBreastExam identifier ->
+            BreastExamRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityCall114 identifier ->
+            Call114Revision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityClinic identifier ->
+            ClinicRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityChildFbf identifier ->
+            ChildFbfRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityCounselingSession identifier ->
+            CounselingSessionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityCorePhysicalExam identifier ->
+            CorePhysicalExamRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityDangerSigns identifier ->
+            DangerSignsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityDashboardStats identifier ->
+            DashboardStatsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityExposure identifier ->
+            ExposureRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityFamilyPlanning identifier ->
+            FamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHCContact identifier ->
+            HCContactRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHeight identifier ->
+            HeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityIndividualParticipant identifier ->
+            IndividualEncounterParticipantRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityIsolation identifier ->
+            IsolationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityLactation identifier ->
+            LactationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityLastMenstrualPeriod identifier ->
+            LastMenstrualPeriodRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityMalariaTesting identifier ->
+            MalariaTestingRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityMedicalHistory identifier ->
+            MedicalHistoryRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityMedication identifier ->
+            MedicationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityMedicationDistribution identifier ->
+            MedicationDistributionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityMotherFbf identifier ->
+            MotherFbfRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityMuac identifier ->
+            MuacRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutrition identifier ->
+            ChildNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutritionEncounter identifier ->
+            NutritionEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutritionHeight identifier ->
+            NutritionHeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutritionMuac identifier ->
+            NutritionMuacRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutritionNutrition identifier ->
+            NutritionNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutritionPhoto identifier ->
+            NutritionPhotoRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutritionWeight identifier ->
+            NutritionWeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityObstetricHistory identifier ->
+            ObstetricHistoryRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityObstetricHistoryStep2 identifier ->
+            ObstetricHistoryStep2Revision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityObstetricalExam identifier ->
+            ObstetricalExamRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityParticipantConsent identifier ->
+            ParticipantConsentRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPerson identifier ->
+            PersonRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPhoto identifier ->
+            PhotoRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalPhoto identifier ->
+            PrenatalPhotoRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPmtctParticipant identifier ->
+            PmtctParticipantRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalFamilyPlanning identifier ->
+            PrenatalFamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalNutrition identifier ->
+            PrenatalNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalEncounter identifier ->
+            PrenatalEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityRelationship identifier ->
+            RelationshipRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityResource identifier ->
+            ResourceRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthoritySendToHC identifier ->
+            SendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthoritySession identifier ->
+            SessionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthoritySocialHistory identifier ->
+            SocialHistoryRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthoritySymptomsGeneral identifier ->
+            SymptomsGeneralRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthoritySymptomsGI identifier ->
+            SymptomsGIRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthoritySymptomsRespiratory identifier ->
+            SymptomsRespiratoryRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTravelHistory identifier ->
+            TravelHistoryRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTreatmentReview identifier ->
+            TreatmentReviewRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWeight identifier ->
+            WeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityVitals identifier ->
+            VitalsRevision (toEntityUuid identifier.uuid) identifier.entity

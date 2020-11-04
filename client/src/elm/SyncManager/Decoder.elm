@@ -614,12 +614,3 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                     _ ->
                         fail <| type_ ++ " is unknown BackendAuthorityEntity"
             )
-
-
-
--- @todo: Needed? Move to utils.
-
-
-decodeTimeField : String -> Decoder Time.Posix
-decodeTimeField fieldName =
-    map Time.millisToPosix (field fieldName decodeInt)
