@@ -505,6 +505,9 @@ getPhotoFromBackendAuthorityEntity backendAuthorityEntity =
         BackendAuthorityNutritionPhoto identifier ->
             getPhotoFromMeasurement identifier
 
+        BackendAuthorityPrenatalPhoto identifier ->
+            getPhotoFromMeasurement identifier
+
         _ ->
             Nothing
 
