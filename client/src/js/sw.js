@@ -231,8 +231,10 @@ dbSync.version(13).upgrade(function (tx) {
     return tx.nodes.toCollection().modify(function (node) {
         node.deleted = false;
     })
-    .then(tx.shards.toCollection().modify(function (shard) {
-        shard.deleted = false;
+    .then(function () {
+        tx.shards.toCollection().modify(function (shard) {
+          shard.deleted = false;
+        });
     });
 });
 
