@@ -10,17 +10,68 @@
  */
 function hedley_patient_drush_command() {
   $items = [];
+  $items['patient-measurements'] = [
+    'callback' => 'hedley_patient_patient_measurements_report',
+    'description' => 'Patient report of number of measurements and their type.',
+    'options' => [
+      'patient' => 'Node ID of the patient.',
+    ],
+    'aliases' => ['ptnt-msmnts'],
+  ];
   $items['consolidate-patients'] = [
     'callback' => 'hedley_patient_consolidate_patients',
     'description' => 'Consolidates data of 2 patient - used when there are duplicate instances of same patient.',
     'options' => [
-      'original' => 'Patient to which all data is consolidated.',
-      'duplicate' => 'Patient which data is moved to the original patient.'
+      'original' => 'Node ID of the patient to which all data is consolidated.',
+      'duplicate' => 'Node ID of the patient which data is moved to the original patient.'
     ],
     'aliases' => ['cns-ptnts'],
   ];
 
   return $items;
+}
+
+/**
+ * Command callback for 'drush patient-measurements'.
+ *
+ * For each type of encounter, reports the number of measurement patient has.
+ */
+function hedley_patient_patient_measurements_report() {
+  $patient = drush_get_option('patient');
+  if (empty($patient)) {
+    drush_print('You have to specify --patient parameter.');
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $patient);
+  if ($wrapper->getBundle() !== 'person') {
+    drush_print('Error! Patient node type is not of a person. Please fix and try again.');
+    return;
+  }
+
+  // Get all measurements that belong to duplicate patient.
+  $measurements = hedley_general_get_person_measurements($patient);
+  // If no measurements found, mark duplicate patient as 'Deleted'.
+  if (count($measurements) == 0) {
+    drush_print('Patient got no measurements.');
+    return;
+  }
+
+  list(
+    $group_measurements,
+    $antenatal_measurements,
+    $nutrition_measurements,
+    $acute_illness_measurements
+    ) = hedley_patient_group_measurements_by_encounter_type($measurements);
+
+  $count = count($group_measurements);
+  drush_print("Duplicate got $count Group measurements.");
+  $count = count($antenatal_measurements);
+  drush_print("Duplicate got $count Antenatal measurements.");
+  $count = count($nutrition_measurements);
+  drush_print("Duplicate got $count Nutrition measurements.");
+  $count = count($acute_illness_measurements);
+  drush_print("Duplicate got $count Acute Illness measurements.");
 }
 
 /**
@@ -65,40 +116,18 @@ function hedley_patient_consolidate_patients() {
   $measurements_of_duplicate = hedley_general_get_person_measurements($duplicate);
   // If no measurements found, mark duplicate patient as 'Deleted'.
   if (count($measurements_of_duplicate) == 0) {
-    drush_print("Duplicate patient got no measurements. Marking it as deleted.");
+    drush_print('Duplicate patient got no measurements. Marking it as deleted.');
     $wrapper_duplicate->field_deleted->set(TRUE);
     $wrapper_duplicate->save();
     return;
   }
 
-  $group_measurements = [];
-  $antenatal_measurements = [];
-  $nutrition_measurements = [];
-  $acute_illness_measurements = [];
-
-  // Group the measurements using encounter type indicator field.
-  foreach ($measurements_of_duplicate as $measurement) {
-    $wrapper = entity_metadata_wrapper('node', $measurement);
-
-    if ($wrapper->__isset('field_session')) {
-      $group_measurements[] = $measurement;
-      continue;
-    }
-
-    if ($wrapper->__isset('field_prenatal_encounter')) {
-      $antenatal_measurements[] = $measurement;
-      continue;
-    }
-
-    if ($wrapper->__isset('field_nutrition_encounter')) {
-      $nutrition_measurements[] = $measurement;
-      continue;
-    }
-
-    if ($wrapper->__isset('field_acute_illness_encounter')) {
-      $acute_illness_measurements[] = $measurement;
-    }
-  }
+  list(
+    $group_measurements,
+    $antenatal_measurements,
+    $nutrition_measurements,
+    $acute_illness_measurements
+    ) = hedley_patient_group_measurements_by_encounter_type($measurements_of_duplicate);
 
   // Consolidate group measurements.
   $success = hedley_patient_consolidate_group_content($group_measurements, $original);
@@ -384,6 +413,59 @@ function hedley_patient_consolidate_acute_illness_content(array $measurements, $
   // with the original patient.
   hedley_patient_associate_content_by_field($participants_duplicate, 'field_person', $original);
   hedley_patient_associate_content_by_field($measurements, 'field_person', $original);
+}
+
+/**
+ * Groups inputs measurements by the type of encounter to which they belong.
+ *
+ * Encounter types:
+ *   - Group.
+ *   - Antenatal.
+ *   - Nutrition.
+ *   - Acute Illness.
+ *
+ * @param array $measurements
+ *   A list of measurements IDs.
+ * 
+ * @return array[]
+ *   List of measurements, grouped by encounter type.
+ */
+function hedley_patient_group_measurements_by_encounter_type(array $measurements) {
+  $group_measurements = [];
+  $antenatal_measurements = [];
+  $nutrition_measurements = [];
+  $acute_illness_measurements = [];
+
+  // Group the measurements using encounter type indicator field.
+  foreach ($measurements as $measurement) {
+    $wrapper = entity_metadata_wrapper('node', $measurement);
+
+    if ($wrapper->__isset('field_session')) {
+      $group_measurements[] = $measurement;
+      continue;
+    }
+
+    if ($wrapper->__isset('field_prenatal_encounter')) {
+      $antenatal_measurements[] = $measurement;
+      continue;
+    }
+
+    if ($wrapper->__isset('field_nutrition_encounter')) {
+      $nutrition_measurements[] = $measurement;
+      continue;
+    }
+
+    if ($wrapper->__isset('field_acute_illness_encounter')) {
+      $acute_illness_measurements[] = $measurement;
+    }
+  }
+
+  return [
+    $group_measurements,
+    $antenatal_measurements,
+    $nutrition_measurements,
+    $acute_illness_measurements,
+  ];
 }
 
 /**
