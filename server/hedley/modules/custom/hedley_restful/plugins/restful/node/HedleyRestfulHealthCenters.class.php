@@ -21,6 +21,10 @@ class HedleyRestfulHealthCenters extends HedleyRestfulSyncBase {
       'sub_property' => 'field_uuid',
     ];
 
+    $public_fields['deleted'] = [
+      'property' => 'field_deleted',
+    ];
+
     return $public_fields;
   }
 
@@ -28,7 +32,14 @@ class HedleyRestfulHealthCenters extends HedleyRestfulSyncBase {
    * {@inheritdoc}
    */
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
-    hedley_restful_join_field_to_query($query, 'node', 'field_catchment_area', FALSE);
+    $field_names = [
+      'field_catchment_area',
+      'field_deleted',
+    ];
+
+    foreach ($field_names as $field_name) {
+      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
+    }
 
     // Get the UUID of the catchment area.
     hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_catchment_area.field_catchment_area_target_id", 'uuid_catchment_area');
