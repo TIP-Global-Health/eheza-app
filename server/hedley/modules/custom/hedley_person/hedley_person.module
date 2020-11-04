@@ -1331,7 +1331,7 @@ function hedley_person_pmtct_participants_for_person($nid) {
  * Resolves person individual_participant nodes IDs, for given encounter type.
  *
  * @param int $nid
- *   Child node ID.
+ *   Person node ID.
  * @param string $type
  *   Encounter type.
  * @param string $order
@@ -1355,10 +1355,18 @@ function hedley_person_individual_participants_for_person($nid, $type, $order = 
   return $query->execute()->fetchCol();
 }
 
-function hedley_person_encounters_for_individual_participant($nid, $type) {
+/**
+ * Resolves all encounters of given type that belong to individual participant.
+ *
+ * @param int $nid
+ *   Individual encounter node ID.
+ *
+ * @return array
+ *   List of encounters nodes IDs.
+ */
+function hedley_person_encounters_for_individual_participant($nid) {
   $query = db_select('node', 'n');
   $query->join('field_data_field_individual_participant', 'p', 'p.entity_id = n.nid');
-  $query->condition('n.type', $type);
   $query->condition('p.field_individual_participant_target_id', $nid);
   $query->addField('n', 'nid');
 
