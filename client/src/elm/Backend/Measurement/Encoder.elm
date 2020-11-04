@@ -1289,6 +1289,7 @@ encodeMedicationDistributionValue : MedicationDistributionValue -> List ( String
 encodeMedicationDistributionValue value =
     [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value.distributionSigns )
     , ( "non_administration_reason", encodeEverySet encodeMedicationNonAdministrationSign value.nonAdministrationSigns )
+    , ( "type", string "medication_distribution" )
     ]
 
 
@@ -1545,6 +1546,7 @@ encodeCall114Value value =
     [ ( "114_contact", encodeEverySet encodeCall114Sign value.signs )
     , ( "114_recommendation", encodeEverySet encodeRecommendation114 value.recommendations114 )
     , ( "site_recommendation", encodeEverySet encodeRecommendationSite value.recommendationsSite )
+    , ( "type", string "call_114" )
     ]
 
 
