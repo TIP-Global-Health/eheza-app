@@ -227,6 +227,17 @@ dbSync.version(12).stores({
     statistics: '&uuid',
 });
 
+dbSync.version(13).upgrade(function (tx) {
+    return tx.nodes.toCollection().modify(function (node) {
+        node.deleted = false;
+    })
+    .then(function () {
+        tx.shards.toCollection().modify(function (shard) {
+          shard.deleted = false;
+        });
+    });
+});
+
 function gatherWords (text) {
     // Split on spaces, and remove blanks from result.
     return (text || '').split(/\s+/).flatMap(function (word) {
