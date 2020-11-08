@@ -486,13 +486,52 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         result.forEach(async function(row, index) {
             const cachedResponse = await cache.match(row.photo);
-            if (!cachedResponse) {
-                // Photo is registered in IndexDB, but doesn't appear in the cache.
-                // For the sync not to get stuck, we set the data of withDefault profile
-                // image instead.
+
+            if (cachedResponse) {
+              const blob = await cachedResponse.blob();
+              const formData = new FormData();
+              const imageName = 'image-' + getRandom8Digits() + '.jpg';
+
+              formData.set('file', blob, imageName);
+
+              const dataArr = JSON.parse(data);
+
+              const backendUrl = dataArr.backend_url;
+              const accessToken = dataArr.access_token;
+
+              const uploadUrl = [
+                backendUrl,
+                '/api/file-upload?access_token=',
+                accessToken,
+              ].join('');
+
+              try {
+                var response = await fetch(uploadUrl, {
+                  method: 'POST',
+                  body: formData,
+                  // This prevents attaching cookies to request, to prevent
+                  // sending authentication cookie, as our desired
+                  // authentication method is token.
+                  credentials: 'omit'
+                });
+              }
+              catch (e) {
+                  // Network error.
+                  return sendResultToElm(queryType,{tag: 'Error', error: 'FetchError', reason: e.toString()});
+              }
+
+              if (response.ok) {
+                try {
+                  var json = await response.json();
+                }
+                catch (e) {
+                  // Bad JSON.
+                  return sendResultToElm(queryType,{tag: 'Error', error: 'BadJson', reason: e.toString()});
+                }
+
                 const changes = {
-                  'fileId': 5002,
-                  'remoteFileName': 'image-file',
+                  'fileId': parseInt(json.data[0].id),
+                  'remoteFileName': json.data[0].label,
                   'isSynced': 1,
                 }
 
@@ -502,52 +541,15 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
                 // their name. So on the two records there were created on the
                 // photoUploadChanges table, the same photo local URL will appear.
                 await dbSync.authorityPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
-            }
-
-            const blob = await cachedResponse.blob();
-            const formData = new FormData();
-            const imageName = 'image-' + getRandom8Digits() + '.jpg';
-
-            formData.set('file', blob, imageName);
-
-            const dataArr = JSON.parse(data);
-
-            const backendUrl = dataArr.backend_url;
-            const accessToken = dataArr.access_token;
-
-            const uploadUrl = [
-              backendUrl,
-              '/api/file-upload?access_token=',
-              accessToken,
-            ].join('');
-
-            try {
-              var response = await fetch(uploadUrl, {
-                method: 'POST',
-                body: formData,
-                // This prevents attaching cookies to request, to prevent
-                // sending authentication cookie, as our desired
-                // authentication method is token.
-                credentials: 'omit'
-              });
-            }
-            catch (e) {
-                // Network error.
-                return sendResultToElm(queryType,{tag: 'Error', error: 'FetchError', reason: e.toString()});
-            }
-
-            if (response.ok) {
-              try {
-                var json = await response.json();
               }
-              catch (e) {
-                // Bad JSON.
-                return sendResultToElm(queryType,{tag: 'Error', error: 'BadJson', reason: e.toString()});
-              }
-
+            }
+            else {
+              // Photo is registered in IndexDB, but doesn't appear in the cache.
+              // For the sync not to get stuck, we set the data of withDefault profile
+              // image instead.
               const changes = {
-                'fileId': parseInt(json.data[0].id),
-                'remoteFileName': json.data[0].label,
+                'fileId': 5002,
+                'remoteFileName': 'image-file',
                 'isSynced': 1,
               }
 
