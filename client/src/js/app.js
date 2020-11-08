@@ -545,8 +545,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             }
             else {
               // Photo is registered in IndexDB, but doesn't appear in the cache.
-              // For the sync not to get stuck, we set the data of withDefault profile
-              // image instead.
+              // For the sync not to get stuck, we set the data of default image instead.
               const changes = {
                 'fileId': 5002,
                 'remoteFileName': 'image-file',
