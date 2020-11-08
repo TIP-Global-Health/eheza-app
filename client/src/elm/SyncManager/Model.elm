@@ -393,8 +393,7 @@ type IndexDbQueryTypeResult
 
 
 type UploadPhotoError
-    = PhotoNotFoundOnCacheStorage
-    | FetchError String
+    = FetchError String
     | BadJson String
 
 

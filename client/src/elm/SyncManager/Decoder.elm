@@ -108,9 +108,6 @@ decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
                             |> andThen
                                 (\( error, maybeReason ) ->
                                     case error of
-                                        "PhotoNotFoundOnCacheStorage" ->
-                                            succeed (RemoteData.Failure PhotoNotFoundOnCacheStorage)
-
                                         "FetchError" ->
                                             succeed (RemoteData.Failure <| FetchError (Maybe.withDefault "" maybeReason))
 

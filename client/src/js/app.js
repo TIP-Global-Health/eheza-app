@@ -487,8 +487,21 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         result.forEach(async function(row, index) {
             const cachedResponse = await cache.match(row.photo);
             if (!cachedResponse) {
-              // Photo is registered in IndexDB, but doesn't appear in the cache.
-              return sendResultToElm(queryType, {tag: 'Error', error: 'PhotoNotFoundOnCacheStorage'});
+                // Photo is registered in IndexDB, but doesn't appear in the cache.
+                // For the sync not to get stuck, we set the data of withDefault profile
+                // image instead.
+                const changes = {
+                  'fileId': 5002,
+                  'remoteFileName': 'image-file',
+                  'isSynced': 1,
+                }
+
+                // Update IndexDb to hold the fileId. As there could have been multiple
+                // operations on the same entity, we replace all the photo occurrences.
+                // For example, lets say a person's photo was changed, and later also
+                // their name. So on the two records there were created on the
+                // photoUploadChanges table, the same photo local URL will appear.
+                await dbSync.authorityPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
             }
 
             const blob = await cachedResponse.blob();
