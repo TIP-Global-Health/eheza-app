@@ -603,11 +603,11 @@
                                 });
                             });
                         } else {
-                            return Promise.reject({
-                                tag: ImageNotFound,
-                                url: change.data[field],
-                                timestamp: Date.now()
-                            });
+                            // Since photo was not found at device cache, we assign
+                            // the ID of default profile image (fid=5002 on live environment).
+                            change.data[field] = 5002;
+
+                            return table.put(change);
                         }
                     });
                 });
