@@ -19,6 +19,7 @@ features[field_base][] = field_health_center
 features[field_instance][] = node-catchment_area-field_uuid
 features[field_instance][] = node-clinic-field_group_type
 features[field_instance][] = node-health_center-field_catchment_area
+features[field_instance][] = node-health_center-field_deleted
 features[field_instance][] = node-health_center-field_uuid
 features[node][] = catchment_area
 features[node][] = health_center
