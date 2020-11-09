@@ -65,8 +65,6 @@ viewHeader title =
 
 viewBody : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> IndividualEncounterType -> Model -> ModelIndexedDb -> Html Msg
 viewBody language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db =
-    -- @todo: I've removed all the code related to checking if we're syncing,
-    -- as I don't think it's really needed. Worth re-visiting.
     div
         [ class "search-wrapper" ]
         [ div

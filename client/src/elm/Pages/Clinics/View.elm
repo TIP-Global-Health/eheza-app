@@ -104,7 +104,7 @@ viewLoadedClinicList language user selectedHealthCenterId syncedHealthCenters mo
                 , text <| translate language message
                 ]
 
-        -- @todo
+        -- @todo : revise if this is needed or not.
         selectedHealthCenterSynced =
             True
 
