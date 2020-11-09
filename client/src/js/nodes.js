@@ -212,6 +212,7 @@
                                         return Promise.resolve(response);
                                     });
                                 } else {
+                                    // Make sure that node is not marked as deleted.
                                     json.deleted = false;
 
                                     var change = {
@@ -263,6 +264,7 @@
                         json.uuid = uuid;
                         json.type = type;
                         json.status = Status.published;
+                        // Newly created node is marked as not deleted.
                         json.deleted = false;
 
                         // Not entirely clear whose job it should be to figure
@@ -331,7 +333,6 @@
     }
 
     function view (type, uuid) {
-        console.log('view:' + type);
         return dbSync.open().catch(databaseError).then(function () {
             return getTableForType(type).then(function (table) {
               var uuids = uuid.split(',');
@@ -476,8 +477,6 @@
     ];
 
     function index (url, type) {
-        console.log('index:' + type);
-
         var params = url.searchParams;
 
         var offset = parseInt(params.get('offset') || '0');
