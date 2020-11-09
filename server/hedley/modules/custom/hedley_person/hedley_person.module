@@ -1244,7 +1244,7 @@ function hedley_person_process_birth_date_update($node) {
     return;
   }
 
-  $ids = hedley_person_pmtct_participants_for_child($node->nid);
+  $ids = hedley_person_pmtct_participants_for_person($node->nid);
   if (empty($ids)) {
     return;
   }
@@ -1302,7 +1302,7 @@ function hedley_person_process_deleted_update($node) {
 }
 
 /**
- * Resolves all pmtct_participant nodes IDs for child.
+ * Resolves all pmtct_participant nodes IDs for person.
  *
  * @param int $nid
  *   Child node ID.
@@ -1310,11 +1310,65 @@ function hedley_person_process_deleted_update($node) {
  * @return array
  *   List of pmtct_participant nodes IDs.
  */
-function hedley_person_pmtct_participants_for_child($nid) {
-  $query = db_select('field_data_field_person', 'person');
-  $query->addField('person', 'entity_id');
-  $query->condition('bundle', 'pmtct_participant');
-  $query->condition('field_person_target_id', $nid);
+function hedley_person_pmtct_participants_for_person($nid) {
+  $query = db_select('node', 'n');
+  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
+  $query->leftJoin('field_data_field_adult', 'a', 'a.entity_id = n.nid');
+
+  $query->condition('n.type', 'pmtct_participant');
+
+  $person_or = db_or();
+  $person_or->condition('p.field_person_target_id', $nid);
+  $person_or->condition('a.field_adult_target_id', $nid);
+  $query->condition($person_or);
+
+  $query->addField('n', 'nid');
+
+  return $query->execute()->fetchCol();
+}
+
+/**
+ * Resolves person individual_participant nodes IDs, for given encounter type.
+ *
+ * @param int $nid
+ *   Person node ID.
+ * @param string $type
+ *   Encounter type.
+ * @param string $order
+ *   Sorting order.
+ *
+ * @return array
+ *   List of individual_participant nodes IDs.
+ */
+function hedley_person_individual_participants_for_person($nid, $type, $order = 'ASC') {
+  $query = db_select('node', 'n');
+  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
+  $query->leftJoin('field_data_field_encounter_type', 'et', 'et.entity_id = p.entity_id');
+
+  $query->condition('n.type', 'individual_participant');
+
+  $query->condition('et.field_encounter_type_value', $type);
+  $query->condition('p.field_person_target_id', $nid);
+  $query->addField('n', 'nid');
+  $query->orderBy('n.nid', $order);
+
+  return $query->execute()->fetchCol();
+}
+
+/**
+ * Resolves all encounters of given type that belong to individual participant.
+ *
+ * @param int $nid
+ *   Individual encounter node ID.
+ *
+ * @return array
+ *   List of encounters nodes IDs.
+ */
+function hedley_person_encounters_for_individual_participant($nid) {
+  $query = db_select('node', 'n');
+  $query->join('field_data_field_individual_participant', 'p', 'p.entity_id = n.nid');
+  $query->condition('p.field_individual_participant_target_id', $nid);
+  $query->addField('n', 'nid');
 
   return $query->execute()->fetchCol();
 }
