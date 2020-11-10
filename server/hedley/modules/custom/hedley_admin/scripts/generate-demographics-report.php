@@ -91,7 +91,13 @@ $skipped = $skipped_with_measurements = [
 ];
 
 $processed = 0;
-$total_encounters = 0;
+$total_encounters = [
+  'all' => 0,
+  'pmtct' => 0,
+  'fbf' => 0,
+  'sorwathe' => 0,
+  'chw' => 0,
+];
 $measurement_types = hedley_general_get_measurement_types();
 
 while ($processed < $total) {
@@ -148,12 +154,17 @@ while ($processed < $total) {
 
     $measurements = node_load_multiple($measurements_ids);
     list($pmtct, $fbf, $sorwathe, $chw, $nutrition, $prenatal, $acute_illness) = count_encounters($measurements);
-    $person_total_encounters = $pmtct + $fbf + $sorwathe + $chw + $prenatal + $acute_illness;
-    $total_encounters += $person_total_encounters;
+    $person_total_encounters = $pmtct + $fbf + $sorwathe + $chw + $nutrition + $prenatal + $acute_illness;
 
     if ($person_total_encounters > 1) {
       $impacted_patients[$age][$gender]++;
     }
+
+    $total_encounters['all'] += $person_total_encounters;
+    $total_encounters['pmtct'] += $pmtct;
+    $total_encounters['fbf'] += $fbf;
+    $total_encounters['sorwathe'] += $sorwathe;
+    $total_encounters['chw'] += $chw;
   }
 
   $nid = end($ids);
@@ -171,12 +182,12 @@ while ($processed < $total) {
 wlog('Done!');
 
 drush_print('');
-drush_print("PMTCT encounters:    $pmtct");
-drush_print("FBF encounters:      $pmtct");
-drush_print("SORWATHE encounters: $pmtct");
-drush_print("CHW encounters:      $pmtct");
+drush_print('PMTCT encounters:    ' . $total_encounters['pmtct']);
+drush_print('FBF encounters:      ' . $total_encounters['fbf']);
+drush_print('SORWATHE encounters: ' . $total_encounters['sorwathe']);
+drush_print('CHW encounters:      ' . $total_encounters['chw']);
 drush_print('');
-drush_print("Total encounters: $total_encounters");
+drush_print('Total encounters:    ' . $total_encounters['all']);
 drush_print('');
 
 drush_print('Registered patients report:');
@@ -285,7 +296,7 @@ function count_encounters($measurements) {
 
     if ($wrapper->__isset('field_session')) {
       $encounter = $wrapper->field_session->getIdentifier();
-      if (!in_array($encounter, $group_encounters)) {
+      if (!empty($encounter) && !in_array($encounter, $group_encounters)) {
         $group_encounters[] = $encounter;
       }
       continue;
@@ -293,7 +304,7 @@ function count_encounters($measurements) {
 
     if ($wrapper->__isset('field_nutrition_encounter')) {
       $encounter = $wrapper->field_nutrition_encounter->getIdentifier();
-      if (!in_array($encounter, $nutrition_encounters)) {
+      if (!empty($encounter) && !in_array($encounter, $nutrition_encounters)) {
         $nutrition_encounters[] = $encounter;
       }
       continue;
@@ -301,7 +312,7 @@ function count_encounters($measurements) {
 
     if ($wrapper->__isset('field_prenatal_encounter')) {
       $encounter = $wrapper->field_prenatal_encounter->getIdentifier();
-      if (!in_array($encounter, $prenatal_encounters)) {
+      if (!empty($encounter) && !in_array($encounter, $prenatal_encounters)) {
         $prenatal_encounters[] = $encounter;
       }
       continue;
@@ -309,10 +320,9 @@ function count_encounters($measurements) {
 
     if ($wrapper->__isset('field_acute_illness_encounter')) {
       $encounter = $wrapper->field_acute_illness_encounter->getIdentifier();
-      if (!in_array($encounter, $acute_illness_encounters)) {
+      if (!empty($encounter) && !in_array($encounter, $acute_illness_encounters)) {
         $acute_illness_encounters[] = $encounter;
       }
-      continue;
     }
   }
 
