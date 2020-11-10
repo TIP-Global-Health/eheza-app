@@ -147,8 +147,8 @@ while ($processed < $total) {
     }
 
     $measurements = node_load_multiple($measurements_ids);
-    list($group, $nutrition, $prenatal, $acute_illness) = count_encounters($measurements);
-    $person_total_encounters = $group + $nutrition + $prenatal + $acute_illness;
+    list($pmtct, $fbf, $sorwathe, $chw, $nutrition, $prenatal, $acute_illness) = count_encounters($measurements);
+    $person_total_encounters = $pmtct + $fbf + $sorwathe + $chw + $prenatal + $acute_illness;
     $total_encounters += $person_total_encounters;
 
     if ($person_total_encounters > 1) {
@@ -171,7 +171,12 @@ while ($processed < $total) {
 wlog('Done!');
 
 drush_print('');
-drush_print("Total participations: $total_encounters");
+drush_print("PMTCT encounters:    $pmtct");
+drush_print("FBF encounters:      $pmtct");
+drush_print("SORWATHE encounters: $pmtct");
+drush_print("CHW encounters:      $pmtct");
+drush_print('');
+drush_print("Total encounters: $total_encounters");
 drush_print('');
 
 drush_print('Registered patients report:');
@@ -311,8 +316,41 @@ function count_encounters($measurements) {
     }
   }
 
+  $pmtct_encounters = $fbf_encounters = $sorwathe_encounters = $chw_encounters = 0;
+  foreach ($group_encounters as $encounter) {
+    $wrapper = entity_metadata_wrapper('node', $encounter);
+    $clinic = $wrapper->field_clinic->getIdentifier();
+
+    if (empty($clinic)) {
+      continue;
+    }
+
+    $wrapper = entity_metadata_wrapper('node', $clinic);
+    $clinic_type = $wrapper->field_group_type->value();
+
+    switch ($clinic_type) {
+      case 'pmtct':
+        $pmtct_encounters++;
+        break;
+
+      case 'fbf':
+        $fbf_encounters++;
+        break;
+
+      case 'sorwathe':
+        $sorwathe_encounters++;
+        break;
+
+      case 'chw':
+        $chw_encounters++;
+    }
+  }
+
   return [
-    count($group_encounters),
+    $pmtct_encounters,
+    $fbf_encounters,
+    $sorwathe_encounters,
+    $chw_encounters,
     count($nutrition_encounters),
     count($prenatal_encounters),
     count($acute_illness_encounters),
