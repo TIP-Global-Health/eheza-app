@@ -8,15 +8,15 @@
  *   - Number of completed encounters.
  *   - Number of unique patients.
  *
+ * Data for each group encounter type:
+ *   - Number of completed encounters.
+ *
  * Patients data:
  *
  * - Registered patients by age and gender.
  * - Impacted patients by age and gender.
  *
  * Note: Patient is considered impacted if attended at least 2 encounters.
- * Code criteria for considering patient as imported:
- * A person that has at least 2 measurements, taken with interval of one week,
- * or more.
  *
  * Drush scr
  * profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php.
@@ -150,7 +150,7 @@ while ($processed < $total) {
     }
 
     $measurements = node_load_multiple($measurements_ids);
-    list($pmtct, $fbf, $sorwathe, $chw, $nutrition, $prenatal, $acute_illness) = count_encounters($measurements);
+    list($pmtct, $fbf, $sorwathe, $chw, $nutrition, $prenatal, $acute_illness) = get_encounters_count($measurements);
     $person_total_encounters = $pmtct + $fbf + $sorwathe + $chw + $nutrition + $prenatal + $acute_illness;
 
     if ($person_total_encounters > 1) {
@@ -179,6 +179,7 @@ while ($processed < $total) {
 wlog('Done!');
 
 drush_print('');
+drush_print('Groups report:');
 drush_print('PMTCT encounters:    ' . $total_encounters['pmtct']);
 drush_print('FBF encounters:      ' . $total_encounters['fbf']);
 drush_print('SORWATHE encounters: ' . $total_encounters['sorwathe']);
@@ -285,7 +286,10 @@ function classify_by_age_and_gender($person_id) {
   return [$age, $gender];
 }
 
-function count_encounters($measurements) {
+/**
+ * Counts the encounters (groups and individual) for given measurements.
+ */
+function get_encounters_count($measurements) {
   $group_encounters = $nutrition_encounters = $prenatal_encounters = $acute_illness_encounters = [];
 
   foreach ($measurements as $measurement) {
