@@ -165,17 +165,22 @@ function hedley_general_get_individual_encounter_measurements($encounter_id, $en
 }
 
 /**
+
  * Returns a list of measurements IDs that were taken for certain person.
  *
  * @param int $person_id
  *   The ID of person we query for measurements.
  * @param array $measurement_types
- *   List of content types that are considered as measurements.
+ *   Optional; List of content types that are considered as measurements.
  *
  * @return array
  *   List of measurements IDs.
  */
-function hedley_general_get_person_measurements($person_id, array $measurement_types) {
+function hedley_general_get_person_measurements($person_id, array $measurement_types = []) {
+  if (empty($measurement_types)) {
+    $measurement_types = hedley_general_get_measurement_types();
+  }
+
   $query = db_select('field_data_field_person', 't');
   $query->addField('t', 'entity_id');
   $query->condition('bundle', $measurement_types, 'IN');
@@ -200,7 +205,7 @@ function hedley_general_get_measurement_types() {
     $fields = hedley_general_get_content_type_fields($type);
 
     // Group encounter measurements got the 'session' field.
-    // Individual encounter measurements measurements got named field.
+    // Individual encounter measurements got encounter type field.
     $measurement_indicator_fields = [
       'field_session',
       'field_nutrition_encounter',
