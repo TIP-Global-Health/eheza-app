@@ -86,8 +86,6 @@ $skipped = $skipped_with_measurements = [
   'age' => [],
   'gender' => [],
 ];
-
-$processed = 0;
 $total_encounters = [
   'all' => 0,
   'pmtct' => 0,
@@ -95,7 +93,7 @@ $total_encounters = [
   'sorwathe' => 0,
   'chw' => 0,
 ];
-$measurement_types = hedley_general_get_measurement_types();
+$processed = 0;
 
 while ($processed < $total) {
   // Free up memory.
@@ -118,7 +116,7 @@ while ($processed < $total) {
   $ids = array_keys($result['node']);
   foreach ($ids as $id) {
     list($age, $gender) = classify_by_age_and_gender($id);
-    $measurements_ids = hedley_general_get_person_measurements($id, $measurement_types);
+    $measurements_ids = hedley_general_get_person_measurements($id);
 
     if (!$age) {
       if (count($measurements_ids) > 0) {

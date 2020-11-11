@@ -165,7 +165,6 @@ function hedley_general_get_individual_encounter_measurements($encounter_id, $en
 }
 
 /**
-
  * Returns a list of measurements IDs that were taken for certain person.
  *
  * @param int $person_id
