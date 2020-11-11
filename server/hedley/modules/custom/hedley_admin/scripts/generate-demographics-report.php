@@ -8,15 +8,15 @@
  *   - Number of completed encounters.
  *   - Number of unique patients.
  *
+ * Data for each group encounter type:
+ *   - Number of completed encounters.
+ *
  * Patients data:
  *
  * - Registered patients by age and gender.
  * - Impacted patients by age and gender.
  *
  * Note: Patient is considered impacted if attended at least 2 encounters.
- * Code criteria for considering patient as imported:
- * A person that has at least 2 measurements, taken with interval of one week,
- * or more.
  *
  * Drush scr
  * profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php.
@@ -35,9 +35,6 @@ $batch = drush_get_option('batch', 50);
 
 // Get allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 500);
-
-$total_participation = count_total_group_attendances();
-drush_print("Total group participation: $total_participation");
 
 generate_individual_encounter_report('prenatal', $batch, $memory_limit);
 generate_individual_encounter_report('nutrition', $batch, $memory_limit);
@@ -91,6 +88,13 @@ $skipped = $skipped_with_measurements = [
 ];
 
 $processed = 0;
+$total_encounters = [
+  'all' => 0,
+  'pmtct' => 0,
+  'fbf' => 0,
+  'sorwathe' => 0,
+  'chw' => 0,
+];
 $measurement_types = hedley_general_get_measurement_types();
 
 while ($processed < $total) {
@@ -145,26 +149,19 @@ while ($processed < $total) {
       continue;
     }
 
-    // When there are more than 50 measurements, we classify patient as
-    // affected, without further checks, as this amount of measurements
-    // can't belong to single encounter.
-    if (count($measurements_ids) > 50) {
+    $measurements = node_load_multiple($measurements_ids);
+    list($pmtct, $fbf, $sorwathe, $chw, $nutrition, $prenatal, $acute_illness) = get_encounters_count($measurements);
+    $person_total_encounters = $pmtct + $fbf + $sorwathe + $chw + $nutrition + $prenatal + $acute_illness;
+
+    if ($person_total_encounters > 1) {
       $impacted_patients[$age][$gender]++;
-      continue;
     }
 
-    $measurements = node_load_multiple($measurements_ids);
-    // Creation timestamp of first measurement.
-    $first_timestamp = array_shift($measurements)->created;
-    foreach ($measurements as $measurement) {
-      // When we find 2 measurements that are at least taken week apart,
-      // we classify the patient as impacted, as these 2 measurements
-      // were taken in different encounters.
-      if (abs($first_timestamp - $measurement->created) > 7 * 24 * 3600) {
-        $impacted_patients[$age][$gender]++;
-        break;
-      }
-    }
+    $total_encounters['all'] += $person_total_encounters;
+    $total_encounters['pmtct'] += $pmtct;
+    $total_encounters['fbf'] += $fbf;
+    $total_encounters['sorwathe'] += $sorwathe;
+    $total_encounters['chw'] += $chw;
   }
 
   $nid = end($ids);
@@ -181,6 +178,14 @@ while ($processed < $total) {
 
 wlog('Done!');
 
+drush_print('');
+drush_print('Groups report:');
+drush_print('PMTCT encounters:    ' . $total_encounters['pmtct']);
+drush_print('FBF encounters:      ' . $total_encounters['fbf']);
+drush_print('SORWATHE encounters: ' . $total_encounters['sorwathe']);
+drush_print('CHW encounters:      ' . $total_encounters['chw']);
+drush_print('');
+drush_print('Total encounters:    ' . $total_encounters['all']);
 drush_print('');
 
 drush_print('Registered patients report:');
@@ -282,6 +287,88 @@ function classify_by_age_and_gender($person_id) {
 }
 
 /**
+ * Counts the encounters (groups and individual) for given measurements.
+ */
+function get_encounters_count($measurements) {
+  $group_encounters = $nutrition_encounters = $prenatal_encounters = $acute_illness_encounters = [];
+
+  foreach ($measurements as $measurement) {
+    $wrapper = entity_metadata_wrapper('node', $measurement);
+
+    if ($wrapper->__isset('field_session')) {
+      $encounter = $wrapper->field_session->getIdentifier();
+      if (!empty($encounter) && !in_array($encounter, $group_encounters)) {
+        $group_encounters[] = $encounter;
+      }
+      continue;
+    }
+
+    if ($wrapper->__isset('field_nutrition_encounter')) {
+      $encounter = $wrapper->field_nutrition_encounter->getIdentifier();
+      if (!empty($encounter) && !in_array($encounter, $nutrition_encounters)) {
+        $nutrition_encounters[] = $encounter;
+      }
+      continue;
+    }
+
+    if ($wrapper->__isset('field_prenatal_encounter')) {
+      $encounter = $wrapper->field_prenatal_encounter->getIdentifier();
+      if (!empty($encounter) && !in_array($encounter, $prenatal_encounters)) {
+        $prenatal_encounters[] = $encounter;
+      }
+      continue;
+    }
+
+    if ($wrapper->__isset('field_acute_illness_encounter')) {
+      $encounter = $wrapper->field_acute_illness_encounter->getIdentifier();
+      if (!empty($encounter) && !in_array($encounter, $acute_illness_encounters)) {
+        $acute_illness_encounters[] = $encounter;
+      }
+    }
+  }
+
+  $pmtct_encounters = $fbf_encounters = $sorwathe_encounters = $chw_encounters = 0;
+  foreach ($group_encounters as $encounter) {
+    $wrapper = entity_metadata_wrapper('node', $encounter);
+    $clinic = $wrapper->field_clinic->getIdentifier();
+
+    if (empty($clinic)) {
+      continue;
+    }
+
+    $wrapper = entity_metadata_wrapper('node', $clinic);
+    $clinic_type = $wrapper->field_group_type->value();
+
+    switch ($clinic_type) {
+      case 'pmtct':
+        $pmtct_encounters++;
+        break;
+
+      case 'fbf':
+        $fbf_encounters++;
+        break;
+
+      case 'sorwathe':
+        $sorwathe_encounters++;
+        break;
+
+      case 'chw':
+        $chw_encounters++;
+    }
+  }
+
+  return [
+    $pmtct_encounters,
+    $fbf_encounters,
+    $sorwathe_encounters,
+    $chw_encounters,
+    count($nutrition_encounters),
+    count($prenatal_encounters),
+    count($acute_illness_encounters),
+  ];
+}
+
+/**
  * Generates a report for certain type of individual encounter.
  *
  * Reported info:
@@ -374,18 +461,6 @@ function generate_individual_encounter_report($encounter_type, $batch, $memory_l
   drush_print("Completed encounters: $encounters_with_measurements.");
   drush_print("Unique patients:      $unique_patients.");
   drush_print('');
-}
-
-/**
- * Counts total number of participation for all types of groups.
- *
- * In other words, number of times mother with child attended group encounter.
- */
-function count_total_group_attendances() {
-  $query = base_query_for_bundle('attendance');
-  $query->fieldCondition('field_attended', 'value', 1);
-
-  return $query->count()->execute();
 }
 
 /**
