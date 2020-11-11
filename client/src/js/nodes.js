@@ -283,6 +283,8 @@
                         json.uuid = uuid;
                         json.type = type;
                         json.status = Status.published;
+                        // Newly created node is marked as not deleted.
+                        json.deleted = false;
 
                         // Not entirely clear whose job it should be to figure
                         // out the shard, but we'll do it here for now.
@@ -354,8 +356,11 @@
 
               // The key to query by.
               var key = 'uuid';
+              var query =  table.where(key).anyOf(uuids).and(function (item) {
+                return item.deleted === false;
+              });
 
-              return table.where(key).anyOf(uuids).toArray().catch(databaseError).then(function (nodes) {
+              return query.toArray().catch(databaseError).then(function (nodes) {
                   // We could also check that the type is the expected type.
                   if (nodes) {
 
@@ -520,6 +525,14 @@
                     countQuery = query.clone();
                 }
 
+                // Exclude deleted results.
+                query = query.and(function (item) {
+                  return item.deleted == false;
+                });
+                countQuery = query.and(function (item) {
+                  return item.deleted == false;
+                });
+
                 var modifyQuery = Promise.resolve();
 
                 if (type === 'person') {
@@ -536,6 +549,11 @@
                         modifyQuery = modifyQuery.then(function () {
                             // We search for resulting persons that start with any of the input words (apply 'OR' condition).
                             query = table.where('name_search').startsWithAnyOf(words).distinct().and(function (person) {
+                              // If person is marked as deleted, do not include it in search results.
+                              if (person.deleted === true) {
+                                return false;
+                              }
+
                               // Now, we check that each word we got as search input is a prefix
                               // of any of person name parts (applying 'AND condition').
                               return words.every(function (word) {
@@ -547,6 +565,10 @@
 
                             // Cloning doesn't seem to work for this one.
                             countQuery = table.where('name_search').startsWithAnyOf(words).distinct().and(function (person) {
+                              if (person.deleted === true) {
+                                return false;
+                              }
+
                               return words.every(function (word) {
                                 return person.name_search.some(function (nameSearchWord) {
                                   return nameSearchWord.startsWith(word);
@@ -573,6 +595,11 @@
                                     criteria.clinic = session.clinic;
 
                                     query = table.where(criteria).and(function (participation) {
+                                        // If participation is marked as deleted, do not include it in results.
+                                        if (participation.deleted === true) {
+                                          return false;
+                                        }
+
                                         return expectedOnDate(participation, session.scheduled_date.value);
                                     });
 
@@ -592,7 +619,10 @@
                   if (individualSessionId) {
                     modifyQuery = modifyQuery.then(function () {
                         criteria.individual_participant = individualSessionId;
-                        query = table.where(criteria);
+                        query = table.where(criteria).and(function (encounter) {
+                            // If encounter is marked as deleted, do not include it in results.
+                            return encounter.deleted === false;
+                        });
 
                         countQuery = query.clone();
 
@@ -613,7 +643,10 @@
                             }).toArray().then(function (participations) {
                                 var clinics = [];
                                 participations.forEach(function(participation) {
-                                  clinics.push(['session', participation.clinic]);
+                                  // If participation is marked as deleted, do not include it in results.
+                                    if (participation.deleted === false) {
+                                        clinics.push(['session', participation.clinic]);
+                                    }
                                 })
 
                                 query = table.where('[type+clinic]').anyOf(clinics);

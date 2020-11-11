@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_device.features.inc

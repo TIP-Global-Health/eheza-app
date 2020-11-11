@@ -139,7 +139,18 @@ dbSync.version(12).stores({
     statistics: '&uuid',
 });
 
-dbSync.version(13).stores({
+dbSync.version(13).upgrade(function (tx) {
+    return tx.nodes.toCollection().modify(function (node) {
+        node.deleted = false;
+    })
+    .then(function () {
+        tx.shards.toCollection().modify(function (shard) {
+          shard.deleted = false;
+        });
+    });
+});
+
+dbSync.version(14).stores({
   // Add `isSynced` and `uuid` indices so we would have an indication to when we
   // can delete local changes. Only after we download from the backend, we'd
   // want to delete the records.

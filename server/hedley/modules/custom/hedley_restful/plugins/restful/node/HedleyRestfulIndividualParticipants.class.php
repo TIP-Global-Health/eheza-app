@@ -54,6 +54,10 @@ class HedleyRestfulIndividualParticipants extends HedleyRestfulSyncBase {
       'property' => 'field_outcome_location',
     ];
 
+    $public_fields['deleted'] = [
+      'property' => 'field_deleted',
+    ];
+
     // The label is decorative only.
     unset($public_fields['label']);
 
@@ -88,6 +92,7 @@ class HedleyRestfulIndividualParticipants extends HedleyRestfulSyncBase {
       'field_date_concluded',
       'field_outcome',
       'field_outcome_location',
+      'field_deleted',
     ];
 
     foreach ($field_names as $field_name) {
