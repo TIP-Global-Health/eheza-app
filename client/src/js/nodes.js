@@ -283,8 +283,6 @@
                         json.uuid = uuid;
                         json.type = type;
                         json.status = Status.published;
-                        // Newly created node is marked as not deleted.
-                        json.deleted = false;
 
                         // Not entirely clear whose job it should be to figure
                         // out the shard, but we'll do it here for now.
@@ -643,7 +641,7 @@
                             }).toArray().then(function (participations) {
                                 var clinics = [];
                                 participations.forEach(function(participation) {
-                                  // If participation is marked as deleted, do not include it in results.
+                                    // If participation is marked as deleted, do not include it in results.
                                     if (participation.deleted === false) {
                                         clinics.push(['session', participation.clinic]);
                                     }
