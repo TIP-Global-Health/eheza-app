@@ -19,6 +19,7 @@ encodePmtctParticipant data =
             ]
       )
     , ( "clinic", encodeEntityUuid data.clinic )
+    , ( "deleted", bool data.deleted )
     , ( "type", string "pmtct_participant" )
     ]
 

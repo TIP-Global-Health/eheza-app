@@ -432,6 +432,7 @@ validatePerson maybeRelated operation maybeCurrentDate =
                 |> andMap (field village (validateVillage maybeRelated))
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
                 |> andMap (field healthCenter (validateHealthCenterId maybeRelated))
+                |> andMap (succeed False)
                 |> andMap (succeed Nothing)
     in
     andThen withFirstName (field firstName (oneOf [ string, emptyString ]))

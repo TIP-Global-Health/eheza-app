@@ -12,6 +12,7 @@ encodeRelationship data =
     [ encodePersonField data.person
     , encodeRelatedToField data.relatedTo
     , encodeRelatedByField data.relatedBy
+    , ( "deleted", bool data.deleted )
     , ( "shard", maybe encodeEntityUuid data.shard )
     , ( "type", string "relationship" )
     ]

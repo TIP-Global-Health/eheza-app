@@ -24,6 +24,7 @@ type alias IndividualEncounterParticipant =
     , dateConcluded : Maybe NominalDate
     , outcome : Maybe PregnancyOutcome
     , deliveryLocation : Maybe DeliveryLocation
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     }
 

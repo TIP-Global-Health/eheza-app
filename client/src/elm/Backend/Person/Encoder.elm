@@ -31,6 +31,7 @@ encodePerson person =
     , ( "village", maybe string person.village )
     , ( "phone_number", maybe string person.telephoneNumber )
     , ( "health_center", maybe encodeEntityUuid person.healthCenterId )
+    , ( "deleted", bool person.deleted )
     , ( "shard", maybe encodeEntityUuid person.shard )
     , ( "type", string "person" )
     ]

@@ -253,7 +253,7 @@ dbSync.version(14).stores({
  *
  * @type {number}
  */
-const dbVersion = 13;
+const dbVersion = 14;
 
 /**
  * Return saved info for General sync.

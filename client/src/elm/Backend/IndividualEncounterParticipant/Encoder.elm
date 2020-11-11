@@ -27,6 +27,7 @@ encodeIndividualEncounterParticipant data =
     , ( "date_concluded", maybe encodeYYYYMMDD data.dateConcluded )
     , ( "outcome", maybe encodePregnancyOutcome data.outcome )
     , ( "outcome_location", maybe encodeDeliveryLocation data.deliveryLocation )
+    , ( "deleted", bool data.deleted )
     , ( "shard", maybe encodeEntityUuid data.shard )
     , ( "type", string "individual_participant" )
     ]

@@ -15,6 +15,7 @@ encodeNurse nurse =
     , ( "role", list encodeRole (EverySet.toList nurse.roles) )
     , ( "email", Json.Encode.Extra.maybe string nurse.email )
     , ( "pin_code", string nurse.pinCode )
+    , ( "deleted", bool False )
     , ( "type", string "nurse" )
     ]
 

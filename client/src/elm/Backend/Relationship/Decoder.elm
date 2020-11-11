@@ -12,6 +12,7 @@ decodeRelationship =
         |> required "person" decodeEntityUuid
         |> required "related_to" decodeEntityUuid
         |> required "related_by" decodeRelatedBy
+        |> required "deleted" bool
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 
 

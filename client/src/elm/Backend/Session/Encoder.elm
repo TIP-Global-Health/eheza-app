@@ -20,5 +20,6 @@ encodeSession session =
       )
     , ( "clinic", encodeEntityUuid session.clinicId )
     , ( "clinic_type", encodeClinicType session.clinicType )
+    , ( "deleted", bool False )
     , ( "type", string "session" )
     ]

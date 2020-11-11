@@ -9,6 +9,7 @@ encodeHealthCenter : HealthCenter -> List ( String, Value )
 encodeHealthCenter healthCenter =
     [ ( "catchment_area", encodeEntityUuid healthCenter.catchmentAreaId )
     , ( "label", string healthCenter.name )
+    , ( "deleted", bool healthCenter.deleted )
     , ( "type", string "health_center" )
     ]
 
@@ -16,5 +17,6 @@ encodeHealthCenter healthCenter =
 encodeCatchmentArea : CatchmentArea -> List ( String, Value )
 encodeCatchmentArea catchmentArea =
     [ ( "label", string catchmentArea.name )
+    , ( "deleted", bool False )
     , ( "type", string "catchment_area" )
     ]

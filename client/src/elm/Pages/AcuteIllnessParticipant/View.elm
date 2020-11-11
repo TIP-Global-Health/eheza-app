@@ -5,7 +5,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter, emptyAcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
-import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
+import Backend.IndividualEncounterParticipant.Utils exposing (emptyIndividualEncounterParticipant, isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
@@ -120,15 +120,7 @@ viewActions language currentDate selectedHealthCenter id db sessions =
                             )
                         -- If session does not exist, create it.
                         |> Maybe.withDefault
-                            [ IndividualEncounterParticipant id
-                                Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
-                                currentDate
-                                Nothing
-                                Nothing
-                                Nothing
-                                Nothing
-                                Nothing
-                                (Just selectedHealthCenter)
+                            [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter selectedHealthCenter
                                 |> Backend.Model.PostIndividualSession
                                 |> App.Model.MsgIndexedDb
                                 |> onClick

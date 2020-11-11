@@ -19,6 +19,7 @@ decodeIndividualEncounterParticipant =
         |> optional "date_concluded" (nullable decodeYYYYMMDD) Nothing
         |> optional "outcome" (nullable decodePregnancyOutcome) Nothing
         |> optional "outcome_location" (nullable decodeDeliveryLocation) Nothing
+        |> required "deleted" bool
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 
 

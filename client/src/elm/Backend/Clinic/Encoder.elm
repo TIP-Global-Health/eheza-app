@@ -10,6 +10,7 @@ encodeClinic clinic =
     [ ( "label", string clinic.name )
     , ( "health_center", encodeEntityUuid clinic.healthCenterId )
     , ( "group_type", encodeClinicType clinic.clinicType )
+    , ( "deleted", bool False )
     , ( "type", string "clinic" )
     ]
         ++ (clinic.villageId

@@ -1189,6 +1189,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                     , start = defaultStartDate
                                     , end = defaultEndDate
                                     , clinic = clinicId
+                                    , deleted = False
                                     }
                             )
                         |> Maybe.Extra.toList
