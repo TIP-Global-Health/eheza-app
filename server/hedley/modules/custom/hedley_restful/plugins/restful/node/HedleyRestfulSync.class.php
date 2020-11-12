@@ -468,6 +468,11 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           // recorded on client. We don't actually need to pass this through,
           // so, we filter it out here.
           'clinic_type',
+          // We do not support marking content as deleted from client,
+          // therefore, we do not want to pass 'deleted' indication.
+          // Also, not most content types do not have 'field_deleted, and
+          // passing 'deleted' indicator will cause error.
+          'deleted',
         ];
 
         // Do not ignore 'health center' field for person,
