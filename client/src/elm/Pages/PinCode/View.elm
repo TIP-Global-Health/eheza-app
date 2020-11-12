@@ -297,16 +297,15 @@ selectHeathCenterOptions language nurse db =
         filtered =
             db.healthCenters
                 |> RemoteData.map
-                    (\dict_ ->
-                        Dict.filter (\uuid _ -> assignedToHealthCenter uuid nurse) dict_
-                            |> Dict.toList
-                            |> List.sortBy (Tuple.second >> .name)
+                    (Dict.filter (\uuid _ -> assignedToHealthCenter uuid nurse)
+                        >> Dict.toList
+                        >> List.sortBy (Tuple.second >> .name)
                     )
                 |> RemoteData.withDefault []
 
         selectButton ( id, location ) =
             button
-                [ class "ui primary button"
+                [ class "ui primary button health-center"
                 , onClick <| SendOutMsg <| SetHealthCenter id
                 ]
                 [ text location.name ]
