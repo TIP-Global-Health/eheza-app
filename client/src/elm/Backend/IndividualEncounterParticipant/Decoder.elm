@@ -48,5 +48,24 @@ pregnancyOutcomeFromString outcome =
         "abortions" ->
             Just OutcomeAbortions
 
+
+acuteIllnessOutcomeFromString : String -> Maybe AcuteIllnessOutcome
+acuteIllnessOutcomeFromString outcome =
+    case outcome of
+        "lillness-resolved" ->
+            Just OutcomeIllnessResolved
+
+        "lost-to-follow-up" ->
+            Just OutcomeLostToFollowUp
+
+        "patient-died" ->
+            Just OutcomePatientDied
+
+        "referred-to-hc" ->
+            Just OutcomeReferredToHC
+
+        "other" ->
+            Just OutcomeOther
+
         _ ->
             Nothing

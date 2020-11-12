@@ -1,12 +1,4 @@
-module Backend.IndividualEncounterParticipant.Model exposing
-    ( IndividualEncounterParticipant
-    , IndividualEncounterType(..)
-    , Model
-    , Msg(..)
-    , PregnancyOutcome(..)
-    , allPregnancyOutcome
-    , emptyModel
-    )
+module Backend.IndividualEncounterParticipant.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Date exposing (Date)
@@ -66,4 +58,22 @@ allPregnancyOutcome =
     , OutcomeStillAtTerm
     , OutcomeStillPreTerm
     , OutcomeAbortions
+    ]
+
+
+type AcuteIllnessOutcome
+    = OutcomeIllnessResolved
+    | OutcomeLostToFollowUp
+    | OutcomePatientDied
+    | OutcomeReferredToHC
+    | OutcomeOther
+
+
+allAcuteIllnessOutcome : List AcuteIllnessOutcome
+allAcuteIllnessOutcome =
+    [ OutcomeIllnessResolved
+    , OutcomeLostToFollowUp
+    , OutcomePatientDied
+    , OutcomeReferredToHC
+    , OutcomeOther
     ]
