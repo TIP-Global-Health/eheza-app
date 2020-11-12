@@ -305,7 +305,7 @@ selectHeathCenterOptions language nurse db =
 
         selectButton ( id, location ) =
             button
-                [ class "ui primary button health-center"
+                [ class "ui primary button"
                 , onClick <| SendOutMsg <| SetHealthCenter id
                 ]
                 [ text location.name ]
