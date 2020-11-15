@@ -1,10 +1,10 @@
-module Pages.PregnancyOutcome.View exposing (view)
+module Pages.AcuteIllnessOutcome.View exposing (view)
 
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Encoder exposing (pregnancyOutcomeToString)
-import Backend.IndividualEncounterParticipant.Model exposing (PregnancyOutcome(..), allPregnancyOutcome)
+import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), allAcuteIllnessOutcome)
 import Backend.Model exposing (ModelIndexedDb)
 import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
@@ -13,8 +13,8 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Pages.AcuteIllnessOutcome.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PregnancyOutcome.Model exposing (Model, Msg(..))
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (generateAssembledData)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
@@ -28,7 +28,7 @@ view : Language -> NominalDate -> IndividualEncounterParticipantId -> ModelIndex
 view language currentDate id db model =
     let
         lastEncounterId =
-            Dict.get id db.prenatalEncountersByParticipant
+            Dict.get id db.acuteIllnessEncountersByParticipant
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.map Dict.keys
                 |> RemoteData.withDefault []
@@ -50,7 +50,7 @@ view language currentDate id db model =
             viewWebData language (viewContent language currentDate model) identity data
     in
     div
-        [ class "page-pregnancy-outcome" ]
+        [ class "page-outcome acute-illness" ]
         [ header
         , content
         ]
@@ -61,7 +61,7 @@ viewHeader language data =
     div [ class "ui basic head segment" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language Translate.PregnancyOutcomeLabel ]
+            [ text <| translate language Translate.AcuteIllnessOutcomeLabel ]
         , a
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage data.participant.person
@@ -76,11 +76,11 @@ viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
 viewContent language currentDate model data =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate data Nothing
-            ++ viewPregnancyOutcome language currentDate data model
+            ++ viewAcuteIllnessOutcome language currentDate data model
 
 
-viewPregnancyOutcome : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
-viewPregnancyOutcome language currentDate data model =
+viewAcuteIllnessOutcome : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
+viewAcuteIllnessOutcome language currentDate data model =
     let
         pregnancyOutcomeInput =
             option
@@ -88,17 +88,17 @@ viewPregnancyOutcome language currentDate data model =
                 , selected (model.pregnancyOutcome == Nothing)
                 ]
                 [ text "" ]
-                :: (allPregnancyOutcome
+                :: (allAcuteIllnessOutcome
                         |> List.map
                             (\outcome ->
                                 option
                                     [ value (pregnancyOutcomeToString outcome)
                                     , selected (model.pregnancyOutcome == Just outcome)
                                     ]
-                                    [ text <| translate language <| Translate.PregnancyOutcome outcome ]
+                                    [ text <| translate language <| Translate.AcuteIllnessOutcome outcome ]
                             )
                    )
-                |> select [ onInput SetPregnancyOutcome, class "form-input pregnancy-outcome" ]
+                |> select [ onInput SetAcuteIllnessOutcome, class "form-input pregnancy-outcome" ]
 
         today =
             currentDate
@@ -125,7 +125,7 @@ viewPregnancyOutcome language currentDate data model =
                 [ viewLabel language Translate.DatePregnancyConcluded
                 , div [ class "form-input date" ]
                     [ pregnancyConcludedDateInput ]
-                , viewLabel language Translate.PregnancyOutcomeLabel
+                , viewLabel language Translate.AcuteIllnessOutcomeLabel
                 , pregnancyOutcomeInput
                 , viewLabel language Translate.DeliveryLocation
                 , viewBoolInput
@@ -139,7 +139,7 @@ viewPregnancyOutcome language currentDate data model =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick SavePregnancyOutcome
+                , onClick SaveAcuteIllnessOutcome
                 ]
                 [ text <| translate language Translate.Save ]
             ]
