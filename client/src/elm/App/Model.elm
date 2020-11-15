@@ -14,6 +14,7 @@ import Json.Encode exposing (Value)
 import NutritionActivity.Model exposing (NutritionActivity)
 import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessEncounter.Model
+import Pages.AcuteIllnessOutcome.Model
 import Pages.AcuteIllnessParticipant.Model
 import Pages.AcuteIllnessProgressReport.Model
 import Pages.Clinics.Model
@@ -180,6 +181,7 @@ type alias LoggedInModel =
     , acuteIllnessEncounterPages : Dict AcuteIllnessEncounterId Pages.AcuteIllnessEncounter.Model.Model
     , acuteIllnessActivityPages : Dict ( AcuteIllnessEncounterId, AcuteIllnessActivity ) Pages.AcuteIllnessActivity.Model.Model
     , acuteIllnessProgressReportPages : Dict AcuteIllnessEncounterId Pages.AcuteIllnessProgressReport.Model.Model
+    , acuteIllnessOutcomePages : Dict IndividualEncounterParticipantId Pages.AcuteIllnessOutcome.Model.Model
     }
 
 
@@ -203,6 +205,7 @@ emptyLoggedInModel nurse =
     , acuteIllnessEncounterPages = Dict.empty
     , acuteIllnessActivityPages = Dict.empty
     , acuteIllnessProgressReportPages = Dict.empty
+    , acuteIllnessOutcomePages = Dict.empty
     }
 
 
@@ -260,6 +263,7 @@ type MsgLoggedIn
     | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
     | MsgPageAcuteIllnessActivity AcuteIllnessEncounterId AcuteIllnessActivity Pages.AcuteIllnessActivity.Model.Msg
     | MsgPageAcuteIllnessProgressReport AcuteIllnessEncounterId Pages.AcuteIllnessProgressReport.Model.Msg
+    | MsgPageAcuteIllnessOutcome IndividualEncounterParticipantId Pages.AcuteIllnessOutcome.Model.Msg
 
 
 type alias Flags =

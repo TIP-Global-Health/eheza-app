@@ -233,6 +233,7 @@ type TranslationId
     | AcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
     | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
     | AcuteIllnessDiagnosisWarning AcuteIllnessDiagnosis
+    | AcuteIllnessOutcomeLabel
     | Activities
     | ActivitiesCompleted Int
     | ActivitiesHelp Activity
@@ -1078,6 +1079,11 @@ translationSet trans =
                     { english = "No Diagnosis"
                     , kinyarwanda = Nothing
                     }
+
+        AcuteIllnessOutcomeLabel ->
+            { english = "Acute Illness Outcome"
+            , kinyarwanda = Nothing
+            }
 
         AddChild ->
             { english = "Add Child"
@@ -5934,6 +5940,11 @@ translateActivePage page =
                 AcuteIllnessProgressReportPage _ ->
                     { english = "Acute Illness Progress Report"
                     , kinyarwanda = Just "Raporo y’ibyakozwe ku ndwara zifatiyeho"
+                    }
+
+                AcuteIllnessOutcomePage _ ->
+                    { english = "Acute Illness Outcome"
+                    , kinyarwanda = Nothing
                     }
 
 

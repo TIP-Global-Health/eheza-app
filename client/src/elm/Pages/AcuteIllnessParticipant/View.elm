@@ -31,7 +31,7 @@ view language currentDate selectedHealthCenter id db model =
     in
     div
         [ class "wrap wrap-alt-2 page-participant acute-illness" ]
-        [ viewHeader language id model
+        [ viewHeader language model
         , div
             [ class "ui full segment" ]
             [ viewWebData language (viewContent language currentDate selectedHealthCenter id db model) identity sessions
@@ -39,8 +39,8 @@ view language currentDate selectedHealthCenter id db model =
         ]
 
 
-viewHeader : Language -> PersonId -> Model -> Html Msg
-viewHeader language id model =
+viewHeader : Language -> Model -> Html Msg
+viewHeader language model =
     let
         ( labelTransId, action ) =
             case model.viewMode of

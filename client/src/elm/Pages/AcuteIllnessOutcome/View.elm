@@ -13,11 +13,11 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
+import Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData)
+import Pages.AcuteIllnessEncounter.View exposing (viewPersonDetailsWithAlert)
 import Pages.AcuteIllnessOutcome.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalEncounter.Model exposing (AssembledData)
-import Pages.PrenatalEncounter.Utils exposing (generateAssembledData)
-import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
 import Pages.Utils exposing (taskCompleted, viewBoolInput, viewLabel)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
@@ -64,7 +64,7 @@ viewHeader language data =
             [ text <| translate language Translate.AcuteIllnessOutcomeLabel ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage data.participant.person
+            , onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage data.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -75,7 +75,7 @@ viewHeader language data =
 viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
 viewContent language currentDate model data =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data Nothing
+        viewPersonDetailsWithAlert language currentDate data Nothing
             ++ viewAcuteIllnessOutcome language currentDate data model
 
 

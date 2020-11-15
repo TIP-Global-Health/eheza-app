@@ -431,6 +431,19 @@ update msg model =
                             , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport id) subCmd
                             , extraMsgs
                             )
+
+                        MsgPageAcuteIllnessOutcome id subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    data.acuteIllnessOutcomePages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.AcuteIllnessOutcome.Model.emptyModel
+                                        |> Pages.AcuteIllnessOutcome.Update.update currentDate id subMsg
+                            in
+                            ( { data | acuteIllnessOutcomePages = Dict.insert id subModel data.acuteIllnessOutcomePages }
+                            , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessOutcome id) subCmd
+                            , appMsgs
+                            )
                 )
                 model
 
