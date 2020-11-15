@@ -139,6 +139,8 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
 
       $item->timestamp = $item->changed;
       unset($item->changed);
+
+      $item->deleted = empty($item->deleted) ? FALSE : (bool) $item->deleted;
     }
 
     return $items;
