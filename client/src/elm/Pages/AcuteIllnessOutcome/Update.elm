@@ -26,12 +26,10 @@ update currentDate id msg model =
                     (\outcome ->
                         ( model
                         , Cmd.none
-                        , [ --  @todo:
-                            -- Backend.IndividualEncounterParticipant.Model.CloseAcuteIllnessSession  outcome
-                            --         |> Backend.Model.MsgIndividualSession id
-                            --         |> App.Model.MsgIndexedDb
-                            --   ,
-                            App.Model.SetActivePage PinCodePage
+                        , [ Backend.IndividualEncounterParticipant.Model.CloseAcuteIllnessSession outcome
+                                |> Backend.Model.MsgIndividualSession id
+                                |> App.Model.MsgIndexedDb
+                          , App.Model.SetActivePage PinCodePage
                           ]
                         )
                     )

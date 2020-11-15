@@ -1,5 +1,6 @@
 module Backend.IndividualEncounterParticipant.Encoder exposing
     ( acuteIllnessOutcomeToString
+    , encodeAcuteIllnessOutcome
     , encodeDeliveryLocation
     , encodeIndividualEncounterParticipant
     , encodePregnancyOutcome
@@ -88,3 +89,8 @@ acuteIllnessOutcomeToString outcome =
 
         OutcomeOther ->
             "other"
+
+
+encodeAcuteIllnessOutcome : AcuteIllnessOutcome -> Value
+encodeAcuteIllnessOutcome outcome =
+    acuteIllnessOutcomeToString outcome |> string

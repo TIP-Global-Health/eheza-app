@@ -18,6 +18,7 @@ type alias IndividualEncounterParticipant =
 
 type alias Model =
     { closePrenatalSession : WebData ()
+    , closeAcuteIllnessSession : WebData ()
     , setEddDate : WebData ()
     }
 
@@ -25,6 +26,8 @@ type alias Model =
 type Msg
     = ClosePrenatalSession Date PregnancyOutcome Bool
     | HandleClosedPrenatalSession (WebData ())
+    | CloseAcuteIllnessSession AcuteIllnessOutcome
+    | HandleClosedAcuteIllnessSession (WebData ())
     | SetEddDate NominalDate
     | HandleSetEddDate (WebData ())
 
@@ -32,6 +35,7 @@ type Msg
 emptyModel : Model
 emptyModel =
     { closePrenatalSession = NotAsked
+    , closeAcuteIllnessSession = NotAsked
     , setEddDate = NotAsked
     }
 

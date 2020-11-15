@@ -19,7 +19,7 @@ update participantId maybeParticipant currentDate msg model =
             applyBackendUrl "/sw"
     in
     case msg of
-        ClosePrenatalSession pregnancyConcludedDate pregnancyOutcome isFacilityDelivery ->
+        ClosePrenatalSession concludedDate outcome isFacilityDelivery ->
             maybeParticipant
                 |> unwrap ( model, Cmd.none )
                     (\participant ->
@@ -31,8 +31,8 @@ update participantId maybeParticipant currentDate msg model =
                                     , ( "value2", encodeYYYYMMDD currentDate )
                                     ]
                               )
-                            , ( "date_concluded", encodeYYYYMMDD pregnancyConcludedDate )
-                            , ( "outcome", encodePregnancyOutcome pregnancyOutcome )
+                            , ( "date_concluded", encodeYYYYMMDD concludedDate )
+                            , ( "outcome", encodePregnancyOutcome outcome )
                             , ( "outcome_location", encodeDeliveryLocation isFacilityDelivery )
                             ]
                             |> sw.patchAny individualEncounterParticipantEndpoint participantId
@@ -43,6 +43,31 @@ update participantId maybeParticipant currentDate msg model =
 
         HandleClosedPrenatalSession data ->
             ( { model | closePrenatalSession = data }
+            , Cmd.none
+            )
+
+        CloseAcuteIllnessSession outcome ->
+            maybeParticipant
+                |> unwrap ( model, Cmd.none )
+                    (\participant ->
+                        ( { model | closePrenatalSession = Loading }
+                        , object
+                            [ ( "expected"
+                              , object
+                                    [ ( "value", encodeYYYYMMDD participant.startDate )
+                                    , ( "value2", encodeYYYYMMDD currentDate )
+                                    ]
+                              )
+                            , ( "outcome", encodeAcuteIllnessOutcome outcome )
+                            ]
+                            |> sw.patchAny individualEncounterParticipantEndpoint participantId
+                            |> withoutDecoder
+                            |> toCmd (RemoteData.fromResult >> HandleClosedPrenatalSession)
+                        )
+                    )
+
+        HandleClosedAcuteIllnessSession data ->
+            ( { model | closeAcuteIllnessSession = data }
             , Cmd.none
             )
 
