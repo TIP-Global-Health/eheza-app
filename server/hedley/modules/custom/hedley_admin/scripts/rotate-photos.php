@@ -2,8 +2,9 @@
 
 /**
  * @file
- * Rotates photos that were uploaded by old Chrome versions, where the
- * photo is a portrait, but got width 800 and height 600.
+ * Rotates photos that were uploaded by old Chrome versions
+ *
+ * Where the photo is a portrait, but got width 800 and height 600.
  *
  * Execution:  drush scr
  *   profiles/hedley/modules/custom/hedley_admin/scripts/rotate-photos.php.
@@ -62,9 +63,9 @@ while (TRUE) {
   $nodes = node_load_multiple($ids);
   $count = 0;
   foreach ($nodes as $node) {
-    $fid = $node->field_photo['und'][0]['fid'];
+    $fid = $node->field_photo[LANGUAGE_NONE][0]['fid'];
     $file = file_load($fid);
-    $new_uri = str_replace('.jpg', '_r.jpg',$file->uri);
+    $new_uri = str_replace('.jpg', '_r.jpg', $file->uri);
 
     $file = file_copy($file, $new_uri, 'FILE_EXISTS_RENAME');
     if (!$file) {
@@ -83,9 +84,9 @@ while (TRUE) {
       drush_print("Failed to rotate photo with ID $node->nid - rotate image phase");
     }
 
-    $node->field_photo['und'][0]['fid'] = $file->fid;
-    $node->field_photo['und'][0]['width'] = 600;
-    $node->field_photo['und'][0]['height'] = 800;
+    $node->field_photo[LANGUAGE_NONE][0]['fid'] = $file->fid;
+    $node->field_photo[LANGUAGE_NONE][0]['width'] = 600;
+    $node->field_photo[LANGUAGE_NONE][0]['height'] = 800;
     node_save($node);
     $count++;
   }
