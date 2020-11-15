@@ -8,6 +8,14 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { acuteIllnessOutcome : Maybe AcuteIllnessOutcome
+    , showAlertsDialog : Bool
+    }
+
+
+emptyModel : Model
+emptyModel =
+    { acuteIllnessOutcome = Nothing
+    , showAlertsDialog = False
     }
 
 
@@ -16,9 +24,4 @@ type Msg
     | SaveAcuteIllnessOutcome
     | SetActivePage Page
     | SetAcuteIllnessOutcome String
-
-
-emptyModel : Model
-emptyModel =
-    { acuteIllnessOutcome = Nothing
-    }
+    | SetAlertsDialogState Bool

@@ -28,6 +28,8 @@ import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessActivity.Update
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.Update
+import Pages.AcuteIllnessOutcome.Model
+import Pages.AcuteIllnessOutcome.Update
 import Pages.AcuteIllnessParticipant.Model
 import Pages.AcuteIllnessParticipant.Update
 import Pages.AcuteIllnessProgressReport.Model

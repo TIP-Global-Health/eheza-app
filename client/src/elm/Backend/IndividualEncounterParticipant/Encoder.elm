@@ -1,5 +1,6 @@
 module Backend.IndividualEncounterParticipant.Encoder exposing
-    ( encodeDeliveryLocation
+    ( acuteIllnessOutcomeToString
+    , encodeDeliveryLocation
     , encodeIndividualEncounterParticipant
     , encodePregnancyOutcome
     , pregnancyOutcomeToString
@@ -68,3 +69,22 @@ pregnancyOutcomeToString outcome =
 
         OutcomeAbortions ->
             "abortions"
+
+
+acuteIllnessOutcomeToString : AcuteIllnessOutcome -> String
+acuteIllnessOutcomeToString outcome =
+    case outcome of
+        OutcomeIllnessResolved ->
+            "lillness-resolved"
+
+        OutcomeLostToFollowUp ->
+            "lost-to-follow-up"
+
+        OutcomePatientDied ->
+            "patient-died"
+
+        OutcomeReferredToHC ->
+            "referred-to-hc"
+
+        OutcomeOther ->
+            "other"

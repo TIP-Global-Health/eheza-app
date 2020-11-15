@@ -30,7 +30,7 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), PregnancyOutcome(..))
+import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model
     exposing
@@ -233,6 +233,7 @@ type TranslationId
     | AcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
     | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
     | AcuteIllnessDiagnosisWarning AcuteIllnessDiagnosis
+    | AcuteIllnessOutcome AcuteIllnessOutcome
     | AcuteIllnessOutcomeLabel
     | Activities
     | ActivitiesCompleted Int
@@ -1084,6 +1085,33 @@ translationSet trans =
             { english = "Acute Illness Outcome"
             , kinyarwanda = Nothing
             }
+
+        AcuteIllnessOutcome outcome ->
+            case outcome of
+                OutcomeIllnessResolved ->
+                    { english = "Illness Resolved"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeLostToFollowUp ->
+                    { english = "Lost to Follow Up (or Moved out of CA?)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomePatientDied ->
+                    { english = "Patient Died"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeReferredToHC ->
+                    { english = "Referred to Health Center"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
 
         AddChild ->
             { english = "Add Child"

@@ -21,7 +21,7 @@ update currentDate id msg model =
             noChange
 
         SaveAcuteIllnessOutcome ->
-            model.acuteIllnessOutcomeFromString
+            model.acuteIllnessOutcome
                 |> Maybe.map
                     (\outcome ->
                         ( model
@@ -35,8 +35,6 @@ update currentDate id msg model =
                           ]
                         )
                     )
-                    model.pregnancyConcludedDate
-                    model.isFacilityDelivery
                 |> Maybe.withDefault noChange
 
         SetActivePage page ->
@@ -54,3 +52,6 @@ update currentDate id msg model =
             , Cmd.none
             , []
             )
+
+        SetAlertsDialogState isOpen ->
+            ( { model | showAlertsDialog = isOpen }, Cmd.none, [] )

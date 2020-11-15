@@ -322,7 +322,7 @@ viewActiveIllnessForOutcome :
     -> Maybe (Html Msg)
 viewActiveIllnessForOutcome language currentDate sessionId encounters diagnosis =
     Just <|
-        viewButton language (RecordIllnessOutcome sessionId) (Translate.AcuteIllnessDiagnosis diagnosis) False
+        viewButton language (navigateToRecordOutcomePage sessionId) (Translate.AcuteIllnessDiagnosis diagnosis) False
 
 
 viewLabel : Language -> String -> TranslationId -> Html Msg
@@ -346,5 +346,12 @@ viewButton language action lablelTransId disabled =
 navigateToEncounterAction : AcuteIllnessEncounterId -> Msg
 navigateToEncounterAction id =
     Pages.Page.AcuteIllnessEncounterPage id
+        |> UserPage
+        |> SetActivePage
+
+
+navigateToRecordOutcomePage : IndividualEncounterParticipantId -> Msg
+navigateToRecordOutcomePage id =
+    Pages.Page.AcuteIllnessOutcomePage id
         |> UserPage
         |> SetActivePage

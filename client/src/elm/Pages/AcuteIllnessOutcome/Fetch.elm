@@ -15,28 +15,25 @@ fetch participantId db =
                 |> RemoteData.toMaybe
                 |> Maybe.map .person
 
-        -- encountersIds =
-        --     participantId
-        --         |> Maybe.map
-        --             (\participantId_ ->
-        --                 Dict.get participantId_ db.acuteIllnessEncountersByParticipant
-        --                     |> Maybe.withDefault NotAsked
-        --                     |> RemoteData.map Dict.keys
-        --                     |> RemoteData.withDefault []
-        --             )
-        --         |> Maybe.withDefault []
+        encountersIds =
+            Dict.get participantId db.acuteIllnessEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map Dict.keys
+                |> RemoteData.withDefault []
+
+        firstEncounterId =
+            List.head encountersIds
+
         -- We fetch measurements for all encounters, to be
         -- able to apply `expectedAcuteIllnessActivity` logic.
-        -- fetchMeasurements =
-        --     encountersIds
-        --         |> List.map FetchAcuteIllnessMeasurements
+        fetchMeasurements =
+            encountersIds
+                |> List.map FetchAcuteIllnessMeasurements
     in
     List.filterMap identity
         [ Maybe.map FetchIndividualEncounterParticipant (Just participantId)
         , Maybe.map FetchPerson personId
         , Maybe.map FetchAcuteIllnessEncountersForParticipant (Just participantId)
+        , Maybe.map FetchAcuteIllnessEncounter firstEncounterId
         ]
-
-
-
--- ++ fetchMeasurements
+        ++ fetchMeasurements

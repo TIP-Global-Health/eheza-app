@@ -3,7 +3,7 @@ module Pages.AcuteIllnessOutcome.View exposing (view)
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Encoder exposing (pregnancyOutcomeToString)
+import Backend.IndividualEncounterParticipant.Encoder exposing (acuteIllnessOutcomeToString)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), allAcuteIllnessOutcome)
 import Backend.Model exposing (ModelIndexedDb)
 import Date exposing (Unit(..))
@@ -14,7 +14,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
-import Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData)
+import Pages.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisToMaybe, generateAssembledData)
 import Pages.AcuteIllnessEncounter.View exposing (viewPersonDetailsWithAlert)
 import Pages.AcuteIllnessOutcome.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -27,16 +27,15 @@ import Utils.WebData exposing (viewWebData)
 view : Language -> NominalDate -> IndividualEncounterParticipantId -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id db model =
     let
-        lastEncounterId =
+        firstEncounterId =
             Dict.get id db.acuteIllnessEncountersByParticipant
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.map Dict.keys
                 |> RemoteData.withDefault []
-                |> List.reverse
                 |> List.head
 
         data =
-            lastEncounterId
+            firstEncounterId
                 |> Maybe.map
                     (\encounterId ->
                         generateAssembledData encounterId db
@@ -74,66 +73,48 @@ viewHeader language data =
 
 viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
 viewContent language currentDate model data =
+    let
+        diagnosis =
+            acuteIllnessDiagnosisToMaybe data.encounter.diagnosis
+    in
     div [ class "ui unstackable items" ] <|
-        viewPersonDetailsWithAlert language currentDate data Nothing
-            ++ viewAcuteIllnessOutcome language currentDate data model
+        viewPersonDetailsWithAlert language currentDate data.person diagnosis model.showAlertsDialog SetAlertsDialogState
+            :: viewAcuteIllnessOutcome language currentDate data model
 
 
 viewAcuteIllnessOutcome : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
 viewAcuteIllnessOutcome language currentDate data model =
     let
-        pregnancyOutcomeInput =
+        acuteIllnessOutcomeInput =
             option
                 [ value ""
-                , selected (model.pregnancyOutcome == Nothing)
+                , selected (model.acuteIllnessOutcome == Nothing)
                 ]
                 [ text "" ]
                 :: (allAcuteIllnessOutcome
                         |> List.map
                             (\outcome ->
                                 option
-                                    [ value (pregnancyOutcomeToString outcome)
-                                    , selected (model.pregnancyOutcome == Just outcome)
+                                    [ value (acuteIllnessOutcomeToString outcome)
+                                    , selected (model.acuteIllnessOutcome == Just outcome)
                                     ]
                                     [ text <| translate language <| Translate.AcuteIllnessOutcome outcome ]
                             )
                    )
-                |> select [ onInput SetAcuteIllnessOutcome, class "form-input pregnancy-outcome" ]
-
-        today =
-            currentDate
-
-        pregnancyConcludedDateInput =
-            DateSelector.SelectorDropdown.view
-                ToggleDateSelector
-                SetPregnancyConcludedDate
-                model.isDateSelectorOpen
-                (Date.add Days -92 today)
-                today
-                model.pregnancyConcludedDate
+                |> select [ onInput SetAcuteIllnessOutcome, class "form-input acuteIllness-outcome" ]
 
         totalTasks =
-            3
+            1
 
         tasksCompleted =
-            taskCompleted model.pregnancyConcludedDate + taskCompleted model.pregnancyOutcome + taskCompleted model.isFacilityDelivery
+            taskCompleted model.acuteIllnessOutcome
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "form pregnancy-dating" ]
-                [ viewLabel language Translate.DatePregnancyConcluded
-                , div [ class "form-input date" ]
-                    [ pregnancyConcludedDateInput ]
-                , viewLabel language Translate.AcuteIllnessOutcomeLabel
-                , pregnancyOutcomeInput
-                , viewLabel language Translate.DeliveryLocation
-                , viewBoolInput
-                    language
-                    model.isFacilityDelivery
-                    SetDeliveryLocation
-                    "delivery-location"
-                    (Just ( Translate.Facility, Translate.Home ))
+            [ div [ class "form acute-illness-dating" ]
+                [ viewLabel language Translate.AcuteIllnessOutcomeLabel
+                , acuteIllnessOutcomeInput
                 ]
             ]
         , div [ class "actions" ]
