@@ -37,6 +37,10 @@ class HedleyRestfulRelationships extends HedleyRestfulSyncBase {
       'sub_property' => 'field_uuid',
     ];
 
+    $public_fields['deleted'] = [
+      'property' => 'field_deleted',
+    ];
+
     // The label is decorative only.
     unset($public_fields['label']);
 
@@ -51,6 +55,7 @@ class HedleyRestfulRelationships extends HedleyRestfulSyncBase {
       'field_related_by',
       'field_person',
       'field_related_to',
+      'field_deleted',
     ];
 
     foreach ($field_names as $field_name) {

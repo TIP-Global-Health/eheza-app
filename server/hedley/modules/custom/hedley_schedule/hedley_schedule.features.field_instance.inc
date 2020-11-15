@@ -1061,6 +1061,49 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-individual_participant-field_deleted'.
+  $field_instances['node-individual_participant-field_deleted'] = array(
+    'bundle' => 'individual_participant',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 12,
+    ),
+  );
+
   // Exported field_instance:
   // 'node-individual_participant-field_encounter_type'.
   $field_instances['node-individual_participant-field_encounter_type'] = array(
@@ -1727,6 +1770,49 @@ Used to track location where pregnancies were completed.',
     ),
   );
 
+  // Exported field_instance: 'node-pmtct_participant-field_deleted'.
+  $field_instances['node-pmtct_participant-field_deleted'] = array(
+    'bundle' => 'pmtct_participant',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 10,
+    ),
+  );
+
   // Exported field_instance: 'node-pmtct_participant-field_expected'.
   $field_instances['node-pmtct_participant-field_expected'] = array(
     'bundle' => 'pmtct_participant',
@@ -2373,6 +2459,7 @@ Used to track location where pregnancies were completed.',
   t('Closed (DEPRECATED)');
   t('Date Measured');
   t('Date concluded');
+  t('Deleted');
   t('Encounter type');
   t('English Title');
   t('Enter the clinic for which data-entry is being scheduled.');
