@@ -330,13 +330,16 @@ update currentDate currentTime dbVersion device msg model =
                         Nothing ->
                             ( Cmd.none, currentZipper.statsCacheHash, [] )
 
+                currentTimeMillis =
+                    Time.posixToMillis currentTime
+
                 syncInfoAuthorities =
                     case RemoteData.toMaybe webData of
                         Just data ->
                             Zipper.mapCurrent
                                 (\old ->
                                     { old
-                                        | lastSuccesfulContact = Time.posixToMillis currentTime
+                                        | lastSuccesfulContact = currentTimeMillis
                                         , remainingToDownload = data.revisionCount
                                         , status = Success
                                         , statsCacheHash = statsCacheHash
@@ -353,6 +356,21 @@ update currentDate currentTime dbVersion device msg model =
                             | syncStatus = SyncDownloadAuthorityDashboardStats webData
                             , syncInfoAuthorities = Just syncInfoAuthorities
                         }
+
+                -- Calculating tge time it took authorities to sync.
+                authoritiesSyncTime =
+                    currentTimeMillis - model.syncInfoGeneral.lastSuccesfulContact
+
+                -- If sync is long (initial sync, for example), we want to refresh the page,
+                -- when sync is completed.
+                -- So, when sync sattus is about to change to Idle, and it took more than one
+                -- minute to sync the authorities, we perform refresh.
+                refreshPageCmd =
+                    if modelWithSyncStatus.syncStatus == SyncIdle && authoritiesSyncTime > 60000 then
+                        refreshPage ()
+
+                    else
+                        Cmd.none
             in
             SubModelReturn
                 modelWithSyncStatus
@@ -360,6 +378,7 @@ update currentDate currentTime dbVersion device msg model =
                     [ cmd
                     , -- Send to JS the updated revision ID. We send the entire list.
                       sendSyncInfoAuthoritiesCmd syncInfoAuthorities
+                    , refreshPageCmd
                     ]
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityDashboardStatsFetchHandle")
@@ -1656,6 +1675,9 @@ port sendSyncSpeed : { idle : Int, cycle : Int, offline : Int } -> Cmd msd
 we have some related data (e.g. the child ID to query), we send it as-well.
 -}
 port askFromIndexDb : { queryType : String, data : Maybe String } -> Cmd msg
+
+
+port refreshPage : () -> Cmd msg
 
 
 {-| Get data requested from IndexDB.

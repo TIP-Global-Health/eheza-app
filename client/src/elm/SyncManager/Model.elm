@@ -196,7 +196,6 @@ type alias Model =
     , downloadPhotosStatus : DownloadPhotosStatus
     , syncInfoGeneral : SyncInfoGeneral
     , syncInfoAuthorities : SyncInfoAuthorityZipper
-    , lastTryBackendGeneralDownloadTime : Time.Posix
 
     -- Determine how we're going to download photos.
     , downloadPhotosMode : DownloadPhotosMode
@@ -223,7 +222,6 @@ emptyModel flags =
     , downloadPhotosStatus = DownloadPhotosIdle
     , syncInfoGeneral = flags.syncInfoGeneral
     , syncInfoAuthorities = flags.syncInfoAuthorities
-    , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , downloadPhotosMode = DownloadPhotosAll emptyDownloadPhotosAllRec
     , downloadPhotosBatchSize = flags.batchSize
     , syncCycle = SyncCycleOn

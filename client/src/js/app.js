@@ -390,6 +390,10 @@ elmApp.ports.scrollToElement.subscribe(function(elementId) {
   }
 });
 
+elmApp.ports.refreshPage.subscribe(function() {
+  location.reload();
+});
+
 /**
  * Set the information about General sync.
  */
