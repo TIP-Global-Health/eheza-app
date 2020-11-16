@@ -31,8 +31,7 @@ we show its status. Otherwise, we show a UI that allows for authorization.
 view : Language -> WebData Device -> App.Model.Model -> Model -> Html Msg
 view language device app model =
     div [ class "wrap wrap-alt-2" ]
-        [ div
-            [ class "ui basic head segment" ]
+        [ div [ class "ui basic head segment" ]
             [ h1
                 [ class "ui header" ]
                 [ text <| translate language Translate.DeviceStatus ]
@@ -40,12 +39,9 @@ view language device app model =
                 [ class "link-back"
                 , onClick <| SetActivePage PinCodePage
                 ]
-                [ span [ class "icon-back" ] []
-                , span [] []
-                ]
+                [ span [ class "icon-back" ] [] ]
             ]
-        , div
-            [ class "ui segment" ]
+        , div [ class "ui segment" ]
             [ viewDeviceStatus language device app model
             ]
         ]
@@ -65,8 +61,7 @@ viewDeviceStatus language device app model =
                     ]
                     [ text <| translate language Translate.TrySyncing ]
                 , viewStorageStatus language app
-                , div
-                    [ class "general-sync" ]
+                , div [ class "general-sync" ]
                     [ h2 [] [ text <| translate language Translate.SyncGeneral ]
                     , viewSyncInfo language app.syncManager.syncInfoGeneral
                     , viewDownloadPhotosInfo language app.syncManager.downloadPhotosStatus
@@ -219,17 +214,21 @@ viewHealthCenters language app =
                 in
                 app.indexedDb.healthCenters
                     |> RemoteData.map
-                        (\data ->
-                            data
-                                |> Dict.toList
-                                |> List.filter (\( healthCenterId, _ ) -> EverySet.member healthCenterId allowedHealthCenters)
-                                |> List.sortBy (Tuple.second >> .name)
-                                |> List.map (viewHealthCenter language app.syncManager.syncInfoAuthorities)
-                                |> div [ class "health-centers" ]
+                        (Dict.toList
+                            >> List.filter (\( healthCenterId, _ ) -> EverySet.member healthCenterId allowedHealthCenters)
+                            >> List.sortBy (Tuple.second >> .name)
+                            >> List.map (viewHealthCenter language app.syncManager.syncInfoAuthorities)
+                            >> div [ class "health-centers" ]
                         )
                     |> RemoteData.withDefault spinner
             )
-        |> Maybe.withDefault (div [ class "login-request" ] [ text <| translate language <| Translate.LoginPhrase Translate.LoginToSyncHealthCenters ])
+        |> Maybe.withDefault
+            (button
+                [ class "ui fluid primary button"
+                , onClick <| SetActivePage PinCodePage
+                ]
+                [ text <| translate language <| Translate.LoginPhrase Translate.LoginToSyncHealthCenters ]
+            )
 
 
 viewHealthCenter : Language -> SyncInfoAuthorityZipper -> ( HealthCenterId, HealthCenter ) -> Html Msg
