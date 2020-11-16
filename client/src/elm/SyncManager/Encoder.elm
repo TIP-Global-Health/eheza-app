@@ -57,16 +57,11 @@ encodeIndexDbQueryUploadAuthorityResultRecord record =
                 doEncode encoder identifier_ =
                     encoder identifier_.entity
                         |> replacePhotoWithFileId identifier_.revision
-                        |> List.append [ ( "uuid", string identifier.uuid ) ]
+                        |> List.append [ ( "uuid", string identifier_.uuid ) ]
                         |> Json.Encode.object
 
                 data =
                     case entity of
-                        BackendAuthorityNutritionPhoto identifier_ ->
-                            doEncode
-                                Backend.Measurement.Encoder.encodeNutritionPhoto
-                                identifier_
-
                         BackendAuthorityPerson identifier_ ->
                             let
                                 encodedEntity =
@@ -79,11 +74,18 @@ encodeIndexDbQueryUploadAuthorityResultRecord record =
                                     else
                                         encodedEntity
                             in
-                            Json.Encode.object encodedEntityUpdated
+                            encodedEntityUpdated
+                                |> List.append [ ( "uuid", string identifier_.uuid ) ]
+                                |> Json.Encode.object
 
                         BackendAuthorityPhoto identifier_ ->
                             doEncode
                                 Backend.Measurement.Encoder.encodePhoto
+                                identifier_
+
+                        BackendAuthorityNutritionPhoto identifier_ ->
+                            doEncode
+                                Backend.Measurement.Encoder.encodeNutritionPhoto
                                 identifier_
 
                         BackendAuthorityPrenatalPhoto identifier_ ->
