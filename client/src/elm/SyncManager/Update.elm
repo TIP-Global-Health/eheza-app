@@ -357,13 +357,13 @@ update currentDate currentTime dbVersion device msg model =
                             , syncInfoAuthorities = Just syncInfoAuthorities
                         }
 
-                -- Calculating tge time it took authorities to sync.
+                -- Calculating the time it took authorities to sync.
                 authoritiesSyncTime =
                     currentTimeMillis - model.syncInfoGeneral.lastSuccesfulContact
 
                 -- If sync is long (initial sync, for example), we want to refresh the page,
                 -- when sync is completed.
-                -- So, when sync sattus is about to change to Idle, and it took more than one
+                -- So, when sync status is about to change to Idle, and it took more than one
                 -- minute to sync the authorities, we perform refresh.
                 refreshPageCmd =
                     if modelWithSyncStatus.syncStatus == SyncIdle && authoritiesSyncTime > 60000 then
