@@ -254,7 +254,7 @@ viewUserPage page deviceName model configured =
                             |> oldPageWrapper model
 
                     ClinicalPage ->
-                        Pages.Clinical.View.view model.language currentDate model.villageId isChw model.indexedDb
+                        Pages.Clinical.View.view model.language currentDate ( healthCenterId, model.villageId ) isChw model
                             |> flexPageWrapper model
 
                     ClinicsPage clinicId ->
@@ -396,7 +396,7 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     IndividualEncounterTypesPage ->
-                        Pages.IndividualEncounterTypes.View.view model.language currentDate isChw model.indexedDb
+                        Pages.IndividualEncounterTypes.View.view model.language currentDate healthCenterId isChw model
                             |> flexPageWrapper model
 
                     PregnancyOutcomePage id ->
