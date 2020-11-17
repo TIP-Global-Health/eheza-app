@@ -108,15 +108,37 @@ warningPopup language maybeDiagnosis setStateMsg =
 
 viewHeader : Language -> AssembledData -> Html Msg
 viewHeader language data =
+    let
+        isFirstEncounter =
+            List.isEmpty data.previousMeasurementsWithDates
+
+        label =
+            if isFirstEncounter then
+                Translate.IndividualEncounterLabel Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                    |> translate language
+                    |> text
+                    |> List.singleton
+
+            else
+                let
+                    diagnosisLabel =
+                        data.diagnosis
+                            |> Maybe.map (Translate.AcuteIllnessDiagnosis >> translate language)
+                            |> Maybe.withDefault ""
+
+                    subsequentDiagnosisLabel =
+                        Translate.IndividualEncounterSubsequentVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                            |> translate language
+                in
+                [ div [] [ text <| subsequentDiagnosisLabel ++ ":" ]
+                , div [] [ text diagnosisLabel ]
+                ]
+    in
     div
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <|
-                translate language <|
-                    Translate.IndividualEncounterLabel
-                        Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
-            ]
+            label
         , a
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage data.participant.person
@@ -129,12 +151,8 @@ viewHeader language data =
 
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id model data =
-    let
-        diagnosis =
-            acuteIllnessDiagnosisToMaybe data.encounter.diagnosis
-    in
-    (viewPersonDetailsWithAlert language currentDate data.person diagnosis model.showAlertsDialog SetAlertsDialogState
-        :: viewMainPageContent language currentDate id data diagnosis model
+    (viewPersonDetailsWithAlert language currentDate data.person data.diagnosis model.showAlertsDialog SetAlertsDialogState
+        :: viewMainPageContent language currentDate id data model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -203,14 +221,17 @@ alertsDialog language isOpen setAlertsDialogStateMsg =
         Nothing
 
 
-viewMainPageContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AssembledData -> Maybe AcuteIllnessDiagnosis -> Model -> List (Html Msg)
-viewMainPageContent language currentDate id data diagnosis model =
+viewMainPageContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate id data model =
     let
+        isFirstEncounter =
+            List.isEmpty data.previousMeasurementsWithDates
+
         measurements =
             data.measurements
 
         ( completedActivities, pendingActivities ) =
-            splitActivities currentDate data diagnosis
+            splitActivities currentDate data
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -289,7 +310,7 @@ viewMainPageContent language currentDate id data diagnosis model =
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEndEncounterButton language measurements pendingActivities diagnosis SetEndEncounterDialogState
+                , viewEndEncounterButton language measurements pendingActivities data.diagnosis SetEndEncounterDialogState
                 ]
     in
     [ tabs
@@ -297,11 +318,15 @@ viewMainPageContent language currentDate id data diagnosis model =
     ]
 
 
-splitActivities : NominalDate -> AssembledData -> Maybe AcuteIllnessDiagnosis -> ( List AcuteIllnessActivity, List AcuteIllnessActivity )
-splitActivities currentDate data diagnosis =
+splitActivities : NominalDate -> AssembledData -> ( List AcuteIllnessActivity, List AcuteIllnessActivity )
+splitActivities currentDate data =
+    let
+        isFirstEncounter =
+            List.isEmpty data.previousMeasurementsWithDates
+    in
     getAllActivities
-        |> List.filter (expectActivity currentDate data.person data.measurements diagnosis)
-        |> List.partition (activityCompleted currentDate data.person data.measurements diagnosis)
+        |> List.filter (expectActivity currentDate data.person data.measurements isFirstEncounter data.diagnosis)
+        |> List.partition (activityCompleted currentDate data.person data.measurements data.diagnosis)
 
 
 viewEndEncounterButton : Language -> AcuteIllnessMeasurements -> List AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> (Bool -> msg) -> Html msg
