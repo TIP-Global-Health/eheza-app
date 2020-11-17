@@ -44,11 +44,16 @@ viewHeader language id model =
     let
         ( labelTransId, action ) =
             case model.viewMode of
-                ManageParticipants ->
+                ManageIllnesses ->
                     ( Translate.IndividualEncounterLabel Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
                     , SetActivePage <|
                         UserPage <|
                             IndividualEncounterParticipantsPage Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                    )
+
+                ManageParticipants ->
+                    ( Translate.IndividualEncounterLabel Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                    , SetViewMode ManageIllnesses
                     )
 
                 RecordOutcome ->
@@ -85,11 +90,110 @@ viewContent language currentDate selectedHealthCenter id db model sessions =
                 |> List.sortWith (\( _, s1 ) ( _, s2 ) -> Gizra.NominalDate.compare s1.startDate s2.startDate)
     in
     case model.viewMode of
+        ManageIllnesses ->
+            viewManageIllnessesContent language currentDate selectedHealthCenter id db activeSessions
+
         ManageParticipants ->
             viewManageParticipantsContent language currentDate selectedHealthCenter id db activeSessions
 
         RecordOutcome ->
             viewRecordOutcomeContent language currentDate selectedHealthCenter id db activeSessions
+
+
+viewManageIllnessesContent :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> PersonId
+    -> ModelIndexedDb
+    -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
+    -> Html Msg
+viewManageIllnessesContent language currentDate selectedHealthCenter id db activeSessions =
+    let
+        lastActiveSession =
+            List.reverse activeSessions
+                |> List.head
+
+        ( createIllnessNavigateToEncounterAction, createIllnessNavigateToEncounterButtonDisabled ) =
+            lastActiveSession
+                |> Maybe.map
+                    (\( sessionId, session ) ->
+                        if session.startDate /= currentDate then
+                            -- Session was not started today, therefore, we know
+                            -- it's first encounter was not started today, which indicates
+                            -- subsequent visit option is needed.
+                            -- This option will be provided at `active Illnesses` section.
+                            ( startIllnessAction, False )
+
+                        else
+                            let
+                                sessionEncounters =
+                                    Dict.get sessionId db.acuteIllnessEncountersByParticipant
+                                        |> Maybe.withDefault NotAsked
+                                        |> RemoteData.toMaybe
+                                        |> Maybe.map Dict.toList
+                                        |> Maybe.withDefault []
+
+                                maybeActiveEncounterId =
+                                    List.filter (Tuple.second >> isDailyEncounterActive currentDate) sessionEncounters
+                                        |> List.head
+                                        |> Maybe.map Tuple.first
+
+                                encounterWasCompletedToday =
+                                    sessionEncounters
+                                        |> List.filter
+                                            (\( _, encounter ) ->
+                                                encounter.startDate == currentDate && encounter.endDate == Just currentDate
+                                            )
+                                        |> List.isEmpty
+                                        |> not
+                            in
+                            ( maybeActiveEncounterId
+                                |> Maybe.map navigateToEncounterAction
+                                |> Maybe.withDefault startIllnessAction
+                            , -- We do not allow to create multiple encounters for same illness on the same day.
+                              -- Therefore, we disable the button.
+                              encounterWasCompletedToday
+                            )
+                    )
+                |> Maybe.withDefault ( startIllnessAction, False )
+
+        startIllnessAction =
+            IndividualEncounterParticipant id
+                Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                currentDate
+                Nothing
+                Nothing
+                (Just selectedHealthCenter)
+                |> Backend.Model.PostIndividualSession
+                |> MsgBackend
+
+        createIllnessNavigateToEncounterSection =
+            [ viewLabel language "select-visit" <| Translate.IndividualEncounterSelectVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+            , viewButton language
+                createIllnessNavigateToEncounterAction
+                Translate.AcuteIllnessNew
+                createIllnessNavigateToEncounterButtonDisabled
+            ]
+
+        activeIllnessesExists =
+            List.map Tuple.first activeSessions
+                |> List.filterMap (getAcuteIllnessDiagnosisForParticipant db)
+                |> List.filter ((/=) NoAcuteIllnessDiagnosis)
+                |> List.isEmpty
+                |> not
+
+        activeIllnessesSection =
+            if activeIllnessesExists then
+                [ viewButton language (SetViewMode ManageParticipants) Translate.AcuteIllnessExisting False
+                ]
+
+            else
+                []
+    in
+    createIllnessNavigateToEncounterSection
+        ++ activeIllnessesSection
+        |> div []
 
 
 viewManageParticipantsContent :
@@ -248,6 +352,10 @@ viewActiveIllness language currentDate selectedHealthCenter db viewMode sessionI
                 |> Maybe.andThen
                     (\encounters ->
                         case viewMode of
+                            -- No need to view illnesses for this view mode.
+                            ManageIllnesses ->
+                                Nothing
+
                             ManageParticipants ->
                                 viewActiveIllnessForManagement language currentDate selectedHealthCenter sessionId encounters diagnosis
 
@@ -348,3 +456,17 @@ navigateToEncounterAction id =
     Pages.Page.AcuteIllnessEncounterPage id
         |> UserPage
         |> SetActivePage
+
+
+getAcuteIllnessDiagnosisForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe AcuteIllnessDiagnosis
+getAcuteIllnessDiagnosisForParticipant db sessionId =
+    Dict.get sessionId db.acuteIllnessEncountersByParticipant
+        |> Maybe.withDefault NotAsked
+        |> RemoteData.toMaybe
+        |> Maybe.map Dict.toList
+        |> Maybe.andThen
+            (List.map Tuple.second
+                >> List.sortWith (\e1 e2 -> Gizra.NominalDate.compare e1.startDate e2.startDate)
+                >> List.head
+                >> Maybe.map .diagnosis
+            )

@@ -12,7 +12,7 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { viewMode = ManageParticipants }
+    { viewMode = ManageIllnesses }
 
 
 type Msg
@@ -23,5 +23,6 @@ type Msg
 
 
 type AcuteIllnessParticipantViewMode
-    = ManageParticipants
+    = ManageIllnesses
+    | ManageParticipants
     | RecordOutcome
