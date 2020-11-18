@@ -14,6 +14,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Pages.AcuteIllnessEncounter.Utils exposing (getAcuteIllnessDiagnosisForParticipant)
 import Pages.AcuteIllnessParticipant.Model exposing (..)
 import Pages.AcuteIllnessParticipant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -463,4 +464,3 @@ navigateToRecordOutcomePage id =
     Pages.Page.AcuteIllnessOutcomePage id
         |> UserPage
         |> SetActivePage
-

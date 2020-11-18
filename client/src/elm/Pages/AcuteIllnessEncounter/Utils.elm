@@ -773,3 +773,17 @@ acuteIllnessDiagnosisToMaybe diagnosis =
 
     else
         Just diagnosis
+
+
+getAcuteIllnessDiagnosisForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe AcuteIllnessDiagnosis
+getAcuteIllnessDiagnosisForParticipant db participantId =
+    Dict.get participantId db.acuteIllnessEncountersByParticipant
+        |> Maybe.withDefault NotAsked
+        |> RemoteData.toMaybe
+        |> Maybe.map Dict.toList
+        |> Maybe.andThen
+            (List.map Tuple.second
+                >> List.sortWith (\e1 e2 -> Gizra.NominalDate.compare e1.startDate e2.startDate)
+                >> List.head
+                >> Maybe.map .diagnosis
+            )
