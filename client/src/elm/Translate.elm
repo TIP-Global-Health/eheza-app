@@ -233,6 +233,8 @@ type TranslationId
     | AcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
     | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
     | AcuteIllnessDiagnosisWarning AcuteIllnessDiagnosis
+    | AcuteIllnessExisting
+    | AcuteIllnessNew
     | AcuteIllnessOutcome AcuteIllnessOutcome
     | AcuteIllnessOutcomeLabel
     | Activities
@@ -1080,6 +1082,16 @@ translationSet trans =
                     { english = "No Diagnosis"
                     , kinyarwanda = Nothing
                     }
+                    
+        AcuteIllnessExisting ->
+            { english = "Existing Acute Illness"
+            , kinyarwanda = Nothing
+            }
+
+        AcuteIllnessNew ->
+            { english = "New Acute Illness"
+            , kinyarwanda = Nothing
+            }                    
 
         AcuteIllnessOutcomeLabel ->
             { english = "Acute Illness Outcome"
