@@ -819,6 +819,32 @@ type alias MedicationDistribution =
     AcuteIllnessMeasurement MedicationDistributionValue
 
 
+type TreatmentOngoingSign
+    = TakeAsPrescribed
+    | MissedDoses
+    | FeelingBetter
+    | SideEffects
+    | NoTreatmentOngoingSign
+
+
+type ReasonForNotTaking
+    = NotTakingSideEffects
+    | NotTakingNoResources
+    | NotTakingOther
+    | NoReasonForNotTakingSign
+
+
+type alias TreatmentOngoingValue =
+    { signs : EverySet TreatmentOngoingSign
+    , reasonForNotTaking : ReasonForNotTaking
+    , missedDoses : Int
+    }
+
+
+type alias TreatmentOngoing =
+    AcuteIllnessMeasurement TreatmentOngoingValue
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -945,6 +971,7 @@ type alias AcuteIllnessMeasurements =
     , treatmentReview : Maybe ( TreatmentReviewId, TreatmentReview )
     , sendToHC : Maybe ( SendToHCId, SendToHC )
     , medicationDistribution : Maybe ( MedicationDistributionId, MedicationDistribution )
+    , treatmentOngoing : Maybe ( TreatmentOngoingId, TreatmentOngoing )
     }
 
 

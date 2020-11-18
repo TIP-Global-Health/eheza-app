@@ -581,3 +581,11 @@ type alias MedicationDistributionId =
 
 type MedicationDistributionIdUuidType
     = MedicationDistributionIdUuidType
+
+
+type alias TreatmentOngoingId =
+    EntityUuid TreatmentOngoingUuidType
+
+
+type TreatmentOngoingUuidType
+    = TreatmentOngoingUuidType
