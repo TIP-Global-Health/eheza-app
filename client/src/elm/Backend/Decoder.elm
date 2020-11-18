@@ -209,6 +209,9 @@ decodeRevision =
                     "treatment_history" ->
                         decodeWithUuid TreatmentReviewRevision decodeTreatmentReview
 
+                    "treatment-ongoing" ->
+                        decodeWithUuid TreatmentOngoingRevision decodeTreatmentOngoing
+
                     "village" ->
                         decodeWithUuid VillageRevision decodeVillage
 
