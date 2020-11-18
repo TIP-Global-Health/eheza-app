@@ -213,7 +213,6 @@ div.page-pincode {
   font-size: 1.72rem; //24px;
   text-align: center;
   flex: 1;
-  padding-bottom: 100px !important;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -253,9 +252,8 @@ div.page-pincode {
   button.ui.logout.button {
     background: $color-light-background;
     border: 2px solid $color-white;
-    position: absolute;
-    bottom: 0;
-    width: 89%;
+    margin-top:auto;
+    width: 100%;
   }
 
   // Maintaing margin from 'sign out' button when selecting health center.
