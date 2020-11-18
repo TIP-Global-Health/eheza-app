@@ -203,16 +203,14 @@ viewNumberInput language maybeCurrentValue toStringFunc setMsg inputClass =
                 |> Maybe.withDefault ""
     in
     div [ class <| "form-input number " ++ inputClass ]
-        [ div [ class "ui grid" ]
-            [ input
-                [ type_ "number"
-                , Html.Attributes.min "0"
-                , Html.Attributes.max "99"
-                , onInput setMsg
-                , value currentValue
-                ]
-                []
+        [ input
+            [ type_ "number"
+            , Html.Attributes.min "0"
+            , Html.Attributes.max "99"
+            , onInput setMsg
+            , value currentValue
             ]
+            []
         ]
 
 

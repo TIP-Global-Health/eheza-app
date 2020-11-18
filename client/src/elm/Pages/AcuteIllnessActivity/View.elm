@@ -2166,14 +2166,16 @@ viewOngoingTreatmentReviewForm language currentDate measurements form =
                     if missedDoses then
                         [ div [ class "ui grid" ]
                             [ div [ class "one wide column" ] []
-                            , div [ class "fifteen wide column" ]
+                            , div [ class "four wide column" ]
                                 [ viewQuestionLabel language Translate.HowMany ]
+                            , div [ class "four wide column" ]
+                                [ viewNumberInput language
+                                    form.totalMissedDoses
+                                    String.fromInt
+                                    SetTotalMissedDoses
+                                    "total-missed-doses"
+                                ]
                             ]
-                        , viewNumberInput language
-                            form.totalMissedDoses
-                            String.fromInt
-                            SetTotalMissedDoses
-                            "total-missed-doses"
                         ]
 
                     else

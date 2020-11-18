@@ -902,6 +902,19 @@ div.page-activity.acute-illness {
       width: 60%;
     }
 
+    .form-input.number {
+
+      input {
+        background-color: $color-white;
+        border: 2px solid $color-grey-border;
+        font-size: 22px;
+        font-weight: bold;
+        height: 35px;
+        text-align: -webkit-center;
+        width: 100%;
+      }
+    }
+
     .checkbox-select-input {
       padding-bottom: 15px;
 
