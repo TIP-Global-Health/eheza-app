@@ -28,6 +28,8 @@ import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessActivity.Update
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.Update
+import Pages.AcuteIllnessOutcome.Model
+import Pages.AcuteIllnessOutcome.Update
 import Pages.AcuteIllnessParticipant.Model
 import Pages.AcuteIllnessParticipant.Update
 import Pages.AcuteIllnessProgressReport.Model
@@ -430,6 +432,19 @@ update msg model =
                             ( { data | acuteIllnessProgressReportPages = Dict.insert id subModel data.acuteIllnessProgressReportPages }
                             , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport id) subCmd
                             , extraMsgs
+                            )
+
+                        MsgPageAcuteIllnessOutcome id subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    data.acuteIllnessOutcomePages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.AcuteIllnessOutcome.Model.emptyModel
+                                        |> Pages.AcuteIllnessOutcome.Update.update currentDate id subMsg
+                            in
+                            ( { data | acuteIllnessOutcomePages = Dict.insert id subModel data.acuteIllnessOutcomePages }
+                            , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessOutcome id) subCmd
+                            , appMsgs
                             )
                 )
                 model

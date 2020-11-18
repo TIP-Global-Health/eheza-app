@@ -1,12 +1,4 @@
-module Backend.IndividualEncounterParticipant.Model exposing
-    ( IndividualEncounterParticipant
-    , IndividualEncounterType(..)
-    , Model
-    , Msg(..)
-    , PregnancyOutcome(..)
-    , allPregnancyOutcome
-    , emptyModel
-    )
+module Backend.IndividualEncounterParticipant.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Date exposing (Date)
@@ -26,6 +18,7 @@ type alias IndividualEncounterParticipant =
 
 type alias Model =
     { closePrenatalSession : WebData ()
+    , closeAcuteIllnessSession : WebData ()
     , setEddDate : WebData ()
     }
 
@@ -33,6 +26,8 @@ type alias Model =
 type Msg
     = ClosePrenatalSession Date PregnancyOutcome Bool
     | HandleClosedPrenatalSession (WebData ())
+    | CloseAcuteIllnessSession AcuteIllnessOutcome
+    | HandleClosedAcuteIllnessSession (WebData ())
     | SetEddDate NominalDate
     | HandleSetEddDate (WebData ())
 
@@ -40,6 +35,7 @@ type Msg
 emptyModel : Model
 emptyModel =
     { closePrenatalSession = NotAsked
+    , closeAcuteIllnessSession = NotAsked
     , setEddDate = NotAsked
     }
 
@@ -66,4 +62,22 @@ allPregnancyOutcome =
     , OutcomeStillAtTerm
     , OutcomeStillPreTerm
     , OutcomeAbortions
+    ]
+
+
+type AcuteIllnessOutcome
+    = OutcomeIllnessResolved
+    | OutcomeLostToFollowUp
+    | OutcomePatientDied
+    | OutcomeReferredToHC
+    | OutcomeOther
+
+
+allAcuteIllnessOutcome : List AcuteIllnessOutcome
+allAcuteIllnessOutcome =
+    [ OutcomeIllnessResolved
+    , OutcomeLostToFollowUp
+    , OutcomePatientDied
+    , OutcomeReferredToHC
+    , OutcomeOther
     ]

@@ -558,7 +558,7 @@ div.page-person {
 // Common for Prenatal Encounter and Prenatal Activity pages
 div.page-encounter,
 div.page-activity,
-div.page-pregnancy-outcome {
+div.page-outcome {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -1223,8 +1223,7 @@ div.page-activity.nutrition {
   }
 }
 
-// Pregnancy Outcome page
-div.page-pregnancy-outcome {
+div.page-outcome {
 
   .tasks-count {
     background: $color-primary;
@@ -1243,6 +1242,14 @@ div.page-pregnancy-outcome {
         margin-bottom: 40px;
       }
     }
+  }
+
+}
+
+// Pregnancy Outcome page
+div.page-outcome.pregnancy {
+
+  .ui.full.segment {
 
     .form-input {
       margin-bottom: 30px;
@@ -1315,6 +1322,24 @@ div.page-pregnancy-outcome {
       }
     }
 
+  }
+}
+
+// Acute Illness Outcome page
+div.page-outcome.pregnancy {
+
+  .ui.full.segment {
+
+    .form-input {
+      margin-bottom: 30px;
+
+      &.pregnancy-outcome {
+        background: $color-white;
+        border: 2px solid $color-light-grey;
+        padding: 5px;
+        width: 73%;
+      }
+    }
   }
 }
 

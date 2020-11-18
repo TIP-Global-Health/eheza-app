@@ -14,6 +14,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Pages.AcuteIllnessEncounter.Utils exposing (getAcuteIllnessDiagnosisForParticipant)
 import Pages.AcuteIllnessParticipant.Model exposing (..)
 import Pages.AcuteIllnessParticipant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -31,7 +32,7 @@ view language currentDate selectedHealthCenter id db model =
     in
     div
         [ class "wrap wrap-alt-2 page-participant acute-illness" ]
-        [ viewHeader language id model
+        [ viewHeader language model
         , div
             [ class "ui full segment" ]
             [ viewWebData language (viewContent language currentDate selectedHealthCenter id db model) identity sessions
@@ -39,8 +40,8 @@ view language currentDate selectedHealthCenter id db model =
         ]
 
 
-viewHeader : Language -> PersonId -> Model -> Html Msg
-viewHeader language id model =
+viewHeader : Language -> Model -> Html Msg
+viewHeader language model =
     let
         ( labelTransId, action ) =
             case model.viewMode of
@@ -430,7 +431,7 @@ viewActiveIllnessForOutcome :
     -> Maybe (Html Msg)
 viewActiveIllnessForOutcome language currentDate sessionId encounters diagnosis =
     Just <|
-        viewButton language (RecordIllnessOutcome sessionId) (Translate.AcuteIllnessDiagnosis diagnosis) False
+        viewButton language (navigateToRecordOutcomePage sessionId) (Translate.AcuteIllnessDiagnosis diagnosis) False
 
 
 viewLabel : Language -> String -> TranslationId -> Html Msg
@@ -458,15 +459,8 @@ navigateToEncounterAction id =
         |> SetActivePage
 
 
-getAcuteIllnessDiagnosisForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe AcuteIllnessDiagnosis
-getAcuteIllnessDiagnosisForParticipant db sessionId =
-    Dict.get sessionId db.acuteIllnessEncountersByParticipant
-        |> Maybe.withDefault NotAsked
-        |> RemoteData.toMaybe
-        |> Maybe.map Dict.toList
-        |> Maybe.andThen
-            (List.map Tuple.second
-                >> List.sortWith (\e1 e2 -> Gizra.NominalDate.compare e1.startDate e2.startDate)
-                >> List.head
-                >> Maybe.map .diagnosis
-            )
+navigateToRecordOutcomePage : IndividualEncounterParticipantId -> Msg
+navigateToRecordOutcomePage id =
+    Pages.Page.AcuteIllnessOutcomePage id
+        |> UserPage
+        |> SetActivePage
