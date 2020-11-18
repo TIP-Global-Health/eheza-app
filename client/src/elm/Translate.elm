@@ -1082,7 +1082,7 @@ translationSet trans =
                     { english = "No Diagnosis"
                     , kinyarwanda = Nothing
                     }
-                    
+
         AcuteIllnessExisting ->
             { english = "Existing Acute Illness"
             , kinyarwanda = Nothing
@@ -1091,7 +1091,7 @@ translationSet trans =
         AcuteIllnessNew ->
             { english = "New Acute Illness"
             , kinyarwanda = Nothing
-            }                    
+            }
 
         AcuteIllnessOutcomeLabel ->
             { english = "Acute Illness Outcome"
