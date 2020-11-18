@@ -2070,21 +2070,20 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
                 OngoingTreatmentReview ->
                     []
 
-        --
-        -- actions =
-        --     let
-        --         saveMsg =
-        --             case data.activeTask of
-        --                 TreatmentReview ->
-        --                     SaveTreatmentReview personId measurements.treatmentReview
-        --     in
-        --     div [ class "actions malaria-testing" ]
-        --         [ button
-        --             [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-        --             , onClick saveMsg
-        --             ]
-        --             [ text <| translate language Translate.Save ]
-        --         ]
+        actions =
+            let
+                saveMsg =
+                    case data.activeTask of
+                        OngoingTreatmentReview ->
+                            SaveOngoingTreatmentReview personId measurements.treatmentOngoing
+            in
+            div [ class "actions treatment-ongoing" ]
+                [ button
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                    , onClick saveMsg
+                    ]
+                    [ text <| translate language Translate.Save ]
+                ]
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui three column grid" ] <|
@@ -2094,8 +2093,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewForm
-
-            -- , actions
+            , actions
             ]
         ]
     ]

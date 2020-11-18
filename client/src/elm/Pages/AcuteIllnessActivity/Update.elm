@@ -1425,3 +1425,29 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
+
+        SaveOngoingTreatmentReview personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.ongoingTreatmentData.treatmentReviewForm
+                        |> toOngoingTreatmentReviewValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.AcuteIllnessEncounter.Model.SaveTreatmentOngoing personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )

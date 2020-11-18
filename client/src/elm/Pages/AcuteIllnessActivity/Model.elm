@@ -76,6 +76,7 @@ type Msg
     | SetOngoingTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
     | SetReasonForNotTaking ReasonForNotTaking
     | SetTotalMissedDoses String
+    | SaveOngoingTreatmentReview PersonId (Maybe ( TreatmentOngoingId, TreatmentOngoing ))
 
 
 type alias Model =
