@@ -1000,7 +1000,7 @@ function hedley_acute_illness_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'take-as-prescribed' => 'Take medication as prescribed',
-        'miss-doses' => 'Miss any doses of medications',
+        'missed-doses' => 'Missed any doses of medications',
         'feel-better' => 'Feel better after taking medications',
         'side-effects' => 'Experience side effects of the medication',
         'none' => 'None',
