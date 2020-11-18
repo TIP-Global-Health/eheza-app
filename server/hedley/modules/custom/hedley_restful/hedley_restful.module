@@ -84,6 +84,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'symptoms_respiratory' => 'symptoms-respiratory',
   'travel_history' => 'travel-histories',
   'treatment_history' => 'treatment-histories',
+  'treatment_ongoing' => 'treatment-ongoing',
   'vitals' => 'vitals',
   'weight' => 'weights',
 ];
