@@ -581,5 +581,5 @@ call114Endpoint =
 
 treatmentOngoingEndpoint : ReadWriteEndPoint Error TreatmentOngoingId TreatmentOngoing TreatmentOngoing ()
 treatmentOngoingEndpoint =
-    swEndpoint "nodes/call_114" decodeTreatmentOngoing
+    swEndpoint "nodes/treatment_ongoing" decodeTreatmentOngoing
         |> withValueEncoder (object << encodeTreatmentOngoing)

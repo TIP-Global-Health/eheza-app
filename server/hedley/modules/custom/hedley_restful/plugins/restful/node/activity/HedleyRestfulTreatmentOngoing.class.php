@@ -14,8 +14,8 @@ class HedleyRestfulTreatmentOngoing extends HedleyRestfulAcuteIllnessActivityBas
    * {@inheritdoc}
    */
   protected $fields = [
-    'reason_for_not_taking',
-    'missed_doses',
+    'field_reason_for_not_taking',
+    'field_missed_doses',
   ];
 
   /**

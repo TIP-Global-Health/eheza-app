@@ -411,7 +411,9 @@ type alias OngoingTreatmentReviewForm =
     , feelingBetter : Maybe Bool
     , sideEffects : Maybe Bool
     , reasonForNotTaking : Maybe ReasonForNotTaking
+    , reasonForNotTakingDirty : Bool
     , totalMissedDoses : Maybe Int
+    , totalMissedDosesDirty : Bool
     }
 
 
@@ -422,5 +424,7 @@ emptyOngoingTreatmentReviewForm =
     , feelingBetter = Nothing
     , sideEffects = Nothing
     , reasonForNotTaking = Nothing
+    , reasonForNotTakingDirty = False
     , totalMissedDoses = Nothing
+    , totalMissedDosesDirty = False
     }

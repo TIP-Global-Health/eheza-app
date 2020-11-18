@@ -1300,7 +1300,9 @@ fromOngoingTreatmentReviewValue saved =
     , feelingBetter = Maybe.map (.signs >> EverySet.member FeelingBetter) saved
     , sideEffects = Maybe.map (.signs >> EverySet.member SideEffects) saved
     , reasonForNotTaking = Maybe.map .reasonForNotTaking saved
+    , reasonForNotTakingDirty = False
     , totalMissedDoses = Maybe.map .missedDoses saved
+    , totalMissedDosesDirty = False
     }
 
 
@@ -1314,8 +1316,10 @@ ongoingTreatmentReviewFormWithDefault form saved =
                 , missedDoses = or form.missedDoses (EverySet.member MissedDoses value.signs |> Just)
                 , feelingBetter = or form.feelingBetter (EverySet.member FeelingBetter value.signs |> Just)
                 , sideEffects = or form.sideEffects (EverySet.member SideEffects value.signs |> Just)
-                , reasonForNotTaking = or form.reasonForNotTaking (Just value.reasonForNotTaking)
-                , totalMissedDoses = or form.totalMissedDoses (Just value.missedDoses)
+                , reasonForNotTaking = valueConsideringIsDirtyField form.reasonForNotTakingDirty form.reasonForNotTaking value.reasonForNotTaking
+                , reasonForNotTakingDirty = form.reasonForNotTakingDirty
+                , totalMissedDoses = valueConsideringIsDirtyField form.totalMissedDosesDirty form.totalMissedDoses value.missedDoses
+                , totalMissedDosesDirty = form.totalMissedDosesDirty
                 }
             )
 

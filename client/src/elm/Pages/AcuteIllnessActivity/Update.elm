@@ -1393,7 +1393,7 @@ update currentDate id db msg model =
                     model.ongoingTreatmentData.treatmentReviewForm
 
                 updatedForm =
-                    { form | reasonForNotTaking = Just value }
+                    { form | reasonForNotTaking = Just value, reasonForNotTakingDirty = True }
 
                 updatedData =
                     model.ongoingTreatmentData
@@ -1410,12 +1410,7 @@ update currentDate id db msg model =
                     model.ongoingTreatmentData.treatmentReviewForm
 
                 updatedForm =
-                    String.toInt value
-                        |> Maybe.map
-                            (\number ->
-                                { form | totalMissedDoses = Just number }
-                            )
-                        |> Maybe.withDefault form
+                    { form | totalMissedDoses = String.toInt value, totalMissedDosesDirty = True }
 
                 updatedData =
                     model.ongoingTreatmentData

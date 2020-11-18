@@ -2104,7 +2104,7 @@ viewOngoingTreatmentReviewForm language currentDate measurements form =
     let
         takenAsPrescribedUpdateFunc value form_ =
             if value then
-                { form_ | takenAsPrescribed = Just True, reasonForNotTaking = Nothing }
+                { form_ | takenAsPrescribed = Just True, reasonForNotTaking = Nothing, reasonForNotTakingDirty = True }
 
             else
                 { form_ | takenAsPrescribed = Just False }
@@ -2114,7 +2114,7 @@ viewOngoingTreatmentReviewForm language currentDate measurements form =
                 { form_ | missedDoses = Just True }
 
             else
-                { form_ | missedDoses = Just False, totalMissedDoses = Nothing }
+                { form_ | missedDoses = Just False, totalMissedDoses = Nothing, totalMissedDosesDirty = True }
 
         feelingBetterUpdateFunc value form_ =
             { form_ | feelingBetter = Just value }
