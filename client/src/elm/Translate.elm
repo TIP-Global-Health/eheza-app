@@ -1434,6 +1434,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibikurikiyeho"
                     }
 
+                AcuteIllnessOngoingTreatment ->
+                    { english = "Treatment Review"
+                    , kinyarwanda = Nothing
+                    }
+
         Adherence adherence ->
             translateAdherence adherence
 

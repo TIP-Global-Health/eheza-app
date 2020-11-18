@@ -39,6 +39,9 @@ encodeActivityAsString activity =
         AcuteIllnessNextSteps ->
             "next-steps"
 
+        AcuteIllnessOngoingTreatment ->
+            "ongoing-treatment"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -63,6 +66,9 @@ decodeActivityFromString s =
         "next-steps" ->
             Just AcuteIllnessNextSteps
 
+        "ongoing-treatment" ->
+            Just AcuteIllnessOngoingTreatment
+
         _ ->
             Nothing
 
@@ -82,6 +88,10 @@ getActivityIcon activity =
     encodeActivityAsString activity
 
 
-getAllActivities : List AcuteIllnessActivity
-getAllActivities =
-    [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPriorTreatment, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory, AcuteIllnessNextSteps ]
+getAllActivities : Bool -> List AcuteIllnessActivity
+getAllActivities isFirstEncounter =
+    if isFirstEncounter then
+        [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPriorTreatment, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory, AcuteIllnessNextSteps ]
+
+    else
+        [ AcuteIllnessSymptoms, AcuteIllnessOngoingTreatment, AcuteIllnessPhysicalExam ]

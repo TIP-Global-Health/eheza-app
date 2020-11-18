@@ -80,6 +80,7 @@ type alias Model =
     , exposureData : ExposureData
     , priorTreatmentData : PriorTreatmentData
     , nextStepsData : NextStepsData
+    , ongoingTreatmentData : OngoingTreatmentData
     , showAlertsDialog : Bool
     , showPertinentSymptomsPopup : Bool
     , warningPopupState : Maybe AcuteIllnessDiagnosis
@@ -94,6 +95,7 @@ emptyModel =
     , exposureData = emptyExposureData
     , priorTreatmentData = emptyPriorTreatmentData
     , nextStepsData = emptyNextStepsData
+    , ongoingTreatmentData = emptyOngoingTreatmentData
     , showAlertsDialog = False
     , showPertinentSymptomsPopup = False
     , warningPopupState = Nothing
@@ -373,4 +375,46 @@ type alias MedicationDistributionForm =
     , zinc : Maybe Bool
     , lemonJuiceOrHoney : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
+    }
+
+
+
+-- ONGOING TREATMENT
+
+
+type alias OngoingTreatmentData =
+    { treatmentReviewForm : OngoingTreatmentReviewForm
+    , activeTask : OngoingTreatmentTask
+    }
+
+
+emptyOngoingTreatmentData : OngoingTreatmentData
+emptyOngoingTreatmentData =
+    { treatmentReviewForm = emptyOngoingTreatmentReviewForm
+    , activeTask = OngoingTreatmentReview
+    }
+
+
+type OngoingTreatmentTask
+    = OngoingTreatmentReview
+
+
+type alias OngoingTreatmentReviewForm =
+    { takeAsPrescribed : Maybe Bool
+    , missedDoses : Maybe Bool
+    , feelingBetter : Maybe Bool
+    , sideEffects : Maybe Bool
+    , reasonForNotTaking : Maybe ReasonForNotTaking
+    , totalMissedDoses : Maybe Int
+    }
+
+
+emptyOngoingTreatmentReviewForm : OngoingTreatmentReviewForm
+emptyOngoingTreatmentReviewForm =
+    { takeAsPrescribed = Nothing
+    , missedDoses = Nothing
+    , feelingBetter = Nothing
+    , sideEffects = Nothing
+    , reasonForNotTaking = Nothing
+    , totalMissedDoses = Nothing
     }

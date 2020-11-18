@@ -390,6 +390,9 @@ viewActivity language currentDate id activity diagnosis data model =
         AcuteIllnessNextSteps ->
             viewAcuteIllnessNextSteps language currentDate id ( personId, data.person, measurements ) diagnosis model.nextStepsData
 
+        AcuteIllnessOngoingTreatment ->
+            viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) model.ongoingTreatmentData
+
 
 viewAcuteIllnessSymptomsContent : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> SymptomsData -> List (Html Msg)
 viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) data =
@@ -2002,6 +2005,11 @@ viewOralSolutionPrescription language dosage =
         , text <| translate language Translate.AfterEachLiquidStool
         , text "."
         ]
+
+
+viewAcuteIllnessOngoingTreatment : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> OngoingTreatmentData -> List (Html Msg)
+viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) data =
+    [ text "viewAcuteIllnessOngoingTreatment" ]
 
 
 renderDatePart : Language -> Maybe NominalDate -> List (Html any)
