@@ -1780,8 +1780,8 @@ decodeTreatmentOngoingSign =
         |> andThen
             (\sign ->
                 case sign of
-                    "take-as-prescribed" ->
-                        succeed TakeAsPrescribed
+                    "taken-as-prescribed" ->
+                        succeed TakenAsPrescribed
 
                     "missed-doses" ->
                         succeed MissedDoses

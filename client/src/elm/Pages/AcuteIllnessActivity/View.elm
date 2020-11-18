@@ -38,6 +38,7 @@ import Pages.Utils
         , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
+        , viewNumberInput
         , viewPhotoThumbFromPhotoUrl
         , viewPreviousMeasurement
         , viewQuestionLabel
@@ -2009,7 +2010,205 @@ viewOralSolutionPrescription language dosage =
 
 viewAcuteIllnessOngoingTreatment : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> OngoingTreatmentData -> List (Html Msg)
 viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) data =
-    [ text "viewAcuteIllnessOngoingTreatment" ]
+    let
+        activity =
+            AcuteIllnessOngoingTreatment
+
+        tasks =
+            [ OngoingTreatmentReview ]
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        OngoingTreatmentReview ->
+                            ( "treatment-review"
+                            , isJust measurements.treatmentReview
+                            )
+
+                isActive =
+                    task == data.activeTask
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveOngoingTreatmentTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ a attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.OngoingTreatmentTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, ongoingTreatmentTasksCompletedFromTotal measurements data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Dict.get data.activeTask tasksCompletedFromTotalDict
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case data.activeTask of
+                OngoingTreatmentReview ->
+                    measurements.treatmentOngoing
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
+                        |> viewOngoingTreatmentReviewForm language currentDate measurements
+
+        getNextTask currentTask =
+            case currentTask of
+                OngoingTreatmentReview ->
+                    []
+
+        --
+        -- actions =
+        --     let
+        --         saveMsg =
+        --             case data.activeTask of
+        --                 TreatmentReview ->
+        --                     SaveTreatmentReview personId measurements.treatmentReview
+        --     in
+        --     div [ class "actions malaria-testing" ]
+        --         [ button
+        --             [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+        --             , onClick saveMsg
+        --             ]
+        --             [ text <| translate language Translate.Save ]
+        --         ]
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui three column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+
+            -- , actions
+            ]
+        ]
+    ]
+
+
+viewOngoingTreatmentReviewForm : Language -> NominalDate -> AcuteIllnessMeasurements -> OngoingTreatmentReviewForm -> Html Msg
+viewOngoingTreatmentReviewForm language currentDate measurements form =
+    let
+        takenAsPrescribedUpdateFunc value form_ =
+            if value then
+                { form_ | takenAsPrescribed = Just True, reasonForNotTaking = Nothing }
+
+            else
+                { form_ | takenAsPrescribed = Just False }
+
+        missedDosesUpdateFunc value form_ =
+            if value then
+                { form_ | missedDoses = Just True }
+
+            else
+                { form_ | missedDoses = Just False, totalMissedDoses = Nothing }
+
+        feelingBetterUpdateFunc value form_ =
+            { form_ | feelingBetter = Just value }
+
+        sideEffectsUpdateFunc value form_ =
+            { form_ | sideEffects = Just value }
+
+        takenAsPrescribedSection =
+            let
+                takenAsPrescribed =
+                    form.takenAsPrescribed
+                        |> Maybe.withDefault True
+
+                reasonForNotTakingInput =
+                    if not takenAsPrescribed then
+                        [ div [ class "ui grid" ]
+                            [ div [ class "one wide column" ] []
+                            , div [ class "fifteen wide column" ]
+                                [ viewQuestionLabel language Translate.WhyNot ]
+                            ]
+                        , viewCheckBoxSelectInput language
+                            [ NotTakingSideEffects, NotTakingNoResources ]
+                            [ NotTakingOther ]
+                            form.reasonForNotTaking
+                            SetReasonForNotTaking
+                            Translate.ReasonForNotTaking
+                        ]
+
+                    else
+                        []
+            in
+            [ viewQuestionLabel language Translate.MedicationTakenAsPrescribedQuestion
+            , viewBoolInput
+                language
+                form.takenAsPrescribed
+                (SetOngoingTreatmentReviewBoolInput takenAsPrescribedUpdateFunc)
+                "taken-as-prescribed"
+                Nothing
+            ]
+                ++ reasonForNotTakingInput
+
+        missedDosesSection =
+            let
+                missedDoses =
+                    form.missedDoses
+                        |> Maybe.withDefault False
+
+                totalMissedDosesInput =
+                    if missedDoses then
+                        [ div [ class "ui grid" ]
+                            [ div [ class "one wide column" ] []
+                            , div [ class "fifteen wide column" ]
+                                [ viewQuestionLabel language Translate.HowMany ]
+                            ]
+                        , viewNumberInput language
+                            form.totalMissedDoses
+                            String.fromInt
+                            SetTotalMissedDoses
+                            "total-missed-doses"
+                        ]
+
+                    else
+                        []
+            in
+            [ viewQuestionLabel language Translate.MedicationDosesMissedQuestion
+            , viewBoolInput
+                language
+                form.missedDoses
+                (SetOngoingTreatmentReviewBoolInput missedDosesUpdateFunc)
+                "missed-doses"
+                Nothing
+            ]
+                ++ totalMissedDosesInput
+    in
+    takenAsPrescribedSection
+        ++ missedDosesSection
+        ++ [ viewQuestionLabel language Translate.MedicationFeelBetterAfterTakingQuestion
+           , viewBoolInput
+                language
+                form.feelingBetter
+                (SetOngoingTreatmentReviewBoolInput feelingBetterUpdateFunc)
+                "feeling-better"
+                Nothing
+           , viewQuestionLabel language Translate.MedicationCausesSideEffectsQuestion
+           , viewBoolInput
+                language
+                form.sideEffects
+                (SetOngoingTreatmentReviewBoolInput sideEffectsUpdateFunc)
+                "side-effects"
+                Nothing
+           ]
+        |> div [ class "ui form ongoing-treatment-review" ]
 
 
 renderDatePart : Language -> Maybe NominalDate -> List (Html any)

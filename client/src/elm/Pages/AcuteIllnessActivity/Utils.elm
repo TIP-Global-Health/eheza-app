@@ -23,6 +23,7 @@ import Backend.Measurement.Model
         , MedicationNonAdministrationReason(..)
         , MedicationNonAdministrationSign(..)
         , ReasonForNotIsolating(..)
+        , ReasonForNotTaking(..)
         , Recommendation114(..)
         , RecommendationSite(..)
         , ResponsePeriod(..)
@@ -33,6 +34,8 @@ import Backend.Measurement.Model
         , SymptomsGeneralSign(..)
         , SymptomsRespiratorySign(..)
         , TravelHistorySign(..)
+        , TreatmentOngoingSign(..)
+        , TreatmentOngoingValue
         , TreatmentReviewSign(..)
         )
 import Backend.Person.Model exposing (Person)
@@ -474,6 +477,53 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
             in
             ( taskCompleted form.handReferralForm + taskCompleted form.handReferralForm
             , 2
+            )
+
+
+ongoingTreatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )
+ongoingTreatmentTasksCompletedFromTotal measurements data task =
+    case task of
+        OngoingTreatmentReview ->
+            let
+                form =
+                    measurements.treatmentOngoing
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
+
+                ( takenAsPrescribedActive, takenAsPrescribedComleted ) =
+                    form.takenAsPrescribed
+                        |> Maybe.map
+                            (\takenAsPrescribed ->
+                                if not takenAsPrescribed then
+                                    if isJust form.reasonForNotTaking then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+
+                ( missedDosesActive, missedDosesCompleted ) =
+                    form.missedDoses
+                        |> Maybe.map
+                            (\missedDoses ->
+                                if missedDoses then
+                                    if isJust form.totalMissedDoses then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+            in
+            ( takenAsPrescribedActive + missedDosesActive + taskCompleted form.feelingBetter + taskCompleted form.sideEffects
+            , takenAsPrescribedComleted + missedDosesCompleted + 2
             )
 
 
@@ -1241,6 +1291,56 @@ nonAdministrationReasonToSign sign reason =
 
         _ ->
             NoMedicationNonAdministrationSigns
+
+
+fromOngoingTreatmentReviewValue : Maybe TreatmentOngoingValue -> OngoingTreatmentReviewForm
+fromOngoingTreatmentReviewValue saved =
+    { takenAsPrescribed = Maybe.map (.signs >> EverySet.member TakenAsPrescribed) saved
+    , missedDoses = Maybe.map (.signs >> EverySet.member MissedDoses) saved
+    , feelingBetter = Maybe.map (.signs >> EverySet.member FeelingBetter) saved
+    , sideEffects = Maybe.map (.signs >> EverySet.member SideEffects) saved
+    , reasonForNotTaking = Maybe.map .reasonForNotTaking saved
+    , totalMissedDoses = Maybe.map .missedDoses saved
+    }
+
+
+ongoingTreatmentReviewFormWithDefault : OngoingTreatmentReviewForm -> Maybe TreatmentOngoingValue -> OngoingTreatmentReviewForm
+ongoingTreatmentReviewFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { takenAsPrescribed = or form.takenAsPrescribed (EverySet.member TakenAsPrescribed value.signs |> Just)
+                , missedDoses = or form.missedDoses (EverySet.member MissedDoses value.signs |> Just)
+                , feelingBetter = or form.feelingBetter (EverySet.member FeelingBetter value.signs |> Just)
+                , sideEffects = or form.sideEffects (EverySet.member SideEffects value.signs |> Just)
+                , reasonForNotTaking = or form.reasonForNotTaking (Just value.reasonForNotTaking)
+                , totalMissedDoses = or form.totalMissedDoses (Just value.missedDoses)
+                }
+            )
+
+
+toOngoingTreatmentReviewValueWithDefault : Maybe TreatmentOngoingValue -> OngoingTreatmentReviewForm -> Maybe TreatmentOngoingValue
+toOngoingTreatmentReviewValueWithDefault saved form =
+    ongoingTreatmentReviewFormWithDefault form saved
+        |> toOngoingTreatmentReviewValue
+
+
+toOngoingTreatmentReviewValue : OngoingTreatmentReviewForm -> Maybe TreatmentOngoingValue
+toOngoingTreatmentReviewValue form =
+    let
+        signs =
+            [ Maybe.map (ifTrue TakenAsPrescribed) form.takenAsPrescribed
+            , Maybe.map (ifTrue MissedDoses) form.missedDoses
+            , Maybe.map (ifTrue FeelingBetter) form.feelingBetter
+            , Maybe.map (ifTrue SideEffects) form.sideEffects
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTreatmentOngoingSign)
+    in
+    Maybe.map TreatmentOngoingValue signs
+        |> andMap (form.reasonForNotTaking |> Maybe.withDefault NoReasonForNotTakingSign |> Just)
+        |> andMap (form.totalMissedDoses |> Maybe.withDefault 0 |> Just)
 
 
 

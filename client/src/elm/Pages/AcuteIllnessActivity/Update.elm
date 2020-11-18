@@ -1360,3 +1360,68 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetActiveOngoingTreatmentTask task ->
+            let
+                updatedData =
+                    model.ongoingTreatmentData
+                        |> (\data -> { data | activeTask = task })
+            in
+            ( { model | ongoingTreatmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOngoingTreatmentReviewBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.ongoingTreatmentData.treatmentReviewForm
+                    in
+                    model.ongoingTreatmentData
+                        |> (\data -> { data | treatmentReviewForm = updatedForm })
+            in
+            ( { model | ongoingTreatmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotTaking value ->
+            let
+                form =
+                    model.ongoingTreatmentData.treatmentReviewForm
+
+                updatedForm =
+                    { form | reasonForNotTaking = Just value }
+
+                updatedData =
+                    model.ongoingTreatmentData
+                        |> (\data -> { data | treatmentReviewForm = updatedForm })
+            in
+            ( { model | ongoingTreatmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetTotalMissedDoses value ->
+            let
+                form =
+                    model.ongoingTreatmentData.treatmentReviewForm
+
+                updatedForm =
+                    String.toInt value
+                        |> Maybe.map
+                            (\number ->
+                                { form | totalMissedDoses = Just number }
+                            )
+                        |> Maybe.withDefault form
+
+                updatedData =
+                    model.ongoingTreatmentData
+                        |> (\data -> { data | treatmentReviewForm = updatedForm })
+            in
+            ( { model | ongoingTreatmentData = updatedData }
+            , Cmd.none
+            , []
+            )

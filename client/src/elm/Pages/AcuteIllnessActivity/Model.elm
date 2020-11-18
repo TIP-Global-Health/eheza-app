@@ -71,6 +71,11 @@ type Msg
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionMedicationNonAdministrationReason (Maybe MedicationNonAdministrationReason) MedicationDistributionSign MedicationNonAdministrationReason
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution ))
+      -- ONGOIN TREATMENT
+    | SetActiveOngoingTreatmentTask OngoingTreatmentTask
+    | SetOngoingTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
+    | SetReasonForNotTaking ReasonForNotTaking
+    | SetTotalMissedDoses String
 
 
 type alias Model =
@@ -400,7 +405,7 @@ type OngoingTreatmentTask
 
 
 type alias OngoingTreatmentReviewForm =
-    { takeAsPrescribed : Maybe Bool
+    { takenAsPrescribed : Maybe Bool
     , missedDoses : Maybe Bool
     , feelingBetter : Maybe Bool
     , sideEffects : Maybe Bool
@@ -411,7 +416,7 @@ type alias OngoingTreatmentReviewForm =
 
 emptyOngoingTreatmentReviewForm : OngoingTreatmentReviewForm
 emptyOngoingTreatmentReviewForm =
-    { takeAsPrescribed = Nothing
+    { takenAsPrescribed = Nothing
     , missedDoses = Nothing
     , feelingBetter = Nothing
     , sideEffects = Nothing

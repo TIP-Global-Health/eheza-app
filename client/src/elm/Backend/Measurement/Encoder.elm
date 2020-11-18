@@ -1528,8 +1528,8 @@ encodeTreatmentOngoingSign : TreatmentOngoingSign -> Value
 encodeTreatmentOngoingSign sign =
     string <|
         case sign of
-            TakeAsPrescribed ->
-                "take-as-prescribed"
+            TakenAsPrescribed ->
+                "taken-as-prescribed"
 
             MissedDoses ->
                 "missed-doses"

@@ -820,7 +820,7 @@ type alias MedicationDistribution =
 
 
 type TreatmentOngoingSign
-    = TakeAsPrescribed
+    = TakenAsPrescribed
     | MissedDoses
     | FeelingBetter
     | SideEffects
