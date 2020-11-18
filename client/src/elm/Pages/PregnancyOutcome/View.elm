@@ -50,7 +50,7 @@ view language currentDate id db model =
             viewWebData language (viewContent language currentDate model) identity data
     in
     div
-        [ class "page-pregnancy-outcome" ]
+        [ class "page-outcome pregnancy" ]
         [ header
         , content
         ]

@@ -30,7 +30,7 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), PregnancyOutcome(..))
+import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model
     exposing
@@ -236,6 +236,8 @@ type TranslationId
     | AcuteIllnessDiagnosisWarning AcuteIllnessDiagnosis
     | AcuteIllnessExisting
     | AcuteIllnessNew
+    | AcuteIllnessOutcome AcuteIllnessOutcome
+    | AcuteIllnessOutcomeLabel
     | Activities
     | ActivitiesCompleted Int
     | ActivitiesHelp Activity
@@ -1098,6 +1100,38 @@ translationSet trans =
             { english = "New Acute Illness"
             , kinyarwanda = Nothing
             }
+
+        AcuteIllnessOutcomeLabel ->
+            { english = "Acute Illness Outcome"
+            , kinyarwanda = Nothing
+            }
+
+        AcuteIllnessOutcome outcome ->
+            case outcome of
+                OutcomeIllnessResolved ->
+                    { english = "Illness Resolved"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeLostToFollowUp ->
+                    { english = "Lost to Follow Up (or Moved out of CA?)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomePatientDied ->
+                    { english = "Patient Died"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeReferredToHC ->
+                    { english = "Referred to Health Center"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
 
         AddChild ->
             { english = "Add Child"
@@ -6013,6 +6047,11 @@ translateActivePage page =
                 AcuteIllnessProgressReportPage _ ->
                     { english = "Acute Illness Progress Report"
                     , kinyarwanda = Just "Raporo y’ibyakozwe ku ndwara zifatiyeho"
+                    }
+
+                AcuteIllnessOutcomePage _ ->
+                    { english = "Acute Illness Outcome"
+                    , kinyarwanda = Nothing
                     }
 
 
