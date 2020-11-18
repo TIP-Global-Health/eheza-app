@@ -76,6 +76,15 @@ generateAssembledData id db =
 
         previousMeasurements =
             List.map Tuple.second previousMeasurementsWithDates
+
+        diagnosis =
+            encounter
+                |> RemoteData.toMaybe
+                |> Maybe.andThen
+                    (.participant
+                        >> getAcuteIllnessDiagnosisForParticipant db
+                        >> Maybe.andThen acuteIllnessDiagnosisToMaybe
+                    )
     in
     RemoteData.map AssembledData (Success id)
         |> RemoteData.andMap encounter
@@ -83,6 +92,7 @@ generateAssembledData id db =
         |> RemoteData.andMap person
         |> RemoteData.andMap measurements
         |> RemoteData.andMap (Success previousMeasurementsWithDates)
+        |> RemoteData.andMap (Success diagnosis)
 
 
 generatePreviousMeasurements : AcuteIllnessEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, AcuteIllnessMeasurements ))
@@ -162,19 +172,34 @@ talkedTo114 measurements =
         |> Maybe.withDefault False
 
 
-expectActivity : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessActivity -> Bool
-expectActivity currentDate person measurements diagnosis activity =
-    case activity of
-        AcuteIllnessLaboratory ->
-            mandatoryActivitiesCompleted measurements
-                && feverRecorded measurements
+expectActivity : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessActivity -> Bool
+expectActivity currentDate person measurements isFirstEncounter diagnosis activity =
+    if isFirstEncounter then
+        case activity of
+            AcuteIllnessLaboratory ->
+                mandatoryActivitiesCompleted measurements
+                    && feverRecorded measurements
 
-        AcuteIllnessNextSteps ->
-            resolveNextStepByDiagnosis currentDate person diagnosis
-                |> isJust
+            AcuteIllnessNextSteps ->
+                resolveNextStepByDiagnosis currentDate person diagnosis
+                    |> isJust
 
-        _ ->
-            True
+            _ ->
+                True
+
+    else
+        case activity of
+            AcuteIllnessSymptoms ->
+                True
+
+            AcuteIllnessPhysicalExam ->
+                True
+
+            AcuteIllnessPriorTreatment ->
+                True
+
+            _ ->
+                False
 
 
 activityCompleted : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessActivity -> Bool

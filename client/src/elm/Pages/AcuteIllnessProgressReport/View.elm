@@ -53,11 +53,8 @@ view language currentDate id db model =
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id model data =
     let
-        diagnosis =
-            acuteIllnessDiagnosisToMaybe data.encounter.diagnosis
-
         ( _, pendingActivities ) =
-            splitActivities currentDate data diagnosis
+            splitActivities currentDate data
 
         endEncounterDialog =
             if model.showEndEncounetrDialog then
@@ -76,11 +73,11 @@ viewContent language currentDate id model data =
             [ class "ui report unstackable items" ]
             [ viewHeader language currentDate id
             , viewPersonInfo language currentDate data.person data.measurements
-            , viewAssessmentPane language currentDate diagnosis data.measurements
+            , viewAssessmentPane language currentDate data.diagnosis data.measurements
             , viewSymptomsPane language currentDate data.measurements
             , viewPhysicalExamPane language currentDate data.measurements
-            , viewActionsTakenPane language currentDate diagnosis data
-            , viewEndEncounterButton language data.measurements pendingActivities diagnosis SetEndEncounterDialogState
+            , viewActionsTakenPane language currentDate data.diagnosis data
+            , viewEndEncounterButton language data.measurements pendingActivities data.diagnosis SetEndEncounterDialogState
             ]
         , viewModal endEncounterDialog
         ]
