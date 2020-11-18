@@ -577,3 +577,9 @@ call114Endpoint : ReadWriteEndPoint Error Call114Id Call114 Call114 ()
 call114Endpoint =
     swEndpoint "nodes/call_114" decodeCall114
         |> withValueEncoder (object << encodeCall114)
+
+
+treatmentOngoingEndpoint : ReadWriteEndPoint Error TreatmentOngoingId TreatmentOngoing TreatmentOngoing ()
+treatmentOngoingEndpoint =
+    swEndpoint "nodes/call_114" decodeTreatmentOngoing
+        |> withValueEncoder (object << encodeTreatmentOngoing)
