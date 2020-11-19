@@ -845,6 +845,21 @@ type alias TreatmentOngoing =
     AcuteIllnessMeasurement TreatmentOngoingValue
 
 
+type AcuteIllnessDangerSign
+    = DangerSignConditionNotImproving
+    | DangerSignUnableDrinkSuck
+    | DangerSignVomiting
+    | DangerSignConvulsions
+    | DangerSignLethargyUnconsciousness
+    | DangerSignRespiratoryDistress
+    | DangerSignSpontaneousBleeding
+    | NoAcuteIllnessDangerSign
+
+
+type alias AcuteIllnessDangerSigns =
+    AcuteIllnessMeasurement (EverySet AcuteIllnessDangerSign)
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -972,6 +987,7 @@ type alias AcuteIllnessMeasurements =
     , sendToHC : Maybe ( SendToHCId, SendToHC )
     , medicationDistribution : Maybe ( MedicationDistributionId, MedicationDistribution )
     , treatmentOngoing : Maybe ( TreatmentOngoingId, TreatmentOngoing )
+    , acuteIllnessDangerSigns : Maybe ( AcuteIllnessDangerSignsId, AcuteIllnessDangerSigns )
     }
 
 
