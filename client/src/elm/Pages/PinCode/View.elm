@@ -296,7 +296,11 @@ selectHeathCenterOptions language nurse db =
     let
         filtered =
             db.healthCenters
-                |> RemoteData.map (Dict.filter (\uuid _ -> assignedToHealthCenter uuid nurse) >> Dict.toList)
+                |> RemoteData.map
+                    (Dict.filter (\uuid _ -> assignedToHealthCenter uuid nurse)
+                        >> Dict.toList
+                        >> List.sortBy (Tuple.second >> .name)
+                    )
                 |> RemoteData.withDefault []
 
         selectButton ( id, location ) =
@@ -315,7 +319,11 @@ selectVillageOptions language nurse db =
     let
         filtered =
             db.villages
-                |> RemoteData.map (Dict.filter (\uuid _ -> assignedToVillage uuid nurse) >> Dict.toList)
+                |> RemoteData.map
+                    (Dict.filter (\uuid _ -> assignedToVillage uuid nurse)
+                        >> Dict.toList
+                        >> List.sortBy (Tuple.second >> .name)
+                    )
                 |> RemoteData.withDefault []
 
         selectButton ( id, location ) =
