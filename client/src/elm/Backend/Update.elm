@@ -1579,6 +1579,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        AcuteIllnessDangerSignsRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | acuteIllnessDangerSigns = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         AcuteIllnessEncounterRevision uuid data ->
             let
                 acuteIllnessEncounters =
