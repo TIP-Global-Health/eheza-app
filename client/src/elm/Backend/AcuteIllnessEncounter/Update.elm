@@ -570,6 +570,42 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
+        SaveAcuteIllnessDangerSigns personId valueId value ->
+            let
+                cmd =
+                    case valueId of
+                        Nothing ->
+                            { participantId = personId
+                            , dateMeasured = currentDate
+                            , encounterId = Just encounterId
+                            , nurse = nurseId
+                            , healthCenter = healthCenterId
+                            , value = value
+                            }
+                                |> sw.post acuteIllnessDangerSignsEndpoint
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedAcuteIllnessDangerSigns)
+
+                        Just id ->
+                            encodeAcuteIllnessDangerSignsValue value
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
+                                |> object
+                                |> sw.patchAny acuteIllnessDangerSignsEndpoint id
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedAcuteIllnessDangerSigns)
+            in
+            ( { model | saveAcuteIllnessDangerSigns = Loading }
+            , cmd
+            )
+
+        HandleSavedAcuteIllnessDangerSigns data ->
+            ( { model | saveAcuteIllnessDangerSigns = data }
+            , Cmd.none
+            )
+
 
 updateEncounter : NominalDate -> AcuteIllnessEncounterId -> Maybe AcuteIllnessEncounter -> (AcuteIllnessEncounter -> AcuteIllnessEncounter) -> Model -> ( Model, Cmd Msg )
 updateEncounter currentDate encounterId maybeEncounter updateFunc model =
