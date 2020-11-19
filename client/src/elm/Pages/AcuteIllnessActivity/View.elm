@@ -827,11 +827,6 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                         |> malariaTestingFormWithDefault data.malariaTestingForm
                         |> viewMalariaTestingForm language currentDate person
 
-        getNextTask currentTask =
-            case currentTask of
-                LaboratoryMalariaTesting ->
-                    []
-
         actions =
             let
                 saveMsg =
@@ -1139,11 +1134,6 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
                         |> Maybe.map (Tuple.second >> .value)
                         |> treatmentReviewFormWithDefault data.treatmentReviewForm
                         |> viewTreatmentReviewForm language currentDate measurements
-
-        getNextTask currentTask =
-            case currentTask of
-                TreatmentReview ->
-                    []
 
         actions =
             let
@@ -2068,11 +2058,6 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
                         |> viewOngoingTreatmentReviewForm language currentDate measurements
 
-        getNextTask currentTask =
-            case currentTask of
-                OngoingTreatmentReview ->
-                    []
-
         actions =
             let
                 saveMsg =
@@ -2268,13 +2253,8 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
                 ReviewDangerSigns ->
                     measurements.dangerSigns
                         |> Maybe.map (Tuple.second >> .value)
-                        |> dangerSignsReviewFormWithDefault data.reviewDangerSignsForm
+                        |> reviewDangerSignsFormWithDefault data.reviewDangerSignsForm
                         |> viewReviewDangerSignsForm language currentDate measurements
-
-        getNextTask currentTask =
-            case currentTask of
-                ReviewDangerSigns ->
-                    []
 
         actions =
             let

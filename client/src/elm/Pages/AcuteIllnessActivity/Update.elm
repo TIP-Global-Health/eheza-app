@@ -65,7 +65,7 @@ update currentDate id db msg model =
             resolveFormWithDefaults .acuteFindings acuteFindingsFormWithDefault model.physicalExamData.acuteFindingsForm
 
         reviewDangerSignsForm =
-            resolveFormWithDefaults .dangerSigns dangerSignsReviewFormWithDefault model.dangerSignsData.reviewDangerSignsForm
+            resolveFormWithDefaults .dangerSigns reviewDangerSignsFormWithDefault model.dangerSignsData.reviewDangerSignsForm
     in
     case msg of
         SetActivePage page ->
@@ -1537,7 +1537,7 @@ update currentDate id db msg model =
 
                 appMsgs =
                     model.dangerSignsData.reviewDangerSignsForm
-                        |> toDangerSignsReviewValueWithDefault measurement
+                        |> toReviewDangerSignsValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->

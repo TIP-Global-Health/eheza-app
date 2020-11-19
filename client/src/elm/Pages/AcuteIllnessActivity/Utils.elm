@@ -536,7 +536,7 @@ dangerSignsTasksCompletedFromTotal measurements data task =
                 form =
                     measurements.dangerSigns
                         |> Maybe.map (Tuple.second >> .value)
-                        |> dangerSignsReviewFormWithDefault data.reviewDangerSignsForm
+                        |> reviewDangerSignsFormWithDefault data.reviewDangerSignsForm
             in
             ( taskCompleted form.conditionImproving + taskCompleted form.symptoms
             , 2
@@ -1363,15 +1363,15 @@ toOngoingTreatmentReviewValue form =
         |> andMap (form.totalMissedDoses |> Maybe.withDefault 0 |> Just)
 
 
-fromDangerSignsReviewValue : Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm
-fromDangerSignsReviewValue saved =
+fromReviewDangerSignsValue : Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm
+fromReviewDangerSignsValue saved =
     { conditionImproving = Maybe.map (EverySet.member DangerSignConditionNotImproving >> not) saved
     , symptoms = Maybe.map (EverySet.remove DangerSignConditionNotImproving >> EverySet.toList) saved
     }
 
 
-dangerSignsReviewFormWithDefault : ReviewDangerSignsForm -> Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm
-dangerSignsReviewFormWithDefault form saved =
+reviewDangerSignsFormWithDefault : ReviewDangerSignsForm -> Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm
+reviewDangerSignsFormWithDefault form saved =
     saved
         |> unwrap
             form
@@ -1382,14 +1382,14 @@ dangerSignsReviewFormWithDefault form saved =
             )
 
 
-toDangerSignsReviewValueWithDefault : Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm -> Maybe (EverySet AcuteIllnessDangerSign)
-toDangerSignsReviewValueWithDefault saved form =
-    dangerSignsReviewFormWithDefault form saved
-        |> toDangerSignsReviewValue
+toReviewDangerSignsValueWithDefault : Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm -> Maybe (EverySet AcuteIllnessDangerSign)
+toReviewDangerSignsValueWithDefault saved form =
+    reviewDangerSignsFormWithDefault form saved
+        |> toReviewDangerSignsValue
 
 
-toDangerSignsReviewValue : ReviewDangerSignsForm -> Maybe (EverySet AcuteIllnessDangerSign)
-toDangerSignsReviewValue form =
+toReviewDangerSignsValue : ReviewDangerSignsForm -> Maybe (EverySet AcuteIllnessDangerSign)
+toReviewDangerSignsValue form =
     [ Maybe.map (ifFalse DangerSignConditionNotImproving) form.conditionImproving
     , Maybe.map EverySet.fromList form.symptoms
     ]
