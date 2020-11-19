@@ -122,6 +122,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "send_to_hc" (decodeHead decodeSendToHC) Nothing
         |> optional "medication_distribution" (decodeHead decodeMedicationDistribution) Nothing
         |> optional "treatment_ongoing" (decodeHead decodeTreatmentOngoing) Nothing
+        |> optional "acute_illness_danger_signs" (decodeHead decodeAcuteIllnessDangerSigns) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1824,4 +1825,48 @@ decodeReasonForNotTaking =
                         fail <|
                             reason
                                 ++ " is not a recognized ReasonForNotTaking"
+            )
+
+
+decodeAcuteIllnessDangerSigns : Decoder AcuteIllnessDangerSigns
+decodeAcuteIllnessDangerSigns =
+    decodeEverySet decodeAcuteIllnessDangerSign
+        |> field "acute_illness_danger_signs"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeAcuteIllnessDangerSign : Decoder AcuteIllnessDangerSign
+decodeAcuteIllnessDangerSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "condition-not-improving" ->
+                        succeed DangerSignConditionNotImproving
+
+                    "unable-drink-suck" ->
+                        succeed DangerSignUnableDrinkSuck
+
+                    "vomiting" ->
+                        succeed DangerSignVomiting
+
+                    "convulsions" ->
+                        succeed DangerSignConvulsions
+
+                    "lethargy-unconsciousness" ->
+                        succeed DangerSignLethargyUnconsciousness
+
+                    "respiratory-distress" ->
+                        succeed DangerSignRespiratoryDistress
+
+                    "spontaneous-bleeding" ->
+                        succeed DangerSignSpontaneousBleeding
+
+                    "none" ->
+                        succeed NoAcuteIllnessDangerSign
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized AcuteIllnessDangerSign"
             )
