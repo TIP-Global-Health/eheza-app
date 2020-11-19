@@ -233,6 +233,7 @@ type TranslationId
     | ActionsToTake
     | AcuteFindingsGeneralSign AcuteFindingsGeneralSign
     | AcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
+    | AcuteIllnessDangerSign AcuteIllnessDangerSign
     | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
     | AcuteIllnessDiagnosisWarning AcuteIllnessDiagnosis
     | AcuteIllnessExisting
@@ -348,6 +349,7 @@ type TranslationId
     | GroupUnauthorized
     | Close
     | Closed
+    | ConditionImprovingQuestion
     | ConfirmationRequired
     | ConfirmDeleteTrainingGroupEncounters
     | ConfirmRegisterParticipant
@@ -476,6 +478,7 @@ type TranslationId
     | Home
     | HouseholdSize
     | HowMany
+    | HaveAnyOfTheFollowingQuestion
     | HttpError Http.Error
     | HypertensionBeforePregnancy
     | IncompleteCervixPreviousPregnancy
@@ -967,6 +970,48 @@ translationSet trans =
                 NoAcuteFindingsRespiratorySigns ->
                     { english = "None of the above"
                     , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
+                    }
+
+        AcuteIllnessDangerSign sign ->
+            case sign of
+                DangerSignConditionNotImproving ->
+                    { english = "Condition not improving"
+                    , kinyarwanda = Nothing
+                    }
+
+                DangerSignUnableDrinkSuck ->
+                    { english = "Unable to to Drink/Suck"
+                    , kinyarwanda = Nothing
+                    }
+
+                DangerSignVomiting ->
+                    { english = "Vomiting"
+                    , kinyarwanda = Nothing
+                    }
+
+                DangerSignConvulsions ->
+                    { english = "Convulsions"
+                    , kinyarwanda = Nothing
+                    }
+
+                DangerSignLethargyUnconsciousness ->
+                    { english = "Lethargy or Uconsciousness"
+                    , kinyarwanda = Nothing
+                    }
+
+                DangerSignRespiratoryDistress ->
+                    { english = "Respiratory Distress"
+                    , kinyarwanda = Nothing
+                    }
+
+                DangerSignSpontaneousBleeding ->
+                    { english = "Spontaneous Bleeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoAcuteIllnessDangerSign ->
+                    { english = "None of the above"
+                    , kinyarwanda = Nothing
                     }
 
         AcuteIllnessDiagnosis diagnosis ->
@@ -2027,6 +2072,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ConditionImprovingQuestion ->
+            { english = "Is your condition improving"
+            , kinyarwanda = Nothing
+            }
+
         ConfirmationRequired ->
             { english = "Please confirm:"
             , kinyarwanda = Nothing
@@ -2986,6 +3036,11 @@ translationSet trans =
 
         HowMany ->
             { english = "How many"
+            , kinyarwanda = Nothing
+            }
+
+        HaveAnyOfTheFollowingQuestion ->
+            { english = "Do you have any of the following"
             , kinyarwanda = Nothing
             }
 

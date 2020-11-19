@@ -79,6 +79,9 @@ type Msg
     | SaveOngoingTreatmentReview PersonId (Maybe ( TreatmentOngoingId, TreatmentOngoing ))
       -- DANGER SIGNS
     | SetActiveDangerSignsTask DangerSignsTask
+    | SetConditionImproving Bool
+    | SetDangerSign AcuteIllnessDangerSign
+    | SaveReviewDangerSigns PersonId (Maybe ( AcuteIllnessDangerSignsId, AcuteIllnessDangerSigns ))
 
 
 type alias Model =
@@ -439,14 +442,14 @@ emptyOngoingTreatmentReviewForm =
 
 
 type alias DangerSignsData =
-    { treatmentReviewForm : ReviewDangerSignsForm
+    { reviewDangerSignsForm : ReviewDangerSignsForm
     , activeTask : DangerSignsTask
     }
 
 
 emptyDangerSignsData : DangerSignsData
 emptyDangerSignsData =
-    { treatmentReviewForm = emptyReviewDangerSignsForm
+    { reviewDangerSignsForm = emptyReviewDangerSignsForm
     , activeTask = ReviewDangerSigns
     }
 

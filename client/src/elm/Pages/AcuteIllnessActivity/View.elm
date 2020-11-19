@@ -2251,59 +2251,87 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
                     ]
                 ]
 
-        -- tasksCompletedFromTotalDict =
-        --     tasks
-        --         |> List.map
-        --             (\task ->
-        --                 ( task, ongoingTreatmentTasksCompletedFromTotal measurements data task )
-        --             )
-        --         |> Dict.fromList
-        --
-        -- ( tasksCompleted, totalTasks ) =
-        --     Dict.get data.activeTask tasksCompletedFromTotalDict
-        --         |> Maybe.withDefault ( 0, 0 )
-        --
-        -- viewForm =
-        --     case data.activeTask of
-        --         DangerSignsReview ->
-        --             measurements.treatmentOngoing
-        --                 |> Maybe.map (Tuple.second >> .value)
-        --                 |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
-        --                 |> viewDangerSignsReviewForm language currentDate measurements
-        --
-        -- getNextTask currentTask =
-        --     case currentTask of
-        --         DangerSignsReview ->
-        --             []
-        --
-        -- actions =
-        --     let
-        --         saveMsg =
-        --             case data.activeTask of
-        --                 DangerSignsReview ->
-        --                     SaveDangerSignsReview personId measurements.treatmentOngoing
-        --     in
-        --     div [ class "actions treatment-ongoing" ]
-        --         [ button
-        --             [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-        --             , onClick saveMsg
-        --             ]
-        --             [ text <| translate language Translate.Save ]
-        --         ]
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, dangerSignsTasksCompletedFromTotal measurements data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Dict.get data.activeTask tasksCompletedFromTotalDict
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case data.activeTask of
+                ReviewDangerSigns ->
+                    measurements.dangerSigns
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> dangerSignsReviewFormWithDefault data.reviewDangerSignsForm
+                        |> viewReviewDangerSignsForm language currentDate measurements
+
+        getNextTask currentTask =
+            case currentTask of
+                ReviewDangerSigns ->
+                    []
+
+        actions =
+            let
+                saveMsg =
+                    case data.activeTask of
+                        ReviewDangerSigns ->
+                            SaveReviewDangerSigns personId measurements.dangerSigns
+            in
+            div [ class "actions treatment-ongoing" ]
+                [ button
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                    , onClick saveMsg
+                    ]
+                    [ text <| translate language Translate.Save ]
+                ]
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui three column grid" ] <|
             List.map viewTask tasks
         ]
-
-    -- , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
-    -- , div [ class "ui full segment" ]
-    --     [ div [ class "full content" ]
-    --         [ viewForm
-    --         , actions
-    --         ]
-    --     ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
+        ]
     ]
+
+
+viewReviewDangerSignsForm : Language -> NominalDate -> AcuteIllnessMeasurements -> ReviewDangerSignsForm -> Html Msg
+viewReviewDangerSignsForm language currentDate measurements form =
+    div [ class "ui form ongoing-treatment-review" ]
+        [ viewQuestionLabel language Translate.ConditionImprovingQuestion
+        , viewBoolInput
+            language
+            form.conditionImproving
+            SetConditionImproving
+            "conditionImproving"
+            Nothing
+        , viewQuestionLabel language Translate.HaveAnyOfTheFollowingQuestion
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+        , viewCheckBoxMultipleSelectInput language
+            [ DangerSignUnableDrinkSuck
+            , DangerSignVomiting
+            , DangerSignConvulsions
+            , DangerSignLethargyUnconsciousness
+            , DangerSignRespiratoryDistress
+            , DangerSignSpontaneousBleeding
+            , NoAcuteIllnessDangerSign
+            ]
+            []
+            (form.symptoms |> Maybe.withDefault [])
+            Nothing
+            SetDangerSign
+            Translate.AcuteIllnessDangerSign
+        ]
 
 
 

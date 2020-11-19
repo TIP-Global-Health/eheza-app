@@ -10,6 +10,7 @@ import Backend.Measurement.Model
     exposing
         ( AcuteFindingsGeneralSign(..)
         , AcuteFindingsRespiratorySign(..)
+        , AcuteIllnessDangerSign(..)
         , HCRecommendation(..)
         , MalariaRapidTestResult(..)
         , MedicationDistributionSign(..)
@@ -62,6 +63,9 @@ update currentDate id db msg model =
 
         acuteFindingsForm =
             resolveFormWithDefaults .acuteFindings acuteFindingsFormWithDefault model.physicalExamData.acuteFindingsForm
+
+        reviewDangerSignsForm =
+            resolveFormWithDefaults .dangerSigns dangerSignsReviewFormWithDefault model.dangerSignsData.reviewDangerSignsForm
     in
     case msg of
         SetActivePage page ->
@@ -1456,4 +1460,95 @@ update currentDate id db msg model =
             ( { model | dangerSignsData = updatedData }
             , Cmd.none
             , []
+            )
+
+        SetConditionImproving value ->
+            let
+                form =
+                    model.dangerSignsData.reviewDangerSignsForm
+
+                updatedForm =
+                    { form | conditionImproving = Just value }
+
+                updatedData =
+                    model.dangerSignsData
+                        |> (\data -> { data | reviewDangerSignsForm = updatedForm })
+            in
+            ( { model | dangerSignsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetDangerSign sign ->
+            let
+                form =
+                    reviewDangerSignsForm
+
+                updatedForm =
+                    case form.symptoms of
+                        Just signs ->
+                            if List.member sign signs then
+                                let
+                                    updatedSigns =
+                                        if List.length signs == 1 then
+                                            Nothing
+
+                                        else
+                                            signs |> List.filter ((/=) sign) |> Just
+                                in
+                                { form | symptoms = updatedSigns }
+
+                            else
+                                case sign of
+                                    NoAcuteIllnessDangerSign ->
+                                        { form | symptoms = Just [ sign ] }
+
+                                    _ ->
+                                        let
+                                            updatedSigns =
+                                                case signs of
+                                                    [ NoAcuteIllnessDangerSign ] ->
+                                                        Just [ sign ]
+
+                                                    _ ->
+                                                        Just (sign :: signs)
+                                        in
+                                        { form | symptoms = updatedSigns }
+
+                        Nothing ->
+                            { form | symptoms = Just [ sign ] }
+
+                updatedData =
+                    model.dangerSignsData
+                        |> (\data -> { data | reviewDangerSignsForm = updatedForm })
+            in
+            ( { model | dangerSignsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveReviewDangerSigns personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.dangerSignsData.reviewDangerSignsForm
+                        |> toDangerSignsReviewValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.AcuteIllnessEncounter.Model.SaveAcuteIllnessDangerSigns personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
             )
