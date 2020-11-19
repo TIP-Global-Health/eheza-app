@@ -1366,7 +1366,13 @@ toOngoingTreatmentReviewValue form =
 fromReviewDangerSignsValue : Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm
 fromReviewDangerSignsValue saved =
     { conditionImproving = Maybe.map (EverySet.member DangerSignConditionNotImproving >> not) saved
-    , symptoms = Maybe.map (EverySet.remove DangerSignConditionNotImproving >> EverySet.toList) saved
+    , symptoms =
+        Maybe.map
+            (EverySet.remove DangerSignConditionNotImproving
+                >> ifEverySetEmpty NoAcuteIllnessDangerSign
+                >> EverySet.toList
+            )
+            saved
     }
 
 
@@ -1377,7 +1383,13 @@ reviewDangerSignsFormWithDefault form saved =
             form
             (\value ->
                 { conditionImproving = or form.conditionImproving (EverySet.member DangerSignConditionNotImproving value |> not |> Just)
-                , symptoms = or form.symptoms (EverySet.remove DangerSignConditionNotImproving value |> EverySet.toList |> Just)
+                , symptoms =
+                    or form.symptoms
+                        (EverySet.remove DangerSignConditionNotImproving value
+                            |> ifEverySetEmpty NoAcuteIllnessDangerSign
+                            |> EverySet.toList
+                            |> Just
+                        )
                 }
             )
 
@@ -1390,11 +1402,27 @@ toReviewDangerSignsValueWithDefault saved form =
 
 toReviewDangerSignsValue : ReviewDangerSignsForm -> Maybe (EverySet AcuteIllnessDangerSign)
 toReviewDangerSignsValue form =
-    [ Maybe.map (ifFalse DangerSignConditionNotImproving) form.conditionImproving
-    , Maybe.map EverySet.fromList form.symptoms
-    ]
-        |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoAcuteIllnessDangerSign)
+    Maybe.map2
+        (\conditionImproving symptoms ->
+            let
+                conditionNotImprovingSet =
+                    if conditionImproving then
+                        EverySet.empty
+
+                    else
+                        EverySet.singleton DangerSignConditionNotImproving
+
+                symptomsSet =
+                    if List.member NoAcuteIllnessDangerSign symptoms && (not <| EverySet.isEmpty conditionNotImprovingSet) then
+                        EverySet.empty
+
+                    else
+                        EverySet.fromList symptoms
+            in
+            EverySet.union conditionNotImprovingSet symptomsSet
+        )
+        form.conditionImproving
+        form.symptoms
 
 
 

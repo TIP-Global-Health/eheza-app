@@ -41,7 +41,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'session' => 'sessions',
   // Measurements.
   'acute_findings' => 'acute-findings',
-  'acute_illness_danger-signs' => 'acute-illness-danger-signs',
+  'acute_illness_danger_signs' => 'acute-illness-danger-signs',
   'acute_illness_vitals' => 'acute-illness-vitals',
   'attendance' => 'attendances',
   'breast_exam' => 'breast-exams',
