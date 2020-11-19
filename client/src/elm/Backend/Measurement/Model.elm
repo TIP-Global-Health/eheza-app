@@ -987,7 +987,7 @@ type alias AcuteIllnessMeasurements =
     , sendToHC : Maybe ( SendToHCId, SendToHC )
     , medicationDistribution : Maybe ( MedicationDistributionId, MedicationDistribution )
     , treatmentOngoing : Maybe ( TreatmentOngoingId, TreatmentOngoing )
-    , acuteIllnessDangerSigns : Maybe ( AcuteIllnessDangerSignsId, AcuteIllnessDangerSigns )
+    , dangerSigns : Maybe ( AcuteIllnessDangerSignsId, AcuteIllnessDangerSigns )
     }
 
 

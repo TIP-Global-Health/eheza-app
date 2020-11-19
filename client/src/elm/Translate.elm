@@ -50,7 +50,8 @@ import Measurement.Model exposing (FloatInputConstraints)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.AcuteIllnessActivity.Model
     exposing
-        ( ExposureTask(..)
+        ( DangerSignsTask(..)
+        , ExposureTask(..)
         , LaboratoryTask(..)
         , NextStepsTask(..)
         , OngoingTreatmentTask(..)
@@ -368,6 +369,7 @@ type TranslationId
     | DashboardLabel
     | CurrentlyPregnant
     | DangerSign DangerSign
+    | DangerSignsTask DangerSignsTask
     | DateOfLastAssessment
     | DatePregnancyConcluded
     | Day
@@ -1481,6 +1483,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                AcuteIllnessDangerSigns ->
+                    { english = "Danger Signs"
+                    , kinyarwanda = Nothing
+                    }
+
         Adherence adherence ->
             translateAdherence adherence
 
@@ -2180,6 +2187,13 @@ translationSet trans =
                 NoDangerSign ->
                     { english = "None of these"
                     , kinyarwanda = Just "Nta bimenyetso/nta na kimwe"
+                    }
+
+        DangerSignsTask task ->
+            case task of
+                ReviewDangerSigns ->
+                    { english = "Review Danger Signs"
+                    , kinyarwanda = Nothing
                     }
 
         DateOfLastAssessment ->

@@ -395,7 +395,7 @@ viewActivity language currentDate id activity diagnosis data model =
             viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) model.ongoingTreatmentData
 
         AcuteIllnessDangerSigns ->
-            []
+            viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) model.dangerSignsData
 
 
 viewAcuteIllnessSymptomsContent : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> SymptomsData -> List (Html Msg)
@@ -2212,6 +2212,102 @@ viewOngoingTreatmentReviewForm language currentDate measurements form =
                 Nothing
            ]
         |> div [ class "ui form ongoing-treatment-review" ]
+
+
+viewAcuteIllnessDangerSigns : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> DangerSignsData -> List (Html Msg)
+viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) data =
+    let
+        activity =
+            AcuteIllnessDangerSigns
+
+        tasks =
+            [ ReviewDangerSigns ]
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        ReviewDangerSigns ->
+                            ( "danger-signs"
+                            , isJust measurements.dangerSigns
+                            )
+
+                isActive =
+                    task == data.activeTask
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveDangerSignsTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ a attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.DangerSignsTask task)
+                    ]
+                ]
+
+        -- tasksCompletedFromTotalDict =
+        --     tasks
+        --         |> List.map
+        --             (\task ->
+        --                 ( task, ongoingTreatmentTasksCompletedFromTotal measurements data task )
+        --             )
+        --         |> Dict.fromList
+        --
+        -- ( tasksCompleted, totalTasks ) =
+        --     Dict.get data.activeTask tasksCompletedFromTotalDict
+        --         |> Maybe.withDefault ( 0, 0 )
+        --
+        -- viewForm =
+        --     case data.activeTask of
+        --         DangerSignsReview ->
+        --             measurements.treatmentOngoing
+        --                 |> Maybe.map (Tuple.second >> .value)
+        --                 |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
+        --                 |> viewDangerSignsReviewForm language currentDate measurements
+        --
+        -- getNextTask currentTask =
+        --     case currentTask of
+        --         DangerSignsReview ->
+        --             []
+        --
+        -- actions =
+        --     let
+        --         saveMsg =
+        --             case data.activeTask of
+        --                 DangerSignsReview ->
+        --                     SaveDangerSignsReview personId measurements.treatmentOngoing
+        --     in
+        --     div [ class "actions treatment-ongoing" ]
+        --         [ button
+        --             [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+        --             , onClick saveMsg
+        --             ]
+        --             [ text <| translate language Translate.Save ]
+        --         ]
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui three column grid" ] <|
+            List.map viewTask tasks
+        ]
+
+    -- , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    -- , div [ class "ui full segment" ]
+    --     [ div [ class "full content" ]
+    --         [ viewForm
+    --         , actions
+    --         ]
+    --     ]
+    ]
+
+
+
+-- HELPER FUNCTIONS
 
 
 renderDatePart : Language -> Maybe NominalDate -> List (Html any)

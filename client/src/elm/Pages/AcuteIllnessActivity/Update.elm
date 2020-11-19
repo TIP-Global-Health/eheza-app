@@ -1446,3 +1446,14 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetActiveDangerSignsTask task ->
+            let
+                updatedData =
+                    model.dangerSignsData
+                        |> (\data -> { data | activeTask = task })
+            in
+            ( { model | dangerSignsData = updatedData }
+            , Cmd.none
+            , []
+            )

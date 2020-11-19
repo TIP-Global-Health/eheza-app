@@ -72,6 +72,9 @@ decodeActivityFromString s =
         "ongoing-treatment" ->
             Just AcuteIllnessOngoingTreatment
 
+        "danger-signs" ->
+            Just AcuteIllnessDangerSigns
+
         _ ->
             Nothing
 

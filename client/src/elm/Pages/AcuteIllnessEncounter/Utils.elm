@@ -224,7 +224,7 @@ activityCompleted currentDate person measurements diagnosis activity =
             isJust measurements.treatmentOngoing
 
         AcuteIllnessDangerSigns ->
-            isJust measurements.acuteIllnessDangerSigns
+            isJust measurements.dangerSigns
 
 
 {-| These are the activities that are mandatory, for us to come up with diagnosis.
