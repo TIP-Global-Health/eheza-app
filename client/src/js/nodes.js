@@ -505,15 +505,15 @@
                 } else {
                     query = table.where(criteria);
                     countQuery = query.clone();
-                }
 
-                // Exclude deleted results.
-                query = query.and(function (item) {
-                  return item.deleted == false;
-                });
-                countQuery = query.and(function (item) {
-                  return item.deleted == false;
-                });
+                    // Exclude deleted results.
+                    query = query.and(function (item) {
+                      return item.deleted == false;
+                    });
+                    countQuery = query.and(function (item) {
+                      return item.deleted == false;
+                    });
+                }
 
                 var modifyQuery = Promise.resolve();
 
