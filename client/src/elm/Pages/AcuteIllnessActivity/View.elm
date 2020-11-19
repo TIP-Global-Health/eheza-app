@@ -394,6 +394,9 @@ viewActivity language currentDate id activity diagnosis data model =
         AcuteIllnessOngoingTreatment ->
             viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) model.ongoingTreatmentData
 
+        AcuteIllnessDangerSigns ->
+            []
+
 
 viewAcuteIllnessSymptomsContent : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> SymptomsData -> List (Html Msg)
 viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) data =

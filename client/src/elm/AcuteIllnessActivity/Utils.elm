@@ -42,6 +42,9 @@ encodeActivityAsString activity =
         AcuteIllnessOngoingTreatment ->
             "ongoing-treatment"
 
+        AcuteIllnessDangerSigns ->
+            "danger-signs"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -94,4 +97,4 @@ getAllActivities isFirstEncounter =
         [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPriorTreatment, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory, AcuteIllnessNextSteps ]
 
     else
-        [ AcuteIllnessSymptoms, AcuteIllnessOngoingTreatment, AcuteIllnessPhysicalExam ]
+        [ AcuteIllnessDangerSigns, AcuteIllnessPhysicalExam, AcuteIllnessOngoingTreatment ]
