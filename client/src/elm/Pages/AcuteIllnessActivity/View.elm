@@ -598,6 +598,7 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
 
         expectTask task =
             case task of
+                -- We show Muac for children under age of 5.
                 PhysicalExamMuac ->
                     ageInYears currentDate person
                         |> Maybe.map (\age -> age < 5)
