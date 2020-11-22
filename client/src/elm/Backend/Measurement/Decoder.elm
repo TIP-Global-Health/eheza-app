@@ -122,6 +122,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "send_to_hc" (decodeHead decodeSendToHC) Nothing
         |> optional "medication_distribution" (decodeHead decodeMedicationDistribution) Nothing
         |> optional "acute_illness_muac" (decodeHead decodeAcuteIllnessMuac) Nothing
+        |> optional "treatment_ongoing" (decodeHead decodeTreatmentOngoing) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1770,3 +1771,65 @@ decodeAcuteIllnessMuac =
     field "muac" decodeFloat
         |> map MuacInCm
         |> decodeAcuteIllnessMeasurement
+
+
+decodeTreatmentOngoing : Decoder TreatmentOngoing
+decodeTreatmentOngoing =
+    succeed TreatmentOngoingValue
+        |> required "treatment_ongoing" (decodeEverySet decodeTreatmentOngoingSign)
+        |> required "reason_for_not_taking" decodeReasonForNotTaking
+        |> required "missed_doses" decodeInt
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeTreatmentOngoingSign : Decoder TreatmentOngoingSign
+decodeTreatmentOngoingSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "taken-as-prescribed" ->
+                        succeed TakenAsPrescribed
+
+                    "missed-doses" ->
+                        succeed MissedDoses
+
+                    "feel-better" ->
+                        succeed FeelingBetter
+
+                    "side-effects" ->
+                        succeed SideEffects
+
+                    "none" ->
+                        succeed NoTreatmentOngoingSign
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized TreatmentOngoingSign"
+            )
+
+
+decodeReasonForNotTaking : Decoder ReasonForNotTaking
+decodeReasonForNotTaking =
+    string
+        |> andThen
+            (\reason ->
+                case reason of
+                    "side-effects" ->
+                        succeed NotTakingSideEffects
+
+                    "no-resources" ->
+                        succeed NotTakingNoResources
+
+                    "other" ->
+                        succeed NotTakingOther
+
+                    "none" ->
+                        succeed NoReasonForNotTakingSign
+
+                    _ ->
+                        fail <|
+                            reason
+                                ++ " is not a recognized ReasonForNotTaking"
+            )

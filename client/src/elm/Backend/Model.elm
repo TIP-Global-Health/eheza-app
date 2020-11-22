@@ -355,6 +355,7 @@ type Revision
     | SymptomsGIRevision SymptomsGIId SymptomsGI
     | SymptomsRespiratoryRevision SymptomsRespiratoryId SymptomsRespiratory
     | TravelHistoryRevision TravelHistoryId TravelHistory
+    | TreatmentOngoingRevision TreatmentOngoingId TreatmentOngoing
     | TreatmentReviewRevision TreatmentReviewId TreatmentReview
     | VillageRevision VillageId Village
     | VitalsRevision VitalsId Vitals

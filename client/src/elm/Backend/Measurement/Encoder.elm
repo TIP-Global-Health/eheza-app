@@ -1514,3 +1514,53 @@ encodeRecommendationSite period =
 encodeAcuteIllnessMuac : AcuteIllnessMuac -> List ( String, Value )
 encodeAcuteIllnessMuac =
     encodeAcuteIllnessMeasurement encodeMuacValue
+
+
+encodeTreatmentOngoing : TreatmentOngoing -> List ( String, Value )
+encodeTreatmentOngoing =
+    encodeAcuteIllnessMeasurement encodeTreatmentOngoingValue
+
+
+encodeTreatmentOngoingValue : TreatmentOngoingValue -> List ( String, Value )
+encodeTreatmentOngoingValue value =
+    [ ( "treatment_ongoing", encodeEverySet encodeTreatmentOngoingSign value.signs )
+    , ( "reason_for_not_taking", encodeReasonForNotTakingSign value.reasonForNotTaking )
+    , ( "missed_doses", int value.missedDoses )
+    ]
+
+
+encodeTreatmentOngoingSign : TreatmentOngoingSign -> Value
+encodeTreatmentOngoingSign sign =
+    string <|
+        case sign of
+            TakenAsPrescribed ->
+                "taken-as-prescribed"
+
+            MissedDoses ->
+                "missed-doses"
+
+            FeelingBetter ->
+                "feel-better"
+
+            SideEffects ->
+                "side-effects"
+
+            NoTreatmentOngoingSign ->
+                "none"
+
+
+encodeReasonForNotTakingSign : ReasonForNotTaking -> Value
+encodeReasonForNotTakingSign reason =
+    string <|
+        case reason of
+            NotTakingSideEffects ->
+                "side-effects"
+
+            NotTakingNoResources ->
+                "no-resources"
+
+            NotTakingOther ->
+                "other"
+
+            NoReasonForNotTakingSign ->
+                "none"

@@ -47,6 +47,7 @@ type alias Model =
     , saveCall114 : WebData ()
     , saveTreatmentReview : WebData ()
     , saveMuac : WebData ()
+    , saveTreatmentOngoing : WebData ()
     }
 
 
@@ -68,6 +69,7 @@ emptyModel =
     , saveCall114 = NotAsked
     , saveTreatmentReview = NotAsked
     , saveMuac = NotAsked
+    , saveTreatmentOngoing = NotAsked
     }
 
 
@@ -120,3 +122,5 @@ type Msg
     | HandleSavedTreatmentReview (WebData ())
     | SaveMuac PersonId (Maybe AcuteIllnessMuacId) MuacInCm
     | HandleSavedMuac (WebData ())
+    | SaveTreatmentOngoing PersonId (Maybe TreatmentOngoingId) TreatmentOngoingValue
+    | HandleSavedTreatmentOngoing (WebData ())

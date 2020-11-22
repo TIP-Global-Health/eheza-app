@@ -823,6 +823,32 @@ type alias AcuteIllnessMuac =
     AcuteIllnessMeasurement MuacInCm
 
 
+type TreatmentOngoingSign
+    = TakenAsPrescribed
+    | MissedDoses
+    | FeelingBetter
+    | SideEffects
+    | NoTreatmentOngoingSign
+
+
+type ReasonForNotTaking
+    = NotTakingSideEffects
+    | NotTakingNoResources
+    | NotTakingOther
+    | NoReasonForNotTakingSign
+
+
+type alias TreatmentOngoingValue =
+    { signs : EverySet TreatmentOngoingSign
+    , reasonForNotTaking : ReasonForNotTaking
+    , missedDoses : Int
+    }
+
+
+type alias TreatmentOngoing =
+    AcuteIllnessMeasurement TreatmentOngoingValue
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -950,6 +976,7 @@ type alias AcuteIllnessMeasurements =
     , sendToHC : Maybe ( SendToHCId, SendToHC )
     , medicationDistribution : Maybe ( MedicationDistributionId, MedicationDistribution )
     , muac : Maybe ( AcuteIllnessMuacId, AcuteIllnessMuac )
+    , treatmentOngoing : Maybe ( TreatmentOngoingId, TreatmentOngoing )
     }
 
 

@@ -583,3 +583,9 @@ acuteIllnessMuacEndpoint : ReadWriteEndPoint Error AcuteIllnessMuacId AcuteIllne
 acuteIllnessMuacEndpoint =
     swEndpoint "nodes/acute_illness_muac" decodeAcuteIllnessMuac
         |> withValueEncoder (object << encodeAcuteIllnessMuac)
+
+
+treatmentOngoingEndpoint : ReadWriteEndPoint Error TreatmentOngoingId TreatmentOngoing TreatmentOngoing ()
+treatmentOngoingEndpoint =
+    swEndpoint "nodes/treatment_ongoing" decodeTreatmentOngoing
+        |> withValueEncoder (object << encodeTreatmentOngoing)

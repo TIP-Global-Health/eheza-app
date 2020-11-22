@@ -63,6 +63,7 @@
         'lethargy_period',
         'live_children',
         'loss_of_smell_period',
+        'missed_doses',
         'nasal_congestion_period',
         'nausea_period',
         'night_sweats_period',

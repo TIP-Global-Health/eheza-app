@@ -324,8 +324,8 @@ splitActivities currentDate data =
         isFirstEncounter =
             List.isEmpty data.previousMeasurementsWithDates
     in
-    getAllActivities
-        |> List.filter (expectActivity currentDate data.person data.measurements isFirstEncounter data.diagnosis)
+    getAllActivities isFirstEncounter
+        |> List.filter (expectActivity currentDate data.person data.measurements data.diagnosis)
         |> List.partition (activityCompleted currentDate data.person data.measurements data.diagnosis)
 
 
