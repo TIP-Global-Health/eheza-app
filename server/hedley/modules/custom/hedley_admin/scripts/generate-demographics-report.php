@@ -115,8 +115,13 @@ while ($processed < $total) {
 
   $ids = array_keys($result['node']);
   foreach ($ids as $id) {
-    list($age, $gender) = classify_by_age_and_gender($id);
+    list($age, $gender, $deleted) = classify_by_age_and_gender($id);
     $measurements_ids = hedley_general_get_person_measurements($id);
+
+    if ($deleted) {
+      // Skip deleted patient.
+      continue;
+    }
 
     if (!$age) {
       if (count($measurements_ids) > 0) {
@@ -250,6 +255,11 @@ drush_print("Skipped due to missing GENDER with measurements: $count");
 function classify_by_age_and_gender($person_id) {
   $wrapper = entity_metadata_wrapper('node', $person_id);
 
+  $deleted = $wrapper->field_deleted->value();
+  if (!empty($deleted) && $deleted === TRUE) {
+    return [FALSE, FALSE, TRUE];
+  }
+
   $gender = $wrapper->field_gender->value();
   if (empty($gender)) {
     $gender = FALSE;
@@ -281,7 +291,7 @@ function classify_by_age_and_gender($person_id) {
     $age = 'mt50y';
   }
 
-  return [$age, $gender];
+  return [$age, $gender, FALSE];
 }
 
 /**
