@@ -1509,3 +1509,8 @@ encodeRecommendationSite period =
 
             RecommendationSiteNotApplicable ->
                 "n-a"
+
+
+encodeAcuteIllnessMuac : AcuteIllnessMuac -> List ( String, Value )
+encodeAcuteIllnessMuac =
+    encodeAcuteIllnessMeasurement encodeMuacValue
