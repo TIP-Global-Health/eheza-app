@@ -1,11 +1,1 @@
-<?xml version="1.0"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="36 55 150 120">
-  <defs>
-    <style>.cls-2{fill:none;stroke:#666;stroke-linecap:round;stroke-linejoin:round;stroke-width:4px;}</style>
-  </defs>
-  <title>icon-mother-grey</title>
-  <circle class="cls-2" cx="111.52" cy="77.05" r="34.93"/>
-  <path class="cls-2" d="M135.26,118.12c-1.2,12.69-23.74,22.82-23.74,22.82S89,130.81,87.78,118.12a66.41,66.41,0,0,0-42.71,62H178A66.41,66.41,0,0,0,135.26,118.12Z"/>
-  <line class="cls-2" x1="80" y1="180.12" x2="80" y2="154.57"/>
-  <line class="cls-2" x1="141.33" y1="180.12" x2="141.33" y2="154.57"/>
-</svg>
+<svg viewBox="36 55 150 120" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#666" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"><circle cx="111.52" cy="77.05" r="34.93"/><path d="m135.26 118.12c-1.2 12.69-23.74 22.82-23.74 22.82s-22.52-10.13-23.74-22.82a66.41 66.41 0 0 0 -42.71 62h132.93a66.41 66.41 0 0 0 -42.74-62z"/><path d="m80 180.12v-25.55"/><path d="m141.33 180.12v-25.55"/></g></svg>
