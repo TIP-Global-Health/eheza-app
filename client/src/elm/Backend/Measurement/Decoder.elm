@@ -121,6 +121,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "treatment_history" (decodeHead decodeTreatmentReview) Nothing
         |> optional "send_to_hc" (decodeHead decodeSendToHC) Nothing
         |> optional "medication_distribution" (decodeHead decodeMedicationDistribution) Nothing
+        |> optional "acute_illness_muac" (decodeHead decodeAcuteIllnessMuac) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1762,3 +1763,10 @@ decodeRecommendationSite =
                             sign
                                 ++ " is not a recognized RecommendationSite"
             )
+
+
+decodeAcuteIllnessMuac : Decoder AcuteIllnessMuac
+decodeAcuteIllnessMuac =
+    field "muac" decodeFloat
+        |> map MuacInCm
+        |> decodeAcuteIllnessMeasurement
