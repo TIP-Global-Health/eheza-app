@@ -71,6 +71,12 @@ type Msg
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionMedicationNonAdministrationReason (Maybe MedicationNonAdministrationReason) MedicationDistributionSign MedicationNonAdministrationReason
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution ))
+      -- ONGOIN TREATMENT
+    | SetActiveOngoingTreatmentTask OngoingTreatmentTask
+    | SetOngoingTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
+    | SetReasonForNotTaking ReasonForNotTaking
+    | SetTotalMissedDoses String
+    | SaveOngoingTreatmentReview PersonId (Maybe ( TreatmentOngoingId, TreatmentOngoing ))
 
 
 type alias Model =
@@ -80,6 +86,7 @@ type alias Model =
     , exposureData : ExposureData
     , priorTreatmentData : PriorTreatmentData
     , nextStepsData : NextStepsData
+    , ongoingTreatmentData : OngoingTreatmentData
     , showAlertsDialog : Bool
     , showPertinentSymptomsPopup : Bool
     , warningPopupState : Maybe AcuteIllnessDiagnosis
@@ -94,6 +101,7 @@ emptyModel =
     , exposureData = emptyExposureData
     , priorTreatmentData = emptyPriorTreatmentData
     , nextStepsData = emptyNextStepsData
+    , ongoingTreatmentData = emptyOngoingTreatmentData
     , showAlertsDialog = False
     , showPertinentSymptomsPopup = False
     , warningPopupState = Nothing
@@ -373,4 +381,50 @@ type alias MedicationDistributionForm =
     , zinc : Maybe Bool
     , lemonJuiceOrHoney : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
+    }
+
+
+
+-- ONGOING TREATMENT
+
+
+type alias OngoingTreatmentData =
+    { treatmentReviewForm : OngoingTreatmentReviewForm
+    , activeTask : OngoingTreatmentTask
+    }
+
+
+emptyOngoingTreatmentData : OngoingTreatmentData
+emptyOngoingTreatmentData =
+    { treatmentReviewForm = emptyOngoingTreatmentReviewForm
+    , activeTask = OngoingTreatmentReview
+    }
+
+
+type OngoingTreatmentTask
+    = OngoingTreatmentReview
+
+
+type alias OngoingTreatmentReviewForm =
+    { takenAsPrescribed : Maybe Bool
+    , missedDoses : Maybe Bool
+    , feelingBetter : Maybe Bool
+    , sideEffects : Maybe Bool
+    , reasonForNotTaking : Maybe ReasonForNotTaking
+    , reasonForNotTakingDirty : Bool
+    , totalMissedDoses : Maybe Int
+    , totalMissedDosesDirty : Bool
+    }
+
+
+emptyOngoingTreatmentReviewForm : OngoingTreatmentReviewForm
+emptyOngoingTreatmentReviewForm =
+    { takenAsPrescribed = Nothing
+    , missedDoses = Nothing
+    , feelingBetter = Nothing
+    , sideEffects = Nothing
+    , reasonForNotTaking = Nothing
+    , reasonForNotTakingDirty = False
+    , totalMissedDoses = Nothing
+    , totalMissedDosesDirty = False
     }

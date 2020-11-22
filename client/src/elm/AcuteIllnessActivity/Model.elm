@@ -12,3 +12,4 @@ type AcuteIllnessActivity
     | AcuteIllnessLaboratory
     | AcuteIllnessExposure
     | AcuteIllnessNextSteps
+    | AcuteIllnessOngoingTreatment

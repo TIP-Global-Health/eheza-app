@@ -1360,3 +1360,89 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetActiveOngoingTreatmentTask task ->
+            let
+                updatedData =
+                    model.ongoingTreatmentData
+                        |> (\data -> { data | activeTask = task })
+            in
+            ( { model | ongoingTreatmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOngoingTreatmentReviewBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.ongoingTreatmentData.treatmentReviewForm
+                    in
+                    model.ongoingTreatmentData
+                        |> (\data -> { data | treatmentReviewForm = updatedForm })
+            in
+            ( { model | ongoingTreatmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotTaking value ->
+            let
+                form =
+                    model.ongoingTreatmentData.treatmentReviewForm
+
+                updatedForm =
+                    { form | reasonForNotTaking = Just value, reasonForNotTakingDirty = True }
+
+                updatedData =
+                    model.ongoingTreatmentData
+                        |> (\data -> { data | treatmentReviewForm = updatedForm })
+            in
+            ( { model | ongoingTreatmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetTotalMissedDoses value ->
+            let
+                form =
+                    model.ongoingTreatmentData.treatmentReviewForm
+
+                updatedForm =
+                    { form | totalMissedDoses = String.toInt value, totalMissedDosesDirty = True }
+
+                updatedData =
+                    model.ongoingTreatmentData
+                        |> (\data -> { data | treatmentReviewForm = updatedForm })
+            in
+            ( { model | ongoingTreatmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveOngoingTreatmentReview personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.ongoingTreatmentData.treatmentReviewForm
+                        |> toOngoingTreatmentReviewValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.AcuteIllnessEncounter.Model.SaveTreatmentOngoing personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )

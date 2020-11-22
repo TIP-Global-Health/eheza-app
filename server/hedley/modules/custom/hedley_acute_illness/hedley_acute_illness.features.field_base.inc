@@ -558,6 +558,21 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_missed_doses'.
+  $field_bases['field_missed_doses'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_missed_doses',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   // Exported field_base: 'field_nasal_congestion_period'.
   $field_bases['field_nasal_congestion_period'] = array(
     'active' => 1,
@@ -723,6 +738,33 @@ function hedley_acute_illness_field_default_field_bases() {
         'can-not-separate' => 'Can not separate from family',
         'other' => 'Other',
         'n-a' => 'Not applicable',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_reason_for_not_taking'.
+  $field_bases['field_reason_for_not_taking'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_reason_for_not_taking',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'side-effects' => 'Side effects',
+        'no-resources' => 'No resources for medication',
+        'other' => 'Other',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),
@@ -933,6 +975,34 @@ function hedley_acute_illness_field_default_field_bases() {
         'malaria-today-helped' => 'Malaria medication today helped',
         'malaria-past-month' => 'Malaria medication within past month',
         'malaria-past-month-helped' => 'Malaria medication within past month helped',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_treatment_ongoing'.
+  $field_bases['field_treatment_ongoing'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_treatment_ongoing',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'taken-as-prescribed' => 'Taken medication as prescribed',
+        'missed-doses' => 'Missed any doses of medications',
+        'feel-better' => 'Feel better after taking medications',
+        'side-effects' => 'Experience side effects of the medication',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

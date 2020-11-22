@@ -172,34 +172,19 @@ talkedTo114 measurements =
         |> Maybe.withDefault False
 
 
-expectActivity : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessActivity -> Bool
-expectActivity currentDate person measurements isFirstEncounter diagnosis activity =
-    if isFirstEncounter then
-        case activity of
-            AcuteIllnessLaboratory ->
-                mandatoryActivitiesCompleted measurements
-                    && feverRecorded measurements
+expectActivity : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessActivity -> Bool
+expectActivity currentDate person measurements diagnosis activity =
+    case activity of
+        AcuteIllnessLaboratory ->
+            mandatoryActivitiesCompleted measurements
+                && feverRecorded measurements
 
-            AcuteIllnessNextSteps ->
-                resolveNextStepByDiagnosis currentDate person diagnosis
-                    |> isJust
+        AcuteIllnessNextSteps ->
+            resolveNextStepByDiagnosis currentDate person diagnosis
+                |> isJust
 
-            _ ->
-                True
-
-    else
-        case activity of
-            AcuteIllnessSymptoms ->
-                True
-
-            AcuteIllnessPhysicalExam ->
-                True
-
-            AcuteIllnessPriorTreatment ->
-                True
-
-            _ ->
-                False
+        _ ->
+            True
 
 
 activityCompleted : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessActivity -> Bool
@@ -234,6 +219,9 @@ activityCompleted currentDate person measurements diagnosis activity =
 
                 _ ->
                     False
+
+        AcuteIllnessOngoingTreatment ->
+            isJust measurements.treatmentOngoing
 
 
 {-| These are the activities that are mandatory, for us to come up with diagnosis.

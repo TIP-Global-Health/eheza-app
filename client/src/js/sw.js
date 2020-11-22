@@ -88,6 +88,7 @@ var tableForType = {
     symptoms_respiratory: 'shards',
     travel_history: 'shards',
     treatment_history: 'shards',
+    treatment_ongoing: 'shards',
     village: 'nodes',
     vitals: 'shards',
     weight: 'shards'

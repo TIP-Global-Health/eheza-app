@@ -53,6 +53,7 @@ import Pages.AcuteIllnessActivity.Model
         ( ExposureTask(..)
         , LaboratoryTask(..)
         , NextStepsTask(..)
+        , OngoingTreatmentTask(..)
         , PhysicalExamTask(..)
         , PriorTreatmentTask(..)
         , SymptomsTask(..)
@@ -472,6 +473,7 @@ type TranslationId
     | HIVStatusLabel
     | Home
     | HouseholdSize
+    | HowMany
     | HttpError Http.Error
     | HypertensionBeforePregnancy
     | IncompleteCervixPreviousPregnancy
@@ -517,9 +519,12 @@ type TranslationId
     | MeasurementLost Float
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
+    | MedicationCausesSideEffectsQuestion
     | MedicationDistributionSign MedicationDistributionSign
+    | MedicationDosesMissedQuestion
     | MedicationForFeverPast6Hours
     | MedicationHelpedEnding Bool
+    | MedicationFeelBetterAfterTakingQuestion
     | MedicationForMalariaToday
     | MedicationForMalariaPastMonth
     | MedicalFormHelper
@@ -527,6 +532,7 @@ type TranslationId
     | MedicationForMalariaTodayQuestion
     | MedicationForMalariaWithinPastMonthQuestion
     | MedicationHelpedQuestion
+    | MedicationTakenAsPrescribedQuestion
     | MentalHealthHistory
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MMHGUnit
@@ -587,6 +593,7 @@ type TranslationId
     | OneVisit
     | OnceYouEndTheEncounter
     | OnceYouEndYourGroupEncounter
+    | OngoingTreatmentTask OngoingTreatmentTask
     | Or
     | PackagesPerMonth
     | Page
@@ -640,6 +647,7 @@ type TranslationId
     | PreviousDeliveryPeriods PreviousDeliveryPeriod
     | PreviousFloatMeasurement Float
     | PreviousMeasurementNotFound
+    | PriorTreatmentTask PriorTreatmentTask
     | Profession
     | Programs
     | ProgressPhotos
@@ -652,6 +660,7 @@ type TranslationId
     | Province
     | ReasonForCSection
     | ReasonForNotIsolating ReasonForNotIsolating
+    | ReasonForNotTaking ReasonForNotTaking
     | ReceivedDewormingPill
     | ReceivedIronFolicAcid
     | ReceivedMosquitoNet
@@ -787,7 +796,6 @@ type TranslationId
     | TrainingGroupEncounterDeleteSuccessMessage
     | TraveledToCOVID19CountryQuestion
     | TravelHistory
-    | PriorTreatmentTask PriorTreatmentTask
     | TrySyncing
     | TuberculosisPast
     | TuberculosisPresent
@@ -1466,6 +1474,11 @@ translationSet trans =
                 AcuteIllnessNextSteps ->
                     { english = "Next Steps"
                     , kinyarwanda = Just "Ibikurikiyeho"
+                    }
+
+                AcuteIllnessOngoingTreatment ->
+                    { english = "Treatment Review"
+                    , kinyarwanda = Nothing
                     }
 
         Adherence adherence ->
@@ -2957,6 +2970,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        HowMany ->
+            { english = "How many"
+            , kinyarwanda = Nothing
+            }
+
         HttpError error ->
             translateHttpError error
 
@@ -3424,6 +3442,11 @@ translationSet trans =
                     , kinyarwanda = Just "Niba yaragize uburwayi bwo mumutwe"
                     }
 
+        MedicationCausesSideEffectsQuestion ->
+            { english = "Did you experience side effects of the medication"
+            , kinyarwanda = Nothing
+            }
+
         MedicationDistributionSign sign ->
             case sign of
                 Amoxicillin ->
@@ -3456,6 +3479,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        MedicationDosesMissedQuestion ->
+            { english = "Did you miss any doses of medications"
+            , kinyarwanda = Nothing
+            }
+
         MedicationForFeverPast6Hours ->
             { english = "Patient took medication to treat a fever in the past six hours"
             , kinyarwanda = Just "Umurwayi yanyoye imiti y’umuriro mu masaha atandatu ashize"
@@ -3471,6 +3499,11 @@ translationSet trans =
                 { english = "but no improvement"
                 , kinyarwanda = Just "ariko ntiyorohewe"
                 }
+
+        MedicationFeelBetterAfterTakingQuestion ->
+            { english = "Do you feel better after taking medications"
+            , kinyarwanda = Nothing
+            }
 
         MedicationForMalariaToday ->
             { english = "Patient received medication for malaria today before this visit"
@@ -3505,6 +3538,11 @@ translationSet trans =
         MedicationHelpedQuestion ->
             { english = "Do you feel better after taking this"
             , kinyarwanda = Just "Urumva umeze neza nyuma yo kunywa iyi miti"
+            }
+
+        MedicationTakenAsPrescribedQuestion ->
+            { english = "Did you take the medication as prescribed"
+            , kinyarwanda = Nothing
             }
 
         MentalHealthHistory ->
@@ -3993,6 +4031,13 @@ translationSet trans =
             , kinyarwanda = Just "Igihe ushoze igikorwa, ntabwo ushobora guhindura cg wongeremo andi makuru."
             }
 
+        OngoingTreatmentTask task ->
+            case task of
+                OngoingTreatmentReview ->
+                    { english = "Treatment Review"
+                    , kinyarwanda = Just "Kureba imiti yahawe"
+                    }
+
         Or ->
             { english = "or"
             , kinyarwanda = Nothing
@@ -4356,6 +4401,13 @@ translationSet trans =
             , kinyarwanda = Just "Nta gipimo cy'ubushize cyanditswe"
             }
 
+        PriorTreatmentTask task ->
+            case task of
+                TreatmentReview ->
+                    { english = "Treatment Review"
+                    , kinyarwanda = Just "Kureba imiti yahawe"
+                    }
+
         Profession ->
             { english = "Profession"
             , kinyarwanda = Nothing
@@ -4436,6 +4488,28 @@ translationSet trans =
                 IsolationReasonNotApplicable ->
                     { english = "Not Applicable "
                     , kinyarwanda = Just "Ibi ntibikorwa"
+                    }
+
+        ReasonForNotTaking reason ->
+            case reason of
+                NotTakingSideEffects ->
+                    { english = "Side effects"
+                    , kinyarwanda = Nothing
+                    }
+
+                NotTakingNoResources ->
+                    { english = "No resources for medication"
+                    , kinyarwanda = Nothing
+                    }
+
+                NotTakingOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoReasonForNotTakingSign ->
+                    { english = ""
+                    , kinyarwanda = Nothing
                     }
 
         ReceivedDewormingPill ->
@@ -5536,13 +5610,6 @@ translationSet trans =
             { english = "Travel History"
             , kinyarwanda = Just "Amukuru ku ngendo"
             }
-
-        PriorTreatmentTask task ->
-            case task of
-                TreatmentReview ->
-                    { english = "Treatment Review"
-                    , kinyarwanda = Just "Kureba imiti yahawe"
-                    }
 
         TrySyncing ->
             { english = "Try syncing with backend"
