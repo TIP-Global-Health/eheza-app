@@ -641,7 +641,7 @@ h3.ui.header {
   }
 
   .input-wrapper {
-    border: 2px solid $color-grey-border;
+    border: 2px solid $color-gray-border;
   }
 }
 
@@ -681,7 +681,7 @@ h3.ui.header {
 
   &.search-input,
   &.pairing-code {
-    background: $color-lighter-grey;
+    background: $color-lighter-gray;
   }
 }
 
@@ -730,7 +730,7 @@ h3.ui.header {
 
       .icon-participant.add {
         background-color: white;
-        border: 2px dashed $color-grey;
+        border: 2px dashed $color-gray;
         height: 120px;
         width: 120px;
       }
@@ -762,7 +762,7 @@ h3.ui.header {
     }
 
     .separator-line {
-      border-top: 2px solid $color-grey;
+      border-top: 2px solid $color-gray;
       width: 620px;
       margin-top: 70px;
       margin-bottom: 70px;
@@ -773,7 +773,7 @@ h3.ui.header {
   &.search {
 
     .items {
-      color: $color-grey;
+      color: $color-gray;
       margin-bottom: 50px;
 
       .item .content {
@@ -783,7 +783,7 @@ h3.ui.header {
           width: 70%;
 
           .ui.header {
-            color: $color-grey;
+            color: $color-gray;
             font-size: 24px;
             font-weight: bold;
             margin-top: 3px;
@@ -858,7 +858,7 @@ h3.ui.header {
       .select-input {
         background: none;
         font-size: 2rem;
-        border: 2px solid $color-grey;
+        border: 2px solid $color-gray;
         padding: 0 0.5em;
         line-height: 0.5;
         text-align: left;
@@ -1097,7 +1097,7 @@ input::placeholder {
         }
 
         .section-label {
-          color: $color-dark-grey;
+          color: $color-dark-gray;
           float: left;
           line-height: 48px;
           margin-left: 30px;
@@ -1107,7 +1107,7 @@ input::placeholder {
       }
 
       .section-items {
-        color: $color-grey;
+        color: $color-gray;
         font-size: 20px;
         padding-left: 6rem;
         text-align: left;
@@ -1167,7 +1167,7 @@ input::placeholder {
         }
 
         .popup-heading {
-          color: $color-dark-grey;
+          color: $color-dark-gray;
           font-size: 30px;
           font-weight: bold;
           line-height: 48px;
@@ -1182,7 +1182,7 @@ input::placeholder {
       }
 
       .popup-title {
-        color: $color-dark-grey;
+        color: $color-dark-gray;
         font-size: 30px;
         font-weight: bold;
         margin-bottom: 1rem;
@@ -1191,7 +1191,7 @@ input::placeholder {
       }
 
       .popup-action {
-        color: $color-dark-grey;
+        color: $color-dark-gray;
         font-size: 30px;
         margin-bottom: 2rem;
         padding: 0 4rem;
@@ -1564,7 +1564,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-obstetrichistory-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-obstetrichistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1578,7 +1578,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-medicalhistory-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-medicalhistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1592,7 +1592,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-socialhistory-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-socialhistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1606,7 +1606,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-vitals-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-vitals-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1620,7 +1620,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-nutritionassessment-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-nutritionassessment-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1634,7 +1634,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-corephysicalexam-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-corephysicalexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1648,7 +1648,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-obstetricalexam-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-obstetricalexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1662,7 +1662,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-breastexam-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-breastexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1676,7 +1676,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-medication-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-medication-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1690,7 +1690,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-resources-grey.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-resources-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
