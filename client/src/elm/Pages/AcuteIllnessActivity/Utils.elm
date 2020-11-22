@@ -1389,6 +1389,23 @@ toOngoingTreatmentReviewValue form =
         |> andMap (form.totalMissedDoses |> Maybe.withDefault 0 |> Just)
 
 
+expectPhysicalExamTask : NominalDate -> Person -> Bool -> PhysicalExamTask -> Bool
+expectPhysicalExamTask currentDate person isFirstEncounter task =
+    case task of
+        PhysicalExamVitals ->
+            True
+
+        -- We show Muac for children under age of 5.
+        PhysicalExamMuac ->
+            ageInYears currentDate person
+                |> Maybe.map (\age -> age < 5)
+                |> Maybe.withDefault False
+
+        -- We show Acute Finding only on first encounter
+        PhysicalExamAcuteFindings ->
+            isFirstEncounter
+
+
 
 -- HELPER FUNCTIONS
 

@@ -2128,13 +2128,13 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
             Dict.get id before.acuteIllnessMeasurements
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
-                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person)
+                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person True)
 
         diagnosisAfterChange =
             Dict.get id after.acuteIllnessMeasurements
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
-                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person)
+                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person True)
 
         updateDiagnosisMsg diagnosis =
             Backend.AcuteIllnessEncounter.Model.SetAcuteIllnessDiagnosis diagnosis

@@ -325,8 +325,8 @@ splitActivities currentDate data =
             List.isEmpty data.previousMeasurementsWithDates
     in
     getAllActivities isFirstEncounter
-        |> List.filter (expectActivity currentDate data.person data.measurements data.diagnosis)
-        |> List.partition (activityCompleted currentDate data.person data.measurements data.diagnosis)
+        |> List.filter (expectActivity currentDate data.person isFirstEncounter data.measurements data.diagnosis)
+        |> List.partition (activityCompleted currentDate data.person isFirstEncounter data.measurements data.diagnosis)
 
 
 viewEndEncounterButton : Language -> AcuteIllnessMeasurements -> List AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> (Bool -> msg) -> Html msg

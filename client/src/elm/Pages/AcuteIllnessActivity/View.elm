@@ -608,22 +608,7 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
 
         tasks =
             [ PhysicalExamVitals, PhysicalExamMuac, PhysicalExamAcuteFindings ]
-                |> List.filter expectTask
-
-        expectTask task =
-            case task of
-                PhysicalExamVitals ->
-                    True
-
-                -- We show Muac for children under age of 5.
-                PhysicalExamMuac ->
-                    ageInYears currentDate person
-                        |> Maybe.map (\age -> age < 5)
-                        |> Maybe.withDefault False
-
-                -- We show Acute Finding only on first encounter
-                PhysicalExamAcuteFindings ->
-                    isFirstEncounter
+                |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
 
         viewTask task =
             let
@@ -699,19 +684,19 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
             case currentTask of
                 PhysicalExamVitals ->
                     [ PhysicalExamMuac, PhysicalExamAcuteFindings ]
-                        |> List.filter expectTask
+                        |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
                 PhysicalExamMuac ->
                     [ PhysicalExamAcuteFindings, PhysicalExamVitals ]
-                        |> List.filter expectTask
+                        |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
                 PhysicalExamAcuteFindings ->
                     [ PhysicalExamVitals, PhysicalExamMuac ]
-                        |> List.filter expectTask
+                        |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
