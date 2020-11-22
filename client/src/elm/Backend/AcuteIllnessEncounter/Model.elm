@@ -118,5 +118,5 @@ type Msg
     | HandleSavedCall114 (WebData ())
     | SaveTreatmentReview PersonId (Maybe TreatmentReviewId) (EverySet TreatmentReviewSign)
     | HandleSavedTreatmentReview (WebData ())
-    | SaveAcuteIllnessMuac PersonId (Maybe AcuteIllnessMuacId) MuacInCm
-    | HandleSavedAcuteIllnessMuac (WebData ())
+    | SaveMuac PersonId (Maybe AcuteIllnessMuacId) MuacInCm
+    | HandleSavedMuac (WebData ())

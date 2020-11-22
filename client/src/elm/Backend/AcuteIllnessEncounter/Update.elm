@@ -534,7 +534,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
-        SaveAcuteIllnessMuac personId valueId value ->
+        SaveMuac personId valueId value ->
             let
                 cmd =
                     case valueId of
@@ -548,7 +548,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                             }
                                 |> sw.post acuteIllnessMuacEndpoint
                                 |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedAcuteIllnessMuac)
+                                |> toCmd (RemoteData.fromResult >> HandleSavedMuac)
 
                         Just id ->
                             encodeMuacValue value
@@ -559,13 +559,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                                 |> object
                                 |> sw.patchAny acuteIllnessMuacEndpoint id
                                 |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedAcuteIllnessMuac)
+                                |> toCmd (RemoteData.fromResult >> HandleSavedMuac)
             in
             ( { model | saveMuac = Loading }
             , cmd
             )
 
-        HandleSavedAcuteIllnessMuac data ->
+        HandleSavedMuac data ->
             ( { model | saveMuac = data }
             , Cmd.none
             )
