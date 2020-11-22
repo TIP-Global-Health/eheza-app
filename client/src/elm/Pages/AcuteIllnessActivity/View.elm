@@ -617,7 +617,7 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
                             )
 
                         PhysicalExamMuac ->
-                            ( "muac"
+                            ( "physical-exam-muac"
                             , isJust measurements.muac
                             )
 
@@ -708,7 +708,7 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
                             SaveVitals personId measurements.vitals nextTask
 
                         PhysicalExamMuac ->
-                            SaveVitals personId measurements.vitals nextTask
+                            SaveMuac personId measurements.muac nextTask
 
                         PhysicalExamAcuteFindings ->
                             SaveAcuteFindings personId measurements.acuteFindings nextTask

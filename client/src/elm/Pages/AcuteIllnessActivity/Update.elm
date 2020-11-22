@@ -588,8 +588,12 @@ update currentDate id db msg model =
                                 )
                                     :: backToActivitiesMsg
                             )
+
+                updatedData =
+                    model.physicalExamData
+                        |> (\data -> { data | activeTask = nextTask })
             in
-            ( model
+            ( { model | physicalExamData = updatedData }
             , Cmd.none
             , appMsgs
             )
