@@ -230,7 +230,7 @@ mandatoryActivityCompleted currentDate person measurements activity =
 
         AcuteIllnessPhysicalExam ->
             isJust measurements.vitals
-                && (not <| expectPhysicalExamTask currentDate person PhysicalExamMuac || isJust measurements.acuteFindings)
+                && ((not <| expectPhysicalExamTask currentDate person PhysicalExamMuac) || isJust measurements.muac)
                 && isJust measurements.acuteFindings
 
         AcuteIllnessExposure ->
