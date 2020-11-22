@@ -374,13 +374,16 @@ viewActivity language currentDate id activity diagnosis data model =
 
         measurements =
             data.measurements
+
+        isFirstEncounter =
+            List.isEmpty data.previousMeasurementsWithDates
     in
     case activity of
         AcuteIllnessSymptoms ->
             viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) model.symptomsData
 
         AcuteIllnessPhysicalExam ->
-            viewAcuteIllnessPhysicalExam language currentDate id ( personId, data.person, measurements ) model.physicalExamData
+            viewAcuteIllnessPhysicalExam language currentDate id ( personId, data.person, measurements ) isFirstEncounter model.physicalExamData
 
         AcuteIllnessPriorTreatment ->
             viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) model.priorTreatmentData
@@ -590,8 +593,15 @@ viewSymptomsGIForm language currentDate measurements form =
         ]
 
 
-viewAcuteIllnessPhysicalExam : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, Person, AcuteIllnessMeasurements ) -> PhysicalExamData -> List (Html Msg)
-viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measurements ) data =
+viewAcuteIllnessPhysicalExam :
+    Language
+    -> NominalDate
+    -> AcuteIllnessEncounterId
+    -> ( PersonId, Person, AcuteIllnessMeasurements )
+    -> Bool
+    -> PhysicalExamData
+    -> List (Html Msg)
+viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measurements ) isFirstEncounter data =
     let
         activity =
             AcuteIllnessPhysicalExam
@@ -602,14 +612,18 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
 
         expectTask task =
             case task of
+                PhysicalExamVitals ->
+                    True
+
                 -- We show Muac for children under age of 5.
                 PhysicalExamMuac ->
                     ageInYears currentDate person
                         |> Maybe.map (\age -> age < 5)
                         |> Maybe.withDefault False
 
-                _ ->
-                    True
+                -- We show Acute Finding only on first encounter
+                PhysicalExamAcuteFindings ->
+                    isFirstEncounter
 
         viewTask task =
             let
