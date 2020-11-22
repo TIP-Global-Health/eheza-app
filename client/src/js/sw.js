@@ -30,6 +30,7 @@ var nodesUuid = '78cf21d1-b3f4-496a-b312-d8ae73041f09';
 var tableForType = {
     acute_findings: 'shards',
     acute_illness_encounter: 'shards',
+    acute_illness_muac: 'shards',
     acute_illness_vitals: 'shards',
     attendance: 'shards',
     breast_exam: 'shards',
