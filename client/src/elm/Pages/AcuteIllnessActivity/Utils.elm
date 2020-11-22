@@ -1285,6 +1285,19 @@ toMuacValue form =
     Maybe.map MuacInCm form.muac
 
 
+expectPhysicalExamTask : NominalDate -> Person -> PhysicalExamTask -> Bool
+expectPhysicalExamTask currentDate person task =
+    case task of
+        -- We show Muac for children under age of 5.
+        PhysicalExamMuac ->
+            ageInYears currentDate person
+                |> Maybe.map (\age -> age < 5)
+                |> Maybe.withDefault False
+
+        _ ->
+            True
+
+
 
 -- HELPER FUNCTIONS
 

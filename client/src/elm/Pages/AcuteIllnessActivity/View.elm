@@ -594,18 +594,7 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
 
         tasks =
             [ PhysicalExamVitals, PhysicalExamMuac, PhysicalExamAcuteFindings ]
-                |> List.filter expectTask
-
-        expectTask task =
-            case task of
-                -- We show Muac for children under age of 5.
-                PhysicalExamMuac ->
-                    ageInYears currentDate person
-                        |> Maybe.map (\age -> age < 5)
-                        |> Maybe.withDefault False
-
-                _ ->
-                    True
+                |> List.filter (expectPhysicalExamTask currentDate person)
 
         viewTask task =
             let
@@ -681,19 +670,19 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
             case currentTask of
                 PhysicalExamVitals ->
                     [ PhysicalExamMuac, PhysicalExamAcuteFindings ]
-                        |> List.filter expectTask
+                        |> List.filter (expectPhysicalExamTask currentDate person)
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
                 PhysicalExamMuac ->
                     [ PhysicalExamAcuteFindings, PhysicalExamVitals ]
-                        |> List.filter expectTask
+                        |> List.filter (expectPhysicalExamTask currentDate person)
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
                 PhysicalExamAcuteFindings ->
                     [ PhysicalExamVitals, PhysicalExamMuac ]
-                        |> List.filter expectTask
+                        |> List.filter (expectPhysicalExamTask currentDate person)
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 

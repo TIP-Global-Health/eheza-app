@@ -33,8 +33,8 @@ import Backend.Person.Utils exposing (ageInMonths)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..), NextStepsTask(..))
-import Pages.AcuteIllnessActivity.Utils exposing (symptomsGeneralDangerSigns)
+import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..), NextStepsTask(..), PhysicalExamTask(..))
+import Pages.AcuteIllnessActivity.Utils exposing (expectPhysicalExamTask, symptomsGeneralDangerSigns)
 import Pages.AcuteIllnessEncounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -166,7 +166,7 @@ expectActivity : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe Acut
 expectActivity currentDate person measurements diagnosis activity =
     case activity of
         AcuteIllnessLaboratory ->
-            mandatoryActivitiesCompleted measurements
+            mandatoryActivitiesCompleted currentDate person measurements
                 && feverRecorded measurements
 
         AcuteIllnessNextSteps ->
@@ -181,10 +181,10 @@ activityCompleted : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe A
 activityCompleted currentDate person measurements diagnosis activity =
     case activity of
         AcuteIllnessSymptoms ->
-            mandatoryActivityCompleted measurements AcuteIllnessSymptoms
+            mandatoryActivityCompleted currentDate person measurements AcuteIllnessSymptoms
 
         AcuteIllnessPhysicalExam ->
-            mandatoryActivityCompleted measurements AcuteIllnessPhysicalExam
+            mandatoryActivityCompleted currentDate person measurements AcuteIllnessPhysicalExam
 
         AcuteIllnessPriorTreatment ->
             isJust measurements.treatmentReview
@@ -193,7 +193,7 @@ activityCompleted currentDate person measurements diagnosis activity =
             isJust measurements.malariaTesting
 
         AcuteIllnessExposure ->
-            mandatoryActivityCompleted measurements AcuteIllnessExposure
+            mandatoryActivityCompleted currentDate person measurements AcuteIllnessExposure
 
         AcuteIllnessNextSteps ->
             case resolveNextStepsTasks currentDate person diagnosis measurements of
@@ -214,14 +214,14 @@ activityCompleted currentDate person measurements diagnosis activity =
 {-| These are the activities that are mandatory, for us to come up with diagnosis.
 Covid19 diagnosis is special, therefore, we assume here that Covid19 is negative.
 -}
-mandatoryActivitiesCompleted : AcuteIllnessMeasurements -> Bool
-mandatoryActivitiesCompleted measurements =
+mandatoryActivitiesCompleted : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
+mandatoryActivitiesCompleted currentDate person measurements =
     [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPhysicalExam ]
-        |> List.all (mandatoryActivityCompleted measurements)
+        |> List.all (mandatoryActivityCompleted currentDate person measurements)
 
 
-mandatoryActivityCompleted : AcuteIllnessMeasurements -> AcuteIllnessActivity -> Bool
-mandatoryActivityCompleted measurements activity =
+mandatoryActivityCompleted : NominalDate -> Person -> AcuteIllnessMeasurements -> AcuteIllnessActivity -> Bool
+mandatoryActivityCompleted currentDate person measurements activity =
     case activity of
         AcuteIllnessSymptoms ->
             isJust measurements.symptomsGeneral
@@ -230,6 +230,7 @@ mandatoryActivityCompleted measurements activity =
 
         AcuteIllnessPhysicalExam ->
             isJust measurements.vitals
+                && (not <| expectPhysicalExamTask currentDate person PhysicalExamMuac || isJust measurements.acuteFindings)
                 && isJust measurements.acuteFindings
 
         AcuteIllnessExposure ->
@@ -403,7 +404,7 @@ covid19Diagnosed measurements =
 resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
 resolveNonCovid19AcuteIllnessDiagnosis currentDate person covid19ByPartialSet measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
-    if mandatoryActivitiesCompleted measurements then
+    if mandatoryActivitiesCompleted currentDate person measurements then
         if feverRecorded measurements then
             resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements
 
