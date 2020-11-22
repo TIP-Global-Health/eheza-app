@@ -1876,6 +1876,20 @@ input::placeholder {
   }
 }
 
+.icon-physical-exam-muac {
+  .active &:after {
+    background-image: url(#{$img-path}icon-muac-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-muac-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-muac-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
 // Lists
 
 .ui.list {
