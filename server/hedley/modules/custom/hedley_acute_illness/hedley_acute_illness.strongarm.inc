@@ -394,7 +394,7 @@ function hedley_acute_illness_strongarm() {
     'extra_fields' => array(
       'form' => array(
         'title' => array(
-          'weight' => '-5',
+          'weight' => '0',
         ),
       ),
       'display' => array(),
@@ -885,7 +885,8 @@ function hedley_acute_illness_strongarm() {
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;  $strongarm->name = 'node_submitted_acute_illness_muac';
+  $strongarm->api_version = 1;
+  $strongarm->name = 'node_submitted_acute_illness_muac';
   $strongarm->value = 1;
   $export['node_submitted_acute_illness_muac'] = $strongarm;
 
