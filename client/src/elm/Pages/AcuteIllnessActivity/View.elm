@@ -383,7 +383,7 @@ viewActivity language currentDate id activity diagnosis data model =
             viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) model.symptomsData
 
         AcuteIllnessPhysicalExam ->
-            viewAcuteIllnessPhysicalExam language currentDate id ( personId, data.person, measurements ) isFirstEncounter model.physicalExamData
+            viewAcuteIllnessPhysicalExam language currentDate id data isFirstEncounter model.physicalExamData
 
         AcuteIllnessPriorTreatment ->
             viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) model.priorTreatmentData
@@ -600,14 +600,23 @@ viewAcuteIllnessPhysicalExam :
     Language
     -> NominalDate
     -> AcuteIllnessEncounterId
-    -> ( PersonId, Person, AcuteIllnessMeasurements )
+    -> AssembledData
     -> Bool
     -> PhysicalExamData
     -> List (Html Msg)
-viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measurements ) isFirstEncounter data =
+viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter data =
     let
         activity =
             AcuteIllnessPhysicalExam
+
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
 
         tasks =
             [ PhysicalExamVitals, PhysicalExamMuac, PhysicalExamAcuteFindings ]
@@ -669,13 +678,13 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
                     measurements.vitals
                         |> Maybe.map (Tuple.second >> .value)
                         |> vitalsFormWithDefault data.vitalsForm
-                        |> viewVitalsForm language currentDate measurements
+                        |> viewVitalsForm language currentDate assembled
 
                 PhysicalExamMuac ->
                     measurements.muac
                         |> Maybe.map (Tuple.second >> .value)
                         |> muacFormWithDefault data.muacForm
-                        |> viewMuacForm language currentDate measurements Nothing
+                        |> viewMuacForm language currentDate assembled
 
                 PhysicalExamAcuteFindings ->
                     measurements.acuteFindings
@@ -741,24 +750,23 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
     ]
 
 
-viewVitalsForm : Language -> NominalDate -> AcuteIllnessMeasurements -> VitalsForm -> Html Msg
-viewVitalsForm language currentDate measurements form_ =
+viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
+viewVitalsForm language currentDate assembled form_ =
     let
+        measurements =
+            assembled.measurements
+
         form =
             measurements.vitals
                 |> Maybe.map (Tuple.second >> .value)
                 |> vitalsFormWithDefault form_
 
         respiratoryRatePreviousValue =
-            -- Todo
-            -- resolvePreviousValue assembled .vitals .respiratoryRate
-            --     |> Maybe.map toFloat
-            Nothing
+            resolvePreviousValue assembled .vitals .respiratoryRate
+                |> Maybe.map toFloat
 
         bodyTemperaturePreviousValue =
-            -- Todo
-            -- resolvePreviousValue assembled .vitals .bodyTemperature
-            Nothing
+            resolvePreviousValue assembled .vitals .bodyTemperature
     in
     div [ class "ui form physical-exam vitals" ]
         [ viewLabel language Translate.RespiratoryRate
@@ -781,9 +789,12 @@ viewVitalsForm language currentDate measurements form_ =
         ]
 
 
-viewMuacForm : Language -> NominalDate -> AcuteIllnessMeasurements -> Maybe ( NominalDate, Float ) -> MuacForm -> Html Msg
-viewMuacForm language currentDate measurements previousValue_ form_ =
+viewMuacForm : Language -> NominalDate -> AssembledData -> MuacForm -> Html Msg
+viewMuacForm language currentDate assembled form_ =
     let
+        measurements =
+            assembled.measurements
+
         form =
             measurements.muac
                 |> Maybe.map (Tuple.second >> .value)
@@ -793,7 +804,7 @@ viewMuacForm language currentDate measurements previousValue_ form_ =
             getInputConstraintsMuac
 
         previousValue =
-            Nothing
+            resolvePreviousValue assembled .muac (\(MuacInCm cm) -> cm)
     in
     div [ class "ui form physical-exam muac" ]
         [ viewLabel language Translate.MUAC
