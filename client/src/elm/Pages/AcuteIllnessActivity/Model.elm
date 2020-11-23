@@ -33,6 +33,8 @@ type Msg
     | SetAcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
     | SaveVitals PersonId (Maybe ( AcuteIllnessVitalsId, AcuteIllnessVitals )) (Maybe PhysicalExamTask)
     | SaveAcuteFindings PersonId (Maybe ( AcuteFindingsId, AcuteFindings )) (Maybe PhysicalExamTask)
+    | SetMuac String
+    | SaveMuac PersonId (Maybe ( AcuteIllnessMuacId, AcuteIllnessMuac )) (Maybe PhysicalExamTask)
       -- LABORATORY Msgs
     | SetActiveLaboratoryTask LaboratoryTask
     | SetRapidTestResult String
@@ -168,6 +170,7 @@ type alias SymptomsGIForm =
 
 type alias PhysicalExamData =
     { vitalsForm : VitalsForm
+    , muacForm : MuacForm
     , acuteFindingsForm : AcuteFindingsForm
     , activeTask : PhysicalExamTask
     }
@@ -177,12 +180,14 @@ emptyPhysicalExamData : PhysicalExamData
 emptyPhysicalExamData =
     { vitalsForm = VitalsForm Nothing False Nothing False
     , acuteFindingsForm = AcuteFindingsForm Nothing Nothing
+    , muacForm = MuacForm Nothing False
     , activeTask = PhysicalExamVitals
     }
 
 
 type PhysicalExamTask
     = PhysicalExamVitals
+    | PhysicalExamMuac
     | PhysicalExamAcuteFindings
 
 
@@ -191,6 +196,12 @@ type alias VitalsForm =
     , respiratoryRateDirty : Bool
     , bodyTemperature : Maybe Float
     , bodyTemperatureDirty : Bool
+    }
+
+
+type alias MuacForm =
+    { muac : Maybe Float
+    , muacDirty : Bool
     }
 
 

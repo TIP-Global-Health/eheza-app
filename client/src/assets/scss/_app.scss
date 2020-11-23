@@ -152,7 +152,7 @@ a {
   }
 
   &.mother {
-    background: url(#{$img-path}icon-mother-grey.svg) no-repeat center;
+    background: url(#{$img-path}icon-mother-gray.svg) no-repeat center;
     background-color: $color-background;
     background-size: 62% 62%;
 
@@ -164,7 +164,7 @@ a {
   }
 
   &.child {
-    background: url(#{$img-path}icon-baby-grey.svg) no-repeat center;
+    background: url(#{$img-path}icon-baby-gray.svg) no-repeat center;
     background-color: $color-background;
     background-size: 75% 75%;
 

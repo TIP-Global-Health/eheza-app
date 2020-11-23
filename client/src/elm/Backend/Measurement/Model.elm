@@ -819,6 +819,10 @@ type alias MedicationDistribution =
     AcuteIllnessMeasurement MedicationDistributionValue
 
 
+type alias AcuteIllnessMuac =
+    AcuteIllnessMeasurement MuacInCm
+
+
 type TreatmentOngoingSign
     = TakenAsPrescribed
     | MissedDoses
@@ -986,6 +990,7 @@ type alias AcuteIllnessMeasurements =
     , treatmentReview : Maybe ( TreatmentReviewId, TreatmentReview )
     , sendToHC : Maybe ( SendToHCId, SendToHC )
     , medicationDistribution : Maybe ( MedicationDistributionId, MedicationDistribution )
+    , muac : Maybe ( AcuteIllnessMuacId, AcuteIllnessMuac )
     , treatmentOngoing : Maybe ( TreatmentOngoingId, TreatmentOngoing )
     , dangerSigns : Maybe ( AcuteIllnessDangerSignsId, AcuteIllnessDangerSigns )
     }

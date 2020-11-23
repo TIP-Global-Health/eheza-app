@@ -7,17 +7,20 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Encoder exposing (malariaRapidTestResultAsString)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (isPersonAFertileWoman)
+import Backend.Person.Utils exposing (ageInYears, isPersonAFertileWoman)
 import EverySet
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Utils exposing (getInputConstraintsMuac)
+import Measurement.View exposing (viewMuacIndication)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
@@ -371,13 +374,16 @@ viewActivity language currentDate id activity diagnosis data model =
 
         measurements =
             data.measurements
+
+        isFirstEncounter =
+            List.isEmpty data.previousMeasurementsWithDates
     in
     case activity of
         AcuteIllnessSymptoms ->
             viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) model.symptomsData
 
         AcuteIllnessPhysicalExam ->
-            viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) model.physicalExamData
+            viewAcuteIllnessPhysicalExam language currentDate id ( personId, data.person, measurements ) isFirstEncounter model.physicalExamData
 
         AcuteIllnessPriorTreatment ->
             viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) model.priorTreatmentData
@@ -590,14 +596,22 @@ viewSymptomsGIForm language currentDate measurements form =
         ]
 
 
-viewAcuteIllnessPhysicalExam : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> PhysicalExamData -> List (Html Msg)
-viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) data =
+viewAcuteIllnessPhysicalExam :
+    Language
+    -> NominalDate
+    -> AcuteIllnessEncounterId
+    -> ( PersonId, Person, AcuteIllnessMeasurements )
+    -> Bool
+    -> PhysicalExamData
+    -> List (Html Msg)
+viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measurements ) isFirstEncounter data =
     let
         activity =
             AcuteIllnessPhysicalExam
 
         tasks =
-            [ PhysicalExamVitals, PhysicalExamAcuteFindings ]
+            [ PhysicalExamVitals, PhysicalExamMuac, PhysicalExamAcuteFindings ]
+                |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
 
         viewTask task =
             let
@@ -606,6 +620,11 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) 
                         PhysicalExamVitals ->
                             ( "physical-exam-vitals"
                             , isJust measurements.vitals
+                            )
+
+                        PhysicalExamMuac ->
+                            ( "physical-exam-muac"
+                            , isJust measurements.muac
                             )
 
                         PhysicalExamAcuteFindings ->
@@ -652,6 +671,12 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) 
                         |> vitalsFormWithDefault data.vitalsForm
                         |> viewVitalsForm language currentDate measurements
 
+                PhysicalExamMuac ->
+                    measurements.muac
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> muacFormWithDefault data.muacForm
+                        |> viewMuacForm language currentDate measurements Nothing
+
                 PhysicalExamAcuteFindings ->
                     measurements.acuteFindings
                         |> Maybe.map (Tuple.second >> .value)
@@ -661,12 +686,20 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) 
         getNextTask currentTask =
             case currentTask of
                 PhysicalExamVitals ->
-                    [ PhysicalExamAcuteFindings ]
+                    [ PhysicalExamMuac, PhysicalExamAcuteFindings ]
+                        |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                PhysicalExamMuac ->
+                    [ PhysicalExamAcuteFindings, PhysicalExamVitals ]
+                        |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
                 PhysicalExamAcuteFindings ->
-                    [ PhysicalExamVitals ]
+                    [ PhysicalExamVitals, PhysicalExamMuac ]
+                        |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
@@ -679,6 +712,9 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) 
                     case data.activeTask of
                         PhysicalExamVitals ->
                             SaveVitals personId measurements.vitals nextTask
+
+                        PhysicalExamMuac ->
+                            SaveMuac personId measurements.muac nextTask
 
                         PhysicalExamAcuteFindings ->
                             SaveAcuteFindings personId measurements.acuteFindings nextTask
@@ -706,8 +742,13 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) 
 
 
 viewVitalsForm : Language -> NominalDate -> AcuteIllnessMeasurements -> VitalsForm -> Html Msg
-viewVitalsForm language currentDate measurements form =
+viewVitalsForm language currentDate measurements form_ =
     let
+        form =
+            measurements.vitals
+                |> Maybe.map (Tuple.second >> .value)
+                |> vitalsFormWithDefault form_
+
         respiratoryRatePreviousValue =
             -- Todo
             -- resolvePreviousValue assembled .vitals .respiratoryRate
@@ -719,7 +760,7 @@ viewVitalsForm language currentDate measurements form =
             -- resolvePreviousValue assembled .vitals .bodyTemperature
             Nothing
     in
-    div [ class "ui form examination vitals" ]
+    div [ class "ui form physical-exam vitals" ]
         [ viewLabel language Translate.RespiratoryRate
         , viewMeasurementInput
             language
@@ -740,6 +781,43 @@ viewVitalsForm language currentDate measurements form =
         ]
 
 
+viewMuacForm : Language -> NominalDate -> AcuteIllnessMeasurements -> Maybe ( NominalDate, Float ) -> MuacForm -> Html Msg
+viewMuacForm language currentDate measurements previousValue_ form_ =
+    let
+        form =
+            measurements.muac
+                |> Maybe.map (Tuple.second >> .value)
+                |> muacFormWithDefault form_
+
+        constraints =
+            getInputConstraintsMuac
+
+        previousValue =
+            Nothing
+    in
+    div [ class "ui form physical-exam muac" ]
+        [ viewLabel language Translate.MUAC
+        , p [ class "activity-helper" ] [ text <| translate language Translate.MuacHelper ]
+        , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
+        , div [ class "ui grid" ]
+            [ div [ class "eleven wide column" ]
+                [ viewMeasurementInput
+                    language
+                    form.muac
+                    SetMuac
+                    "muac"
+                    Translate.CentimeterShorthand
+                ]
+            , div
+                [ class "five wide column" ]
+                [ showMaybe <|
+                    Maybe.map (MuacInCm >> muacIndication >> viewMuacIndication language) form.muac
+                ]
+            ]
+        , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
+        ]
+
+
 viewAcuteFindingsForm : Language -> NominalDate -> AcuteIllnessMeasurements -> AcuteFindingsForm -> Html Msg
 viewAcuteFindingsForm language currentDate measurements form_ =
     let
@@ -748,7 +826,7 @@ viewAcuteFindingsForm language currentDate measurements form_ =
                 |> Maybe.map (Tuple.second >> .value)
                 |> acuteFindingsFormWithDefault form_
     in
-    div [ class "ui form examination acute-findings" ]
+    div [ class "ui form physical-exam acute-findings" ]
         [ viewQuestionLabel language Translate.PatientExhibitAnyFindings
         , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
         , viewCheckBoxMultipleSelectInput language

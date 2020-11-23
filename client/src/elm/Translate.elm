@@ -555,6 +555,7 @@ type TranslationId
     | MotherNationalId
     | Mothers
     | MUAC
+    | MuacHelper
     | MuacIndication MuacIndication
     | MyAccount
     | MyRelatedBy MyRelatedBy
@@ -3727,6 +3728,11 @@ translationSet trans =
             , kinyarwanda = Just "Ikizigira"
             }
 
+        MuacHelper ->
+            { english = "Make sure to measure at the center of the baby’s upper arm."
+            , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe guoima ikizigira cy'akaboko"
+            }
+
         MuacIndication indication ->
             case indication of
                 MuacRed ->
@@ -4285,6 +4291,11 @@ translationSet trans =
                 PhysicalExamVitals ->
                     { english = "Vitals"
                     , kinyarwanda = Just "Ibipimo by'ubuzima"
+                    }
+
+                PhysicalExamMuac ->
+                    { english = "Muac"
+                    , kinyarwanda = Nothing
                     }
 
                 PhysicalExamAcuteFindings ->

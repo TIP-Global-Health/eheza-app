@@ -547,6 +547,61 @@ update currentDate id db msg model =
             , appMsgs
             )
 
+        SetMuac string ->
+            let
+                form =
+                    model.physicalExamData.muacForm
+
+                updatedForm =
+                    { form | muac = String.toFloat string, muacDirty = True }
+
+                updatedData =
+                    model.physicalExamData
+                        |> (\data -> { data | muacForm = updatedForm })
+            in
+            ( { model | physicalExamData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveMuac personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+                            , PhysicalExamVitals
+                            )
+
+                appMsgs =
+                    model.physicalExamData.muacForm
+                        |> toMuacValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.AcuteIllnessEncounter.Model.SaveMuac personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.physicalExamData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | physicalExamData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
         SetActiveLaboratoryTask task ->
             let
                 updatedData =

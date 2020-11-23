@@ -534,6 +534,42 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
+        SaveMuac personId valueId value ->
+            let
+                cmd =
+                    case valueId of
+                        Nothing ->
+                            { participantId = personId
+                            , dateMeasured = currentDate
+                            , encounterId = Just encounterId
+                            , nurse = nurseId
+                            , healthCenter = healthCenterId
+                            , value = value
+                            }
+                                |> sw.post acuteIllnessMuacEndpoint
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedMuac)
+
+                        Just id ->
+                            encodeMuacValue value
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
+                                |> object
+                                |> sw.patchAny acuteIllnessMuacEndpoint id
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedMuac)
+            in
+            ( { model | saveMuac = Loading }
+            , cmd
+            )
+
+        HandleSavedMuac data ->
+            ( { model | saveMuac = data }
+            , Cmd.none
+            )
+
         SaveTreatmentOngoing personId valueId value ->
             let
                 cmd =

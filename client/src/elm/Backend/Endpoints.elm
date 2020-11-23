@@ -579,6 +579,12 @@ call114Endpoint =
         |> withValueEncoder (object << encodeCall114)
 
 
+acuteIllnessMuacEndpoint : ReadWriteEndPoint Error AcuteIllnessMuacId AcuteIllnessMuac AcuteIllnessMuac ()
+acuteIllnessMuacEndpoint =
+    swEndpoint "nodes/acute_illness_muac" decodeAcuteIllnessMuac
+        |> withValueEncoder (object << encodeAcuteIllnessMuac)
+
+
 treatmentOngoingEndpoint : ReadWriteEndPoint Error TreatmentOngoingId TreatmentOngoing TreatmentOngoing ()
 treatmentOngoingEndpoint =
     swEndpoint "nodes/treatment_ongoing" decodeTreatmentOngoing

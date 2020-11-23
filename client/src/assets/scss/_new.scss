@@ -252,9 +252,9 @@ div.page-pincode {
   button.ui.logout.button {
     background: $color-light-background;
     border: 2px solid $color-white;
-    position: absolute;
-    bottom: 0;
-    width: 89%;
+    margin-bottom: 0;
+    margin-top: auto;
+    width: 100%;
   }
 
   // Maintaing margin from 'sign out' button when selecting health center.
@@ -475,7 +475,7 @@ div.page-activity {
         input,
         select {
           background-color: $color-white;
-          border: 2px solid $color-grey-border;
+          border: 2px solid $color-gray-border;
           color: $color-text;
           float: left;
           width: 60%;
@@ -501,7 +501,7 @@ div.page-activity {
           width: 26px;
           height: 26px;
           border-radius: 13px;
-          border: 2px solid $color-grey-border;
+          border: 2px solid $color-gray-border;
           background-color: transparent;
         }
 
@@ -821,7 +821,7 @@ div.page-activity.acute-illness {
 
     .form-input.period {
       background: $color-white;
-      border: 2px solid $color-lighter-grey;
+      border: 2px solid $color-lighter-gray;
       margin-bottom: 0;
       margin-top: -10px;
       padding: 5px;
@@ -841,7 +841,7 @@ div.page-activity.acute-illness {
 
       input {
         background-color: $color-white;
-        border: 2px solid $color-grey-border;
+        border: 2px solid $color-gray-border;
         float: left;
         width: 60%;
       }
@@ -862,7 +862,7 @@ div.page-activity.acute-illness {
 
       label:before {
         background-color: transparent;
-        border: 2px solid $color-grey-border;
+        border: 2px solid $color-gray-border;
         border-radius: 13px;
         content: " ";
         display: inline-block;
@@ -896,7 +896,7 @@ div.page-activity.acute-illness {
 
     .form-input.rapid-test-result {
       background: $color-white;
-      border: 2px solid $color-lighter-grey;
+      border: 2px solid $color-lighter-gray;
       color: $color-text;
       padding: 5px;
       width: 60%;
@@ -906,10 +906,11 @@ div.page-activity.acute-illness {
 
       input {
         background-color: $color-white;
-        border: 2px solid $color-grey-border;
+        border: 2px solid $color-gray-border;
         font-size: 22px;
         font-weight: bold;
         height: 35px;
+        text-align: center;
         text-align: -webkit-center;
         width: 100%;
       }
@@ -967,7 +968,7 @@ div.page-activity.nutrition {
       // Pregnanacy Dating Inputs
       &.range {
         background: $color-white;
-        border: 2px solid $color-light-grey;
+        border: 2px solid $color-light-gray;
         padding: 5px;
         width: 50%;
       }
@@ -983,7 +984,7 @@ div.page-activity.nutrition {
 
         .dropdown--button-container {
           background: $color-white;
-          border: 2px solid $color-light-grey;
+          border: 2px solid $color-light-gray;
 
           input {
             border: 0;
@@ -994,7 +995,7 @@ div.page-activity.nutrition {
 
       &.hiv-test-result {
         background: $color-white;
-        border: 2px solid $color-light-grey;
+        border: 2px solid $color-light-gray;
         margin-top: 15px;
         padding: 5px;
         width: 73%;
@@ -1005,9 +1006,10 @@ div.page-activity.nutrition {
         margin-bottom: 10px;
 
         input {
-          border: 2px solid $color-grey-border;
+          border: 2px solid $color-gray-border;
           background-color: $color-white;
           width: 100%;
+          text-align: center;
           text-align: -webkit-center;
           font-weight: bold;
         }
@@ -1032,7 +1034,7 @@ div.page-activity.nutrition {
 
         input {
           background-color: $color-white;
-          border: 2px solid $color-grey-border;
+          border: 2px solid $color-gray-border;
           float: left;
           width: 60%;
         }
@@ -1061,7 +1063,7 @@ div.page-activity.nutrition {
           width: 26px;
           height: 26px;
           border-radius: 13px;
-          border: 2px solid $color-grey-border;
+          border: 2px solid $color-gray-border;
           background-color: transparent;
         }
 
@@ -1100,7 +1102,7 @@ div.page-activity.nutrition {
     }
 
     .separator {
-      color: $color-light-grey;
+      color: $color-light-gray;
       margin: 30px 0;
       width: 100%;
       border: 1px solid;
@@ -1278,7 +1280,7 @@ div.page-outcome.pregnancy {
 
         .dropdown--button-container {
           background: $color-white;
-          border: 2px solid $color-light-grey;
+          border: 2px solid $color-light-gray;
 
           input {
             border: 0;
@@ -1289,7 +1291,7 @@ div.page-outcome.pregnancy {
 
       &.pregnancy-outcome {
         background: $color-white;
-        border: 2px solid $color-light-grey;
+        border: 2px solid $color-light-gray;
         padding: 5px;
         width: 73%;
       }
@@ -1313,7 +1315,7 @@ div.page-outcome.pregnancy {
           width: 26px;
           height: 26px;
           border-radius: 13px;
-          border: 2px solid $color-grey-border;
+          border: 2px solid $color-gray-border;
           background-color: transparent;
         }
 
@@ -1348,7 +1350,7 @@ div.page-outcome.pregnancy {
 
       &.pregnancy-outcome {
         background: $color-white;
-        border: 2px solid $color-light-grey;
+        border: 2px solid $color-light-gray;
         padding: 5px;
         width: 73%;
       }
@@ -1358,7 +1360,7 @@ div.page-outcome.pregnancy {
 
 div.page-clinical-progress-report,
 div.page-demographics-report {
-  background: $color-light-grey;
+  background: $color-light-gray;
   padding: 0 20px 35px 20px;
   height: 100%;
   display: flex;
@@ -1452,8 +1454,8 @@ div.page-clinical-progress-report {
       }
 
       .gravida {
-        border-left: 1px solid $color-light-grey;
-        border-right: 1px solid $color-light-grey;
+        border-left: 1px solid $color-light-gray;
+        border-right: 1px solid $color-light-gray;
         text-align: center;
       }
 
@@ -1475,7 +1477,7 @@ div.page-clinical-progress-report {
           }
 
           .term, .pre-term, .abortions {
-            border-right: 1px solid $color-light-grey;
+            border-right: 1px solid $color-light-gray;
           }
         }
       }
@@ -1560,7 +1562,7 @@ div.page-clinical-progress-report {
           }
 
           p.gray {
-            border-top: 10px solid $color-light-grey;
+            border-top: 10px solid $color-light-gray;
           }
 
           span {
@@ -1599,7 +1601,7 @@ div.page-clinical-progress-report {
       grid-template-columns: 25% 25% 40%;
 
       .trimester-visits {
-        border-left: 1px solid $color-light-grey;
+        border-left: 1px solid $color-light-gray;
         font-size: 16px;
         padding-left: 10px;
         padding-top: 30px;
@@ -1638,7 +1640,7 @@ div.page-clinical-progress-report {
         }
 
         .ega {
-          background-color: $color-grey;
+          background-color: $color-gray;
           color: $color-white;
           font-size: 16px;
           font-weight: bold;
@@ -1668,7 +1670,7 @@ div.page-clinical-progress-report {
       }
 
       table {
-        color: $color-darker-grey;
+        color: $color-darker-gray;
         margin-bottom: -20px;
 
         th, td {
@@ -1684,13 +1686,13 @@ div.page-clinical-progress-report {
         }
 
         th {
-          background-color: $color-light-grey;
+          background-color: $color-light-gray;
         }
 
       }
 
       .illustrative-purposes {
-        color: $color-darker-grey;
+        color: $color-darker-gray;
         margin-bottom: 50px;
         margin-top: -90px;
         font-size: 12px;
@@ -1718,7 +1720,7 @@ div.page-demographics-report {
     margin-top: 20px;
 
     .thead {
-      border-bottom: 2px solid $color-light-grey;
+      border-bottom: 2px solid $color-light-gray;
       width: 95%;
 
       .label {
@@ -1731,7 +1733,7 @@ div.page-demographics-report {
     }
 
     .row {
-      border-bottom: 1px solid $color-light-grey;
+      border-bottom: 1px solid $color-light-gray;
       height: 24px;
       width: 95%;
 
@@ -1895,7 +1897,7 @@ div.page-participant.acute-illness {
 }
 
 div.page-report.acute-illness {
-  background: $color-lighter-grey;
+  background: $color-lighter-gray;
   padding: 20px;
 
   .ui.report.unstackable.items {

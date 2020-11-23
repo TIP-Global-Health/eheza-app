@@ -1511,6 +1511,11 @@ encodeRecommendationSite period =
                 "n-a"
 
 
+encodeAcuteIllnessMuac : AcuteIllnessMuac -> List ( String, Value )
+encodeAcuteIllnessMuac =
+    encodeAcuteIllnessMeasurement encodeMuacValue
+
+
 encodeTreatmentOngoing : TreatmentOngoing -> List ( String, Value )
 encodeTreatmentOngoing =
     encodeAcuteIllnessMeasurement encodeTreatmentOngoingValue

@@ -583,6 +583,14 @@ type MedicationDistributionIdUuidType
     = MedicationDistributionIdUuidType
 
 
+type alias AcuteIllnessMuacId =
+    EntityUuid AcuteIllnessMuacUuidType
+
+
+type AcuteIllnessMuacUuidType
+    = AcuteIllnessMuacUuidType
+
+
 type alias TreatmentOngoingId =
     EntityUuid TreatmentOngoingUuidType
 

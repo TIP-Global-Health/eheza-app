@@ -23,6 +23,7 @@ import Backend.Measurement.Model
         , MedicationDistributionValue
         , MedicationNonAdministrationReason(..)
         , MedicationNonAdministrationSign(..)
+        , MuacInCm(..)
         , ReasonForNotIsolating(..)
         , ReasonForNotTaking(..)
         , Recommendation114(..)
@@ -184,6 +185,17 @@ physicalExamTasksCompletedFromTotal measurements data task =
             in
             ( taskCompleted form.respiratoryRate + taskCompleted form.bodyTemperature
             , 2
+            )
+
+        PhysicalExamMuac ->
+            let
+                form =
+                    measurements.muac
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> muacFormWithDefault data.muacForm
+            in
+            ( taskCompleted form.muac
+            , 1
             )
 
         PhysicalExamAcuteFindings ->
@@ -1309,6 +1321,36 @@ nonAdministrationReasonToSign sign reason =
             NoMedicationNonAdministrationSigns
 
 
+fromMuacValue : Maybe MuacInCm -> MuacForm
+fromMuacValue saved =
+    { muac = Maybe.map (\(MuacInCm cm) -> cm) saved
+    , muacDirty = False
+    }
+
+
+muacFormWithDefault : MuacForm -> Maybe MuacInCm -> MuacForm
+muacFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { muac = valueConsideringIsDirtyField form.muacDirty form.muac (value |> (\(MuacInCm cm) -> cm))
+                , muacDirty = form.muacDirty
+                }
+            )
+
+
+toMuacValueWithDefault : Maybe MuacInCm -> MuacForm -> Maybe MuacInCm
+toMuacValueWithDefault saved form =
+    muacFormWithDefault form saved
+        |> toMuacValue
+
+
+toMuacValue : MuacForm -> Maybe MuacInCm
+toMuacValue form =
+    Maybe.map MuacInCm form.muac
+
+
 fromOngoingTreatmentReviewValue : Maybe TreatmentOngoingValue -> OngoingTreatmentReviewForm
 fromOngoingTreatmentReviewValue saved =
     { takenAsPrescribed = Maybe.map (.signs >> EverySet.member TakenAsPrescribed) saved
@@ -1423,6 +1465,23 @@ toReviewDangerSignsValue form =
         )
         form.conditionImproving
         form.symptoms
+
+
+expectPhysicalExamTask : NominalDate -> Person -> Bool -> PhysicalExamTask -> Bool
+expectPhysicalExamTask currentDate person isFirstEncounter task =
+    case task of
+        PhysicalExamVitals ->
+            True
+
+        -- We show Muac for children under age of 5.
+        PhysicalExamMuac ->
+            ageInYears currentDate person
+                |> Maybe.map (\age -> age < 5)
+                |> Maybe.withDefault False
+
+        -- We show Acute Finding only on first encounter
+        PhysicalExamAcuteFindings ->
+            isFirstEncounter
 
 
 
