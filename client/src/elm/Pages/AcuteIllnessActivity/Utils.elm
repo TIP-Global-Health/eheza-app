@@ -22,6 +22,7 @@ import Backend.Measurement.Model
         , MedicationDistributionValue
         , MedicationNonAdministrationReason(..)
         , MedicationNonAdministrationSign(..)
+        , MuacInCm(..)
         , ReasonForNotIsolating(..)
         , Recommendation114(..)
         , RecommendationSite(..)
@@ -180,6 +181,17 @@ physicalExamTasksCompletedFromTotal measurements data task =
             in
             ( taskCompleted form.respiratoryRate + taskCompleted form.bodyTemperature
             , 2
+            )
+
+        PhysicalExamMuac ->
+            let
+                form =
+                    measurements.muac
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> muacFormWithDefault data.muacForm
+            in
+            ( taskCompleted form.muac
+            , 1
             )
 
         PhysicalExamAcuteFindings ->
@@ -1241,6 +1253,49 @@ nonAdministrationReasonToSign sign reason =
 
         _ ->
             NoMedicationNonAdministrationSigns
+
+
+fromMuacValue : Maybe MuacInCm -> MuacForm
+fromMuacValue saved =
+    { muac = Maybe.map (\(MuacInCm cm) -> cm) saved
+    , muacDirty = False
+    }
+
+
+muacFormWithDefault : MuacForm -> Maybe MuacInCm -> MuacForm
+muacFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { muac = valueConsideringIsDirtyField form.muacDirty form.muac (value |> (\(MuacInCm cm) -> cm))
+                , muacDirty = form.muacDirty
+                }
+            )
+
+
+toMuacValueWithDefault : Maybe MuacInCm -> MuacForm -> Maybe MuacInCm
+toMuacValueWithDefault saved form =
+    muacFormWithDefault form saved
+        |> toMuacValue
+
+
+toMuacValue : MuacForm -> Maybe MuacInCm
+toMuacValue form =
+    Maybe.map MuacInCm form.muac
+
+
+expectPhysicalExamTask : NominalDate -> Person -> PhysicalExamTask -> Bool
+expectPhysicalExamTask currentDate person task =
+    case task of
+        -- We show Muac for children under age of 5.
+        PhysicalExamMuac ->
+            ageInYears currentDate person
+                |> Maybe.map (\age -> age < 5)
+                |> Maybe.withDefault False
+
+        _ ->
+            True
 
 
 

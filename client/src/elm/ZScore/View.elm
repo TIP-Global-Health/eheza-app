@@ -689,7 +689,7 @@ viewHeightForAgeBoys language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-grey"
+        [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Male ZeroYears)
         , yAxisLinesAndText heightForAgeConfig
         , xAxisLinesAndText heightForAgeConfig
@@ -710,7 +710,7 @@ viewHeightForAgeBoys2To5 language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-grey"
+        [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Male TwoYears)
         , yAxisLinesAndText heightForAgeConfig2To5
         , xAxisLinesAndText heightForAgeConfig2To5
@@ -731,7 +731,7 @@ viewHeightForAgeBoys5To19 language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-grey"
+        [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Male FiveYears)
         , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
@@ -752,7 +752,7 @@ viewHeightForAgeGirls language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-grey"
+        [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Female ZeroYears)
         , yAxisLinesAndText heightForAgeConfig
         , xAxisLinesAndText heightForAgeConfig
@@ -773,7 +773,7 @@ viewHeightForAgeGirls2To5 language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-grey"
+        [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Female TwoYears)
         , yAxisLinesAndText heightForAgeConfig2To5
         , xAxisLinesAndText heightForAgeConfig2To5
@@ -794,7 +794,7 @@ viewHeightForAgeGirls5To19 language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-grey"
+        [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Female FiveYears)
         , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
@@ -815,7 +815,7 @@ viewWeightForAgeBoys language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-grey"
+        [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Male ZeroYears)
         , yAxisLinesAndText weightForAgeConfig
         , xAxisLinesAndText weightForAgeConfig
@@ -836,7 +836,7 @@ viewWeightForAgeBoys2To5 language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-grey"
+        [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Male TwoYears)
         , yAxisLinesAndText weightForAge2to5Config
         , xAxisLinesAndText weightForAge2to5Config
@@ -857,7 +857,7 @@ viewWeightForAgeBoys5To10 language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-grey"
+        [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Male FiveYears)
         , yAxisLinesAndText weightForAge5to10Config
         , xAxisLinesAndText weightForAge5to10Config
@@ -878,7 +878,7 @@ viewWeightForAgeGirls language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-grey"
+        [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Female ZeroYears)
         , yAxisLinesAndText weightForAgeConfig
         , xAxisLinesAndText weightForAgeConfig
@@ -899,7 +899,7 @@ viewWeightForAgeGirls2To5 language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-grey"
+        [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Female TwoYears)
         , yAxisLinesAndText weightForAge2to5Config
         , xAxisLinesAndText weightForAge2to5Config
@@ -920,7 +920,7 @@ viewWeightForAgeGirls5To10 language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-grey"
+        [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Female FiveYears)
         , yAxisLinesAndText weightForAge5to10Config
         , xAxisLinesAndText weightForAge5to10Config
@@ -941,7 +941,7 @@ viewWeightForHeightBoys language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-grey"
+        [ frame language "z-score-gray"
         , labels language (weightForHeightLabels Male ZeroYears)
         , yAxisLinesAndText weightForHeightConfig
         , xAxisLinesAndText weightForHeightConfig
@@ -962,7 +962,7 @@ viewWeightForHeight2To5Boys language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-grey"
+        [ frame language "z-score-gray"
         , labels language (weightForHeightLabels Male TwoYears)
         , yAxisLinesAndText weightForHeight2To5Config
         , xAxisLinesAndText weightForHeight2To5Config
@@ -983,7 +983,7 @@ viewWeightForHeightGirls language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-grey"
+        [ frame language "z-score-gray"
         , labels language (weightForHeightLabels Female ZeroYears)
         , yAxisLinesAndText weightForHeightConfig
         , xAxisLinesAndText weightForHeightConfig
@@ -1004,7 +1004,7 @@ viewWeightForHeight2To5Girls language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-grey"
+        [ frame language "z-score-gray"
         , labels language (weightForHeightLabels Female TwoYears)
         , yAxisLinesAndText weightForHeight2To5Config
         , xAxisLinesAndText weightForHeight2To5Config
