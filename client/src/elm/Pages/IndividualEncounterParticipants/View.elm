@@ -6,7 +6,6 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isPersonAFertileWoman, isPersonAnAdult)
-import Backend.SyncData.Model
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -18,6 +17,7 @@ import Pages.IndividualEncounterParticipants.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
+import SyncManager.Model
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
@@ -65,54 +65,12 @@ viewHeader title =
 
 viewBody : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> IndividualEncounterType -> Model -> ModelIndexedDb -> Html Msg
 viewBody language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db =
-    let
-        sync =
-            db.syncData |> RemoteData.withDefault Dict.empty
-
-        showWarningMessage header message =
-            div [ class "ui basic segment" ]
-                [ div
-                    [ class "ui message warning" ]
-                    [ div [ class "header" ] [ text <| translate language header ]
-                    , text <| translate language message
-                    ]
-                ]
-    in
-    Dict.get healthCenterId sync
-        |> unwrap
-            (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
-            (\selectedHealthCenterSyncData ->
-                let
-                    isDownloading =
-                        case selectedHealthCenterSyncData.attempt of
-                            Backend.SyncData.Model.Downloading _ _ ->
-                                True
-
-                            _ ->
-                                False
-
-                    isUploading =
-                        case selectedHealthCenterSyncData.attempt of
-                            Backend.SyncData.Model.Uploading _ ->
-                                True
-
-                            _ ->
-                                False
-                in
-                if isDownloading then
-                    showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCDownloading
-
-                else if isUploading then
-                    showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCUploading
-
-                else
-                    div
-                        [ class "search-wrapper" ]
-                        [ div
-                            [ class "ui full segment" ]
-                            [ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db ]
-                        ]
-            )
+    div
+        [ class "search-wrapper" ]
+        [ div
+            [ class "ui full segment" ]
+            [ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db ]
+        ]
 
 
 viewSearchForm : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> IndividualEncounterType -> Model -> ModelIndexedDb -> Html Msg

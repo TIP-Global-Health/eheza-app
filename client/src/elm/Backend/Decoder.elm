@@ -200,11 +200,11 @@ decodeRevision =
                     "symptoms_general" ->
                         decodeWithUuid SymptomsGeneralRevision decodeSymptomsGeneral
 
-                    "symptoms_respiratory" ->
-                        decodeWithUuid SymptomsRespiratoryRevision decodeSymptomsRespiratory
-
                     "symptoms_gi" ->
                         decodeWithUuid SymptomsGIRevision decodeSymptomsGI
+
+                    "symptoms_respiratory" ->
+                        decodeWithUuid SymptomsRespiratoryRevision decodeSymptomsRespiratory
 
                     "travel_history" ->
                         decodeWithUuid TravelHistoryRevision decodeTravelHistory

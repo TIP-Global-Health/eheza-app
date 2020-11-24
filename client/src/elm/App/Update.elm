@@ -3,7 +3,7 @@ module App.Update exposing (init, subscriptions, updateAndThenFetch)
 import App.Fetch
 import App.Model exposing (..)
 import App.Ports exposing (..)
-import App.Utils exposing (getLoggedInData)
+import App.Utils exposing (getLoggedInData, updateSubModel)
 import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
@@ -20,9 +20,8 @@ import Dict as LegacyDict
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
 import HttpBuilder
-import Json.Decode exposing (bool, decodeValue, oneOf)
+import Json.Decode
 import Json.Encode
-import Maybe.Extra exposing (isJust)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessActivity.Update
@@ -61,6 +60,8 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
 import ServiceWorker.Model
 import ServiceWorker.Update
+import SyncManager.Model
+import SyncManager.Update
 import Task
 import Time
 import Translate.Model exposing (Language(..))
@@ -177,6 +178,9 @@ updateAndThenFetch msg model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
+        noChange =
+            ( model, Cmd.none )
+
         currentDate =
             fromLocalDateTime model.currentTime
 
@@ -473,6 +477,7 @@ update msg model =
                     )
                 )
                 model
+                |> sequence update [ MsgSyncManager SyncManager.Model.TrySyncing ]
 
         MsgPagePinCode subMsg ->
             updateConfigured
@@ -548,6 +553,10 @@ update msg model =
 
                 extraMsgs =
                     case page of
+                        -- When navigating to Device page (which is used for Sync management), trigger Sync.
+                        DevicePage ->
+                            [ MsgSyncManager SyncManager.Model.TrySyncing ]
+
                         -- When navigating to relationship page in group encounter context,
                         -- we automaticaly select the clinic, to which the session belongs.
                         UserPage (RelationshipPage id1 id2 (GroupEncounterOrigin sessionId)) ->
@@ -620,11 +629,6 @@ update msg model =
             )
                 |> sequence update extraMsgs
 
-        SetDeviceName name ->
-            ( { model | deviceName = name }
-            , Cmd.none
-            )
-
         Tick time ->
             let
                 extraMsgs =
@@ -652,9 +656,21 @@ update msg model =
             )
                 |> sequence update extraMsgs
 
-        TrySyncing ->
-            -- Normally handled automatically, but sometimes nice to trigger manually
-            ( model, trySyncing () )
+        MsgSyncManager subMsg ->
+            model.configuration
+                |> RemoteData.toMaybe
+                |> Maybe.andThen (\config -> RemoteData.toMaybe config.device)
+                |> Maybe.map
+                    (\device ->
+                        updateSubModel
+                            subMsg
+                            model.syncManager
+                            (\subMsg_ subModel -> SyncManager.Update.update currentDate model.currentTime model.dbVersion device subMsg_ subModel)
+                            (\subModel model_ -> { model_ | syncManager = subModel })
+                            (\subCmds -> MsgSyncManager subCmds)
+                            model
+                    )
+                |> Maybe.withDefault noChange
 
         TryPinCode code ->
             updateConfigured
@@ -881,11 +897,12 @@ subscriptions model =
                 []
     in
     Sub.batch
-        ([ Time.every 60000 Tick
+        ([ Time.every 10000 Tick
          , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
          , persistentStorage SetPersistentStorage
          , storageQuota SetStorageQuota
          , memoryQuota SetMemoryQuota
+         , Sub.map App.Model.MsgSyncManager (SyncManager.Update.subscriptions model.syncManager)
          ]
             ++ checkDataWanted
         )

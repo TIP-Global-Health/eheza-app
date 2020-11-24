@@ -21,6 +21,8 @@ encodeAcuteIllnessEncounter session =
     , ( "individual_participant", encodeEntityUuid session.participant )
     , ( "acute_illness_diagnosis", encodeAcuteIllnessDiagnosis session.diagnosis )
     , ( "shard", maybe encodeEntityUuid session.shard )
+    , ( "deleted", bool False )
+    , ( "type", string "acute_illness_encounter" )
     ]
 
 

@@ -1,4 +1,4 @@
-module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, Model, Msg(..), MsgLoggedIn(..), StorageQuota, Version, emptyLoggedInModel, emptyModel)
+module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, Model, Msg(..), MsgLoggedIn(..), StorageQuota, SubModelReturn, Version, emptyLoggedInModel, emptyModel)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import AssocList as Dict exposing (Dict)
@@ -9,8 +9,10 @@ import Browser
 import Browser.Navigation as Nav
 import Config.Model
 import Device.Model exposing (Device)
+import Error.Model exposing (Error)
 import Http
 import Json.Encode exposing (Value)
+import List.Zipper as Zipper
 import NutritionActivity.Model exposing (NutritionActivity)
 import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessEncounter.Model
@@ -35,6 +37,8 @@ import PrenatalActivity.Model exposing (PrenatalActivity)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import ServiceWorker.Model
+import SyncManager.Model
+import SyncManager.Utils
 import Time
 import Translate.Model exposing (Language(..))
 import Url exposing (Url)
@@ -60,6 +64,10 @@ type alias Model =
     { activePage : Page
     , navigationKey : Nav.Key
     , url : Url
+
+    -- The DB version on the backend.
+    -- This must be sent whenever we POST or PATCH an entity to the backend.
+    , dbVersion : Int
 
     -- Access to things stored in IndexedDB. Eventually, most of this probably
     -- ought to be in LoggedInModel instead, but it's not urgent.
@@ -100,8 +108,13 @@ type alias Model =
     -- Which village center a nurse is working at.
     , villageId : Maybe VillageId
 
-    -- The name of device nurse is working with.
-    , deviceName : Maybe String
+    -- This is outside of ModelIndexedDb, as it's a related system, which other
+    -- pages/ backends shouldn't look into. It's data being synced (download or
+    -- uploaded), and if some code needs it, they should access it via `ModelIndexedDb`.
+    , syncManager : SyncManager.Model.Model
+
+    -- List of errors we'll send to console.log
+    , errors : List Error
     }
 
 
@@ -208,7 +221,7 @@ type Msg
       -- worker
       MsgIndexedDb Backend.Model.MsgIndexedDb
     | MsgServiceWorker ServiceWorker.Model.Msg
-    | TrySyncing
+    | MsgSyncManager SyncManager.Model.Msg
       -- Messages that require login, or manage the login process
     | MsgLoggedIn MsgLoggedIn
     | MsgPagePinCode Pages.PinCode.Model.Msg
@@ -229,7 +242,6 @@ type Msg
     | SetMemoryQuota MemoryQuota
     | SetHealthCenter (Maybe HealthCenterId)
     | SetVillage (Maybe VillageId)
-    | SetDeviceName (Maybe String)
     | Tick Time.Posix
     | CheckDataWanted
     | UrlRequested Browser.UrlRequest
@@ -262,9 +274,14 @@ type alias Flags =
     { activeLanguage : String
     , activeServiceWorker : Bool
     , hostname : String
+    , dbVersion : Int
     , pinCode : String
     , healthCenterId : String
     , villageId : String
+    , syncInfoGeneral : SyncManager.Model.SyncInfoGeneralForPort
+    , syncInfoAuthorities : List SyncManager.Model.SyncInfoAuthorityForPort
+    , photoDownloadBatchSize : Int
+    , syncSpeed : SyncManager.Model.SyncSpeed
     }
 
 
@@ -272,22 +289,35 @@ emptyModel : Nav.Key -> Url -> Flags -> Model
 emptyModel key url flags =
     let
         healthCenterId =
-            if flags.healthCenterId == "" then
+            if String.isEmpty flags.healthCenterId then
                 Nothing
 
             else
                 Just (toEntityUuid flags.healthCenterId)
 
         villageId =
-            if flags.villageId == "" then
+            if String.isEmpty flags.villageId then
                 Nothing
 
             else
                 Just (toEntityUuid flags.villageId)
+
+        syncInfoAuthorities =
+            flags.syncInfoAuthorities
+                |> List.map SyncManager.Utils.syncInfoAuthorityFromPort
+                |> Zipper.fromList
+
+        syncManagerFlags =
+            { syncInfoGeneral = SyncManager.Utils.syncInfoGeneralFromPort flags.syncInfoGeneral
+            , syncInfoAuthorities = syncInfoAuthorities
+            , batchSize = flags.photoDownloadBatchSize
+            , syncSpeed = flags.syncSpeed
+            }
     in
     { activePage = PinCodePage
     , navigationKey = key
     , url = url
+    , dbVersion = flags.dbVersion
     , configuration = NotAsked
     , currentTime = Time.millisToPosix 0
     , dataWanted = Dict.empty
@@ -301,5 +331,23 @@ emptyModel key url flags =
     , zscores = ZScore.Model.emptyModel
     , healthCenterId = healthCenterId
     , villageId = villageId
-    , deviceName = Nothing
+    , syncManager = SyncManager.Model.emptyModel syncManagerFlags
+    , errors = []
+    }
+
+
+{-| This is what Pages and Backend should return. Currently we're adding it
+gradually, as code base was written without it.
+
+Along with the Model and Cmd, we return:
+
+  - error: a Maybe error to indicate for example a Failure in HTTP request.
+  - appMsgs - that allow sub models to call MSGs of other submodules.
+
+-}
+type alias SubModelReturn subModel subMsg =
+    { model : subModel
+    , cmd : Cmd subMsg
+    , error : Maybe Error
+    , appMsgs : List Msg
     }

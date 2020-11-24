@@ -23,7 +23,6 @@ fetch maybeVillageId db =
 
 fetchForAll : List MsgIndexedDb
 fetchForAll =
-    [ FetchSyncData
-    , FetchHealthCenters
+    [ FetchHealthCenters
     , FetchVillages
     ]

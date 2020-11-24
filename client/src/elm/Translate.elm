@@ -120,7 +120,7 @@ type LoginPhrase
     | LoggedInAs
     | LoginError Http.Error
     | LoginRejected LoginMethod
-    | LoginOrWorkOffline
+    | LoginToSyncHealthCenters
     | Logout
     | LogoutInProgress
     | LogoutFailed
@@ -382,6 +382,7 @@ type TranslationId
     | DeviceStatus
     | Diabetes
     | Diagnosis
+    | Disabled
     | DistributionNotice DistributionNotice
     | District
     | DOB
@@ -469,6 +470,7 @@ type TranslationId
     | HouseholdSize
     | HttpError Http.Error
     | HypertensionBeforePregnancy
+    | IdleWaitingForSync
     | IncompleteCervixPreviousPregnancy
     | IndividualEncounter
     | IndividualEncounterFirstVisit IndividualEncounterType
@@ -549,6 +551,7 @@ type TranslationId
     | Neck
     | NeckCPESign NeckCPESign
     | NegativeLabel
+    | Never
     | Next
     | NextStepsTask NextStepsTask
     | No
@@ -614,6 +617,7 @@ type TranslationId
     | Person
     | PersonHasBeenSaved
     | PertinentSymptoms
+    | PhotosDownloadStatus
     | PhysicalExam
     | PhysicalExamTask PhysicalExamTask
     | PlaceholderEnterHeight
@@ -2221,6 +2225,11 @@ translationSet trans =
             , kinyarwanda = Just "Uburwayi bwabonetse"
             }
 
+        Disabled ->
+            { english = "Disabled"
+            , kinyarwanda = Nothing
+            }
+
         DistributionNotice notice ->
             case notice of
                 DistributedFully ->
@@ -2908,6 +2917,11 @@ translationSet trans =
         HypertensionBeforePregnancy ->
             { english = "Hypertension before pregnancy"
             , kinyarwanda = Just "Umuvuduko w'amaraso mbere yo gutwita"
+            }
+
+        IdleWaitingForSync ->
+            { english = "Idle, waiting for next Sync cycle"
+            , kinyarwanda = Nothing
             }
 
         IncompleteCervixPreviousPregnancy ->
@@ -3633,6 +3647,11 @@ translationSet trans =
             , kinyarwanda = Just "Nta bwandu afite"
             }
 
+        Never ->
+            { english = "Never"
+            , kinyarwanda = Nothing
+            }
+
         Next ->
             { english = "Next"
             , kinyarwanda = Just "Ibikurikiyeho"
@@ -4109,6 +4128,11 @@ translationSet trans =
         PertinentSymptoms ->
             { english = "Pertinent Symptoms"
             , kinyarwanda = Just " Ibimenyetso by'ingenzi"
+            }
+
+        PhotosDownloadStatus ->
+            { english = "Photos Download Status"
+            , kinyarwanda = Nothing
             }
 
         PhysicalExam ->
@@ -6377,8 +6401,8 @@ translateLoginPhrase phrase =
         LoginError error ->
             translateHttpError error
 
-        LoginOrWorkOffline ->
-            { english = "Either login below, or work offline without logging in."
+        LoginToSyncHealthCenters ->
+            { english = "Please log in before syncing health centers"
             , kinyarwanda = Nothing
             }
 

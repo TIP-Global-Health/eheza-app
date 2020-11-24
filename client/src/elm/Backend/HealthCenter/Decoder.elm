@@ -11,6 +11,7 @@ decodeHealthCenter =
     succeed HealthCenter
         |> required "catchment_area" decodeEntityUuid
         |> required "label" string
+        |> required "deleted" bool
 
 
 decodeCatchmentArea : Decoder CatchmentArea
