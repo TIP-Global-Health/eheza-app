@@ -181,7 +181,8 @@ dbSync.version(14).stores({
     const collection = await tx.syncMetadata.toCollection().toArray();
 
     var syncInfoAuthorities = [];
-    collection.forEach(async function(row, index) {
+    var itemsToProcess = collection.length;
+    collection.forEach(async function(row) {
         // Check if this is the General sync UUID, and if so migrate syncMetadata into Local  storage.
         if (row.uuid == '78cf21d1-b3f4-496a-b312-d8ae73041f09') {
             var syncInfoGeneral = {lastFetchedRevisionId: 0, remainingToUpload:0, remainingToDownload: 0, status: 'Not Available'};
@@ -205,6 +206,7 @@ dbSync.version(14).stores({
             }
 
             localStorage.setItem('syncInfoGeneral', JSON.stringify(syncInfoGeneral));
+            itemsToProcess--;
         }
         // This is sync data of a health center.
         else {
@@ -232,13 +234,15 @@ dbSync.version(14).stores({
             }
 
             syncInfoAuthorities.push(syncInfoAuthority);
-            // If we've reached last item of collection, store Authorities
-            // sync info, and refresh, so that the APP reinitializes
-            // with the sync data from  Local Storage.
-            if (index == (collection.length - 1) ) {
-                localStorage.setItem('syncInfoAuthorities', JSON.stringify(syncInfoAuthorities));
-                location.reload();
-            }
+            itemsToProcess--;
+        }
+
+        // If we've processed all the items, store Authorities
+        // sync info, and refresh, so that the APP reinitializes
+        // with the sync data from  Local Storage.
+        if (itemsToProcess === 0) {
+            localStorage.setItem('syncInfoAuthorities', JSON.stringify(syncInfoAuthorities));
+            location.reload();
         }
     });
 
