@@ -341,7 +341,7 @@ decodeLactationSign =
 decodeFbfValue : Decoder FbfValue
 decodeFbfValue =
     succeed FbfValue
-        |> required "distributed_amount" float
+        |> required "distributed_amount" decodeFloat
         |> required "distribution_notice" decodeDistributionNotice
 
 

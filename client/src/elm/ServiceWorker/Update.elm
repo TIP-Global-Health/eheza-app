@@ -79,15 +79,6 @@ handleIncomingMsg currentTime msg model =
             )
                 |> sequenceExtra (update currentTime) extraMsgs
 
-        SetSyncData data ->
-            ( model
-            , Cmd.none
-            , [ Success data
-                    |> Backend.Model.HandleFetchedSyncData
-                    |> App.Model.MsgIndexedDb
-              ]
-            )
-
         NewRevisions data ->
             ( model
             , Cmd.none

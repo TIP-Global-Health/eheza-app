@@ -6,5 +6,4 @@ import Backend.Model
 fetch : List Backend.Model.MsgIndexedDb
 fetch =
     [ Backend.Model.FetchHealthCenters
-    , Backend.Model.FetchSyncData
     ]

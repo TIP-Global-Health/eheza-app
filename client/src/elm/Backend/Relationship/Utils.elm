@@ -50,6 +50,7 @@ toRelationship personId myRelationship shard =
             { person = myRelationship.relatedTo
             , relatedTo = personId
             , relatedBy = ParentOf
+            , deleted = False
             , shard = shard
             }
 
@@ -57,6 +58,7 @@ toRelationship personId myRelationship shard =
             { person = personId
             , relatedTo = myRelationship.relatedTo
             , relatedBy = ParentOf
+            , deleted = False
             , shard = shard
             }
 
@@ -64,6 +66,7 @@ toRelationship personId myRelationship shard =
             { person = myRelationship.relatedTo
             , relatedTo = personId
             , relatedBy = CaregiverFor
+            , deleted = False
             , shard = shard
             }
 
@@ -71,5 +74,6 @@ toRelationship personId myRelationship shard =
             { person = personId
             , relatedTo = myRelationship.relatedTo
             , relatedBy = CaregiverFor
+            , deleted = False
             , shard = shard
             }

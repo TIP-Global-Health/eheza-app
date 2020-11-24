@@ -4,6 +4,7 @@ import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Utils exposing (emptyIndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
@@ -156,7 +157,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id db prenatalSess
                         )
                     -- If prenatal session does not exist, create it.
                     |> Maybe.withDefault
-                        [ IndividualEncounterParticipant id AntenatalEncounter currentDate Nothing Nothing (Just selectedHealthCenter)
+                        [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.AntenatalEncounter selectedHealthCenter
                             |> Backend.Model.PostIndividualSession
                             |> App.Model.MsgIndexedDb
                             |> onClick

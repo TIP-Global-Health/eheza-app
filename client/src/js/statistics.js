@@ -13,14 +13,35 @@
 // start by implementing just the things we need -- over time, it may
 // become more comprehensive.
 
-(function () {
+(async () => {
     // This defines our URL scheme. A URL will look like
     //
     // /sw/statistics
 
     var statsUrlRegex = /\/sw\/statistics/;
 
-    self.addEventListener('fetch', function (event) {
+    // As we defined Dexie's store in app.js, we'll need to redefine tables properties here.
+    // Since we don't know exactly when the DB will be ready, we define DB placeholder here.
+    var dbSync = null;
+    var db = null;
+
+    self.addEventListener('fetch', async function (event) {
+      if (dbSync === null) {
+          // Check if IndexedDB exists.
+          var dbExists = await Dexie.exists('sync');
+          if (!dbExists) {
+            // Skip any further actions, if it's not.
+            return;
+          }
+
+          // Redefine tables properties.
+          dbSync = new Dexie('sync');
+          db = await dbSync.open();
+          db.tables.forEach(function(table) {
+              dbSync[table.name] = table;
+          });
+        }
+
         var url = new URL(event.request.url);
         var matches = statsUrlRegex.exec(url.pathname);
 

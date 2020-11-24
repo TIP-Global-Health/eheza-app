@@ -16,6 +16,7 @@ decodePmtctParticipant =
         |> requiredAt [ "expected", "value" ] decodeYYYYMMDD
         |> optionalAt [ "expected", "value2" ] (nullable decodeYYYYMMDD) Nothing
         |> required "clinic" decodeEntityUuid
+        |> required "deleted" bool
 
 
 decodeAdultActivities : Decoder AdultActivities

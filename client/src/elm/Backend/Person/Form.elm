@@ -51,11 +51,11 @@ import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, deco
 import Backend.Person.Encoder
     exposing
         ( encodeEducationLevel
-        , encodeGender
         , encodeHivStatus
         , encodeMaritalStatus
         , encodeModeOfDelivery
         , encodeUbudehe
+        , genderToString
         )
 import Backend.Person.Model exposing (..)
 import Backend.Person.Utils exposing (expectedAgeByPerson, isAdult, isPersonAnAdult, resolveExpectedAge)
@@ -242,7 +242,7 @@ applyDefaultValues currentDate maybeVillage isChw maybeRelatedPerson operation f
                         if formFieldEmpty gender form_ then
                             Form.update
                                 validation
-                                (Form.Input gender Form.Radio (Form.Field.String (encodeGender gender_)))
+                                (Form.Input gender Form.Radio (Form.Field.String (genderToString gender_)))
                                 form_
 
                         else
@@ -432,6 +432,7 @@ validatePerson maybeRelated operation maybeCurrentDate =
                 |> andMap (field village (validateVillage maybeRelated))
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
                 |> andMap (field healthCenter (validateHealthCenterId maybeRelated))
+                |> andMap (succeed False)
                 |> andMap (succeed Nothing)
     in
     andThen withFirstName (field firstName (oneOf [ string, emptyString ]))
