@@ -30,7 +30,7 @@ import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
-import Backend.Utils exposing (mapAcuteIllnessMeasurements, mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, nodesUuid)
+import Backend.Utils exposing (mapAcuteIllnessMeasurements, mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, sw)
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -46,15 +46,13 @@ import Pages.Person.Model
 import Pages.Relationship.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyBackendUrl, toCmd, toTask, withoutDecoder)
+import SyncManager.Model exposing (IndexDbQueryType(..))
 import Task
 
 
 updateIndexedDb : NominalDate -> Maybe NurseId -> Maybe HealthCenterId -> Bool -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
 updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
     let
-        sw =
-            applyBackendUrl "/sw"
-
         noChange =
             ( model, Cmd.none, [] )
     in
@@ -716,30 +714,6 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             , []
             )
 
-        FetchSyncData ->
-            ( { model | syncData = Loading }
-            , sw.select syncDataEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedSyncData)
-            , []
-            )
-
-        HandleFetchedSyncData data ->
-            let
-                setDeviceNameMsg =
-                    RemoteData.toMaybe data
-                        |> Maybe.andThen
-                            (Dict.get nodesUuid
-                                >> Maybe.andThen .downloadStatus
-                                >> Maybe.map .deviceName
-                                >> Maybe.andThen (App.Model.SetDeviceName >> List.singleton >> Just)
-                            )
-                        |> Maybe.withDefault []
-            in
-            ( { model | syncData = data }
-            , Cmd.none
-            , setDeviceNameMsg
-            )
-
         HandleRevisions revisions ->
             let
                 processRevisionAndDiagnose participantId encounterId =
@@ -1005,33 +979,6 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     , []
                     )
 
-        SaveSyncData uuid data ->
-            ( { model | saveSyncDataRequests = Dict.insert uuid Loading model.saveSyncDataRequests }
-            , sw.put syncDataEndpoint uuid data
-                |> withoutDecoder
-                |> toCmd (RemoteData.fromResult >> HandleSavedSyncData uuid)
-            , []
-            )
-
-        HandleSavedSyncData uuid data ->
-            ( { model | saveSyncDataRequests = Dict.insert uuid data model.saveSyncDataRequests }
-            , Cmd.none
-            , []
-            )
-
-        DeleteSyncData uuid ->
-            ( { model | deleteSyncDataRequests = Dict.insert uuid Loading model.deleteSyncDataRequests }
-            , sw.delete syncDataEndpoint uuid
-                |> toCmd (RemoteData.fromResult >> HandleDeletedSyncData uuid)
-            , []
-            )
-
-        HandleDeletedSyncData uuid data ->
-            ( { model | deleteSyncDataRequests = Dict.insert uuid data model.deleteSyncDataRequests }
-            , Cmd.none
-            , []
-            )
-
         MsgPrenatalEncounter encounterId subMsg ->
             let
                 encounter =
@@ -1242,6 +1189,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                     , start = defaultStartDate
                                     , end = defaultEndDate
                                     , clinic = clinicId
+                                    , deleted = False
                                     }
                             )
                         |> Maybe.Extra.toList
@@ -1561,6 +1509,21 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                 )
                 data
                 |> RemoteData.withDefault []
+            )
+
+        ResetFailedToFetchAuthorities ->
+            let
+                failureToNotAsked webData =
+                    case webData of
+                        Failure _ ->
+                            NotAsked
+
+                        _ ->
+                            webData
+            in
+            ( { model | healthCenters = failureToNotAsked model.healthCenters, villages = failureToNotAsked model.villages }
+            , Cmd.none
+            , []
             )
 
 

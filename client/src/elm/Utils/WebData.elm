@@ -1,10 +1,18 @@
-module Utils.WebData exposing (resetError, resetSuccess, sendWithHandler, viewError, viewWebData, whenNotAsked)
+module Utils.WebData exposing
+    ( isNetworkError
+    , resetError
+    , resetSuccess
+    , sendWithHandler
+    , viewError
+    , viewWebData
+    , whenNotAsked
+    )
 
 import Html exposing (..)
 import Html.Attributes exposing (class)
-import Http exposing (Error, expectJson)
+import Http exposing (Error(..))
 import HttpBuilder exposing (..)
-import Json.Decode exposing (Decoder, field, list)
+import Json.Decode exposing (Decoder, field)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
@@ -133,3 +141,13 @@ sendWithHandler decoder tagger builder =
     builder
         |> withExpect (Http.expectJson decoder)
         |> send tagger
+
+
+isNetworkError : Http.Error -> Bool
+isNetworkError error =
+    case error of
+        NetworkError ->
+            True
+
+        _ ->
+            False

@@ -133,6 +133,38 @@ function hedley_general_get_aq_item_by_title($item_title, $all_status = FALSE) {
 }
 
 /**
+ * Returns a list of measurements IDs that were taken during certain encounter.
+ *
+ * @param int $encounter_id
+ *   ID of individual encounter.
+ * @param string $encounter_type
+ *   Type of individual encounter.
+ *
+ * @return array
+ *   List of measurements IDs.
+ */
+function hedley_general_get_individual_encounter_measurements($encounter_id, $encounter_type) {
+  $types = [
+    'acute_illness',
+    'nutrition',
+    'prenatal',
+  ];
+
+  if (!in_array($encounter_type, $types)) {
+    return [];
+  }
+
+  $table = "{field_data_field_{$encounter_type}_encounter}";
+  $target_field = "field_{$encounter_type}_encounter_target_id";
+
+  $query = db_select($table, 't');
+  $query->addField('t', 'entity_id');
+  $query->condition($target_field, $encounter_id);
+
+  return $query->execute()->fetchCol();
+}
+
+/**
  * Returns a list of measurements IDs that were taken for certain person.
  *
  * @param int $person_id

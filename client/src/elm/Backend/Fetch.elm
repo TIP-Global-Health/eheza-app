@@ -223,9 +223,6 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
-        FetchSyncData ->
-            isNotAsked model.syncData
-
         -- For other messages, we answer false.
         _ ->
             False
@@ -316,9 +313,6 @@ forget msg model =
 
         FetchSessionsByClinic clinicId ->
             { model | sessionsByClinic = Dict.remove clinicId model.sessionsByClinic }
-
-        FetchSyncData ->
-            { model | syncData = NotAsked }
 
         -- For other messages, we do nothing.
         _ ->

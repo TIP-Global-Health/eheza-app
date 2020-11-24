@@ -1,21 +1,17 @@
-module Backend.Utils exposing (mapAcuteIllnessMeasurements, mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, nodesUuid)
+module Backend.Utils exposing (mapAcuteIllnessMeasurements, mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, saveMeasurementCmd, sw)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (AcuteIllnessMeasurements, ChildMeasurementList, MotherMeasurementList, NutritionMeasurements, PrenatalMeasurements)
 import Backend.Model exposing (..)
+import Json.Encode exposing (object)
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (toEntityUuid)
+import Restful.Endpoint exposing (applyBackendUrl, toCmd, toEntityUuid, withoutDecoder)
 
 
-{-| We organize our SyncData by health center. However, there is also a bunch
-of nodes that we get no matter which health center we're interesting in. So,
-this is the "magic" UUID that represents "all the health centers" (or, "no
-health center", depending on how you look at it).
--}
-nodesUuid : HealthCenterId
-nodesUuid =
-    toEntityUuid "78cf21d1-b3f4-496a-b312-d8ae73041f09"
+sw : Restful.Endpoint.CrudOperations w e k v c p
+sw =
+    applyBackendUrl "/sw"
 
 
 mapChildMeasurements : PersonId -> (ChildMeasurementList -> ChildMeasurementList) -> ModelIndexedDb -> ModelIndexedDb
@@ -78,3 +74,29 @@ mapAcuteIllnessMeasurements id func model =
 
         Nothing ->
             model
+
+
+saveMeasurementCmd date encounter person nurse healthCenter savedValueId savedValue endpoint handleSavedMsg =
+    let
+        measurement =
+            { participantId = person
+            , dateMeasured = date
+            , encounterId = Just encounter
+            , nurse = nurse
+            , healthCenter = healthCenter
+            , value = savedValue
+            }
+
+        requestData =
+            case savedValueId of
+                Nothing ->
+                    measurement
+                        |> sw.post endpoint
+                        |> withoutDecoder
+
+                Just id ->
+                    measurement
+                        |> sw.patchFull endpoint id
+                        |> withoutDecoder
+    in
+    toCmd (RemoteData.fromResult >> handleSavedMsg) requestData

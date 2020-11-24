@@ -7,46 +7,24 @@ import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
 
 
-encodeRelationship : Relationship -> Value
+encodeRelationship : Relationship -> List ( String, Value )
 encodeRelationship data =
-    object
-        [ encodePersonField data.person
-        , encodeRelatedToField data.relatedTo
-        , encodeRelatedByField data.relatedBy
-        , ( "shard", maybe encodeEntityUuid data.shard )
-        ]
+    [ encodePersonField data.person
+    , encodeRelatedToField data.relatedTo
+    , encodeRelatedByField data.relatedBy
+    , ( "deleted", bool data.deleted )
+    , ( "shard", maybe encodeEntityUuid data.shard )
+    , ( "type", string "relationship" )
+    ]
 
 
 encodeRelationshipChanges : { old : Relationship, new : Relationship } -> List ( String, Value )
 encodeRelationshipChanges { old, new } =
-    let
-        person =
-            if old.person == new.person then
-                Nothing
+    if old.person == new.person && old.relatedTo == new.relatedTo && old.relatedBy == new.relatedBy then
+        []
 
-            else
-                Just <| encodePersonField new.person
-
-        relatedTo =
-            if old.relatedTo == new.relatedTo then
-                Nothing
-
-            else
-                Just <| encodeRelatedToField new.relatedTo
-
-        relatedBy =
-            if old.relatedBy == new.relatedBy then
-                Nothing
-
-            else
-                Just <| encodeRelatedByField new.relatedBy
-    in
-    [ person
-    , relatedTo
-    , relatedBy
-    , Nothing
-    ]
-        |> List.filterMap identity
+    else
+        encodeRelationship new
 
 
 encodeRelatedBy : RelatedBy -> Value
