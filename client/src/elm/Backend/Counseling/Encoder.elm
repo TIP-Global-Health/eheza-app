@@ -10,6 +10,8 @@ encodeCounselingTopic : CounselingTopic -> List ( String, Value )
 encodeCounselingTopic topic =
     [ ( "label", string topic.english )
     , ( "kinyarwanda_title", maybe string topic.kinyarwanda )
+    , ( "deleted", bool False )
+    , ( "type", string "counseling_topic" )
     ]
 
 
@@ -32,9 +34,10 @@ encodeCounselingTiming timing =
             string "exit"
 
 
-encodeCounselingSchedule : CounselingSchedule -> Value
+encodeCounselingSchedule : CounselingSchedule -> List ( String, Value )
 encodeCounselingSchedule schedule =
-    object
-        [ ( "timing", encodeCounselingTiming schedule.timing )
-        , ( "topics", list encodeEntityUuid schedule.topics )
-        ]
+    [ ( "timing", encodeCounselingTiming schedule.timing )
+    , ( "topics", list encodeEntityUuid schedule.topics )
+    , ( "deleted", bool False )
+    , ( "type", string "counseling_schedule" )
+    ]

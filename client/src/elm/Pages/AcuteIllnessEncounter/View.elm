@@ -310,7 +310,7 @@ viewMainPageContent language currentDate id data model =
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEndEncounterButton language measurements pendingActivities data.diagnosis SetEndEncounterDialogState
+                , viewEndEncounterButton language isFirstEncounter measurements pendingActivities data.diagnosis SetEndEncounterDialogState
                 ]
     in
     [ tabs
@@ -329,11 +329,14 @@ splitActivities currentDate data =
         |> List.partition (activityCompleted currentDate data.person isFirstEncounter data.measurements data.diagnosis)
 
 
-viewEndEncounterButton : Language -> AcuteIllnessMeasurements -> List AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> (Bool -> msg) -> Html msg
-viewEndEncounterButton language measurements pendingActivities diagnosis setDialogStateMsgs =
+viewEndEncounterButton : Language -> Bool -> AcuteIllnessMeasurements -> List AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> (Bool -> msg) -> Html msg
+viewEndEncounterButton language isFirstEncounter measurements pendingActivities diagnosis setDialogStateMsgs =
     let
         allowEndEcounter =
-            if diagnosis == Just DiagnosisCovid19 then
+            if not isFirstEncounter then
+                List.isEmpty pendingActivities
+
+            else if diagnosis == Just DiagnosisCovid19 then
                 isJust measurements.isolation
                     && (talkedTo114 measurements || isJust measurements.hcContact)
 

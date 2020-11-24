@@ -1,13 +1,13 @@
-module Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encoudeIndividualEncounterTypeAsString, isDailyEncounterActive)
+module Backend.IndividualEncounterParticipant.Utils exposing (..)
 
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isNothing)
 
 
-encoudeIndividualEncounterTypeAsString : IndividualEncounterType -> String
-encoudeIndividualEncounterTypeAsString encounterType =
+encodeIndividualEncounterTypeAsString : IndividualEncounterType -> String
+encodeIndividualEncounterTypeAsString encounterType =
     case encounterType of
         AcuteIllnessEncounter ->
             "acute-illness"
@@ -44,3 +44,8 @@ decodeIndividualEncounterTypeFromString string =
 isDailyEncounterActive : NominalDate -> { a | startDate : NominalDate, endDate : Maybe NominalDate } -> Bool
 isDailyEncounterActive currentDate encounter =
     encounter.startDate == currentDate && isNothing encounter.endDate
+
+
+emptyIndividualEncounterParticipant : NominalDate -> PersonId -> IndividualEncounterType -> HealthCenterId -> IndividualEncounterParticipant
+emptyIndividualEncounterParticipant currentDate personId type_ healthCenterId =
+    IndividualEncounterParticipant personId type_ currentDate Nothing Nothing Nothing Nothing Nothing False (Just healthCenterId)

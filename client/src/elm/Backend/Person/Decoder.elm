@@ -34,7 +34,8 @@ decodePerson =
         |> optional "village" (nullable decodeGeoField) Nothing
         |> optional "phone_number" (nullable string) Nothing
         |> optional "health_center" (nullable decodeEntityUuid) Nothing
-        |> hardcoded Nothing
+        |> required "deleted" bool
+        |> optional "shard" (nullable decodeEntityUuid) Nothing
 
 
 decodeHivStatus : Decoder HIVStatus

@@ -23,6 +23,7 @@
 'use strict';
 
 (function () {
+
     self.addEventListener('fetch', function (event) {
         if (configUrlRegex.test(event.request.url)) {
             if (event.request.method === 'GET') {
@@ -58,13 +59,6 @@
                         });
 
                         return cache.put(cachedRequest, cachedResponse).then(function () {
-                            if (credentialsUrlRegex.test(event.request.url)) {
-                                // If we have new credentials, kick off a background sync.
-                                registration.sync.register(syncTag).catch(function () {
-                                    registration.active.postMessage(syncTag);
-                                });
-                            }
-
                             return new Response ('', {
                                 status: 201,
                                 statusText: 'Created',
