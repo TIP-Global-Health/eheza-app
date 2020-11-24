@@ -340,6 +340,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.AcuteIllnessEncounter.Decoder.decodeAcuteIllnessEncounter
                             BackendAuthorityAcuteIllnessEncounter
 
+                    "acute_illness_muac" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteIllnessMuac
+                            BackendAuthorityAcuteIllnessMuac
+
                     "acute_illness_vitals" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeAcuteIllnessVitals
@@ -597,6 +602,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeTreatmentReview
                             BackendAuthorityTreatmentReview
+
+                    "treatment_ongoing" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTreatmentOngoing
+                            BackendAuthorityTreatmentOngoing
 
                     "vitals" ->
                         doDecode
