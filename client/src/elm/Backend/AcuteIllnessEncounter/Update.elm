@@ -189,34 +189,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         SaveAcuteIllnessDangerSigns personId valueId value ->
-            let
-                cmd =
-                    case valueId of
-                        Nothing ->
-                            { participantId = personId
-                            , dateMeasured = currentDate
-                            , encounterId = Just encounterId
-                            , nurse = nurseId
-                            , healthCenter = healthCenterId
-                            , value = value
-                            }
-                                |> sw.post acuteIllnessDangerSignsEndpoint
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedAcuteIllnessDangerSigns)
-
-                        Just id ->
-                            encodeAcuteIllnessDangerSignsValue value
-                                |> List.append
-                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
-                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
-                                    ]
-                                |> object
-                                |> sw.patchAny acuteIllnessDangerSignsEndpoint id
-                                |> withoutDecoder
-                                |> toCmd (RemoteData.fromResult >> HandleSavedAcuteIllnessDangerSigns)
-            in
             ( { model | saveAcuteIllnessDangerSigns = Loading }
-            , cmd
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value acuteIllnessDangerSignsEndpoint HandleSavedAcuteIllnessDangerSigns
             )
 
         HandleSavedAcuteIllnessDangerSigns data ->
@@ -227,10 +201,6 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
 updateEncounter : NominalDate -> AcuteIllnessEncounterId -> Maybe AcuteIllnessEncounter -> (AcuteIllnessEncounter -> AcuteIllnessEncounter) -> Model -> ( Model, Cmd Msg )
 updateEncounter currentDate encounterId maybeEncounter updateFunc model =
-    let
-        sw =
-            applyBackendUrl "/sw"
-    in
     maybeEncounter
         |> unwrap ( model, Cmd.none )
             (\encounter ->

@@ -1719,7 +1719,9 @@ encodeAcuteIllnessDangerSigns =
 
 encodeAcuteIllnessDangerSignsValue : EverySet AcuteIllnessDangerSign -> List ( String, Value )
 encodeAcuteIllnessDangerSignsValue value =
-    [ ( "acute_illness_danger_signs", encodeEverySet encodeAcuteIllnessDangerSign value ) ]
+    [ ( "acute_illness_danger_signs", encodeEverySet encodeAcuteIllnessDangerSign value )
+    , ( "type", string "acute_illness_danger_signs" )
+    ]
 
 
 encodeAcuteIllnessDangerSign : AcuteIllnessDangerSign -> Value
