@@ -191,10 +191,6 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
 updateEncounter : NominalDate -> AcuteIllnessEncounterId -> Maybe AcuteIllnessEncounter -> (AcuteIllnessEncounter -> AcuteIllnessEncounter) -> Model -> ( Model, Cmd Msg )
 updateEncounter currentDate encounterId maybeEncounter updateFunc model =
-    let
-        sw =
-            applyBackendUrl "/sw"
-    in
     maybeEncounter
         |> unwrap ( model, Cmd.none )
             (\encounter ->
