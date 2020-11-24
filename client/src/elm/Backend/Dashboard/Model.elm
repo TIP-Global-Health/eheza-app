@@ -42,6 +42,9 @@ type alias DashboardStats =
     , maybeGoodNutrition : Maybe GoodNutrition
     , missedSessions : List ParticipantStats
     , totalEncounters : Periods
+
+    -- Hold an md5 hash, so we'd know if we have the most up to date data.
+    , cacheHash : String
     }
 
 
@@ -54,6 +57,7 @@ emptyModel =
     , maybeGoodNutrition = Nothing
     , missedSessions = []
     , totalEncounters = Periods 0 0
+    , cacheHash = ""
     }
 
 

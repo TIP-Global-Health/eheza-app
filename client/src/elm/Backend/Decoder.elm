@@ -35,6 +35,9 @@ decodeRevision =
                     "acute_illness_encounter" ->
                         decodeWithUuid AcuteIllnessEncounterRevision decodeAcuteIllnessEncounter
 
+                    "acute_illness_muac" ->
+                        decodeWithUuid AcuteIllnessMuacRevision decodeAcuteIllnessMuac
+
                     "acute_illness_vitals" ->
                         decodeWithUuid AcuteIllnessVitalsRevision decodeAcuteIllnessVitals
 
@@ -197,11 +200,11 @@ decodeRevision =
                     "symptoms_general" ->
                         decodeWithUuid SymptomsGeneralRevision decodeSymptomsGeneral
 
-                    "symptoms_respiratory" ->
-                        decodeWithUuid SymptomsRespiratoryRevision decodeSymptomsRespiratory
-
                     "symptoms_gi" ->
                         decodeWithUuid SymptomsGIRevision decodeSymptomsGI
+
+                    "symptoms_respiratory" ->
+                        decodeWithUuid SymptomsRespiratoryRevision decodeSymptomsRespiratory
 
                     "travel_history" ->
                         decodeWithUuid TravelHistoryRevision decodeTravelHistory

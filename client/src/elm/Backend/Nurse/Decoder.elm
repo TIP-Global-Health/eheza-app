@@ -15,6 +15,7 @@ decodeNurse =
         |> optional "villages" (map EverySet.fromList (list decodeEntityUuid)) EverySet.empty
         |> optional "role" (map EverySet.fromList (list decodeRole)) EverySet.empty
         |> optional "email" (map Just string) Nothing
+        |> required "pin_code" string
 
 
 decodeRole : Decoder Role

@@ -13,7 +13,13 @@
 // start by implementing just the things we need -- over time, it may
 // become more comprehensive.
 
-(function () {
+(async () => {
+
+    // As we defined Dexie's store in app.js, we'll need to redefine tables properties here.
+    // Since we don't know exactly when the DB will be ready, we define DB placeholder here.
+    var dbSync = null;
+    var db = null;
+
     // This defines our URL scheme. A URL will look like
     //
     // /sw/nodes/health_center
@@ -25,7 +31,30 @@
     // /sw/nodes/health_center/78cf21d1-b3f4-496a-b312-d8ae73041f09
     var nodesUrlRegex = /\/sw\/nodes\/([^/]+)\/?(.*)/;
 
-    self.addEventListener('fetch', function (event) {
+    self.addEventListener('fetch', async function (event) {
+        // If placeholder still indicates tha DB was not initialized.
+        if (dbSync === null) {
+            // Check if IndexedDB exists.
+            var dbExists = await Dexie.exists('sync');
+            if (!dbExists) {
+              // Skip any further actions, if it's not.
+              return;
+            }
+
+            // Redefine tables properties.
+            dbSync = new Dexie('sync');
+            db = await dbSync.open();
+            db.tables.forEach(function(table) {
+                dbSync[table.name] = table;
+            });
+
+            // A hook to create matching row in `authorityPhotoUploadChanges`, if entity has a photo.
+            dbSync.shardChanges.hook('creating', function (primKey, obj, transaction) {
+                const self = this;
+                return addPhotoUploadChanges(self, dbSync.authorityPhotoUploadChanges, obj);
+            });
+        }
+
         var url = new URL(event.request.url);
         var matches = nodesUrlRegex.exec(url.pathname);
 
@@ -151,32 +180,27 @@
                     json.type = type;
 
                     return table.put(json).catch(databaseError).then(function () {
-                        var body = JSON.stringify({
-                            data: [json]
-                        });
+                        return sendRevisedNode(table, uuid).then(function () {
+                            // For hooks to be able to work, we need to declare the
+                            // tables that may be altered due to a change. In this case
+                            // We want to allow adding pending upload photos.
+                            // See for example dbSync.nodeChanges.hook().
+                            return db.transaction('rw', table, dbSync.nodeChanges, dbSync.shardChanges,  dbSync.authorityPhotoUploadChanges, function() {
+                                var body = JSON.stringify({
+                                    data: [json]
+                                });
 
-                        var response = new Response(body, {
-                            status: 200,
-                            statusText: 'OK',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
+                                var response = new Response(body, {
+                                    status: 200,
+                                    statusText: 'OK',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    }
+                                });
 
-                        if (type === 'syncmetadata') {
-                            // If our syncmetadata changes, kick off a sync
-                            self.registration.sync.register('sync').catch(function () {
-                                self.registration.active.postMessage('sync');
-                            });
-
-                            return sendSyncData().then(function () {
                                 return Promise.resolve(response);
                             });
-                        } else {
-                            return sendRevisedNode(table, uuid).then(function () {
-                                return Promise.resolve(response);
-                            });
-                        }
+                        });
                     });
                 });
             });
@@ -188,67 +212,62 @@
             return getTableForType(type).then(function (table) {
                 return request.json().catch(jsonError).then(function (json) {
                     return table.update(uuid, json).catch(databaseError).then(function () {
-                        return table.get(uuid).catch(databaseError).then(function (node) {
-                            if (node) {
-                                var body = JSON.stringify({
-                                    data: [node]
-                                });
+                        return sendRevisedNode(table, uuid).then(function () {
+                            // For hooks to be able to work, we need to declare the
+                            // tables that may be altered due to a change. In this case
+                            // We want to allow adding pending upload photos.
+                            // See for example dbSync.nodeChanges.hook().
+                            return db.transaction('rw', table, dbSync.nodeChanges, dbSync.shardChanges,  dbSync.authorityPhotoUploadChanges, function() {
+                                return table.get(uuid).catch(databaseError).then(function (node) {
+                                    if (node) {
+                                        var body = JSON.stringify({
+                                            data: [node]
+                                        });
 
-                                var response = new Response(body, {
-                                    status: 200,
-                                    statusText: 'OK',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    }
-                                });
-
-                                if (type === 'syncmetadata') {
-                                    // If our syncmetadata changes, kick off a sync
-                                    self.registration.sync.register('sync').catch(function () {
-                                        self.registration.active.postMessage('sync');
-                                    });
-
-                                    return sendSyncData().then(function () {
-                                        return Promise.resolve(response);
-                                    });
-                                } else {
-                                    // Make sure that node is not marked as deleted.
-                                    json.deleted = false;
-
-                                    var change = {
-                                        type: type,
-                                        uuid: uuid,
-                                        method: 'PATCH',
-                                        data: json,
-                                        timestamp: Date.now()
-                                    };
-
-                                    var changeTable = dbSync.nodeChanges;
-                                    var addShard = Promise.resolve();
-
-                                    if (table === dbSync.shards) {
-                                        changeTable = dbSync.shardChanges;
-
-                                        addShard = table.get(uuid).catch(databaseError).then(function (item) {
-                                            if (item) {
-                                                change.shard = item.shard;
-                                            } else {
-                                                return Promise.reject('Unexpectedly could not find: ' + uuid);
+                                        var response = new Response(body, {
+                                            status: 200,
+                                            statusText: 'OK',
+                                            headers: {
+                                                'Content-Type': 'application/json'
                                             }
                                         });
-                                    }
 
-                                    return addShard.then(function () {
-                                        return changeTable.add(change).then(function (localId) {
-                                            return sendRevisedNode(table, uuid).then(function () {
+                                        var change = {
+                                            type: type,
+                                            uuid: uuid,
+                                            method: 'PATCH',
+                                            data: json,
+                                            timestamp: Date.now()
+                                        };
+
+                                        var changeTable = dbSync.nodeChanges;
+                                        var addShard = Promise.resolve();
+
+                                        if (table === dbSync.shards) {
+                                            changeTable = dbSync.shardChanges;
+
+                                            addShard = table.get(uuid).catch(databaseError).then(function (item) {
+                                                if (item) {
+                                                    change.shard = item.shard;
+                                                }
+                                                else {
+                                                    return Promise.reject('Unexpectedly could not find: ' + uuid);
+                                                }
+                                            });
+                                        }
+
+                                        return addShard.then(function () {
+                                            change.isSynced = 0;
+                                            return changeTable.add(change).then(function (localId) {
                                                 return Promise.resolve(response);
                                             });
                                         });
-                                    });
-                                }
-                            } else {
-                                return Promise.reject("UUID unexpectedly not found.");
-                            }
+                                    }
+                                    else {
+                                        return Promise.reject("UUID unexpectedly not found.");
+                                    }
+                              });
+                            });
                         });
                     });
                 });
@@ -256,7 +275,7 @@
         }).catch(sendErrorResponses);
     }
 
-    function postNode (request, type) {
+    async function postNode (request, type) {
         return dbSync.open().catch(databaseError).then(function () {
             return getTableForType(type).then(function (table) {
                 return request.json().catch(jsonError).then(function (json) {
@@ -264,8 +283,6 @@
                         json.uuid = uuid;
                         json.type = type;
                         json.status = Status.published;
-                        // Newly created node is marked as not deleted.
-                        json.deleted = false;
 
                         // Not entirely clear whose job it should be to figure
                         // out the shard, but we'll do it here for now.
@@ -281,49 +298,46 @@
 
                         return addShard.then(function (json) {
                             return table.put(json).catch(databaseError).then(function () {
-                                var body = JSON.stringify({
-                                    data: [json]
+                                return sendRevisedNode(table, uuid).then(function () {
+                                    // For hooks to be able to work, we need to declare the
+                                    // tables that may be altered due to a change. In this case
+                                    // We want to allow adding pending upload photos.
+                                    // See for example dbSync.nodeChanges.hook().
+                                    return db.transaction('rw', table, dbSync.nodeChanges, dbSync.shardChanges, dbSync.authorityPhotoUploadChanges, function() {
+                                          var body = JSON.stringify({
+                                              data: [json]
+                                          });
+
+                                          var response = new Response(body, {
+                                              status: 200,
+                                              statusText: 'OK',
+                                              headers: {
+                                                  'Content-Type': 'application/json'
+                                              }
+                                          });
+
+                                          var change = {
+                                              type: type,
+                                              uuid: uuid,
+                                              method: 'POST',
+                                              data: json,
+                                              timestamp: Date.now(),
+                                              // Mark if the entity was already synced.
+                                              isSynced: 0
+                                          };
+
+                                          var changeTable = dbSync.nodeChanges;
+
+                                          if (table === dbSync.shards) {
+                                              changeTable = dbSync.shardChanges;
+                                              change.shard = json.shard;
+                                          }
+
+                                          return changeTable.add(change).then(function (localId) {
+                                              return Promise.resolve(response);
+                                          });
+                                    });
                                 });
-
-                                var response = new Response(body, {
-                                    status: 200,
-                                    statusText: 'OK',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    }
-                                });
-
-                                if (type === 'syncmetadata') {
-                                    // If our syncmetadata changes, kick off a sync
-                                    self.registration.sync.register('sync').catch(function () {
-                                        self.registration.active.postMessage('sync');
-                                    });
-
-                                    return sendSyncData().then(function () {
-                                        return Promise.resolve(response);
-                                    });
-                                } else {
-                                    var change = {
-                                        type: type,
-                                        uuid: uuid,
-                                        method: 'POST',
-                                        data: json,
-                                        timestamp: Date.now()
-                                    };
-
-                                    var changeTable = dbSync.nodeChanges;
-
-                                    if (table === dbSync.shards) {
-                                        changeTable = dbSync.shardChanges;
-                                        change.shard = json.shard;
-                                    }
-
-                                    return changeTable.add(change).then(function (localId) {
-                                        return sendRevisedNode(table, uuid).then(function () {
-                                            return Promise.resolve(response);
-                                        });
-                                    });
-                                }
                             });
                         });
                     });
@@ -334,6 +348,7 @@
 
     function view (type, uuid) {
         return dbSync.open().catch(databaseError).then(function () {
+
             return getTableForType(type).then(function (table) {
               var uuids = uuid.split(',');
 
@@ -373,7 +388,7 @@
         }).catch(sendErrorResponses);
     }
 
-    // A list of all types of measuremnts that can be
+    // A list of all types of measurements that can be
     // taken during groups encounter.
     var groupMeasurementTypes = [
       'attendance',
@@ -391,7 +406,7 @@
     ];
 
     // This is a kind of special-case for now, at least. We're wanting to get
-    // back all of measuremnts for whom the key is equal to the value.
+    // back all of measurements for whom the key is equal to the value.
     //
     // Ultimately, it would be better to make this more generic here and do the
     // processing on the client side, but this mirrors the pre-existing
@@ -483,7 +498,8 @@
         var range = parseInt(params.get('range') || '0');
         var sortBy = '';
 
-        return dbSync.open().catch(databaseError).then(function () {
+        return dbSync.open().catch(databaseError).then(function (db) {
+
             var criteria = {type: type};
 
             // We can do a limited kind of criteria ... can be expanded when
@@ -505,15 +521,15 @@
                 } else {
                     query = table.where(criteria);
                     countQuery = query.clone();
-                }
 
-                // Exclude deleted results.
-                query = query.and(function (item) {
-                  return item.deleted == false;
-                });
-                countQuery = query.and(function (item) {
-                  return item.deleted == false;
-                });
+                    // Exclude deleted results.
+                    query = query.and(function (item) {
+                      return item.deleted == false;
+                    });
+                    countQuery = query.and(function (item) {
+                      return item.deleted == false;
+                    });
+                }
 
                 var modifyQuery = Promise.resolve();
 
@@ -625,7 +641,7 @@
                             }).toArray().then(function (participations) {
                                 var clinics = [];
                                 participations.forEach(function(participation) {
-                                  // If participation is marked as deleted, do not include it in results.
+                                    // If participation is marked as deleted, do not include it in results.
                                     if (participation.deleted === false) {
                                         clinics.push(['session', participation.clinic]);
                                     }
@@ -723,6 +739,16 @@
       });
     }
 
+    function sendRevisedNode (table, uuid) {
+        return table.get(uuid).catch(databaseError).then(function (item) {
+            if (item) {
+                return sendRevisions([item]);
+            } else {
+                return Promise.reject("UUID unexpectedly not found.");
+            }
+        });
+    }
+
     // This is meant for the end of a promise chain. If we've rejected with a
     // `Response` object, then we resolve instead, so that we'll send the
     // response. (Otherwise, we'll send a network error).
@@ -732,16 +758,6 @@
         } else {
             return Promise.reject(err);
         }
-    }
-
-    function sendRevisedNode (table, uuid) {
-        return table.get(uuid).catch(databaseError).then(function (item) {
-            if (item) {
-                return sendRevisions([item]);
-            } else {
-                return Promise.reject("UUID unexpectedly not found.");
-            }
-        });
     }
 
     function databaseError (err) {
@@ -797,6 +813,40 @@
         }).then(function (deviceUuid) {
             return Promise.resolve(kelektivUuid.v5(timestamp, deviceUuid));
         });
+    }
+
+    /**
+     * Helper function to add a record to authority PhotoUploadChanges.
+     */
+    function addPhotoUploadChanges(tableHook, table, obj) {
+        if (!obj.data.hasOwnProperty('photo')) {
+            // Entity doesn't have a photo.
+            return;
+        }
+
+        if (!photosUploadUrlRegex.test(obj.data.photo)) {
+            // Photo URL doesn't point to the local cache.
+            return;
+        }
+
+        // As `localId`, the primary key, is auto incremented, we have to wait
+        // for the transaction to finish in order to have it.
+        tableHook.onsuccess = async function (primaryKey) {
+            const result = await table.add({
+                localId : primaryKey,
+                uuid: obj.uuid,
+                photo: obj.data.photo,
+                // Drupal's file ID.
+                fileId: null,
+                // The file name on Drupal.
+                remoteFileName: null,
+                // Indicate photo was not uploaded to Drupal yet.
+                // IndexDB doesn't index Boolean, so we use an Int.
+                isSynced: 0,
+            });
+
+            return result;
+        };
     }
 
 })();

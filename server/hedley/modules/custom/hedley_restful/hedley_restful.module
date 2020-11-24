@@ -5,7 +5,7 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 13);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 14);
 
 /**
  * Nodes synced to all devices.
@@ -41,6 +41,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'session' => 'sessions',
   // Measurements.
   'acute_findings' => 'acute-findings',
+  'acute_illness_muac' => 'acute-illness-muacs',
   'acute_illness_vitals' => 'acute-illness-vitals',
   'attendance' => 'attendances',
   'breast_exam' => 'breast-exams',

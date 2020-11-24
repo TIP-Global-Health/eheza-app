@@ -43,9 +43,6 @@ import Backend.Relationship.Model exposing (Relationship)
 import Backend.Session.Decoder exposing (decodeSession)
 import Backend.Session.Encoder exposing (encodeSession)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
-import Backend.SyncData.Decoder exposing (decodeSyncData)
-import Backend.SyncData.Encoder exposing (encodeSyncData)
-import Backend.SyncData.Model exposing (SyncData)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.Village.Model exposing (Village)
 import Http exposing (Error)
@@ -70,7 +67,7 @@ swEndpoint path decodeValue =
 personEndpoint : ReadWriteEndPoint Error PersonId Person Person PersonParams
 personEndpoint =
     swEndpoint "nodes/person" decodePerson
-        |> withValueEncoder encodePerson
+        |> withValueEncoder (\val -> Json.Encode.object (encodePerson val))
         |> withParamsEncoder encodePersonParams
 
 
@@ -89,7 +86,7 @@ encodePersonParams params =
 relationshipEndpoint : ReadWriteEndPoint Error RelationshipId Relationship Relationship RelationshipParams
 relationshipEndpoint =
     swEndpoint "nodes/relationship" decodeRelationship
-        |> withValueEncoder encodeRelationship
+        |> withValueEncoder (object << encodeRelationship)
         |> withParamsEncoder encodeRelationshipParams
 
 
@@ -107,8 +104,6 @@ encodeRelationshipParams params =
         ]
 
 
-{-| @todo: For now we'll fetch only health center. Eventually, we'll get all the data, and compute inside Elm.
--}
 computedDashboardEndpoint : ReadOnlyEndPoint Error HealthCenterId DashboardStats ()
 computedDashboardEndpoint =
     swEndpoint "statistics" decodeDashboardStats
@@ -122,12 +117,6 @@ healthCenterEndpoint =
 villageEndpoint : ReadOnlyEndPoint Error VillageId Village ()
 villageEndpoint =
     swEndpoint "nodes/village" decodeVillage
-
-
-syncDataEndpoint : ReadWriteEndPoint Error HealthCenterId SyncData SyncData ()
-syncDataEndpoint =
-    swEndpoint "nodes/syncmetadata" decodeSyncData
-        |> withValueEncoder encodeSyncData
 
 
 clinicEndpoint : ReadWriteEndPoint Error ClinicId Clinic Clinic ()
@@ -198,18 +187,14 @@ lactationEndpoint =
 
 childFbfEndpoint : ReadWriteEndPoint Error ChildFbfId Fbf Fbf ()
 childFbfEndpoint =
-    fbfEndpoint "nodes/child_fbf"
+    swEndpoint "nodes/child_fbf" decodeFbf
+        |> withValueEncoder (object << encodeChildFbf)
 
 
 motherFbfEndpoint : ReadWriteEndPoint Error MotherFbfId Fbf Fbf ()
 motherFbfEndpoint =
-    fbfEndpoint "nodes/mother_fbf"
-
-
-fbfEndpoint : String -> ReadWriteEndPoint Error (EntityUuid a) Fbf Fbf ()
-fbfEndpoint path =
-    swEndpoint path decodeFbf
-        |> withValueEncoder (object << encodeFbf)
+    swEndpoint "nodes/mother_fbf" decodeFbf
+        |> withValueEncoder (object << encodeMotherFbf)
 
 
 participantConsentEndpoint : ReadWriteEndPoint Error ParticipantConsentId ParticipantConsent ParticipantConsent ()
@@ -221,7 +206,7 @@ participantConsentEndpoint =
 counselingScheduleEndpoint : ReadWriteEndPoint Error CounselingScheduleId CounselingSchedule CounselingSchedule ()
 counselingScheduleEndpoint =
     swEndpoint "nodes/counseling_schedule" decodeCounselingSchedule
-        |> withValueEncoder encodeCounselingSchedule
+        |> withValueEncoder (object << encodeCounselingSchedule)
 
 
 counselingTopicEndpoint : ReadWriteEndPoint Error CounselingTopicId CounselingTopic CounselingTopic ()
@@ -329,7 +314,7 @@ encodePmtctParticipantParams params =
 pmtctParticipantEndpoint : ReadWriteEndPoint Error PmtctParticipantId PmtctParticipant PmtctParticipant PmtctParticipantParams
 pmtctParticipantEndpoint =
     swEndpoint "nodes/pmtct_participant" decodePmtctParticipant
-        |> withValueEncoder encodePmtctParticipant
+        |> withValueEncoder (object << encodePmtctParticipant)
         |> withParamsEncoder encodePmtctParticipantParams
 
 
@@ -367,7 +352,7 @@ encodeIndividualEncounterParams params =
 individualEncounterParticipantEndpoint : ReadWriteEndPoint Error IndividualEncounterParticipantId IndividualEncounterParticipant IndividualEncounterParticipant (Maybe PersonId)
 individualEncounterParticipantEndpoint =
     swEndpoint "nodes/individual_participant" decodeIndividualEncounterParticipant
-        |> withValueEncoder encodeIndividualEncounterParticipant
+        |> withValueEncoder (object << encodeIndividualEncounterParticipant)
         |> withParamsEncoder encodeIndividualEncounterParticipantParams
 
 
@@ -577,3 +562,9 @@ call114Endpoint : ReadWriteEndPoint Error Call114Id Call114 Call114 ()
 call114Endpoint =
     swEndpoint "nodes/call_114" decodeCall114
         |> withValueEncoder (object << encodeCall114)
+
+
+acuteIllnessMuacEndpoint : ReadWriteEndPoint Error AcuteIllnessMuacId AcuteIllnessMuac AcuteIllnessMuac ()
+acuteIllnessMuacEndpoint =
+    swEndpoint "nodes/acute_illness_muac" decodeAcuteIllnessMuac
+        |> withValueEncoder (object << encodeAcuteIllnessMuac)
