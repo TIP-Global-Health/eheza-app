@@ -47,6 +47,7 @@ authority.
 type BackendAuthorityEntity
     = BackendAuthorityAcuteFindings (BackendEntity AcuteFindings)
     | BackendAuthorityAcuteIllnessEncounter (BackendEntity AcuteIllnessEncounter)
+    | BackendAuthorityAcuteIllnessMuac (BackendEntity AcuteIllnessMuac)
     | BackendAuthorityAcuteIllnessVitals (BackendEntity AcuteIllnessVitals)
     | BackendAuthorityAttendance (BackendEntity Attendance)
     | BackendAuthorityBreastExam (BackendEntity BreastExam)
