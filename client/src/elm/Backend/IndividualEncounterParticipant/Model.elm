@@ -13,7 +13,7 @@ type alias IndividualEncounterParticipant =
     , endDate : Maybe NominalDate
     , eddDate : Maybe NominalDate
     , dateConcluded : Maybe NominalDate
-    , outcome : Maybe PregnancyOutcome
+    , outcome : Maybe IndividualEncounterParticipantOutcome
     , deliveryLocation : Maybe DeliveryLocation
     , deleted : Bool
     , shard : Maybe HealthCenterId
@@ -54,6 +54,11 @@ type IndividualEncounterType
 type DeliveryLocation
     = FacilityDelivery
     | HomeDelivery
+
+
+type IndividualEncounterParticipantOutcome
+    = AcuteIllness AcuteIllnessOutcome
+    | Pregnancy PregnancyOutcome
 
 
 type PregnancyOutcome

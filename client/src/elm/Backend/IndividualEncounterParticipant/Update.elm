@@ -29,7 +29,7 @@ update participantId maybeParticipant currentDate msg model =
                                     HomeDelivery
                         in
                         ( { model | closePrenatalSession = Loading }
-                        , { participant | endDate = currentDate, dateConcluded = Just concludedDate, outcome = Just outcome, deliveryLocation = Just deliveryLocation }
+                        , { participant | endDate = Just currentDate, dateConcluded = Just concludedDate, outcome = Just (Pregnancy outcome), deliveryLocation = Just deliveryLocation }
                             |> sw.patchFull individualEncounterParticipantEndpoint participantId
                             |> withoutDecoder
                             |> toCmd (RemoteData.fromResult >> HandleClosedPrenatalSession)
@@ -45,11 +45,12 @@ update participantId maybeParticipant currentDate msg model =
             maybeParticipant
                 |> unwrap ( model, Cmd.none )
                     (\participant ->
-                        { model | closePrenatalSession = Loading }
-                            { participant | endDate = currentDate, outcome = Just outcome }
-                            |> sw.patchAny individualEncounterParticipantEndpoint participantId
+                        ( { model | closeAcuteIllnessSession = Loading }
+                        , { participant | endDate = Just currentDate, outcome = Just (AcuteIllness outcome) }
+                            |> sw.patchFull individualEncounterParticipantEndpoint participantId
                             |> withoutDecoder
                             |> toCmd (RemoteData.fromResult >> HandleClosedPrenatalSession)
+                        )
                     )
 
         HandleClosedAcuteIllnessSession data ->

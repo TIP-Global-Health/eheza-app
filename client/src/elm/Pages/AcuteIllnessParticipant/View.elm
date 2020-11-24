@@ -160,12 +160,7 @@ viewManageIllnessesContent language currentDate selectedHealthCenter id db activ
                 |> Maybe.withDefault ( startIllnessAction, False )
 
         startIllnessAction =
-            IndividualEncounterParticipant id
-                Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
-                currentDate
-                Nothing
-                Nothing
-                (Just selectedHealthCenter)
+            emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter selectedHealthCenter
                 |> Backend.Model.PostIndividualSession
                 |> MsgBackend
 
@@ -260,12 +255,7 @@ viewManageParticipantsContent language currentDate selectedHealthCenter id db ac
                 |> Maybe.withDefault ( startIllnessAction, False )
 
         startIllnessAction =
-            IndividualEncounterParticipant id
-                Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
-                currentDate
-                Nothing
-                Nothing
-                (Just selectedHealthCenter)
+            emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter selectedHealthCenter
                 |> Backend.Model.PostIndividualSession
                 |> MsgBackend
 
