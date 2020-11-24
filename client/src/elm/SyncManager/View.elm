@@ -373,10 +373,10 @@ viewAuthorityEntity backendAuthorityEntity =
                 text ("Acute Illness Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
 
             BackendAuthorityAcuteIllnessMuac identifier ->
-                viewMeasurement identifier "AcuteI llness Muac"
+                viewMeasurement identifier "Acute Illness Muac"
 
             BackendAuthorityAcuteIllnessVitals identifier ->
-                viewMeasurement identifier "AcuteI llness Vitals"
+                viewMeasurement identifier "Acute Illness Vitals"
 
             BackendAuthorityAttendance identifier ->
                 viewMeasurement identifier "Attendance"
