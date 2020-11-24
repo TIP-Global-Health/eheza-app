@@ -50,22 +50,12 @@ encodeHeightValueWithType type_ (HeightInCm height) =
 
 encodeMuac : Muac -> List ( String, Value )
 encodeMuac =
-    encodeGroupMeasurement encodeMuacValue
+    encodeGroupMeasurement (encodeMuacValueWithType "muac")
 
 
 encodeNutritionMuac : NutritionMuac -> List ( String, Value )
 encodeNutritionMuac =
-    encodeNutritionMeasurement encodeNutritionMuacValue
-
-
-encodeMuacValue : MuacInCm -> List ( String, Value )
-encodeMuacValue muac =
-    encodeMuacValueWithType "muac" muac
-
-
-encodeNutritionMuacValue : MuacInCm -> List ( String, Value )
-encodeNutritionMuacValue muac =
-    encodeMuacValueWithType "nutrition_muac" muac
+    encodeNutritionMeasurement (encodeMuacValueWithType "nutrition_muac")
 
 
 encodeMuacValueWithType : String -> MuacInCm -> List ( String, Value )
@@ -1668,4 +1658,4 @@ encodeRecommendationSite period =
 
 encodeAcuteIllnessMuac : AcuteIllnessMuac -> List ( String, Value )
 encodeAcuteIllnessMuac =
-    encodeAcuteIllnessMeasurement encodeMuacValue
+    encodeAcuteIllnessMeasurement (encodeMuacValueWithType "acute_illness_muac")
