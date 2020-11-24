@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Rotates photos that were uploaded by old Chrome versions
+ * Rotates photos that were uploaded by old Chrome versions.
  *
  * Where the photo is a portrait, but got width 800 and height 600.
  *
