@@ -177,11 +177,15 @@ getAllChildActivities offlineSession =
             [ {- Counseling, -} Height, Muac, NutritionSigns, Weight, ChildPicture ]
 
         forFbf =
-            if offlineSession.session.clinicType == Fbf then
-                [ ChildFbf ]
+            case offlineSession.session.clinicType of
+                Fbf ->
+                    [ ChildFbf ]
 
-            else
-                []
+                Achi ->
+                    [ ChildFbf ]
+
+                _ ->
+                    []
     in
     forAllGroupTypes ++ forFbf
 
@@ -196,11 +200,15 @@ getAllMotherActivities offlineSession =
             ]
 
         forFbf =
-            if offlineSession.session.clinicType == Fbf then
-                [ Lactation, MotherFbf ]
+            case offlineSession.session.clinicType of
+                Fbf ->
+                    [ Lactation, MotherFbf ]
 
-            else
-                []
+                Achi ->
+                    [ Lactation, MotherFbf ]
+
+                _ ->
+                    []
     in
     forAllGroupTypes ++ forFbf
 
@@ -233,7 +241,7 @@ expectChildActivity currentDate offlineSession childId isChw activity =
                expectCounselingActivity session childId
         -}
         ChildFbf ->
-            offlineSession.session.clinicType == Fbf
+            List.member offlineSession.session.clinicType [ Achi, Fbf ]
 
         _ ->
             -- In all other cases, we expect each ativity each time.
@@ -467,7 +475,7 @@ expectMotherActivity currentDate offlineSession motherId activity =
                     Lactation ->
                         case participant.adultActivities of
                             MotherActivities ->
-                                offlineSession.session.clinicType == Fbf
+                                List.member offlineSession.session.clinicType [ Achi, Fbf ]
 
                             CaregiverActivities ->
                                 False
@@ -476,7 +484,7 @@ expectMotherActivity currentDate offlineSession motherId activity =
                     MotherFbf ->
                         case participant.adultActivities of
                             MotherActivities ->
-                                if offlineSession.session.clinicType == Fbf then
+                                if List.member offlineSession.session.clinicType [ Achi, Fbf ] then
                                     let
                                         isBreastfeeding =
                                             getMotherMeasurementData2 motherId offlineSession

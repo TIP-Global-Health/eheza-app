@@ -1811,6 +1811,11 @@ translationSet trans =
 
         ClinicType clinicType ->
             case clinicType of
+                Achi ->
+                    { english = "Achi"
+                    , kinyarwanda = Nothing
+                    }
+
                 Chw ->
                     { english = "CHW"
                     , kinyarwanda = Nothing

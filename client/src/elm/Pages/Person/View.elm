@@ -374,8 +374,8 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                             |> Maybe.map
                                 (\session ->
                                     let
-                                        -- Allow any adult. Allow any child, when clinic type is other
-                                        -- than Sorwathe. When clinic is Sorwathe, do allow child
+                                        -- Allow any adult. Allow any child, when clinic type is
+                                        -- Sorwathe. When clinic is other than Sorwathe, allow child
                                         -- with age lower than 26 month.
                                         qualifiesByAge =
                                             isAdult || session.clinicType == Sorwathe || childAgeCondition
