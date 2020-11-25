@@ -92,6 +92,7 @@ $total_encounters = [
   'fbf' => 0,
   'sorwathe' => 0,
   'chw' => 0,
+  'achi' => 0,
 ];
 $processed = 0;
 
@@ -153,7 +154,7 @@ while ($processed < $total) {
     }
 
     $measurements = node_load_multiple($measurements_ids);
-    list($pmtct, $fbf, $sorwathe, $chw, $nutrition, $prenatal, $acute_illness) = get_encounters_count($measurements);
+    list($pmtct, $fbf, $sorwathe, $chw, $achi, $nutrition, $prenatal, $acute_illness) = get_encounters_count($measurements);
     $person_total_encounters = $pmtct + $fbf + $sorwathe + $chw + $nutrition + $prenatal + $acute_illness;
 
     if ($person_total_encounters > 1) {
@@ -165,6 +166,7 @@ while ($processed < $total) {
     $total_encounters['fbf'] += $fbf;
     $total_encounters['sorwathe'] += $sorwathe;
     $total_encounters['chw'] += $chw;
+    $total_encounters['achi'] += $achi;
   }
 
   $nid = end($ids);
@@ -187,6 +189,7 @@ drush_print('PMTCT encounters:    ' . $total_encounters['pmtct']);
 drush_print('FBF encounters:      ' . $total_encounters['fbf']);
 drush_print('SORWATHE encounters: ' . $total_encounters['sorwathe']);
 drush_print('CHW encounters:      ' . $total_encounters['chw']);
+drush_print('ACHI encounters:      ' . $total_encounters['achi']);
 drush_print('');
 drush_print('Total encounters:    ' . $total_encounters['all']);
 drush_print('');
@@ -335,7 +338,7 @@ function get_encounters_count($measurements) {
     }
   }
 
-  $pmtct_encounters = $fbf_encounters = $sorwathe_encounters = $chw_encounters = 0;
+  $pmtct_encounters = $fbf_encounters = $sorwathe_encounters = $chw_encounters = $achi_encounters = 0;
   foreach ($group_encounters as $encounter) {
     $wrapper = entity_metadata_wrapper('node', $encounter);
     $clinic = $wrapper->field_clinic->getIdentifier();
@@ -362,6 +365,10 @@ function get_encounters_count($measurements) {
 
       case 'chw':
         $chw_encounters++;
+        break;
+
+      case 'achi':
+        $achi_encounters++;
     }
   }
 
@@ -370,6 +377,7 @@ function get_encounters_count($measurements) {
     $fbf_encounters,
     $sorwathe_encounters,
     $chw_encounters,
+    $achi_encounters,
     count($nutrition_encounters),
     count($prenatal_encounters),
     count($acute_illness_encounters),
