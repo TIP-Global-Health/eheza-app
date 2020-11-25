@@ -1266,20 +1266,35 @@ viewFbfForm language measurement activity clinicType setDistributedAmountMsg set
                    )
                 |> select [ onInput setDistributedAmountMsg, class "fbf-distirbution" ]
 
-        formContent =
-            [ div [ class "form-input measurement quantity" ]
+        formContentCommom =
+            div [ class "form-input measurement quantity" ]
                 [ selectQuantityInput
                 , div [ class "unit" ]
-                    [ text <| translate language Trans.PackagesPerMonth ]
+                    [ text <| translate language quantityUnitLabel ]
                 ]
-            , viewLabel language <| Trans.WasFbfDistirbuted activity
-            , viewCheckBoxSelectInput language
-                [ DistributedPartiallyLackOfStock, DistributedPartiallyOther ]
-                []
-                form.distributionNotice
-                setDistributoinNoticeMsg
-                Trans.DistributionNotice
-            ]
+
+        formContentByClinicType =
+            case clinicType of
+                Achi ->
+                    []
+
+                _ ->
+                    [ viewLabel language <| Trans.WasFbfDistirbuted activity
+                    , viewCheckBoxSelectInput language
+                        [ DistributedPartiallyLackOfStock, DistributedPartiallyOther ]
+                        []
+                        form.distributionNotice
+                        setDistributoinNoticeMsg
+                        Trans.DistributionNotice
+                    ]
+
+        ( quantityUnitLabel, activityLabel ) =
+            case clinicType of
+                Achi ->
+                    ( Trans.KilogramShorthand, Trans.ActivitityLabelAchi )
+
+                _ ->
+                    ( Trans.PackagesPerMonth, Trans.ActivitiesLabel activity )
     in
     div
         [ class "ui full segment fbf"
@@ -1287,9 +1302,10 @@ viewFbfForm language measurement activity clinicType setDistributedAmountMsg set
         ]
         [ div [ class "content" ]
             [ h3 [ class "ui header" ]
-                [ text <| translate language Trans.FbfDistribution ]
-            , p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
-            , formContent
+                [ text <| translate language (Trans.FbfDistribution clinicType) ]
+            , p [] [ text <| translate language activityLabel ]
+            , formContentCommom
+                :: formContentByClinicType
                 |> div [ class "ui form" ]
             ]
         , div [ class "actions" ] <|
