@@ -1178,7 +1178,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                                                     graduationDate
 
                                                                 Achi ->
-                                                                    graduationDate
+                                                                    Nothing
 
                                                                 Sorwathe ->
                                                                     Nothing
