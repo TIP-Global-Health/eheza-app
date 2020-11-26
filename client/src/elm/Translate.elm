@@ -1000,7 +1000,7 @@ translationSet trans =
                     }
 
                 DangerSignLethargyUnconsciousness ->
-                    { english = "Lethargy or Uconsciousness"
+                    { english = "Lethargy or Unconsciousness"
                     , kinyarwanda = Nothing
                     }
 
