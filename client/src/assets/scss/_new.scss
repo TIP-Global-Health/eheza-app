@@ -2049,6 +2049,11 @@ div.page-report.acute-illness {
     div.pane.physical-exam .ui.table thead th {
       background-color: $color-white;
       color: $color-text;
+
+      &.first {
+        text-align: left;
+        width: 190px;
+      }
     }
 
     div.pane.physical-exam .ui.table tbody td {
@@ -2056,6 +2061,11 @@ div.page-report.acute-illness {
 
       &.alert {
         color: $color-red-alert;
+      }
+
+      &.first {
+        text-align: left;
+        width: 190px;
       }
     }
 
