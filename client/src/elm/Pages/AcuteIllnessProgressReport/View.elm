@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
@@ -361,7 +362,7 @@ viewPhysicalExamPane : Language -> NominalDate -> AcuteIllnessMeasurements -> Ht
 viewPhysicalExamPane language currentDate measurements =
     let
         viewDateCell date =
-            th [ class "uppercase" ] [ text <| formatDDMMYY date ]
+            th [] [ text <| formatDDMMYY date ]
 
         viewBodyTemperatureCell maybeBodyTemperature =
             maybeBodyTemperature
@@ -371,7 +372,7 @@ viewPhysicalExamPane language currentDate measurements =
                             td [] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
 
                         else
-                            td [ class "alert" ] [ text <| String.fromFloat bodyTemperature_ ++ " " ++ translate language Translate.CelsiusAbbrev ]
+                            td [ class "red" ] [ text <| String.fromFloat bodyTemperature_ ++ " " ++ translate language Translate.CelsiusAbbrev ]
                     )
                 |> Maybe.withDefault (td [] [])
 
@@ -383,13 +384,28 @@ viewPhysicalExamPane language currentDate measurements =
                             td [] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
 
                         else
-                            td [ class "alert" ] [ text <| translate language <| Translate.BpmUnit respiratoryRate_ ]
+                            td [ class "red" ] [ text <| translate language <| Translate.BpmUnit respiratoryRate_ ]
                     )
                 |> Maybe.withDefault (td [] [])
 
         viewMuacCell maybeMuac =
             maybeMuac
-                |> Maybe.map (\(MuacInCm muac_) -> td [] [ text <| String.fromFloat muac_ ])
+                |> Maybe.map
+                    (\(MuacInCm muac_) ->
+                        let
+                            muacColor =
+                                case muacIndication (MuacInCm muac_) of
+                                    MuacRed ->
+                                        "red"
+
+                                    MuacYellow ->
+                                        "yellow"
+
+                                    MuacGreen ->
+                                        "green"
+                        in
+                        td [ class muacColor ] [ text <| String.fromFloat muac_ ]
+                    )
                 |> Maybe.withDefault (td [] [])
 
         bodyTemperature =

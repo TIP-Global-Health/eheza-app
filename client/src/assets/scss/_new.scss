@@ -2059,8 +2059,16 @@ div.page-report.acute-illness {
     div.pane.physical-exam .ui.table tbody td {
       font-weight: 600;
 
-      &.alert {
+      &.red {
         color: $color-red-alert;
+      }
+
+      &.yellow {
+        color: $color-yellow;
+      }
+
+      &.green {
+        color: $color-green;
       }
 
       &.first {
