@@ -5,7 +5,6 @@ user to click on clinics the user is assigned to, to see the sessions which are
 available for data-entry.
 -}
 
-import App.Model exposing (MsgLoggedIn(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic, ClinicType(..), allClinicTypes)
 import Backend.Entities exposing (..)
@@ -14,20 +13,23 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isAuthorithedNurse)
 import Backend.Session.Model exposing (Session)
 import Backend.Session.Utils exposing (isClosed)
-import Backend.SyncData.Model exposing (SyncData)
 import Date exposing (Unit(..))
-import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import List.Extra
+import List.Zipper as Zipper
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Clinics.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData, isLoading)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
+import SyncManager.Model exposing (SyncInfoStatus(..))
+import SyncManager.Utils exposing (getSyncedHealthCenters)
 import Translate exposing (Language, translate)
-import Utils.WebData exposing (viewError, viewWebData)
+import Utils.WebData exposing (viewWebData)
 
 
 {-| If `selectedClinic` is Just, we'll show a page for that clinic. If not,
@@ -37,24 +39,24 @@ For now, at least, we don't really need our own `Msg` type, so we're just using
 the big one.
 
 -}
-view : Language -> NominalDate -> Nurse -> HealthCenterId -> Maybe ClinicId -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate user healthCenterId selectedClinic model db =
+view : Language -> NominalDate -> Nurse -> HealthCenterId -> Maybe ClinicId -> Model -> ModelIndexedDb -> SyncManager.Model.Model -> Html Msg
+view language currentDate user healthCenterId selectedClinic model db syncManager =
     case selectedClinic of
         Just clinicId ->
             viewClinic language currentDate user clinicId db
 
         Nothing ->
-            viewClinicList language user healthCenterId model db
+            viewClinicList language user healthCenterId model db syncManager
 
 
-viewClinicList : Language -> Nurse -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
-viewClinicList language user healthCenterId model db =
+viewClinicList : Language -> Nurse -> HealthCenterId -> Model -> ModelIndexedDb -> SyncManager.Model.Model -> Html Msg
+viewClinicList language user healthCenterId model db syncManager =
     let
         content =
             viewWebData language
-                (viewLoadedClinicList language user healthCenterId model)
+                (viewLoadedClinicList language user healthCenterId syncManager model)
                 identity
-                (RemoteData.append db.clinics db.syncData)
+                db.clinics
 
         ( titleTransId, goBackAction ) =
             if isJust model.clinicType then
@@ -90,102 +92,99 @@ we could show something about the sync status here ... might want to know how
 up-to-date things are.
 
 -}
-viewLoadedClinicList : Language -> Nurse -> HealthCenterId -> Model -> ( Dict ClinicId Clinic, Dict HealthCenterId SyncData ) -> Html Msg
-viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync ) =
+viewLoadedClinicList : Language -> Nurse -> HealthCenterId -> SyncManager.Model.Model -> Model -> Dict ClinicId Clinic -> Html Msg
+viewLoadedClinicList language user selectedHealthCenterId syncManager model clinics =
     let
+        syncedHealthCenters =
+            getSyncedHealthCenters syncManager
+                |> List.map toEntityUuid
+
         showWarningMessage header message =
             div
                 [ class "ui message warning" ]
                 [ div [ class "header" ] [ text <| translate language header ]
                 , text <| translate language message
                 ]
+
+        selectedHealthCenterSyncInfo =
+            syncManager.syncInfoAuthorities
+                |> Maybe.andThen
+                    (Zipper.toList >> List.Extra.find (\authorityInfo -> authorityInfo.uuid == fromEntityUuid selectedHealthCenterId))
     in
-    Dict.get selectedHealthCenterId sync
-        |> unwrap
-            (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
-            (\selectedHealthCenterSyncData ->
-                let
-                    isDownloading =
-                        case selectedHealthCenterSyncData.attempt of
-                            Backend.SyncData.Model.Downloading _ _ ->
-                                True
+    selectedHealthCenterSyncInfo
+        |> Maybe.map
+            (\syncInfo ->
+                case syncInfo.status of
+                    NotAvailable ->
+                        showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync
 
-                            _ ->
-                                False
+                    Uploading ->
+                        showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCUploading
 
-                    isUploading =
-                        case selectedHealthCenterSyncData.attempt of
-                            Backend.SyncData.Model.Uploading _ ->
-                                True
+                    Downloading ->
+                        showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCDownloading
 
-                            _ ->
-                                False
-                in
-                if isDownloading then
-                    showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCDownloading
+                    _ ->
+                        let
+                            titleTransId =
+                                if isJust model.clinicType then
+                                    Translate.SelectYourGroup
 
-                else if isUploading then
-                    showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCUploading
+                                else
+                                    Translate.SelectProgram
 
-                else
-                    let
-                        titleTransId =
-                            if isJust model.clinicType then
-                                Translate.SelectYourGroup
+                            title =
+                                p
+                                    [ class "centered" ]
+                                    [ text <| translate language titleTransId
+                                    , text ":"
+                                    ]
 
-                            else
-                                Translate.SelectProgram
+                            synced =
+                                case model.clinicType of
+                                    Just clinicType ->
+                                        clinics
+                                            |> Dict.filter
+                                                (\_ clinic ->
+                                                    -- Group belongs to seleced health center.
+                                                    (clinic.healthCenterId == selectedHealthCenterId)
+                                                        -- Health center is synced.
+                                                        && List.member clinic.healthCenterId syncedHealthCenters
+                                                        -- Group is of selected type.
+                                                        && (clinic.clinicType == clinicType)
+                                                )
+                                            |> Dict.toList
+                                            |> List.sortBy (Tuple.second >> .name)
+                                            |> Dict.fromList
 
-                        title =
-                            p
-                                [ class "centered" ]
-                                [ text <| translate language titleTransId
-                                , text ":"
-                                ]
+                                    Nothing ->
+                                        clinics
+                                            |> Dict.filter
+                                                (\_ clinic ->
+                                                    -- Group belongs to seleced health center.
+                                                    (clinic.healthCenterId == selectedHealthCenterId)
+                                                        -- Health center is synced.
+                                                        && List.member clinic.healthCenterId syncedHealthCenters
+                                                )
 
-                        synced =
-                            case model.clinicType of
-                                Just clinicType ->
-                                    clinics
-                                        |> Dict.filter
-                                            (\_ clinic ->
-                                                -- Group belongs to seleced health center.
-                                                (clinic.healthCenterId == selectedHealthCenterId)
-                                                    -- Health center is synced.
-                                                    && Dict.member clinic.healthCenterId sync
-                                                    -- Group is of selected type.
-                                                    && (clinic.clinicType == clinicType)
-                                            )
+                            buttonsView =
+                                if isJust model.clinicType then
+                                    synced
                                         |> Dict.toList
-                                        |> List.sortBy (Tuple.second >> .name)
-                                        |> Dict.fromList
+                                        |> List.map (viewClinicButton user)
 
-                                Nothing ->
-                                    clinics
-                                        |> Dict.filter
-                                            (\_ clinic ->
-                                                -- Group belongs to seleced health center.
-                                                (clinic.healthCenterId == selectedHealthCenterId)
-                                                    -- Health center is synced.
-                                                    && Dict.member clinic.healthCenterId sync
-                                            )
-
-                        buttonsView =
-                            if isJust model.clinicType then
-                                synced
-                                    |> Dict.toList
-                                    |> List.map (viewClinicButton user)
-
-                            else
-                                synced
-                                    |> Dict.values
-                                    |> viewClinicTypeButtons language
-                    in
-                    div []
-                        [ title
-                        , div [] buttonsView
-                        ]
+                                else
+                                    synced
+                                        |> Dict.values
+                                        |> viewClinicTypeButtons language
+                        in
+                        div []
+                            [ title
+                            , div [] buttonsView
+                            ]
             )
+        |> Maybe.withDefault
+            (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
 
 
 viewClinicButton : Nurse -> ( ClinicId, Clinic ) -> Html Msg

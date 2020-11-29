@@ -11,6 +11,7 @@ type alias PmtctParticipant =
     , start : NominalDate
     , end : Maybe NominalDate
     , clinic : ClinicId
+    , deleted : Bool
     }
 
 
