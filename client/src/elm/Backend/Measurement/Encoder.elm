@@ -1659,3 +1659,13 @@ encodeRecommendationSite period =
 encodeAcuteIllnessMuac : AcuteIllnessMuac -> List ( String, Value )
 encodeAcuteIllnessMuac =
     encodeAcuteIllnessMeasurement (encodeMuacValueWithType "acute_illness_muac")
+
+
+encodeAcuteIllnessNutrition : AcuteIllnessNutrition -> List ( String, Value )
+encodeAcuteIllnessNutrition =
+    encodeAcuteIllnessMeasurement encodeNutritionValue
+
+
+encodeAcuteIllnessValue : EverySet ChildNutritionSign -> List ( String, Value )
+encodeAcuteIllnessValue nutritions =
+    encodeNutritionValueWithType "acute_illness_nutrition" nutritions
