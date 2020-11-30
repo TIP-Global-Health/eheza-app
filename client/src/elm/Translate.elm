@@ -1014,6 +1014,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DangerSignBloodyDiarrhea ->
+                    { english = "Bloody Diarrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                DangerSignNewSkinRash ->
+                    { english = "New Skin Rash"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoAcuteIllnessDangerSign ->
                     { english = "None of the above"
                     , kinyarwanda = Nothing

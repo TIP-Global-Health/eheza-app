@@ -1749,5 +1749,11 @@ encodeAcuteIllnessDangerSign sign =
             DangerSignSpontaneousBleeding ->
                 "spontaneous-bleeding"
 
+            DangerSignBloodyDiarrhea ->
+                "bloody-diarrhea"
+
+            DangerSignNewSkinRash ->
+                "new-skip-rash"
+
             NoAcuteIllnessDangerSign ->
                 "none"

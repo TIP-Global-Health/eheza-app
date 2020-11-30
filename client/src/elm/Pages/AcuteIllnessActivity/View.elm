@@ -2382,6 +2382,8 @@ viewReviewDangerSignsForm language currentDate measurements form =
             , DangerSignLethargyUnconsciousness
             , DangerSignRespiratoryDistress
             , DangerSignSpontaneousBleeding
+            , DangerSignBloodyDiarrhea
+            , DangerSignNewSkinRash
             , NoAcuteIllnessDangerSign
             ]
             []

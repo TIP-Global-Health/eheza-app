@@ -1870,6 +1870,12 @@ decodeAcuteIllnessDangerSign =
                     "spontaneous-bleeding" ->
                         succeed DangerSignSpontaneousBleeding
 
+                    "bloody-diarrhea" ->
+                        succeed DangerSignBloodyDiarrhea
+
+                    "new-skip-rash" ->
+                        succeed DangerSignNewSkinRash
+
                     "none" ->
                         succeed NoAcuteIllnessDangerSign
 

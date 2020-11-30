@@ -857,6 +857,8 @@ type AcuteIllnessDangerSign
     | DangerSignLethargyUnconsciousness
     | DangerSignRespiratoryDistress
     | DangerSignSpontaneousBleeding
+    | DangerSignBloodyDiarrhea
+    | DangerSignNewSkinRash
     | NoAcuteIllnessDangerSign
 
 
