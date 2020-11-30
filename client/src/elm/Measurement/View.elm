@@ -5,6 +5,7 @@ module Measurement.View exposing (viewChild, viewMeasurementFloatDiff, viewMothe
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import AssocList as Dict exposing (Dict)
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
@@ -54,7 +55,7 @@ viewChild :
 viewChild language currentDate isChw child activity measurements zscores session model previousIndividualMeasurements =
     case activity of
         ChildFbf ->
-            viewChildFbf language currentDate child (mapMeasurementData .fbf measurements) model.fbfForm
+            viewChildFbf language currentDate child session.offlineSession.session.clinicType (mapMeasurementData .fbf measurements) model.fbfForm
 
         ChildPicture ->
             viewPhoto language (mapMeasurementData .photo measurements) model.photo
@@ -667,8 +668,8 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
         ]
 
 
-viewChildFbf : Language -> NominalDate -> Person -> MeasurementData (Maybe ( ChildFbfId, Fbf )) -> FbfForm -> Html MsgChild
-viewChildFbf language currentDate child measurement form =
+viewChildFbf : Language -> NominalDate -> Person -> ClinicType -> MeasurementData (Maybe ( ChildFbfId, Fbf )) -> FbfForm -> Html MsgChild
+viewChildFbf language currentDate child clinicType measurement form =
     let
         activity =
             ChildActivity ChildFbf
@@ -696,6 +697,7 @@ viewChildFbf language currentDate child measurement form =
     viewFbfForm language
         measurement
         activity
+        clinicType
         SetDistributedAmountForChild
         SetDistributoinNoticeForChild
         saveMsg
@@ -809,8 +811,8 @@ type alias MotherMeasurementData =
     }
 
 
-viewMother : Language -> NominalDate -> Person -> MotherActivity -> MeasurementData MotherMeasurements -> ModelMother -> Html MsgMother
-viewMother language currentDate mother activity measurements model =
+viewMother : Language -> NominalDate -> Person -> MotherActivity -> ClinicType -> MeasurementData MotherMeasurements -> ModelMother -> Html MsgMother
+viewMother language currentDate mother activity clinicType measurements model =
     case activity of
         FamilyPlanning ->
             viewFamilyPlanning language (mapMeasurementData .familyPlanning measurements) model.familyPlanningSigns
@@ -819,7 +821,7 @@ viewMother language currentDate mother activity measurements model =
             viewLactation language (mapMeasurementData .lactation measurements) model.lactationForm
 
         MotherFbf ->
-            viewMotherFbf language currentDate mother (mapMeasurementData .fbf measurements) model.fbfForm
+            viewMotherFbf language currentDate mother clinicType (mapMeasurementData .fbf measurements) model.fbfForm
 
         ParticipantConsent ->
             viewParticipantConsent language (mapMeasurementData .consent measurements) model.participantConsent
@@ -1194,8 +1196,8 @@ viewLactation language measurement form =
         ]
 
 
-viewMotherFbf : Language -> NominalDate -> Person -> MeasurementData (Maybe ( MotherFbfId, Fbf )) -> FbfForm -> Html MsgMother
-viewMotherFbf language currentDate mother measurement form =
+viewMotherFbf : Language -> NominalDate -> Person -> ClinicType -> MeasurementData (Maybe ( MotherFbfId, Fbf )) -> FbfForm -> Html MsgMother
+viewMotherFbf language currentDate mother clinicType measurement form =
     let
         activity =
             MotherActivity MotherFbf
@@ -1223,6 +1225,7 @@ viewMotherFbf language currentDate mother measurement form =
     viewFbfForm language
         measurement
         activity
+        clinicType
         SetDistributedAmountForMother
         SetDistributoinNoticeForMother
         saveMsg
@@ -1233,12 +1236,13 @@ viewFbfForm :
     Language
     -> MeasurementData (Maybe a)
     -> Activity
+    -> ClinicType
     -> (String -> msg)
     -> (DistributionNotice -> msg)
     -> Maybe msg
     -> FbfForm
     -> Html msg
-viewFbfForm language measurement activity setDistributedAmountMsg setDistributoinNoticeMsg saveMsg form =
+viewFbfForm language measurement activity clinicType setDistributedAmountMsg setDistributoinNoticeMsg saveMsg form =
     let
         selectQuantityInput =
             option
@@ -1262,20 +1266,35 @@ viewFbfForm language measurement activity setDistributedAmountMsg setDistributoi
                    )
                 |> select [ onInput setDistributedAmountMsg, class "fbf-distirbution" ]
 
-        formContent =
-            [ div [ class "form-input measurement quantity" ]
+        formContentCommon =
+            div [ class "form-input measurement quantity" ]
                 [ selectQuantityInput
                 , div [ class "unit" ]
-                    [ text <| translate language Trans.PackagesPerMonth ]
+                    [ text <| translate language quantityUnitLabel ]
                 ]
-            , viewLabel language <| Trans.WasFbfDistirbuted activity
-            , viewCheckBoxSelectInput language
-                [ DistributedPartiallyLackOfStock, DistributedPartiallyOther ]
-                []
-                form.distributionNotice
-                setDistributoinNoticeMsg
-                Trans.DistributionNotice
-            ]
+
+        formContentByClinicType =
+            case clinicType of
+                Achi ->
+                    []
+
+                _ ->
+                    [ viewLabel language <| Trans.WasFbfDistirbuted activity
+                    , viewCheckBoxSelectInput language
+                        [ DistributedPartiallyLackOfStock, DistributedPartiallyOther ]
+                        []
+                        form.distributionNotice
+                        setDistributoinNoticeMsg
+                        Trans.DistributionNotice
+                    ]
+
+        ( quantityUnitLabel, activityLabel ) =
+            case clinicType of
+                Achi ->
+                    ( Trans.KilogramShorthand, Trans.ActivitityLabelAchi )
+
+                _ ->
+                    ( Trans.PackagesPerMonth, Trans.ActivitiesLabel activity )
     in
     div
         [ class "ui full segment fbf"
@@ -1283,9 +1302,10 @@ viewFbfForm language measurement activity setDistributedAmountMsg setDistributoi
         ]
         [ div [ class "content" ]
             [ h3 [ class "ui header" ]
-                [ text <| translate language Trans.FbfDistribution ]
-            , p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
-            , formContent
+                [ text <| translate language (Trans.FbfDistribution clinicType) ]
+            , p [] [ text <| translate language activityLabel ]
+            , formContentCommon
+                :: formContentByClinicType
                 |> div [ class "ui form" ]
             ]
         , div [ class "actions" ] <|

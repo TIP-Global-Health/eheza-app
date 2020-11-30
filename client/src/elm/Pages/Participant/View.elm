@@ -289,7 +289,7 @@ viewFoundMother language currentDate isChw ( motherId, mother ) ( sessionId, ses
                         |> LocalData.unwrap
                             []
                             (\measurements ->
-                                [ Measurement.View.viewMother language currentDate mother activity measurements form
+                                [ Measurement.View.viewMother language currentDate mother activity session.offlineSession.session.clinicType measurements form
                                     |> Html.map MsgMeasurement
                                     |> keyed "content"
                                 ]
