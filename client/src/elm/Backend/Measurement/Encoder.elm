@@ -1663,9 +1663,9 @@ encodeAcuteIllnessMuac =
 
 encodeAcuteIllnessNutrition : AcuteIllnessNutrition -> List ( String, Value )
 encodeAcuteIllnessNutrition =
-    encodeAcuteIllnessMeasurement encodeNutritionValue
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessNutritionValue
 
 
-encodeAcuteIllnessValue : EverySet ChildNutritionSign -> List ( String, Value )
-encodeAcuteIllnessValue nutritions =
+encodeAcuteIllnessNutritionValue : EverySet ChildNutritionSign -> List ( String, Value )
+encodeAcuteIllnessNutritionValue nutritions =
     encodeNutritionValueWithType "acute_illness_nutrition" nutritions

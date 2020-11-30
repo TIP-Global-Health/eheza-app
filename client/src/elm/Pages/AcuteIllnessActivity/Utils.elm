@@ -1307,9 +1307,7 @@ nutritionFormWithDefault form saved =
     saved
         |> unwrap
             form
-            (\value ->
-                { signs = or form.signs (EverySet.toList value |> Just) }
-            )
+            (\value -> { signs = or form.signs (EverySet.toList value |> Just) })
 
 
 toNutritionValueWithDefault : Maybe (EverySet ChildNutritionSign) -> NutritionForm -> Maybe (EverySet ChildNutritionSign)
