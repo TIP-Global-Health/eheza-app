@@ -4157,6 +4157,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibimenyetso biziyeho"
                     }
 
+                PhysicalExamNutrition ->
+                    { english = "Nutrition"
+                    , kinyarwanda = Nothing
+                    }
+
         PlaceholderEnterHeight ->
             { english = "Enter height here…"
             , kinyarwanda = Just "Andika uburebure hano…"
