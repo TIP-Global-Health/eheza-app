@@ -192,25 +192,24 @@ getAllChildActivities offlineSession =
 
 getAllMotherActivities : OfflineSession -> List MotherActivity
 getAllMotherActivities offlineSession =
-    let
-        forAllGroupTypes =
-            [ FamilyPlanning
+    case offlineSession.session.clinicType of
+        Achi ->
+            -- No mother activities at Achi groups.
+            []
 
-            --, ParticipantConsent
-            ]
+        _ ->
+            let
+                forAllGroupTypes =
+                    [ FamilyPlanning
 
-        forFbf =
-            case offlineSession.session.clinicType of
-                Fbf ->
-                    [ Lactation, MotherFbf ]
+                    --, ParticipantConsent
+                    ]
+            in
+            if offlineSession.session.clinicType == Fbf then
+                forAllGroupTypes ++ [ Lactation, MotherFbf ]
 
-                Achi ->
-                    [ Lactation, MotherFbf ]
-
-                _ ->
-                    []
-    in
-    forAllGroupTypes ++ forFbf
+            else
+                forAllGroupTypes
 
 
 {-| Do we expect this activity to be performed in this session for this child?

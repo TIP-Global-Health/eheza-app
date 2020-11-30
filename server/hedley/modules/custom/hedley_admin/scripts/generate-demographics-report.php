@@ -189,7 +189,7 @@ drush_print('PMTCT encounters:    ' . $total_encounters['pmtct']);
 drush_print('FBF encounters:      ' . $total_encounters['fbf']);
 drush_print('SORWATHE encounters: ' . $total_encounters['sorwathe']);
 drush_print('CHW encounters:      ' . $total_encounters['chw']);
-drush_print('ACHI encounters:      ' . $total_encounters['achi']);
+drush_print('ACHI encounters:     ' . $total_encounters['achi']);
 drush_print('');
 drush_print('Total encounters:    ' . $total_encounters['all']);
 drush_print('');

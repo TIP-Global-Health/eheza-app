@@ -239,6 +239,7 @@ type TranslationId
     | ActivitiesLabel Activity
     | ActivitiesTitle Activity
     | ActivitiesToComplete Int
+    | ActivitityLabelAchi
     | ActivityProgressReport Activity
     | ActivePage Page
     | AcuteIllnessActivityTitle AcuteIllnessActivity
@@ -417,7 +418,7 @@ type TranslationId
     | FamilyUbudehe
     | FatherName
     | FatherNationalId
-    | FbfDistribution
+    | FbfDistribution ClinicType
     | FbfToReceive Activity Float
     | FetalHeartRate
     | FetalMovement
@@ -1385,6 +1386,11 @@ translationSet trans =
         ActivitiesToComplete count ->
             { english = "To Do (" ++ String.fromInt count ++ ")"
             , kinyarwanda = Just <| "Ibisabwa gukora (" ++ String.fromInt count ++ ")"
+            }
+
+        ActivitityLabelAchi ->
+            { english = "Enter the amount of Aheza distributed below."
+            , kinyarwanda = Nothing
             }
 
         ActivePage page ->
@@ -2516,10 +2522,17 @@ translationSet trans =
             , kinyarwanda = Just "Icyiciro cy'ubudehe umuryango uherereyemo"
             }
 
-        FbfDistribution ->
-            { english = "FBF Distribution"
-            , kinyarwanda = Nothing
-            }
+        FbfDistribution clinicType ->
+            case clinicType of
+                Achi ->
+                    { english = "Aheza Distribution"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = "FBF Distribution"
+                    , kinyarwanda = Nothing
+                    }
 
         FbfToReceive activity amount ->
             case activity of
