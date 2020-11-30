@@ -579,6 +579,7 @@ type TranslationId
     | NumberOfStillbirthsPreTerm
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
+    | NutritionHelper
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
@@ -3869,6 +3870,11 @@ translationSet trans =
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
                     }
+
+        NutritionHelper ->
+            { english = "Explain to the mother how to check the malnutrition signs for their own child."
+            , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye."
+            }
 
         ObstetricalDiagnosis ->
             { english = "Obstetrical Diagnosis"

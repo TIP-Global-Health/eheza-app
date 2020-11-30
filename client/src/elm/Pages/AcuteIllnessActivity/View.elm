@@ -859,31 +859,17 @@ viewNutritionForm language currentDate measurements form_ =
                 |> Maybe.map (Tuple.second >> .value)
                 |> nutritionFormWithDefault form_
     in
-    text "viewNutritionForm"
-
-
-
--- div [ class "ui form physical-exam muac" ]
---     [ viewLabel language Translate.MUAC
---     , p [ class "activity-helper" ] [ text <| translate language Translate.MuacHelper ]
---     , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
---     , div [ class "ui grid" ]
---         [ div [ class "eleven wide column" ]
---             [ viewMeasurementInput
---                 language
---                 form.muac
---                 SetMuac
---                 "muac"
---                 Translate.CentimeterShorthand
---             ]
---         , div
---             [ class "five wide column" ]
---             [ showMaybe <|
---                 Maybe.map (MuacInCm >> muacIndication >> viewMuacIndication language) form.muac
---             ]
---         ]
---     , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
---     ]
+    div [ class "ui form physical-exam nutrition" ]
+        [ p [] [ text <| translate language Translate.NutritionHelper ]
+        , viewLabel language Translate.SelectAllSigns
+        , viewCheckBoxMultipleSelectInput language
+            [ Edema, AbdominalDistension, DrySkin ]
+            [ Apathy, PoorAppetite, BrittleHair ]
+            (form.signs |> Maybe.withDefault [])
+            (Just NormalChildNutrition)
+            SetNutritionSign
+            Translate.ChildNutritionSignLabel
+        ]
 
 
 viewAcuteIllnessLaboratory : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, Person, AcuteIllnessMeasurements ) -> LaboratoryData -> List (Html Msg)
