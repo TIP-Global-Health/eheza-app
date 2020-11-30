@@ -985,7 +985,7 @@ translationSet trans =
                     }
 
                 DangerSignUnableDrinkSuck ->
-                    { english = "Unable to to Drink/Suck"
+                    { english = "Unable to Drink/Suck"
                     , kinyarwanda = Nothing
                     }
 
