@@ -105,6 +105,8 @@ function hedley_acute_illness_field_default_field_bases() {
         'lethargy-unconsciousness' => 'Lethargy or unconsciousness',
         'respiratory-distress' => 'Respiratory distress',
         'spontaneous-bleeding' => 'Spontaneous bleeding',
+        'bloody-diarrhea' => 'Bloody Diarrhea',
+        'new-skip-rash' => 'New Skin Rash',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
