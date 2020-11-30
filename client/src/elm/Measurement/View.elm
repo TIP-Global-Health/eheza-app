@@ -1266,7 +1266,7 @@ viewFbfForm language measurement activity clinicType setDistributedAmountMsg set
                    )
                 |> select [ onInput setDistributedAmountMsg, class "fbf-distirbution" ]
 
-        formContentCommom =
+        formContentCommon =
             div [ class "form-input measurement quantity" ]
                 [ selectQuantityInput
                 , div [ class "unit" ]
@@ -1304,7 +1304,7 @@ viewFbfForm language measurement activity clinicType setDistributedAmountMsg set
             [ h3 [ class "ui header" ]
                 [ text <| translate language (Trans.FbfDistribution clinicType) ]
             , p [] [ text <| translate language activityLabel ]
-            , formContentCommom
+            , formContentCommon
                 :: formContentByClinicType
                 |> div [ class "ui form" ]
             ]
