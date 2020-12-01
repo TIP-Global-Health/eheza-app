@@ -18,21 +18,27 @@ class HedleyMigrateNutritions extends HedleyMigrateMeasurementBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'field_person',
-    'field_date_measured',
-    'field_nurse',
-    'field_session',
-    'created',
-    'field_nutrition_signs',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'field_nutrition_signs',
+      ]
+    );
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected $simpleMultipleMappings = [
-    'field_nutrition_signs',
-  ];
+  protected function simpleMappings() {
+    $mappings = parent::simpleMappings();
+
+    return array_merge(
+      $mappings, [
+        'field_nutrition_signs',
+      ]
+    );
+  }
 
 }

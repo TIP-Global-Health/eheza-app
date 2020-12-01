@@ -18,21 +18,27 @@ class HedleyMigrateMuacs extends HedleyMigrateMeasurementBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'field_person',
-    'field_date_measured',
-    'field_nurse',
-    'field_session',
-    'created',
-    'field_muac',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'field_muac',
+      ]
+    );
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected $simpleMappings = [
-    'field_muac',
-  ];
+  protected function simpleMappings() {
+    $mappings = parent::simpleMappings();
+
+    return array_merge(
+      $mappings, [
+        'field_muac',
+      ]
+    );
+  }
 
 }

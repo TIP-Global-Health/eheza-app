@@ -25,13 +25,6 @@ abstract class HedleyMigrateBase extends Migration {
   protected $bundle = NULL;
 
   /**
-   * The CSV columns.
-   *
-   * @var array
-   */
-  protected $csvColumns = [];
-
-  /**
    * Additional columns not in the CSV.
    *
    * @var array
@@ -46,20 +39,6 @@ abstract class HedleyMigrateBase extends Migration {
   protected $fields = [];
 
   /**
-   * Fields which we can map in a standard way.
-   *
-   * @var array
-   */
-  protected $simpleMappings = [];
-
-  /**
-   * Fields with multi-values that we can map in a standard way.
-   *
-   * @var array
-   */
-  protected $simpleMultipleMappings = [];
-
-  /**
    * A sub-directory where we can find the CSV for this migration.
    *
    * @var string
@@ -72,6 +51,36 @@ abstract class HedleyMigrateBase extends Migration {
    * @var string
    */
   protected $keyName = 'id';
+
+  /**
+   * Returns list of columns in CSV file.
+   *
+   * @return array
+   *   List of columns in CSV file.
+   */
+  protected function csvColumns() {
+    return [];
+  }
+
+  /**
+   * Returns list of fields that we can map in a standard way.
+   *
+   * @return array
+   *   List of fields that we can map in a standard way.
+   */
+  protected function simpleMappings() {
+    return [];
+  }
+
+  /**
+   * Returns list of fields with multi-values that we can map in a standard way.
+   *
+   * @return array
+   *   List of fields with multi-values that we can map in a standard way.
+   */
+  protected function simpleMultipleMappings() {
+    return [];
+  }
 
   /**
    * HedleyMigrateBase constructor.
@@ -92,7 +101,8 @@ abstract class HedleyMigrateBase extends Migration {
 
     $source_file = $this->getMigrateDirectory() . '/csv/' . $this->csvPrefix . $this->bundle . '.csv';
 
-    foreach ($this->csvColumns as $column_name) {
+    $columnsCsv = $this->csvColumns();
+    foreach ($columnsCsv as $column_name) {
       $this->columns[] = [$column_name, $column_name];
     }
     $this->source = new MigrateSourceCSV($source_file, $this->columns, ['header_rows' => 1], $this->fields);
@@ -111,10 +121,11 @@ abstract class HedleyMigrateBase extends Migration {
     $this->map = new MigrateSQLMap($this->machineName, $key, $this->destination->getKeySchema($this->entityType));
 
     // Add simple mappings.
-    if ($this->simpleMappings) {
-      $this->addSimpleMappings(drupal_map_assoc($this->simpleMappings));
+    $mappingsSimple = $this->simpleMappings();
+    if (!empty($mappingsSimple)) {
+      $this->addSimpleMappings(drupal_map_assoc($mappingsSimple));
     }
-    foreach ($this->simpleMultipleMappings as $field) {
+    foreach ($this->simpleMultipleMappings() as $field) {
       $this
         ->addFieldMapping($field, $field)
         ->separator('|');
@@ -126,24 +137,23 @@ abstract class HedleyMigrateBase extends Migration {
         ->addFieldMapping('uid', 'author')
         ->defaultValue(1);
       // Map the title field to the default title.
-      if (in_array('title', $this->csvColumns)) {
+      if (in_array('title', $columnsCsv)) {
         $this->addFieldMapping('title', 'title');
       }
-      elseif (in_array('title_field', $this->csvColumns)) {
+      elseif (in_array('title_field', $columnsCsv)) {
         $this->addFieldMapping('title', 'title_field');
       }
 
-      if (in_array('created', $this->csvColumns)) {
+      if (in_array('created', $columnsCsv)) {
         $this->addFieldMapping('created', 'created');
       }
     }
     elseif ($this->entityType == 'taxonomy_term') {
       // Map the translated name field to the default term name.
-      if (in_array('name', $this->csvColumns)) {
+      if (in_array('name', $columnsCsv)) {
         $this->addFieldMapping('name', 'name');
       }
     }
-
   }
 
   /**
@@ -245,19 +255,6 @@ abstract class HedleyMigrateBase extends Migration {
       'value' => $value1,
       'arguments' => ['to' => $value2],
     ];
-  }
-
-  /**
-   * Add date fields.
-   *
-   * @param array $field_names
-   *   The date related field names.
-   */
-  public function addDateFields(array $field_names) {
-    foreach ($field_names as $field_name) {
-      $this->addFieldMapping($field_name, $field_name)
-        ->callbacks([$this, 'dateProcess']);
-    }
   }
 
 }

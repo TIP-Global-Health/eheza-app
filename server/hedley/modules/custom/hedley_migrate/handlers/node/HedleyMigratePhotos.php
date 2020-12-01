@@ -16,19 +16,6 @@ class HedleyMigratePhotos extends HedleyMigrateMeasurementBase {
   protected $bundle = 'photo';
 
   /**
-   * {@inheritdoc}
-   */
-  protected $csvColumns = [
-    'id',
-    'field_person',
-    'field_date_measured',
-    'field_nurse',
-    'field_session',
-    'created',
-    'field_photo',
-  ];
-
-  /**
    * HedleyMigratePhotos constructor.
    *
    * {@inheritdoc}

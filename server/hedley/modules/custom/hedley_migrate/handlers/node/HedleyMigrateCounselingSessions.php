@@ -23,20 +23,32 @@ class HedleyMigrateCounselingSessions extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'field_date_measured',
-    'field_timing',
-    'field_topics',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'id',
+        'field_date_measured',
+        'field_timing',
+        'field_topics',
+      ]
+    );
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected $simpleMappings = [
-    'field_date_measured',
-    'field_timing',
-  ];
+  protected function simpleMappings() {
+    $mappings = parent::simpleMappings();
+
+    return array_merge(
+      $mappings, [
+        'field_date_measured',
+        'field_timing',
+      ]
+    );
+  }
 
   /**
    * HedleyMigrateCounselingSessions constructor.

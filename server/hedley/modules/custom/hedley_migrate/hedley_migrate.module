@@ -34,11 +34,14 @@ function hedley_migrate_migrate_api() {
       'HedleyMigratePmtctParticipants' => [
         'class_name' => 'HedleyMigratePmtctParticipants',
       ],
+      'HedleyMigratePrenatalEncounters' => [
+        'class_name' => 'HedleyMigratePrenatalEncounters',
+      ],
       'HedleyMigrateNutritionEncounters' => [
         'class_name' => 'HedleyMigrateNutritionEncounters',
       ],
-      'HedleyMigratePrenatalEncounters' => [
-        'class_name' => 'HedleyMigratePrenatalEncounters',
+      'HedleyMigrateAcuteIllnessEncounters' => [
+        'class_name' => 'HedleyMigrateAcuteIllnessEncounters',
       ],
       'HedleyMigrateIndividualParticipants' => [
         'class_name' => 'HedleyMigrateIndividualParticipants',

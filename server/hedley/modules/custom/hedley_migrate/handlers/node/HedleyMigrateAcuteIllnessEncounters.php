@@ -2,18 +2,23 @@
 
 /**
  * @file
- * Contains \HedleyMigrateAttendances.
+ * Contains \HedleyMigrateAcuteIllnessEncounters.
  */
 
 /**
- * Class HedleyMigrateAttendances.
+ * Class HedleyMigrateAcuteIllnessEncounters.
  */
-class HedleyMigrateAttendances extends HedleyMigrateMeasurementBase {
+class HedleyMigrateAcuteIllnessEncounters extends HedleyMigrateIndividualEncounterBase {
 
   /**
    * {@inheritdoc}
    */
-  protected $bundle = 'attendance';
+  protected $entityType = 'node';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $bundle = 'acute_illness_encounter';
 
   /**
    * {@inheritdoc}
@@ -23,7 +28,7 @@ class HedleyMigrateAttendances extends HedleyMigrateMeasurementBase {
 
     return array_merge(
       $columns, [
-        'field_attended',
+        'field_acute_illness_diagnosis',
       ]
     );
   }
@@ -36,7 +41,7 @@ class HedleyMigrateAttendances extends HedleyMigrateMeasurementBase {
 
     return array_merge(
       $mappings, [
-        'field_attended',
+        'field_acute_illness_diagnosis',
       ]
     );
   }

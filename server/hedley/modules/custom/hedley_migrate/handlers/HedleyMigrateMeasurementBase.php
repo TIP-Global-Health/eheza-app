@@ -18,6 +18,24 @@ abstract class HedleyMigrateMeasurementBase extends HedleyMigrateBase {
   protected $entityType = 'node';
 
   /**
+   * {@inheritdoc}
+   */
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'id',
+        'field_person',
+        'field_date_measured',
+        'field_nurse',
+        'field_session',
+        'created',
+      ]
+    );
+  }
+
+  /**
    * HedleyMigrateMeasurementBase constructor.
    *
    * {@inheritdoc}

@@ -18,21 +18,27 @@ class HedleyMigrateFamilyPlannings extends HedleyMigrateMeasurementBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'field_person',
-    'field_date_measured',
-    'field_nurse',
-    'field_session',
-    'created',
-    'field_family_planning_signs',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'field_family_planning_signs',
+      ]
+    );
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected $simpleMultipleMappings = [
-    'field_family_planning_signs',
-  ];
+  protected function simpleMultipleMappings() {
+    $mappings = parent::simpleMultipleMappings();
+
+    return array_merge(
+      $mappings, [
+        'field_family_planning_signs',
+      ]
+    );
+  }
 
 }

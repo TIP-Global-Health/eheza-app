@@ -23,10 +23,16 @@ class HedleyMigrateCatchmentAreas extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'title',
-    'created',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'id',
+        'title',
+        'created',
+      ]
+    );
+  }
 
 }

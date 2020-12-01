@@ -18,29 +18,35 @@ class HedleyMigrateWeights extends HedleyMigrateMeasurementBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'field_person',
-    'field_date_measured',
-    'field_nurse',
-    'field_session',
-    'created',
-    'field_weight',
-    'field_bmi',
-    'field_zscore_age',
-    'field_zscore_length',
-    'field_zscore_bmi',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'field_weight',
+        'field_bmi',
+        'field_zscore_age',
+        'field_zscore_length',
+        'field_zscore_bmi',
+      ]
+    );
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected $simpleMappings = [
-    'field_weight',
-    'field_bmi',
-    'field_zscore_age',
-    'field_zscore_length',
-    'field_zscore_bmi',
-  ];
+  protected function simpleMappings() {
+    $mappings = parent::simpleMappings();
+
+    return array_merge(
+      $mappings, [
+        'field_weight',
+        'field_bmi',
+        'field_zscore_age',
+        'field_zscore_length',
+        'field_zscore_bmi',
+      ]
+    );
+  }
 
 }

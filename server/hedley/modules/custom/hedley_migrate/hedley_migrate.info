@@ -20,7 +20,6 @@ files[] = handlers/node/HedleyMigrateCounselingSessions.php
 files[] = handlers/node/HedleyMigrateCounselingTopics.php
 files[] = handlers/node/HedleyMigrateDevices.php
 files[] = handlers/node/HedleyMigrateNurses.php
-files[] = handlers/node/HedleyMigrateNutritionEncounters.php
 files[] = handlers/node/HedleyMigratePeople.php
 files[] = handlers/node/HedleyMigratePmtctParticipants.php
 files[] = handlers/node/HedleyMigratePrenatalEncounters.php
@@ -36,3 +35,6 @@ files[] = handlers/node/HedleyMigrateMuacs.php
 files[] = handlers/node/HedleyMigrateNutritions.php
 files[] = handlers/node/HedleyMigratePhotos.php
 files[] = handlers/node/HedleyMigrateWeights.php
+files[] = handlers/node/HedleyMigrateNutritionEncounters.php
+files[] = handlers/node/HedleyMigrateAcuteIllnessEncounters.php
+

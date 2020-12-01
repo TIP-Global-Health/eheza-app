@@ -13,11 +13,17 @@ abstract class HedleyMigrateIndividualEncounterBase extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'field_individual_participant',
-    'field_scheduled_date',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'id',
+        'field_individual_participant',
+        'field_scheduled_date',
+      ]
+    );
+  }
 
   /**
    * HedleyMigrateIndividualEncounterBase constructor.

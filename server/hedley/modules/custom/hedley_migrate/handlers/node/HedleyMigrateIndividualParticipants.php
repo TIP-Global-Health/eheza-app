@@ -23,25 +23,37 @@ class HedleyMigrateIndividualParticipants extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'field_person',
-    'field_expected',
-    'field_encounter_type',
-    'field_date_concluded',
-    'field_outcome',
-    'field_outcome_location',
-    'field_expected_date_concluded',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'id',
+        'field_person',
+        'field_expected',
+        'field_encounter_type',
+        'field_date_concluded',
+        'field_outcome',
+        'field_outcome_location',
+        'field_expected_date_concluded',
+      ]
+    );
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected $simpleMappings = [
-    'field_encounter_type',
-    'field_outcome',
-    'field_outcome_location',
-  ];
+  protected function simpleMappings() {
+    $mappings = parent::simpleMappings();
+
+    return array_merge(
+      $mappings, [
+        'field_encounter_type',
+        'field_outcome',
+        'field_outcome_location',
+      ]
+    );
+  }
 
   /**
    * HedleyMigrateRelationships constructor.
