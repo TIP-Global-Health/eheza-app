@@ -177,9 +177,22 @@ abstract class HedleyMigrateBase extends Migration {
    *
    * @return int
    *   A timestamp.
+   *
+   * @throws \Exception
    */
   public function dateProcess($date) {
-    return strtotime($date);
+    // The source material uses several date formats.
+    $trimmed = trim($date);
+
+    if (empty($trimmed)) {
+      return $trimmed;
+    }
+
+    if (preg_match('/^\\d\\d\\d\\d-\\d\\d-\\d\\d$/', $trimmed)) {
+      return DateTime::createFromFormat('!Y-m-d', $trimmed, new DateTimeZone("UTC"))->getTimestamp();
+    }
+
+    throw new Exception("$date was not a recognized date format.");
   }
 
   /**
