@@ -209,7 +209,20 @@ div.language-switcher {
   }
 }
 
+details.error-log {
+  color: $color-orange;
+  max-height: 500px;
+  overflow: auto;
+  padding: 15px;
+
+  ol {
+    font-size: 18px;
+  }
+
+}
+
 details.sync-manager {
+  color: $color-orange;
   padding: 15px;
 
   .segment.ui {
