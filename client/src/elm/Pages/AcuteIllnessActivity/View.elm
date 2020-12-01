@@ -617,7 +617,7 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
 
                         PhysicalExamNutrition ->
                             ( "physical-exam-nutrition"
-                            , isJust measurements.muac
+                            , isJust measurements.nutrition
                             )
 
                 isActive =
