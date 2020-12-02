@@ -2120,7 +2120,7 @@ translationSet trans =
 
         DateOfLastAssessment ->
             { english = "Date of last Assessment"
-            , kinyarwanda = Just "Amakuru y'ipimwa ry'ubushize"
+            , kinyarwanda = Just "Amakuru y'ipimwa rirangiye"
             }
 
         DatePregnancyConcluded ->
@@ -4029,7 +4029,7 @@ translationSet trans =
 
         ParticipantSummary ->
             { english = "Participant Summary"
-            , kinyarwanda = Just "Umwirondoro w’urera umwana"
+            , kinyarwanda = Just "Umwirondoro w’Umwana"
             }
 
         ParticipantDemographicInformation ->
