@@ -22,71 +22,17 @@ function hedley_migrate_migrate_api() {
       ],
     ],
     'migrations' => [
-      'HedleyMigrateUsers' => [
-        'class_name' => 'HedleyMigrateUsers',
-      ],
-      'HedleyMigrateDevices' => [
-        'class_name' => 'HedleyMigrateDevices',
-      ],
-      'HedleyMigrateClinics' => [
-        'class_name' => 'HedleyMigrateClinics',
-      ],
-      'HedleyMigratePmtctParticipants' => [
-        'class_name' => 'HedleyMigratePmtctParticipants',
-      ],
-      'HedleyMigratePrenatalEncounters' => [
-        'class_name' => 'HedleyMigratePrenatalEncounters',
-      ],
-      'HedleyMigrateNutritionEncounters' => [
-        'class_name' => 'HedleyMigrateNutritionEncounters',
-      ],
       'HedleyMigrateAcuteIllnessEncounters' => [
         'class_name' => 'HedleyMigrateAcuteIllnessEncounters',
-      ],
-      'HedleyMigrateIndividualParticipants' => [
-        'class_name' => 'HedleyMigrateIndividualParticipants',
-      ],
-      'HedleyMigrateRelationships' => [
-        'class_name' => 'HedleyMigrateRelationships',
-      ],
-      'HedleyMigrateSessions' => [
-        'class_name' => 'HedleyMigrateSessions',
-      ],
-      'HedleyMigrateCatchmentAreas' => [
-        'class_name' => 'HedleyMigrateCatchmentAreas',
-      ],
-      'HedleyMigrateHealthCenters' => [
-        'class_name' => 'HedleyMigrateHealthCenters',
-      ],
-      'HedleyMigratePeople' => [
-        'class_name' => 'HedleyMigratePeople',
-      ],
-      'HedleyMigrateNurses' => [
-        'class_name' => 'HedleyMigrateNurses',
       ],
       'HedleyMigrateAttendances' => [
         'class_name' => 'HedleyMigrateAttendances',
       ],
-      'HedleyMigrateFamilyPlannings' => [
-        'class_name' => 'HedleyMigrateFamilyPlannings',
+      'HedleyMigrateCatchmentAreas' => [
+        'class_name' => 'HedleyMigrateCatchmentAreas',
       ],
-      'HedleyMigrateHeights' => [
-        'class_name' => 'HedleyMigrateHeights',
-      ],
-      'HedleyMigrateMuacs' => [
-        'class_name' => 'HedleyMigrateMuacs',
-      ],
-      'HedleyMigrateNutritions' => [
-        'class_name' => 'HedleyMigrateNutritions',
-      ],
-      'HedleyMigratePhotos' => [
-        'class_name' => 'HedleyMigratePhotos',
-      ],
-      'HedleyMigrateWeights' => [
-        'class_name' => 'HedleyMigrateWeights',
-      ],
-      'HedleyMigrateVillages' => [
-        'class_name' => 'HedleyMigrateVillages',
+      'HedleyMigrateClinics' => [
+        'class_name' => 'HedleyMigrateClinics',
       ],
       'HedleyMigrateCounselingSchedules' => [
         'class_name' => 'HedleyMigrateCounselingSchedules',
@@ -100,9 +46,66 @@ function hedley_migrate_migrate_api() {
         'class_name' => 'HedleyMigrateCounselingTopics',
         'group_name' => 'counseling',
       ],
+      'HedleyMigrateDevices' => [
+        'class_name' => 'HedleyMigrateDevices',
+      ],
+      'HedleyMigrateFamilyPlannings' => [
+        'class_name' => 'HedleyMigrateFamilyPlannings',
+      ],
+      'HedleyMigrateHealthCenters' => [
+        'class_name' => 'HedleyMigrateHealthCenters',
+      ],
+      'HedleyMigrateHeights' => [
+        'class_name' => 'HedleyMigrateHeights',
+      ],
+      'HedleyMigrateIndividualParticipants' => [
+        'class_name' => 'HedleyMigrateIndividualParticipants',
+      ],
+      'HedleyMigrateLactations' => [
+        'class_name' => 'HedleyMigrateLactations',
+      ],
+      'HedleyMigrateMuacs' => [
+        'class_name' => 'HedleyMigrateMuacs',
+      ],
+      'HedleyMigrateNurses' => [
+        'class_name' => 'HedleyMigrateNurses',
+      ],
+      'HedleyMigrateNutritionEncounters' => [
+        'class_name' => 'HedleyMigrateNutritionEncounters',
+      ],
+      'HedleyMigrateNutritions' => [
+        'class_name' => 'HedleyMigrateNutritions',
+      ],
       'HedleyMigrateParticipantForms' => [
         'class_name' => 'HedleyMigrateParticipantForms',
         'group_name' => 'forms',
+      ],
+      'HedleyMigratePeople' => [
+        'class_name' => 'HedleyMigratePeople',
+      ],
+      'HedleyMigratePhotos' => [
+        'class_name' => 'HedleyMigratePhotos',
+      ],
+      'HedleyMigratePmtctParticipants' => [
+        'class_name' => 'HedleyMigratePmtctParticipants',
+      ],
+      'HedleyMigratePrenatalEncounters' => [
+        'class_name' => 'HedleyMigratePrenatalEncounters',
+      ],
+      'HedleyMigrateRelationships' => [
+        'class_name' => 'HedleyMigrateRelationships',
+      ],
+      'HedleyMigrateSessions' => [
+        'class_name' => 'HedleyMigrateSessions',
+      ],
+      'HedleyMigrateUsers' => [
+        'class_name' => 'HedleyMigrateUsers',
+      ],
+      'HedleyMigrateVillages' => [
+        'class_name' => 'HedleyMigrateVillages',
+      ],
+      'HedleyMigrateWeights' => [
+        'class_name' => 'HedleyMigrateWeights',
       ],
     ],
   ];
