@@ -32,12 +32,12 @@ abstract class HedleyMigrateNutritionMeasurementBase extends HedleyMigrateMeasur
     parent::__construct($arguments);
 
     $this->dependencies = [
-      'HedleyMigratePrenatalEncounters',
+      'HedleyMigrateNutritionEncounters',
     ];
 
     $this
       ->addFieldMapping('field_nutrition_encounter', 'field_nutrition_encounter')
-      ->sourceMigration('HedleyMigratePrenatalEncounters');
+      ->sourceMigration('HedleyMigrateNutritionEncounters');
   }
 
 }
