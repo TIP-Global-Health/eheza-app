@@ -31,6 +31,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateCatchmentAreas' => [
         'class_name' => 'HedleyMigrateCatchmentAreas',
       ],
+      'HedleyMigrateChildFbfs' => [
+        'class_name' => 'HedleyMigrateChildFbfs',
+      ],
       'HedleyMigrateClinics' => [
         'class_name' => 'HedleyMigrateClinics',
       ],
@@ -63,6 +66,9 @@ function hedley_migrate_migrate_api() {
       ],
       'HedleyMigrateLactations' => [
         'class_name' => 'HedleyMigrateLactations',
+      ],
+      'HedleyMigrateMotherFbfs' => [
+        'class_name' => 'HedleyMigrateMotherFbfs',
       ],
       'HedleyMigrateMuacs' => [
         'class_name' => 'HedleyMigrateMuacs',
