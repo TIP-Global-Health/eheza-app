@@ -238,6 +238,7 @@ type TranslationId
     | ActivitiesHelp Activity
     | ActivitiesLabel Activity
     | ActivitiesTitle Activity
+    | ActivitityTitleAchi
     | ActivitiesToComplete Int
     | ActivitityLabelAchi
     | ActivityProgressReport Activity
@@ -1325,6 +1326,11 @@ translationSet trans =
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
                     }
+
+        ActivitityTitleAchi ->
+            { english = "Aheza Child"
+            , kinyarwanda = Nothing
+            }
 
         ActivityProgressReport activity ->
             case activity of

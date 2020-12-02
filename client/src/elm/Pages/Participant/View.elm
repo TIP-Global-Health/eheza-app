@@ -1,7 +1,8 @@
 module Pages.Participant.View exposing (viewChild, viewMother, viewUbudehe)
 
-import Activity.Model exposing (Activity(..), ChildActivity, CompletedAndPending, MotherActivity(..))
+import Activity.Model exposing (Activity(..), ChildActivity(..), CompletedAndPending, MotherActivity(..))
 import Activity.Utils exposing (getActivityIcon, summarizeChildParticipant, summarizeMotherParticipant)
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (generatePreviousValuesForChild)
@@ -205,7 +206,7 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                     ]
                     |> keyed "child-info"
               ]
-            , viewActivityCards childParticipant language activities model.selectedTab selectedActivity
+            , viewActivityCards childParticipant language activities model.selectedTab session.offlineSession.session.clinicType selectedActivity
             , content
             ]
 
@@ -338,27 +339,34 @@ viewFoundMother language currentDate isChw ( motherId, mother ) ( sessionId, ses
                     ]
                     |> keyed "mother"
               ]
-            , viewActivityCards motherParticipant language activities model.selectedTab selectedActivity
+            , viewActivityCards motherParticipant language activities model.selectedTab session.offlineSession.session.clinicType selectedActivity
             , content
             ]
 
 
-viewActivityCards : Participant id value activity msg NominalDate -> Language -> CompletedAndPending (List activity) -> Tab -> Maybe activity -> List ( String, Html (Msg activity any) )
-viewActivityCards config language activities selectedTab selectedActivity =
+viewActivityCards :
+    Participant id value activity msg NominalDate
+    -> Language
+    -> CompletedAndPending (List activity)
+    -> Tab
+    -> ClinicType
+    -> Maybe activity
+    -> List ( String, Html (Msg activity any) )
+viewActivityCards config language activities selectedTab clinicType selectedActivity =
     let
         pendingActivitiesView =
             if List.isEmpty activities.pending then
                 [ span [] [ text <| translate language Translate.NoActivitiesPendingForThisParticipant ] ]
 
             else
-                List.map (viewActivityListItem config language selectedActivity) activities.pending
+                List.map (viewActivityListItem config language clinicType selectedActivity) activities.pending
 
         completedActivitiesView =
             if List.isEmpty activities.completed then
                 [ span [] [ text <| translate language Translate.NoActivitiesCompletedForThisParticipant ] ]
 
             else
-                List.map (viewActivityListItem config language selectedActivity) activities.completed
+                List.map (viewActivityListItem config language clinicType selectedActivity) activities.completed
 
         activeView =
             if selectedTab == ProgressReport then
@@ -402,8 +410,19 @@ viewActivityCards config language activities selectedTab selectedActivity =
     ]
 
 
-viewActivityListItem : Participant id value activity msg NominalDate -> Language -> Maybe activity -> activity -> Html (Msg activity any)
-viewActivityListItem config language selectedActivity activityItem =
+viewActivityListItem : Participant id value activity msg NominalDate -> Language -> ClinicType -> Maybe activity -> activity -> Html (Msg activity any)
+viewActivityListItem config language clinicType selectedActivity activityItem =
+    let
+        activity =
+            config.tagActivity activityItem
+
+        activityTitle =
+            if activity == ChildActivity ChildFbf && clinicType == Achi then
+                Translate.ActivitityTitleAchi
+
+            else
+                Translate.ActivitiesTitle activity
+    in
     div [ class "column" ]
         [ a
             [ onClick <| SetSelectedActivity activityItem
@@ -413,7 +432,7 @@ viewActivityListItem config language selectedActivity activityItem =
                 ]
             ]
             [ span [ class ("icon-section icon-" ++ getActivityIcon (config.tagActivity activityItem)) ] []
-            , text <| translate language <| Translate.ActivitiesTitle <| config.tagActivity activityItem
+            , text <| translate language activityTitle
             ]
         ]
 
