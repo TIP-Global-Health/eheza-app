@@ -29,7 +29,6 @@ abstract class HedleyMigrateMeasurementBase extends HedleyMigrateBase {
         'field_person',
         'field_date_measured',
         'field_nurse',
-        'field_session',
         'created',
       ]
     );
@@ -46,7 +45,6 @@ abstract class HedleyMigrateMeasurementBase extends HedleyMigrateBase {
     $this->dependencies = [
       'HedleyMigratePeople',
       'HedleyMigrateNurses',
-      'HedleyMigrateSessions',
       'HedleyMigrateHealthCenters',
     ];
 
@@ -61,10 +59,6 @@ abstract class HedleyMigrateMeasurementBase extends HedleyMigrateBase {
     $this
       ->addFieldMapping('field_nurse', 'field_nurse')
       ->sourceMigration('HedleyMigrateNurses');
-
-    $this
-      ->addFieldMapping('field_session', 'field_session')
-      ->sourceMigration('HedleyMigrateSessions');
   }
 
 }

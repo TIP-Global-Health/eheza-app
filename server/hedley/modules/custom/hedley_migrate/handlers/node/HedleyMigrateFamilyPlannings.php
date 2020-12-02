@@ -8,7 +8,7 @@
 /**
  * Class HedleyMigrateFamilyPlannings.
  */
-class HedleyMigrateFamilyPlannings extends HedleyMigrateMeasurementBase {
+class HedleyMigrateFamilyPlannings extends HedleyMigrateGroupMeasurementBase {
 
   /**
    * {@inheritdoc}

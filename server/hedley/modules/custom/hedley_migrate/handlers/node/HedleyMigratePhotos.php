@@ -8,7 +8,7 @@
 /**
  * Class HedleyMigratePhotos.
  */
-class HedleyMigratePhotos extends HedleyMigrateMeasurementBase {
+class HedleyMigratePhotos extends HedleyMigrateGroupMeasurementBase {
 
   /**
    * {@inheritdoc}

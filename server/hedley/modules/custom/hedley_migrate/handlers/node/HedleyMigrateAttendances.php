@@ -8,7 +8,7 @@
 /**
  * Class HedleyMigrateAttendances.
  */
-class HedleyMigrateAttendances extends HedleyMigrateMeasurementBase {
+class HedleyMigrateAttendances extends HedleyMigrateGroupMeasurementBase {
 
   /**
    * {@inheritdoc}

@@ -8,7 +8,7 @@
 /**
  * Class HedleyMigrateWeights.
  */
-class HedleyMigrateWeights extends HedleyMigrateMeasurementBase {
+class HedleyMigrateWeights extends HedleyMigrateGroupMeasurementBase {
 
   /**
    * {@inheritdoc}

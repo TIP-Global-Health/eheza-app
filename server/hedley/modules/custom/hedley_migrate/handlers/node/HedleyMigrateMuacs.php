@@ -8,7 +8,7 @@
 /**
  * Class HedleyMigrateMuacs.
  */
-class HedleyMigrateMuacs extends HedleyMigrateMeasurementBase {
+class HedleyMigrateMuacs extends HedleyMigrateGroupMeasurementBase {
 
   /**
    * {@inheritdoc}
