@@ -1,7 +1,8 @@
 module Pages.Activities.View exposing (view)
 
-import Activity.Model exposing (emptySummaryByActivity)
+import Activity.Model exposing (Activity(..), ChildActivity(..), emptySummaryByActivity)
 import Activity.Utils exposing (getActivityIcon, getAllActivities, getParticipantCountForActivity)
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
@@ -43,6 +44,14 @@ view language nurse ( sessionId, session ) model =
                 ]
 
         viewCard activity =
+            let
+                activityTitle =
+                    if activity == ChildActivity ChildFbf && session.offlineSession.session.clinicType == Achi then
+                        Trans.ActivitityTitleAchi
+
+                    else
+                        Trans.ActivitiesTitle activity
+            in
             div
                 [ class "card" ]
                 [ div
@@ -53,11 +62,7 @@ view language nurse ( sessionId, session ) model =
                 , div
                     [ class "content" ]
                     [ p []
-                        [ Trans.ActivitiesTitle activity
-                            |> translate language
-                            |> String.toUpper
-                            |> text
-                        ]
+                        [ text <| String.toUpper <| translate language activityTitle ]
                     , div
                         [ class "ui tiny progress" ]
                         [ div
