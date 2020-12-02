@@ -24,6 +24,9 @@ encodeClinicType clinicType =
     let
         clinicTypeAsString =
             case clinicType of
+                Achi ->
+                    "achi"
+
                 Chw ->
                     "chw"
 
