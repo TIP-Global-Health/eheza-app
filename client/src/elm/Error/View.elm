@@ -17,9 +17,7 @@ view language errors =
 
     else
         details
-            [ style "min-height" "100px"
-            , style "max-height" "500px"
-            , style "overflow" "auto"
+            [ class "error-log"
             , property "open" (Json.Encode.bool False)
             ]
             [ summary [] [ text "Error log" ]
