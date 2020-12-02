@@ -31,9 +31,7 @@ abstract class HedleyMigrateGroupMeasurementBase extends HedleyMigrateMeasuremen
   public function __construct($arguments) {
     parent::__construct($arguments);
 
-    $this->dependencies = [
-      'HedleyMigrateSessions',
-    ];
+    $this->dependencies[] = 'HedleyMigrateSessions';
 
     $this
       ->addFieldMapping('field_session', 'field_session')

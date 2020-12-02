@@ -1,4 +1,4 @@
-id,field_person,field_date_measured,field_nurse,field_session,created,field_distributed_amount,field_distribution_notice
-194,74,2020-06-19,,191,1592244289,2.5,complete
-195,35,2017-12-16,,190,1592244289,1.5,lack-of-stock
-196,81,2020-08-07,,191,1592244289,1.2,other
+id,field_person,field_date_measured,field_nurse,created,field_session,field_distributed_amount,field_distribution_notice
+194,74,2020-06-19,189,1592244289,191,2.5,complete
+195,35,2017-12-16,189,1592244289,190,1.5,lack-of-stock
+196,81,2020-08-07,189,1592244289,191,1.2,other

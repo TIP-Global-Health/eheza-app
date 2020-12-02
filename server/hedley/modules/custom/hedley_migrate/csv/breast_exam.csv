@@ -1,4 +1,4 @@
-id,field_person,field_date_measured,field_nurse,field_prenatal_encounter,created,field_breast,field_breast_self_exam
-194,74,2020-06-19,188,1,1592244289,normal,1
-195,35,2017-12-16,188,1,1592244289,mass|infection,0
-196,81,2020-08-07,188,1,1592244289,discharge|infection,1
+id,field_person,field_date_measured,field_nurse,created,field_prenatal_encounter,field_breast,field_breast_self_exam
+194,74,2020-06-19,188,1592244289,1,normal,1
+195,35,2017-12-16,188,1592244289,1,mass|infection,0
+196,81,2020-08-07,188,1592244289,1,discharge|infection,1

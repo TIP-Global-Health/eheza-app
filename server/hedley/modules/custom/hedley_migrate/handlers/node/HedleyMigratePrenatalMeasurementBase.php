@@ -31,9 +31,7 @@ abstract class HedleyMigratePrenatalMeasurementBase extends HedleyMigrateMeasure
   public function __construct($arguments) {
     parent::__construct($arguments);
 
-    $this->dependencies = [
-      'HedleyMigratePrenatalEncounters',
-    ];
+    $this->dependencies[] = 'HedleyMigratePrenatalEncounters';
 
     $this
       ->addFieldMapping('field_prenatal_encounter', 'field_prenatal_encounter')

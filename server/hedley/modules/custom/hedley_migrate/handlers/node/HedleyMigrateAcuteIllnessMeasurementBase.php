@@ -31,9 +31,7 @@ abstract class HedleyMigrateAcuteIllnessMeasurementBase extends HedleyMigrateMea
   public function __construct($arguments) {
     parent::__construct($arguments);
 
-    $this->dependencies = [
-      'HedleyMigrateAcuteIllnessEncounters',
-    ];
+    $this->dependencies[] = 'HedleyMigrateAcuteIllnessEncounters';
 
     $this
       ->addFieldMapping('field_acute_illness_encounter', 'field_acute_illness_encounter')
