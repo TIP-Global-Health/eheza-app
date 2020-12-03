@@ -581,6 +581,7 @@ type TranslationId
     | NumberOfStillbirthsPreTerm
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
+    | NutritionHelper
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
@@ -3894,6 +3895,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibiro"
                     }
 
+        NutritionHelper ->
+            { english = "Explain to the mother how to check the malnutrition signs for their own child."
+            , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye."
+            }
+
         ObstetricalDiagnosis ->
             { english = "Obstetrical Diagnosis"
             , kinyarwanda = Just "Uburwayi bwemejwe n'inzobere mu gusuzuma abagore batwite"
@@ -4179,6 +4185,11 @@ translationSet trans =
                 PhysicalExamAcuteFindings ->
                     { english = "Acute Findings"
                     , kinyarwanda = Just "Ibimenyetso biziyeho"
+                    }
+
+                PhysicalExamNutrition ->
+                    { english = "Nutrition"
+                    , kinyarwanda = Nothing
                     }
 
         PlaceholderEnterHeight ->

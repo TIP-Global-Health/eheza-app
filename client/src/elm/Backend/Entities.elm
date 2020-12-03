@@ -589,3 +589,11 @@ type alias AcuteIllnessMuacId =
 
 type AcuteIllnessMuacUuidType
     = AcuteIllnessMuacUuidType
+
+
+type alias AcuteIllnessNutritionId =
+    EntityUuid AcuteIllnessNutritionUuidType
+
+
+type AcuteIllnessNutritionUuidType
+    = AcuteIllnessNutritionUuidType

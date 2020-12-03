@@ -823,6 +823,10 @@ type alias AcuteIllnessMuac =
     AcuteIllnessMeasurement MuacInCm
 
 
+type alias AcuteIllnessNutrition =
+    AcuteIllnessMeasurement (EverySet ChildNutritionSign)
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -950,6 +954,7 @@ type alias AcuteIllnessMeasurements =
     , sendToHC : Maybe ( SendToHCId, SendToHC )
     , medicationDistribution : Maybe ( MedicationDistributionId, MedicationDistribution )
     , muac : Maybe ( AcuteIllnessMuacId, AcuteIllnessMuac )
+    , nutrition : Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )
     }
 
 

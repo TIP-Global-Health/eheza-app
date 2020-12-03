@@ -122,6 +122,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "send_to_hc" (decodeHead decodeSendToHC) Nothing
         |> optional "medication_distribution" (decodeHead decodeMedicationDistribution) Nothing
         |> optional "acute_illness_muac" (decodeHead decodeAcuteIllnessMuac) Nothing
+        |> optional "acute_illness_nutrition" (decodeHead decodeAcuteIllnessNutrition) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1769,4 +1770,11 @@ decodeAcuteIllnessMuac : Decoder AcuteIllnessMuac
 decodeAcuteIllnessMuac =
     field "muac" decodeFloat
         |> map MuacInCm
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeAcuteIllnessNutrition : Decoder AcuteIllnessNutrition
+decodeAcuteIllnessNutrition =
+    decodeEverySet decodeChildNutritionSign
+        |> field "nutrition_signs"
         |> decodeAcuteIllnessMeasurement

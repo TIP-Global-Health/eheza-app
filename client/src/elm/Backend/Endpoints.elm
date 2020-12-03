@@ -568,3 +568,9 @@ acuteIllnessMuacEndpoint : ReadWriteEndPoint Error AcuteIllnessMuacId AcuteIllne
 acuteIllnessMuacEndpoint =
     swEndpoint "nodes/acute_illness_muac" decodeAcuteIllnessMuac
         |> withValueEncoder (object << encodeAcuteIllnessMuac)
+
+
+acuteIllnessNutritionEndpoint : ReadWriteEndPoint Error AcuteIllnessNutritionId AcuteIllnessNutrition AcuteIllnessNutrition ()
+acuteIllnessNutritionEndpoint =
+    swEndpoint "nodes/acute_illness_nutrition" decodeAcuteIllnessNutrition
+        |> withValueEncoder (object << encodeAcuteIllnessNutrition)
