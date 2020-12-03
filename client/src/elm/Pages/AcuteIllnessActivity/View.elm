@@ -383,7 +383,7 @@ viewActivity language currentDate id activity diagnosis data model =
             viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) model.symptomsData
 
         AcuteIllnessPhysicalExam ->
-            viewAcuteIllnessPhysicalExam language currentDate id ( personId, data.person, measurements ) isFirstEncounter model.physicalExamData
+            viewAcuteIllnessPhysicalExam language currentDate id data isFirstEncounter model.physicalExamData
 
         AcuteIllnessPriorTreatment ->
             viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) model.priorTreatmentData
@@ -399,6 +399,9 @@ viewActivity language currentDate id activity diagnosis data model =
 
         AcuteIllnessOngoingTreatment ->
             viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) model.ongoingTreatmentData
+
+        AcuteIllnessDangerSigns ->
+            viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) model.dangerSignsData
 
 
 viewAcuteIllnessSymptomsContent : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> SymptomsData -> List (Html Msg)
@@ -597,14 +600,23 @@ viewAcuteIllnessPhysicalExam :
     Language
     -> NominalDate
     -> AcuteIllnessEncounterId
-    -> ( PersonId, Person, AcuteIllnessMeasurements )
+    -> AssembledData
     -> Bool
     -> PhysicalExamData
     -> List (Html Msg)
-viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measurements ) isFirstEncounter data =
+viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter data =
     let
         activity =
             AcuteIllnessPhysicalExam
+
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
 
         tasks =
             [ PhysicalExamVitals, PhysicalExamMuac, PhysicalExamNutrition, PhysicalExamAcuteFindings ]
@@ -671,13 +683,13 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
                     measurements.vitals
                         |> Maybe.map (Tuple.second >> .value)
                         |> vitalsFormWithDefault data.vitalsForm
-                        |> viewVitalsForm language currentDate measurements
+                        |> viewVitalsForm language currentDate assembled
 
                 PhysicalExamMuac ->
                     measurements.muac
                         |> Maybe.map (Tuple.second >> .value)
                         |> muacFormWithDefault data.muacForm
-                        |> viewMuacForm language currentDate measurements Nothing
+                        |> viewMuacForm language currentDate assembled
 
                 PhysicalExamAcuteFindings ->
                     measurements.acuteFindings
@@ -758,24 +770,23 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
     ]
 
 
-viewVitalsForm : Language -> NominalDate -> AcuteIllnessMeasurements -> VitalsForm -> Html Msg
-viewVitalsForm language currentDate measurements form_ =
+viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
+viewVitalsForm language currentDate assembled form_ =
     let
+        measurements =
+            assembled.measurements
+
         form =
             measurements.vitals
                 |> Maybe.map (Tuple.second >> .value)
                 |> vitalsFormWithDefault form_
 
         respiratoryRatePreviousValue =
-            -- Todo
-            -- resolvePreviousValue assembled .vitals .respiratoryRate
-            --     |> Maybe.map toFloat
-            Nothing
+            resolvePreviousValue assembled .vitals .respiratoryRate
+                |> Maybe.map toFloat
 
         bodyTemperaturePreviousValue =
-            -- Todo
-            -- resolvePreviousValue assembled .vitals .bodyTemperature
-            Nothing
+            resolvePreviousValue assembled .vitals .bodyTemperature
     in
     div [ class "ui form physical-exam vitals" ]
         [ viewLabel language Translate.RespiratoryRate
@@ -798,9 +809,12 @@ viewVitalsForm language currentDate measurements form_ =
         ]
 
 
-viewMuacForm : Language -> NominalDate -> AcuteIllnessMeasurements -> Maybe ( NominalDate, Float ) -> MuacForm -> Html Msg
-viewMuacForm language currentDate measurements previousValue_ form_ =
+viewMuacForm : Language -> NominalDate -> AssembledData -> MuacForm -> Html Msg
+viewMuacForm language currentDate assembled form_ =
     let
+        measurements =
+            assembled.measurements
+
         form =
             measurements.muac
                 |> Maybe.map (Tuple.second >> .value)
@@ -810,7 +824,7 @@ viewMuacForm language currentDate measurements previousValue_ form_ =
             getInputConstraintsMuac
 
         previousValue =
-            Nothing
+            resolvePreviousValue assembled .muac (\(MuacInCm cm) -> cm)
     in
     div [ class "ui form physical-exam muac" ]
         [ viewLabel language Translate.MUAC
@@ -942,11 +956,6 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                         |> Maybe.map (Tuple.second >> .value)
                         |> malariaTestingFormWithDefault data.malariaTestingForm
                         |> viewMalariaTestingForm language currentDate person
-
-        getNextTask currentTask =
-            case currentTask of
-                LaboratoryMalariaTesting ->
-                    []
 
         actions =
             let
@@ -1255,11 +1264,6 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
                         |> Maybe.map (Tuple.second >> .value)
                         |> treatmentReviewFormWithDefault data.treatmentReviewForm
                         |> viewTreatmentReviewForm language currentDate measurements
-
-        getNextTask currentTask =
-            case currentTask of
-                TreatmentReview ->
-                    []
 
         actions =
             let
@@ -2184,11 +2188,6 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
                         |> viewOngoingTreatmentReviewForm language currentDate measurements
 
-        getNextTask currentTask =
-            case currentTask of
-                OngoingTreatmentReview ->
-                    []
-
         actions =
             let
                 saveMsg =
@@ -2328,6 +2327,127 @@ viewOngoingTreatmentReviewForm language currentDate measurements form =
                 Nothing
            ]
         |> div [ class "ui form ongoing-treatment-review" ]
+
+
+viewAcuteIllnessDangerSigns : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> DangerSignsData -> List (Html Msg)
+viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) data =
+    let
+        activity =
+            AcuteIllnessDangerSigns
+
+        tasks =
+            [ ReviewDangerSigns ]
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        ReviewDangerSigns ->
+                            ( "danger-signs"
+                            , isJust measurements.dangerSigns
+                            )
+
+                isActive =
+                    task == data.activeTask
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveDangerSignsTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ a attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.DangerSignsTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, dangerSignsTasksCompletedFromTotal measurements data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Dict.get data.activeTask tasksCompletedFromTotalDict
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case data.activeTask of
+                ReviewDangerSigns ->
+                    measurements.dangerSigns
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> reviewDangerSignsFormWithDefault data.reviewDangerSignsForm
+                        |> viewReviewDangerSignsForm language currentDate measurements
+
+        actions =
+            let
+                saveMsg =
+                    case data.activeTask of
+                        ReviewDangerSigns ->
+                            SaveReviewDangerSigns personId measurements.dangerSigns
+            in
+            div [ class "actions treatment-ongoing" ]
+                [ button
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                    , onClick saveMsg
+                    ]
+                    [ text <| translate language Translate.Save ]
+                ]
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui three column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]
+
+
+viewReviewDangerSignsForm : Language -> NominalDate -> AcuteIllnessMeasurements -> ReviewDangerSignsForm -> Html Msg
+viewReviewDangerSignsForm language currentDate measurements form =
+    div [ class "ui form ongoing-treatment-review" ]
+        [ viewQuestionLabel language Translate.ConditionImprovingQuestion
+        , viewBoolInput
+            language
+            form.conditionImproving
+            SetConditionImproving
+            "conditionImproving"
+            Nothing
+        , viewQuestionLabel language Translate.HaveAnyOfTheFollowingQuestion
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+        , viewCheckBoxMultipleSelectInput language
+            [ DangerSignUnableDrinkSuck
+            , DangerSignVomiting
+            , DangerSignConvulsions
+            , DangerSignLethargyUnconsciousness
+            , DangerSignRespiratoryDistress
+            , DangerSignSpontaneousBleeding
+            , DangerSignBloodyDiarrhea
+            , DangerSignNewSkinRash
+            , NoAcuteIllnessDangerSign
+            ]
+            []
+            (form.symptoms |> Maybe.withDefault [])
+            Nothing
+            SetDangerSign
+            Translate.AcuteIllnessDangerSign
+        ]
+
+
+
+-- HELPER FUNCTIONS
 
 
 renderDatePart : Language -> Maybe NominalDate -> List (Html any)

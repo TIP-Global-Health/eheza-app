@@ -7,6 +7,8 @@ import Backend.Measurement.Model
         ( AcuteFindingsGeneralSign(..)
         , AcuteFindingsRespiratorySign(..)
         , AcuteFindingsValue
+        , AcuteIllnessDangerSign(..)
+        , AcuteIllnessMeasurement
         , AcuteIllnessMeasurements
         , AcuteIllnessVitalsValue
         , Call114Sign(..)
@@ -46,7 +48,8 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
-import Pages.PrenatalActivity.Utils exposing (ifNullableTrue, ifTrue)
+import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
+import Pages.PrenatalActivity.Utils exposing (ifFalse, ifNullableTrue, ifTrue)
 import Pages.Utils exposing (ifEverySetEmpty, maybeValueConsideringIsDirtyField, taskCompleted, valueConsideringIsDirtyField)
 
 
@@ -548,6 +551,21 @@ ongoingTreatmentTasksCompletedFromTotal measurements data task =
             in
             ( takenAsPrescribedActive + missedDosesActive + taskCompleted form.feelingBetter + taskCompleted form.sideEffects
             , takenAsPrescribedComleted + missedDosesCompleted + 2
+            )
+
+
+dangerSignsTasksCompletedFromTotal : AcuteIllnessMeasurements -> DangerSignsData -> DangerSignsTask -> ( Int, Int )
+dangerSignsTasksCompletedFromTotal measurements data task =
+    case task of
+        ReviewDangerSigns ->
+            let
+                form =
+                    measurements.dangerSigns
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> reviewDangerSignsFormWithDefault data.reviewDangerSignsForm
+            in
+            ( taskCompleted form.conditionImproving + taskCompleted form.symptoms
+            , 2
             )
 
 
@@ -1401,6 +1419,68 @@ toOngoingTreatmentReviewValue form =
         |> andMap (form.totalMissedDoses |> Maybe.withDefault 0 |> Just)
 
 
+fromReviewDangerSignsValue : Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm
+fromReviewDangerSignsValue saved =
+    { conditionImproving = Maybe.map (EverySet.member DangerSignConditionNotImproving >> not) saved
+    , symptoms =
+        Maybe.map
+            (EverySet.remove DangerSignConditionNotImproving
+                >> ifEverySetEmpty NoAcuteIllnessDangerSign
+                >> EverySet.toList
+            )
+            saved
+    }
+
+
+reviewDangerSignsFormWithDefault : ReviewDangerSignsForm -> Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm
+reviewDangerSignsFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { conditionImproving = or form.conditionImproving (EverySet.member DangerSignConditionNotImproving value |> not |> Just)
+                , symptoms =
+                    or form.symptoms
+                        (EverySet.remove DangerSignConditionNotImproving value
+                            |> ifEverySetEmpty NoAcuteIllnessDangerSign
+                            |> EverySet.toList
+                            |> Just
+                        )
+                }
+            )
+
+
+toReviewDangerSignsValueWithDefault : Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm -> Maybe (EverySet AcuteIllnessDangerSign)
+toReviewDangerSignsValueWithDefault saved form =
+    reviewDangerSignsFormWithDefault form saved
+        |> toReviewDangerSignsValue
+
+
+toReviewDangerSignsValue : ReviewDangerSignsForm -> Maybe (EverySet AcuteIllnessDangerSign)
+toReviewDangerSignsValue form =
+    Maybe.map2
+        (\conditionImproving symptoms ->
+            let
+                conditionNotImprovingSet =
+                    if conditionImproving then
+                        EverySet.empty
+
+                    else
+                        EverySet.singleton DangerSignConditionNotImproving
+
+                symptomsSet =
+                    if List.member NoAcuteIllnessDangerSign symptoms && (not <| EverySet.isEmpty conditionNotImprovingSet) then
+                        EverySet.empty
+
+                    else
+                        EverySet.fromList symptoms
+            in
+            EverySet.union conditionNotImprovingSet symptomsSet
+        )
+        form.conditionImproving
+        form.symptoms
+
+
 fromNutritionValue : Maybe (EverySet ChildNutritionSign) -> NutritionForm
 fromNutritionValue saved =
     { signs = Maybe.map EverySet.toList saved }
@@ -1450,6 +1530,18 @@ expectPhysicalExamTask currentDate person isFirstEncounter task =
 
 
 -- HELPER FUNCTIONS
+
+
+resolvePreviousValue : AssembledData -> (AcuteIllnessMeasurements -> Maybe ( id, AcuteIllnessMeasurement a )) -> (a -> b) -> Maybe b
+resolvePreviousValue assembled measurementFunc valueFunc =
+    assembled.previousMeasurementsWithDates
+        |> List.filterMap
+            (\( _, measurements ) ->
+                measurementFunc measurements
+                    |> Maybe.map (Tuple.second >> .value >> valueFunc)
+            )
+        |> List.reverse
+        |> List.head
 
 
 withDefaultValue : a -> Maybe a -> EverySet a

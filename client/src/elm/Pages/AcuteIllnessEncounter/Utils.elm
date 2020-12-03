@@ -223,6 +223,9 @@ activityCompleted currentDate person isFirstEncounter measurements diagnosis act
         AcuteIllnessOngoingTreatment ->
             isJust measurements.treatmentOngoing
 
+        AcuteIllnessDangerSigns ->
+            isJust measurements.dangerSigns
+
 
 {-| These are the activities that are mandatory, for us to come up with diagnosis.
 Covid19 diagnosis is special, therefore, we assume here that Covid19 is negative.

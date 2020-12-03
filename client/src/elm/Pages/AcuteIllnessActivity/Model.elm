@@ -81,6 +81,11 @@ type Msg
     | SetReasonForNotTaking ReasonForNotTaking
     | SetTotalMissedDoses String
     | SaveOngoingTreatmentReview PersonId (Maybe ( TreatmentOngoingId, TreatmentOngoing ))
+      -- DANGER SIGNS
+    | SetActiveDangerSignsTask DangerSignsTask
+    | SetConditionImproving Bool
+    | SetDangerSign AcuteIllnessDangerSign
+    | SaveReviewDangerSigns PersonId (Maybe ( AcuteIllnessDangerSignsId, AcuteIllnessDangerSigns ))
 
 
 type alias Model =
@@ -91,6 +96,7 @@ type alias Model =
     , priorTreatmentData : PriorTreatmentData
     , nextStepsData : NextStepsData
     , ongoingTreatmentData : OngoingTreatmentData
+    , dangerSignsData : DangerSignsData
     , showAlertsDialog : Bool
     , showPertinentSymptomsPopup : Bool
     , warningPopupState : Maybe AcuteIllnessDiagnosis
@@ -106,6 +112,7 @@ emptyModel =
     , priorTreatmentData = emptyPriorTreatmentData
     , nextStepsData = emptyNextStepsData
     , ongoingTreatmentData = emptyOngoingTreatmentData
+    , dangerSignsData = emptyDangerSignsData
     , showAlertsDialog = False
     , showPertinentSymptomsPopup = False
     , warningPopupState = Nothing
@@ -448,4 +455,38 @@ emptyOngoingTreatmentReviewForm =
     , reasonForNotTakingDirty = False
     , totalMissedDoses = Nothing
     , totalMissedDosesDirty = False
+    }
+
+
+
+-- DANGER SIGNS
+
+
+type alias DangerSignsData =
+    { reviewDangerSignsForm : ReviewDangerSignsForm
+    , activeTask : DangerSignsTask
+    }
+
+
+emptyDangerSignsData : DangerSignsData
+emptyDangerSignsData =
+    { reviewDangerSignsForm = emptyReviewDangerSignsForm
+    , activeTask = ReviewDangerSigns
+    }
+
+
+type DangerSignsTask
+    = ReviewDangerSigns
+
+
+type alias ReviewDangerSignsForm =
+    { conditionImproving : Maybe Bool
+    , symptoms : Maybe (List AcuteIllnessDangerSign)
+    }
+
+
+emptyReviewDangerSignsForm : ReviewDangerSignsForm
+emptyReviewDangerSignsForm =
+    { conditionImproving = Nothing
+    , symptoms = Nothing
     }

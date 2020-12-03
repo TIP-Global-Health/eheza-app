@@ -82,6 +82,39 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_acute_illness_danger_signs'.
+  $field_bases['field_acute_illness_danger_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_acute_illness_danger_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'condition-not-improving' => 'Condition not improving',
+        'unable-drink-suck' => 'Unable to to drink/suck',
+        'vomiting' => 'Vomiting',
+        'convulsions' => 'Convulsions',
+        'lethargy-unconsciousness' => 'Lethargy or unconsciousness',
+        'respiratory-distress' => 'Respiratory distress',
+        'spontaneous-bleeding' => 'Spontaneous bleeding',
+        'bloody-diarrhea' => 'Bloody Diarrhea',
+        'new-skip-rash' => 'New Skin Rash',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_acute_illness_encounter'.
   $field_bases['field_acute_illness_encounter'] = array(
     'active' => 1,

@@ -849,6 +849,23 @@ type alias TreatmentOngoing =
     AcuteIllnessMeasurement TreatmentOngoingValue
 
 
+type AcuteIllnessDangerSign
+    = DangerSignConditionNotImproving
+    | DangerSignUnableDrinkSuck
+    | DangerSignVomiting
+    | DangerSignConvulsions
+    | DangerSignLethargyUnconsciousness
+    | DangerSignRespiratoryDistress
+    | DangerSignSpontaneousBleeding
+    | DangerSignBloodyDiarrhea
+    | DangerSignNewSkinRash
+    | NoAcuteIllnessDangerSign
+
+
+type alias AcuteIllnessDangerSigns =
+    AcuteIllnessMeasurement (EverySet AcuteIllnessDangerSign)
+
+
 type alias AcuteIllnessNutrition =
     AcuteIllnessMeasurement (EverySet ChildNutritionSign)
 
@@ -981,6 +998,7 @@ type alias AcuteIllnessMeasurements =
     , medicationDistribution : Maybe ( MedicationDistributionId, MedicationDistribution )
     , muac : Maybe ( AcuteIllnessMuacId, AcuteIllnessMuac )
     , treatmentOngoing : Maybe ( TreatmentOngoingId, TreatmentOngoing )
+    , dangerSigns : Maybe ( AcuteIllnessDangerSignsId, AcuteIllnessDangerSigns )
     , nutrition : Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )
     }
 

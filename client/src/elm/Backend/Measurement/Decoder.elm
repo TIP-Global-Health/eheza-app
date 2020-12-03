@@ -123,6 +123,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "medication_distribution" (decodeHead decodeMedicationDistribution) Nothing
         |> optional "acute_illness_muac" (decodeHead decodeAcuteIllnessMuac) Nothing
         |> optional "treatment_ongoing" (decodeHead decodeTreatmentOngoing) Nothing
+        |> optional "acute_illness_danger_signs" (decodeHead decodeAcuteIllnessDangerSigns) Nothing
         |> optional "acute_illness_nutrition" (decodeHead decodeAcuteIllnessNutrition) Nothing
 
 
@@ -1833,6 +1834,56 @@ decodeReasonForNotTaking =
                         fail <|
                             reason
                                 ++ " is not a recognized ReasonForNotTaking"
+            )
+
+
+decodeAcuteIllnessDangerSigns : Decoder AcuteIllnessDangerSigns
+decodeAcuteIllnessDangerSigns =
+    decodeEverySet decodeAcuteIllnessDangerSign
+        |> field "acute_illness_danger_signs"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeAcuteIllnessDangerSign : Decoder AcuteIllnessDangerSign
+decodeAcuteIllnessDangerSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "condition-not-improving" ->
+                        succeed DangerSignConditionNotImproving
+
+                    "unable-drink-suck" ->
+                        succeed DangerSignUnableDrinkSuck
+
+                    "vomiting" ->
+                        succeed DangerSignVomiting
+
+                    "convulsions" ->
+                        succeed DangerSignConvulsions
+
+                    "lethargy-unconsciousness" ->
+                        succeed DangerSignLethargyUnconsciousness
+
+                    "respiratory-distress" ->
+                        succeed DangerSignRespiratoryDistress
+
+                    "spontaneous-bleeding" ->
+                        succeed DangerSignSpontaneousBleeding
+
+                    "bloody-diarrhea" ->
+                        succeed DangerSignBloodyDiarrhea
+
+                    "new-skip-rash" ->
+                        succeed DangerSignNewSkinRash
+
+                    "none" ->
+                        succeed NoAcuteIllnessDangerSign
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized AcuteIllnessDangerSign"
             )
 
 

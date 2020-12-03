@@ -281,6 +281,7 @@ type MsgIndexedDb
 -}
 type Revision
     = AcuteFindingsRevision AcuteFindingsId AcuteFindings
+    | AcuteIllnessDangerSignsRevision AcuteIllnessDangerSignsId AcuteIllnessDangerSigns
     | AcuteIllnessMuacRevision AcuteIllnessMuacId AcuteIllnessMuac
     | AcuteIllnessNutritionRevision AcuteIllnessNutritionId AcuteIllnessNutrition
     | AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter

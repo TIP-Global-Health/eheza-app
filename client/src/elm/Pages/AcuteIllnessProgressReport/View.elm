@@ -55,6 +55,9 @@ view language currentDate id db model =
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id model data =
     let
+        isFirstEncounter =
+            List.isEmpty data.previousMeasurementsWithDates
+
         ( _, pendingActivities ) =
             splitActivities currentDate data
 
@@ -79,7 +82,7 @@ viewContent language currentDate id model data =
             , viewSymptomsPane language currentDate data.measurements
             , viewPhysicalExamPane language currentDate data.measurements
             , viewActionsTakenPane language currentDate data.diagnosis data
-            , viewEndEncounterButton language data.measurements pendingActivities data.diagnosis SetEndEncounterDialogState
+            , viewEndEncounterButton language isFirstEncounter data.measurements pendingActivities data.diagnosis SetEndEncounterDialogState
             ]
         , viewModal endEncounterDialog
         ]

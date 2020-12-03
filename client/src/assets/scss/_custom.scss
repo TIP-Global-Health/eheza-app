@@ -1895,6 +1895,23 @@ input::placeholder {
   }
 }
 
+.icon-danger-signs {
+  .active &:after {
+    background-image: url(#{$img-path}icon-danger-signs-white.svg), url(#{$img-path}icon-selected-circle.svg);
+    background-size: 83px 83px;
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-danger-signs-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-size: 83px 83px;
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-danger-signs-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-size: 83px 83px;
+  }
+}
+
 .icon-physical-exam-nutrition {
   .active &:after {
     background-image: url(#{$img-path}icon-nutrition-white.svg), url(#{$img-path}icon-selected-circle.svg);

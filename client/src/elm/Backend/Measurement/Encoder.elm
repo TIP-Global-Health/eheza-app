@@ -1712,6 +1712,53 @@ encodeReasonForNotTakingSign reason =
                 "none"
 
 
+encodeAcuteIllnessDangerSigns : AcuteIllnessDangerSigns -> List ( String, Value )
+encodeAcuteIllnessDangerSigns =
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessDangerSignsValue
+
+
+encodeAcuteIllnessDangerSignsValue : EverySet AcuteIllnessDangerSign -> List ( String, Value )
+encodeAcuteIllnessDangerSignsValue value =
+    [ ( "acute_illness_danger_signs", encodeEverySet encodeAcuteIllnessDangerSign value )
+    , ( "type", string "acute_illness_danger_signs" )
+    ]
+
+
+encodeAcuteIllnessDangerSign : AcuteIllnessDangerSign -> Value
+encodeAcuteIllnessDangerSign sign =
+    string <|
+        case sign of
+            DangerSignConditionNotImproving ->
+                "condition-not-improving"
+
+            DangerSignUnableDrinkSuck ->
+                "unable-drink-suck"
+
+            DangerSignVomiting ->
+                "vomiting"
+
+            DangerSignConvulsions ->
+                "convulsions"
+
+            DangerSignLethargyUnconsciousness ->
+                "lethargy-unconsciousness"
+
+            DangerSignRespiratoryDistress ->
+                "respiratory-distress"
+
+            DangerSignSpontaneousBleeding ->
+                "spontaneous-bleeding"
+
+            DangerSignBloodyDiarrhea ->
+                "bloody-diarrhea"
+
+            DangerSignNewSkinRash ->
+                "new-skip-rash"
+
+            NoAcuteIllnessDangerSign ->
+                "none"
+
+
 encodeAcuteIllnessNutrition : AcuteIllnessNutrition -> List ( String, Value )
 encodeAcuteIllnessNutrition =
     encodeAcuteIllnessMeasurement encodeAcuteIllnessNutritionValue

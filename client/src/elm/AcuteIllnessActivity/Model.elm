@@ -13,3 +13,4 @@ type AcuteIllnessActivity
     | AcuteIllnessExposure
     | AcuteIllnessNextSteps
     | AcuteIllnessOngoingTreatment
+    | AcuteIllnessDangerSigns

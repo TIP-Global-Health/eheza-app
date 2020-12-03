@@ -50,7 +50,8 @@ import Measurement.Model exposing (FloatInputConstraints)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.AcuteIllnessActivity.Model
     exposing
-        ( ExposureTask(..)
+        ( DangerSignsTask(..)
+        , ExposureTask(..)
         , LaboratoryTask(..)
         , NextStepsTask(..)
         , OngoingTreatmentTask(..)
@@ -232,6 +233,7 @@ type TranslationId
     | ActionsToTake
     | AcuteFindingsGeneralSign AcuteFindingsGeneralSign
     | AcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
+    | AcuteIllnessDangerSign AcuteIllnessDangerSign
     | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
     | AcuteIllnessDiagnosisWarning AcuteIllnessDiagnosis
     | AcuteIllnessExisting
@@ -349,6 +351,7 @@ type TranslationId
     | GroupUnauthorized
     | Close
     | Closed
+    | ConditionImprovingQuestion
     | ConfirmationRequired
     | ConfirmDeleteTrainingGroupEncounters
     | ConfirmRegisterParticipant
@@ -370,6 +373,7 @@ type TranslationId
     | DashboardLabel
     | CurrentlyPregnant
     | DangerSign DangerSign
+    | DangerSignsTask DangerSignsTask
     | DateOfLastAssessment
     | DatePregnancyConcluded
     | Day
@@ -477,6 +481,7 @@ type TranslationId
     | Home
     | HouseholdSize
     | HowMany
+    | HaveAnyOfTheFollowingQuestion
     | HttpError Http.Error
     | HypertensionBeforePregnancy
     | IdleWaitingForSync
@@ -973,6 +978,58 @@ translationSet trans =
                 NoAcuteFindingsRespiratorySigns ->
                     { english = "None of the above"
                     , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
+                    }
+
+        AcuteIllnessDangerSign sign ->
+            case sign of
+                DangerSignConditionNotImproving ->
+                    { english = "Condition not improving"
+                    , kinyarwanda = Nothing
+                    }
+
+                DangerSignUnableDrinkSuck ->
+                    { english = "Unable to Drink/Suck"
+                    , kinyarwanda = Nothing
+                    }
+
+                DangerSignVomiting ->
+                    { english = "Vomiting"
+                    , kinyarwanda = Nothing
+                    }
+
+                DangerSignConvulsions ->
+                    { english = "Convulsions"
+                    , kinyarwanda = Nothing
+                    }
+
+                DangerSignLethargyUnconsciousness ->
+                    { english = "Lethargy or Unconsciousness"
+                    , kinyarwanda = Nothing
+                    }
+
+                DangerSignRespiratoryDistress ->
+                    { english = "Respiratory Distress"
+                    , kinyarwanda = Nothing
+                    }
+
+                DangerSignSpontaneousBleeding ->
+                    { english = "Spontaneous Bleeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                DangerSignBloodyDiarrhea ->
+                    { english = "Bloody Diarrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                DangerSignNewSkinRash ->
+                    { english = "New Skin Rash"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoAcuteIllnessDangerSign ->
+                    { english = "None of the above"
+                    , kinyarwanda = Nothing
                     }
 
         AcuteIllnessDiagnosis diagnosis ->
@@ -1496,6 +1553,11 @@ translationSet trans =
 
                 AcuteIllnessOngoingTreatment ->
                     { english = "Treatment Review"
+                    , kinyarwanda = Nothing
+                    }
+
+                AcuteIllnessDangerSigns ->
+                    { english = "Danger Signs"
                     , kinyarwanda = Nothing
                     }
 
@@ -2043,6 +2105,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ConditionImprovingQuestion ->
+            { english = "Is your condition improving"
+            , kinyarwanda = Nothing
+            }
+
         ConfirmationRequired ->
             { english = "Please confirm:"
             , kinyarwanda = Nothing
@@ -2203,6 +2270,13 @@ translationSet trans =
                 NoDangerSign ->
                     { english = "None of these"
                     , kinyarwanda = Just "Nta bimenyetso/nta na kimwe"
+                    }
+
+        DangerSignsTask task ->
+            case task of
+                ReviewDangerSigns ->
+                    { english = "Review Danger Signs"
+                    , kinyarwanda = Nothing
                     }
 
         DateOfLastAssessment ->
@@ -3007,6 +3081,11 @@ translationSet trans =
 
         HowMany ->
             { english = "How many"
+            , kinyarwanda = Nothing
+            }
+
+        HaveAnyOfTheFollowingQuestion ->
+            { english = "Do you have any of the following"
             , kinyarwanda = Nothing
             }
 
