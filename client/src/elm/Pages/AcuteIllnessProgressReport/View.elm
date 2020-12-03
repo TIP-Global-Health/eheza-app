@@ -8,7 +8,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Gender(..), Person)
-import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, isChildUnderAgeOf5, isPersonAnAdult)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
@@ -80,7 +80,7 @@ viewContent language currentDate id model data =
             , viewPersonInfo language currentDate data.person data.measurements
             , viewAssessmentPane language currentDate diagnosis data.measurements
             , viewSymptomsPane language currentDate data.measurements
-            , viewPhysicalExamPane language currentDate data.measurements
+            , viewPhysicalExamPane language currentDate data.person data.measurements
             , viewActionsTakenPane language currentDate diagnosis data
             , viewEndEncounterButton language data.measurements pendingActivities diagnosis SetEndEncounterDialogState
             ]
@@ -359,8 +359,8 @@ viewTimeLineBottom =
     ]
 
 
-viewPhysicalExamPane : Language -> NominalDate -> AcuteIllnessMeasurements -> Html Msg
-viewPhysicalExamPane language currentDate measurements =
+viewPhysicalExamPane : Language -> NominalDate -> Person -> AcuteIllnessMeasurements -> Html Msg
+viewPhysicalExamPane language currentDate person measurements =
     let
         viewDateCell date =
             th [] [ text <| formatDDMMYY date ]
@@ -454,13 +454,13 @@ viewPhysicalExamPane language currentDate measurements =
                 |> tr []
 
         muacRow =
-            if List.isEmpty muacs then
-                emptyNode
-
-            else
+            if isChildUnderAgeOf5 currentDate person then
                 td [ class "first" ] [ text <| translate language Translate.MUAC ]
                     :: List.map viewMuacCell muacs
                     |> tr []
+
+            else
+                emptyNode
 
         tableBody =
             [ feverRow

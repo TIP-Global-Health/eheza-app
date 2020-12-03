@@ -1,4 +1,4 @@
-module Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, expectedAgeByPerson, graduatingAgeInMonth, initiatorFromUrlFragmemt, initiatorToUrlFragmemt, isAdult, isPersonAFertileWoman, isPersonAnAdult, resolveExpectedAge)
+module Backend.Person.Utils exposing (..)
 
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), Initiator(..), ParticipantDirectoryOperation(..), Person)
@@ -40,6 +40,13 @@ isPersonAFertileWoman currentDate person =
         person.birthDate
             |> Maybe.map (\birthDate -> diffYears birthDate currentDate |> (\age -> age > 12 && age < 45))
             |> Maybe.withDefault False
+
+
+isChildUnderAgeOf5 : NominalDate -> Person -> Bool
+isChildUnderAgeOf5 currentDate person =
+    ageInYears currentDate person
+        |> Maybe.map (\age -> age < 5)
+        |> Maybe.withDefault False
 
 
 expectedAgeByPerson : NominalDate -> Person -> ParticipantDirectoryOperation -> ExpectedAge
