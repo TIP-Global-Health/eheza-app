@@ -1,0 +1,7 @@
+#!/bin/bash
+
+## Description: Run robo commands inside the web container for the client app.
+## Usage: gulp
+## Example: "ddev gulp publish" or "ddev gulp".
+
+cd ../../client && gulp $@
