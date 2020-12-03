@@ -2059,6 +2059,10 @@ div.page-report.acute-illness {
       text-align: center;
     }
 
+    div.pane.physical-exam .ui.table.nutrition-signs {
+      border-top: 10px solid $color-lighter-gray;
+    }
+
     div.pane.physical-exam .ui.table thead th {
       background-color: $color-white;
       color: $color-text;

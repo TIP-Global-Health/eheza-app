@@ -1,5 +1,6 @@
 module Pages.AcuteIllnessProgressReport.View exposing (view)
 
+import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
@@ -392,6 +393,10 @@ viewPhysicalExamPane language currentDate measurements =
             measurements.vitals
                 |> Maybe.map (Tuple.second >> .value >> .respiratoryRate)
 
+        nutrition =
+            measurements.nutrition
+                |> Maybe.map (Tuple.second >> .value)
+
         values =
             [ ( currentDate, bodyTemperature, respiratoryRate ) ]
 
@@ -415,6 +420,12 @@ viewPhysicalExamPane language currentDate measurements =
                             , viewRespiratoryRateCell maybeRespiratoryRate
                             ]
                     )
+
+        nutritionSignsTable =
+            nutrition
+                |> Maybe.map
+                    (viewNutritionSigns language currentDate)
+                |> Maybe.withDefault emptyNode
     in
     if isNothing bodyTemperature && isNothing respiratoryRate then
         emptyNode
@@ -427,7 +438,34 @@ viewPhysicalExamPane language currentDate measurements =
                 [ thead [] tableHead
                 , tbody [] tableBody
                 ]
+            , nutritionSignsTable
             ]
+
+
+viewNutritionSigns : Language -> NominalDate -> EverySet ChildNutritionSign -> Html any
+viewNutritionSigns language dateOfLastAssessment signs =
+    table
+        [ class "ui celled table nutrition-signs" ]
+        [ tbody []
+            [ tr []
+                [ td
+                    [ class "first" ]
+                    [ ChildActivity NutritionSigns
+                        |> Translate.ActivityProgressReport
+                        |> translate language
+                        |> text
+                    ]
+                , (signs
+                    |> EverySet.toList
+                    |> List.map (translate language << Translate.ChildNutritionSignReport)
+                    |> String.join ", "
+                    |> text
+                    |> List.singleton
+                  )
+                    |> td []
+                ]
+            ]
+        ]
 
 
 viewActionsTakenPane : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> AssembledData -> Html Msg
