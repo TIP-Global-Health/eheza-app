@@ -432,11 +432,10 @@ viewPhysicalExamPane language currentDate measurements =
 
         muacs =
             [ muac ]
-            
+
         nutrition =
             measurements.nutrition
                 |> Maybe.map (Tuple.second >> .value)
-
 
         tableHead =
             th [ class "first" ] []
@@ -468,7 +467,6 @@ viewPhysicalExamPane language currentDate measurements =
             , tachypneaRow
             , muacRow
             ]
-
 
         nutritionSignsTable =
             nutrition
