@@ -8,6 +8,7 @@ import Backend.Measurement.Model
         , AcuteFindingsRespiratorySign(..)
         , AcuteFindingsValue
         , AcuteIllnessDangerSign(..)
+        , AcuteIllnessMeasurement
         , AcuteIllnessMeasurements
         , AcuteIllnessVitalsValue
         , Call114Sign(..)
@@ -47,6 +48,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
+import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.PrenatalActivity.Utils exposing (ifFalse, ifNullableTrue, ifTrue)
 import Pages.Utils exposing (ifEverySetEmpty, maybeValueConsideringIsDirtyField, taskCompleted, valueConsideringIsDirtyField)
 
@@ -1528,6 +1530,18 @@ expectPhysicalExamTask currentDate person isFirstEncounter task =
 
 
 -- HELPER FUNCTIONS
+
+
+resolvePreviousValue : AssembledData -> (AcuteIllnessMeasurements -> Maybe ( id, AcuteIllnessMeasurement a )) -> (a -> b) -> Maybe b
+resolvePreviousValue assembled measurementFunc valueFunc =
+    assembled.previousMeasurementsWithDates
+        |> List.filterMap
+            (\( _, measurements ) ->
+                measurementFunc measurements
+                    |> Maybe.map (Tuple.second >> .value >> valueFunc)
+            )
+        |> List.reverse
+        |> List.head
 
 
 withDefaultValue : a -> Maybe a -> EverySet a
