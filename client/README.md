@@ -29,7 +29,7 @@ The unit tests are written in Elm via [Elm Test](https://github.com/elm-communit
 ### Local execution
 
 ```
-ddev client-test
+ddev npm test
 ```
 
 Note that the `npm test` automatically does a `gulp zscore` to setup the JSON
