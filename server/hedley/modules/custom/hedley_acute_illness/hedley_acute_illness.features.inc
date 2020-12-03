@@ -35,6 +35,14 @@ function hedley_acute_illness_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'acute_illness_nutrition' => array(
+      'name' => t('Acute Illness Nutrition'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'acute_illness_vitals' => array(
       'name' => t('Acute Illness Vitals'),
       'base' => 'node_content',

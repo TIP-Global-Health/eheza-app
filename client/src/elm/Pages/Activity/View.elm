@@ -1,7 +1,9 @@
 module Pages.Activity.View exposing (view)
 
+import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Activity.Utils exposing (getActivityIcon)
 import AssocList as Dict
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
@@ -194,15 +196,21 @@ view config language currentDate zscores isChw selectedActivity ( sessionId, ses
                 Nothing ->
                     emptyNode
 
+        activity =
+            config.tagActivity selectedActivity
+
+        activityTitle =
+            if activity == ChildActivity ChildFbf && session.offlineSession.session.clinicType == Achi then
+                Translate.ActivitityTitleAchi
+
+            else
+                Translate.ActivitiesTitle activity
+
         header =
             div
                 [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
-                    [ config.tagActivity selectedActivity
-                        |> Translate.ActivitiesTitle
-                        |> translate language
-                        |> text
-                    ]
+                    [ text <| translate language activityTitle ]
                 , a
                     [ class "link-back"
                     , onClick <| GoBackToActivitiesPage sessionId
