@@ -14,3 +14,5 @@ RUN chmod +x /usr/bin/elm
 # Install compass.
 RUN gem update --system
 RUN gem install compass --minimal-deps
+# Bower - still in use for some dependencies like dropzone.
+RUN npm install -g bower
