@@ -1,0 +1,7 @@
+#!/bin/bash
+
+## Description: Run robo commands inside the web container for the client app.
+## Usage: npm
+## Example: "ddev npm test" or "ddev npm install".
+
+cd ../../client && npm $@
