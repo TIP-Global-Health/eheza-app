@@ -238,7 +238,9 @@ type TranslationId
     | ActivitiesHelp Activity
     | ActivitiesLabel Activity
     | ActivitiesTitle Activity
+    | ActivitityTitleAchi
     | ActivitiesToComplete Int
+    | ActivitityLabelAchi
     | ActivityProgressReport Activity
     | ActivePage Page
     | AcuteIllnessActivityTitle AcuteIllnessActivity
@@ -417,7 +419,7 @@ type TranslationId
     | FamilyUbudehe
     | FatherName
     | FatherNationalId
-    | FbfDistribution
+    | FbfDistribution ClinicType
     | FbfToReceive Activity Float
     | FetalHeartRate
     | FetalMovement
@@ -579,6 +581,7 @@ type TranslationId
     | NumberOfStillbirthsPreTerm
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
+    | NutritionHelper
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
@@ -1325,6 +1328,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibiro"
                     }
 
+        ActivitityTitleAchi ->
+            { english = "Aheza Child"
+            , kinyarwanda = Nothing
+            }
+
         ActivityProgressReport activity ->
             case activity of
                 MotherActivity Activity.Model.FamilyPlanning ->
@@ -1385,6 +1393,11 @@ translationSet trans =
         ActivitiesToComplete count ->
             { english = "To Do (" ++ String.fromInt count ++ ")"
             , kinyarwanda = Just <| "Ibisabwa gukora (" ++ String.fromInt count ++ ")"
+            }
+
+        ActivitityLabelAchi ->
+            { english = "Enter the amount of Aheza distributed below."
+            , kinyarwanda = Nothing
             }
 
         ActivePage page ->
@@ -1811,6 +1824,11 @@ translationSet trans =
 
         ClinicType clinicType ->
             case clinicType of
+                Achi ->
+                    { english = "Achi"
+                    , kinyarwanda = Nothing
+                    }
+
                 Chw ->
                     { english = "CHW"
                     , kinyarwanda = Nothing
@@ -2511,10 +2529,17 @@ translationSet trans =
             , kinyarwanda = Just "Icyiciro cy'ubudehe umuryango uherereyemo"
             }
 
-        FbfDistribution ->
-            { english = "FBF Distribution"
-            , kinyarwanda = Nothing
-            }
+        FbfDistribution clinicType ->
+            case clinicType of
+                Achi ->
+                    { english = "Aheza Distribution"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = "FBF Distribution"
+                    , kinyarwanda = Nothing
+                    }
 
         FbfToReceive activity amount ->
             case activity of
@@ -3870,6 +3895,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibiro"
                     }
 
+        NutritionHelper ->
+            { english = "Explain to the mother how to check the malnutrition signs for their own child."
+            , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye."
+            }
+
         ObstetricalDiagnosis ->
             { english = "Obstetrical Diagnosis"
             , kinyarwanda = Just "Uburwayi bwemejwe n'inzobere mu gusuzuma abagore batwite"
@@ -4155,6 +4185,11 @@ translationSet trans =
                 PhysicalExamAcuteFindings ->
                     { english = "Acute Findings"
                     , kinyarwanda = Just "Ibimenyetso biziyeho"
+                    }
+
+                PhysicalExamNutrition ->
+                    { english = "Nutrition"
+                    , kinyarwanda = Nothing
                     }
 
         PlaceholderEnterHeight ->

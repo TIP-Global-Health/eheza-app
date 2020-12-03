@@ -21,6 +21,9 @@ decodeClinicType =
         |> andThen
             (\s ->
                 case s of
+                    "achi" ->
+                        succeed Achi
+
                     "chw" ->
                         succeed Chw
 
