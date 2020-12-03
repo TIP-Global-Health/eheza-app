@@ -49,6 +49,7 @@ type alias Model =
     , saveMuac : WebData ()
     , saveTreatmentOngoing : WebData ()
     , saveAcuteIllnessDangerSigns : WebData ()
+    , saveNutrition : WebData ()
     }
 
 
@@ -72,6 +73,7 @@ emptyModel =
     , saveMuac = NotAsked
     , saveTreatmentOngoing = NotAsked
     , saveAcuteIllnessDangerSigns = NotAsked
+    , saveNutrition = NotAsked
     }
 
 
@@ -128,3 +130,5 @@ type Msg
     | HandleSavedTreatmentOngoing (WebData ())
     | SaveAcuteIllnessDangerSigns PersonId (Maybe AcuteIllnessDangerSignsId) (EverySet AcuteIllnessDangerSign)
     | HandleSavedAcuteIllnessDangerSigns (WebData ())
+    | SaveNutrition PersonId (Maybe AcuteIllnessNutritionId) (EverySet ChildNutritionSign)
+    | HandleSavedNutrition (WebData ())

@@ -866,6 +866,10 @@ type alias AcuteIllnessDangerSigns =
     AcuteIllnessMeasurement (EverySet AcuteIllnessDangerSign)
 
 
+type alias AcuteIllnessNutrition =
+    AcuteIllnessMeasurement (EverySet ChildNutritionSign)
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -995,6 +999,7 @@ type alias AcuteIllnessMeasurements =
     , muac : Maybe ( AcuteIllnessMuacId, AcuteIllnessMuac )
     , treatmentOngoing : Maybe ( TreatmentOngoingId, TreatmentOngoing )
     , dangerSigns : Maybe ( AcuteIllnessDangerSignsId, AcuteIllnessDangerSigns )
+    , nutrition : Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )
     }
 
 

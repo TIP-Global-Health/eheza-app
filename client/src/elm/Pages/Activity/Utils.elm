@@ -67,7 +67,7 @@ viewMotherMeasurements language currentDate motherId activity pages session =
                 getMother motherId session.offlineSession
                     |> Maybe.map
                         (\mother ->
-                            Measurement.View.viewMother language currentDate mother activity measurements form
+                            Measurement.View.viewMother language currentDate mother activity session.offlineSession.session.clinicType measurements form
                                 |> Html.map MsgMeasurement
                         )
                     |> Maybe.withDefault emptyNode

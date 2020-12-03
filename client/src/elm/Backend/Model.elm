@@ -283,6 +283,7 @@ type Revision
     = AcuteFindingsRevision AcuteFindingsId AcuteFindings
     | AcuteIllnessDangerSignsRevision AcuteIllnessDangerSignsId AcuteIllnessDangerSigns
     | AcuteIllnessMuacRevision AcuteIllnessMuacId AcuteIllnessMuac
+    | AcuteIllnessNutritionRevision AcuteIllnessNutritionId AcuteIllnessNutrition
     | AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
     | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
     | AttendanceRevision AttendanceId Attendance

@@ -11,6 +11,7 @@ import Backend.Measurement.Model
         ( AcuteFindingsGeneralSign(..)
         , AcuteFindingsRespiratorySign(..)
         , AcuteIllnessDangerSign(..)
+        , ChildNutritionSign(..)
         , HCRecommendation(..)
         , MalariaRapidTestResult(..)
         , MedicationDistributionSign(..)
@@ -66,6 +67,9 @@ update currentDate id db msg model =
 
         reviewDangerSignsForm =
             resolveFormWithDefaults .dangerSigns reviewDangerSignsFormWithDefault model.dangerSignsData.reviewDangerSignsForm
+
+        nutritionForm =
+            resolveFormWithDefaults .nutrition nutritionFormWithDefault model.physicalExamData.nutritionForm
     in
     case msg of
         SetActivePage page ->
@@ -587,6 +591,92 @@ update currentDate id db msg model =
                             []
                             (\value ->
                                 (Backend.AcuteIllnessEncounter.Model.SaveMuac personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.physicalExamData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | physicalExamData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetNutritionSign sign ->
+            let
+                form =
+                    nutritionForm
+
+                updatedForm =
+                    case form.signs of
+                        Just signs ->
+                            if List.member sign signs then
+                                let
+                                    updatedSigns =
+                                        if List.length signs == 1 then
+                                            Nothing
+
+                                        else
+                                            signs |> List.filter ((/=) sign) |> Just
+                                in
+                                { form | signs = updatedSigns }
+
+                            else
+                                case sign of
+                                    NormalChildNutrition ->
+                                        { form | signs = Just [ sign ] }
+
+                                    _ ->
+                                        let
+                                            updatedSigns =
+                                                case signs of
+                                                    [ NormalChildNutrition ] ->
+                                                        Just [ sign ]
+
+                                                    _ ->
+                                                        Just (sign :: signs)
+                                        in
+                                        { form | signs = updatedSigns }
+
+                        Nothing ->
+                            { form | signs = Just [ sign ] }
+
+                updatedData =
+                    model.physicalExamData
+                        |> (\data -> { data | nutritionForm = updatedForm })
+            in
+            ( { model | physicalExamData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveNutrition personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+                            , PhysicalExamVitals
+                            )
+
+                appMsgs =
+                    model.physicalExamData.nutritionForm
+                        |> toNutritionValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.AcuteIllnessEncounter.Model.SaveNutrition personId measurementId value
                                     |> Backend.Model.MsgAcuteIllnessEncounter id
                                     |> App.Model.MsgIndexedDb
                                 )

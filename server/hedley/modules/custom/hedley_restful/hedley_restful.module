@@ -43,6 +43,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'acute_findings' => 'acute-findings',
   'acute_illness_danger_signs' => 'acute-illness-danger-signs',
   'acute_illness_muac' => 'acute-illness-muacs',
+  'acute_illness_nutrition' => 'acute-illness-nutritions',
   'acute_illness_vitals' => 'acute-illness-vitals',
   'attendance' => 'attendances',
   'breast_exam' => 'breast-exams',

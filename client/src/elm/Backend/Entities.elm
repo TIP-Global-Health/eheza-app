@@ -605,3 +605,11 @@ type alias AcuteIllnessDangerSignsId =
 
 type AcuteIllnessDangerSignsUuidType
     = AcuteIllnessDangerSignsUuidType
+
+
+type alias AcuteIllnessNutritionId =
+    EntityUuid AcuteIllnessNutritionUuidType
+
+
+type AcuteIllnessNutritionUuidType
+    = AcuteIllnessNutritionUuidType

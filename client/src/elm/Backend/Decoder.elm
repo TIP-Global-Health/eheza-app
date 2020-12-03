@@ -41,6 +41,9 @@ decodeRevision =
                     "acute_illness_muac" ->
                         decodeWithUuid AcuteIllnessMuacRevision decodeAcuteIllnessMuac
 
+                    "acute_illness_nutrition" ->
+                        decodeWithUuid AcuteIllnessNutritionRevision decodeAcuteIllnessNutrition
+
                     "acute_illness_vitals" ->
                         decodeWithUuid AcuteIllnessVitalsRevision decodeAcuteIllnessVitals
 

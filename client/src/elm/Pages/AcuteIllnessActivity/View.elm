@@ -610,7 +610,7 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
             AcuteIllnessPhysicalExam
 
         tasks =
-            [ PhysicalExamVitals, PhysicalExamMuac, PhysicalExamAcuteFindings ]
+            [ PhysicalExamVitals, PhysicalExamMuac, PhysicalExamNutrition, PhysicalExamAcuteFindings ]
                 |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
 
         viewTask task =
@@ -630,6 +630,11 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
                         PhysicalExamAcuteFindings ->
                             ( "acute-findings"
                             , isJust measurements.acuteFindings
+                            )
+
+                        PhysicalExamNutrition ->
+                            ( "physical-exam-nutrition"
+                            , isJust measurements.nutrition
                             )
 
                 isActive =
@@ -683,22 +688,34 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
                         |> acuteFindingsFormWithDefault data.acuteFindingsForm
                         |> viewAcuteFindingsForm language currentDate measurements
 
+                PhysicalExamNutrition ->
+                    measurements.nutrition
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> nutritionFormWithDefault data.nutritionForm
+                        |> viewNutritionForm language currentDate measurements
+
         getNextTask currentTask =
             case currentTask of
                 PhysicalExamVitals ->
-                    [ PhysicalExamMuac, PhysicalExamAcuteFindings ]
+                    [ PhysicalExamMuac, PhysicalExamNutrition, PhysicalExamAcuteFindings ]
                         |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
                 PhysicalExamMuac ->
-                    [ PhysicalExamAcuteFindings, PhysicalExamVitals ]
+                    [ PhysicalExamNutrition, PhysicalExamAcuteFindings, PhysicalExamVitals ]
+                        |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                PhysicalExamNutrition ->
+                    [ PhysicalExamAcuteFindings, PhysicalExamVitals, PhysicalExamAcuteFindings ]
                         |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
                 PhysicalExamAcuteFindings ->
-                    [ PhysicalExamVitals, PhysicalExamMuac ]
+                    [ PhysicalExamVitals, PhysicalExamMuac, PhysicalExamNutrition ]
                         |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
@@ -718,6 +735,9 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
 
                         PhysicalExamAcuteFindings ->
                             SaveAcuteFindings personId measurements.acuteFindings nextTask
+
+                        PhysicalExamNutrition ->
+                            SaveNutrition personId measurements.nutrition nextTask
             in
             div [ class "actions symptoms" ]
                 [ button
@@ -728,7 +748,7 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, person, measure
                 ]
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
-        [ div [ class "ui three column grid" ] <|
+        [ div [ class "ui four column grid" ] <|
             List.map viewTask tasks
         ]
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
@@ -845,6 +865,27 @@ viewAcuteFindingsForm language currentDate measurements form_ =
             Nothing
             SetAcuteFindingsRespiratorySign
             Translate.AcuteFindingsRespiratorySign
+        ]
+
+
+viewNutritionForm : Language -> NominalDate -> AcuteIllnessMeasurements -> NutritionForm -> Html Msg
+viewNutritionForm language currentDate measurements form_ =
+    let
+        form =
+            measurements.nutrition
+                |> Maybe.map (Tuple.second >> .value)
+                |> nutritionFormWithDefault form_
+    in
+    div [ class "ui form physical-exam nutrition" ]
+        [ p [] [ text <| translate language Translate.NutritionHelper ]
+        , viewLabel language Translate.SelectAllSigns
+        , viewCheckBoxMultipleSelectInput language
+            [ Edema, AbdominalDistension, DrySkin ]
+            [ Apathy, PoorAppetite, BrittleHair ]
+            (form.signs |> Maybe.withDefault [])
+            (Just NormalChildNutrition)
+            SetNutritionSign
+            Translate.ChildNutritionSignLabel
         ]
 
 

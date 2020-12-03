@@ -12,6 +12,7 @@ import Backend.Measurement.Model
         , AcuteIllnessVitalsValue
         , Call114Sign(..)
         , Call114Value
+        , ChildNutritionSign(..)
         , ExposureSign(..)
         , HCContactSign(..)
         , HCContactValue
@@ -207,6 +208,17 @@ physicalExamTasksCompletedFromTotal measurements data task =
             in
             ( taskCompleted form.signsGeneral + taskCompleted form.signsRespiratory
             , 2
+            )
+
+        PhysicalExamNutrition ->
+            let
+                form =
+                    measurements.nutrition
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> nutritionFormWithDefault data.nutritionForm
+            in
+            ( taskCompleted form.signs
+            , 1
             )
 
 
@@ -1467,6 +1479,30 @@ toReviewDangerSignsValue form =
         form.symptoms
 
 
+fromNutritionValue : Maybe (EverySet ChildNutritionSign) -> NutritionForm
+fromNutritionValue saved =
+    { signs = Maybe.map EverySet.toList saved }
+
+
+nutritionFormWithDefault : NutritionForm -> Maybe (EverySet ChildNutritionSign) -> NutritionForm
+nutritionFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value -> { signs = or form.signs (EverySet.toList value |> Just) })
+
+
+toNutritionValueWithDefault : Maybe (EverySet ChildNutritionSign) -> NutritionForm -> Maybe (EverySet ChildNutritionSign)
+toNutritionValueWithDefault saved form =
+    nutritionFormWithDefault form saved
+        |> toNutritionValue
+
+
+toNutritionValue : NutritionForm -> Maybe (EverySet ChildNutritionSign)
+toNutritionValue form =
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NormalChildNutrition) form.signs
+
+
 expectPhysicalExamTask : NominalDate -> Person -> Bool -> PhysicalExamTask -> Bool
 expectPhysicalExamTask currentDate person isFirstEncounter task =
     case task of
@@ -1475,6 +1511,12 @@ expectPhysicalExamTask currentDate person isFirstEncounter task =
 
         -- We show Muac for children under age of 5.
         PhysicalExamMuac ->
+            ageInYears currentDate person
+                |> Maybe.map (\age -> age < 5)
+                |> Maybe.withDefault False
+
+        -- We show Nutrition for children under age of 5.
+        PhysicalExamNutrition ->
             ageInYears currentDate person
                 |> Maybe.map (\age -> age < 5)
                 |> Maybe.withDefault False

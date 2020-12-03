@@ -124,6 +124,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "acute_illness_muac" (decodeHead decodeAcuteIllnessMuac) Nothing
         |> optional "treatment_ongoing" (decodeHead decodeTreatmentOngoing) Nothing
         |> optional "acute_illness_danger_signs" (decodeHead decodeAcuteIllnessDangerSigns) Nothing
+        |> optional "acute_illness_nutrition" (decodeHead decodeAcuteIllnessNutrition) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1884,3 +1885,10 @@ decodeAcuteIllnessDangerSign =
                             sign
                                 ++ " is not a recognized AcuteIllnessDangerSign"
             )
+
+
+decodeAcuteIllnessNutrition : Decoder AcuteIllnessNutrition
+decodeAcuteIllnessNutrition =
+    decodeEverySet decodeChildNutritionSign
+        |> field "nutrition_signs"
+        |> decodeAcuteIllnessMeasurement

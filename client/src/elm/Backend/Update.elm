@@ -1167,18 +1167,11 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                                                 graduationDate =
                                                                     Maybe.map (Date.add Months graduatingAgeInMonth) childBirthDate
                                                             in
-                                                            case clinic.clinicType of
-                                                                Pmtct ->
-                                                                    graduationDate
+                                                            if List.member clinic.clinicType [ Sorwathe, Achi ] then
+                                                                Nothing
 
-                                                                Fbf ->
-                                                                    graduationDate
-
-                                                                Chw ->
-                                                                    graduationDate
-
-                                                                Sorwathe ->
-                                                                    Nothing
+                                                            else
+                                                                graduationDate
                                                         )
                                                 )
                                 in
@@ -1569,6 +1562,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             ( mapAcuteIllnessMeasurements
                 data.encounterId
                 (\measurements -> { measurements | muac = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        AcuteIllnessNutritionRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
                 model
             , recalc
             )

@@ -49,6 +49,7 @@ type BackendAuthorityEntity
     | BackendAuthorityAcuteIllnessDangerSigns (BackendEntity AcuteIllnessDangerSigns)
     | BackendAuthorityAcuteIllnessEncounter (BackendEntity AcuteIllnessEncounter)
     | BackendAuthorityAcuteIllnessMuac (BackendEntity AcuteIllnessMuac)
+    | BackendAuthorityAcuteIllnessNutrition (BackendEntity AcuteIllnessNutrition)
     | BackendAuthorityAcuteIllnessVitals (BackendEntity AcuteIllnessVitals)
     | BackendAuthorityAttendance (BackendEntity Attendance)
     | BackendAuthorityBreastExam (BackendEntity BreastExam)
