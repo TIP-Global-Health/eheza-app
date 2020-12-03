@@ -5,6 +5,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
@@ -361,6 +362,9 @@ viewTimeLineBottom =
 viewPhysicalExamPane : Language -> NominalDate -> AcuteIllnessMeasurements -> Html Msg
 viewPhysicalExamPane language currentDate measurements =
     let
+        viewDateCell date =
+            th [] [ text <| formatDDMMYY date ]
+
         viewBodyTemperatureCell maybeBodyTemperature =
             maybeBodyTemperature
                 |> Maybe.map
@@ -369,7 +373,7 @@ viewPhysicalExamPane language currentDate measurements =
                             td [] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
 
                         else
-                            td [ class "alert" ] [ text <| String.fromFloat bodyTemperature_ ++ " " ++ translate language Translate.CelsiusAbbrev ]
+                            td [ class "red" ] [ text <| String.fromFloat bodyTemperature_ ++ " " ++ translate language Translate.CelsiusAbbrev ]
                     )
                 |> Maybe.withDefault (td [] [])
 
@@ -381,7 +385,27 @@ viewPhysicalExamPane language currentDate measurements =
                             td [] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
 
                         else
-                            td [ class "alert" ] [ text <| translate language <| Translate.BpmUnit respiratoryRate_ ]
+                            td [ class "red" ] [ text <| translate language <| Translate.BpmUnit respiratoryRate_ ]
+                    )
+                |> Maybe.withDefault (td [] [])
+
+        viewMuacCell maybeMuac =
+            maybeMuac
+                |> Maybe.map
+                    (\(MuacInCm muac_) ->
+                        let
+                            muacColor =
+                                case muacIndication (MuacInCm muac_) of
+                                    MuacRed ->
+                                        "red"
+
+                                    MuacYellow ->
+                                        "yellow"
+
+                                    MuacGreen ->
+                                        "green"
+                        in
+                        td [ class muacColor ] [ text <| String.fromFloat muac_ ]
                     )
                 |> Maybe.withDefault (td [] [])
 
@@ -393,33 +417,56 @@ viewPhysicalExamPane language currentDate measurements =
             measurements.vitals
                 |> Maybe.map (Tuple.second >> .value >> .respiratoryRate)
 
+        muac =
+            measurements.muac
+                |> Maybe.map (Tuple.second >> .value)
+
+        dates =
+            [ currentDate ]
+
+        bodyTemperatures =
+            [ bodyTemperature ]
+
+        respiratoryRates =
+            [ respiratoryRate ]
+
+        muacs =
+            [ muac ]
+
         nutrition =
             measurements.nutrition
                 |> Maybe.map (Tuple.second >> .value)
 
-        values =
-            [ ( currentDate, bodyTemperature, respiratoryRate ) ]
-
         tableHead =
-            [ tr []
-                [ th [] []
-                , th [ class "uppercase" ]
-                    [ text <| translate language Translate.Fever ]
-                , th [ class "last" ]
-                    [ text <| translate language Translate.Tachypnea ]
-                ]
-            ]
+            th [ class "first" ] []
+                :: List.map viewDateCell dates
+                |> tr []
+                |> List.singleton
+
+        feverRow =
+            td [ class "first" ] [ text <| translate language Translate.Fever ]
+                :: List.map viewBodyTemperatureCell bodyTemperatures
+                |> tr []
+
+        tachypneaRow =
+            td [ class "first" ] [ text <| translate language Translate.Tachypnea ]
+                :: List.map viewRespiratoryRateCell respiratoryRates
+                |> tr []
+
+        muacRow =
+            if List.isEmpty muacs then
+                emptyNode
+
+            else
+                td [ class "first" ] [ text <| translate language Translate.MUAC ]
+                    :: List.map viewMuacCell muacs
+                    |> tr []
 
         tableBody =
-            values
-                |> List.map
-                    (\( date, maybeBodyTemperature, maybeRespiratoryRate ) ->
-                        tr []
-                            [ td [ class "first" ] [ formatDDMMYY date |> text ]
-                            , viewBodyTemperatureCell maybeBodyTemperature
-                            , viewRespiratoryRateCell maybeRespiratoryRate
-                            ]
-                    )
+            [ feverRow
+            , tachypneaRow
+            , muacRow
+            ]
 
         nutritionSignsTable =
             nutrition
@@ -434,7 +481,7 @@ viewPhysicalExamPane language currentDate measurements =
         div [ class "pane physical-exam" ]
             [ viewItemHeading language Translate.PhysicalExam "blue"
             , table
-                [ class "ui celled table" ]
+                [ class "ui collapsing celled table" ]
                 [ thead [] tableHead
                 , tbody [] tableBody
                 ]
