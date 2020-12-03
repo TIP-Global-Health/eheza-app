@@ -597,3 +597,11 @@ type alias TreatmentOngoingId =
 
 type TreatmentOngoingUuidType
     = TreatmentOngoingUuidType
+
+
+type alias AcuteIllnessNutritionId =
+    EntityUuid AcuteIllnessNutritionUuidType
+
+
+type AcuteIllnessNutritionUuidType
+    = AcuteIllnessNutritionUuidType

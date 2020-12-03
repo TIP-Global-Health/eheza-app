@@ -1710,3 +1710,13 @@ encodeReasonForNotTakingSign reason =
 
             NoReasonForNotTakingSign ->
                 "none"
+
+
+encodeAcuteIllnessNutrition : AcuteIllnessNutrition -> List ( String, Value )
+encodeAcuteIllnessNutrition =
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessNutritionValue
+
+
+encodeAcuteIllnessNutritionValue : EverySet ChildNutritionSign -> List ( String, Value )
+encodeAcuteIllnessNutritionValue nutritions =
+    encodeNutritionValueWithType "acute_illness_nutrition" nutritions

@@ -35,6 +35,8 @@ type Msg
     | SaveAcuteFindings PersonId (Maybe ( AcuteFindingsId, AcuteFindings )) (Maybe PhysicalExamTask)
     | SetMuac String
     | SaveMuac PersonId (Maybe ( AcuteIllnessMuacId, AcuteIllnessMuac )) (Maybe PhysicalExamTask)
+    | SetNutritionSign ChildNutritionSign
+    | SaveNutrition PersonId (Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )) (Maybe PhysicalExamTask)
       -- LABORATORY Msgs
     | SetActiveLaboratoryTask LaboratoryTask
     | SetRapidTestResult String
@@ -163,8 +165,9 @@ type alias SymptomsGIForm =
 
 type alias PhysicalExamData =
     { vitalsForm : VitalsForm
-    , muacForm : MuacForm
     , acuteFindingsForm : AcuteFindingsForm
+    , muacForm : MuacForm
+    , nutritionForm : NutritionForm
     , activeTask : PhysicalExamTask
     }
 
@@ -174,6 +177,7 @@ emptyPhysicalExamData =
     { vitalsForm = VitalsForm Nothing False Nothing False
     , acuteFindingsForm = AcuteFindingsForm Nothing Nothing
     , muacForm = MuacForm Nothing False
+    , nutritionForm = NutritionForm Nothing
     , activeTask = PhysicalExamVitals
     }
 
@@ -182,6 +186,7 @@ type PhysicalExamTask
     = PhysicalExamVitals
     | PhysicalExamMuac
     | PhysicalExamAcuteFindings
+    | PhysicalExamNutrition
 
 
 type alias VitalsForm =
@@ -201,6 +206,11 @@ type alias MuacForm =
 type alias AcuteFindingsForm =
     { signsGeneral : Maybe (List AcuteFindingsGeneralSign)
     , signsRespiratory : Maybe (List AcuteFindingsRespiratorySign)
+    }
+
+
+type alias NutritionForm =
+    { signs : Maybe (List ChildNutritionSign)
     }
 
 

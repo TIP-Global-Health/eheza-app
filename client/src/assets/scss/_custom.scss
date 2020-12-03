@@ -1895,6 +1895,20 @@ input::placeholder {
   }
 }
 
+.icon-physical-exam-nutrition {
+  .active &:after {
+    background-image: url(#{$img-path}icon-nutrition-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-nutrition-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-nutrition-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
 // Lists
 
 .ui.list {

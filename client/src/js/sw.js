@@ -29,6 +29,7 @@ var tableForType = {
     acute_findings: 'shards',
     acute_illness_encounter: 'shards',
     acute_illness_muac: 'shards',
+    acute_illness_nutrition: 'shards',
     acute_illness_vitals: 'shards',
     attendance: 'shards',
     breast_exam: 'shards',

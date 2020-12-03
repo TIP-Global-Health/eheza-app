@@ -849,6 +849,10 @@ type alias TreatmentOngoing =
     AcuteIllnessMeasurement TreatmentOngoingValue
 
 
+type alias AcuteIllnessNutrition =
+    AcuteIllnessMeasurement (EverySet ChildNutritionSign)
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -977,6 +981,7 @@ type alias AcuteIllnessMeasurements =
     , medicationDistribution : Maybe ( MedicationDistributionId, MedicationDistribution )
     , muac : Maybe ( AcuteIllnessMuacId, AcuteIllnessMuac )
     , treatmentOngoing : Maybe ( TreatmentOngoingId, TreatmentOngoing )
+    , nutrition : Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )
     }
 
 

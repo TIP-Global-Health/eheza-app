@@ -574,3 +574,9 @@ treatmentOngoingEndpoint : ReadWriteEndPoint Error TreatmentOngoingId TreatmentO
 treatmentOngoingEndpoint =
     swEndpoint "nodes/treatment_ongoing" decodeTreatmentOngoing
         |> withValueEncoder (object << encodeTreatmentOngoing)
+
+
+acuteIllnessNutritionEndpoint : ReadWriteEndPoint Error AcuteIllnessNutritionId AcuteIllnessNutrition AcuteIllnessNutrition ()
+acuteIllnessNutritionEndpoint =
+    swEndpoint "nodes/acute_illness_nutrition" decodeAcuteIllnessNutrition
+        |> withValueEncoder (object << encodeAcuteIllnessNutrition)

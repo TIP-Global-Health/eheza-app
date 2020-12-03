@@ -66,6 +66,7 @@ function hedley_health_center_field_default_field_bases() {
         'fbf' => 'FBF',
         'sorwathe' => 'SORWATHE',
         'chw' => 'CHW',
+        'achi' => 'ACHI',
       ),
       'allowed_values_function' => '',
     ),
