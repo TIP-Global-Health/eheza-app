@@ -1,6 +1,6 @@
 name: ihangane
 type: drupal7
-docroot: www
+docroot: server/www
 php_version: "7.2"
 webserver_type: nginx-fpm
 router_http_port: "8081"
