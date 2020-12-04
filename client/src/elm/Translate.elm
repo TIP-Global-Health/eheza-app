@@ -1166,7 +1166,7 @@ translationSet trans =
 
                 MotherActivity Lactation ->
                     { english = "Ideally a mother exclusively breastfeeds her infant for at least 6 months. Every mother should be asked about how she is feeding her infant each month."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ni byiza ko umubyeyi yonsa umwana we byibuze amezi 6 nta kindi amuvangiye. Buri mubyeyi agomba kubazwa uko agaburira umwana we buri kwezi."
                     }
 
                 MotherActivity MotherFbf ->
@@ -1228,7 +1228,7 @@ translationSet trans =
 
                 MotherActivity MotherFbf ->
                     { english = "Enter the amount of CSB++ (FBF) distributed below."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Andika ingano ya  CSB++ (FBF) yahawe hano."
                     }
 
                 MotherActivity ParticipantConsent ->
@@ -1243,7 +1243,7 @@ translationSet trans =
                 -}
                 ChildActivity ChildFbf ->
                     { english = "Enter the amount of CSB++ (FBF) distributed below."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Andika ingano ya  CSB++ (FBF) yahawe hano."
                     }
 
                 ChildActivity Activity.Model.Height ->
@@ -1280,12 +1280,12 @@ translationSet trans =
 
                 MotherActivity Lactation ->
                     { english = "Lactation"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Konsa"
                     }
 
                 MotherActivity MotherFbf ->
                     { english = "FBF Mother"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "FBF y'umubyeyi"
                     }
 
                 MotherActivity ParticipantConsent ->
@@ -1300,7 +1300,7 @@ translationSet trans =
                 -}
                 ChildActivity ChildFbf ->
                     { english = "FBF Child"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "FBF y'umwana"
                     }
 
                 ChildActivity Activity.Model.Height ->
@@ -1851,7 +1851,7 @@ translationSet trans =
 
         Clinical ->
             { english = "Clinical"
-            , kinyarwanda = Just "Ikigo Nderabuzima"
+            , kinyarwanda = Just "Amakuru y’ubuvuzi"
             }
 
         Dashboard dashboard ->
@@ -2081,7 +2081,7 @@ translationSet trans =
 
         DashboardLabel ->
             { english = "Dashboard"
-            , kinyarwanda = Just "Tableau de bord"
+            , kinyarwanda = Just "Ikibaho cy’amakuru y’ingenzi"
             }
 
         DeliveryLocation ->
@@ -2257,12 +2257,12 @@ translationSet trans =
 
                 DistributedPartiallyLackOfStock ->
                     { english = "Lack of stock"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Byashize mu bubiko"
                     }
 
                 DistributedPartiallyOther ->
                     { english = "Other"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Izindi mpamvu"
                     }
 
         District ->
@@ -2538,7 +2538,7 @@ translationSet trans =
 
                 _ ->
                     { english = "FBF Distribution"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gutanga FBF (Shishakibondo)"
                     }
 
         FbfToReceive activity amount ->
@@ -3104,7 +3104,7 @@ translationSet trans =
 
         IsCurrentlyBreastfeeding ->
             { english = "Is the mother currently breastfeeding her infant"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Muri iki gihe, umubeyi yonsa umwana we?"
             }
 
         IsolatedAtHome ->
@@ -3999,7 +3999,7 @@ translationSet trans =
 
         PackagesPerMonth ->
             { english = "packages / month"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amapaki ku kwezi"
             }
 
         Page ->
@@ -5618,12 +5618,12 @@ translationSet trans =
             case activity of
                 ChildActivity _ ->
                     { english = "If distributed amount is not as per guidelines, select the reason"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Niba ingano ya FBF yatanzwe idahuye n’amabwiriza, hitamo impamvu"
                     }
 
                 MotherActivity _ ->
                     { english = "If distributed amount is not as per guidelines, select the reason"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Niba ingano ya FBF yatanzwe idahuye n’amabwiriza, hitamo impamvu"
                     }
 
         WeekSinglePlural value ->
