@@ -3104,7 +3104,7 @@ translationSet trans =
 
         IsCurrentlyBreastfeeding ->
             { english = "Is the mother currently breastfeeding her infant"
-            , kinyarwanda = Just "Muri iki gihe, umubeyi yonsa umwana we?"
+            , kinyarwanda = Just "Muri iki gihe, umubyeyi yonsa umwana we?"
             }
 
         IsolatedAtHome ->
