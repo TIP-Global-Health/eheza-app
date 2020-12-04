@@ -4,6 +4,7 @@ import App.Model exposing (SubModelReturn)
 import App.Utils exposing (sequenceSubModelReturn)
 import AssocList as Dict exposing (Dict)
 import Backend.Model
+import Debouncer.Basic as Debouncer exposing (provideInput)
 import Device.Encoder
 import Device.Model exposing (Device)
 import Editable
@@ -13,6 +14,7 @@ import HttpBuilder exposing (withExpectJson, withJsonBody, withQueryParams)
 import Json.Decode exposing (Value, decodeValue)
 import Json.Encode
 import List.Zipper as Zipper
+import Maybe.Extra
 import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseAuthorityStats, decodeDownloadSyncResponseGeneral)
@@ -59,6 +61,31 @@ update currentDate currentTime dbVersion device msg model =
                 |> App.Model.MsgIndexedDb
     in
     case msg of
+        MsgDebouncer subMsg ->
+            let
+                ( subModel, subCmd, extraMsg ) =
+                    Debouncer.update subMsg model.debouncer
+            in
+            SubModelReturn
+                { model | debouncer = subModel }
+                (Cmd.map MsgDebouncer subCmd)
+                noError
+                []
+                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) (Maybe.Extra.toList extraMsg)
+
+        SchedulePageRefresh ->
+            noChange
+                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device)
+                    [ MsgDebouncer <| provideInput RefreshPage ]
+
+        SchedulePhotosDownload ->
+            noChange
+                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device)
+                    [ MsgDebouncer <| provideInput TryDownloadingPhotos ]
+
+        RefreshPage ->
+            SubModelReturn model (refreshPage ()) noError []
+
         BackendAuthorityFetch ->
             case model.syncStatus of
                 SyncDownloadAuthority webData ->
@@ -229,7 +256,6 @@ update currentDate currentTime dbVersion device msg model =
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
                 appMsgs
-                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ TryDownloadingPhotos ]
 
         BackendAuthorityDashboardStatsFetch ->
             case model.syncStatus of
@@ -361,16 +387,21 @@ update currentDate currentTime dbVersion device msg model =
                 authoritiesSyncTime =
                     currentTimeMillis - model.syncInfoGeneral.lastSuccesfulContact
 
-                -- If sync is long (initial sync, for example), we want to refresh the page,
-                -- when sync is completed.
-                -- So, when sync status is about to change to Idle, and it took more than one
-                -- minute to sync the authorities, we perform refresh.
-                refreshPageCmd =
-                    if modelWithSyncStatus.syncStatus == SyncIdle && authoritiesSyncTime > 60000 then
-                        refreshPage ()
+                -- When sync is completed (status is about to change to Idle), we need to decide on
+                -- additional actions:
+                -- If sync lasted  more than one minute (initial sync, for example), we refresh the page.
+                -- Otherwise, we trigger photos download.
+                extraMsgs =
+                    if modelWithSyncStatus.syncStatus == SyncIdle then
+                        if authoritiesSyncTime > 60000 then
+                            [ SchedulePageRefresh ]
+
+                        else
+                            [ TryDownloadingPhotos ]
 
                     else
-                        Cmd.none
+                        -- Sync is not completed yet - no additional actions.
+                        []
             in
             SubModelReturn
                 modelWithSyncStatus
@@ -378,11 +409,11 @@ update currentDate currentTime dbVersion device msg model =
                     [ cmd
                     , -- Send to JS the updated revision ID. We send the entire list.
                       sendSyncInfoAuthoritiesCmd syncInfoAuthorities
-                    , refreshPageCmd
                     ]
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityDashboardStatsFetchHandle")
                 appMsgs
+                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) extraMsgs
 
         BackendFetchMain ->
             case model.syncStatus of
