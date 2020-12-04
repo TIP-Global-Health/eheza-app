@@ -1627,7 +1627,7 @@ translationSet trans =
 
                 Discharge ->
                     { english = "Discharge"
-                    , kinyarwanda = Just "Gusezererwa"
+                    , kinyarwanda = Just "Gusohoka kw'ibintu bidasanzwe"
                     }
 
                 Infection ->
@@ -2424,7 +2424,7 @@ translationSet trans =
 
         Extremities ->
             { english = "Extremities"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ku mpera z'ibice by'umubiri (ibiganza,ibirenge)"
             }
 
         Eyes ->
@@ -3914,7 +3914,7 @@ translationSet trans =
 
                 DiagnosisModerateUnderweight ->
                     { english = "Moderate underweight"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibiro bike bidakabije ugendeye ku myaka"
                     }
 
                 DiagnosisSevereUnderweight ->
@@ -4074,7 +4074,7 @@ translationSet trans =
 
         PartnerHivTestResult ->
             { english = "What was the partners HIV Test result"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ni ikihe gisubizo cy'ubwandu bwa Virusi itera SIDA kuwo babana?"
             }
 
         PartnerReceivedHivCounseling ->
@@ -4897,7 +4897,7 @@ translationSet trans =
 
         SaveAndNext ->
             { english = "Save & Next"
-            , kinyarwanda = Just "Kubika"
+            , kinyarwanda = Just "Bika & ukomeze"
             }
 
         SaveError ->
