@@ -1099,7 +1099,7 @@ translationSet trans =
 
         AddNewParticipant ->
             { english = "Add new participant"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ongeramo Umugenerwabikorwa musha"
             }
 
         AddParentOrCaregiver ->
@@ -1166,7 +1166,7 @@ translationSet trans =
 
                 MotherActivity Lactation ->
                     { english = "Ideally a mother exclusively breastfeeds her infant for at least 6 months. Every mother should be asked about how she is feeding her infant each month."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ni byiza ko umubyeyi yonsa umwana we byibuze amezi 6 nta kindi amuvangiye. Buri mubyeyi agomba kubazwa uko agaburira umwana we buri kwezi."
                     }
 
                 MotherActivity MotherFbf ->
@@ -1228,7 +1228,7 @@ translationSet trans =
 
                 MotherActivity MotherFbf ->
                     { english = "Enter the amount of CSB++ (FBF) distributed below."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Andika ingano ya  CSB++ (FBF) yahawe hano."
                     }
 
                 MotherActivity ParticipantConsent ->
@@ -1243,7 +1243,7 @@ translationSet trans =
                 -}
                 ChildActivity ChildFbf ->
                     { english = "Enter the amount of CSB++ (FBF) distributed below."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Andika ingano ya  CSB++ (FBF) yahawe hano."
                     }
 
                 ChildActivity Activity.Model.Height ->
@@ -1280,12 +1280,12 @@ translationSet trans =
 
                 MotherActivity Lactation ->
                     { english = "Lactation"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Konsa"
                     }
 
                 MotherActivity MotherFbf ->
                     { english = "FBF Mother"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "FBF y'umubyeyi"
                     }
 
                 MotherActivity ParticipantConsent ->
@@ -1300,7 +1300,7 @@ translationSet trans =
                 -}
                 ChildActivity ChildFbf ->
                     { english = "FBF Child"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "FBF y'umwana"
                     }
 
                 ChildActivity Activity.Model.Height ->
@@ -1500,7 +1500,7 @@ translationSet trans =
 
         AllowedValuesRangeHelper constraints ->
             { english = "Allowed values are between " ++ String.fromFloat constraints.minVal ++ " and " ++ String.fromFloat constraints.maxVal ++ "."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just <| "Imibare yemewe iri hagati ya " ++ String.fromFloat constraints.minVal ++ " na " ++ String.fromFloat constraints.maxVal ++ "."
             }
 
         AreYouSure ->
@@ -1570,7 +1570,7 @@ translationSet trans =
 
         BloodPressureSysLabel ->
             { english = "Systolic"
-            , kinyarwanda = Just "Umubare w'umuviduko w'amaraso wo hejuru"
+            , kinyarwanda = Just "Umubare w'umuvuduko w'amaraso wo hejuru"
             }
 
         BMI ->
@@ -1627,7 +1627,7 @@ translationSet trans =
 
                 Discharge ->
                     { english = "Discharge"
-                    , kinyarwanda = Just "Gusezererwa"
+                    , kinyarwanda = Just "Gusohoka kw'ibintu bidasanzwe"
                     }
 
                 Infection ->
@@ -1851,7 +1851,7 @@ translationSet trans =
 
         Clinical ->
             { english = "Clinical"
-            , kinyarwanda = Just "Ikigo Nderabuzima"
+            , kinyarwanda = Just "Amakuru y’ubuvuzi"
             }
 
         Dashboard dashboard ->
@@ -2081,7 +2081,7 @@ translationSet trans =
 
         DashboardLabel ->
             { english = "Dashboard"
-            , kinyarwanda = Just "Tabeau de bord"
+            , kinyarwanda = Just "Ikibaho cy’amakuru y’ingenzi"
             }
 
         DeliveryLocation ->
@@ -2138,7 +2138,7 @@ translationSet trans =
 
         DateOfLastAssessment ->
             { english = "Date of last Assessment"
-            , kinyarwanda = Just "Amakuru y'ipimwa ry'ubushize"
+            , kinyarwanda = Just "Amakuru y'ipimwa rirangiye"
             }
 
         DatePregnancyConcluded ->
@@ -2257,12 +2257,12 @@ translationSet trans =
 
                 DistributedPartiallyLackOfStock ->
                     { english = "Lack of stock"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Byashize mu bubiko"
                     }
 
                 DistributedPartiallyOther ->
                     { english = "Other"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Izindi mpamvu"
                     }
 
         District ->
@@ -2424,7 +2424,7 @@ translationSet trans =
 
         Extremities ->
             { english = "Extremities"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ku mpera z'ibice by'umubiri (ibiganza,ibirenge)"
             }
 
         Eyes ->
@@ -2538,7 +2538,7 @@ translationSet trans =
 
                 _ ->
                     { english = "FBF Distribution"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gutanga FBF (Shishakibondo)"
                     }
 
         FbfToReceive activity amount ->
@@ -2968,7 +2968,7 @@ translationSet trans =
 
                 AntenatalEncounter ->
                     { english = "First Antenatal Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma rya mbere ku mugore utwite"
                     }
 
                 InmmunizationEncounter ->
@@ -2978,7 +2978,7 @@ translationSet trans =
 
                 NutritionEncounter ->
                     { english = "First Nutrition Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma rya mbere ku mirire"
                     }
 
         IndividualEncounterLabel encounterType ->
@@ -2990,7 +2990,7 @@ translationSet trans =
 
                 AntenatalEncounter ->
                     { english = "Antenatal Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma k’umugore utwite"
                     }
 
                 InmmunizationEncounter ->
@@ -3000,7 +3000,7 @@ translationSet trans =
 
                 NutritionEncounter ->
                     { english = "Nutrition Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma ry’imirire"
                     }
 
         IndividualEncounterSelectVisit encounterType ->
@@ -3012,7 +3012,7 @@ translationSet trans =
 
                 AntenatalEncounter ->
                     { english = "Select Antenatal Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hitamo isuzuma k’umugore utwite"
                     }
 
                 InmmunizationEncounter ->
@@ -3022,7 +3022,7 @@ translationSet trans =
 
                 NutritionEncounter ->
                     { english = "Select Nutrition Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hitamo isuzuma ry’imirire"
                     }
 
         IndividualEncounterSubsequentVisit encounterType ->
@@ -3034,7 +3034,7 @@ translationSet trans =
 
                 AntenatalEncounter ->
                     { english = "Subsequent Antenatal Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma rikurikiyeho ku mugore utwite"
                     }
 
                 InmmunizationEncounter ->
@@ -3044,7 +3044,7 @@ translationSet trans =
 
                 NutritionEncounter ->
                     { english = "Subsequent Nutrition Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma rikurikiyeho ku mugore utwite"
                     }
 
         IndividualEncounterType encounterType ->
@@ -3104,7 +3104,7 @@ translationSet trans =
 
         IsCurrentlyBreastfeeding ->
             { english = "Is the mother currently breastfeeding her infant"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Muri iki gihe, umubyeyi yonsa umwana we?"
             }
 
         IsolatedAtHome ->
@@ -3385,7 +3385,7 @@ translationSet trans =
 
                 DiagnosisTuberculosis ->
                     { english = "Tuberculosis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igituntu"
                     }
 
                 DiagnosisAsthma ->
@@ -3649,7 +3649,7 @@ translationSet trans =
 
         Neck ->
             { english = "Neck"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ijosi"
             }
 
         NeckCPESign option ->
@@ -3914,7 +3914,7 @@ translationSet trans =
 
                 DiagnosisModerateUnderweight ->
                     { english = "Moderate underweight"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibiro bike bidakabije ugendeye ku myaka"
                     }
 
                 DiagnosisSevereUnderweight ->
@@ -3999,7 +3999,7 @@ translationSet trans =
 
         PackagesPerMonth ->
             { english = "packages / month"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amapaki ku kwezi"
             }
 
         Page ->
@@ -4059,7 +4059,7 @@ translationSet trans =
 
         ParticipantSummary ->
             { english = "Participant Summary"
-            , kinyarwanda = Just "Umwirondoro w’urera umwana"
+            , kinyarwanda = Just "Umwirondoro w’Umwana"
             }
 
         ParticipantDemographicInformation ->
@@ -4074,7 +4074,7 @@ translationSet trans =
 
         PartnerHivTestResult ->
             { english = "What was the partners HIV Test result"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ni ikihe gisubizo cy'ubwandu bwa Virusi itera SIDA kuwo babana?"
             }
 
         PartnerReceivedHivCounseling ->
@@ -4335,7 +4335,7 @@ translationSet trans =
 
         PreviousCSectionScar ->
             { english = "Previous C-section scar"
-            , kinyarwanda = Just "Inkovu yaho bababze ubushize"
+            , kinyarwanda = Just "Inkovu yaho babaze ubushize"
             }
 
         PreviousDelivery ->
@@ -4897,7 +4897,7 @@ translationSet trans =
 
         SaveAndNext ->
             { english = "Save & Next"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Bika & ukomeze"
             }
 
         SaveError ->
@@ -5618,12 +5618,12 @@ translationSet trans =
             case activity of
                 ChildActivity _ ->
                     { english = "If distributed amount is not as per guidelines, select the reason"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Niba ingano ya FBF yatanzwe idahuye n’amabwiriza, hitamo impamvu"
                     }
 
                 MotherActivity _ ->
                     { english = "If distributed amount is not as per guidelines, select the reason"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Niba ingano ya FBF yatanzwe idahuye n’amabwiriza, hitamo impamvu"
                     }
 
         WeekSinglePlural value ->
@@ -5918,7 +5918,7 @@ translateActivePage page =
 
                 PrenatalEncounterPage _ ->
                     { english = "Antenatal Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma k’umugore utwite"
                     }
 
                 PrenatalActivityPage _ _ ->
@@ -5938,12 +5938,12 @@ translateActivePage page =
 
                 NutritionParticipantPage _ ->
                     { english = "Nutrition Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma ry’imirire"
                     }
 
                 NutritionEncounterPage _ ->
                     { english = "Nutrition Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma ry’imirire"
                     }
 
                 NutritionActivityPage _ _ ->
@@ -6050,17 +6050,17 @@ translateChartPhrase phrase =
 
         TwoToFiveYears ->
             { english = "2 to 5 years (z-scores)"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Imyaka 2-5"
             }
 
         FiveToNineteenYears ->
             { english = "5 to 19 years (z-scores)"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Imyaka 5-19"
             }
 
         FiveToTenYears ->
             { english = "5 to 10 years (z-scores)"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Imyaka 5-10"
             }
 
         HeightCm ->
