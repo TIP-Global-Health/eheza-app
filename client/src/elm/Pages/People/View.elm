@@ -177,11 +177,11 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
                             GroupEncounterOrigin sessionId ->
                                 Maybe.map2
                                     (\session birthDate ->
-                                        if session.clinicType /= Sorwathe then
-                                            diffMonths birthDate currentDate < graduatingAgeInMonth
+                                        if List.member session.clinicType [ Sorwathe, Achi ] then
+                                            True
 
                                         else
-                                            True
+                                            diffMonths birthDate currentDate < graduatingAgeInMonth
                                     )
                                     (getSession sessionId db)
                                     filteredPerson.birthDate

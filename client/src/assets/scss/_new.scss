@@ -209,7 +209,20 @@ div.language-switcher {
   }
 }
 
+details.error-log {
+  color: $color-orange;
+  padding: 15px;
+
+  ol {
+    background: $color-white;
+    font-size: 18px;
+    max-height: 400px;
+    overflow: auto;
+  }
+}
+
 details.sync-manager {
+  color: $color-orange;
   padding: 15px;
 
   .segment.ui {
@@ -2046,16 +2059,38 @@ div.page-report.acute-illness {
       text-align: center;
     }
 
+    div.pane.physical-exam .ui.table.nutrition-signs {
+      border-top: 10px solid $color-lighter-gray;
+    }
+
     div.pane.physical-exam .ui.table thead th {
       background-color: $color-white;
       color: $color-text;
+
+      &.first {
+        text-align: left;
+        width: 190px;
+      }
     }
 
     div.pane.physical-exam .ui.table tbody td {
       font-weight: 600;
 
-      &.alert {
+      &.red {
         color: $color-red-alert;
+      }
+
+      &.yellow {
+        color: $color-yellow;
+      }
+
+      &.green {
+        color: $color-green;
+      }
+
+      &.first {
+        text-align: left;
+        width: 190px;
       }
     }
 
