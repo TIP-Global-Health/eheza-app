@@ -212,40 +212,46 @@ determineDownloadPhotosStatus model =
                 model.downloadPhotosStatus
 
             statusUpdated =
-                -- Cases are ordered by the cycle order.
-                case currentStatus of
-                    DownloadPhotosIdle ->
-                        DownloadPhotosInProcess model.downloadPhotosMode
+                case model.syncStatus of
+                    SyncIdle ->
+                        -- Cases are ordered by the cycle order.
+                        case currentStatus of
+                            DownloadPhotosIdle ->
+                                DownloadPhotosInProcess model.downloadPhotosMode
 
-                    DownloadPhotosInProcess record ->
-                        case record of
-                            DownloadPhotosNone ->
-                                DownloadPhotosIdle
+                            DownloadPhotosInProcess record ->
+                                case record of
+                                    DownloadPhotosNone ->
+                                        DownloadPhotosIdle
 
-                            DownloadPhotosBatch deferredPhoto ->
-                                if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
-                                    -- We tried to fetch deferred photos from IndexDB,
-                                    -- but there we non matching the query.
-                                    DownloadPhotosIdle
+                                    DownloadPhotosBatch deferredPhoto ->
+                                        if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
+                                            -- We tried to fetch deferred photos from IndexDB,
+                                            -- but there we non matching the query.
+                                            DownloadPhotosIdle
 
-                                else if deferredPhoto.batchCounter < 1 then
-                                    -- We've reached the end of the batch, so we
-                                    -- need to rotate.
-                                    DownloadPhotosIdle
+                                        else if deferredPhoto.batchCounter < 1 then
+                                            -- We've reached the end of the batch, so we
+                                            -- need to rotate.
+                                            DownloadPhotosIdle
 
-                                else
-                                    currentStatus
+                                        else
+                                            currentStatus
 
-                            DownloadPhotosAll deferredPhoto ->
-                                if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
-                                    -- We tried to fetch deferred photos from IndexDB,
-                                    -- but there we non matching the query.
-                                    DownloadPhotosIdle
+                                    DownloadPhotosAll deferredPhoto ->
+                                        if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
+                                            -- We tried to fetch deferred photos from IndexDB,
+                                            -- but there we non matching the query.
+                                            DownloadPhotosIdle
 
-                                else
-                                    -- There are still deferred photos in IndexDB
-                                    -- that match out query.
-                                    currentStatus
+                                        else
+                                            -- There are still deferred photos in IndexDB
+                                            -- that match out query.
+                                            currentStatus
+
+                    -- When sync is active, we stop photos download.
+                    _ ->
+                        DownloadPhotosIdle
         in
         { model | downloadPhotosStatus = statusUpdated }
 

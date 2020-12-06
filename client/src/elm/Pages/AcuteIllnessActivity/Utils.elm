@@ -43,7 +43,7 @@ import Backend.Measurement.Model
         , TreatmentReviewSign(..)
         )
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths, ageInYears)
+import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
@@ -1513,15 +1513,11 @@ expectPhysicalExamTask currentDate person isFirstEncounter task =
 
         -- We show Muac for children under age of 5.
         PhysicalExamMuac ->
-            ageInYears currentDate person
-                |> Maybe.map (\age -> age < 5)
-                |> Maybe.withDefault False
+            isChildUnderAgeOf5 currentDate person
 
         -- We show Nutrition for children under age of 5.
         PhysicalExamNutrition ->
-            ageInYears currentDate person
-                |> Maybe.map (\age -> age < 5)
-                |> Maybe.withDefault False
+            isChildUnderAgeOf5 currentDate person
 
         -- We show Acute Finding only on first encounter
         PhysicalExamAcuteFindings ->
