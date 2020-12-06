@@ -18,6 +18,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Model exposing (Relationship)
 import Backend.Session.Model exposing (Session)
 import Backend.Village.Model exposing (Village)
+import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import Editable exposing (Editable)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Json.Decode exposing (Value)
@@ -194,7 +195,8 @@ type alias SyncInfoAuthorityZipper =
 
 
 type alias Model =
-    { syncStatus : SyncStatus
+    { debouncer : Debouncer Msg Msg
+    , syncStatus : SyncStatus
     , downloadPhotosStatus : DownloadPhotosStatus
     , syncInfoGeneral : SyncInfoGeneral
     , syncInfoAuthorities : SyncInfoAuthorityZipper
@@ -220,7 +222,8 @@ type alias Model =
 
 emptyModel : Flags -> Model
 emptyModel flags =
-    { syncStatus = SyncIdle
+    { debouncer = debounce 15000 |> toDebouncer
+    , syncStatus = SyncIdle
     , downloadPhotosStatus = DownloadPhotosIdle
     , syncInfoGeneral = flags.syncInfoGeneral
     , syncInfoAuthorities = flags.syncInfoAuthorities
@@ -448,7 +451,11 @@ type alias IndexDbQueryDeferredPhotoResultRecord =
 
 
 type Msg
-    = BackendAuthorityFetch
+    = MsgDebouncer (Debouncer.Msg Msg)
+    | SchedulePageRefresh
+    | SchedulePhotosDownload
+    | RefreshPage
+    | BackendAuthorityFetch
     | BackendAuthorityFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
     | BackendAuthorityDashboardStatsFetch
     | BackendAuthorityDashboardStatsFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))

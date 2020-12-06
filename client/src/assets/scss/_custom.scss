@@ -1021,11 +1021,11 @@ input::placeholder {
 }
 
 .label-yellow {
-  color: #d9e021;
+  color: $color-yellow;
 }
 
 .label-green {
-  color: #25d625;
+  color: $color-green;
 }
 
 .label-with-icon {
@@ -1972,9 +1972,9 @@ input::placeholder {
 }
 
 .icon-checked-in {
-  background: #25d625 url(#{$img-path}icon-checked-in.svg) no-repeat 13px 12px;
+  background: $color-green url(#{$img-path}icon-checked-in.svg) no-repeat 13px 12px;
   background-size: 26px 24px;
-  border-color: #25d625;
+  border-color: $color-green;
 }
 
 
