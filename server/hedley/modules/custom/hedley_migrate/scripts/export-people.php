@@ -75,6 +75,12 @@ while ($processed < $total) {
       continue;
     }
 
+    $health_center_id = $wrapper->field_health_center->getIdentifier();
+    if (empty($health_center_id)) {
+      // Can't determine health center. Skipping.
+      continue;
+    }
+
     $is_child = $birth_date > strtotime('-13 year');
 
     // Common values.
