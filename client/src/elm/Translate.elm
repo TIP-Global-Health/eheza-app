@@ -5758,7 +5758,7 @@ translateMyRelatedByQuestion relationship =
 
         MyParent ->
             { english = "is the child of"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "ni umwana wa"
             }
 
         MyCaregiven ->
@@ -5768,7 +5768,7 @@ translateMyRelatedByQuestion relationship =
 
         MyCaregiver ->
             { english = "is given care by"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "arerwa na"
             }
 
 
