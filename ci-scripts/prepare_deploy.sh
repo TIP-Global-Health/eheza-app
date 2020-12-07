@@ -23,7 +23,7 @@ symlink_externals
 cd server || exit 1
 
 # Install Robo.li.
-ddev composer install
+ddev . "cd .. && composer install"
 
 # Authenticate with Terminus.
 ddev . terminus auth:login --machine-token="$TERMINUS_TOKEN"
