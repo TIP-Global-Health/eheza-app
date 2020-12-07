@@ -269,7 +269,7 @@ const getSyncInfoGeneral = function() {
     let storageArr = JSON.parse(storage);
     storageArr.lastFetchedRevisionId = parseInt(storageArr.lastFetchedRevisionId);
     storageArr.lastSuccesfulContact = parseInt(storageArr.lastSuccesfulContact);
-    storageArr.remainingToUpload = parseInt(storageArr.remainingToDownload);
+    storageArr.remainingToUpload = parseInt(storageArr.remainingToUpload);
     storageArr.remainingToDownload = parseInt(storageArr.remainingToDownload);
     storageArr.deviceName = storageArr.deviceName;
     storageArr.status = storageArr.status;
@@ -292,7 +292,7 @@ const getSyncInfoAuthorities = function() {
     storageArr.forEach(function(value, index) {
       value.lastFetchedRevisionId = parseInt(value.lastFetchedRevisionId);
       value.lastSuccesfulContact = parseInt(value.lastSuccesfulContact);
-      value.remainingToUpload = parseInt(value.remainingToDownload);
+      value.remainingToUpload = parseInt(value.remainingToUpload);
       value.remainingToDownload = parseInt(value.remainingToDownload);
       value.statsCacheHash = value.statsCacheHash;
       value.status = value.status;
