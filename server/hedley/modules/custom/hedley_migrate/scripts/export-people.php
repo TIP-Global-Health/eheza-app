@@ -62,6 +62,7 @@ while ($processed < $total) {
   $people = node_load_multiple($ids);
   foreach ($people as $person) {
     $wrapper = entity_metadata_wrapper('node', $person);
+    $person_id = $person->nid;
 
     $deleted = $wrapper->field_deleted->value();
     if ($deleted) {
@@ -107,19 +108,44 @@ while ($processed < $total) {
     if ($is_child) {
       $mode_of_delivery = $wrapper->field_mode_of_delivery->value();
 
+      $relation = 'parent';
+      $relationships = hedley_person_get_child_relationships($person_id, $relation);
+      $count = count($relationships);
+      if ($count == 0) {
+        $relation = 'caregiver';
+        $relationships = hedley_person_get_child_relationships($person_id, $relation);
+        $count = count($relationships);
+      }
+
+      if ($count == 0) {
+        $mother_national_id = '';
+        $mother_name = '';
+        $relation = '';
+      }
+      else {
+        if ($count > 1) {
+          drush_print("Child with ID $person_id got $count relations of type $relation.");
+        }
+
+        $adult_id = reset($relationships);
+        $adult_wrapper = entity_metadata_wrapper('node', $adult_id);
+        $mother_national_id = $adult_wrapper->field_national_id_number->value();
+        $mother_name = $adult_wrapper->label();
+      }
+
       $mapping['children'][] = [
-        $person->nid,
+        $person_id,
         $first_name,
         $second_name,
         $birth_date,
         $estimated,
-        //$mother_id,
+        $mother_national_id,
         $gender,
         $ubudehe,
         $hiv_status,
         $mode_of_delivery,
-        //$mother_id,
-        //$relation,
+        $mother_name,
+        $relation,
         $province,
         $district,
         $sector,
@@ -136,7 +162,7 @@ while ($processed < $total) {
       $phone_number = $wrapper->field_phone_number->value();
 
       $mapping['adults'][] = [
-        $person->nid,
+        $person_id,
         $first_name,
         $second_name,
         $birth_date,
