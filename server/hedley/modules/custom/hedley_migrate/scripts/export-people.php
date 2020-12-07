@@ -127,7 +127,9 @@ while ($processed < $total) {
           drush_print("Child with ID $person_id got $count relations of type $relation.");
         }
 
-        $adult_id = reset($relationships);
+        $relationship_id = reset($relationships);
+        $relationship_wrapper = entity_metadata_wrapper('node', $relationship_id);
+        $adult_id = $relationship_wrapper->field_person->getIdentifier();
         $adult_wrapper = entity_metadata_wrapper('node', $adult_id);
         $mother_national_id = $adult_wrapper->field_national_id_number->value();
         $mother_name = $adult_wrapper->label();
