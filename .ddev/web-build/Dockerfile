@@ -16,6 +16,8 @@ RUN gem update --system
 RUN gem install compass --minimal-deps
 # Bower - still in use for some dependencies like dropzone.
 RUN npm install -g bower
+# gulp for the client compilation.
+RUN npm install -g gulp
 # For Elm Unit tests
 RUN npm -g config set user root
 RUN npm install -g elm-test@0.18.13-beta4
