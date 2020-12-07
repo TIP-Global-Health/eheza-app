@@ -305,7 +305,8 @@ gulp.task("serve:dev", ["build"], function() {
     // tunnel: "",
     server: {
       baseDir: "serve"
-    }
+    },
+    "open": false
   });
 });
 
@@ -317,6 +318,7 @@ gulp.task("serve:emulator", ["build", "ssl-cert"], function() {
     server: {
       baseDir: "serve"
     },
+    "open": false,
     https: {
       cert: "ssl/ssl.pem",
       key: "ssl/ssl.key"
@@ -368,6 +370,7 @@ gulp.task("watch", function() {
 // Serve the site after optimizations to see that everything looks fine
 gulp.task("serve:prod", function() {
   bs = browserSync({
+    "open": false,
     notify: false,
     // tunnel: true,
     server: {
