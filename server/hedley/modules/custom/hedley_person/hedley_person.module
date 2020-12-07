@@ -1166,7 +1166,7 @@ function hedley_person_get_child_relationships($child_id, $relation_type = 'pare
     ->propertyCondition('type', 'relationship')
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_related_to', 'target_id', $child_id)
-    ->fieldCondition('field_related_by', 'target_id', $relation_type);
+    ->fieldCondition('field_related_by', 'value', $relation_type);
 
   $result = $query->execute();
 
