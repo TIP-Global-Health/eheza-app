@@ -3,6 +3,8 @@
 /**
  * @file
  *
+ * Generates adults and children CSV files, in format that is expected
+ * by 'import patients' utility.
  *
  * Drush scr
  * profiles/hedley/modules/custom/hedley_migrate/scripts/export-people.php.
@@ -274,6 +276,7 @@ while ($processed < $total) {
   drush_print("$processed persons processed.");
 }
 
+// Write data into CSV files.
 foreach ($mapping as $name => $rows) {
   $content = [];
   foreach ($rows as $row) {
@@ -298,6 +301,12 @@ foreach ($mapping as $name => $rows) {
 drush_print('Done!');
 
 
+/**
+ * Resolve first and second name of the person.
+ *
+ * Trims strings and removes all occurrences of ',', so that CSV
+ * format is maintained.
+ */
 function resolve_name($wrapper) {
   $first_name = trim(str_replace(',', ' ', $wrapper->field_first_name->value()));
   $second_name = trim(str_replace(',', ' ', $wrapper->field_second_name->value()));
@@ -308,6 +317,9 @@ function resolve_name($wrapper) {
   return [$first_name, $second_name];
 }
 
+/**
+ * Filters nodes that got 'deleted' field set to TRUE.
+ */
 function filter_deleted(&$nodes) {
   foreach ($nodes as $index => $node) {
     $wrapper = entity_metadata_wrapper('node', $node);
@@ -318,6 +330,9 @@ function filter_deleted(&$nodes) {
   }
 }
 
+/**
+ * Formats date as 'dd-MMM-YYY', where MMM is 'jan' - 'dec'.
+ */
 function format_birth_date(&$date) {
   $date = date('d-m-Y', $date);
   $parts = explode('-', $date);
