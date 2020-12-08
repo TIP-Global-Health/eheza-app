@@ -60,15 +60,10 @@ while ($processed < $total) {
 
   $ids = array_keys($result['node']);
   $people = node_load_multiple($ids);
+  filter_deleted($people);
   foreach ($people as $person) {
     $wrapper = entity_metadata_wrapper('node', $person);
     $person_id = $person->nid;
-
-    $deleted = $wrapper->field_deleted->value();
-    if ($deleted) {
-      // Skip deleted patient.
-      continue;
-    }
 
     $birth_date = $wrapper->field_birth_date->value();
     if (empty($birth_date)) {
@@ -85,12 +80,8 @@ while ($processed < $total) {
     $is_child = $birth_date > strtotime('-13 year');
 
     // Common values.
-    $first_name = trim($wrapper->field_first_name->value());
-    $second_name = trim($wrapper->field_second_name->value());
-    if (empty($first_name) && empty($second_name)) {
-      $second_name = $wrapper->label();
-    }
-    $birth_date = date('Y-m-d', $birth_date);
+    list($first_name, $second_name) = resolve_name($wrapper);
+    format_birth_date($birth_date);
     $estimated = $wrapper->field_birth_date_estimated->value();
     $gender = $wrapper->field_gender->value();
     $ubudehe = $wrapper->field_ubudehe->value();
@@ -109,11 +100,16 @@ while ($processed < $total) {
       $mode_of_delivery = $wrapper->field_mode_of_delivery->value();
 
       $relation = 'parent';
-      $relationships = hedley_person_get_child_relationships($person_id, $relation);
+      $relationships_ids = hedley_person_get_child_relationships($person_id, $relation);
+      $relationships = node_load_multiple($relationships_ids);
+      filter_deleted($relationships);
       $count = count($relationships);
+
       if ($count == 0) {
         $relation = 'caregiver';
-        $relationships = hedley_person_get_child_relationships($person_id, $relation);
+        $relationships_ids = hedley_person_get_child_relationships($person_id, $relation);
+        $relationships = node_load_multiple($relationships_ids);
+        filter_deleted($relationships);
         $count = count($relationships);
       }
 
@@ -124,15 +120,19 @@ while ($processed < $total) {
       }
       else {
         if ($count > 1) {
-          drush_print("Child with ID $person_id got $count relations of type $relation.");
+          $instances = array_map(function($node) { return $node->nid; }, $relationships);
+          $instances_list = implode(', ', $instances);
+          drush_print("Child with ID $person_id got $count relations of type $relation: $instances_list");
         }
 
-        $relationship_id = reset($relationships);
-        $relationship_wrapper = entity_metadata_wrapper('node', $relationship_id);
+        // Taking first relationship.
+        $relationship = reset($relationships);
+        $relationship_wrapper = entity_metadata_wrapper('node', $relationship);
         $adult_id = $relationship_wrapper->field_person->getIdentifier();
         $adult_wrapper = entity_metadata_wrapper('node', $adult_id);
         $mother_national_id = $adult_wrapper->field_national_id_number->value();
-        $mother_name = $adult_wrapper->label();
+        list($first_name, $second_name) = resolve_name($adult_wrapper);
+        $mother_name = trim("$first_name $second_name");
       }
 
       $mapping['children'][] = [
@@ -194,7 +194,7 @@ while ($processed < $total) {
     return;
   }
 
-  $count = count($ids);
+  $count = count($people);
   $processed += $count;
   drush_print("$processed persons processed.");
 }
@@ -215,6 +215,47 @@ foreach ($mapping as $name => $rows) {
   fclose($fp);
 }
 
+function resolve_name($wrapper) {
+  $first_name = trim(str_replace(',', ' ', $wrapper->field_first_name->value()));
+  $second_name = trim(str_replace(',', ' ', $wrapper->field_second_name->value()));
+  if (empty($first_name) && empty($second_name)) {
+    $second_name = trim(str_replace(',', ' ',$wrapper->label()));
+  }
+
+  return [$first_name, $second_name];
+}
+
+function filter_deleted(&$nodes) {
+  foreach ($nodes as $index => $node) {
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $deleted = $wrapper->field_deleted->value();
+    if (!empty($deleted) && $deleted == TRUE) {
+      unset($nodes[$index]);
+    }
+  }
+}
+
+function format_birth_date(&$date) {
+  $date = date('d-m-Y', $date);
+  $parts = explode('-', $date);
+  $mapping = [
+    '01' => 'jan',
+    '02' => 'feb',
+    '03' => 'mar',
+    '04' => 'apr',
+    '05' => 'may',
+    '06' => 'jun',
+    '07' => 'jul',
+    '08' => 'aug',
+    '09' => 'sep',
+    '10' => 'oct',
+    '11' => 'nov',
+    '12' => 'dec',
+  ];
+
+  $parts[1] = $mapping[$parts[1]];
+  $date = implode('-', $parts);
+}
 
 /**
  * Generate base query.
