@@ -8,9 +8,7 @@ if [ -z "$DOCKER_DEBUG" ]; then
   bash pre_cache.sh
 
   bash preparing_server.sh
-  bash preparing_client.sh
 
-  bash run_webdriverio.sh
   bash run_simpletest.sh
 
   bash post_cache.sh
@@ -19,9 +17,7 @@ else
   # We keep going and open a Bash shell to interactively inspect what failed or
   # what's the status of the application.
   bash preparing_server.sh || :
-  bash preparing_client.sh || :
 
-  bash run_webdriverio.sh || :
   bash run_simpletest.sh || :
 
   bash
