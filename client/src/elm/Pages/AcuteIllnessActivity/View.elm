@@ -395,7 +395,7 @@ viewActivity language currentDate id activity diagnosis data model =
             viewAcuteIllnessExposure language currentDate id ( personId, measurements ) model.exposureData
 
         AcuteIllnessNextSteps ->
-            viewAcuteIllnessNextSteps language currentDate id ( personId, data.person, measurements ) diagnosis model.nextStepsData
+            viewAcuteIllnessNextSteps language currentDate id ( personId, data.person, measurements ) isFirstEncounter diagnosis model.nextStepsData
 
         AcuteIllnessOngoingTreatment ->
             viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) model.ongoingTreatmentData
@@ -1430,14 +1430,14 @@ viewTreatmentReviewForm language currentDate measurements form =
         |> div [ class "ui form treatment-review" ]
 
 
-viewAcuteIllnessNextSteps : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, Person, AcuteIllnessMeasurements ) -> Maybe AcuteIllnessDiagnosis -> NextStepsData -> List (Html Msg)
-viewAcuteIllnessNextSteps language currentDate id ( personId, person, measurements ) diagnosis data =
+viewAcuteIllnessNextSteps : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, Person, AcuteIllnessMeasurements ) -> Bool -> Maybe AcuteIllnessDiagnosis -> NextStepsData -> List (Html Msg)
+viewAcuteIllnessNextSteps language currentDate id ( personId, person, measurements ) isFirstEncounter diagnosis data =
     let
         activity =
             AcuteIllnessNextSteps
 
         tasks =
-            resolveNextStepsTasks currentDate person diagnosis measurements
+            resolveNextStepsTasks currentDate person isFirstEncounter diagnosis measurements
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
