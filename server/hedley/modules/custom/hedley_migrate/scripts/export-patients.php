@@ -2,7 +2,6 @@
 
 /**
  * @file
- *
  * Generates adults and children CSV files.
  *
  * Generated format matches the one expected by 'import patients' utility.
@@ -171,8 +170,7 @@ while ($processed < $total) {
         if ($count > 1) {
           $instances = array_map(function ($node) {
             return $node->nid;
-            }, $relationships
-          );
+          }, $relationships);
           $instances_list = implode(', ', $instances);
           drush_print("Child with ID $person_id got $count relations of type $relation: $instances_list");
         }
