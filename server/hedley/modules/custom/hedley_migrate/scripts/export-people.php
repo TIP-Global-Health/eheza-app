@@ -82,10 +82,40 @@ while ($processed < $total) {
     // Common values.
     list($first_name, $second_name) = resolve_name($wrapper);
     format_birth_date($birth_date);
+
     $estimated = $wrapper->field_birth_date_estimated->value();
+    if (empty($estimated) || $estimated == FALSE) {
+      $estimated = 'N';
+    }
+    else {
+      $estimated = 'Y';
+    }
+
     $gender = $wrapper->field_gender->value();
     $ubudehe = $wrapper->field_ubudehe->value();
+
     $hiv_status = $wrapper->field_hiv_status->value();
+    switch ($hiv_status) {
+      case 'hiv-exposed-infant':
+        $hiv_status = 'hiv-exposed infant';
+        break;
+
+      case 'negative':
+        $hiv_status = 'negative';
+        break;
+
+      case 'negative-dc':
+        $hiv_status = 'negative - discordant couple';
+        break;
+
+      case 'positive':
+        $hiv_status = 'positive';
+        break;
+
+      case 'unknown':
+        $hiv_status = 'unknown';
+    }
+
     $province = $wrapper->field_province->value();
     $district = $wrapper->field_district->value();
     $sector = $wrapper->field_sector->value();
@@ -98,6 +128,22 @@ while ($processed < $total) {
 
     if ($is_child) {
       $mode_of_delivery = $wrapper->field_mode_of_delivery->value();
+      switch ($mode_of_delivery) {
+        case 'svd-episiotomy':
+          $mode_of_delivery = 'spontaneous vaginal delivery with episiotomy';
+          break;
+
+        case 'svd-no-episiotomy':
+          $mode_of_delivery = 'spontaneous vaginal delivery without episiotomy';
+          break;
+
+        case 'vd-vacuum':
+          $mode_of_delivery = 'vaginal delivery with vacuum extraction';
+          break;
+
+        case 'cesarean-delivery':
+          $mode_of_delivery = 'cesarean delivery';
+      }
 
       $relation = 'parent';
       $relationships_ids = hedley_person_get_child_relationships($person_id, $relation);
@@ -158,10 +204,39 @@ while ($processed < $total) {
     }
     else {
       $national_id = $wrapper->field_national_id_number->value();
-      $education_level = $wrapper->field_education_level->value();
       $marital_status = $wrapper->field_marital_status->value();
       $number_of_children = $wrapper->field_number_of_children->value();
       $phone_number = $wrapper->field_phone_number->value();
+
+      $education_level = $wrapper->field_education_level->value();
+      switch ($education_level) {
+        case '0':
+          $education_level = 'no schooling';
+          break;
+
+        case '1':
+          $education_level = 'primary school';
+          break;
+
+        case '2':
+          $education_level = 'vocational training school';
+          break;
+
+        case '3':
+          $education_level = 'secondary school';
+          break;
+
+        case '4':
+          $education_level = 'diploma programs';
+          break;
+
+        case '5':
+          $education_level = 'higher education';
+          break;
+
+        case '6':
+          $education_level = 'advanced diploma';
+      }
 
       $mapping['adults'][] = [
         $person_id,
@@ -199,9 +274,6 @@ while ($processed < $total) {
   drush_print("$processed persons processed.");
 }
 
-drush_print('Done!');
-
-
 foreach ($mapping as $name => $rows) {
   $content = [];
   foreach ($rows as $row) {
@@ -210,10 +282,21 @@ foreach ($mapping as $name => $rows) {
 
   $path = drupal_get_path('module', 'hedley_migrate') . '/exported';
   $fp = fopen("$path/$name.csv", 'w');
+  if ($name == 'adults') {
+    $captions = 'Unique ID,First Name,Last Name,Date of Birth,Estimated (Y-N),National ID,Gender,Ubudehe,Education level,Marital Status,HIV Status,Number of Children,Phone,Province,District,Sector,Cell,Village,Health Center';
+  }
+  else {
+    $captions = 'Unique ID,First Name,Last Name,Date of Birth,Estimated (Y-N),Mother National ID,Gender,Ubudehe,HIV Status,Mode of Delivery,Mother Name,Relation,Province,District,Sector,Cell,Village,Health Center,Group Name';
+  }
+
+  fwrite($fp, $captions . PHP_EOL);
   fwrite($fp, implode(PHP_EOL, $content));
 
   fclose($fp);
 }
+
+drush_print('Done!');
+
 
 function resolve_name($wrapper) {
   $first_name = trim(str_replace(',', ' ', $wrapper->field_first_name->value()));
