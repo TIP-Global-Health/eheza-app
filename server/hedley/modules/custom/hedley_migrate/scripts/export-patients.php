@@ -3,11 +3,12 @@
 /**
  * @file
  *
- * Generates adults and children CSV files, in format that is expected
- * by 'import patients' utility.
+ * Generates adults and children CSV files.
+ *
+ * Generated format matches the one expected by 'import patients' utility.
  *
  * Drush scr
- * profiles/hedley/modules/custom/hedley_migrate/scripts/export-people.php.
+ * profiles/hedley/modules/custom/hedley_migrate/scripts/export-patients.php.
  */
 
 if (!drupal_is_cli()) {
@@ -168,7 +169,10 @@ while ($processed < $total) {
       }
       else {
         if ($count > 1) {
-          $instances = array_map(function($node) { return $node->nid; }, $relationships);
+          $instances = array_map(function ($node) {
+            return $node->nid;
+            }, $relationships
+          );
           $instances_list = implode(', ', $instances);
           drush_print("Child with ID $person_id got $count relations of type $relation: $instances_list");
         }
@@ -300,7 +304,6 @@ foreach ($mapping as $name => $rows) {
 
 drush_print('Done!');
 
-
 /**
  * Resolve first and second name of the person.
  *
@@ -311,7 +314,7 @@ function resolve_name($wrapper) {
   $first_name = trim(str_replace(',', ' ', $wrapper->field_first_name->value()));
   $second_name = trim(str_replace(',', ' ', $wrapper->field_second_name->value()));
   if (empty($first_name) && empty($second_name)) {
-    $second_name = trim(str_replace(',', ' ',$wrapper->label()));
+    $second_name = trim(str_replace(',', ' ', $wrapper->label()));
   }
 
   return [$first_name, $second_name];
