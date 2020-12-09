@@ -81,7 +81,7 @@ viewContent language currentDate id model data =
             , viewAssessmentPane language currentDate data.diagnosis data.measurements
             , viewSymptomsPane language currentDate data.measurements
             , viewPhysicalExamPane language currentDate data.person data.measurements
-            , viewActionsTakenPane language currentDate data.diagnosis data
+            , viewActionsTakenPane language currentDate isFirstEncounter data
             , viewEndEncounterButton language isFirstEncounter data.measurements pendingActivities data.diagnosis SetEndEncounterDialogState
             ]
         , viewModal endEncounterDialog
@@ -515,245 +515,294 @@ viewNutritionSigns language dateOfLastAssessment signs =
         ]
 
 
-viewActionsTakenPane : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> AssembledData -> Html Msg
-viewActionsTakenPane language currentDate diagnosis data =
+viewActionsTakenPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
+viewActionsTakenPane language currentDate isFirstEncounter data =
     let
-        actionsTaken =
-            case resolveNextStepByDiagnosis currentDate data.person diagnosis of
-                -- This is COVID19 case
-                Just NextStepsIsolation ->
-                    let
-                        called114Action =
-                            data.measurements.call114
-                                |> Maybe.map
-                                    (Tuple.second
-                                        >> .value
-                                        >> (\value ->
-                                                let
-                                                    viewRecommendation recommenation =
-                                                        div [ class "recommendation" ]
-                                                            [ text <| "- " ++ translate language recommenation ++ "."
-                                                            ]
+        firstEncounterData =
+            if isFirstEncounter then
+                Just ( currentDate, data.measurements )
 
-                                                    recommenationOf114 =
-                                                        value.recommendations114
-                                                            |> EverySet.toList
-                                                            -- There can be only one recommendation.
-                                                            |> List.head
-                                                            |> Maybe.map (Translate.ResultOfContacting114 >> viewRecommendation)
-                                                            |> Maybe.withDefault emptyNode
+            else
+                List.head data.previousMeasurementsWithDates
 
-                                                    recommenationOfSite =
-                                                        value.recommendationsSite
-                                                            |> EverySet.toList
-                                                            |> List.filter ((/=) RecommendationSiteNotApplicable)
-                                                            -- There can be only one recommendation.
-                                                            |> List.head
-                                                            |> Maybe.map (Translate.ResultOfContactingRecommendedSite >> viewRecommendation)
-                                                            |> Maybe.withDefault emptyNode
-                                                in
-                                                [ viewSendToHCActionLabel language Translate.Contacted114 "icon-phone" (Just currentDate)
-                                                , recommenationOf114
-                                                , recommenationOfSite
-                                                ]
-                                           )
-                                    )
-                                |> Maybe.withDefault []
+        subsequentEncountersData =
+            if isFirstEncounter then
+                []
 
-                        contacedHCValue =
-                            data.measurements.hcContact
-                                |> Maybe.map (Tuple.second >> .value)
-
-                        contacedHC =
-                            contacedHCValue
-                                |> Maybe.map
-                                    (.signs
-                                        >> EverySet.member ContactedHealthCenter
-                                    )
-                                |> Maybe.withDefault False
-
-                        contacedHCAction =
-                            contacedHCValue
-                                |> Maybe.map
-                                    (\value ->
-                                        if EverySet.member ContactedHealthCenter value.signs then
-                                            let
-                                                recommendation =
-                                                    value.recommendations
-                                                        |> EverySet.toList
-                                                        |> List.head
-                                                        |> Maybe.withDefault HCRecommendationNotApplicable
-                                            in
-                                            [ viewSendToHCActionLabel language Translate.ContactedHC "icon-phone" (Just currentDate)
-                                            , viewHCRecommendationActionTaken language recommendation
-                                            ]
-
-                                        else
-                                            []
-                                    )
-                                |> Maybe.withDefault []
-
-                        patientIsolated =
-                            data.measurements.isolation
-                                |> Maybe.map
-                                    (Tuple.second
-                                        >> .value
-                                        >> .signs
-                                        >> EverySet.member PatientIsolated
-                                    )
-                                |> Maybe.withDefault False
-
-                        patientIsolatedAction =
-                            if patientIsolated then
-                                [ viewSendToHCActionLabel language Translate.IsolatedAtHome "icon-patient-in-bed" (Just currentDate) ]
-
-                            else
-                                []
-                    in
-                    called114Action
-                        ++ contacedHCAction
-                        ++ patientIsolatedAction
-                        |> div [ class "instructions" ]
-
-                Just NextStepsMedicationDistribution ->
-                    let
-                        medicationSigns =
-                            Maybe.map (Tuple.second >> .value >> .distributionSigns) data.measurements.medicationDistribution
-                    in
-                    case diagnosis of
-                        Just DiagnosisMalariaUncomplicated ->
+            else
+                firstEncounterData
+                    |> Maybe.map
+                        (\( firstEncounterDate, _ ) ->
                             let
-                                coartemPrescribed =
-                                    Maybe.map (EverySet.member Coartem) medicationSigns
-                                        |> Maybe.withDefault False
+                                previousEncountersData =
+                                    data.previousMeasurementsWithDates
+                                        |> List.filter (\( date, _ ) -> date /= firstEncounterDate)
                             in
-                            if coartemPrescribed then
-                                resolveCoartemDosage currentDate data.person
-                                    |> Maybe.map
-                                        (\dosage ->
-                                            div [ class "instructions malaria-uncomplicated" ]
-                                                [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign Coartem) "icon-pills" (Just currentDate)
-                                                , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 3)
-                                                ]
-                                        )
-                                    |> Maybe.withDefault emptyNode
+                            previousEncountersData ++ [ ( currentDate, data.measurements ) ]
+                        )
+                    |> Maybe.withDefault []
 
-                            else
+        actionsTakenFirstEncounter =
+            firstEncounterData
+                |> Maybe.map
+                    (\( date, measurements ) ->
+                        case resolveNextStepByDiagnosis date data.person data.diagnosis of
+                            -- This is COVID19 case
+                            Just NextStepsIsolation ->
+                                viewActionsTakenIsolationAndContactHC language date measurements
+
+                            Just NextStepsMedicationDistribution ->
+                                viewActionsTakenMedicationDistribution language date data.person data.diagnosis measurements
+
+                            Just NextStepsSendToHC ->
+                                viewActionsTakenSendToHC language date measurements
+
+                            _ ->
                                 emptyNode
+                    )
+                |> Maybe.withDefault emptyNode
 
-                        Just DiagnosisGastrointestinalInfectionUncomplicated ->
-                            let
-                                orsPrescribed =
-                                    Maybe.map (EverySet.member ORS) medicationSigns
-                                        |> Maybe.withDefault False
-
-                                orsAction =
-                                    if orsPrescribed then
-                                        Maybe.map
-                                            (\dosage ->
-                                                [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign ORS) "icon-oral-solution" (Just currentDate)
-                                                , viewOralSolutionPrescription language dosage
-                                                ]
-                                            )
-                                            (resolveORSDosage currentDate data.person)
-                                            |> Maybe.withDefault []
-
-                                    else
-                                        []
-
-                                zincPrescribed =
-                                    Maybe.map (EverySet.member Zinc) medicationSigns
-                                        |> Maybe.withDefault False
-
-                                zincAction =
-                                    if zincPrescribed then
-                                        Maybe.map
-                                            (\dosage ->
-                                                [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign Zinc) "icon-pills" (Just currentDate)
-                                                , viewTabletsPrescription language dosage (Translate.ByMouthDaylyForXDays 10)
-                                                ]
-                                            )
-                                            (resolveZincDosage currentDate data.person)
-                                            |> Maybe.withDefault []
-
-                                    else
-                                        []
-                            in
-                            if orsPrescribed || zincPrescribed then
-                                div [ class "instructions gastrointestinal-uncomplicated" ] <|
-                                    (orsAction ++ zincAction)
-
-                            else
-                                emptyNode
-
-                        Just DiagnosisSimpleColdAndCough ->
-                            div [ class "instructions simple-cough-and-cold" ]
-                                [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign LemonJuiceOrHoney) "icon-pills" (Just currentDate) ]
-
-                        Just DiagnosisRespiratoryInfectionUncomplicated ->
-                            let
-                                amoxicillinPrescribed =
-                                    Maybe.map (EverySet.member Amoxicillin) medicationSigns
-                                        |> Maybe.withDefault False
-                            in
-                            if amoxicillinPrescribed then
-                                resolveAmoxicillinDosage currentDate data.person
-                                    |> Maybe.map
-                                        (\dosage ->
-                                            div [ class "instructions respiratory-infection-uncomplicated" ]
-                                                [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign Amoxicillin) "icon-pills" (Just currentDate)
-                                                , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 5)
-                                                ]
-                                        )
-                                    |> Maybe.withDefault emptyNode
-
-                            else
-                                emptyNode
-
-                        _ ->
-                            emptyNode
-
-                Just NextStepsSendToHC ->
-                    let
-                        sendToHCSigns =
-                            Maybe.map (Tuple.second >> .value) data.measurements.sendToHC
-
-                        completedForm =
-                            Maybe.map (EverySet.member HandReferrerForm) sendToHCSigns
-                                |> Maybe.withDefault False
-
-                        completedFormAction =
-                            if completedForm then
-                                [ viewSendToHCActionLabel language Translate.CompletedHCReferralForm "icon-forms" (Just currentDate) ]
-
-                            else
-                                []
-
-                        sentToHC =
-                            Maybe.map (EverySet.member ReferToHealthCenter) sendToHCSigns
-                                |> Maybe.withDefault False
-
-                        sentToHCAction =
-                            if sentToHC then
-                                [ viewSendToHCActionLabel language Translate.SentPatientToHC "icon-shuttle" (Just currentDate) ]
-
-                            else
-                                []
-                    in
-                    if completedForm || sentToHC then
-                        div [ class "instructions" ] <|
-                            (completedFormAction ++ sentToHCAction)
-
-                    else
-                        emptyNode
-
-                _ ->
-                    emptyNode
+        actionsTakenSubsequentEncounters =
+            subsequentEncountersData
+                |> List.map
+                    (\( date, measurements ) -> viewActionsTakenSendToHC language date measurements)
     in
     div [ class "pane actions-taken" ]
         [ viewItemHeading language Translate.ActionsTaken "blue"
-        , actionsTaken
+        , actionsTakenFirstEncounter :: actionsTakenSubsequentEncounters |> List.reverse |> div [ class "instructions" ]
         ]
+
+
+viewActionsTakenIsolationAndContactHC : Language -> NominalDate -> AcuteIllnessMeasurements -> Html Msg
+viewActionsTakenIsolationAndContactHC language currentDate measurements =
+    let
+        called114Action =
+            measurements.call114
+                |> Maybe.map
+                    (Tuple.second
+                        >> .value
+                        >> (\value ->
+                                let
+                                    viewRecommendation recommenation =
+                                        div [ class "recommendation" ]
+                                            [ text <| "- " ++ translate language recommenation ++ "."
+                                            ]
+
+                                    recommenationOf114 =
+                                        value.recommendations114
+                                            |> EverySet.toList
+                                            -- There can be only one recommendation.
+                                            |> List.head
+                                            |> Maybe.map (Translate.ResultOfContacting114 >> viewRecommendation)
+                                            |> Maybe.withDefault emptyNode
+
+                                    recommenationOfSite =
+                                        value.recommendationsSite
+                                            |> EverySet.toList
+                                            |> List.filter ((/=) RecommendationSiteNotApplicable)
+                                            -- There can be only one recommendation.
+                                            |> List.head
+                                            |> Maybe.map (Translate.ResultOfContactingRecommendedSite >> viewRecommendation)
+                                            |> Maybe.withDefault emptyNode
+                                in
+                                [ viewSendToHCActionLabel language Translate.Contacted114 "icon-phone" (Just currentDate)
+                                , recommenationOf114
+                                , recommenationOfSite
+                                ]
+                           )
+                    )
+                |> Maybe.withDefault []
+
+        contacedHCValue =
+            measurements.hcContact
+                |> Maybe.map (Tuple.second >> .value)
+
+        contacedHC =
+            contacedHCValue
+                |> Maybe.map
+                    (.signs
+                        >> EverySet.member ContactedHealthCenter
+                    )
+                |> Maybe.withDefault False
+
+        contacedHCAction =
+            contacedHCValue
+                |> Maybe.map
+                    (\value ->
+                        if EverySet.member ContactedHealthCenter value.signs then
+                            let
+                                recommendation =
+                                    value.recommendations
+                                        |> EverySet.toList
+                                        |> List.head
+                                        |> Maybe.withDefault HCRecommendationNotApplicable
+                            in
+                            [ viewSendToHCActionLabel language Translate.ContactedHC "icon-phone" (Just currentDate)
+                            , viewHCRecommendationActionTaken language recommendation
+                            ]
+
+                        else
+                            []
+                    )
+                |> Maybe.withDefault []
+
+        patientIsolated =
+            measurements.isolation
+                |> Maybe.map
+                    (Tuple.second
+                        >> .value
+                        >> .signs
+                        >> EverySet.member PatientIsolated
+                    )
+                |> Maybe.withDefault False
+
+        patientIsolatedAction =
+            if patientIsolated then
+                [ viewSendToHCActionLabel language Translate.IsolatedAtHome "icon-patient-in-bed" (Just currentDate) ]
+
+            else
+                []
+    in
+    called114Action
+        ++ contacedHCAction
+        ++ patientIsolatedAction
+        |> div [ class "isolate-and-contact-hc" ]
+
+
+viewActionsTakenMedicationDistribution : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> Html Msg
+viewActionsTakenMedicationDistribution language currentDate person diagnosis measurements =
+    let
+        medicationSigns =
+            Maybe.map (Tuple.second >> .value >> .distributionSigns) measurements.medicationDistribution
+    in
+    case diagnosis of
+        Just DiagnosisMalariaUncomplicated ->
+            let
+                coartemPrescribed =
+                    Maybe.map (EverySet.member Coartem) medicationSigns
+                        |> Maybe.withDefault False
+            in
+            if coartemPrescribed then
+                resolveCoartemDosage currentDate person
+                    |> Maybe.map
+                        (\dosage ->
+                            div [ class "malaria-uncomplicated" ]
+                                [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign Coartem) "icon-pills" (Just currentDate)
+                                , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 3)
+                                ]
+                        )
+                    |> Maybe.withDefault emptyNode
+
+            else
+                emptyNode
+
+        Just DiagnosisGastrointestinalInfectionUncomplicated ->
+            let
+                orsPrescribed =
+                    Maybe.map (EverySet.member ORS) medicationSigns
+                        |> Maybe.withDefault False
+
+                orsAction =
+                    if orsPrescribed then
+                        Maybe.map
+                            (\dosage ->
+                                [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign ORS) "icon-oral-solution" (Just currentDate)
+                                , viewOralSolutionPrescription language dosage
+                                ]
+                            )
+                            (resolveORSDosage currentDate person)
+                            |> Maybe.withDefault []
+
+                    else
+                        []
+
+                zincPrescribed =
+                    Maybe.map (EverySet.member Zinc) medicationSigns
+                        |> Maybe.withDefault False
+
+                zincAction =
+                    if zincPrescribed then
+                        Maybe.map
+                            (\dosage ->
+                                [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign Zinc) "icon-pills" (Just currentDate)
+                                , viewTabletsPrescription language dosage (Translate.ByMouthDaylyForXDays 10)
+                                ]
+                            )
+                            (resolveZincDosage currentDate person)
+                            |> Maybe.withDefault []
+
+                    else
+                        []
+            in
+            if orsPrescribed || zincPrescribed then
+                div [ class "gastrointestinal-uncomplicated" ] <|
+                    (orsAction ++ zincAction)
+
+            else
+                emptyNode
+
+        Just DiagnosisSimpleColdAndCough ->
+            div [ class "simple-cough-and-cold" ]
+                [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign LemonJuiceOrHoney) "icon-pills" (Just currentDate) ]
+
+        Just DiagnosisRespiratoryInfectionUncomplicated ->
+            let
+                amoxicillinPrescribed =
+                    Maybe.map (EverySet.member Amoxicillin) medicationSigns
+                        |> Maybe.withDefault False
+            in
+            if amoxicillinPrescribed then
+                resolveAmoxicillinDosage currentDate person
+                    |> Maybe.map
+                        (\dosage ->
+                            div [ class "respiratory-infection-uncomplicated" ]
+                                [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign Amoxicillin) "icon-pills" (Just currentDate)
+                                , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 5)
+                                ]
+                        )
+                    |> Maybe.withDefault emptyNode
+
+            else
+                emptyNode
+
+        _ ->
+            emptyNode
+
+
+viewActionsTakenSendToHC : Language -> NominalDate -> AcuteIllnessMeasurements -> Html Msg
+viewActionsTakenSendToHC language currentDate measurements =
+    let
+        sendToHCSigns =
+            Maybe.map (Tuple.second >> .value) measurements.sendToHC
+
+        completedForm =
+            Maybe.map (EverySet.member HandReferrerForm) sendToHCSigns
+                |> Maybe.withDefault False
+
+        completedFormAction =
+            if completedForm then
+                [ viewSendToHCActionLabel language Translate.CompletedHCReferralForm "icon-forms" (Just currentDate) ]
+
+            else
+                []
+
+        sentToHC =
+            Maybe.map (EverySet.member ReferToHealthCenter) sendToHCSigns
+                |> Maybe.withDefault False
+
+        sentToHCAction =
+            if sentToHC then
+                [ viewSendToHCActionLabel language Translate.SentPatientToHC "icon-shuttle" (Just currentDate) ]
+
+            else
+                []
+    in
+    if completedForm || sentToHC then
+        div [ class "send-to-hc" ] <|
+            (completedFormAction ++ sentToHCAction)
+
+    else
+        emptyNode
 
 
 viewHCRecommendationActionTaken : Language -> HCRecommendation -> Html any
