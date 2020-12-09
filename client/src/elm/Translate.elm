@@ -3562,7 +3562,7 @@ translationSet trans =
                     }
 
         MedicationCausesSideEffectsQuestion ->
-            { english = "Did you experience side effects of the medication"
+            { english = "Did you experience adverse events of the medication"
             , kinyarwanda = Nothing
             }
 
