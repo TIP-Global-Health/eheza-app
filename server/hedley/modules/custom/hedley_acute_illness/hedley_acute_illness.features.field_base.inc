@@ -794,8 +794,9 @@ function hedley_acute_illness_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'side-effects' => 'Side effects',
-        'no-resources' => 'No resources for medication',
+        'adverse-event' => 'Adverse event',
+        'no-money' => 'No money for medication',
+        'memory-problems' => 'Memory problems',
         'other' => 'Other',
         'none' => 'None',
       ),
