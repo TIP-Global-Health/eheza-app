@@ -12,6 +12,7 @@ import Backend.Measurement.Model
         , AcuteIllnessMeasurements
         , AcuteIllnessVitalsValue
         , Call114Sign(..)
+        , ChildNutritionSign(..)
         , ExposureSign(..)
         , HCContactSign(..)
         , HCContactValue
@@ -19,6 +20,7 @@ import Backend.Measurement.Model
         , IsolationSign(..)
         , IsolationValue
         , MalariaRapidTestResult(..)
+        , MuacIndication(..)
         , ReasonForNotIsolating(..)
         , Recommendation114(..)
         , RecommendationSite(..)
@@ -28,6 +30,7 @@ import Backend.Measurement.Model
         , SymptomsRespiratorySign(..)
         , TravelHistorySign(..)
         )
+import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
@@ -190,20 +193,54 @@ expectActivity currentDate person isFirstEncounter measurements diagnosis activi
                     |> isJust
 
             else
-                sendToHCOnSubsequentVisit measurements
+                sendToHCOnSubsequentVisitByDangerSigns measurements
+                    || sendToHCOnSubsequentVisitByVitals currentDate person measurements
+                    || sendToHCOnSubsequentVisitByMuac measurements
+                    || sendToHCOnSubsequentVisitByNutrition measurements
 
         _ ->
             True
 
 
-sendToHCOnSubsequentVisit : AcuteIllnessMeasurements -> Bool
-sendToHCOnSubsequentVisit measurements =
+sendToHCOnSubsequentVisitByDangerSigns : AcuteIllnessMeasurements -> Bool
+sendToHCOnSubsequentVisitByDangerSigns measurements =
     measurements.dangerSigns
         |> Maybe.map
             (Tuple.second
                 >> .value
                 >> (\signs ->
                         not (EverySet.isEmpty signs || signs == EverySet.singleton NoAcuteIllnessDangerSign)
+                   )
+            )
+        |> Maybe.withDefault False
+
+
+sendToHCOnSubsequentVisitByVitals : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
+sendToHCOnSubsequentVisitByVitals currentDate person measurements =
+    feverRecorded measurements
+        || respiratoryRateElevated currentDate person measurements
+
+
+sendToHCOnSubsequentVisitByMuac : AcuteIllnessMeasurements -> Bool
+sendToHCOnSubsequentVisitByMuac measurements =
+    measurements.muac
+        |> Maybe.map
+            (Tuple.second
+                >> .value
+                >> muacIndication
+                >> (==) MuacRed
+            )
+        |> Maybe.withDefault False
+
+
+sendToHCOnSubsequentVisitByNutrition : AcuteIllnessMeasurements -> Bool
+sendToHCOnSubsequentVisitByNutrition measurements =
+    measurements.nutrition
+        |> Maybe.map
+            (Tuple.second
+                >> .value
+                >> (\signs ->
+                        not (EverySet.isEmpty signs || signs == EverySet.singleton NormalChildNutrition)
                    )
             )
         |> Maybe.withDefault False
