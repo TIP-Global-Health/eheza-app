@@ -2255,7 +2255,7 @@ viewOngoingTreatmentReviewForm language currentDate measurements form =
                             ]
                         , viewCheckBoxSelectInput language
                             [ NotTakingAdverseEvent, NotTakingNoMoney ]
-                            [ NotTakingOther ]
+                            [ NotTakingMemoryProblems, NotTakingOther ]
                             form.reasonForNotTaking
                             SetReasonForNotTaking
                             Translate.ReasonForNotTaking

@@ -1825,7 +1825,7 @@ decodeReasonForNotTaking =
                         succeed NotTakingNoMoney
 
                     "memory-problems" ->
-                        NotTakingMemoryProblems
+                        succeed NotTakingMemoryProblems
 
                     "other" ->
                         succeed NotTakingOther
