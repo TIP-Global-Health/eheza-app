@@ -1330,7 +1330,7 @@ translationSet trans =
 
         ActivitityTitleAchi ->
             { english = "Aheza Child"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Aheza igenewe umwana"
             }
 
         ActivityProgressReport activity ->
@@ -1397,7 +1397,7 @@ translationSet trans =
 
         ActivitityLabelAchi ->
             { english = "Enter the amount of Aheza distributed below."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uzuza hano ingano ya Aheza utanze"
             }
 
         ActivePage page ->
@@ -2533,7 +2533,7 @@ translationSet trans =
             case clinicType of
                 Achi ->
                     { english = "Aheza Distribution"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gutanga Aheza"
                     }
 
                 _ ->
@@ -5758,7 +5758,7 @@ translateMyRelatedByQuestion relationship =
 
         MyParent ->
             { english = "is the child of"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "ni umwana wa"
             }
 
         MyCaregiven ->
@@ -5768,7 +5768,7 @@ translateMyRelatedByQuestion relationship =
 
         MyCaregiver ->
             { english = "is given care by"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "arerwa na"
             }
 
 
