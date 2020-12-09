@@ -964,9 +964,6 @@ function attachDropzone() {
   dropZone = new Dropzone(selector, {
     url: "cache-upload/images",
     dictDefaultMessage: "Touch here to take a photo, or drop a photo file here.",
-    resizeWidth: 800,
-    resizeHeight: 800,
-    resizeMethod: "contain",
     acceptedFiles: "jpg,jpeg,png,gif,image/*"
   });
 
