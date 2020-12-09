@@ -269,6 +269,7 @@ mandatoryActivityCompleted currentDate person isFirstEncounter measurements acti
         AcuteIllnessPhysicalExam ->
             isJust measurements.vitals
                 && ((not <| expectPhysicalExamTask currentDate person isFirstEncounter PhysicalExamMuac) || isJust measurements.muac)
+                && ((not <| expectPhysicalExamTask currentDate person isFirstEncounter PhysicalExamNutrition) || isJust measurements.nutrition)
                 && ((not <| expectPhysicalExamTask currentDate person isFirstEncounter PhysicalExamAcuteFindings) || isJust measurements.acuteFindings)
 
         AcuteIllnessExposure ->
