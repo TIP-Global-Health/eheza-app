@@ -16,6 +16,7 @@ import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isNothing)
 import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
@@ -58,6 +59,30 @@ viewContent language currentDate id model data =
         isFirstEncounter =
             List.isEmpty data.previousMeasurementsWithDates
 
+        firstEncounterData =
+            if isFirstEncounter then
+                Just ( currentDate, data.measurements )
+
+            else
+                List.head data.previousMeasurementsWithDates
+
+        subsequentEncountersData =
+            if isFirstEncounter then
+                []
+
+            else
+                firstEncounterData
+                    |> Maybe.map
+                        (\( firstEncounterDate, _ ) ->
+                            let
+                                previousEncountersData =
+                                    data.previousMeasurementsWithDates
+                                        |> List.filter (\( date, _ ) -> date /= firstEncounterDate)
+                            in
+                            previousEncountersData ++ [ ( currentDate, data.measurements ) ]
+                        )
+                    |> Maybe.withDefault []
+
         ( _, pendingActivities ) =
             splitActivities currentDate data
 
@@ -80,8 +105,8 @@ viewContent language currentDate id model data =
             , viewPersonInfo language currentDate data.person data.measurements
             , viewAssessmentPane language currentDate data.diagnosis data.measurements
             , viewSymptomsPane language currentDate data.measurements
-            , viewPhysicalExamPane language currentDate data.person data.measurements
-            , viewActionsTakenPane language currentDate isFirstEncounter data
+            , viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data
+            , viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData data
             , viewEndEncounterButton language isFirstEncounter data.measurements pendingActivities data.diagnosis SetEndEncounterDialogState
             ]
         , viewModal endEncounterDialog
@@ -359,8 +384,14 @@ viewTimeLineBottom =
     ]
 
 
-viewPhysicalExamPane : Language -> NominalDate -> Person -> AcuteIllnessMeasurements -> Html Msg
-viewPhysicalExamPane language currentDate person measurements =
+viewPhysicalExamPane :
+    Language
+    -> NominalDate
+    -> Maybe ( NominalDate, AcuteIllnessMeasurements )
+    -> List ( NominalDate, AcuteIllnessMeasurements )
+    -> AssembledData
+    -> Html Msg
+viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data =
     let
         viewDateCell date =
             th [] [ text <| formatDDMMYY date ]
@@ -409,64 +440,93 @@ viewPhysicalExamPane language currentDate person measurements =
                     )
                 |> Maybe.withDefault (td [] [])
 
-        bodyTemperature =
-            measurements.vitals
-                |> Maybe.map (Tuple.second >> .value >> .bodyTemperature)
+        allEncountersData =
+            firstEncounterData
+                |> Maybe.map
+                    (\( date, measurements ) ->
+                        ( date, measurements ) :: subsequentEncountersData
+                    )
+                |> Maybe.withDefault []
 
-        respiratoryRate =
-            measurements.vitals
-                |> Maybe.map (Tuple.second >> .value >> .respiratoryRate)
+        tables =
+            allEncountersData
+                |> greedyGroupsOf 4
+                |> List.map
+                    (\groupOfFour ->
+                        let
+                            dates =
+                                groupOfFour
+                                    |> List.map Tuple.first
 
-        muac =
-            measurements.muac
-                |> Maybe.map (Tuple.second >> .value)
+                            bodyTemperatures =
+                                groupOfFour
+                                    |> List.map
+                                        (Tuple.second
+                                            >> .vitals
+                                            >> Maybe.map (Tuple.second >> .value >> .bodyTemperature)
+                                        )
 
-        dates =
-            [ currentDate ]
+                            respiratoryRates =
+                                groupOfFour
+                                    |> List.map
+                                        (Tuple.second
+                                            >> .vitals
+                                            >> Maybe.map (Tuple.second >> .value >> .respiratoryRate)
+                                        )
 
-        bodyTemperatures =
-            [ bodyTemperature ]
+                            muacs =
+                                groupOfFour
+                                    |> List.map
+                                        (Tuple.second
+                                            >> .muac
+                                            >> Maybe.map (Tuple.second >> .value)
+                                        )
 
-        respiratoryRates =
-            [ respiratoryRate ]
+                            tableHead =
+                                th [ class "first" ] []
+                                    :: List.map viewDateCell dates
+                                    |> tr []
+                                    |> List.singleton
 
-        muacs =
-            [ muac ]
+                            feverRow =
+                                td [ class "first" ] [ text <| translate language Translate.Fever ]
+                                    :: List.map viewBodyTemperatureCell bodyTemperatures
+                                    |> tr []
+
+                            tachypneaRow =
+                                td [ class "first" ] [ text <| translate language Translate.Tachypnea ]
+                                    :: List.map viewRespiratoryRateCell respiratoryRates
+                                    |> tr []
+
+                            muacRow =
+                                if isChildUnderAgeOf5 currentDate data.person then
+                                    td [ class "first" ] [ text <| translate language Translate.MUAC ]
+                                        :: List.map viewMuacCell muacs
+                                        |> tr []
+
+                                else
+                                    emptyNode
+
+                            tableBody =
+                                [ feverRow
+                                , tachypneaRow
+                                , muacRow
+                                ]
+                        in
+                        table
+                            [ class "ui collapsing celled table" ]
+                            [ thead [] tableHead
+                            , tbody [] tableBody
+                            ]
+                    )
+
+        heading =
+            viewItemHeading language Translate.PhysicalExam "blue"
 
         nutrition =
-            measurements.nutrition
+            -- We show nutrition data of current encounter.
+            data.measurements.nutrition
                 |> Maybe.map (Tuple.second >> .value)
-
-        tableHead =
-            th [ class "first" ] []
-                :: List.map viewDateCell dates
-                |> tr []
-                |> List.singleton
-
-        feverRow =
-            td [ class "first" ] [ text <| translate language Translate.Fever ]
-                :: List.map viewBodyTemperatureCell bodyTemperatures
-                |> tr []
-
-        tachypneaRow =
-            td [ class "first" ] [ text <| translate language Translate.Tachypnea ]
-                :: List.map viewRespiratoryRateCell respiratoryRates
-                |> tr []
-
-        muacRow =
-            if isChildUnderAgeOf5 currentDate person then
-                td [ class "first" ] [ text <| translate language Translate.MUAC ]
-                    :: List.map viewMuacCell muacs
-                    |> tr []
-
-            else
-                emptyNode
-
-        tableBody =
-            [ feverRow
-            , tachypneaRow
-            , muacRow
-            ]
 
         nutritionSignsTable =
             nutrition
@@ -474,19 +534,9 @@ viewPhysicalExamPane language currentDate person measurements =
                     (viewNutritionSigns language currentDate)
                 |> Maybe.withDefault emptyNode
     in
-    if isNothing bodyTemperature && isNothing respiratoryRate then
-        emptyNode
-
-    else
-        div [ class "pane physical-exam" ]
-            [ viewItemHeading language Translate.PhysicalExam "blue"
-            , table
-                [ class "ui collapsing celled table" ]
-                [ thead [] tableHead
-                , tbody [] tableBody
-                ]
-            , nutritionSignsTable
-            ]
+    (heading :: tables)
+        ++ [ nutritionSignsTable ]
+        |> div [ class "pane physical-exam" ]
 
 
 viewNutritionSigns : Language -> NominalDate -> EverySet ChildNutritionSign -> Html any
@@ -515,33 +565,15 @@ viewNutritionSigns language dateOfLastAssessment signs =
         ]
 
 
-viewActionsTakenPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
-viewActionsTakenPane language currentDate isFirstEncounter data =
+viewActionsTakenPane :
+    Language
+    -> NominalDate
+    -> Maybe ( NominalDate, AcuteIllnessMeasurements )
+    -> List ( NominalDate, AcuteIllnessMeasurements )
+    -> AssembledData
+    -> Html Msg
+viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData data =
     let
-        firstEncounterData =
-            if isFirstEncounter then
-                Just ( currentDate, data.measurements )
-
-            else
-                List.head data.previousMeasurementsWithDates
-
-        subsequentEncountersData =
-            if isFirstEncounter then
-                []
-
-            else
-                firstEncounterData
-                    |> Maybe.map
-                        (\( firstEncounterDate, _ ) ->
-                            let
-                                previousEncountersData =
-                                    data.previousMeasurementsWithDates
-                                        |> List.filter (\( date, _ ) -> date /= firstEncounterDate)
-                            in
-                            previousEncountersData ++ [ ( currentDate, data.measurements ) ]
-                        )
-                    |> Maybe.withDefault []
-
         actionsTakenFirstEncounter =
             firstEncounterData
                 |> Maybe.map
