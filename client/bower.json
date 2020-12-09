@@ -12,8 +12,9 @@
   ],
   "dependencies": {
     "copy-button": "sudodoki/copy-button#2.0.0",
-    "dropzone": "5.1.1",
+    "dropzone": "5.7.0",
     "dexie": "2.0.4",
+    "exif-js": "2.3.0",
     "semantic": "semantic-ui#2.2.1"
   }
 }
