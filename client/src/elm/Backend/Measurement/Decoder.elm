@@ -1781,6 +1781,7 @@ decodeTreatmentOngoing =
         |> required "treatment_ongoing" (decodeEverySet decodeTreatmentOngoingSign)
         |> required "reason_for_not_taking" decodeReasonForNotTaking
         |> required "missed_doses" decodeInt
+        |> required "adverse_events" (decodeEverySet decodeAdverseEvent)
         |> decodeAcuteIllnessMeasurement
 
 
@@ -1834,6 +1835,40 @@ decodeReasonForNotTaking =
                         fail <|
                             reason
                                 ++ " is not a recognized ReasonForNotTaking"
+            )
+
+
+decodeAdverseEvent : Decoder AdverseEvent
+decodeAdverseEvent =
+    string
+        |> andThen
+            (\event ->
+                case event of
+                    "rash-itching" ->
+                        succeed AdverseEventRashOrItching
+
+                    "fever" ->
+                        succeed AdverseEventFever
+
+                    "diarrhea" ->
+                        succeed AdverseEventDiarrhea
+
+                    "vomiting" ->
+                        succeed AdverseEventVomiting
+
+                    "fatigue" ->
+                        succeed AdverseEventFatigue
+
+                    "other" ->
+                        succeed AdverseEventOther
+
+                    "none" ->
+                        succeed NoAdverseEvent
+
+                    _ ->
+                        fail <|
+                            event
+                                ++ " is not a recognized AdverseEvent"
             )
 
 

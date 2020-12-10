@@ -838,10 +838,21 @@ type ReasonForNotTaking
     | NoReasonForNotTakingSign
 
 
+type AdverseEvent
+    = AdverseEventRashOrItching
+    | AdverseEventFever
+    | AdverseEventDiarrhea
+    | AdverseEventVomiting
+    | AdverseEventFatigue
+    | AdverseEventOther
+    | NoAdverseEvent
+
+
 type alias TreatmentOngoingValue =
     { signs : EverySet TreatmentOngoingSign
     , reasonForNotTaking : ReasonForNotTaking
     , missedDoses : Int
+    , adverseEvents : EverySet AdverseEvent
     }
 
 
