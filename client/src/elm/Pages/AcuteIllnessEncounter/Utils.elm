@@ -180,23 +180,43 @@ talkedTo114 measurements =
         |> Maybe.withDefault False
 
 
-expectActivity : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessActivity -> Bool
-expectActivity currentDate person isFirstEncounter measurements diagnosis activity =
+expectActivity : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
+expectActivity currentDate isFirstEncounter data activity =
     case activity of
         AcuteIllnessLaboratory ->
-            mandatoryActivitiesCompleted currentDate person isFirstEncounter measurements
-                && feverRecorded measurements
+            if isFirstEncounter then
+                mandatoryActivitiesCompleted currentDate data.person isFirstEncounter data.measurements
+                    && feverRecorded data.measurements
+
+            else
+                -- If fever is recorded on current encounter, and patient did not
+                -- test positive to Malaria during previous encounters,
+                -- we want patient to take Malaria test.
+                feverRecorded data.measurements
+                    && (data.previousMeasurementsWithDates
+                            |> List.filter
+                                (Tuple.second
+                                    >> .malariaTesting
+                                    >> Maybe.map
+                                        (Tuple.second
+                                            >> .value
+                                            >> (\testResult -> testResult == RapidTestPositive || testResult == RapidTestPositiveAndPregnant)
+                                        )
+                                    >> Maybe.withDefault False
+                                )
+                            |> List.isEmpty
+                       )
 
         AcuteIllnessNextSteps ->
             if isFirstEncounter then
-                resolveNextStepByDiagnosis currentDate person diagnosis
+                resolveNextStepByDiagnosis currentDate data.person data.diagnosis
                     |> isJust
 
             else
-                sendToHCOnSubsequentVisitByDangerSigns measurements
-                    || sendToHCOnSubsequentVisitByVitals currentDate person measurements
-                    || sendToHCOnSubsequentVisitByMuac measurements
-                    || sendToHCOnSubsequentVisitByNutrition measurements
+                sendToHCOnSubsequentVisitByDangerSigns data.measurements
+                    || sendToHCOnSubsequentVisitByVitals currentDate data.person data.measurements
+                    || sendToHCOnSubsequentVisitByMuac data.measurements
+                    || sendToHCOnSubsequentVisitByNutrition data.measurements
 
         _ ->
             True
