@@ -78,8 +78,8 @@ while ($processed < $total) {
     }
 
     $clinic_type = $wrapper->field_clinic->field_group_type->value();
-    // We do not set graduation date for sorwathe group participants.
-    if ($clinic_type == HEDLEY_PERSON_CLINIC_TYPE_SORWATHE) {
+    // We do not set graduation date for sorwathe/achi group participants.
+    if (!hedley_person_graduation_date_required($clinic_type)) {
       continue;
     }
 
