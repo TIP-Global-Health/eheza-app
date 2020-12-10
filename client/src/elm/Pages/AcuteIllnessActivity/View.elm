@@ -2238,7 +2238,11 @@ viewOngoingTreatmentReviewForm language currentDate measurements form =
             { form_ | feelingBetter = Just value }
 
         sideEffectsUpdateFunc value form_ =
-            { form_ | sideEffects = Just value }
+            if value then
+                { form_ | sideEffects = Just value }
+
+            else
+                { form_ | sideEffects = Just value, adverseEvents = Nothing, adverseEventsDirty = True }
 
         takenAsPrescribedSection =
             let
@@ -2308,6 +2312,47 @@ viewOngoingTreatmentReviewForm language currentDate measurements form =
                 Nothing
             ]
                 ++ totalMissedDosesInput
+
+        sideEffectsSection =
+            let
+                sideEffects =
+                    form.sideEffects
+                        |> Maybe.withDefault False
+
+                adverseEventsInput =
+                    if sideEffects then
+                        [ div [ class "ui grid" ]
+                            [ div [ class "one wide column" ] []
+                            , div [ class "fifteen wide column" ]
+                                [ viewQuestionLabel language Translate.AcuteIllnessAdverseEventKindsQuestion ]
+                            ]
+                        , viewCheckBoxMultipleSelectInput language
+                            [ AdverseEventRashOrItching
+                            , AdverseEventFever
+                            , AdverseEventDiarrhea
+                            ]
+                            [ AdverseEventVomiting
+                            , AdverseEventFatigue
+                            , AdverseEventOther
+                            ]
+                            (form.adverseEvents |> Maybe.withDefault [])
+                            Nothing
+                            SetAdverseEvent
+                            Translate.AcuteIllnessAdverseEvent
+                        ]
+
+                    else
+                        []
+            in
+            [ viewQuestionLabel language Translate.MedicationCausesSideEffectsQuestion
+            , viewBoolInput
+                language
+                form.sideEffects
+                (SetOngoingTreatmentReviewBoolInput sideEffectsUpdateFunc)
+                "side-effects"
+                Nothing
+            ]
+                ++ adverseEventsInput
     in
     takenAsPrescribedSection
         ++ missedDosesSection
@@ -2318,14 +2363,8 @@ viewOngoingTreatmentReviewForm language currentDate measurements form =
                 (SetOngoingTreatmentReviewBoolInput feelingBetterUpdateFunc)
                 "feeling-better"
                 Nothing
-           , viewQuestionLabel language Translate.MedicationCausesSideEffectsQuestion
-           , viewBoolInput
-                language
-                form.sideEffects
-                (SetOngoingTreatmentReviewBoolInput sideEffectsUpdateFunc)
-                "side-effects"
-                Nothing
            ]
+        ++ sideEffectsSection
         |> div [ class "ui form ongoing-treatment-review" ]
 
 

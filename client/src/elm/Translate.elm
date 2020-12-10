@@ -233,6 +233,8 @@ type TranslationId
     | ActionsToTake
     | AcuteFindingsGeneralSign AcuteFindingsGeneralSign
     | AcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
+    | AcuteIllnessAdverseEvent AdverseEvent
+    | AcuteIllnessAdverseEventKindsQuestion
     | AcuteIllnessDangerSign AcuteIllnessDangerSign
     | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
     | AcuteIllnessDiagnosisWarning AcuteIllnessDiagnosis
@@ -979,6 +981,48 @@ translationSet trans =
                     { english = "None of the above"
                     , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
                     }
+
+        AcuteIllnessAdverseEvent event ->
+            case event of
+                AdverseEventRashOrItching ->
+                    { english = "Rash or Itching"
+                    , kinyarwanda = Nothing
+                    }
+
+                AdverseEventFever ->
+                    { english = "Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                AdverseEventDiarrhea ->
+                    { english = "Diarrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                AdverseEventVomiting ->
+                    { english = "Vomiting"
+                    , kinyarwanda = Nothing
+                    }
+
+                AdverseEventFatigue ->
+                    { english = "Fatigue"
+                    , kinyarwanda = Nothing
+                    }
+
+                AdverseEventOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoAdverseEvent ->
+                    { english = "None of the above"
+                    , kinyarwanda = Nothing
+                    }
+
+        AcuteIllnessAdverseEventKindsQuestion ->
+            { english = "What kind of adverse events"
+            , kinyarwanda = Nothing
+            }
 
         AcuteIllnessDangerSign sign ->
             case sign of

@@ -80,6 +80,7 @@ type Msg
     | SetOngoingTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
     | SetReasonForNotTaking ReasonForNotTaking
     | SetTotalMissedDoses String
+    | SetAdverseEvent AdverseEvent
     | SaveOngoingTreatmentReview PersonId (Maybe ( TreatmentOngoingId, TreatmentOngoing ))
       -- DANGER SIGNS
     | SetActiveDangerSignsTask DangerSignsTask
@@ -442,6 +443,8 @@ type alias OngoingTreatmentReviewForm =
     , reasonForNotTakingDirty : Bool
     , totalMissedDoses : Maybe Int
     , totalMissedDosesDirty : Bool
+    , adverseEvents : Maybe (List AdverseEvent)
+    , adverseEventsDirty : Bool
     }
 
 
@@ -455,6 +458,8 @@ emptyOngoingTreatmentReviewForm =
     , reasonForNotTakingDirty = False
     , totalMissedDoses = Nothing
     , totalMissedDosesDirty = False
+    , adverseEvents = Nothing
+    , adverseEventsDirty = False
     }
 
 
