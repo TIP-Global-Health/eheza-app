@@ -19,6 +19,7 @@ define('HEDLEY_PERSON_GENDER_FEMALE', 'female');
 define('HEDLEY_PERSON_RELATED_BY_PARENT_OF', 'parent');
 define('HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR', 'caregiver');
 define('HEDLEY_PERSON_CLINIC_TYPE_SORWATHE', 'sorwathe');
+define('HEDLEY_PERSON_CLINIC_TYPE_ACHI', 'achi');
 
 // Import CSV column mapping:
 define('HEDLEY_PERSON_COLUMN_UNIQUE_ID', 0);
@@ -996,7 +997,7 @@ function hedley_person_create_pmtct_participant($child_id, $adult_id, $relation,
   $clinic_type = $wrapper_clinic->field_group_type->value();
 
   $expected_start_date = date('Y-m-d', $birth_date);
-  $expected_end_date = ($clinic_type == HEDLEY_PERSON_CLINIC_TYPE_SORWATHE) ? NULL : date('Y-m-d', strtotime("+26 month", $birth_date));
+  $expected_end_date = (hedley_person_graduation_date_required($clinic_type)) ? date('Y-m-d', strtotime("+26 month", $birth_date)) : NULL;
 
   $wrapper->field_expected->set([
     'value' => $expected_start_date,
@@ -1259,7 +1260,7 @@ function hedley_person_process_birth_date_update($node) {
 
     $clinic_type = $participant_wrapper->field_clinic->field_group_type->value();
     // We do not change graduation date for 'Sorwathe' group participants.
-    if (empty($clinic_type) || $clinic_type == HEDLEY_PERSON_CLINIC_TYPE_SORWATHE) {
+    if (empty($clinic_type) || !hedley_person_graduation_date_required($clinic_type)) {
       $expected_new_end_date = $expected['value2'];
     }
 
@@ -1269,6 +1270,31 @@ function hedley_person_process_birth_date_update($node) {
     ]);
     $participant_wrapper->save();
   }
+}
+
+/**
+ * Returns if clinic participation requires setting a graduation date, or not.
+ *
+ * ACHI and SORWATHE clinics do not require setting graduation date.
+ * All others do.
+ *
+ * @param string $clinic_type
+ *   The type of the clinic.
+ *
+ * @return bool
+ *   True, if clinic participation requires setting a graduation date.
+ */
+function hedley_person_graduation_date_required($clinic_type) {
+  if (in_array($clinic_type,
+    [
+      HEDLEY_PERSON_CLINIC_TYPE_SORWATHE,
+      HEDLEY_PERSON_CLINIC_TYPE_ACHI,
+    ]
+  )) {
+    return FALSE;
+  }
+
+  return TRUE;
 }
 
 /**
