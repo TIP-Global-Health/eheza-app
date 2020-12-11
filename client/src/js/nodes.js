@@ -322,7 +322,7 @@
                                               method: 'POST',
                                               data: json,
                                               timestamp: Date.now(),
-                                              // Mark if the entity was already synced.
+                                              // Mark entity as not synced.
                                               isSynced: 0
                                           };
 
