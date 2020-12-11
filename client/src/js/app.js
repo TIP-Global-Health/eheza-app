@@ -250,6 +250,12 @@ dbSync.version(14).stores({
   })();
 });
 
+dbSync.version(15).upgrade(function (tx) {
+    return tx.shardChanges.toCollection().modify(function (node) {
+        node.isSynced = 0;
+    })
+});
+
 /**
  * The DB version on the backend.
  *
@@ -257,7 +263,7 @@ dbSync.version(14).stores({
  *
  * @type {number}
  */
-const dbVersion = 14;
+const dbVersion = 15;
 
 /**
  * Return saved info for General sync.
