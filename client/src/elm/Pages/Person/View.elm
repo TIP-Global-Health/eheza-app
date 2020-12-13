@@ -375,12 +375,12 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                                 (\session ->
                                     let
                                         -- Allow any adult. Allow any child, when clinic type is
-                                        -- Sorwathe. When clinic is other than Sorwathe, allow child
+                                        -- Sorwathe/Achi. When clinic type is other, allow child
                                         -- with age lower than 26 month.
                                         qualifiesByAge =
-                                            isAdult || session.clinicType == Sorwathe || childAgeCondition
+                                            isAdult || List.member session.clinicType [ Sorwathe, Achi ] || childAgeCondition
 
-                                        -- When clinic type is other than Sorwathe, we expect child age
+                                        -- When clinic type is not Sorwathe or Achi, we expect child age
                                         -- to be less than 26 month.
                                         childAgeCondition =
                                             person.birthDate
@@ -441,7 +441,7 @@ viewPhotoThumb url =
     div []
         [ img
             [ src url
-            , class "ui small image rotate-90"
+            , class "ui small image orientation"
             ]
             []
         ]
@@ -601,11 +601,11 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                                                     getSession sessionId db
                                                         |> Maybe.map
                                                             (\session ->
-                                                                if session.clinicType /= Sorwathe then
-                                                                    Date.add Months (-1 * graduatingAgeInMonth) currentDate
+                                                                if List.member session.clinicType [ Sorwathe, Achi ] then
+                                                                    defaultMaximalAge
 
                                                                 else
-                                                                    defaultMaximalAge
+                                                                    Date.add Months (-1 * graduatingAgeInMonth) currentDate
                                                             )
                                                         |> Maybe.withDefault defaultMaximalAge
                                             in

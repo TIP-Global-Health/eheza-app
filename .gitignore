@@ -50,3 +50,6 @@ deployment-robot-key
 # Composer #
 ############
 vendor
+
+package-lock.json
+travis-cache
