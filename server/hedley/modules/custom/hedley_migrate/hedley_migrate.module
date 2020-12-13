@@ -146,6 +146,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateSymptomsGI' => [
         'class_name' => 'HedleyMigrateSymptomsGI',
       ],
+      'HedleyMigrateSymptomsGeneral' => [
+        'class_name' => 'HedleyMigrateSymptomsGeneral',
+      ],
       'HedleyMigrateUsers' => [
         'class_name' => 'HedleyMigrateUsers',
       ],
