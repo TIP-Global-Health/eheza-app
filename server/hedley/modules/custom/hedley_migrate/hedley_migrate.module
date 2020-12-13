@@ -94,6 +94,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateLactations' => [
         'class_name' => 'HedleyMigrateLactations',
       ],
+      'HedleyMigrateMalariaTesting' => [
+        'class_name' => 'HedleyMigrateMalariaTesting',
+      ],
       'HedleyMigrateMotherFbfs' => [
         'class_name' => 'HedleyMigrateMotherFbfs',
       ],
