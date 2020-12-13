@@ -17,7 +17,6 @@ before_install:
 - openssl aes-256-cbc -K $encrypted_414fa4dd00a5_key -iv $encrypted_414fa4dd00a5_iv
   -in deployment-robot-key.enc -out deployment-robot-key -d
 - export PATH="$HOME/.config/composer/vendor/bin:$HOME/vendor/bin:$PATH"
-- "([ ! -z $BUILD_WEBDRIVERIO ] && sudo pip install docker-compose) || :"
 
 jobs:
   include:
@@ -50,24 +49,8 @@ jobs:
       script:
         - "$TRAVIS_BUILD_DIR/ci-scripts/install_server.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/test_server.sh"
-    - stage: Test
-      name: "Client-side"
-      if: commit_message ~= [test client]
-      script:
-        - "$TRAVIS_BUILD_DIR/ci-scripts/install_client.sh"
-        - "$TRAVIS_BUILD_DIR/ci-scripts/test_client.sh"
-    - stage: Deploy
-      name: "Deployment to Pantheon"
-      if: branch = develop
-      script:
-        - "export DEPLOY=1 && $TRAVIS_BUILD_DIR/ci-scripts/install_client.sh"
-        - "$TRAVIS_BUILD_DIR/ci-scripts/install_ddev.sh"
-        - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_deploy.sh"
-        - "cd $TRAVIS_BUILD_DIR/server && ddev robo deploy:pantheon qa --no-interaction"
 cache:
   directories:
-  - client/elm-stuff/packages
-  - client/sysconfcpus
   - travis-cache
   - vendor
 

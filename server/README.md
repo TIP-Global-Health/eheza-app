@@ -118,11 +118,11 @@ when you run the upgrade script.
 
 ## Deploy to Pantheon
 
-1. There are two main things that should be checked before running the custom script:
-    1. `config.sh`: `PANTHEON_DIR`, please make sure it matches the absolute path of your Pantheon repository.
-    2. `config.sh`: `PANTHEON_ALIAS`, please make sure it matches the alias of the development site and this alias points to the DEV site and it works on your local Drush. Only needed for the one-time login link.
-2. Alternatively you can configure the following:
-    1. `config.sh`: `PANTHEON_BRANCH`, you can use this to deploy the current branch of your GitHub working copy to a multidev environment on Pantheon.
-3. Run the script: `bash pantheon-update.sh`. During the process, you have the ability to interrupt the process by pressing Cntrl-C, if the output of `git show` shows abnormal changes. The script has the following command-line options:
-   - `-l` : shows a one-time login link for the admin user to the site after the finished deployment and opens in in the browser.
-   - `-h` : shows a summary of the command line options.
+```
+ddev start
+ddev gulp publish
+ddev robo deploy:pantheon
+```
+
+See https://github.com/Gizra/ihangane/wiki/Deployment for more details.
+To generate the release notes, use `ddev robo generate:release-notes prev-tag`.

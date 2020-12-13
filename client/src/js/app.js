@@ -250,6 +250,12 @@ dbSync.version(14).stores({
   })();
 });
 
+dbSync.version(15).upgrade(function (tx) {
+    return tx.shardChanges.toCollection().modify(function (node) {
+        node.isSynced = 0;
+    })
+});
+
 /**
  * The DB version on the backend.
  *
@@ -257,7 +263,7 @@ dbSync.version(14).stores({
  *
  * @type {number}
  */
-const dbVersion = 14;
+const dbVersion = 15;
 
 /**
  * Return saved info for General sync.
@@ -269,7 +275,7 @@ const getSyncInfoGeneral = function() {
     let storageArr = JSON.parse(storage);
     storageArr.lastFetchedRevisionId = parseInt(storageArr.lastFetchedRevisionId);
     storageArr.lastSuccesfulContact = parseInt(storageArr.lastSuccesfulContact);
-    storageArr.remainingToUpload = parseInt(storageArr.remainingToDownload);
+    storageArr.remainingToUpload = parseInt(storageArr.remainingToUpload);
     storageArr.remainingToDownload = parseInt(storageArr.remainingToDownload);
     storageArr.deviceName = storageArr.deviceName;
     storageArr.status = storageArr.status;
@@ -292,7 +298,7 @@ const getSyncInfoAuthorities = function() {
     storageArr.forEach(function(value, index) {
       value.lastFetchedRevisionId = parseInt(value.lastFetchedRevisionId);
       value.lastSuccesfulContact = parseInt(value.lastSuccesfulContact);
-      value.remainingToUpload = parseInt(value.remainingToDownload);
+      value.remainingToUpload = parseInt(value.remainingToUpload);
       value.remainingToDownload = parseInt(value.remainingToDownload);
       value.statsCacheHash = value.statsCacheHash;
       value.status = value.status;
@@ -964,9 +970,6 @@ function attachDropzone() {
   dropZone = new Dropzone(selector, {
     url: "cache-upload/images",
     dictDefaultMessage: "Touch here to take a photo, or drop a photo file here.",
-    resizeWidth: 800,
-    resizeHeight: 800,
-    resizeMethod: "contain",
     acceptedFiles: "jpg,jpeg,png,gif,image/*"
   });
 
