@@ -1700,11 +1700,14 @@ encodeReasonForNotTakingSign : ReasonForNotTaking -> Value
 encodeReasonForNotTakingSign reason =
     string <|
         case reason of
-            NotTakingSideEffects ->
-                "side-effects"
+            NotTakingAdverseEvent ->
+                "adverse-event"
 
-            NotTakingNoResources ->
-                "no-resources"
+            NotTakingNoMoney ->
+                "no-money"
+
+            NotTakingMemoryProblems ->
+                "memory-problems"
 
             NotTakingOther ->
                 "other"

@@ -4685,13 +4685,18 @@ translationSet trans =
 
         ReasonForNotTaking reason ->
             case reason of
-                NotTakingSideEffects ->
-                    { english = "Side effects"
+                NotTakingAdverseEvent ->
+                    { english = "Adverse event"
                     , kinyarwanda = Nothing
                     }
 
-                NotTakingNoResources ->
-                    { english = "No resources for medication"
+                NotTakingNoMoney ->
+                    { english = "No money for medication"
+                    , kinyarwanda = Nothing
+                    }
+
+                NotTakingMemoryProblems ->
+                    { english = "Memory problems"
                     , kinyarwanda = Nothing
                     }
 
