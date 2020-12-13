@@ -143,6 +143,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateSessions' => [
         'class_name' => 'HedleyMigrateSessions',
       ],
+      'HedleyMigrateSymptomsGI' => [
+        'class_name' => 'HedleyMigrateSymptomsGI',
+      ],
       'HedleyMigrateUsers' => [
         'class_name' => 'HedleyMigrateUsers',
       ],
