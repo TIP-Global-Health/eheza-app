@@ -832,8 +832,9 @@ type TreatmentOngoingSign
 
 
 type ReasonForNotTaking
-    = NotTakingSideEffects
-    | NotTakingNoResources
+    = NotTakingAdverseEvent
+    | NotTakingNoMoney
+    | NotTakingMemoryProblems
     | NotTakingOther
     | NoReasonForNotTakingSign
 

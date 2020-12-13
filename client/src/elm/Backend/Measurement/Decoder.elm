@@ -1818,11 +1818,14 @@ decodeReasonForNotTaking =
         |> andThen
             (\reason ->
                 case reason of
-                    "side-effects" ->
-                        succeed NotTakingSideEffects
+                    "adverse-event" ->
+                        succeed NotTakingAdverseEvent
 
-                    "no-resources" ->
-                        succeed NotTakingNoResources
+                    "no-money" ->
+                        succeed NotTakingNoMoney
+
+                    "memory-problems" ->
+                        succeed NotTakingMemoryProblems
 
                     "other" ->
                         succeed NotTakingOther
