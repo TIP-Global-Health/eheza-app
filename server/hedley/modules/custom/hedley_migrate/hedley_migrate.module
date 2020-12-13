@@ -155,6 +155,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateTravelHistory' => [
         'class_name' => 'HedleyMigrateTravelHistory',
       ],
+      'HedleyMigrateTreatmentHistory' => [
+        'class_name' => 'HedleyMigrateTreatmentHistory',
+      ],
       'HedleyMigrateUsers' => [
         'class_name' => 'HedleyMigrateUsers',
       ],

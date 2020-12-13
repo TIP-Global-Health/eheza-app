@@ -60,6 +60,7 @@ files[] = handlers/node/activity/acute_illness/HedleyMigrateSymptomsGI.php
 files[] = handlers/node/activity/acute_illness/HedleyMigrateSymptomsGeneral.php
 files[] = handlers/node/activity/acute_illness/HedleyMigrateSymptomsRespiratory.php
 files[] = handlers/node/activity/acute_illness/HedleyMigrateTravelHistory.php
+files[] = handlers/node/activity/acute_illness/HedleyMigrateTreatmentHistory.php
 
 
 files[] = handlers/node/activity/prenatal/HedleyMigrateBreastExams.php
