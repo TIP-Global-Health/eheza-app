@@ -55,6 +55,7 @@ files[] = handlers/node/activity/acute_illness/HedleyMigrateHCContact.php
 files[] = handlers/node/activity/acute_illness/HedleyMigrateIsolation.php
 files[] = handlers/node/activity/acute_illness/HedleyMigrateMalariaTesting.php
 files[] = handlers/node/activity/acute_illness/HedleyMigrateMedicationDistribution.php
+files[] = handlers/node/activity/acute_illness/HedleyMigrateSendToHC.php
 
 
 files[] = handlers/node/activity/prenatal/HedleyMigrateBreastExams.php
