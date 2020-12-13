@@ -152,6 +152,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateSymptomsRespiratory' => [
         'class_name' => 'HedleyMigrateSymptomsRespiratory',
       ],
+      'HedleyMigrateTravelHistory' => [
+        'class_name' => 'HedleyMigrateTravelHistory',
+      ],
       'HedleyMigrateUsers' => [
         'class_name' => 'HedleyMigrateUsers',
       ],
