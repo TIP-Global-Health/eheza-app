@@ -44,6 +44,11 @@ files[] = handlers/node/activity/group/HedleyMigrateMuacs.php
 files[] = handlers/node/activity/group/HedleyMigrateNutritions.php
 files[] = handlers/node/activity/group/HedleyMigratePhotos.php
 files[] = handlers/node/activity/group/HedleyMigrateWeights.php
+
 files[] = handlers/node/activity/acute_illness/HedleyMigrateAcuteFindings.php
+files[] = handlers/node/activity/acute_illness/HedleyMigrateAcuteIllnessMuac.php
+
 files[] = handlers/node/activity/prenatal/HedleyMigrateBreastExams.php
+
 files[] = handlers/node/activity/nutrition/HedleyMigrateNutritionNutritions.php
+
