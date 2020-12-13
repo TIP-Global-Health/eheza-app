@@ -88,6 +88,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateIndividualParticipants' => [
         'class_name' => 'HedleyMigrateIndividualParticipants',
       ],
+      'HedleyMigrateIsolation' => [
+        'class_name' => 'HedleyMigrateIsolation',
+      ],
       'HedleyMigrateLactations' => [
         'class_name' => 'HedleyMigrateLactations',
       ],
