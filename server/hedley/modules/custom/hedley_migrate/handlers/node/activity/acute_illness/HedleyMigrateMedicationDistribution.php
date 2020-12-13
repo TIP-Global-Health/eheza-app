@@ -2,18 +2,18 @@
 
 /**
  * @file
- * Contains \HedleyMigrateIsolation.
+ * Contains \HedleyMigrateMedicationDistribution.
  */
 
 /**
- * Class HedleyMigrateIsolation.
+ * Class HedleyMigrateMedicationDistribution.
  */
-class HedleyMigrateIsolation extends HedleyMigrateAcuteIllnessMeasurementBase {
+class HedleyMigrateMedicationDistribution extends HedleyMigrateAcuteIllnessMeasurementBase {
 
   /**
    * {@inheritdoc}
    */
-  protected $bundle = 'isolation';
+  protected $bundle = 'medication_distribution';
 
   /**
    * {@inheritdoc}
@@ -23,8 +23,8 @@ class HedleyMigrateIsolation extends HedleyMigrateAcuteIllnessMeasurementBase {
 
     return array_merge(
       $columns, [
-        'field_isolation',
-        'field_reason_for_not_isolating',
+        'field_prescribed_medication',
+        'field_non_administration_reason',
       ]
     );
   }
@@ -37,8 +37,8 @@ class HedleyMigrateIsolation extends HedleyMigrateAcuteIllnessMeasurementBase {
 
     return array_merge(
       $mappings, [
-        'field_isolation',
-        'field_reason_for_not_isolating',
+        'field_prescribed_medication',
+        'field_non_administration_reason',
       ]
     );
   }

@@ -1,0 +1,4 @@
+id,field_person,field_date_measured,field_nurse,created,field_acute_illness_encounter,field_prescribed_medication,field_non_administration_reason
+194,74,2020-06-19,188,1592244289,1,none,none
+195,35,2017-12-16,188,1592244289,1,lemon-juice-or-honey|zinc,zinc-othe
+196,81,2020-08-07,188,1592244289,1,amoxicillin|coartem|ors,ors-patient-declined|coartem-known-allergy
