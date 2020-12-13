@@ -14,8 +14,8 @@ import SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntityIden
 import SyncManager.Utils
 
 
-encodeIndexDbQueryUploadGeneralResultRecord : IndexDbQueryUploadGeneralResultRecord -> List ( String, Value )
-encodeIndexDbQueryUploadGeneralResultRecord record =
+encodeIndexDbQueryUploadGeneralResultRecord : Int -> IndexDbQueryUploadGeneralResultRecord -> List ( String, Value )
+encodeIndexDbQueryUploadGeneralResultRecord dbVersion record =
     let
         encodeData ( entity, method ) =
             let
@@ -29,11 +29,13 @@ encodeIndexDbQueryUploadGeneralResultRecord record =
             ]
                 |> object
     in
-    [ ( "changes", list encodeData record.entities ) ]
+    [ ( "changes", list encodeData record.entities )
+    , ( "db_version", string <| String.fromInt dbVersion )
+    ]
 
 
-encodeIndexDbQueryUploadAuthorityResultRecord : IndexDbQueryUploadAuthorityResultRecord -> List ( String, Value )
-encodeIndexDbQueryUploadAuthorityResultRecord record =
+encodeIndexDbQueryUploadAuthorityResultRecord : Int -> IndexDbQueryUploadAuthorityResultRecord -> List ( String, Value )
+encodeIndexDbQueryUploadAuthorityResultRecord dbVersion record =
     let
         replacePhotoWithFileId localId encodedEntity =
             let
@@ -103,7 +105,9 @@ encodeIndexDbQueryUploadAuthorityResultRecord record =
             ]
                 |> object
     in
-    [ ( "changes", list encodeData record.entities ) ]
+    [ ( "changes", list encodeData record.entities )
+    , ( "db_version", string <| String.fromInt dbVersion )
+    ]
 
 
 encodeDataForDeferredPhotos : String -> BackendEntityIdentifier -> String
