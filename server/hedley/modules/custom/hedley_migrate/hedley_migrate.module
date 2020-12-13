@@ -70,6 +70,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateDevices' => [
         'class_name' => 'HedleyMigrateDevices',
       ],
+      'HedleyMigrateExposure' => [
+        'class_name' => 'HedleyMigrateExposure',
+      ],
       'HedleyMigrateFamilyPlannings' => [
         'class_name' => 'HedleyMigrateFamilyPlannings',
       ],
