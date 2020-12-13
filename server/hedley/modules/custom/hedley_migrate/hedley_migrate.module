@@ -43,6 +43,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateBreastExams' => [
         'class_name' => 'HedleyMigrateBreastExams',
       ],
+      'HedleyMigrateCall114' => [
+        'class_name' => 'HedleyMigrateCall114',
+      ],
       'HedleyMigrateCatchmentAreas' => [
         'class_name' => 'HedleyMigrateCatchmentAreas',
       ],
