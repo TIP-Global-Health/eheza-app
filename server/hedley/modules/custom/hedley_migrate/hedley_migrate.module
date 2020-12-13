@@ -31,7 +31,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateAcuteIllnessMuac' => [
         'class_name' => 'HedleyMigrateAcuteIllnessMuac',
       ],
-
+      'HedleyMigrateAcuteIllnessNutrition' => [
+        'class_name' => 'HedleyMigrateAcuteIllnessNutrition',
+      ],
       'HedleyMigrateAttendances' => [
         'class_name' => 'HedleyMigrateAttendances',
       ],
