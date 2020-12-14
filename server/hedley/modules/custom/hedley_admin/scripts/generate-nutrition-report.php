@@ -33,11 +33,11 @@ $count_query->propertyCondition('nid', $nid, '>');
 $total = $count_query->count()->execute();
 
 if ($total == 0) {
-  wlog("There are no patients in DB.");
+  drush_print("There are no patients in DB.");
   exit;
 }
 
-wlog("$total children with age bellow 6 years located.");
+drush_print("$total children with age bellow 6 years located.");
 
 $tuple = [
   'moderate' => 0,
@@ -171,7 +171,7 @@ while ($processed < $total) {
 
   $count = count($ids);
   $processed += $count;
-  wlog("$processed children processed.");
+  drush_print("$processed children processed.");
 }
 
 drush_print('Stunting Moderate (overall): ' . $total_stunting['all']['moderate']);
@@ -293,16 +293,4 @@ function base_query_for_bundle($bundle) {
     ->propertyCondition('status', NODE_PUBLISHED);
 
   return $query;
-}
-
-/**
- * Prints log based on verbosity option.
- */
-function wlog($message) {
-  // Get the option that will determine if output should be verbose or not.
-  $verbose = drush_get_option('verbose', FALSE);
-
-  if ($verbose !== FALSE) {
-    drush_print($message);
-  }
 }
