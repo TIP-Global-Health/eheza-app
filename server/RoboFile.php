@@ -37,7 +37,7 @@ class RoboFile extends Tasks {
       ->run();
 
     if ($result->getMessage()) {
-      $this->yell($this->getMessage());
+      $this->yell($result->getMessage());
       throw new Exception('The GitHub working directory is dirty. Please commit any pending changes or add to .gitignore.');
     }
 
@@ -47,7 +47,7 @@ class RoboFile extends Tasks {
       ->run();
 
     if ($result->getMessage()) {
-      $this->yell($this->getMessage());
+      $this->yell($result->getMessage());
       throw new Exception('The Pantheon working directory is dirty. Please commit any pending changes ör add to .gitignore.');
     }
 
