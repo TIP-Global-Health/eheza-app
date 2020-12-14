@@ -118,8 +118,8 @@ while ($processed < $total) {
       $underweight['severe'] += $underweight_severe;
 
       [$wasting_moderate, $wasting_severe] = resolve_indicator_tuple($measurement, 'field_zscore_length', $dates_rage);
-      $wasting['wasting'] += $wasting_moderate;
-      $wasting['wasting'] += $wasting_severe;
+      $wasting['moderate'] += $wasting_moderate;
+      $wasting['severe'] += $wasting_severe;
     }
 
     $total_stunting['all']['moderate'] += $stunting['moderate'];
@@ -222,65 +222,6 @@ function resolve_indicator_tuple($node, $field, array $dates_rage) {
 
   return [0, 0];
 }
-
-//drush_print('');
-//drush_print('Groups report:');
-//drush_print('PMTCT encounters:    ' . $total_encounters['pmtct']);
-//drush_print('FBF encounters:      ' . $total_encounters['fbf']);
-//drush_print('SORWATHE encounters: ' . $total_encounters['sorwathe']);
-//drush_print('CHW encounters:      ' . $total_encounters['chw']);
-//drush_print('ACHI encounters:     ' . $total_encounters['achi']);
-//drush_print('');
-//drush_print('Total encounters:    ' . $total_encounters['all']);
-//drush_print('');
-//
-//drush_print('Registered patients report:');
-//$male = $all_patients['lt1m']['male'];
-//$female = $all_patients['lt1m']['female'];
-//drush_print("* 0 - 1 month: Male - $male, Female - $female");
-//$male = $all_patients['lt2y']['male'];
-//$female = $all_patients['lt2y']['female'];
-//drush_print("* 1 month - 2 years: Male - $male, Female - $female");
-//$male = $all_patients['lt5y']['male'];
-//$female = $all_patients['lt5y']['female'];
-//drush_print("* 2 years - 5 years: Male - $male, Female - $female");
-//$male = $all_patients['lt10y']['male'];
-//$female = $all_patients['lt10y']['female'];
-//drush_print("* 5 years - 10 years: Male - $male, Female - $female");
-//$male = $all_patients['lt20y']['male'];
-//$female = $all_patients['lt20y']['female'];
-//drush_print("* 10 years - 20 years: Male - $male, Female - $female");
-//$male = $all_patients['lt50y']['male'];
-//$female = $all_patients['lt50y']['female'];
-//drush_print("* 20 years - 50 years: Male - $male, Female - $female");
-//$male = $all_patients['mt50y']['male'];
-//$female = $all_patients['mt50y']['female'];
-//drush_print("* Older than 50 years: Male - $male, Female - $female");
-//
-//drush_print('');
-//
-//drush_print('Impacted patients report:');
-//$male = $impacted_patients['lt1m']['male'];
-//$female = $impacted_patients['lt1m']['female'];
-//drush_print("* 0 - 1 month: Male - $male, Female - $female");
-//$male = $impacted_patients['lt2y']['male'];
-//$female = $impacted_patients['lt2y']['female'];
-//drush_print("* 1 month - 2 years: Male - $male, Female - $female");
-//$male = $impacted_patients['lt5y']['male'];
-//$female = $impacted_patients['lt5y']['female'];
-//drush_print("* 2 years - 5 years: Male - $male, Female - $female");
-//$male = $impacted_patients['lt10y']['male'];
-//$female = $impacted_patients['lt10y']['female'];
-//drush_print("* 5 years - 10 years: Male - $male, Female - $female");
-//$male = $impacted_patients['lt20y']['male'];
-//$female = $impacted_patients['lt20y']['female'];
-//drush_print("* 10 years - 20 years: Male - $male, Female - $female");
-//$male = $impacted_patients['lt50y']['male'];
-//$female = $impacted_patients['lt50y']['female'];
-//drush_print("* 20 years - 50 years: Male - $male, Female - $female");
-//$male = $impacted_patients['mt50y']['male'];
-//$female = $impacted_patients['mt50y']['female'];
-//drush_print("* Older than 50 years: Male - $male, Female - $female");
 
 /**
  * Generate base query.
