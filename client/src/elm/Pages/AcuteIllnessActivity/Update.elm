@@ -11,6 +11,7 @@ import Backend.Measurement.Model
         ( AcuteFindingsGeneralSign(..)
         , AcuteFindingsRespiratorySign(..)
         , AcuteIllnessDangerSign(..)
+        , AdverseEvent(..)
         , ChildNutritionSign(..)
         , HCRecommendation(..)
         , MalariaRapidTestResult(..)
@@ -64,6 +65,9 @@ update currentDate id db msg model =
 
         acuteFindingsForm =
             resolveFormWithDefaults .acuteFindings acuteFindingsFormWithDefault model.physicalExamData.acuteFindingsForm
+
+        treatmentReviewForm =
+            resolveFormWithDefaults .treatmentOngoing ongoingTreatmentReviewFormWithDefault model.ongoingTreatmentData.treatmentReviewForm
 
         reviewDangerSignsForm =
             resolveFormWithDefaults .dangerSigns reviewDangerSignsFormWithDefault model.dangerSignsData.reviewDangerSignsForm
@@ -1526,7 +1530,7 @@ update currentDate id db msg model =
                 updatedData =
                     let
                         updatedForm =
-                            formUpdateFunc value model.ongoingTreatmentData.treatmentReviewForm
+                            formUpdateFunc value treatmentReviewForm
                     in
                     model.ongoingTreatmentData
                         |> (\data -> { data | treatmentReviewForm = updatedForm })
@@ -1539,7 +1543,7 @@ update currentDate id db msg model =
         SetReasonForNotTaking value ->
             let
                 form =
-                    model.ongoingTreatmentData.treatmentReviewForm
+                    treatmentReviewForm
 
                 updatedForm =
                     { form | reasonForNotTaking = Just value, reasonForNotTakingDirty = True }
@@ -1556,10 +1560,58 @@ update currentDate id db msg model =
         SetTotalMissedDoses value ->
             let
                 form =
-                    model.ongoingTreatmentData.treatmentReviewForm
+                    treatmentReviewForm
 
                 updatedForm =
                     { form | totalMissedDoses = String.toInt value, totalMissedDosesDirty = True }
+
+                updatedData =
+                    model.ongoingTreatmentData
+                        |> (\data -> { data | treatmentReviewForm = updatedForm })
+            in
+            ( { model | ongoingTreatmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetAdverseEvent event ->
+            let
+                form =
+                    treatmentReviewForm
+
+                updatedForm =
+                    case form.adverseEvents of
+                        Just events ->
+                            if List.member event events then
+                                let
+                                    updatedEvents =
+                                        if List.length events == 1 then
+                                            Nothing
+
+                                        else
+                                            events |> List.filter ((/=) event) |> Just
+                                in
+                                { form | adverseEvents = updatedEvents, adverseEventsDirty = True }
+
+                            else
+                                case event of
+                                    NoAdverseEvent ->
+                                        { form | adverseEvents = Just [ event ], adverseEventsDirty = True }
+
+                                    _ ->
+                                        let
+                                            updatedEvents =
+                                                case events of
+                                                    [ NoAdverseEvent ] ->
+                                                        Just [ event ]
+
+                                                    _ ->
+                                                        Just (event :: events)
+                                        in
+                                        { form | adverseEvents = updatedEvents, adverseEventsDirty = True }
+
+                        Nothing ->
+                            { form | adverseEvents = Just [ event ], adverseEventsDirty = True }
 
                 updatedData =
                     model.ongoingTreatmentData

@@ -1671,6 +1671,7 @@ encodeTreatmentOngoingValue value =
     [ ( "treatment_ongoing", encodeEverySet encodeTreatmentOngoingSign value.signs )
     , ( "reason_for_not_taking", encodeReasonForNotTakingSign value.reasonForNotTaking )
     , ( "missed_doses", int value.missedDoses )
+    , ( "adverse_events", encodeEverySet encodeAdverseEvent value.adverseEvents )
     , ( "type", string "treatment_ongoing" )
     ]
 
@@ -1712,6 +1713,32 @@ encodeReasonForNotTakingSign reason =
                 "other"
 
             NoReasonForNotTakingSign ->
+                "none"
+
+
+encodeAdverseEvent : AdverseEvent -> Value
+encodeAdverseEvent event =
+    string <|
+        case event of
+            AdverseEventRashOrItching ->
+                "rash-itching"
+
+            AdverseEventFever ->
+                "fever"
+
+            AdverseEventDiarrhea ->
+                "diarrhea"
+
+            AdverseEventVomiting ->
+                "vomiting"
+
+            AdverseEventFatigue ->
+                "fatigue"
+
+            AdverseEventOther ->
+                "other"
+
+            NoAdverseEvent ->
                 "none"
 
 

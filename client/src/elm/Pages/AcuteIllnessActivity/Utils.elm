@@ -11,6 +11,7 @@ import Backend.Measurement.Model
         , AcuteIllnessMeasurement
         , AcuteIllnessMeasurements
         , AcuteIllnessVitalsValue
+        , AdverseEvent(..)
         , Call114Sign(..)
         , Call114Value
         , ChildNutritionSign(..)
@@ -548,9 +549,25 @@ ongoingTreatmentTasksCompletedFromTotal measurements data task =
                                     ( 1, 1 )
                             )
                         |> Maybe.withDefault ( 0, 1 )
+
+                ( adverseEventsActive, adverseEventsCompleted ) =
+                    form.sideEffects
+                        |> Maybe.map
+                            (\sideEffects ->
+                                if sideEffects then
+                                    if isJust form.adverseEvents then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
             in
-            ( takenAsPrescribedActive + missedDosesActive + taskCompleted form.feelingBetter + taskCompleted form.sideEffects
-            , takenAsPrescribedComleted + missedDosesCompleted + 2
+            ( takenAsPrescribedActive + missedDosesActive + adverseEventsActive + taskCompleted form.feelingBetter
+            , takenAsPrescribedComleted + missedDosesCompleted + adverseEventsCompleted + 1
             )
 
 
@@ -1375,6 +1392,8 @@ fromOngoingTreatmentReviewValue saved =
     , reasonForNotTakingDirty = False
     , totalMissedDoses = Maybe.map .missedDoses saved
     , totalMissedDosesDirty = False
+    , adverseEvents = Maybe.map (.adverseEvents >> EverySet.toList) saved
+    , adverseEventsDirty = False
     }
 
 
@@ -1392,6 +1411,8 @@ ongoingTreatmentReviewFormWithDefault form saved =
                 , reasonForNotTakingDirty = form.reasonForNotTakingDirty
                 , totalMissedDoses = valueConsideringIsDirtyField form.totalMissedDosesDirty form.totalMissedDoses value.missedDoses
                 , totalMissedDosesDirty = form.totalMissedDosesDirty
+                , adverseEvents = maybeValueConsideringIsDirtyField form.adverseEventsDirty form.adverseEvents (value.adverseEvents |> EverySet.toList |> Just)
+                , adverseEventsDirty = form.adverseEventsDirty
                 }
             )
 
@@ -1417,6 +1438,7 @@ toOngoingTreatmentReviewValue form =
     Maybe.map TreatmentOngoingValue signs
         |> andMap (form.reasonForNotTaking |> Maybe.withDefault NoReasonForNotTakingSign |> Just)
         |> andMap (form.totalMissedDoses |> Maybe.withDefault 0 |> Just)
+        |> andMap (form.adverseEvents |> fromListWithDefaultValue NoAdverseEvent |> Just)
 
 
 fromReviewDangerSignsValue : Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm

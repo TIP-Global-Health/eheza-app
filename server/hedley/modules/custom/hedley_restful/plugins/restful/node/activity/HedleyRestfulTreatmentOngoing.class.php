@@ -23,6 +23,7 @@ class HedleyRestfulTreatmentOngoing extends HedleyRestfulAcuteIllnessActivityBas
    */
   protected $multiFields = [
     'field_treatment_ongoing',
+    'field_adverse_events',
   ];
 
 }
