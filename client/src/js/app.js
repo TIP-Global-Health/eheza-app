@@ -639,6 +639,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .notEqual(1)
             .count();
 
+        console.log('totalEntites: ' + totalEntites);
         if (totalEntites == 0) {
           // No entities for upload found.
           return sendResultToElm(queryType, null);
