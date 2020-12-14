@@ -32,7 +32,7 @@ class RoboFile extends Tasks {
     $pantheonDirectory = '.pantheon';
 
     $result = $this
-      ->taskExec('git status -s')
+      ->taskExec('git status -s -uno')
       ->printOutput(FALSE)
       ->run();
 
@@ -42,7 +42,7 @@ class RoboFile extends Tasks {
     }
 
     $result = $this
-      ->taskExec("cd $pantheonDirectory && git status -s")
+      ->taskExec("cd $pantheonDirectory && git status -s -uno")
       ->printOutput(FALSE)
       ->run();
 
