@@ -47,8 +47,13 @@ $tuple = [
 $now = time();
 $one_year_ago = strtotime('-1 year');
 
-$processed = 0;
+$total_stunting = $total_underweight = $total_wasting = [
+  'all' => $tuple,
+  'mt1' => $tuple,
+  'mt2' => $tuple,
+];
 
+$processed = 0;
 while ($processed < $total) {
   // Free up memory.
   drupal_static_reset();
@@ -82,9 +87,7 @@ while ($processed < $total) {
     // If child is older than 5 years old.
     if (strtotime('+5 years', $birth_date) < $now) {
       $dates_rage['to'] = strtotime('+5 years', $birth_date);
-      drush_print("CHILD $child->nid is over 5 years");
     }
-
 
     if ($deleted) {
       // Skip deleted patient.
@@ -119,13 +122,44 @@ while ($processed < $total) {
       $wasting['wasting'] += $wasting_severe;
     }
 
-//    drush_print("Person $child->nid:");
-//    drush_print('sm: ' . $stunting['moderate']);
-//    drush_print('ss: ' . $stunting['severe']);
-//    drush_print('um: ' . $underweight['moderate']);
-//    drush_print('us: ' . $underweight['severe']);
-//    drush_print('wm: ' . $wasting['moderate']);
-//    drush_print('ws: ' . $wasting['severe']);
+    $total_stunting['all']['moderate'] += $stunting['moderate'];
+    $total_stunting['all']['severe'] += $stunting['severe'];
+
+    if ($stunting['moderate'] + $stunting['severe'] > 1) {
+      $total_stunting['mt1']['moderate'] += $stunting['moderate'];
+      $total_stunting['mt1']['severe'] += $stunting['severe'];
+    }
+
+    if ($stunting['moderate'] + $stunting['severe'] > 2) {
+      $total_stunting['mt2']['moderate'] += $stunting['moderate'];
+      $total_stunting['mt2']['severe'] += $stunting['severe'];
+    }
+
+    $total_underweight['all']['moderate'] += $underweight['moderate'];
+    $total_underweight['all']['severe'] += $underweight['severe'];
+
+    if ($underweight['moderate'] + $underweight['severe'] > 1) {
+      $total_underweight['mt1']['moderate'] += $underweight['moderate'];
+      $total_underweight['mt1']['severe'] += $underweight['severe'];
+    }
+
+    if ($underweight['moderate'] + $underweight['severe'] > 2) {
+      $total_underweight['mt2']['moderate'] += $underweight['moderate'];
+      $total_underweight['mt2']['severe'] += $underweight['severe'];
+    }
+
+    $total_wasting['all']['moderate'] += $wasting['moderate'];
+    $total_wasting['all']['severe'] += $wasting['severe'];
+
+    if ($wasting['moderate'] + $wasting['severe'] > 1) {
+      $total_wasting['mt1']['moderate'] += $wasting['moderate'];
+      $total_wasting['mt1']['severe'] += $wasting['severe'];
+    }
+
+    if ($wasting['moderate'] + $wasting['severe'] > 2) {
+      $total_wasting['mt2']['moderate'] += $wasting['moderate'];
+      $total_wasting['mt2']['severe'] += $wasting['severe'];
+    }
   }
 
   $nid = end($ids);
@@ -140,7 +174,30 @@ while ($processed < $total) {
   wlog("$processed children processed.");
 }
 
-wlog('Done!');
+drush_print('Stunting Moderate (overall): ' . $total_stunting['all']['moderate']);
+drush_print('Stunting Severe   (overall): ' . $total_stunting['all']['severe']);
+drush_print('Stunting Moderate (more than one): ' . $total_stunting['mt1']['moderate']);
+drush_print('Stunting Severe   (more than one): ' . $total_stunting['mt1']['severe']);
+drush_print('Stunting Moderate (more than two): ' . $total_stunting['mt2']['moderate']);
+drush_print('Stunting Severe   (more than two): ' . $total_stunting['mt2']['severe']);
+
+drush_print('');
+
+drush_print('Underweight Moderate (overall): ' . $total_underweight['all']['moderate']);
+drush_print('Underweight Severe   (overall): ' . $total_underweight['all']['severe']);
+drush_print('Underweight Moderate (more than one): ' . $total_underweight['mt1']['moderate']);
+drush_print('Underweight Severe   (more than one): ' . $total_underweight['mt1']['severe']);
+drush_print('Underweight Moderate (more than two): ' . $total_underweight['mt2']['moderate']);
+drush_print('Underweight Severe   (more than two): ' . $total_underweight['mt2']['severe']);
+
+drush_print('');
+
+drush_print('Wasting Moderate (overall): ' . $total_wasting['all']['moderate']);
+drush_print('Wasting Severe   (overall): ' . $total_wasting['all']['severe']);
+drush_print('Wasting Moderate (more than one): ' . $total_wasting['mt1']['moderate']);
+drush_print('Wasting Severe   (more than one): ' . $total_wasting['mt1']['severe']);
+drush_print('Wasting Moderate (more than two): ' . $total_wasting['mt2']['moderate']);
+drush_print('Wasting Severe   (more than two): ' . $total_wasting['mt2']['severe']);
 
 function resolve_indicator_tuple($node, $field, array $dates_rage) {
   $wrapper = entity_metadata_wrapper('node', $node);
