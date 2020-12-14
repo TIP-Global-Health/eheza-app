@@ -100,4 +100,4 @@ getAllActivities isFirstEncounter =
         [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPriorTreatment, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory, AcuteIllnessNextSteps ]
 
     else
-        [ AcuteIllnessDangerSigns, AcuteIllnessPhysicalExam, AcuteIllnessOngoingTreatment, AcuteIllnessNextSteps ]
+        [ AcuteIllnessDangerSigns, AcuteIllnessPhysicalExam, AcuteIllnessOngoingTreatment, AcuteIllnessLaboratory, AcuteIllnessNextSteps ]
