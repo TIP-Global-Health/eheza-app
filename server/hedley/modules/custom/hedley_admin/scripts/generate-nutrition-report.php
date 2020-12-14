@@ -44,6 +44,9 @@ $tuple = [
   'severe' => 0,
 ];
 
+$now = time();
+$one_year_ago = strtotime('-1 year');
+
 $processed = 0;
 
 while ($processed < $total) {
@@ -65,10 +68,23 @@ while ($processed < $total) {
   }
 
   $ids = array_keys($result['node']);
-  $nodes = node_load_multiple($ids);
-  foreach ($nodes as $node) {
-    $wrapper = entity_metadata_wrapper('node', $node);
+  $children = node_load_multiple($ids);
+  foreach ($children as $child) {
+    $wrapper = entity_metadata_wrapper('node', $child);
     $deleted = $wrapper->field_deleted->value();
+    $birth_date = $wrapper->field_birth_date->value();
+
+    $dates_rage = [
+      'from' => $one_year_ago,
+      'to' => $now,
+    ];
+
+    // If child is older than 5 years old.
+    if (strtotime('+5 years', $birth_date) < $now) {
+      $dates_rage['to'] = strtotime('+5 years', $birth_date);
+      drush_print("CHILD $child->nid is over 5 years");
+    }
+
 
     if ($deleted) {
       // Skip deleted patient.
@@ -76,7 +92,7 @@ while ($processed < $total) {
     }
 
     $bundles = array_merge(HEDLEY_ACTIVITY_HEIGHT_BUNDLES, HEDLEY_ACTIVITY_WEIGHT_BUNDLES);
-    $measurements_ids = hedley_general_get_person_measurements($node->nid, $bundles);
+    $measurements_ids = hedley_general_get_person_measurements($child->nid, $bundles);
 
     // If child got no measurements, move on to next child.
     if (empty($measurements_ids)) {
@@ -87,28 +103,29 @@ while ($processed < $total) {
     $measurements = node_load_multiple($measurements_ids);
     foreach ($measurements as $measurement) {
       if (in_array($measurement->type, HEDLEY_ACTIVITY_HEIGHT_BUNDLES)) {
-        [$stunting_moderate, $stunting_severe] = resolve_indicator_tuple($measurement, 'field_zscore_age');
+        [$stunting_moderate, $stunting_severe] = resolve_indicator_tuple($measurement, 'field_zscore_age', $dates_rage);
         $stunting['moderate'] += $stunting_moderate;
         $stunting['severe'] += $stunting_severe;
         continue;
       }
 
       // We know it's one of HEDLEY_ACTIVITY_WEIGHT_BUNDLES.
-      [$underweight_moderate, $underweight_severe] = resolve_indicator_tuple($measurement, 'field_zscore_age');
+      [$underweight_moderate, $underweight_severe] = resolve_indicator_tuple($measurement, 'field_zscore_age', $dates_rage);
       $underweight['moderate'] += $underweight_moderate;
       $underweight['severe'] += $underweight_severe;
 
-      [$wasting_moderate, $wasting_severe] = resolve_indicator_tuple($measurement, 'field_zscore_length');
+      [$wasting_moderate, $wasting_severe] = resolve_indicator_tuple($measurement, 'field_zscore_length', $dates_rage);
       $wasting['wasting'] += $wasting_moderate;
       $wasting['wasting'] += $wasting_severe;
     }
-    drush_print("Person $node->nid:");
-    drush_print('sm: ' . $stunting['moderate']);
-    drush_print('ss: ' . $stunting['severe']);
-    drush_print('um: ' . $underweight['moderate']);
-    drush_print('us: ' . $underweight['severe']);
-    drush_print('wm: ' . $wasting['moderate']);
-    drush_print('ws: ' . $wasting['severe']);
+
+//    drush_print("Person $child->nid:");
+//    drush_print('sm: ' . $stunting['moderate']);
+//    drush_print('ss: ' . $stunting['severe']);
+//    drush_print('um: ' . $underweight['moderate']);
+//    drush_print('us: ' . $underweight['severe']);
+//    drush_print('wm: ' . $wasting['moderate']);
+//    drush_print('ws: ' . $wasting['severe']);
   }
 
   $nid = end($ids);
@@ -125,11 +142,16 @@ while ($processed < $total) {
 
 wlog('Done!');
 
-function resolve_indicator_tuple($node, $field) {
+function resolve_indicator_tuple($node, $field, array $dates_rage) {
   $wrapper = entity_metadata_wrapper('node', $node);
   $z_score = $wrapper->{$field}->value();
 
   if (empty($z_score)) {
+    return [0, 0];
+  }
+
+  $date_measured = $wrapper->field_date_measured->value();
+  if ($date_measured < $dates_rage['from'] || $date_measured > $dates_rage['to']) {
     return [0, 0];
   }
 
