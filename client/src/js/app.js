@@ -485,7 +485,6 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
  */
 elmApp.ports.askFromIndexDb.subscribe(function(info) {
   const queryType = info.queryType;
-  console.log('askFromIndexDb:' + queryType);
 
   // Some queries pass may pass us data.
   const data = info.data;
@@ -639,7 +638,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .notEqual(1)
             .count();
 
-        console.log('totalEntites: ' + totalEntites);
         if (totalEntites == 0) {
           // No entities for upload found.
           return sendResultToElm(queryType, null);

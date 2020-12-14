@@ -817,13 +817,6 @@ update currentDate currentTime dbVersion device msg model =
             -- Get a entities for upload from IndexDB.
             case model.syncStatus of
                 SyncUploadAuthority record ->
-                    let
-                        _ =
-                            Debug.log "SyncUploadAuthority record.indexDbRemoteData" record.indexDbRemoteData
-
-                        _ =
-                            Debug.log "SyncUploadAuthority record.backendRemoteData" record.backendRemoteData
-                    in
                     if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
                         -- We are already loading.
                         noChange
@@ -882,10 +875,6 @@ update currentDate currentTime dbVersion device msg model =
 
         BackendUploadAuthority Nothing ->
             let
-                _ =
-                    Debug.log "BackendUploadAuthority" "Nothing"
-            in
-            let
                 syncStatus =
                     -- There are no entities for upload.
                     case model.syncStatus of
@@ -902,10 +891,6 @@ update currentDate currentTime dbVersion device msg model =
                 []
 
         BackendUploadAuthority (Just result) ->
-            let
-                _ =
-                    Debug.log "BackendUploadAuthority (Just result)" result
-            in
             case model.syncStatus of
                 SyncUploadAuthority record ->
                     if RemoteData.isLoading record.backendRemoteData then
@@ -980,13 +965,6 @@ update currentDate currentTime dbVersion device msg model =
                     noChange
 
         BackendUploadAuthorityHandle result webData ->
-            let
-                _ =
-                    Debug.log "BackendUploadAuthorityHandle result " result
-
-                _ =
-                    Debug.log "BackendUploadAuthorityHandle webData " webData
-            in
             case model.syncStatus of
                 SyncUploadAuthority record ->
                     case webData of
@@ -1405,9 +1383,6 @@ update currentDate currentTime dbVersion device msg model =
 
         QueryIndexDb indexDbQueryType ->
             let
-                _ =
-                    Debug.log "QueryIndexDb indexDbQueryType" indexDbQueryType
-
                 record =
                     case indexDbQueryType of
                         IndexDbQueryUploadPhotoAuthority ->
@@ -1488,10 +1463,6 @@ update currentDate currentTime dbVersion device msg model =
                                 model
 
                         IndexDbQueryUploadAuthorityResult result ->
-                            let
-                                _ =
-                                    Debug.log "IndexDbQueryUploadAuthorityResult result" result
-                            in
                             update
                                 currentDate
                                 currentTime
