@@ -37,7 +37,8 @@ class RoboFile extends Tasks {
       ->run();
 
     if ($result->getMessage()) {
-      throw new Exception('The working directory is dirty. Please commit any pending changes.');
+      $this->yell($this->getMessage());
+      throw new Exception('The GitHub working directory is dirty. Please commit any pending changes or add to .gitignore.');
     }
 
     $result = $this
@@ -46,7 +47,8 @@ class RoboFile extends Tasks {
       ->run();
 
     if ($result->getMessage()) {
-      throw new Exception('The Pantheon directory is dirty. Please commit any pending changes.');
+      $this->yell($this->getMessage());
+      throw new Exception('The Pantheon working directory is dirty. Please commit any pending changes ör add to .gitignore.');
     }
 
     // Validate pantheon.upstream.yml.
