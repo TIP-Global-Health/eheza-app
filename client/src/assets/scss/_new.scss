@@ -2105,9 +2105,10 @@ div.page-report.acute-illness {
     }
 
     div.pane.physical-exam .ui.table {
+      border: 0;
       color: $color-text;
       margin: 0;
-      padding: 10px;
+      padding: 5px 10px;
       text-align: center;
     }
 
@@ -2118,6 +2119,7 @@ div.page-report.acute-illness {
     div.pane.physical-exam .ui.table thead th {
       background-color: $color-white;
       color: $color-text;
+      width: 135px;
 
       &.first {
         text-align: left;
@@ -2127,6 +2129,12 @@ div.page-report.acute-illness {
 
     div.pane.physical-exam .ui.table tbody td {
       font-weight: 600;
+      width: 135px;
+
+      &.first {
+        text-align: left;
+        width: 190px;
+      }
 
       &.red {
         color: $color-red-alert;
@@ -2138,11 +2146,6 @@ div.page-report.acute-illness {
 
       &.green {
         color: $color-green;
-      }
-
-      &.first {
-        text-align: left;
-        width: 190px;
       }
     }
 
