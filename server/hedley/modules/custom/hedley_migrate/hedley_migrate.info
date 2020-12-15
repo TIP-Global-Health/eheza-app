@@ -66,6 +66,7 @@ files[] = handlers/node/activity/acute_illness/HedleyMigrateTreatmentHistory.php
 files[] = handlers/node/activity/prenatal/HedleyMigrateBreastExams.php
 files[] = handlers/node/activity/prenatal/HedleyMigrateCorePhysicalExam.php
 files[] = handlers/node/activity/prenatal/HedleyMigrateDangerSigns.php
+files[] = handlers/node/activity/prenatal/HedleyMigrateLastMenstrualPeriod.php
 
 
 files[] = handlers/node/activity/nutrition/HedleyMigrateNutritionHeight.php

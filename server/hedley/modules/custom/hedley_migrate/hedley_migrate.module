@@ -100,6 +100,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateLactations' => [
         'class_name' => 'HedleyMigrateLactations',
       ],
+      'HedleyMigrateLastMenstrualPeriod' => [
+        'class_name' => 'HedleyMigrateLastMenstrualPeriod',
+      ],
       'HedleyMigrateMalariaTesting' => [
         'class_name' => 'HedleyMigrateMalariaTesting',
       ],
