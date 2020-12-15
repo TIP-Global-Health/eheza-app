@@ -68,4 +68,5 @@ files[] = handlers/node/activity/prenatal/HedleyMigrateBreastExams.php
 files[] = handlers/node/activity/nutrition/HedleyMigrateNutritionHeight.php
 files[] = handlers/node/activity/nutrition/HedleyMigrateNutritionMuac.php
 files[] = handlers/node/activity/nutrition/HedleyMigrateNutritionNutritions.php
+files[] = handlers/node/activity/nutrition/HedleyMigrateNutritionPhoto.php
 
