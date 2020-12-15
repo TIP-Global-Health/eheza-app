@@ -145,6 +145,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateNutritionWeight' => [
         'class_name' => 'HedleyMigrateNutritionWeight',
       ],
+      'HedleyMigrateObstetricHistory' => [
+        'class_name' => 'HedleyMigrateObstetricHistory',
+      ],
       'HedleyMigrateParticipantForms' => [
         'class_name' => 'HedleyMigrateParticipantForms',
         'group_name' => 'forms',
