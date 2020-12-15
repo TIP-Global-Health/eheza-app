@@ -70,6 +70,9 @@ function hedley_migrate_migrate_api() {
         'class_name' => 'HedleyMigrateCounselingTopics',
         'group_name' => 'counseling',
       ],
+      'HedleyMigrateDangerSigns' => [
+        'class_name' => 'HedleyMigrateDangerSigns',
+      ],
       'HedleyMigrateDevices' => [
         'class_name' => 'HedleyMigrateDevices',
       ],
