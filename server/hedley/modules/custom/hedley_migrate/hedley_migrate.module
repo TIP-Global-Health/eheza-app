@@ -151,6 +151,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateObstetricHistoryStep2' => [
         'class_name' => 'HedleyMigrateObstetricHistoryStep2',
       ],
+      'HedleyMigrateObstetricalExam' => [
+        'class_name' => 'HedleyMigrateObstetricalExam',
+      ],
       'HedleyMigrateParticipantForms' => [
         'class_name' => 'HedleyMigrateParticipantForms',
         'group_name' => 'forms',
