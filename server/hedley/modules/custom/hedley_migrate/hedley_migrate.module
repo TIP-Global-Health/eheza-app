@@ -55,6 +55,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateClinics' => [
         'class_name' => 'HedleyMigrateClinics',
       ],
+      'HedleyMigrateCorePhysicalExam' => [
+        'class_name' => 'HedleyMigrateCorePhysicalExam',
+      ],
       'HedleyMigrateCounselingSchedules' => [
         'class_name' => 'HedleyMigrateCounselingSchedules',
         'group_name' => 'counseling',
