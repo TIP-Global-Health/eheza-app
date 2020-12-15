@@ -118,6 +118,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateNutritionHeight' => [
         'class_name' => 'HedleyMigrateNutritionHeight',
       ],
+      'HedleyMigrateNutritionMuac' => [
+        'class_name' => 'HedleyMigrateNutritionMuac',
+      ],
       'HedleyMigrateNutritionNutritions' => [
         'class_name' => 'HedleyMigrateNutritionNutritions',
       ],
