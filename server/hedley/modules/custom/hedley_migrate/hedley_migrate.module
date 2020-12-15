@@ -127,6 +127,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateNutritionPhoto' => [
         'class_name' => 'HedleyMigrateNutritionPhoto',
       ],
+      'HedleyMigrateNutritionWeight' => [
+        'class_name' => 'HedleyMigrateNutritionWeight',
+      ],
       'HedleyMigrateParticipantForms' => [
         'class_name' => 'HedleyMigrateParticipantForms',
         'group_name' => 'forms',
