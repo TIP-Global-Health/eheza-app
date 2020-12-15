@@ -106,18 +106,18 @@ while ($processed < $total) {
     $measurements = node_load_multiple($measurements_ids);
     foreach ($measurements as $measurement) {
       if (in_array($measurement->type, HEDLEY_ACTIVITY_HEIGHT_BUNDLES)) {
-        [$stunting_moderate, $stunting_severe] = resolve_indicator_tuple($measurement, 'field_zscore_age', $dates_rage);
+        [$stunting_moderate, $stunting_severe] = classify_by_malnutrition_type($measurement, 'field_zscore_age', $dates_rage);
         $stunting['moderate'] += $stunting_moderate;
         $stunting['severe'] += $stunting_severe;
         continue;
       }
 
       // We know it's one of HEDLEY_ACTIVITY_WEIGHT_BUNDLES.
-      [$underweight_moderate, $underweight_severe] = resolve_indicator_tuple($measurement, 'field_zscore_age', $dates_rage);
+      [$underweight_moderate, $underweight_severe] = classify_by_malnutrition_type($measurement, 'field_zscore_age', $dates_rage);
       $underweight['moderate'] += $underweight_moderate;
       $underweight['severe'] += $underweight_severe;
 
-      [$wasting_moderate, $wasting_severe] = resolve_indicator_tuple($measurement, 'field_zscore_length', $dates_rage);
+      [$wasting_moderate, $wasting_severe] = classify_by_malnutrition_type($measurement, 'field_zscore_length', $dates_rage);
       $wasting['moderate'] += $wasting_moderate;
       $wasting['severe'] += $wasting_severe;
     }
@@ -174,6 +174,9 @@ while ($processed < $total) {
   drush_print("$processed children processed.");
 }
 
+drush_print('');
+drush_print('Malnutrition report for past year:');
+
 drush_print('Stunting Moderate (overall): ' . $total_stunting['all']['moderate']);
 drush_print('Stunting Severe   (overall): ' . $total_stunting['all']['severe']);
 drush_print('Stunting Moderate (more than one): ' . $total_stunting['mt1']['moderate']);
@@ -199,7 +202,12 @@ drush_print('Wasting Severe   (more than one): ' . $total_wasting['mt1']['severe
 drush_print('Wasting Moderate (more than two): ' . $total_wasting['mt2']['moderate']);
 drush_print('Wasting Severe   (more than two): ' . $total_wasting['mt2']['severe']);
 
-function resolve_indicator_tuple($node, $field, array $dates_rage) {
+/**
+ * Classifies measurement by it's malnutrition indicator (severe / moderate).
+ * 
+ * If measurement does not indicate malnutrition, 0 values are returned.
+ */
+function classify_by_malnutrition_type($node, $field, array $dates_rage) {
   $wrapper = entity_metadata_wrapper('node', $node);
   $z_score = $wrapper->{$field}->value();
 
