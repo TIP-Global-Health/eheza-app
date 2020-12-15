@@ -106,6 +106,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateMalariaTesting' => [
         'class_name' => 'HedleyMigrateMalariaTesting',
       ],
+      'HedleyMigrateMedicalHistory' => [
+        'class_name' => 'HedleyMigrateMedicalHistory',
+      ],
       'HedleyMigrateMedicationDistribution' => [
         'class_name' => 'HedleyMigrateMedicationDistribution',
       ],
