@@ -2,8 +2,9 @@
 
 /**
  * @file
- * Generates 'Nutrition' report.
+ * Generates 'Nutrition' report for past.
  *
+ * Counts occurrences of malnutrition indicators (moderate and severe).
  *
  * Drush scr
  * profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php.
@@ -174,37 +175,40 @@ while ($processed < $total) {
   drush_print("$processed children processed.");
 }
 
+drush_print('Done!');
+
 drush_print('');
 drush_print('Malnutrition report for past year:');
+drush_print('');
 
 drush_print('Stunting Moderate (overall): ' . $total_stunting['all']['moderate']);
 drush_print('Stunting Severe   (overall): ' . $total_stunting['all']['severe']);
-drush_print('Stunting Moderate (more than one): ' . $total_stunting['mt1']['moderate']);
-drush_print('Stunting Severe   (more than one): ' . $total_stunting['mt1']['severe']);
-drush_print('Stunting Moderate (more than two): ' . $total_stunting['mt2']['moderate']);
-drush_print('Stunting Severe   (more than two): ' . $total_stunting['mt2']['severe']);
+drush_print('Stunting Moderate (more than one visit): ' . $total_stunting['mt1']['moderate']);
+drush_print('Stunting Severe   (more than one visit): ' . $total_stunting['mt1']['severe']);
+drush_print('Stunting Moderate (more than two visit): ' . $total_stunting['mt2']['moderate']);
+drush_print('Stunting Severe   (more than two visit): ' . $total_stunting['mt2']['severe']);
 
 drush_print('');
 
 drush_print('Underweight Moderate (overall): ' . $total_underweight['all']['moderate']);
 drush_print('Underweight Severe   (overall): ' . $total_underweight['all']['severe']);
-drush_print('Underweight Moderate (more than one): ' . $total_underweight['mt1']['moderate']);
-drush_print('Underweight Severe   (more than one): ' . $total_underweight['mt1']['severe']);
-drush_print('Underweight Moderate (more than two): ' . $total_underweight['mt2']['moderate']);
-drush_print('Underweight Severe   (more than two): ' . $total_underweight['mt2']['severe']);
+drush_print('Underweight Moderate (more than one visit): ' . $total_underweight['mt1']['moderate']);
+drush_print('Underweight Severe   (more than one visit): ' . $total_underweight['mt1']['severe']);
+drush_print('Underweight Moderate (more than two visit): ' . $total_underweight['mt2']['moderate']);
+drush_print('Underweight Severe   (more than two visit): ' . $total_underweight['mt2']['severe']);
 
 drush_print('');
 
 drush_print('Wasting Moderate (overall): ' . $total_wasting['all']['moderate']);
 drush_print('Wasting Severe   (overall): ' . $total_wasting['all']['severe']);
-drush_print('Wasting Moderate (more than one): ' . $total_wasting['mt1']['moderate']);
-drush_print('Wasting Severe   (more than one): ' . $total_wasting['mt1']['severe']);
-drush_print('Wasting Moderate (more than two): ' . $total_wasting['mt2']['moderate']);
-drush_print('Wasting Severe   (more than two): ' . $total_wasting['mt2']['severe']);
+drush_print('Wasting Moderate (more than one visit): ' . $total_wasting['mt1']['moderate']);
+drush_print('Wasting Severe   (more than one visit): ' . $total_wasting['mt1']['severe']);
+drush_print('Wasting Moderate (more than two visit): ' . $total_wasting['mt2']['moderate']);
+drush_print('Wasting Severe   (more than two visit): ' . $total_wasting['mt2']['severe']);
 
 /**
  * Classifies measurement by it's malnutrition indicator (severe / moderate).
- * 
+ *
  * If measurement does not indicate malnutrition, 0 values are returned.
  */
 function classify_by_malnutrition_type($node, $field, array $dates_rage) {
