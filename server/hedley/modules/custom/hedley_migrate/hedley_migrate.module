@@ -182,6 +182,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateRelationships' => [
         'class_name' => 'HedleyMigrateRelationships',
       ],
+      'HedleyMigrateResource' => [
+        'class_name' => 'HedleyMigrateResource',
+      ],
       'HedleyMigrateSendToHC' => [
         'class_name' => 'HedleyMigrateSendToHC',
       ],
