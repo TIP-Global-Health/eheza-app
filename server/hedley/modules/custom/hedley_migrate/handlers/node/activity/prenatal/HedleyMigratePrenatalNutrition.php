@@ -8,7 +8,7 @@
 /**
  * Class HedleyMigratePrenatalNutrition.
  */
-class HedleyMigratePrenatalNutrition extends HedleyMigrateNutritionMeasurementBase {
+class HedleyMigratePrenatalNutrition extends HedleyMigratePrenatalMeasurementBase {
 
   /**
    * {@inheritdoc}
