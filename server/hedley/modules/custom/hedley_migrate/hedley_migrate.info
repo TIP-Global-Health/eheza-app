@@ -34,6 +34,7 @@ files[] = handlers/node/HedleyMigrateParticipantForms.php
 files[] = handlers/node/HedleyMigrateVillages.php
 files[] = handlers/node/HedleyMigrateNutritionEncounters.php
 files[] = handlers/node/HedleyMigrateAcuteIllnessEncounters.php
+
 files[] = handlers/node/activity/group/HedleyMigrateAttendances.php
 files[] = handlers/node/activity/group/HedleyMigrateChildFbfs.php
 files[] = handlers/node/activity/group/HedleyMigrateFamilyPlannings.php
@@ -62,7 +63,6 @@ files[] = handlers/node/activity/acute_illness/HedleyMigrateSymptomsRespiratory.
 files[] = handlers/node/activity/acute_illness/HedleyMigrateTravelHistory.php
 files[] = handlers/node/activity/acute_illness/HedleyMigrateTreatmentHistory.php
 
-
 files[] = handlers/node/activity/prenatal/HedleyMigrateBreastExams.php
 files[] = handlers/node/activity/prenatal/HedleyMigrateCorePhysicalExam.php
 files[] = handlers/node/activity/prenatal/HedleyMigrateDangerSigns.php
@@ -77,7 +77,7 @@ files[] = handlers/node/activity/prenatal/HedleyMigratePrenatalNutrition.php
 files[] = handlers/node/activity/prenatal/HedleyMigratePrenatalPhoto.php
 files[] = handlers/node/activity/prenatal/HedleyMigrateResource.php
 files[] = handlers/node/activity/prenatal/HedleyMigrateSocialHistory.php
-
+files[] = handlers/node/activity/prenatal/HedleyMigrateVitals.php
 
 files[] = handlers/node/activity/nutrition/HedleyMigrateNutritionHeight.php
 files[] = handlers/node/activity/nutrition/HedleyMigrateNutritionMuac.php
