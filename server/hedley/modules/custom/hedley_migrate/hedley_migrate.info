@@ -76,6 +76,7 @@ files[] = handlers/node/activity/prenatal/HedleyMigratePrenatalFamilyPlanning.ph
 files[] = handlers/node/activity/prenatal/HedleyMigratePrenatalNutrition.php
 files[] = handlers/node/activity/prenatal/HedleyMigratePrenatalPhoto.php
 files[] = handlers/node/activity/prenatal/HedleyMigrateResource.php
+files[] = handlers/node/activity/prenatal/HedleyMigrateSocialHistory.php
 
 
 files[] = handlers/node/activity/nutrition/HedleyMigrateNutritionHeight.php

@@ -191,6 +191,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateSessions' => [
         'class_name' => 'HedleyMigrateSessions',
       ],
+      'HedleyMigrateSocialHistory' => [
+        'class_name' => 'HedleyMigrateSocialHistory',
+      ],
       'HedleyMigrateSymptomsGI' => [
         'class_name' => 'HedleyMigrateSymptomsGI',
       ],
