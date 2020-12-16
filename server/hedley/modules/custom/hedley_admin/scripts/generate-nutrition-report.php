@@ -43,6 +43,7 @@ drush_print("$total children with age bellow 6 years located.");
 $tuple = [
   'moderate' => 0,
   'severe' => 0,
+  'any' => 0,
 ];
 
 $now = time();
@@ -110,6 +111,7 @@ while ($processed < $total) {
         [$stunting_moderate, $stunting_severe] = classify_by_malnutrition_type($measurement, 'field_zscore_age', $dates_rage);
         $stunting['moderate'] += $stunting_moderate;
         $stunting['severe'] += $stunting_severe;
+        $stunting['any']++;
         continue;
       }
 
@@ -117,49 +119,60 @@ while ($processed < $total) {
       [$underweight_moderate, $underweight_severe] = classify_by_malnutrition_type($measurement, 'field_zscore_age', $dates_rage);
       $underweight['moderate'] += $underweight_moderate;
       $underweight['severe'] += $underweight_severe;
+      $underweight['any']++;
 
       [$wasting_moderate, $wasting_severe] = classify_by_malnutrition_type($measurement, 'field_zscore_length', $dates_rage);
       $wasting['moderate'] += $wasting_moderate;
       $wasting['severe'] += $wasting_severe;
+      $wasting['any']++;
     }
 
     $total_stunting['all']['moderate'] += $stunting['moderate'];
     $total_stunting['all']['severe'] += $stunting['severe'];
+    $total_stunting['all']['any'] += $stunting['any'];
 
     if ($stunting['moderate'] + $stunting['severe'] > 1) {
       $total_stunting['mt1']['moderate'] += $stunting['moderate'];
       $total_stunting['mt1']['severe'] += $stunting['severe'];
+      $total_stunting['mt1']['any'] += $stunting['any'];
     }
 
     if ($stunting['moderate'] + $stunting['severe'] > 2) {
       $total_stunting['mt2']['moderate'] += $stunting['moderate'];
       $total_stunting['mt2']['severe'] += $stunting['severe'];
+      $total_stunting['mt2']['any'] += $stunting['any'];
     }
 
     $total_underweight['all']['moderate'] += $underweight['moderate'];
     $total_underweight['all']['severe'] += $underweight['severe'];
+    $total_underweight['all']['any'] += $underweight['any'];
 
     if ($underweight['moderate'] + $underweight['severe'] > 1) {
       $total_underweight['mt1']['moderate'] += $underweight['moderate'];
       $total_underweight['mt1']['severe'] += $underweight['severe'];
+      $total_underweight['mt1']['any'] += $underweight['any'];
     }
 
     if ($underweight['moderate'] + $underweight['severe'] > 2) {
       $total_underweight['mt2']['moderate'] += $underweight['moderate'];
       $total_underweight['mt2']['severe'] += $underweight['severe'];
+      $total_underweight['mt2']['any'] += $underweight['any'];
     }
 
     $total_wasting['all']['moderate'] += $wasting['moderate'];
     $total_wasting['all']['severe'] += $wasting['severe'];
+    $total_wasting['all']['any'] += $wasting['any'];
 
     if ($wasting['moderate'] + $wasting['severe'] > 1) {
       $total_wasting['mt1']['moderate'] += $wasting['moderate'];
       $total_wasting['mt1']['severe'] += $wasting['severe'];
+      $total_wasting['mt1']['any'] += $wasting['any'];
     }
 
     if ($wasting['moderate'] + $wasting['severe'] > 2) {
       $total_wasting['mt2']['moderate'] += $wasting['moderate'];
       $total_wasting['mt2']['severe'] += $wasting['severe'];
+      $total_wasting['mt2']['any'] += $wasting['any'];
     }
   }
 
@@ -180,31 +193,62 @@ drush_print('Done!');
 drush_print('');
 drush_print('Malnutrition report for past year:');
 drush_print('');
+drush_print('');
 
-drush_print('Stunting Moderate (overall): ' . $total_stunting['all']['moderate']);
-drush_print('Stunting Severe   (overall): ' . $total_stunting['all']['severe']);
+
+drush_print('Stunting Moderate (one visit, or more): ' . $total_stunting['all']['moderate']);
+drush_print('Stunting Severe   (one visit, or more): ' . $total_stunting['all']['severe']);
+drush_print('Total encounters  (one visit, or more): ' . $total_stunting['all']['any']);
+
+drush_print('');
+
 drush_print('Stunting Moderate (more than one visit): ' . $total_stunting['mt1']['moderate']);
 drush_print('Stunting Severe   (more than one visit): ' . $total_stunting['mt1']['severe']);
+drush_print('Total encounters  (more than one visit): ' . $total_stunting['mt1']['any']);
+
+drush_print('');
+
 drush_print('Stunting Moderate (more than two visit): ' . $total_stunting['mt2']['moderate']);
 drush_print('Stunting Severe   (more than two visit): ' . $total_stunting['mt2']['severe']);
+drush_print('Total encounters  (more than two visit): ' . $total_stunting['mt2']['any']);
+
+drush_print('');
+drush_print('');
+
+drush_print('Underweight Moderate (one visit, or more): ' . $total_underweight['all']['moderate']);
+drush_print('Underweight Severe   (one visit, or more): ' . $total_underweight['all']['severe']);
+drush_print('Total encounters     (one visit, or more): ' . $total_underweight['all']['any']);
 
 drush_print('');
 
-drush_print('Underweight Moderate (overall): ' . $total_underweight['all']['moderate']);
-drush_print('Underweight Severe   (overall): ' . $total_underweight['all']['severe']);
 drush_print('Underweight Moderate (more than one visit): ' . $total_underweight['mt1']['moderate']);
 drush_print('Underweight Severe   (more than one visit): ' . $total_underweight['mt1']['severe']);
-drush_print('Underweight Moderate (more than two visit): ' . $total_underweight['mt2']['moderate']);
-drush_print('Underweight Severe   (more than two visit): ' . $total_underweight['mt2']['severe']);
+drush_print('Total encounters     (more than one visit): ' . $total_underweight['mt1']['any']);
 
 drush_print('');
 
-drush_print('Wasting Moderate (overall): ' . $total_wasting['all']['moderate']);
-drush_print('Wasting Severe   (overall): ' . $total_wasting['all']['severe']);
+drush_print('Underweight Moderate (more than two visit): ' . $total_underweight['mt2']['moderate']);
+drush_print('Underweight Severe   (more than two visit): ' . $total_underweight['mt2']['severe']);
+drush_print('Total encounters     (more than two visit): ' . $total_underweight['mt2']['any']);
+
+drush_print('');
+drush_print('');
+
+drush_print('Wasting Moderate (one visit, or more): ' . $total_wasting['all']['moderate']);
+drush_print('Wasting Severe   (one visit, or more): ' . $total_wasting['all']['severe']);
+drush_print('Total encounters (one visit, or more): ' . $total_wasting['all']['any']);
+
+drush_print('');
+
 drush_print('Wasting Moderate (more than one visit): ' . $total_wasting['mt1']['moderate']);
 drush_print('Wasting Severe   (more than one visit): ' . $total_wasting['mt1']['severe']);
+drush_print('Total encounters (more than one visit): ' . $total_wasting['mt1']['any']);
+
+drush_print('');
+
 drush_print('Wasting Moderate (more than two visit): ' . $total_wasting['mt2']['moderate']);
 drush_print('Wasting Severe   (more than two visit): ' . $total_wasting['mt2']['severe']);
+drush_print('Total encounters (more than two visit): ' . $total_wasting['mt2']['any']);
 
 /**
  * Classifies measurement by it's malnutrition indicator (severe / moderate).
