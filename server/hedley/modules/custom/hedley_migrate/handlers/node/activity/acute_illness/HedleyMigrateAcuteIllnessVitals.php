@@ -38,7 +38,8 @@ class HedleyMigrateAcuteIllnessVitals extends HedleyMigrateAcuteIllnessMeasureme
     return array_merge(
       $mappings, [
         'field_respiratory_rate',
-        'field_body_temperature',      ]
+        'field_body_temperature',
+      ]
     );
   }
 

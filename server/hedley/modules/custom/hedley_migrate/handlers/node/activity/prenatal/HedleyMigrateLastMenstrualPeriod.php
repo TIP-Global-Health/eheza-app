@@ -55,5 +55,4 @@ class HedleyMigrateLastMenstrualPeriod extends HedleyMigratePrenatalMeasurementB
       ->callbacks([$this, 'dateProcess']);
   }
 
-
 }

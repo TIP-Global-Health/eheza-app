@@ -40,7 +40,7 @@ class HedleyMigratePrenatalNutrition extends HedleyMigratePrenatalMeasurementBas
       $mappings, [
         'field_height',
         'field_weight',
-        'field_muac'
+        'field_muac',
       ]
     );
   }
