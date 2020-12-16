@@ -31,8 +31,8 @@ class HedleyMigrateNutritions extends HedleyMigrateGroupMeasurementBase {
   /**
    * {@inheritdoc}
    */
-  protected function simpleMappings() {
-    $mappings = parent::simpleMappings();
+  protected function simpleMultipleMappings() {
+    $mappings = parent::simpleMultipleMappings();
 
     return array_merge(
       $mappings, [

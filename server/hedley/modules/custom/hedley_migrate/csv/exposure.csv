@@ -1,4 +1,4 @@
 id,field_person,field_date_measured,field_nurse,created,field_acute_illness_encounter,field_exposure
-194,74,2020-06-19,188,1592244289,1,covid19-symptom
+194,74,2020-06-19,188,1592244289,1,covid19-symptoms
 195,35,2017-12-16,188,1592244289,1,none
-196,81,2020-08-07,188,1592244289,1,covid19-symptom|none
+196,81,2020-08-07,188,1592244289,1,covid19-symptoms|none
