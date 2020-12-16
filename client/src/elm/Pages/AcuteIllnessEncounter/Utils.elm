@@ -20,6 +20,7 @@ import Backend.Measurement.Model
         , IsolationSign(..)
         , IsolationValue
         , MalariaRapidTestResult(..)
+        , MedicationDistributionSign(..)
         , MuacIndication(..)
         , ReasonForNotIsolating(..)
         , Recommendation114(..)
@@ -217,6 +218,30 @@ expectActivity currentDate isFirstEncounter data activity =
                     || sendToHCOnSubsequentVisitByVitals currentDate data.person data.measurements
                     || sendToHCOnSubsequentVisitByMuac data.measurements
                     || sendToHCOnSubsequentVisitByNutrition data.measurements
+
+        AcuteIllnessOngoingTreatment ->
+            if isFirstEncounter then
+                False
+
+            else
+                -- Show activity, if medication was perscribed at any of previous encounters.
+                data.previousMeasurementsWithDates
+                    |> List.filterMap
+                        (Tuple.second
+                            >> .medicationDistribution
+                            >> Maybe.map
+                                (Tuple.second
+                                    >> .value
+                                    >> .distributionSigns
+                                    >> (\medications ->
+                                            (medications /= EverySet.singleton NoMedicationDistributionSigns)
+                                                -- Lemon juice does not count as a medication.
+                                                && (medications /= EverySet.singleton LemonJuiceOrHoney)
+                                       )
+                                )
+                        )
+                    |> List.isEmpty
+                    |> not
 
         _ ->
             True
