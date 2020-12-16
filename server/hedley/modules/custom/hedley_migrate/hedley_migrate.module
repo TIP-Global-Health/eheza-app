@@ -176,6 +176,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigratePrenatalNutrition' => [
         'class_name' => 'HedleyMigratePrenatalNutrition',
       ],
+      'HedleyMigratePrenatalPhoto' => [
+        'class_name' => 'HedleyMigratePrenatalPhoto',
+      ],
       'HedleyMigrateRelationships' => [
         'class_name' => 'HedleyMigrateRelationships',
       ],
