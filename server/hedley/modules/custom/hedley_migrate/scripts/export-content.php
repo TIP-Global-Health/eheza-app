@@ -15,9 +15,9 @@ if (!drupal_is_cli()) {
 
 // For sample db: Rukura, Rwankuba, Test.
 $health_centers_data = [
-  7091 => ['anonymize' => TRUE],
-  7092 => ['anonymize' => TRUE],
-  28589 => ['anonymize' => FALSE],
+  4 => ['anonymize' => TRUE],
+  5 => ['anonymize' => TRUE],
+//  28589 => ['anonymize' => FALSE],
 ];
 
 // In case we need to pull real files, make sure
@@ -141,47 +141,47 @@ $relationships = [
     'created',
   ],
 ];
-$measurements_fields = [
+$group_measurements_fields = [
   'id',
   'field_person',
   'field_date_measured',
   'field_nurse',
-  'field_session',
   'created',
+  'field_session',
 ];
-$measurements = [
-  'attendance' => [array_merge($measurements_fields, ['field_attended'])],
+$group_measurements = [
+  'attendance' => [array_merge($group_measurements_fields, ['field_attended'])],
   'child_fbf' => [
     array_merge(
-      $measurements_fields,
-      ['field_distributed_amount, field_distribution_notice']
+      $group_measurements_fields,
+      ['field_distributed_amount', 'field_distribution_notice']
     )
   ],
   'family_planning' => [
     array_merge(
-      $measurements_fields,
+      $group_measurements_fields,
       ['field_family_planning_signs']
     ),
   ],
   'height' => [
     array_merge(
-      $measurements_fields,
+      $group_measurements_fields,
       ['field_height', 'field_zscore_age']
     ),
   ],
-  'lactation' => [array_merge($measurements_fields, ['field_lactation_signs'])],
+  'lactation' => [array_merge($group_measurements_fields, ['field_lactation_signs'])],
   'mother_fbf' => [
     array_merge(
-      $measurements_fields,
-      ['field_distributed_amount, field_distribution_notice']
+      $group_measurements_fields,
+      ['field_distributed_amount', 'field_distribution_notice']
     )
   ],
-  'muac' => [array_merge($measurements_fields, ['field_muac'])],
-  'nutrition' => [array_merge($measurements_fields, ['field_nutrition_signs'])],
-  'photo' => [array_merge($measurements_fields, ['field_photo'])],
+  'muac' => [array_merge($group_measurements_fields, ['field_muac'])],
+  'nutrition' => [array_merge($group_measurements_fields, ['field_nutrition_signs'])],
+  'photo' => [array_merge($group_measurements_fields, ['field_photo'])],
   'weight' => [
     array_merge(
-      $measurements_fields,
+      $group_measurements_fields,
       [
         'field_weight',
         'field_bmi',
@@ -411,7 +411,7 @@ foreach ($health_centers_ids as $health_center_id) {
     ];
   }
 
-  foreach ($measurements as $type => $values) {
+  foreach ($group_measurements as $type => $values) {
     $ids = hedley_migrate_resolve_for_export($type, 'field_session', $group_encounters_ids);
 
     foreach ($ids as $id) {
@@ -421,8 +421,8 @@ foreach ($health_centers_ids as $health_center_id) {
         $wrapper->field_person->getIdentifier(),
         date('Y-m-d', $wrapper->field_date_measured->value()),
         $wrapper->field_nurse->getIdentifier(),
-        $wrapper->field_session->getIdentifier(),
         $wrapper->created->raw(),
+        $wrapper->field_session->getIdentifier(),
       ];
 
       switch ($type) {
@@ -494,7 +494,7 @@ foreach ($health_centers_ids as $health_center_id) {
           $type_based_values = [];
       }
 
-      $measurements[$type][] = array_merge($common_values, $type_based_values);
+      $group_measurements[$type][] = array_merge($common_values, $type_based_values);
     }
   }
 }
@@ -511,8 +511,9 @@ $mapping = [
   'relationship' => array_values($relationships),
 ];
 
-foreach (array_keys($measurements) as $type) {
-  $mapping[$type] = $measurements[$type];
+// Group measurements.
+foreach (array_keys($group_measurements) as $type) {
+  $mapping[$type] = $group_measurements[$type];
 }
 
 foreach ($mapping as $name => $rows) {
