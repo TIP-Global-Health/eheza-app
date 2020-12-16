@@ -15,9 +15,9 @@ if (!drupal_is_cli()) {
 
 // For sample db: Rukura, Rwankuba, Test.
 $health_centers_data = [
-  4 => ['anonymize' => TRUE],
-  5 => ['anonymize' => TRUE],
-//  28589 => ['anonymize' => FALSE],
+  7090 => ['anonymize' => TRUE],
+  7091 => ['anonymize' => TRUE],
+  28589 => ['anonymize' => FALSE],
 ];
 
 // In case we need to pull real files, make sure
@@ -154,13 +154,13 @@ $group_measurements = [
     array_merge(
       $group_measurements_fields,
       ['field_attended']
-    )
+    ),
   ],
   'child_fbf' => [
     array_merge(
       $group_measurements_fields,
       ['field_distributed_amount', 'field_distribution_notice']
-    )
+    ),
   ],
   'family_planning' => [
     array_merge(
@@ -178,19 +178,19 @@ $group_measurements = [
     array_merge(
       $group_measurements_fields,
       ['field_lactation_signs']
-    )
+    ),
   ],
   'mother_fbf' => [
     array_merge(
       $group_measurements_fields,
       ['field_distributed_amount', 'field_distribution_notice']
-    )
+    ),
   ],
   'muac' => [
     array_merge(
       $group_measurements_fields,
       ['field_muac']
-    )
+    ),
   ],
   'nutrition' => [
     array_merge(
@@ -201,7 +201,7 @@ $group_measurements = [
     array_merge(
       $group_measurements_fields,
       ['field_photo']
-    )
+    ),
   ],
   'weight' => [
     array_merge(
