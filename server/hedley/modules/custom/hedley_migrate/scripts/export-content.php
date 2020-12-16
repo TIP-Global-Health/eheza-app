@@ -151,6 +151,12 @@ $measurements_fields = [
 ];
 $measurements = [
   'attendance' => [array_merge($measurements_fields, ['field_attended'])],
+  'child_fbf' => [
+    array_merge(
+      $measurements_fields,
+      ['field_distributed_amount, field_distribution_notice']
+    )
+  ],
   'family_planning' => [
     array_merge(
       $measurements_fields,
@@ -163,6 +169,16 @@ $measurements = [
       ['field_height', 'field_zscore_age']
     ),
   ],
+  'lactation' => [array_merge($measurements_fields, ['field_lactation_signs'])],
+  'mother_fbf' => [
+    array_merge(
+      $measurements_fields,
+      ['field_distributed_amount, field_distribution_notice']
+    )
+  ],
+  'muac' => [array_merge($measurements_fields, ['field_muac'])],
+  'nutrition' => [array_merge($measurements_fields, ['field_nutrition_signs'])],
+  'photo' => [array_merge($measurements_fields, ['field_photo'])],
   'weight' => [
     array_merge(
       $measurements_fields,
@@ -175,9 +191,6 @@ $measurements = [
       ]
     ),
   ],
-  'muac' => [array_merge($measurements_fields, ['field_muac'])],
-  'nutrition' => [array_merge($measurements_fields, ['field_nutrition_signs'])],
-  'photo' => [array_merge($measurements_fields, ['field_photo'])],
 ];
 
 $male_first_names = hedley_migrate_male_first_names();
@@ -417,6 +430,14 @@ foreach ($health_centers_ids as $health_center_id) {
           $type_based_values = [$wrapper->field_attended->value()];
           break;
 
+        case 'child_fbf':
+        case 'mother_fbf':
+          $type_based_values = [
+            $wrapper->field_distributed_amount->value(),
+            $wrapper->field_distribution_notice->value(),
+          ];
+          break;
+
         case 'family_planning':
           $type_based_values = [
             implode('|', $wrapper->field_family_planning_signs->value()),
@@ -430,13 +451,9 @@ foreach ($health_centers_ids as $health_center_id) {
           ];
           break;
 
-        case 'weight':
+        case 'lactation':
           $type_based_values = [
-            $wrapper->field_weight->value(),
-            $wrapper->field_bmi->value(),
-            $wrapper->field_zscore_age->value(),
-            $wrapper->field_zscore_length->value(),
-            $wrapper->field_zscore_bmi->value(),
+            implode('|', $wrapper->field_lactation_signs->value()),
           ];
           break;
 
@@ -463,6 +480,16 @@ foreach ($health_centers_ids as $health_center_id) {
           $type_based_values = [$photo];
           break;
 
+        case 'weight':
+          $type_based_values = [
+            $wrapper->field_weight->value(),
+            $wrapper->field_bmi->value(),
+            $wrapper->field_zscore_age->value(),
+            $wrapper->field_zscore_length->value(),
+            $wrapper->field_zscore_bmi->value(),
+          ];
+          break;
+
         default:
           $type_based_values = [];
       }
@@ -482,14 +509,11 @@ $mapping = [
   'pmtct_participant' => $participants,
   'person' => array_values($people),
   'relationship' => array_values($relationships),
-  'attendance' => $measurements['attendance'],
-  'family_planning' => $measurements['family_planning'],
-  'height' => $measurements['height'],
-  'weight' => $measurements['weight'],
-  'muac' => $measurements['muac'],
-  'nutrition' => $measurements['nutrition'],
-  'photo' => $measurements['photo'],
 ];
+
+foreach (array_keys($measurements) as $type) {
+  $mapping[$type] = $measurements[$type];
+}
 
 foreach ($mapping as $name => $rows) {
   $content = [];
