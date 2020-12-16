@@ -150,7 +150,12 @@ $group_measurements_fields = [
   'field_session',
 ];
 $group_measurements = [
-  'attendance' => [array_merge($group_measurements_fields, ['field_attended'])],
+  'attendance' => [
+    array_merge(
+      $group_measurements_fields,
+      ['field_attended']
+    )
+  ],
   'child_fbf' => [
     array_merge(
       $group_measurements_fields,
@@ -169,16 +174,35 @@ $group_measurements = [
       ['field_height', 'field_zscore_age']
     ),
   ],
-  'lactation' => [array_merge($group_measurements_fields, ['field_lactation_signs'])],
+  'lactation' => [
+    array_merge(
+      $group_measurements_fields,
+      ['field_lactation_signs']
+    )
+  ],
   'mother_fbf' => [
     array_merge(
       $group_measurements_fields,
       ['field_distributed_amount', 'field_distribution_notice']
     )
   ],
-  'muac' => [array_merge($group_measurements_fields, ['field_muac'])],
-  'nutrition' => [array_merge($group_measurements_fields, ['field_nutrition_signs'])],
-  'photo' => [array_merge($group_measurements_fields, ['field_photo'])],
+  'muac' => [
+    array_merge(
+      $group_measurements_fields,
+      ['field_muac']
+    )
+  ],
+  'nutrition' => [
+    array_merge(
+      $group_measurements_fields,
+      ['field_nutrition_signs'])
+  ],
+  'photo' => [
+    array_merge(
+      $group_measurements_fields,
+      ['field_photo']
+    )
+  ],
   'weight' => [
     array_merge(
       $group_measurements_fields,
