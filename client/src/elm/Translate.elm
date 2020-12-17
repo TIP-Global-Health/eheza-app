@@ -4630,7 +4630,7 @@ translationSet trans =
             }
 
         RemainingTotalToUpload ->
-            { english = "Remaining total to upload"
+            { english = "Remaining to upload, in total"
             , kinyarwanda = Nothing
             }
 
