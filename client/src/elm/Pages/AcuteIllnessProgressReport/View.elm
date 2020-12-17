@@ -104,7 +104,7 @@ viewContent language currentDate id model data =
             [ viewHeader language currentDate id
             , viewPersonInfo language currentDate data.person data.measurements
             , viewAssessmentPane language currentDate data.diagnosis data.measurements
-            , viewSymptomsPane language currentDate data.measurements
+            , viewSymptomsPane language currentDate isFirstEncounter firstEncounterData
             , viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data
             , viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData data
             , viewEndEncounterButton language isFirstEncounter data.measurements pendingActivities data.diagnosis SetEndEncounterDialogState
@@ -234,118 +234,131 @@ viewAssessmentPane language currentDate diagnosis measurements =
         ]
 
 
-viewSymptomsPane : Language -> NominalDate -> AcuteIllnessMeasurements -> Html Msg
-viewSymptomsPane language currentDate measurements =
+viewSymptomsPane : Language -> NominalDate -> Bool -> Maybe ( NominalDate, AcuteIllnessMeasurements ) -> Html Msg
+viewSymptomsPane language currentDate isFirstEncounter firstEncounterData =
     let
-        symptomsMaxDuration getFunc measurement =
-            measurement
-                |> Maybe.andThen (Tuple.second >> getFunc >> Dict.values >> List.maximum)
-                |> Maybe.withDefault 1
+        headingTransId =
+            if isFirstEncounter then
+                Translate.Symptoms
 
-        maxDuration =
-            List.maximum
-                [ symptomsMaxDuration .value measurements.symptomsGeneral
-                , symptomsMaxDuration .value measurements.symptomsRespiratory
-                , symptomsMaxDuration (.value >> .signs) measurements.symptomsGI
-                ]
-                |> Maybe.withDefault 1
-
-        filterSymptoms symptomDuration exclusion dict =
-            Dict.toList dict
-                |> List.filterMap
-                    (\( symptom, count ) ->
-                        if symptom /= exclusion && count > symptomDuration then
-                            Just symptom
-
-                        else
-                            Nothing
-                    )
-
-        symptomsGeneral duration =
-            measurements.symptomsGeneral
-                |> Maybe.map
-                    (Tuple.second
-                        >> .value
-                        >> filterSymptoms duration NoSymptomsGeneral
-                        >> List.map (\symptom -> li [ class "general" ] [ text <| translate language (Translate.SymptomsGeneralSign symptom) ])
-                    )
-                |> Maybe.withDefault []
-
-        symptomsRespiratory duration =
-            measurements.symptomsRespiratory
-                |> Maybe.map
-                    (Tuple.second
-                        >> .value
-                        >> filterSymptoms duration NoSymptomsRespiratory
-                        >> List.map (\symptom -> li [ class "respiratory" ] [ text <| translate language (Translate.SymptomsRespiratorySign symptom) ])
-                    )
-                |> Maybe.withDefault []
-
-        symptomsGI duration =
-            measurements.symptomsGI
-                |> Maybe.map
-                    (\measurement ->
-                        Tuple.second measurement
-                            |> .value
-                            |> .signs
-                            |> filterSymptoms duration NoSymptomsGI
-                            |> List.map
-                                (\symptom ->
-                                    let
-                                        translation =
-                                            if symptom == Vomiting then
-                                                Tuple.second measurement
-                                                    |> .value
-                                                    |> .derivedSigns
-                                                    |> EverySet.member IntractableVomiting
-                                                    |> Translate.IntractableVomiting
-
-                                            else
-                                                Translate.SymptomsGISignAbbrev symptom
-                                    in
-                                    li [ class "gi" ] [ text <| translate language translation ]
-                                )
-                    )
-                |> Maybe.withDefault []
-
-        values =
-            List.repeat maxDuration currentDate
-                |> List.indexedMap
-                    (\index date ->
-                        ( Date.add Date.Days (-1 * index) date |> formatDDMMYY
-                        , symptomsGeneral index ++ symptomsRespiratory index ++ symptomsGI index
-                        )
-                    )
-                |> List.filter (Tuple.second >> List.isEmpty >> not)
-
-        totalValues =
-            List.length values
+            else
+                Translate.SymptomsAtFirstEncounter
 
         symptomsTable =
-            values
-                |> List.indexedMap
-                    (\index ( date, symptoms ) ->
+            firstEncounterData
+                |> Maybe.map
+                    (\( firstEncounterDate, measurements ) ->
                         let
-                            timeline =
-                                if index == 0 then
-                                    viewTimeLineTop (totalValues == 1)
+                            symptomsMaxDuration getFunc measurement =
+                                measurement
+                                    |> Maybe.andThen (Tuple.second >> getFunc >> Dict.values >> List.maximum)
+                                    |> Maybe.withDefault 1
 
-                                else if index == totalValues - 1 then
-                                    viewTimeLineBottom
+                            maxDuration =
+                                List.maximum
+                                    [ symptomsMaxDuration .value measurements.symptomsGeneral
+                                    , symptomsMaxDuration .value measurements.symptomsRespiratory
+                                    , symptomsMaxDuration (.value >> .signs) measurements.symptomsGI
+                                    ]
+                                    |> Maybe.withDefault 1
 
-                                else
-                                    viewTimeLineMiddle
+                            filterSymptoms symptomDuration exclusion dict =
+                                Dict.toList dict
+                                    |> List.filterMap
+                                        (\( symptom, count ) ->
+                                            if symptom /= exclusion && count > symptomDuration then
+                                                Just symptom
+
+                                            else
+                                                Nothing
+                                        )
+
+                            symptomsGeneral duration =
+                                measurements.symptomsGeneral
+                                    |> Maybe.map
+                                        (Tuple.second
+                                            >> .value
+                                            >> filterSymptoms duration NoSymptomsGeneral
+                                            >> List.map (\symptom -> li [ class "general" ] [ text <| translate language (Translate.SymptomsGeneralSign symptom) ])
+                                        )
+                                    |> Maybe.withDefault []
+
+                            symptomsRespiratory duration =
+                                measurements.symptomsRespiratory
+                                    |> Maybe.map
+                                        (Tuple.second
+                                            >> .value
+                                            >> filterSymptoms duration NoSymptomsRespiratory
+                                            >> List.map (\symptom -> li [ class "respiratory" ] [ text <| translate language (Translate.SymptomsRespiratorySign symptom) ])
+                                        )
+                                    |> Maybe.withDefault []
+
+                            symptomsGI duration =
+                                measurements.symptomsGI
+                                    |> Maybe.map
+                                        (\measurement ->
+                                            Tuple.second measurement
+                                                |> .value
+                                                |> .signs
+                                                |> filterSymptoms duration NoSymptomsGI
+                                                |> List.map
+                                                    (\symptom ->
+                                                        let
+                                                            translation =
+                                                                if symptom == Vomiting then
+                                                                    Tuple.second measurement
+                                                                        |> .value
+                                                                        |> .derivedSigns
+                                                                        |> EverySet.member IntractableVomiting
+                                                                        |> Translate.IntractableVomiting
+
+                                                                else
+                                                                    Translate.SymptomsGISignAbbrev symptom
+                                                        in
+                                                        li [ class "gi" ] [ text <| translate language translation ]
+                                                    )
+                                        )
+                                    |> Maybe.withDefault []
+
+                            values =
+                                List.repeat maxDuration firstEncounterDate
+                                    |> List.indexedMap
+                                        (\index date ->
+                                            ( Date.add Date.Days (-1 * index) date |> formatDDMMYY
+                                            , symptomsGeneral index ++ symptomsRespiratory index ++ symptomsGI index
+                                            )
+                                        )
+                                    |> List.filter (Tuple.second >> List.isEmpty >> not)
+
+                            totalValues =
+                                List.length values
                         in
-                        div [ class "symptoms-table-row" ]
-                            [ div [ class "date" ] [ text date ]
-                            , div [ class "timeline" ] timeline
-                            , ul [] symptoms
-                            ]
+                        values
+                            |> List.indexedMap
+                                (\index ( date, symptoms ) ->
+                                    let
+                                        timeline =
+                                            if index == 0 then
+                                                viewTimeLineTop (totalValues == 1)
+
+                                            else if index == totalValues - 1 then
+                                                viewTimeLineBottom
+
+                                            else
+                                                viewTimeLineMiddle
+                                    in
+                                    div [ class "symptoms-table-row" ]
+                                        [ div [ class "date" ] [ text date ]
+                                        , div [ class "timeline" ] timeline
+                                        , ul [] symptoms
+                                        ]
+                                )
+                            |> div [ class "symptoms-table" ]
                     )
-                |> div [ class "symptoms-table" ]
+                |> Maybe.withDefault emptyNode
     in
     div [ class "pane symptoms" ]
-        [ viewItemHeading language Translate.Symptoms "blue"
+        [ viewItemHeading language headingTransId "blue"
         , symptomsTable
         ]
 

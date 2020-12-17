@@ -771,6 +771,7 @@ type TranslationId
     | SuspectedCovid19CaseIsolate
     | SuspectedCovid19CaseContactHC
     | Symptoms
+    | SymptomsAtFirstEncounter
     | SymptomsGeneralSign SymptomsGeneralSign
     | SymptomsGISign SymptomsGISign
     | SymptomsGISignAbbrev SymptomsGISign
@@ -5438,6 +5439,11 @@ translationSet trans =
         Symptoms ->
             { english = "Symptoms"
             , kinyarwanda = Just "Ibimenyetso"
+            }
+
+        SymptomsAtFirstEncounter ->
+            { english = "Symptoms at first encounter"
+            , kinyarwanda = Nothing
             }
 
         SymptomsGeneralSign sign ->
