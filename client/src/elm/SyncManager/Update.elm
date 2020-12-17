@@ -389,15 +389,15 @@ update currentDate currentTime dbVersion device msg model =
 
                 -- When sync is completed (status is about to change to Idle), we need to decide on
                 -- additional actions:
-                -- If sync lasted  more than one minute (initial sync, for example), we refresh the page.
+                -- If sync lasted  more than 45 seconds (initial sync, for example), we refresh the page.
                 -- Otherwise, we trigger photos download.
                 extraMsgs =
                     if modelWithSyncStatus.syncStatus == SyncIdle then
-                        if authoritiesSyncTime > 60000 then
+                        if authoritiesSyncTime > 45000 then
                             [ SchedulePageRefresh ]
 
                         else
-                            [ TryDownloadingPhotos ]
+                            [ SchedulePhotosDownload ]
 
                     else
                         -- Sync is not completed yet - no additional actions.
