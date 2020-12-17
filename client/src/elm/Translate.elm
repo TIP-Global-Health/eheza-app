@@ -676,6 +676,7 @@ type TranslationId
     | RelationSuccessfulMotherWithChild
     | RemainingForDownloadLabel
     | RemainingForUploadLabel
+    | RemainingTotalToUpload
     | RenalDisease
     | ReportAge String
     | ReportDOB String
@@ -4626,6 +4627,11 @@ translationSet trans =
         RemainingForUploadLabel ->
             { english = "Remaining for Upload"
             , kinyarwanda = Just "Ibisigaye koherezwa kuri seriveri"
+            }
+
+        RemainingTotalToUpload ->
+            { english = "Remaining total to upload"
+            , kinyarwanda = Nothing
             }
 
         ReportAge age ->

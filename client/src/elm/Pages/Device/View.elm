@@ -64,6 +64,7 @@ viewDeviceStatus language device app model =
                 , div [ class "general-sync" ]
                     [ h2 [] [ text <| translate language Translate.SyncGeneral ]
                     , viewSyncInfo language app.syncManager.syncInfoGeneral
+                    , viewTotalEntriesToUpload language app.syncManager.totalEntriesToUpload
                     , viewDownloadPhotosInfo language app.syncManager.downloadPhotosStatus
                     ]
                 , viewHealthCenters language app
@@ -143,6 +144,17 @@ viewSyncInfo language info =
         , div [] [ text <| translate language Translate.RemainingForDownloadLabel ++ ": " ++ String.fromInt info.remainingToDownload ]
         , div [] [ text <| translate language Translate.StatusLabel ++ ": " ++ syncInfoStatusToString info.status ]
         ]
+
+
+viewTotalEntriesToUpload : Language -> Maybe Int -> Html Msg
+viewTotalEntriesToUpload language maybeTotal =
+    let
+        total =
+            maybeTotal
+                |> Maybe.map String.fromInt
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
+    in
+    div [ class "total-to-upload" ] [ text <| translate language Translate.RemainingTotalToUpload ++ ": " ++ total ]
 
 
 viewDownloadPhotosInfo : Language -> DownloadPhotosStatus -> Html Msg
