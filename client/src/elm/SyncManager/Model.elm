@@ -457,6 +457,7 @@ type alias IndexDbQueryDeferredPhotoResultRecord =
 
 type Msg
     = MsgDebouncer (Debouncer.Msg Msg)
+    | NoOp
     | SchedulePageRefresh
     | SchedulePhotosDownload
     | RefreshPage

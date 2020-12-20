@@ -1,5 +1,6 @@
 module SyncManager.Encoder exposing
     ( encodeDataForDeferredPhotos
+    , encodeDeviceSatateReport
     , encodeIndexDbQueryUploadAuthorityResultRecord
     , encodeIndexDbQueryUploadGeneralResultRecord
     )
@@ -126,6 +127,13 @@ encodeDataForDeferredPhotos photoUrl entityIdentifier =
     ]
         |> Json.Encode.object
         |> Json.Encode.encode 0
+
+
+encodeDeviceSatateReport : String -> Int -> List ( String, Value )
+encodeDeviceSatateReport version totalToUpload =
+    [ ( "version", string version )
+    , ( "total_to_upload", int totalToUpload )
+    ]
 
 
 encodeUploadMethod : UploadMethod -> Value

@@ -31,6 +31,7 @@ import SyncManager.Utils
         )
 import Time
 import Utils.WebData
+import Version
 
 
 update : NominalDate -> Time.Posix -> Int -> Device -> Msg -> Model -> SubModelReturn Model Msg
@@ -72,6 +73,9 @@ update currentDate currentTime dbVersion device msg model =
                 noError
                 []
                 |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) (Maybe.Extra.toList extraMsg)
+
+        NoOp ->
+            noChange
 
         SchedulePageRefresh ->
             noChange
@@ -736,9 +740,19 @@ update currentDate currentTime dbVersion device msg model =
                 []
 
         SetTotalEntriesToUpload val ->
+            let
+                version =
+                    Version.version.build
+
+                cmd =
+                    HttpBuilder.post (device.backendUrl ++ "/api/report-state")
+                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeDeviceSatateReport version val)
+                        |> HttpBuilder.send (always NoOp)
+            in
             SubModelReturn
                 { model | totalEntriesToUpload = Just val }
-                Cmd.none
+                cmd
                 noError
                 []
 
