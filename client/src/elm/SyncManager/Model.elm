@@ -376,7 +376,7 @@ type IndexDbQueryType
     = -- Get a single photo pending uploading.
       IndexDbQueryUploadPhotoAuthority
     | IndexDbQueryUploadGeneral
-    | IndexDbQueryUploadAuthority
+    | IndexDbQueryUploadAuthority String
       -- Get a single deferred photo.
     | IndexDbQueryDeferredPhoto
       -- When we successfully download a photo, we remove it from the `deferredPhotos` table.
