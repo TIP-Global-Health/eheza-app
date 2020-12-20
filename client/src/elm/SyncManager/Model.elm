@@ -217,6 +217,7 @@ type alias Model =
     -- `idle` - 50; which is the minimum we will allow.
     -- `sync` - 10000. The means that sync will sit idle for 10 seconds.
     , syncSpeed : Editable SyncSpeed
+    , totalEntriesToUpload : Maybe Int
     }
 
 
@@ -231,6 +232,7 @@ emptyModel flags =
     , downloadPhotosBatchSize = flags.batchSize
     , syncCycle = SyncCycleOn
     , syncSpeed = Editable.ReadOnly flags.syncSpeed
+    , totalEntriesToUpload = Nothing
     }
 
 
@@ -384,6 +386,8 @@ type IndexDbQueryType
       -- We don't count cases where we were offline.
     | IndexDbQueryUpdateDeferredPhotoAttempts IndexDbQueryDeferredPhotoResultRecord
     | IndexDbQueryRemoveUploadPhotos (List Int)
+      -- Reports the number of entries at shardChanges table.
+    | IndexDbQueryGetTotalEntriesToUpload
 
 
 type IndexDbQueryTypeResult
@@ -393,6 +397,7 @@ type IndexDbQueryTypeResult
     | IndexDbQueryUploadGeneralResult (Maybe IndexDbQueryUploadGeneralResultRecord)
       -- A single deferred photo, if exists.
     | IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
+    | IndexDbQueryGetTotalEntriesToUploadResult Int
 
 
 type UploadPhotoError
@@ -487,6 +492,7 @@ type Msg
     | RevisionIdAuthorityRemove HealthCenterId
     | SetLastFetchedRevisionIdAuthority (Zipper SyncInfoAuthority) Int
     | SetLastFetchedRevisionIdGeneral Int
+    | SetTotalEntriesToUpload Int
       -- UI settings
     | ResetSettings
     | SaveSettings

@@ -397,7 +397,7 @@ update currentDate currentTime dbVersion device msg model =
                             [ SchedulePageRefresh ]
 
                         else
-                            [ SchedulePhotosDownload ]
+                            [ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
                     else
                         -- Sync is not completed yet - no additional actions.
@@ -735,6 +735,13 @@ update currentDate currentTime dbVersion device msg model =
                 noError
                 []
 
+        SetTotalEntriesToUpload val ->
+            SubModelReturn
+                { model | totalEntriesToUpload = Just val }
+                Cmd.none
+                noError
+                []
+
         FetchFromIndexDbDeferredPhoto ->
             -- Get a deferred photo from IndexDB.
             case model.downloadPhotosStatus of
@@ -943,11 +950,8 @@ update currentDate currentTime dbVersion device msg model =
 
                                 else
                                     HttpBuilder.post (device.backendUrl ++ "/api/sync")
-                                        |> withQueryParams
-                                            [ ( "access_token", device.accessToken )
-                                            , ( "db_version", String.fromInt dbVersion )
-                                            ]
-                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadAuthorityResultRecord result)
+                                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadAuthorityResultRecord dbVersion result)
                                         -- We don't need to decode anything, as we just want to have
                                         -- the browser download it.
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadAuthorityHandle result)
@@ -1126,11 +1130,8 @@ update currentDate currentTime dbVersion device msg model =
 
                                 else
                                     HttpBuilder.post (device.backendUrl ++ "/api/sync")
-                                        |> withQueryParams
-                                            [ ( "access_token", device.accessToken )
-                                            , ( "db_version", String.fromInt dbVersion )
-                                            ]
-                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord result)
+                                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord dbVersion result)
                                         -- We don't need to decode anything, as we just want to have
                                         -- the browser download it.
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle result)
@@ -1442,6 +1443,11 @@ update currentDate currentTime dbVersion device msg model =
                             { queryType = "IndexDbQueryRemoveUploadPhotos"
                             , data = Just uuidsAsString
                             }
+
+                        IndexDbQueryGetTotalEntriesToUpload ->
+                            { queryType = "IndexDbQueryGetTotalEntriesToUpload"
+                            , data = Nothing
+                            }
             in
             SubModelReturn
                 model
@@ -1487,6 +1493,15 @@ update currentDate currentTime dbVersion device msg model =
                                 dbVersion
                                 device
                                 (BackendDeferredPhotoFetch result)
+                                model
+
+                        IndexDbQueryGetTotalEntriesToUploadResult result ->
+                            update
+                                currentDate
+                                currentTime
+                                dbVersion
+                                device
+                                (SetTotalEntriesToUpload result)
                                 model
 
                 Err error ->

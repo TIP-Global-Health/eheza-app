@@ -747,6 +747,17 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       })();
       break;
 
+    case 'IndexDbQueryGetTotalEntriesToUpload':
+      (async () => {
+
+        let totalEntites = await dbSync
+            .shardChanges
+            .count();
+
+        return sendResultToElm(queryType, totalEntites);
+      })();
+        break;
+
     default:
       throw queryType + ' is not a known Query type for `askFromIndexDb`';
   }
