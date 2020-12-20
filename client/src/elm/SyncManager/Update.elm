@@ -397,7 +397,7 @@ update currentDate currentTime dbVersion device msg model =
                             [ SchedulePageRefresh ]
 
                         else
-                            [ SchedulePhotosDownload ]
+                            [ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
                     else
                         -- Sync is not completed yet - no additional actions.
@@ -731,6 +731,13 @@ update currentDate currentTime dbVersion device msg model =
             in
             SubModelReturn
                 { model | syncInfoGeneral = infoUpdated }
+                Cmd.none
+                noError
+                []
+
+        SetTotalEntriesToUpload val ->
+            SubModelReturn
+                { model | totalEntriesToUpload = Just val }
                 Cmd.none
                 noError
                 []
@@ -1442,6 +1449,11 @@ update currentDate currentTime dbVersion device msg model =
                             { queryType = "IndexDbQueryRemoveUploadPhotos"
                             , data = Just uuidsAsString
                             }
+
+                        IndexDbQueryGetTotalEntriesToUpload ->
+                            { queryType = "IndexDbQueryGetTotalEntriesToUpload"
+                            , data = Nothing
+                            }
             in
             SubModelReturn
                 model
@@ -1487,6 +1499,15 @@ update currentDate currentTime dbVersion device msg model =
                                 dbVersion
                                 device
                                 (BackendDeferredPhotoFetch result)
+                                model
+
+                        IndexDbQueryGetTotalEntriesToUploadResult result ->
+                            update
+                                currentDate
+                                currentTime
+                                dbVersion
+                                device
+                                (SetTotalEntriesToUpload result)
                                 model
 
                 Err error ->
