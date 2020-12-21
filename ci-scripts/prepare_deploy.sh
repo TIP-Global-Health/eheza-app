@@ -38,4 +38,4 @@ git clone ***REMOVED*** .pantheon
 ddev auth ssh
 
 # Workaround for non-matching NPM/node version inside DDEV and Travis.
-git checkout client/package-lock.json
+git checkout ../client/package-lock.json
