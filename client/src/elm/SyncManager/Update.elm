@@ -843,20 +843,31 @@ update currentDate currentTime dbVersion device msg model =
                         noChange
 
                     else
-                        let
-                            recordUpdated =
-                                { record
-                                    | indexDbRemoteData = RemoteData.Loading
-                                    , backendRemoteData = RemoteData.NotAsked
-                                }
-                        in
-                        update
-                            currentDate
-                            currentTime
-                            dbVersion
-                            device
-                            (QueryIndexDb IndexDbQueryUploadAuthority)
-                            { model | syncStatus = SyncUploadAuthority recordUpdated }
+                        case model.syncInfoAuthorities of
+                            Nothing ->
+                                -- No zipper, means not subscribed yet to any
+                                -- authority. `determineSyncStatus` will take care of
+                                -- rotating if we're not on automatic sync.
+                                determineSyncStatus
+
+                            Just zipper ->
+                                let
+                                    currentZipper =
+                                        Zipper.current zipper
+
+                                    recordUpdated =
+                                        { record
+                                            | indexDbRemoteData = RemoteData.Loading
+                                            , backendRemoteData = RemoteData.NotAsked
+                                        }
+                                in
+                                update
+                                    currentDate
+                                    currentTime
+                                    dbVersion
+                                    device
+                                    (QueryIndexDb <| IndexDbQueryUploadAuthority currentZipper.uuid)
+                                    { model | syncStatus = SyncUploadAuthority recordUpdated }
 
                 _ ->
                     noChange
@@ -1417,9 +1428,9 @@ update currentDate currentTime dbVersion device msg model =
                             , data = Nothing
                             }
 
-                        IndexDbQueryUploadAuthority ->
+                        IndexDbQueryUploadAuthority uuid ->
                             { queryType = "IndexDbQueryUploadAuthority"
-                            , data = Nothing
+                            , data = Just uuid
                             }
 
                         IndexDbQueryDeferredPhoto ->
