@@ -484,6 +484,7 @@ type Msg
     | BackendUploadGeneral (Maybe IndexDbQueryUploadGeneralResultRecord)
     | BackendUploadGeneralHandle IndexDbQueryUploadGeneralResultRecord (WebData ())
     | BackendUploadPhotoAuthorityHandle (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
+    | BackendReportState Int
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto
@@ -493,7 +494,6 @@ type Msg
     | RevisionIdAuthorityRemove HealthCenterId
     | SetLastFetchedRevisionIdAuthority (Zipper SyncInfoAuthority) Int
     | SetLastFetchedRevisionIdGeneral Int
-    | SetTotalEntriesToUpload Int
       -- UI settings
     | ResetSettings
     | SaveSettings

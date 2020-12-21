@@ -103,7 +103,10 @@ update currentDate currentTime dbVersion device msg model =
                                 -- No zipper, means not subscribed yet to any
                                 -- authority. `determineSyncStatus` will take care of
                                 -- rotating if we're not on automatic sync.
+                                -- We also, schdule photos download send devicestate report,
+                                -- so that version and synced authorities get updated on backend.
                                 determineSyncStatus
+                                    |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
                             Just zipper ->
                                 let
@@ -539,17 +542,8 @@ update currentDate currentTime dbVersion device msg model =
                     fromEntityUuid uuid
 
                 syncInfoAuthorities =
-                    case model.syncInfoAuthorities of
-                        Just zipper ->
-                            zipper
-                                |> Zipper.toList
-                                |> List.filter (\row -> row.uuid /= uuidAsString)
-                                |> Zipper.fromList
-
-                        Nothing ->
-                            -- We don't seem to have a zipper, so we cannot add
-                            -- it.
-                            Nothing
+                    model.syncInfoAuthorities
+                        |> Maybe.andThen (Zipper.toList >> List.filter (\row -> row.uuid /= uuidAsString) >> Zipper.fromList)
 
                 cmd =
                     case syncInfoAuthorities of
@@ -557,7 +551,8 @@ update currentDate currentTime dbVersion device msg model =
                             sendSyncInfoAuthoritiesCmd zipper
 
                         Nothing ->
-                            Cmd.none
+                            -- There're no authorities to sync, so we set an empty list.
+                            sendSyncInfoAuthorities []
             in
             SubModelReturn
                 { model | syncInfoAuthorities = syncInfoAuthorities }
@@ -739,19 +734,24 @@ update currentDate currentTime dbVersion device msg model =
                 noError
                 []
 
-        SetTotalEntriesToUpload val ->
+        BackendReportState totalToUpload ->
             let
                 version =
                     Version.version.build
 
+                syncedAutorities =
+                    model.syncInfoAuthorities
+                        |> Maybe.map (Zipper.toList >> List.map .uuid)
+                        |> Maybe.withDefault []
+
                 cmd =
                     HttpBuilder.post (device.backendUrl ++ "/api/report-state")
                         |> withQueryParams [ ( "access_token", device.accessToken ) ]
-                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeDeviceSatateReport version val)
+                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeDeviceSatateReport version totalToUpload syncedAutorities)
                         |> HttpBuilder.send (always NoOp)
             in
             SubModelReturn
-                { model | totalEntriesToUpload = Just val }
+                { model | totalEntriesToUpload = Just totalToUpload }
                 cmd
                 noError
                 []
@@ -1515,7 +1515,7 @@ update currentDate currentTime dbVersion device msg model =
                                 currentTime
                                 dbVersion
                                 device
-                                (SetTotalEntriesToUpload result)
+                                (BackendReportState result)
                                 model
 
                 Err error ->
