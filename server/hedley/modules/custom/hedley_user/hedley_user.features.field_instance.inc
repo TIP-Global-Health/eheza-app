@@ -484,6 +484,80 @@ function hedley_user_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'user-user-field_total_to_upload'.
+  $field_instances['user-user-field_total_to_upload'] = array(
+    'bundle' => 'user',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 6,
+      ),
+    ),
+    'entity_type' => 'user',
+    'field_name' => 'field_total_to_upload',
+    'label' => 'Total to upload',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => 0,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 14,
+    ),
+  );
+
+  // Exported field_instance: 'user-user-field_version'.
+  $field_instances['user-user-field_version'] = array(
+    'bundle' => 'user',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 5,
+      ),
+    ),
+    'entity_type' => 'user',
+    'field_name' => 'field_version',
+    'label' => 'Version',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => 0,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 13,
+    ),
+  );
+
   // Translatables
   // Included for use with string extractors like potx.
   t('A code which users can provide on devices to identify themselves.');
@@ -495,7 +569,9 @@ function hedley_user_field_default_field_instances() {
   t('Phone');
   t('Profile photo');
   t('Role');
+  t('Total to upload');
   t('UUID');
+  t('Version');
   t('Villages');
   t('Which clinics is this user allowed to participate in?');
   t('Which clinics is this user authorized to work with? Deprecated -- use `Health Centers` instead.');
