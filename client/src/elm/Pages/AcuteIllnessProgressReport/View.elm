@@ -203,15 +203,23 @@ viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subs
                 |> Maybe.map
                     (\diagnosis ->
                         let
-                            isImproving =
-                                not <| sendToHCOnSubsequentVisit currentDate data.person data.measurements
+                            suffixText =
+                                if isFirstEncounter then
+                                    []
+
+                                else
+                                    let
+                                        isImproving =
+                                            not <| sendToHCOnSubsequentVisit currentDate data.person data.measurements
+                                    in
+                                    [ text " - ["
+                                    , text <| translate language <| Translate.ConditionImproving isImproving
+                                    , text "]"
+                                    ]
                         in
-                        div [ class "diagnosis" ]
-                            [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis
-                            , text " - ["
-                            , text <| translate language <| Translate.ConditionImproving isImproving
-                            , text "]"
-                            ]
+                        (text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis)
+                            :: suffixText
+                            |> div [ class "diagnosis" ]
                     )
                 |> Maybe.withDefault emptyNode
     in
