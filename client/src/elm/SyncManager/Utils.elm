@@ -173,28 +173,22 @@ determineSyncStatus model =
                                 , syncInfoAuthorities
                                 )
 
-                            ( Just zipper, RemoteData.Success data ) ->
-                                if Zipper.isLast zipper then
-                                    ( SyncIdle
-                                    , Just (Zipper.first zipper)
-                                    )
+                            ( Just zipper, RemoteData.Success _ ) ->
+                                -- Go to the next authority if there is
+                                -- otherwise, to the next status
+                                case Zipper.next zipper of
+                                    Just nextZipper ->
+                                        ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
+                                        , Just nextZipper
+                                        )
 
-                                else
-                                    -- Go to the next authority if there is
-                                    -- otherwise, to the next status
-                                    case Zipper.next zipper of
-                                        Just nextZipper ->
-                                            ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
-                                            , Just nextZipper
-                                            )
-
-                                        Nothing ->
-                                            -- We've reached the last element
-                                            -- so reset it back, and rotate
-                                            -- to the next status.
-                                            ( SyncIdle
-                                            , Just (Zipper.first zipper)
-                                            )
+                                    Nothing ->
+                                        -- We've reached the last element,
+                                        -- so reset authorities zipper to first element,
+                                        -- and rotate to the next status.
+                                        ( SyncIdle
+                                        , Just (Zipper.first zipper)
+                                        )
 
                             _ ->
                                 noChange
