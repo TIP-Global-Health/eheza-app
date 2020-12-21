@@ -216,6 +216,8 @@ function hedley_restful_resolve_nids_for_uuids(array $uuids) {
   $query = db_select('field_data_field_uuid', 'uuid');
   $query->condition('uuid.field_uuid_value', $uuids, 'IN');
   $query->addField('uuid', 'entity_id');
+  // Limit to 500 results, to avoid running out of memory.
+  $query->range(0, 500);
 
   $result = $query
     ->execute()
