@@ -32,7 +32,11 @@ class HedleyRestfulReportState extends \RestfulBase implements \RestfulDataProvi
   }
 
   /**
+   * Records device state data reported by clients.
+   *
    * @return array
+   *   We don't need to return anything, so we return an empty array.
+   *
    * @throws \EntityMetadataWrapperException
    * @throws \RestfulBadRequestException
    */
