@@ -638,7 +638,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .shardChanges
             .where('shard')
             .equals(authorityId)
-            .and(function(item) { return item.isSynced != 1; })
+            .and((item) => { return item.isSynced != 1; })
             .count();
 
         if (totalEntites == 0) {
@@ -650,7 +650,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .shardChanges
             .where('shard')
             .equals(authorityId)
-            .and(function(item) { return item.isSynced != 1; })
+            .and((item) => { return item.isSynced != 1; })
             .limit(batchSize)
             .toArray();
 
