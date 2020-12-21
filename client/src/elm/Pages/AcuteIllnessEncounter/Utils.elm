@@ -214,10 +214,7 @@ expectActivity currentDate isFirstEncounter data activity =
                     |> isJust
 
             else
-                sendToHCOnSubsequentVisitByDangerSigns data.measurements
-                    || sendToHCOnSubsequentVisitByVitals currentDate data.person data.measurements
-                    || sendToHCOnSubsequentVisitByMuac data.measurements
-                    || sendToHCOnSubsequentVisitByNutrition data.measurements
+                sendToHCOnSubsequentVisit currentDate data.person data.measurements
 
         AcuteIllnessOngoingTreatment ->
             if isFirstEncounter then
@@ -245,6 +242,14 @@ expectActivity currentDate isFirstEncounter data activity =
 
         _ ->
             True
+
+
+sendToHCOnSubsequentVisit : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
+sendToHCOnSubsequentVisit currentDate person measurements =
+    sendToHCOnSubsequentVisitByDangerSigns measurements
+        || sendToHCOnSubsequentVisitByVitals currentDate person measurements
+        || sendToHCOnSubsequentVisitByMuac measurements
+        || sendToHCOnSubsequentVisitByNutrition measurements
 
 
 sendToHCOnSubsequentVisitByDangerSigns : AcuteIllnessMeasurements -> Bool

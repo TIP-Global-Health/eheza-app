@@ -354,6 +354,7 @@ type TranslationId
     | GroupUnauthorized
     | Close
     | Closed
+    | ConditionImproving Bool
     | ConditionImprovingQuestion
     | ConfirmationRequired
     | ConfirmDeleteTrainingGroupEncounters
@@ -2165,6 +2166,17 @@ translationSet trans =
             { english = "Are you sure you want to save this participant's data?"
             , kinyarwanda = Nothing
             }
+
+        ConditionImproving isImproving ->
+            if isImproving then
+                { english = "Improving"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "Not improving"
+                , kinyarwanda = Nothing
+                }
 
         ConditionImprovingQuestion ->
             { english = "Is your condition improving"

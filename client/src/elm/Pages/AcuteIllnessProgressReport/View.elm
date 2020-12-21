@@ -22,7 +22,7 @@ import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
-import Pages.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisToMaybe, generateAssembledData, resolveNextStepByDiagnosis)
+import Pages.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisToMaybe, generateAssembledData, resolveNextStepByDiagnosis, sendToHCOnSubsequentVisit)
 import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
 import Pages.AcuteIllnessProgressReport.Model exposing (..)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
@@ -200,7 +200,19 @@ viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subs
     let
         assessment =
             data.diagnosis
-                |> Maybe.map (Translate.AcuteIllnessDiagnosisWarning >> translate language >> text >> List.singleton >> div [ class "diagnosis" ])
+                |> Maybe.map
+                    (\diagnosis ->
+                        let
+                            isImproving =
+                                not <| sendToHCOnSubsequentVisit currentDate data.person data.measurements
+                        in
+                        div [ class "diagnosis" ]
+                            [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis
+                            , text " - ["
+                            , text <| translate language <| Translate.ConditionImproving isImproving
+                            , text "]"
+                            ]
+                    )
                 |> Maybe.withDefault emptyNode
     in
     div [ class "pane assessment" ]
