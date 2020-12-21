@@ -265,6 +265,7 @@ type TranslationId
     | AdministeredMedicationQuestion
     | AddressInformation
     | Adherence Adherence
+    | AdverseEventSinglePlural Int
     | AfterEachLiquidStool
     | AgeWord
     | Age Int Int
@@ -543,12 +544,14 @@ type TranslationId
     | MedicationForMalariaTodayQuestion
     | MedicationForMalariaWithinPastMonthQuestion
     | MedicationHelpedQuestion
+    | MedicationTaken
     | MedicationTakenAsPrescribedQuestion
     | MentalHealthHistory
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MMHGUnit
     | MiddleName
     | MinutesAgo Int
+    | MissedDosesOfMedicatgion Int
     | ModeOfDelivery ModeOfDelivery
     | ModeOfDeliveryLabel
     | Month
@@ -604,6 +607,7 @@ type TranslationId
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
     | Old
+    | On
     | OneVisit
     | OnceYouEndTheEncounter
     | OnceYouEndYourGroupEncounter
@@ -800,6 +804,7 @@ type TranslationId
     | Tachypnea
     | TabletSinglePlural String
     | TakenCareOfBy
+    | TakingMedicationAsPrescribed Bool
     | TasksCompleted Int Int
     | TelephoneNumber
     | Term
@@ -1608,6 +1613,17 @@ translationSet trans =
 
         Adherence adherence ->
             translateAdherence adherence
+
+        AdverseEventSinglePlural val ->
+            if val == 1 then
+                { english = "Adverse event"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "Adverse events"
+                , kinyarwanda = Nothing
+                }
 
         Age months days ->
             { english = String.fromInt months ++ " months " ++ String.fromInt days ++ " days"
@@ -3704,6 +3720,11 @@ translationSet trans =
             , kinyarwanda = Just "Urumva umeze neza nyuma yo kunywa iyi miti"
             }
 
+        MedicationTaken ->
+            { english = "Medication taken"
+            , kinyarwanda = Nothing
+            }
+
         MedicationTakenAsPrescribedQuestion ->
             { english = "Did you take the medication as prescribed"
             , kinyarwanda = Nothing
@@ -3744,6 +3765,17 @@ translationSet trans =
                 else
                     Just <| String.fromInt minutes ++ " hashize iminota micye"
             }
+
+        MissedDosesOfMedicatgion val ->
+            if val == 0 then
+                { english = "No missed doses of medication"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "Missed " ++ String.fromInt val ++ " doses of medication"
+                , kinyarwanda = Nothing
+                }
 
         ModeOfDelivery mode ->
             case mode of
@@ -4193,6 +4225,11 @@ translationSet trans =
         Old ->
             { english = "old"
             , kinyarwanda = Just "imyaka"
+            }
+
+        On ->
+            { english = "On"
+            , kinyarwanda = Nothing
             }
 
         OneVisit ->
@@ -5754,6 +5791,17 @@ translationSet trans =
             { english = "Taken care of by"
             , kinyarwanda = Nothing
             }
+
+        TakingMedicationAsPrescribed taking ->
+            if taking then
+                { english = "Taking medication as prescribed"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "Not taking medication as prescribed because of"
+                , kinyarwanda = Nothing
+                }
 
         TasksCompleted completed total ->
             { english = String.fromInt completed ++ "/" ++ String.fromInt total ++ " Tasks Completed"

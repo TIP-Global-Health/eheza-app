@@ -103,7 +103,7 @@ viewContent language currentDate id model data =
             [ class "ui report unstackable items" ]
             [ viewHeader language currentDate id
             , viewPersonInfo language currentDate data.person data.measurements
-            , viewAssessmentPane language currentDate data.diagnosis data.measurements
+            , viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subsequentEncountersData data
             , viewSymptomsPane language currentDate isFirstEncounter firstEncounterData
             , viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data
             , viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData data
@@ -188,50 +188,183 @@ viewPersonInfo language currentDate person measurements =
         ]
 
 
-viewAssessmentPane : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> Html Msg
-viewAssessmentPane language currentDate diagnosis measurements =
+viewAssessmentPane :
+    Language
+    -> NominalDate
+    -> Bool
+    -> Maybe ( NominalDate, AcuteIllnessMeasurements )
+    -> List ( NominalDate, AcuteIllnessMeasurements )
+    -> AssembledData
+    -> Html Msg
+viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subsequentEncountersData data =
     let
-        treatmentReview =
-            measurements.treatmentReview
-                |> Maybe.map (Tuple.second >> .value)
-
-        viewTreatmentSignInfo sign signHelped signTransId =
-            treatmentReview
-                |> Maybe.map
-                    (\signs ->
-                        if EverySet.member sign signs then
-                            let
-                                medicationHelpedEndiln =
-                                    EverySet.member signHelped signs
-                                        |> Translate.MedicationHelpedEnding
-                                        |> translate language
-                            in
-                            div [ class "treatment-comment" ]
-                                [ text <| translate language signTransId
-                                , text ","
-                                , b [] [ text medicationHelpedEndiln ]
-                                , text "."
-                                ]
-
-                        else
-                            emptyNode
-                    )
-                |> Maybe.withDefault emptyNode
-
         assessment =
-            diagnosis
+            data.diagnosis
                 |> Maybe.map (Translate.AcuteIllnessDiagnosisWarning >> translate language >> text >> List.singleton >> div [ class "diagnosis" ])
                 |> Maybe.withDefault emptyNode
     in
     div [ class "pane assessment" ]
         [ viewItemHeading language Translate.Assessment "blue"
-        , div [ class "pane-content" ]
-            [ assessment
-            , viewTreatmentSignInfo FeverPast6Hours FeverPast6HoursHelped Translate.MedicationForFeverPast6Hours
-            , viewTreatmentSignInfo MalariaToday MalariaTodayHelped Translate.MedicationForMalariaToday
-            , viewTreatmentSignInfo MalariaWithinPastMonth MalariaWithinPastMonthHelped Translate.MedicationForMalariaPastMonth
-            ]
+        , assessment
+            :: viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subsequentEncountersData
+            |> div [ class "pane-content" ]
         ]
+
+
+viewTreatmentSigns :
+    Language
+    -> NominalDate
+    -> Bool
+    -> Maybe ( NominalDate, AcuteIllnessMeasurements )
+    -> List ( NominalDate, AcuteIllnessMeasurements )
+    -> List (Html Msg)
+viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subsequentEncountersData =
+    firstEncounterData
+        |> Maybe.map
+            (\( _, firstEncounterMeasurements ) ->
+                if isFirstEncounter then
+                    let
+                        treatmentReview =
+                            firstEncounterMeasurements.treatmentReview
+                                |> Maybe.map (Tuple.second >> .value)
+
+                        viewTreatmentSignInfo sign signHelped signTransId =
+                            treatmentReview
+                                |> Maybe.map
+                                    (\signs ->
+                                        if EverySet.member sign signs then
+                                            let
+                                                medicationHelpedEnding =
+                                                    EverySet.member signHelped signs
+                                                        |> Translate.MedicationHelpedEnding
+                                                        |> translate language
+                                            in
+                                            div [ class "treatment-comment" ]
+                                                [ text <| translate language signTransId
+                                                , text ","
+                                                , b [] [ text medicationHelpedEnding ]
+                                                , text "."
+                                                ]
+
+                                        else
+                                            emptyNode
+                                    )
+                                |> Maybe.withDefault emptyNode
+                    in
+                    [ viewTreatmentSignInfo FeverPast6Hours FeverPast6HoursHelped Translate.MedicationForFeverPast6Hours
+                    , viewTreatmentSignInfo MalariaToday MalariaTodayHelped Translate.MedicationForMalariaToday
+                    , viewTreatmentSignInfo MalariaWithinPastMonth MalariaWithinPastMonthHelped Translate.MedicationForMalariaPastMonth
+                    ]
+
+                else
+                    let
+                        prescribedMedication =
+                            firstEncounterMeasurements.medicationDistribution
+                                |> Maybe.map
+                                    (Tuple.second
+                                        >> .value
+                                        >> .distributionSigns
+                                        >> EverySet.toList
+                                        >> List.filter (\sign -> not <| List.member sign [ LemonJuiceOrHoney, NoMedicationDistributionSigns ])
+                                    )
+                                |> Maybe.withDefault []
+
+                        viewTreatmentOngoing treatmentOngoing =
+                            let
+                                viewTakenAsPrescribed =
+                                    if EverySet.member TakenAsPrescribed treatmentOngoing.signs then
+                                        div [ class "treatment-comment" ]
+                                            [ text "- "
+                                            , text <| translate language <| Translate.TakingMedicationAsPrescribed True
+                                            , text "."
+                                            ]
+
+                                    else
+                                        div [ class "treatment-comment" ]
+                                            [ text "- "
+                                            , text <| translate language <| Translate.TakingMedicationAsPrescribed False
+                                            , text " "
+                                            , text <| translate language <| Translate.ReasonForNotTaking treatmentOngoing.reasonForNotTaking
+                                            , text "."
+                                            ]
+
+                                missedDoses =
+                                    if EverySet.member MissedDoses treatmentOngoing.signs then
+                                        treatmentOngoing.missedDoses
+
+                                    else
+                                        0
+
+                                viewMissedDoses =
+                                    div [ class "treatment-comment" ]
+                                        [ text "- "
+                                        , text <| translate language <| Translate.MissedDosesOfMedicatgion missedDoses
+                                        , text "."
+                                        ]
+
+                                viewAdverseEvents =
+                                    if EverySet.member SideEffects treatmentOngoing.signs then
+                                        let
+                                            medications =
+                                                prescribedMedication
+                                                    |> List.map (Translate.MedicationDistributionSign >> translate language)
+                                                    |> String.join ", "
+
+                                            events =
+                                                EverySet.toList treatmentOngoing.adverseEvents
+                                                    |> List.map (Translate.AcuteIllnessAdverseEvent >> translate language)
+                                        in
+                                        [ div [ class "treatment-comment" ]
+                                            [ text "- "
+                                            , text <| translate language Translate.MedicationTaken
+                                            , text ": "
+                                            , text medications
+                                            , text "."
+                                            ]
+                                        , div [ class "treatment-comment" ]
+                                            [ text "- "
+                                            , text <| translate language <| Translate.AdverseEventSinglePlural <| List.length events
+                                            , text ": "
+                                            , text <| String.join ", " events
+                                            , text "."
+                                            ]
+                                        ]
+
+                                    else
+                                        []
+                            in
+                            [ viewTakenAsPrescribed
+                            , viewMissedDoses
+                            ]
+                                ++ viewAdverseEvents
+                    in
+                    if List.isEmpty prescribedMedication then
+                        []
+
+                    else
+                        subsequentEncountersData
+                            |> List.reverse
+                            |> List.map
+                                (\( date, subsequentEncounterMeasurements ) ->
+                                    subsequentEncounterMeasurements.treatmentOngoing
+                                        |> Maybe.map
+                                            (Tuple.second
+                                                >> .value
+                                                >> viewTreatmentOngoing
+                                                >> List.append
+                                                    [ div [ class "visit-date" ]
+                                                        [ text <| translate language <| Translate.On
+                                                        , text " "
+                                                        , text <| formatDDMMYY date
+                                                        , text " :"
+                                                        ]
+                                                    ]
+                                            )
+                                        |> Maybe.withDefault []
+                                )
+                            |> List.concat
+            )
+        |> Maybe.withDefault []
 
 
 viewSymptomsPane : Language -> NominalDate -> Bool -> Maybe ( NominalDate, AcuteIllnessMeasurements ) -> Html Msg
