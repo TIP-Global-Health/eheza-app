@@ -40,7 +40,14 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (OutMsgMother(..))
 import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessEncounter.Model
-import Pages.AcuteIllnessEncounter.Utils exposing (resolveAcuteIllnessDiagnosis, resolveNextStepByDiagnosis, talkedTo114)
+import Pages.AcuteIllnessEncounter.Utils
+    exposing
+        ( generateAssembledData
+        , resolveAcuteIllnessDiagnosisFirstEncounter
+        , resolveAcuteIllnessDiagnosisSubsequentEncounter
+        , resolveNextStepByDiagnosis
+        , talkedTo114
+        )
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
@@ -2096,17 +2103,34 @@ handleRevision revision (( model, recalc ) as noChange) =
 generateSuspectedDiagnosisMsgs : NominalDate -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
 generateSuspectedDiagnosisMsgs currentDate before after id person =
     let
+        assembled =
+            generateAssembledData id after
+
+        isFirstEncounter =
+            RemoteData.toMaybe assembled
+                |> Maybe.map (\data -> List.isEmpty data.previousMeasurementsWithDates)
+                |> Maybe.withDefault True
+
+        resolveDiagnosisFunc =
+            if isFirstEncounter then
+                resolveAcuteIllnessDiagnosisFirstEncounter currentDate person
+
+            else
+                RemoteData.toMaybe assembled
+                    |> Maybe.map (resolveAcuteIllnessDiagnosisSubsequentEncounter currentDate)
+                    |> Maybe.withDefault Nothing
+
         diagnosisBeforeChange =
             Dict.get id before.acuteIllnessMeasurements
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
-                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person True)
+                |> Maybe.andThen resolveDiagnosisFunc
 
         diagnosisAfterChange =
             Dict.get id after.acuteIllnessMeasurements
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
-                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person True)
+                |> Maybe.andThen resolveDiagnosisFunc
 
         updateDiagnosisMsg diagnosis =
             Backend.AcuteIllnessEncounter.Model.SetAcuteIllnessDiagnosis diagnosis

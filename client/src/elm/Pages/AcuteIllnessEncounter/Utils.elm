@@ -79,9 +79,6 @@ generateAssembledData id db =
                     )
                 |> RemoteData.withDefault []
 
-        previousMeasurements =
-            List.map Tuple.second previousMeasurementsWithDates
-
         diagnosis =
             encounter
                 |> RemoteData.toMaybe
@@ -208,7 +205,7 @@ expectActivity currentDate isFirstEncounter data activity =
     case activity of
         AcuteIllnessLaboratory ->
             if isFirstEncounter then
-                mandatoryActivitiesCompletedFirstEncounter currentDate data.person isFirstEncounter data.measurements
+                mandatoryActivitiesCompletedFirstEncounter currentDate data.person data.measurements
                     && feverRecorded data.measurements
 
             else
@@ -236,7 +233,7 @@ expectActivity currentDate isFirstEncounter data activity =
                     |> isJust
 
             else
-                mandatoryActivitiesCompletedSubsequentEncounter currentDate isFirstEncounter data
+                mandatoryActivitiesCompletedSubsequentEncounter currentDate data
 
         AcuteIllnessOngoingTreatment ->
             if isFirstEncounter then
@@ -350,10 +347,10 @@ activityCompleted currentDate isFirstEncounter data activity =
     in
     case activity of
         AcuteIllnessSymptoms ->
-            mandatoryActivityCompletedFirstEncounter currentDate person isFirstEncounter measurements AcuteIllnessSymptoms
+            mandatoryActivityCompletedFirstEncounter currentDate person measurements AcuteIllnessSymptoms
 
         AcuteIllnessPhysicalExam ->
-            mandatoryActivityCompletedFirstEncounter currentDate person isFirstEncounter measurements AcuteIllnessPhysicalExam
+            mandatoryActivityCompletedFirstEncounter currentDate person measurements AcuteIllnessPhysicalExam
 
         AcuteIllnessPriorTreatment ->
             isJust measurements.treatmentReview
@@ -362,7 +359,7 @@ activityCompleted currentDate isFirstEncounter data activity =
             isJust measurements.malariaTesting
 
         AcuteIllnessExposure ->
-            mandatoryActivityCompletedFirstEncounter currentDate person isFirstEncounter measurements AcuteIllnessExposure
+            mandatoryActivityCompletedFirstEncounter currentDate person measurements AcuteIllnessExposure
 
         AcuteIllnessNextSteps ->
             let
@@ -386,33 +383,35 @@ activityCompleted currentDate isFirstEncounter data activity =
 
             else
                 case nextStepsTasks of
+                    -- @todo Expand
                     [ NextStepsMedicationDistribution ] ->
                         isJust measurements.medicationDistribution
 
+                    -- @todo Expand
                     [ NextStepsSendToHC ] ->
                         isJust measurements.sendToHC
 
                     _ ->
                         False
 
-        AcuteIllnessOngoingTreatment ->
-            isJust measurements.treatmentOngoing
-
         AcuteIllnessDangerSigns ->
-            isJust measurements.dangerSigns
+            mandatoryActivityCompletedSubsequentEncounter currentDate data AcuteIllnessDangerSigns
+
+        AcuteIllnessOngoingTreatment ->
+            mandatoryActivityCompletedSubsequentEncounter currentDate data AcuteIllnessOngoingTreatment
 
 
 {-| These are the activities that are mandatory for us to come up with diagnosis during first encounter.
 Covid19 diagnosis is special, therefore, we assume here that Covid19 is negative.
 -}
-mandatoryActivitiesCompletedFirstEncounter : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Bool
-mandatoryActivitiesCompletedFirstEncounter currentDate person isFirstEncounter measurements =
+mandatoryActivitiesCompletedFirstEncounter : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
+mandatoryActivitiesCompletedFirstEncounter currentDate person measurements =
     [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPhysicalExam ]
-        |> List.all (mandatoryActivityCompletedFirstEncounter currentDate person isFirstEncounter measurements)
+        |> List.all (mandatoryActivityCompletedFirstEncounter currentDate person measurements)
 
 
-mandatoryActivityCompletedFirstEncounter : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> AcuteIllnessActivity -> Bool
-mandatoryActivityCompletedFirstEncounter currentDate person isFirstEncounter measurements activity =
+mandatoryActivityCompletedFirstEncounter : NominalDate -> Person -> AcuteIllnessMeasurements -> AcuteIllnessActivity -> Bool
+mandatoryActivityCompletedFirstEncounter currentDate person measurements activity =
     case activity of
         AcuteIllnessSymptoms ->
             isJust measurements.symptomsGeneral
@@ -432,14 +431,14 @@ mandatoryActivityCompletedFirstEncounter currentDate person isFirstEncounter mea
 
 {-| These are the activities that are mandatory for us to come up with next steps during subsequent encounter.
 -}
-mandatoryActivitiesCompletedSubsequentEncounter : NominalDate -> Bool -> AssembledData -> Bool
-mandatoryActivitiesCompletedSubsequentEncounter currentDate isFirstEncounter data =
+mandatoryActivitiesCompletedSubsequentEncounter : NominalDate -> AssembledData -> Bool
+mandatoryActivitiesCompletedSubsequentEncounter currentDate data =
     [ AcuteIllnessDangerSigns, AcuteIllnessPhysicalExam, AcuteIllnessOngoingTreatment ]
-        |> List.all (mandatoryActivityCompletedSubsequentEncounter currentDate isFirstEncounter data)
+        |> List.all (mandatoryActivityCompletedSubsequentEncounter currentDate data)
 
 
-mandatoryActivityCompletedSubsequentEncounter : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
-mandatoryActivityCompletedSubsequentEncounter currentDate isFirstEncounter data activity =
+mandatoryActivityCompletedSubsequentEncounter : NominalDate -> AssembledData -> AcuteIllnessActivity -> Bool
+mandatoryActivityCompletedSubsequentEncounter currentDate data activity =
     let
         person =
             data.person
@@ -453,12 +452,12 @@ mandatoryActivityCompletedSubsequentEncounter currentDate isFirstEncounter data 
 
         AcuteIllnessPhysicalExam ->
             isJust measurements.vitals
-                && ((not <| expectPhysicalExamTask currentDate person isFirstEncounter PhysicalExamMuac) || isJust measurements.muac)
-                && ((not <| expectPhysicalExamTask currentDate person isFirstEncounter PhysicalExamNutrition) || isJust measurements.nutrition)
-                && ((not <| expectPhysicalExamTask currentDate person isFirstEncounter PhysicalExamAcuteFindings) || isJust measurements.acuteFindings)
+                && ((not <| expectPhysicalExamTask currentDate person False PhysicalExamMuac) || isJust measurements.muac)
+                && ((not <| expectPhysicalExamTask currentDate person False PhysicalExamNutrition) || isJust measurements.nutrition)
+                && ((not <| expectPhysicalExamTask currentDate person False PhysicalExamAcuteFindings) || isJust measurements.acuteFindings)
 
         AcuteIllnessOngoingTreatment ->
-            (not <| expectActivity currentDate isFirstEncounter data AcuteIllnessOngoingTreatment)
+            (not <| expectActivity currentDate False data AcuteIllnessOngoingTreatment)
                 || isJust measurements.treatmentOngoing
 
         _ ->
@@ -538,8 +537,8 @@ ageDependentARINextStep currentDate person =
             )
 
 
-resolveAcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveAcuteIllnessDiagnosis currentDate person isFirstEncounter measurements =
+resolveAcuteIllnessDiagnosisFirstEncounter : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveAcuteIllnessDiagnosisFirstEncounter currentDate person measurements =
     let
         ( covid19ByCompleteSet, covid19ByPartialSet ) =
             covid19Diagnosed measurements
@@ -549,7 +548,12 @@ resolveAcuteIllnessDiagnosis currentDate person isFirstEncounter measurements =
         Just DiagnosisCovid19
 
     else
-        resolveNonCovid19AcuteIllnessDiagnosis currentDate person isFirstEncounter covid19ByPartialSet measurements
+        resolveNonCovid19AcuteIllnessDiagnosis currentDate person covid19ByPartialSet measurements
+
+
+resolveAcuteIllnessDiagnosisSubsequentEncounter : NominalDate -> AssembledData -> Maybe AcuteIllnessDiagnosis
+resolveAcuteIllnessDiagnosisSubsequentEncounter currentDate data =
+    Nothing
 
 
 covid19Diagnosed : AcuteIllnessMeasurements -> ( Bool, Bool )
@@ -625,10 +629,10 @@ covid19Diagnosed measurements =
     )
 
 
-resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveNonCovid19AcuteIllnessDiagnosis currentDate person isFirstEncounter covid19ByPartialSet measurements =
+resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveNonCovid19AcuteIllnessDiagnosis currentDate person covid19ByPartialSet measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
-    if mandatoryActivitiesCompletedFirstEncounter currentDate person isFirstEncounter measurements then
+    if mandatoryActivitiesCompletedFirstEncounter currentDate person measurements then
         if feverRecorded measurements then
             resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements
 
