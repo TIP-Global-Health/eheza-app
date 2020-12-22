@@ -486,7 +486,7 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
 elmApp.ports.askFromIndexDb.subscribe(function(info) {
   const queryType = info.queryType;
 
-  // Some queries pass may pass us data.
+  // Some queries may pass us data.
   const data = info.data;
   switch (queryType) {
 
@@ -628,14 +628,17 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       break;
 
     case 'IndexDbQueryUploadAuthority':
+      let authorityId = data;
+
       (async () => {
 
         const batchSize = 50;
 
         let totalEntites = await dbSync
             .shardChanges
-            .where('isSynced')
-            .notEqual(1)
+            .where('shard')
+            .equals(authorityId)
+            .and((item) => { return item.isSynced != 1; })
             .count();
 
         if (totalEntites == 0) {
@@ -645,9 +648,9 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         let entitiesResult = await dbSync
             .shardChanges
-            .where('isSynced')
-            // Don't include items that were already synced.
-            .notEqual(1)
+            .where('shard')
+            .equals(authorityId)
+            .and((item) => { return item.isSynced != 1; })
             .limit(batchSize)
             .toArray();
 
