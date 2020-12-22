@@ -22,7 +22,7 @@ import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
-import Pages.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisToMaybe, generateAssembledData, resolveNextStepByDiagnosis, sendToHCOnSubsequentVisit)
+import Pages.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisToMaybe, generateAssembledData, noImprovementOnSubsequentVisit, resolveNextStepByDiagnosis, sendToHCOnSubsequentVisit)
 import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
 import Pages.AcuteIllnessProgressReport.Model exposing (..)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
@@ -84,7 +84,7 @@ viewContent language currentDate id model data =
                     |> Maybe.withDefault []
 
         ( _, pendingActivities ) =
-            splitActivities currentDate data
+            splitActivities currentDate isFirstEncounter data
 
         endEncounterDialog =
             if model.showEndEncounetrDialog then
@@ -210,7 +210,7 @@ viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subs
                                 else
                                     let
                                         isImproving =
-                                            not <| sendToHCOnSubsequentVisit currentDate data.person data.measurements
+                                            not <| noImprovementOnSubsequentVisit currentDate data.person data.measurements
                                     in
                                     [ text " - ["
                                     , text <| translate language <| Translate.ConditionImproving isImproving

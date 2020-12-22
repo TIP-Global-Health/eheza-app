@@ -231,7 +231,7 @@ viewMainPageContent language currentDate id data model =
             data.measurements
 
         ( completedActivities, pendingActivities ) =
-            splitActivities currentDate data
+            splitActivities currentDate isFirstEncounter data
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -318,15 +318,11 @@ viewMainPageContent language currentDate id data model =
     ]
 
 
-splitActivities : NominalDate -> AssembledData -> ( List AcuteIllnessActivity, List AcuteIllnessActivity )
-splitActivities currentDate data =
-    let
-        isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
-    in
+splitActivities : NominalDate -> Bool -> AssembledData -> ( List AcuteIllnessActivity, List AcuteIllnessActivity )
+splitActivities currentDate isFirstEncounter data =
     getAllActivities isFirstEncounter
         |> List.filter (expectActivity currentDate isFirstEncounter data)
-        |> List.partition (activityCompleted currentDate data.person isFirstEncounter data.measurements data.diagnosis)
+        |> List.partition (activityCompleted currentDate isFirstEncounter data)
 
 
 viewEndEncounterButton : Language -> Bool -> AcuteIllnessMeasurements -> List AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> (Bool -> msg) -> Html msg
