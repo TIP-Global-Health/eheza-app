@@ -5,7 +5,7 @@ import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
-import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
+import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict, decodeStringWithDefault)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
@@ -134,14 +134,14 @@ decodeHead =
 
 decodePhoto : Decoder Photo
 decodePhoto =
-    field "photo" string
+    field "photo" (decodeStringWithDefault "")
         |> map PhotoUrl
         |> decodeGroupMeasurement
 
 
 decodePrenatalPhoto : Decoder PrenatalPhoto
 decodePrenatalPhoto =
-    field "photo" string
+    field "photo" (decodeStringWithDefault "")
         |> map PhotoUrl
         |> decodePrenatalMeasurement
 
@@ -1041,7 +1041,7 @@ decodeNutritionNutrition =
 
 decodeNutritionPhoto : Decoder NutritionPhoto
 decodeNutritionPhoto =
-    field "photo" string
+    field "photo" (decodeStringWithDefault "")
         |> map PhotoUrl
         |> decodeNutritionMeasurement
 
