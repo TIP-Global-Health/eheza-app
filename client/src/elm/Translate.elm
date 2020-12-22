@@ -1204,12 +1204,12 @@ translationSet trans =
 
         AcuteIllnessExisting ->
             { english = "Existing Acute Illness"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Indwara ifatiyeho iheruka kuvurwa"
             }
 
         AcuteIllnessNew ->
             { english = "New Acute Illness"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Indwara ifatiyeho nshyashya"
             }
 
         AcuteIllnessOutcomeLabel ->
