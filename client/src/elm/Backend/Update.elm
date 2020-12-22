@@ -43,8 +43,7 @@ import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.Utils
     exposing
         ( generateAssembledData
-        , resolveAcuteIllnessDiagnosisFirstEncounter
-        , resolveAcuteIllnessDiagnosisSubsequentEncounter
+        , resolveAcuteIllnessDiagnosis
         , resolveNextStepByDiagnosis
         , talkedTo114
         )
@@ -2103,34 +2102,15 @@ handleRevision revision (( model, recalc ) as noChange) =
 generateSuspectedDiagnosisMsgs : NominalDate -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
 generateSuspectedDiagnosisMsgs currentDate before after id person =
     let
-        assembled =
-            generateAssembledData id after
-
-        isFirstEncounter =
-            RemoteData.toMaybe assembled
-                |> Maybe.map (\data -> List.isEmpty data.previousMeasurementsWithDates)
-                |> Maybe.withDefault True
-
-        resolveDiagnosisFunc =
-            if isFirstEncounter then
-                resolveAcuteIllnessDiagnosisFirstEncounter currentDate person
-
-            else
-                RemoteData.toMaybe assembled
-                    |> Maybe.map (resolveAcuteIllnessDiagnosisSubsequentEncounter currentDate)
-                    |> Maybe.withDefault Nothing
-
         diagnosisBeforeChange =
-            Dict.get id before.acuteIllnessMeasurements
-                |> Maybe.withDefault NotAsked
+            generateAssembledData id before
                 |> RemoteData.toMaybe
-                |> Maybe.andThen resolveDiagnosisFunc
+                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate)
 
         diagnosisAfterChange =
-            Dict.get id after.acuteIllnessMeasurements
-                |> Maybe.withDefault NotAsked
+            generateAssembledData id after
                 |> RemoteData.toMaybe
-                |> Maybe.andThen resolveDiagnosisFunc
+                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate)
 
         updateDiagnosisMsg diagnosis =
             Backend.AcuteIllnessEncounter.Model.SetAcuteIllnessDiagnosis diagnosis

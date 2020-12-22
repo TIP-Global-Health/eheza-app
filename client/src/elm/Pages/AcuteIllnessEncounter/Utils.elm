@@ -233,7 +233,7 @@ expectActivity currentDate isFirstEncounter data activity =
                     |> isJust
 
             else
-                mandatoryActivitiesCompletedSubsequentEncounter currentDate data
+                mandatoryActivitiesCompletedSubsequentVisit currentDate data
 
         AcuteIllnessOngoingTreatment ->
             if isFirstEncounter then
@@ -279,15 +279,7 @@ sendToHCOnSubsequentVisit currentDate person malariaDiagnosedAtCurrentEncounter 
 
 sendToHCOnSubsequentVisitByDangerSigns : AcuteIllnessMeasurements -> Bool
 sendToHCOnSubsequentVisitByDangerSigns measurements =
-    measurements.dangerSigns
-        |> Maybe.map
-            (Tuple.second
-                >> .value
-                >> (\signs ->
-                        not (EverySet.isEmpty signs || signs == EverySet.singleton NoAcuteIllnessDangerSign)
-                   )
-            )
-        |> Maybe.withDefault False
+    dangerSignPresentOnSubsequentVisit measurements
 
 
 sendToHCOnSubsequentVisitByVitals : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
@@ -331,6 +323,19 @@ sendToHCOnSubsequentVisitByMalariaTesting ageMonths0To6 diagnosis measurements =
     (diagnosis == Just DiagnosisMalariaUncomplicated && ageMonths0To6)
         || (diagnosis == Just DiagnosisMalariaComplicated)
         || (diagnosis == Just DiagnosisMalariaUncomplicatedAndPregnant)
+
+
+dangerSignPresentOnSubsequentVisit : AcuteIllnessMeasurements -> Bool
+dangerSignPresentOnSubsequentVisit measurements =
+    measurements.dangerSigns
+        |> Maybe.map
+            (Tuple.second
+                >> .value
+                >> (\signs ->
+                        not (EverySet.isEmpty signs || signs == EverySet.singleton NoAcuteIllnessDangerSign)
+                   )
+            )
+        |> Maybe.withDefault False
 
 
 activityCompleted : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
@@ -395,10 +400,10 @@ activityCompleted currentDate isFirstEncounter data activity =
                         False
 
         AcuteIllnessDangerSigns ->
-            mandatoryActivityCompletedSubsequentEncounter currentDate data AcuteIllnessDangerSigns
+            mandatoryActivityCompletedSubsequentVisit currentDate data AcuteIllnessDangerSigns
 
         AcuteIllnessOngoingTreatment ->
-            mandatoryActivityCompletedSubsequentEncounter currentDate data AcuteIllnessOngoingTreatment
+            mandatoryActivityCompletedSubsequentVisit currentDate data AcuteIllnessOngoingTreatment
 
 
 {-| These are the activities that are mandatory for us to come up with diagnosis during first encounter.
@@ -431,14 +436,14 @@ mandatoryActivityCompletedFirstEncounter currentDate person measurements activit
 
 {-| These are the activities that are mandatory for us to come up with next steps during subsequent encounter.
 -}
-mandatoryActivitiesCompletedSubsequentEncounter : NominalDate -> AssembledData -> Bool
-mandatoryActivitiesCompletedSubsequentEncounter currentDate data =
+mandatoryActivitiesCompletedSubsequentVisit : NominalDate -> AssembledData -> Bool
+mandatoryActivitiesCompletedSubsequentVisit currentDate data =
     [ AcuteIllnessDangerSigns, AcuteIllnessPhysicalExam, AcuteIllnessOngoingTreatment ]
-        |> List.all (mandatoryActivityCompletedSubsequentEncounter currentDate data)
+        |> List.all (mandatoryActivityCompletedSubsequentVisit currentDate data)
 
 
-mandatoryActivityCompletedSubsequentEncounter : NominalDate -> AssembledData -> AcuteIllnessActivity -> Bool
-mandatoryActivityCompletedSubsequentEncounter currentDate data activity =
+mandatoryActivityCompletedSubsequentVisit : NominalDate -> AssembledData -> AcuteIllnessActivity -> Bool
+mandatoryActivityCompletedSubsequentVisit currentDate data activity =
     let
         person =
             data.person
@@ -537,23 +542,46 @@ ageDependentARINextStep currentDate person =
             )
 
 
-resolveAcuteIllnessDiagnosisFirstEncounter : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveAcuteIllnessDiagnosisFirstEncounter currentDate person measurements =
+resolveAcuteIllnessDiagnosis : NominalDate -> AssembledData -> Maybe AcuteIllnessDiagnosis
+resolveAcuteIllnessDiagnosis currentDate data =
     let
-        ( covid19ByCompleteSet, covid19ByPartialSet ) =
-            covid19Diagnosed measurements
+        isFirstEncounter =
+            List.isEmpty data.previousMeasurementsWithDates
     in
-    -- First we check for Covid19.
-    if covid19ByCompleteSet then
-        Just DiagnosisCovid19
+    if isFirstEncounter then
+        let
+            ( covid19ByCompleteSet, covid19ByPartialSet ) =
+                covid19Diagnosed data.measurements
+        in
+        -- First we check for Covid19.
+        if covid19ByCompleteSet then
+            Just DiagnosisCovid19
+
+        else
+            resolveNonCovid19AcuteIllnessDiagnosis currentDate data.person covid19ByPartialSet data.measurements
 
     else
-        resolveNonCovid19AcuteIllnessDiagnosis currentDate person covid19ByPartialSet measurements
+        malariaRapidTestResult data.measurements
+            |> Maybe.andThen
+                (\testResult ->
+                    case testResult of
+                        RapidTestPositive ->
+                            if dangerSignPresentOnSubsequentVisit data.measurements then
+                                Just DiagnosisMalariaComplicated
 
+                            else
+                                Just DiagnosisMalariaUncomplicated
 
-resolveAcuteIllnessDiagnosisSubsequentEncounter : NominalDate -> AssembledData -> Maybe AcuteIllnessDiagnosis
-resolveAcuteIllnessDiagnosisSubsequentEncounter currentDate data =
-    Nothing
+                        RapidTestPositiveAndPregnant ->
+                            if dangerSignPresentOnSubsequentVisit data.measurements then
+                                Just DiagnosisMalariaComplicated
+
+                            else
+                                Just DiagnosisMalariaUncomplicatedAndPregnant
+
+                        _ ->
+                            Nothing
+                )
 
 
 covid19Diagnosed : AcuteIllnessMeasurements -> ( Bool, Bool )
