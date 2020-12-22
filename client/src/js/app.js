@@ -486,7 +486,7 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
 elmApp.ports.askFromIndexDb.subscribe(function(info) {
   const queryType = info.queryType;
 
-  // Some queries pass may pass us data.
+  // Some queries may pass us data.
   const data = info.data;
   switch (queryType) {
 
