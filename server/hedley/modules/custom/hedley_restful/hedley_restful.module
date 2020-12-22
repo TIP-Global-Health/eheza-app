@@ -41,6 +41,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'session' => 'sessions',
   // Measurements.
   'acute_findings' => 'acute-findings',
+  'acute_illness_danger_signs' => 'acute-illness-danger-signs',
   'acute_illness_muac' => 'acute-illness-muacs',
   'acute_illness_nutrition' => 'acute-illness-nutritions',
   'acute_illness_vitals' => 'acute-illness-vitals',
@@ -86,6 +87,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'symptoms_respiratory' => 'symptoms-respiratory',
   'travel_history' => 'travel-histories',
   'treatment_history' => 'treatment-histories',
+  'treatment_ongoing' => 'treatment-ongoing',
   'vitals' => 'vitals',
   'weight' => 'weights',
 ];

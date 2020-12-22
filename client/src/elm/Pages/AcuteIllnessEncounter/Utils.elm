@@ -8,9 +8,11 @@ import Backend.Measurement.Model
     exposing
         ( AcuteFindingsGeneralSign(..)
         , AcuteFindingsRespiratorySign(..)
+        , AcuteIllnessDangerSign(..)
         , AcuteIllnessMeasurements
         , AcuteIllnessVitalsValue
         , Call114Sign(..)
+        , ChildNutritionSign(..)
         , ExposureSign(..)
         , HCContactSign(..)
         , HCContactValue
@@ -18,6 +20,8 @@ import Backend.Measurement.Model
         , IsolationSign(..)
         , IsolationValue
         , MalariaRapidTestResult(..)
+        , MedicationDistributionSign(..)
+        , MuacIndication(..)
         , ReasonForNotIsolating(..)
         , Recommendation114(..)
         , RecommendationSite(..)
@@ -27,6 +31,7 @@ import Backend.Measurement.Model
         , SymptomsRespiratorySign(..)
         , TravelHistorySign(..)
         )
+import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
@@ -76,6 +81,15 @@ generateAssembledData id db =
 
         previousMeasurements =
             List.map Tuple.second previousMeasurementsWithDates
+
+        diagnosis =
+            encounter
+                |> RemoteData.toMaybe
+                |> Maybe.andThen
+                    (.participant
+                        >> getAcuteIllnessDiagnosisForParticipant db
+                        >> Maybe.andThen acuteIllnessDiagnosisToMaybe
+                    )
     in
     RemoteData.map AssembledData (Success id)
         |> RemoteData.andMap encounter
@@ -83,6 +97,7 @@ generateAssembledData id db =
         |> RemoteData.andMap person
         |> RemoteData.andMap measurements
         |> RemoteData.andMap (Success previousMeasurementsWithDates)
+        |> RemoteData.andMap (Success diagnosis)
 
 
 generatePreviousMeasurements : AcuteIllnessEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, AcuteIllnessMeasurements ))
@@ -110,44 +125,48 @@ generatePreviousMeasurements currentEncounterId participantId db =
             )
 
 
-resolveNextStepsTasks : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> List NextStepsTask
-resolveNextStepsTasks currentDate person diagnosis measurements =
-    let
-        ( ageMonths0To2, ageMonths0To6, ageMonths2To60 ) =
-            ageInMonths currentDate person
-                |> Maybe.map (\ageMonthss -> ( ageMonthss < 2, ageMonthss < 6, ageMonthss >= 2 && ageMonthss < 60 ))
-                |> Maybe.withDefault ( False, False, False )
+resolveNextStepsTasks : NominalDate -> Person -> Bool -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> List NextStepsTask
+resolveNextStepsTasks currentDate person isFirstEncounter diagnosis measurements =
+    if not isFirstEncounter then
+        [ NextStepsSendToHC ]
 
-        expectTask task =
-            case task of
-                NextStepsIsolation ->
-                    diagnosis == Just DiagnosisCovid19
+    else
+        let
+            ( ageMonths0To2, ageMonths0To6, ageMonths2To60 ) =
+                ageInMonths currentDate person
+                    |> Maybe.map (\ageMonthss -> ( ageMonthss < 2, ageMonthss < 6, ageMonthss >= 2 && ageMonthss < 60 ))
+                    |> Maybe.withDefault ( False, False, False )
 
-                NextStepsCall114 ->
-                    diagnosis == Just DiagnosisCovid19
+            expectTask task =
+                case task of
+                    NextStepsIsolation ->
+                        diagnosis == Just DiagnosisCovid19
 
-                NextStepsContactHC ->
-                    diagnosis == Just DiagnosisCovid19 && isJust measurements.call114 && (not <| talkedTo114 measurements)
+                    NextStepsCall114 ->
+                        diagnosis == Just DiagnosisCovid19
 
-                NextStepsMedicationDistribution ->
-                    (diagnosis == Just DiagnosisMalariaUncomplicated && not ageMonths0To6)
-                        || (diagnosis == Just DiagnosisGastrointestinalInfectionUncomplicated)
-                        || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths2To60)
-                        || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths2To60)
+                    NextStepsContactHC ->
+                        diagnosis == Just DiagnosisCovid19 && isJust measurements.call114 && (not <| talkedTo114 measurements)
 
-                NextStepsSendToHC ->
-                    (diagnosis == Just DiagnosisMalariaUncomplicated && ageMonths0To6)
-                        || (diagnosis == Just DiagnosisMalariaComplicated)
-                        || (diagnosis == Just DiagnosisMalariaUncomplicatedAndPregnant)
-                        || (diagnosis == Just DiagnosisGastrointestinalInfectionComplicated)
-                        || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths0To2)
-                        || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths0To2)
-                        || (diagnosis == Just DiagnosisRespiratoryInfectionComplicated)
-                        || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
-                        || (diagnosis == Just DiagnosisUndeterminedMoreEvaluationNeeded)
-    in
-    [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
-        |> List.filter expectTask
+                    NextStepsMedicationDistribution ->
+                        (diagnosis == Just DiagnosisMalariaUncomplicated && not ageMonths0To6)
+                            || (diagnosis == Just DiagnosisGastrointestinalInfectionUncomplicated)
+                            || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths2To60)
+                            || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths2To60)
+
+                    NextStepsSendToHC ->
+                        (diagnosis == Just DiagnosisMalariaUncomplicated && ageMonths0To6)
+                            || (diagnosis == Just DiagnosisMalariaComplicated)
+                            || (diagnosis == Just DiagnosisMalariaUncomplicatedAndPregnant)
+                            || (diagnosis == Just DiagnosisGastrointestinalInfectionComplicated)
+                            || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths0To2)
+                            || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths0To2)
+                            || (diagnosis == Just DiagnosisRespiratoryInfectionComplicated)
+                            || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
+                            || (diagnosis == Just DiagnosisUndeterminedMoreEvaluationNeeded)
+        in
+        [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
+            |> List.filter expectTask
 
 
 talkedTo114 : AcuteIllnessMeasurements -> Bool
@@ -162,29 +181,124 @@ talkedTo114 measurements =
         |> Maybe.withDefault False
 
 
-expectActivity : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessActivity -> Bool
-expectActivity currentDate person measurements diagnosis activity =
+expectActivity : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
+expectActivity currentDate isFirstEncounter data activity =
     case activity of
         AcuteIllnessLaboratory ->
-            mandatoryActivitiesCompleted currentDate person measurements
-                && feverRecorded measurements
+            if isFirstEncounter then
+                mandatoryActivitiesCompleted currentDate data.person isFirstEncounter data.measurements
+                    && feverRecorded data.measurements
+
+            else
+                -- If fever is recorded on current encounter, and patient did not
+                -- test positive to Malaria during previous encounters,
+                -- we want patient to take Malaria test.
+                feverRecorded data.measurements
+                    && (data.previousMeasurementsWithDates
+                            |> List.filter
+                                (Tuple.second
+                                    >> .malariaTesting
+                                    >> Maybe.map
+                                        (Tuple.second
+                                            >> .value
+                                            >> (\testResult -> testResult == RapidTestPositive || testResult == RapidTestPositiveAndPregnant)
+                                        )
+                                    >> Maybe.withDefault False
+                                )
+                            |> List.isEmpty
+                       )
 
         AcuteIllnessNextSteps ->
-            resolveNextStepByDiagnosis currentDate person diagnosis
-                |> isJust
+            if isFirstEncounter then
+                resolveNextStepByDiagnosis currentDate data.person data.diagnosis
+                    |> isJust
+
+            else
+                sendToHCOnSubsequentVisitByDangerSigns data.measurements
+                    || sendToHCOnSubsequentVisitByVitals currentDate data.person data.measurements
+                    || sendToHCOnSubsequentVisitByMuac data.measurements
+                    || sendToHCOnSubsequentVisitByNutrition data.measurements
+
+        AcuteIllnessOngoingTreatment ->
+            if isFirstEncounter then
+                False
+
+            else
+                -- Show activity, if medication was perscribed at any of previous encounters.
+                data.previousMeasurementsWithDates
+                    |> List.filterMap
+                        (Tuple.second
+                            >> .medicationDistribution
+                            >> Maybe.map
+                                (Tuple.second
+                                    >> .value
+                                    >> .distributionSigns
+                                    >> (\medications ->
+                                            (medications /= EverySet.singleton NoMedicationDistributionSigns)
+                                                -- Lemon juice does not count as a medication.
+                                                && (medications /= EverySet.singleton LemonJuiceOrHoney)
+                                       )
+                                )
+                        )
+                    |> List.isEmpty
+                    |> not
 
         _ ->
             True
 
 
-activityCompleted : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessActivity -> Bool
-activityCompleted currentDate person measurements diagnosis activity =
+sendToHCOnSubsequentVisitByDangerSigns : AcuteIllnessMeasurements -> Bool
+sendToHCOnSubsequentVisitByDangerSigns measurements =
+    measurements.dangerSigns
+        |> Maybe.map
+            (Tuple.second
+                >> .value
+                >> (\signs ->
+                        not (EverySet.isEmpty signs || signs == EverySet.singleton NoAcuteIllnessDangerSign)
+                   )
+            )
+        |> Maybe.withDefault False
+
+
+sendToHCOnSubsequentVisitByVitals : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
+sendToHCOnSubsequentVisitByVitals currentDate person measurements =
+    feverRecorded measurements
+        || respiratoryRateElevated currentDate person measurements
+
+
+sendToHCOnSubsequentVisitByMuac : AcuteIllnessMeasurements -> Bool
+sendToHCOnSubsequentVisitByMuac measurements =
+    measurements.muac
+        |> Maybe.map
+            (Tuple.second
+                >> .value
+                >> muacIndication
+                >> (==) MuacRed
+            )
+        |> Maybe.withDefault False
+
+
+sendToHCOnSubsequentVisitByNutrition : AcuteIllnessMeasurements -> Bool
+sendToHCOnSubsequentVisitByNutrition measurements =
+    measurements.nutrition
+        |> Maybe.map
+            (Tuple.second
+                >> .value
+                >> (\signs ->
+                        not (EverySet.isEmpty signs || signs == EverySet.singleton NormalChildNutrition)
+                   )
+            )
+        |> Maybe.withDefault False
+
+
+activityCompleted : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessActivity -> Bool
+activityCompleted currentDate person isFirstEncounter measurements diagnosis activity =
     case activity of
         AcuteIllnessSymptoms ->
-            mandatoryActivityCompleted currentDate person measurements AcuteIllnessSymptoms
+            mandatoryActivityCompleted currentDate person isFirstEncounter measurements AcuteIllnessSymptoms
 
         AcuteIllnessPhysicalExam ->
-            mandatoryActivityCompleted currentDate person measurements AcuteIllnessPhysicalExam
+            mandatoryActivityCompleted currentDate person isFirstEncounter measurements AcuteIllnessPhysicalExam
 
         AcuteIllnessPriorTreatment ->
             isJust measurements.treatmentReview
@@ -193,10 +307,10 @@ activityCompleted currentDate person measurements diagnosis activity =
             isJust measurements.malariaTesting
 
         AcuteIllnessExposure ->
-            mandatoryActivityCompleted currentDate person measurements AcuteIllnessExposure
+            mandatoryActivityCompleted currentDate person isFirstEncounter measurements AcuteIllnessExposure
 
         AcuteIllnessNextSteps ->
-            case resolveNextStepsTasks currentDate person diagnosis measurements of
+            case resolveNextStepsTasks currentDate person isFirstEncounter diagnosis measurements of
                 [ NextStepsIsolation, NextStepsCall114 ] ->
                     isJust measurements.isolation
                         && isJust measurements.hcContact
@@ -210,18 +324,24 @@ activityCompleted currentDate person measurements diagnosis activity =
                 _ ->
                     False
 
+        AcuteIllnessOngoingTreatment ->
+            isJust measurements.treatmentOngoing
+
+        AcuteIllnessDangerSigns ->
+            isJust measurements.dangerSigns
+
 
 {-| These are the activities that are mandatory, for us to come up with diagnosis.
 Covid19 diagnosis is special, therefore, we assume here that Covid19 is negative.
 -}
-mandatoryActivitiesCompleted : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
-mandatoryActivitiesCompleted currentDate person measurements =
+mandatoryActivitiesCompleted : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Bool
+mandatoryActivitiesCompleted currentDate person isFirstEncounter measurements =
     [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPhysicalExam ]
-        |> List.all (mandatoryActivityCompleted currentDate person measurements)
+        |> List.all (mandatoryActivityCompleted currentDate person isFirstEncounter measurements)
 
 
-mandatoryActivityCompleted : NominalDate -> Person -> AcuteIllnessMeasurements -> AcuteIllnessActivity -> Bool
-mandatoryActivityCompleted currentDate person measurements activity =
+mandatoryActivityCompleted : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> AcuteIllnessActivity -> Bool
+mandatoryActivityCompleted currentDate person isFirstEncounter measurements activity =
     case activity of
         AcuteIllnessSymptoms ->
             isJust measurements.symptomsGeneral
@@ -230,8 +350,9 @@ mandatoryActivityCompleted currentDate person measurements activity =
 
         AcuteIllnessPhysicalExam ->
             isJust measurements.vitals
-                && ((not <| expectPhysicalExamTask currentDate person PhysicalExamMuac) || isJust measurements.muac)
-                && isJust measurements.acuteFindings
+                && ((not <| expectPhysicalExamTask currentDate person isFirstEncounter PhysicalExamMuac) || isJust measurements.muac)
+                && ((not <| expectPhysicalExamTask currentDate person isFirstEncounter PhysicalExamNutrition) || isJust measurements.nutrition)
+                && ((not <| expectPhysicalExamTask currentDate person isFirstEncounter PhysicalExamAcuteFindings) || isJust measurements.acuteFindings)
 
         AcuteIllnessExposure ->
             isJust measurements.travelHistory
@@ -314,8 +435,8 @@ ageDependentARINextStep currentDate person =
             )
 
 
-resolveAcuteIllnessDiagnosis : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveAcuteIllnessDiagnosis currentDate person measurements =
+resolveAcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveAcuteIllnessDiagnosis currentDate person isFirstEncounter measurements =
     let
         ( covid19ByCompleteSet, covid19ByPartialSet ) =
             covid19Diagnosed measurements
@@ -325,7 +446,7 @@ resolveAcuteIllnessDiagnosis currentDate person measurements =
         Just DiagnosisCovid19
 
     else
-        resolveNonCovid19AcuteIllnessDiagnosis currentDate person covid19ByPartialSet measurements
+        resolveNonCovid19AcuteIllnessDiagnosis currentDate person isFirstEncounter covid19ByPartialSet measurements
 
 
 covid19Diagnosed : AcuteIllnessMeasurements -> ( Bool, Bool )
@@ -401,10 +522,10 @@ covid19Diagnosed measurements =
     )
 
 
-resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveNonCovid19AcuteIllnessDiagnosis currentDate person covid19ByPartialSet measurements =
+resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveNonCovid19AcuteIllnessDiagnosis currentDate person isFirstEncounter covid19ByPartialSet measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
-    if mandatoryActivitiesCompleted currentDate person measurements then
+    if mandatoryActivitiesCompleted currentDate person isFirstEncounter measurements then
         if feverRecorded measurements then
             resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements
 
@@ -774,3 +895,17 @@ acuteIllnessDiagnosisToMaybe diagnosis =
 
     else
         Just diagnosis
+
+
+getAcuteIllnessDiagnosisForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe AcuteIllnessDiagnosis
+getAcuteIllnessDiagnosisForParticipant db participantId =
+    Dict.get participantId db.acuteIllnessEncountersByParticipant
+        |> Maybe.withDefault NotAsked
+        |> RemoteData.toMaybe
+        |> Maybe.map Dict.toList
+        |> Maybe.andThen
+            (List.map Tuple.second
+                >> List.sortWith (\e1 e2 -> Gizra.NominalDate.compare e1.startDate e2.startDate)
+                >> List.head
+                >> Maybe.map .diagnosis
+            )

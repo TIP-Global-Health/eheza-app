@@ -325,6 +325,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityAcuteFindings identifier ->
             getIdentifier identifier "acute_findings"
 
+        BackendAuthorityAcuteIllnessDangerSigns identifier ->
+            getIdentifier identifier "acute_illness_danger_signs"
+
         BackendAuthorityAcuteIllnessEncounter identifier ->
             getIdentifier identifier "acute_illness_encounter"
 
@@ -486,6 +489,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityTravelHistory identifier ->
             getIdentifier identifier "travel_history"
+
+        BackendAuthorityTreatmentOngoing identifier ->
+            getIdentifier identifier "treatment_ongoing"
 
         BackendAuthorityTreatmentReview identifier ->
             getIdentifier identifier "treatment_history"
@@ -691,6 +697,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityAcuteFindings identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteFindings identifier
 
+        BackendAuthorityAcuteIllnessDangerSigns identifier ->
+            encode Backend.Measurement.Encoder.encodeAcuteIllnessDangerSigns identifier
+
         BackendAuthorityAcuteIllnessEncounter identifier ->
             encode Backend.AcuteIllnessEncounter.Encoder.encodeAcuteIllnessEncounter identifier
 
@@ -852,6 +861,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityTravelHistory identifier ->
             encode Backend.Measurement.Encoder.encodeTravelHistory identifier
+
+        BackendAuthorityTreatmentOngoing identifier ->
+            encode Backend.Measurement.Encoder.encodeTreatmentOngoing identifier
 
         BackendAuthorityTreatmentReview identifier ->
             encode Backend.Measurement.Encoder.encodeTreatmentReview identifier
@@ -1020,6 +1032,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityAcuteFindings identifier ->
             AcuteFindingsRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityAcuteIllnessDangerSigns identifier ->
+            AcuteIllnessDangerSignsRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityAcuteIllnessEncounter identifier ->
             AcuteIllnessEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1181,6 +1196,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityTravelHistory identifier ->
             TravelHistoryRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTreatmentOngoing identifier ->
+            TreatmentOngoingRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityTreatmentReview identifier ->
             TreatmentReviewRevision (toEntityUuid identifier.uuid) identifier.entity

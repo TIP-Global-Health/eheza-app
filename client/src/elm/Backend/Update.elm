@@ -1535,6 +1535,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        AcuteIllnessDangerSignsRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | dangerSigns = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         AcuteIllnessEncounterRevision uuid data ->
             let
                 acuteIllnessEncounters =
@@ -2043,6 +2051,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        TreatmentOngoingRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | treatmentOngoing = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         TreatmentReviewRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
@@ -2084,13 +2100,13 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
             Dict.get id before.acuteIllnessMeasurements
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
-                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person)
+                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person True)
 
         diagnosisAfterChange =
             Dict.get id after.acuteIllnessMeasurements
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
-                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person)
+                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate person True)
 
         updateDiagnosisMsg diagnosis =
             Backend.AcuteIllnessEncounter.Model.SetAcuteIllnessDiagnosis diagnosis

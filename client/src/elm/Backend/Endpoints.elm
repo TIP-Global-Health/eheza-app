@@ -570,6 +570,18 @@ acuteIllnessMuacEndpoint =
         |> withValueEncoder (object << encodeAcuteIllnessMuac)
 
 
+treatmentOngoingEndpoint : ReadWriteEndPoint Error TreatmentOngoingId TreatmentOngoing TreatmentOngoing ()
+treatmentOngoingEndpoint =
+    swEndpoint "nodes/treatment_ongoing" decodeTreatmentOngoing
+        |> withValueEncoder (object << encodeTreatmentOngoing)
+
+
+acuteIllnessDangerSignsEndpoint : ReadWriteEndPoint Error AcuteIllnessDangerSignsId AcuteIllnessDangerSigns AcuteIllnessDangerSigns ()
+acuteIllnessDangerSignsEndpoint =
+    swEndpoint "nodes/acute_illness_danger_signs" decodeAcuteIllnessDangerSigns
+        |> withValueEncoder (object << encodeAcuteIllnessDangerSigns)
+
+
 acuteIllnessNutritionEndpoint : ReadWriteEndPoint Error AcuteIllnessNutritionId AcuteIllnessNutrition AcuteIllnessNutrition ()
 acuteIllnessNutritionEndpoint =
     swEndpoint "nodes/acute_illness_nutrition" decodeAcuteIllnessNutrition

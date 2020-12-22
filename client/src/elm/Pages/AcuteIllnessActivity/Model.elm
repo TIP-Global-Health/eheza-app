@@ -75,6 +75,18 @@ type Msg
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionMedicationNonAdministrationReason (Maybe MedicationNonAdministrationReason) MedicationDistributionSign MedicationNonAdministrationReason
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution ))
+      -- ONGOIN TREATMENT
+    | SetActiveOngoingTreatmentTask OngoingTreatmentTask
+    | SetOngoingTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
+    | SetReasonForNotTaking ReasonForNotTaking
+    | SetTotalMissedDoses String
+    | SetAdverseEvent AdverseEvent
+    | SaveOngoingTreatmentReview PersonId (Maybe ( TreatmentOngoingId, TreatmentOngoing ))
+      -- DANGER SIGNS
+    | SetActiveDangerSignsTask DangerSignsTask
+    | SetConditionImproving Bool
+    | SetDangerSign AcuteIllnessDangerSign
+    | SaveReviewDangerSigns PersonId (Maybe ( AcuteIllnessDangerSignsId, AcuteIllnessDangerSigns ))
 
 
 type alias Model =
@@ -84,6 +96,8 @@ type alias Model =
     , exposureData : ExposureData
     , priorTreatmentData : PriorTreatmentData
     , nextStepsData : NextStepsData
+    , ongoingTreatmentData : OngoingTreatmentData
+    , dangerSignsData : DangerSignsData
     , showAlertsDialog : Bool
     , showPertinentSymptomsPopup : Bool
     , warningPopupState : Maybe AcuteIllnessDiagnosis
@@ -98,6 +112,8 @@ emptyModel =
     , exposureData = emptyExposureData
     , priorTreatmentData = emptyPriorTreatmentData
     , nextStepsData = emptyNextStepsData
+    , ongoingTreatmentData = emptyOngoingTreatmentData
+    , dangerSignsData = emptyDangerSignsData
     , showAlertsDialog = False
     , showPertinentSymptomsPopup = False
     , warningPopupState = Nothing
@@ -394,4 +410,88 @@ type alias MedicationDistributionForm =
     , zinc : Maybe Bool
     , lemonJuiceOrHoney : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
+    }
+
+
+
+-- ONGOING TREATMENT
+
+
+type alias OngoingTreatmentData =
+    { treatmentReviewForm : OngoingTreatmentReviewForm
+    , activeTask : OngoingTreatmentTask
+    }
+
+
+emptyOngoingTreatmentData : OngoingTreatmentData
+emptyOngoingTreatmentData =
+    { treatmentReviewForm = emptyOngoingTreatmentReviewForm
+    , activeTask = OngoingTreatmentReview
+    }
+
+
+type OngoingTreatmentTask
+    = OngoingTreatmentReview
+
+
+type alias OngoingTreatmentReviewForm =
+    { takenAsPrescribed : Maybe Bool
+    , missedDoses : Maybe Bool
+    , feelingBetter : Maybe Bool
+    , sideEffects : Maybe Bool
+    , reasonForNotTaking : Maybe ReasonForNotTaking
+    , reasonForNotTakingDirty : Bool
+    , totalMissedDoses : Maybe Int
+    , totalMissedDosesDirty : Bool
+    , adverseEvents : Maybe (List AdverseEvent)
+    , adverseEventsDirty : Bool
+    }
+
+
+emptyOngoingTreatmentReviewForm : OngoingTreatmentReviewForm
+emptyOngoingTreatmentReviewForm =
+    { takenAsPrescribed = Nothing
+    , missedDoses = Nothing
+    , feelingBetter = Nothing
+    , sideEffects = Nothing
+    , reasonForNotTaking = Nothing
+    , reasonForNotTakingDirty = False
+    , totalMissedDoses = Nothing
+    , totalMissedDosesDirty = False
+    , adverseEvents = Nothing
+    , adverseEventsDirty = False
+    }
+
+
+
+-- DANGER SIGNS
+
+
+type alias DangerSignsData =
+    { reviewDangerSignsForm : ReviewDangerSignsForm
+    , activeTask : DangerSignsTask
+    }
+
+
+emptyDangerSignsData : DangerSignsData
+emptyDangerSignsData =
+    { reviewDangerSignsForm = emptyReviewDangerSignsForm
+    , activeTask = ReviewDangerSigns
+    }
+
+
+type DangerSignsTask
+    = ReviewDangerSigns
+
+
+type alias ReviewDangerSignsForm =
+    { conditionImproving : Maybe Bool
+    , symptoms : Maybe (List AcuteIllnessDangerSign)
+    }
+
+
+emptyReviewDangerSignsForm : ReviewDangerSignsForm
+emptyReviewDangerSignsForm =
+    { conditionImproving = Nothing
+    , symptoms = Nothing
     }

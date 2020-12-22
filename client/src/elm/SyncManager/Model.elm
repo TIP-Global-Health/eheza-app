@@ -47,6 +47,7 @@ authority.
 -}
 type BackendAuthorityEntity
     = BackendAuthorityAcuteFindings (BackendEntity AcuteFindings)
+    | BackendAuthorityAcuteIllnessDangerSigns (BackendEntity AcuteIllnessDangerSigns)
     | BackendAuthorityAcuteIllnessEncounter (BackendEntity AcuteIllnessEncounter)
     | BackendAuthorityAcuteIllnessMuac (BackendEntity AcuteIllnessMuac)
     | BackendAuthorityAcuteIllnessNutrition (BackendEntity AcuteIllnessNutrition)
@@ -101,6 +102,7 @@ type BackendAuthorityEntity
     | BackendAuthoritySymptomsGI (BackendEntity SymptomsGI)
     | BackendAuthoritySymptomsRespiratory (BackendEntity SymptomsRespiratory)
     | BackendAuthorityTravelHistory (BackendEntity TravelHistory)
+    | BackendAuthorityTreatmentOngoing (BackendEntity TreatmentOngoing)
     | BackendAuthorityTreatmentReview (BackendEntity TreatmentReview)
     | BackendAuthorityVitals (BackendEntity Vitals)
     | BackendAuthorityWeight (BackendEntity Weight)

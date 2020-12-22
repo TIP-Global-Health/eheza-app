@@ -27,6 +27,7 @@ var photosUploadUrlRegex = /\/cache-upload\/images/;
 // entities).
 var tableForType = {
     acute_findings: 'shards',
+    acute_illness_danger_signs: 'shards',
     acute_illness_encounter: 'shards',
     acute_illness_muac: 'shards',
     acute_illness_nutrition: 'shards',
@@ -88,6 +89,7 @@ var tableForType = {
     symptoms_respiratory: 'shards',
     travel_history: 'shards',
     treatment_history: 'shards',
+    treatment_ongoing: 'shards',
     village: 'nodes',
     vitals: 'shards',
     weight: 'shards'

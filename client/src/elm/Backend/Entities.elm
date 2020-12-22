@@ -591,6 +591,22 @@ type AcuteIllnessMuacUuidType
     = AcuteIllnessMuacUuidType
 
 
+type alias TreatmentOngoingId =
+    EntityUuid TreatmentOngoingUuidType
+
+
+type TreatmentOngoingUuidType
+    = TreatmentOngoingUuidType
+
+
+type alias AcuteIllnessDangerSignsId =
+    EntityUuid AcuteIllnessDangerSignsUuidType
+
+
+type AcuteIllnessDangerSignsUuidType
+    = AcuteIllnessDangerSignsUuidType
+
+
 type alias AcuteIllnessNutritionId =
     EntityUuid AcuteIllnessNutritionUuidType
 

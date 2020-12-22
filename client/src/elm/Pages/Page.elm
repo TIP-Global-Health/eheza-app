@@ -153,13 +153,14 @@ type UserPage
     | IndividualEncounterTypesPage -- this is where we select the type of encounter we're interested in.
     | PregnancyOutcomePage IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
     | NutritionParticipantPage PersonId
-    | NutritionEncounterPage NutritionEncounterId -- nutrition activities index
-    | NutritionActivityPage NutritionEncounterId NutritionActivity -- record nutrition activity
+    | NutritionEncounterPage NutritionEncounterId -- nutrition activities index.
+    | NutritionActivityPage NutritionEncounterId NutritionActivity -- record nutrition activity.
     | NutritionProgressReportPage NutritionEncounterId
     | AcuteIllnessParticipantPage PersonId
-    | AcuteIllnessEncounterPage AcuteIllnessEncounterId -- acute illness activities index
-    | AcuteIllnessActivityPage AcuteIllnessEncounterId AcuteIllnessActivity -- record acute illness activity
-    | AcuteIllnessProgressReportPage AcuteIllnessEncounterId -- acute illness progress report
+    | AcuteIllnessEncounterPage AcuteIllnessEncounterId -- acute illness activities index.
+    | AcuteIllnessActivityPage AcuteIllnessEncounterId AcuteIllnessActivity -- record acute illness activity.
+    | AcuteIllnessProgressReportPage AcuteIllnessEncounterId -- acute illness progress report.
+    | AcuteIllnessOutcomePage IndividualEncounterParticipantId -- this is where acute illness outcome is recorded.
 
 
 {-| We group together the pages that can only be viewed in the Dashboard

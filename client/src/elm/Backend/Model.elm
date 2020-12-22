@@ -281,6 +281,7 @@ type MsgIndexedDb
 -}
 type Revision
     = AcuteFindingsRevision AcuteFindingsId AcuteFindings
+    | AcuteIllnessDangerSignsRevision AcuteIllnessDangerSignsId AcuteIllnessDangerSigns
     | AcuteIllnessMuacRevision AcuteIllnessMuacId AcuteIllnessMuac
     | AcuteIllnessNutritionRevision AcuteIllnessNutritionId AcuteIllnessNutrition
     | AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
@@ -341,6 +342,7 @@ type Revision
     | SymptomsGIRevision SymptomsGIId SymptomsGI
     | SymptomsRespiratoryRevision SymptomsRespiratoryId SymptomsRespiratory
     | TravelHistoryRevision TravelHistoryId TravelHistory
+    | TreatmentOngoingRevision TreatmentOngoingId TreatmentOngoing
     | TreatmentReviewRevision TreatmentReviewId TreatmentReview
     | VillageRevision VillageId Village
     | VitalsRevision VitalsId Vitals
