@@ -376,7 +376,7 @@ type IndexDbQueryType
     = -- Get a single photo pending uploading.
       IndexDbQueryUploadPhotoAuthority
     | IndexDbQueryUploadGeneral
-      -- Query one authority at a time, to maje sure
+      -- Query one authority at a time, to make sure
       -- content is being uploaded in correct order,
       -- and we present correct 'remianing for upload'
       -- on sync screen.
