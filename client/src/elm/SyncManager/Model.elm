@@ -219,6 +219,7 @@ type alias Model =
     -- `idle` - 50; which is the minimum we will allow.
     -- `sync` - 10000. The means that sync will sit idle for 10 seconds.
     , syncSpeed : Editable SyncSpeed
+    , totalEntriesToUpload : Maybe Int
     }
 
 
@@ -233,6 +234,7 @@ emptyModel flags =
     , downloadPhotosBatchSize = flags.batchSize
     , syncCycle = SyncCycleOn
     , syncSpeed = Editable.ReadOnly flags.syncSpeed
+    , totalEntriesToUpload = Nothing
     }
 
 
@@ -376,7 +378,11 @@ type IndexDbQueryType
     = -- Get a single photo pending uploading.
       IndexDbQueryUploadPhotoAuthority
     | IndexDbQueryUploadGeneral
-    | IndexDbQueryUploadAuthority
+      -- Query one authority at a time, to make sure
+      -- content is being uploaded in correct order,
+      -- and we present correct 'remianing for upload'
+      -- on sync screen.
+    | IndexDbQueryUploadAuthority String
       -- Get a single deferred photo.
     | IndexDbQueryDeferredPhoto
       -- When we successfully download a photo, we remove it from the `deferredPhotos` table.
@@ -386,6 +392,8 @@ type IndexDbQueryType
       -- We don't count cases where we were offline.
     | IndexDbQueryUpdateDeferredPhotoAttempts IndexDbQueryDeferredPhotoResultRecord
     | IndexDbQueryRemoveUploadPhotos (List Int)
+      -- Reports the number of entries at shardChanges table.
+    | IndexDbQueryGetTotalEntriesToUpload
 
 
 type IndexDbQueryTypeResult
@@ -395,6 +403,7 @@ type IndexDbQueryTypeResult
     | IndexDbQueryUploadGeneralResult (Maybe IndexDbQueryUploadGeneralResultRecord)
       -- A single deferred photo, if exists.
     | IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
+    | IndexDbQueryGetTotalEntriesToUploadResult Int
 
 
 type UploadPhotoError
@@ -454,6 +463,7 @@ type alias IndexDbQueryDeferredPhotoResultRecord =
 
 type Msg
     = MsgDebouncer (Debouncer.Msg Msg)
+    | NoOp
     | SchedulePageRefresh
     | SchedulePhotosDownload
     | RefreshPage
@@ -480,6 +490,7 @@ type Msg
     | BackendUploadGeneral (Maybe IndexDbQueryUploadGeneralResultRecord)
     | BackendUploadGeneralHandle IndexDbQueryUploadGeneralResultRecord (WebData ())
     | BackendUploadPhotoAuthorityHandle (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
+    | BackendReportState Int
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto

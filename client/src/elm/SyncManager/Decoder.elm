@@ -80,6 +80,10 @@ decodeIndexDbQueryTypeResult =
                             , succeed (IndexDbQueryDeferredPhotoResult Nothing)
                             ]
 
+                    "IndexDbQueryGetTotalEntriesToUploadResult" ->
+                        field "data" decodeInt
+                            |> andThen (\val -> succeed (IndexDbQueryGetTotalEntriesToUploadResult val))
+
                     _ ->
                         fail <| queryType ++ " is not a recognized IndexDbQueryTypeResult"
             )
