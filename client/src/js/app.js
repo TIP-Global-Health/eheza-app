@@ -983,9 +983,9 @@ function attachDropzone() {
     url: "cache-upload/images",
     dictDefaultMessage: "Touch here to take a photo, or drop a photo file here.",
     acceptedFiles: "jpg,jpeg,png,gif,image/*",
+    capture: 'camera',
     resizeWidth: 600,
-    resizeHeight: 800,
-    resizeMethod: "contain"
+    resizeHeight: 800
   });
 
   dropZone.on('complete', function(file) {
