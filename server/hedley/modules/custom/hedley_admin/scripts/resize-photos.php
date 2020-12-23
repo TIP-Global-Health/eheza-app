@@ -2,7 +2,6 @@
 
 /**
  * @file
- *
  * Resizes large dimension images to standard size (600x800).
  *
  * Drush scr
@@ -24,7 +23,14 @@ $batch = drush_get_option('batch', 50);
 $memory_limit = drush_get_option('memory_limit', 500);
 
 $base_query = db_select('field_data_field_photo', 'photos')
-  ->fields('photos', ['field_photo_fid', 'field_photo_width', 'field_photo_height']);
+  ->fields(
+    'photos',
+    [
+      'field_photo_fid',
+      'field_photo_width',
+      'field_photo_height'
+    ]
+  );
 $or = db_or()
   ->condition('field_photo_width', 1000, '>')
   ->condition('field_photo_height', 1000, '>');
@@ -68,7 +74,7 @@ while ($processed < $total) {
 
     $height = 600;
     $width = 800;
-    if($row->field_photo_width < $row->field_photo_height) {
+    if ($row->field_photo_width < $row->field_photo_height) {
       $height = 800;
       $width = 600;
     }
@@ -113,7 +119,3 @@ while ($processed < $total) {
 }
 
 drush_print('Done!');
-
-
-
-
