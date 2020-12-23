@@ -28,7 +28,7 @@ $base_query = db_select('field_data_field_photo', 'photos')
     [
       'field_photo_fid',
       'field_photo_width',
-      'field_photo_height'
+      'field_photo_height',
     ]
   );
 $or = db_or()
