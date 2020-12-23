@@ -63,7 +63,7 @@ determineSyncStatus model =
                             RemoteData.Success maybeData ->
                                 case maybeData of
                                     Just data ->
-                                        -- We still have date.
+                                        -- We still have data.
                                         noChange
 
                                     Nothing ->

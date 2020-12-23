@@ -200,69 +200,6 @@ talkedTo114 measurements =
         |> Maybe.withDefault False
 
 
-expectActivity : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
-expectActivity currentDate isFirstEncounter data activity =
-    case activity of
-        AcuteIllnessLaboratory ->
-            if isFirstEncounter then
-                mandatoryActivitiesCompletedFirstEncounter currentDate data.person data.measurements
-                    && feverRecorded data.measurements
-
-            else
-                -- If fever is recorded on current encounter, and patient did not
-                -- test positive to Malaria during previous encounters,
-                -- we want patient to take Malaria test.
-                feverRecorded data.measurements
-                    && (data.previousMeasurementsWithDates
-                            |> List.filter
-                                (Tuple.second
-                                    >> .malariaTesting
-                                    >> Maybe.map
-                                        (Tuple.second
-                                            >> .value
-                                            >> (\testResult -> testResult == RapidTestPositive || testResult == RapidTestPositiveAndPregnant)
-                                        )
-                                    >> Maybe.withDefault False
-                                )
-                            |> List.isEmpty
-                       )
-
-        AcuteIllnessNextSteps ->
-            if isFirstEncounter then
-                resolveNextStepByDiagnosis currentDate data.person data.diagnosis
-                    |> isJust
-
-            else
-                mandatoryActivitiesCompletedSubsequentVisit currentDate data
-
-        AcuteIllnessOngoingTreatment ->
-            if isFirstEncounter then
-                False
-
-            else
-                -- Show activity, if medication was perscribed at any of previous encounters.
-                data.previousMeasurementsWithDates
-                    |> List.filterMap
-                        (Tuple.second
-                            >> .medicationDistribution
-                            >> Maybe.map
-                                (Tuple.second
-                                    >> .value
-                                    >> .distributionSigns
-                                    >> (\medications ->
-                                            (medications /= EverySet.singleton NoMedicationDistributionSigns)
-                                                -- Lemon juice does not count as a medication.
-                                                && (medications /= EverySet.singleton LemonJuiceOrHoney)
-                                       )
-                                )
-                        )
-                    |> List.isEmpty
-                    |> not
-
-        _ ->
-            True
-
-
 noImprovementOnSubsequentVisit : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
 noImprovementOnSubsequentVisit currentDate person measurements =
     sendToHCOnSubsequentVisitByDangerSigns measurements
@@ -341,6 +278,69 @@ muacRedOnSubsequentVisit measurements =
                 >> (==) MuacRed
             )
         |> Maybe.withDefault False
+
+
+expectActivity : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
+expectActivity currentDate isFirstEncounter data activity =
+    case activity of
+        AcuteIllnessLaboratory ->
+            if isFirstEncounter then
+                mandatoryActivitiesCompletedFirstEncounter currentDate data.person data.measurements
+                    && feverRecorded data.measurements
+
+            else
+                -- If fever is recorded on current encounter, and patient did not
+                -- test positive to Malaria during previous encounters,
+                -- we want patient to take Malaria test.
+                feverRecorded data.measurements
+                    && (data.previousMeasurementsWithDates
+                            |> List.filter
+                                (Tuple.second
+                                    >> .malariaTesting
+                                    >> Maybe.map
+                                        (Tuple.second
+                                            >> .value
+                                            >> (\testResult -> testResult == RapidTestPositive || testResult == RapidTestPositiveAndPregnant)
+                                        )
+                                    >> Maybe.withDefault False
+                                )
+                            |> List.isEmpty
+                       )
+
+        AcuteIllnessOngoingTreatment ->
+            if isFirstEncounter then
+                False
+
+            else
+                -- Show activity, if medication was perscribed at any of previous encounters.
+                data.previousMeasurementsWithDates
+                    |> List.filterMap
+                        (Tuple.second
+                            >> .medicationDistribution
+                            >> Maybe.map
+                                (Tuple.second
+                                    >> .value
+                                    >> .distributionSigns
+                                    >> (\medications ->
+                                            (medications /= EverySet.singleton NoMedicationDistributionSigns)
+                                                -- Lemon juice does not count as a medication.
+                                                && (medications /= EverySet.singleton LemonJuiceOrHoney)
+                                       )
+                                )
+                        )
+                    |> List.isEmpty
+                    |> not
+
+        AcuteIllnessNextSteps ->
+            if isFirstEncounter then
+                resolveNextStepByDiagnosis currentDate data.person data.diagnosis
+                    |> isJust
+
+            else
+                mandatoryActivitiesCompletedSubsequentVisit currentDate data
+
+        _ ->
+            True
 
 
 activityCompleted : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
@@ -1041,7 +1041,7 @@ acuteIllnessDiagnosisToMaybe diagnosis =
         Just diagnosis
 
 
-{-| Since there can be multiple encounters, resolved diagnosis is the One
+{-| Since there can be multiple encounters, resolved diagnosis is the one
 that was set in most recent encountr.
 -}
 getAcuteIllnessDiagnosisForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe AcuteIllnessDiagnosis
