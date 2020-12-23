@@ -2015,7 +2015,11 @@ div.page-report.acute-illness {
 
       .diagnosis {
         color: $color-red-alert;
-        margin-bottom: 10px;
+        margin-bottom: 20px;
+
+        p {
+          margin-bottom: 5px;
+        }
       }
 
       .visit-date {

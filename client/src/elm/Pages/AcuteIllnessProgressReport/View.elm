@@ -22,7 +22,17 @@ import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
-import Pages.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisToMaybe, generateAssembledData, noImprovementOnSubsequentVisit, resolveNextStepByDiagnosis, sendToHCOnSubsequentVisit)
+import Pages.AcuteIllnessEncounter.Utils
+    exposing
+        ( acuteIllnessDiagnosisToMaybe
+        , dangerSignPresentOnSubsequentVisit
+        , generateAssembledData
+        , muacRedOnSubsequentVisit
+        , noImprovementOnSubsequentVisit
+        , resolveNextStepByDiagnosis
+        , respiratoryRateElevated
+        , sendToHCOnSubsequentVisit
+        )
 import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
 import Pages.AcuteIllnessProgressReport.Model exposing (..)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
@@ -203,22 +213,50 @@ viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subs
                 |> Maybe.map
                     (\diagnosis ->
                         let
-                            suffixText =
+                            diagnosisText =
+                                text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis
+
+                            ( diagnosisSuffix, additionalObservations ) =
                                 if isFirstEncounter then
-                                    []
+                                    ( [], [] )
 
                                 else
                                     let
                                         isImproving =
                                             not <| noImprovementOnSubsequentVisit currentDate data.person data.measurements
+
+                                        respiratoryDistress =
+                                            if respiratoryRateElevated currentDate data.person data.measurements then
+                                                p [] [ text <| translate language Translate.RespiratoryDistress ]
+
+                                            else
+                                                emptyNode
+
+                                        severeAcuteMalnutrition =
+                                            if muacRedOnSubsequentVisit data.measurements then
+                                                p [] [ text <| translate language Translate.SevereAcuteMalnutrition ]
+
+                                            else
+                                                emptyNode
+
+                                        malnutritionWithComplications =
+                                            if dangerSignPresentOnSubsequentVisit data.measurements then
+                                                p [] [ text <| translate language Translate.MalnutritionWithComplications ]
+
+                                            else
+                                                emptyNode
                                     in
-                                    [ text " - ["
-                                    , text <| translate language <| Translate.ConditionImproving isImproving
-                                    , text "]"
-                                    ]
+                                    ( [ text " - ["
+                                      , text <| translate language <| Translate.ConditionImproving isImproving
+                                      , text "]"
+                                      ]
+                                    , [ respiratoryDistress
+                                      , severeAcuteMalnutrition
+                                      , malnutritionWithComplications
+                                      ]
+                                    )
                         in
-                        (text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis)
-                            :: suffixText
+                        ((p [] <| diagnosisText :: diagnosisSuffix) :: additionalObservations)
                             |> div [ class "diagnosis" ]
                     )
                 |> Maybe.withDefault emptyNode

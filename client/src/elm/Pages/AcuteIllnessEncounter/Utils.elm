@@ -290,14 +290,7 @@ sendToHCOnSubsequentVisitByVitals currentDate person measurements =
 
 sendToHCOnSubsequentVisitByMuac : AcuteIllnessMeasurements -> Bool
 sendToHCOnSubsequentVisitByMuac measurements =
-    measurements.muac
-        |> Maybe.map
-            (Tuple.second
-                >> .value
-                >> muacIndication
-                >> (==) MuacRed
-            )
-        |> Maybe.withDefault False
+    muacRedOnSubsequentVisit measurements
 
 
 sendToHCOnSubsequentVisitByNutrition : AcuteIllnessMeasurements -> Bool
@@ -338,6 +331,18 @@ dangerSignPresentOnSubsequentVisit measurements =
         |> Maybe.withDefault False
 
 
+muacRedOnSubsequentVisit : AcuteIllnessMeasurements -> Bool
+muacRedOnSubsequentVisit measurements =
+    measurements.muac
+        |> Maybe.map
+            (Tuple.second
+                >> .value
+                >> muacIndication
+                >> (==) MuacRed
+            )
+        |> Maybe.withDefault False
+
+
 activityCompleted : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
 activityCompleted currentDate isFirstEncounter data activity =
     let
@@ -355,7 +360,11 @@ activityCompleted currentDate isFirstEncounter data activity =
             mandatoryActivityCompletedFirstEncounter currentDate person measurements AcuteIllnessSymptoms
 
         AcuteIllnessPhysicalExam ->
-            mandatoryActivityCompletedFirstEncounter currentDate person measurements AcuteIllnessPhysicalExam
+            if isFirstEncounter then
+                mandatoryActivityCompletedFirstEncounter currentDate person measurements AcuteIllnessPhysicalExam
+
+            else
+                mandatoryActivityCompletedSubsequentVisit currentDate data AcuteIllnessPhysicalExam
 
         AcuteIllnessPriorTreatment ->
             isJust measurements.treatmentReview

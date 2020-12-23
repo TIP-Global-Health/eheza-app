@@ -525,6 +525,7 @@ type TranslationId
     | MakeSureYouAreConnected
     | MalariaRapidDiagnosticTest
     | MalariaRapidTestResult MalariaRapidTestResult
+    | MalnutritionWithComplications
     | MaritalStatusLabel
     | MaritalStatus MaritalStatus
     | MeasurementNoChange
@@ -714,6 +715,7 @@ type TranslationId
     | ReportCompleted { pending : Int, completed : Int }
     | ResolveMonth Bool Month
     | ResolveMonthYY Int Bool Month
+    | RespiratoryDistress
     | RespiratoryRate
     | ResponsePeriod ResponsePeriod
     | ResultOfContacting114 Recommendation114
@@ -765,6 +767,7 @@ type TranslationId
     | ServiceWorkerRegErr
     | ServiceWorkerRegSuccess
     | ServiceWorkerStatus
+    | SevereAcuteMalnutrition
     | SevereHemorrhagingPreviousDelivery
     | SignOnDoorPostedQuestion
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
@@ -3536,6 +3539,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ikizamini nticyakozwe"
                     }
 
+        MalnutritionWithComplications ->
+            { english = "Malnutrition with complications"
+            , kinyarwanda = Nothing
+            }
+
         MaritalStatusLabel ->
             { english = "Marital Status"
             , kinyarwanda = Just "Irangamimerere"
@@ -4995,6 +5003,11 @@ translationSet trans =
         ResolveMonthYY year short month ->
             translateMonthYY month year short
 
+        RespiratoryDistress ->
+            { english = "Respiratory Distress"
+            , kinyarwanda = Nothing
+            }
+
         RespiratoryRate ->
             { english = "Respiratory Rate"
             , kinyarwanda = Just "Inshuro ahumeka"
@@ -5417,6 +5430,11 @@ translationSet trans =
         ServiceWorkerStatus ->
             { english = "Deployment Status"
             , kinyarwanda = Just "Ibijyanye no kuvugurura no kongerera ubushobozi sisiteme"
+            }
+
+        SevereAcuteMalnutrition ->
+            { english = "Severe acute malnutrition"
+            , kinyarwanda = Nothing
             }
 
         SevereHemorrhagingPreviousDelivery ->
