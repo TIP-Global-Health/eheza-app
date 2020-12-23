@@ -1041,6 +1041,9 @@ acuteIllnessDiagnosisToMaybe diagnosis =
         Just diagnosis
 
 
+{-| Since there can be multiple encounters, resolved diagnosis is the One
+that was set in most recent encountr.
+-}
 getAcuteIllnessDiagnosisForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe AcuteIllnessDiagnosis
 getAcuteIllnessDiagnosisForParticipant db participantId =
     Dict.get participantId db.acuteIllnessEncountersByParticipant
