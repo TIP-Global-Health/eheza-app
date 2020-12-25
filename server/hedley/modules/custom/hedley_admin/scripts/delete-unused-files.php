@@ -31,14 +31,14 @@ $executed = $count_query->execute();
 $total = $executed->rowCount();
 
 if ($total == 0) {
-  drush_print("There are no images in DB.");
+  drush_print("There are no files in DB.");
   exit;
 }
 
-drush_print("$total images located.");
+drush_print("$total files located.");
 
 if ($total == 0) {
-  drush_print("There are no images in DB.");
+  drush_print("There are no files in DB.");
   exit;
 }
 
@@ -75,7 +75,6 @@ while ($processed < $total) {
       continue;
     }
 
-    drush_print("File with ID $id is not in use. Size: $file->filesize");
     $unused++;
     $unused_size += (int) $file->filesize;
 
@@ -94,7 +93,7 @@ while ($processed < $total) {
 
   $count = count($ids);
   $processed += $count;
-  drush_print("$processed images processed.");
+  drush_print("$processed files processed.");
 }
 
 drush_print("Total unused: $unused, total size: $unused_size");
