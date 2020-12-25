@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Resizes large dimension images to standard size (600x800).
+ * Deletes files that are not in use.
  *
  * Drush scr
- * profiles/hedley/modules/custom/hedley_admin/scripts/delete-unused-photos.php.
+ * profiles/hedley/modules/custom/hedley_admin/scripts/delete-unused-files.php.
  */
 
 if (!drupal_is_cli()) {
