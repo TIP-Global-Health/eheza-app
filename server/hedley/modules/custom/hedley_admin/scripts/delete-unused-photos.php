@@ -22,7 +22,7 @@ $batch = drush_get_option('batch', 50);
 // Get allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 500);
 
-$base_query = db_select('file_managed ', 'files')
+$base_query = db_select('file_managed', 'files')
   ->fields('files', ['fid']);
 
 $count_query = clone $base_query;
