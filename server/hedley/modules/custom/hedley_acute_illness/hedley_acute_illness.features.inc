@@ -83,6 +83,14 @@ function hedley_acute_illness_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'health_education' => array(
+      'name' => t('Health Education'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'isolation' => array(
       'name' => t('Isolation'),
       'base' => 'node_content',
