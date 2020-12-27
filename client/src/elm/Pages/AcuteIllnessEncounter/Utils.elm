@@ -163,6 +163,7 @@ resolveNextStepsTasks currentDate person isFirstEncounter diagnosis measurements
                     NextStepsHealthEducation ->
                         False
         in
+        -- The order is important. Do not change.
         [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
             |> List.filter expectTask
 
@@ -190,7 +191,8 @@ resolveNextStepsTasks currentDate person isFirstEncounter diagnosis measurements
                     _ ->
                         False
         in
-        [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsHealthEducation ]
+        -- The order is important. Do not change.
+        [ NextStepsContactHC, NextStepsSendToHC, NextStepsMedicationDistribution, NextStepsHealthEducation ]
             |> List.filter expectTask
 
 
@@ -405,18 +407,16 @@ activityCompleted currentDate isFirstEncounter data activity =
                 case nextStepsTasks of
                     -- Improving, without danger signs present
                     [ NextStepsHealthEducation ] ->
-                        -- @todo Expand
-                        False
+                        isJust measurements.healthEducation
 
                     -- Not improving, without danger signs present
                     [ NextStepsSendToHC, NextStepsHealthEducation ] ->
-                        -- @todo Expand
-                        isJust measurements.sendToHC
+                        isJust measurements.sendToHC && isJust measurements.healthEducation
 
                     -- Not improving, with danger signs
                     [ NextStepsContactHC, NextStepsHealthEducation ] ->
-                        -- @todo Expand
-                        isJust measurements.hcContact
+                        -- @todo Expand for SendToHC
+                        isJust measurements.hcContact && isJust measurements.healthEducation
 
                     -- Uncomplicated malarial for adult
                     [ NextStepsMedicationDistribution ] ->
