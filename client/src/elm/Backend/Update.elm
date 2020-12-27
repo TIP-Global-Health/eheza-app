@@ -1713,6 +1713,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        HealthEducationRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         HeightRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId

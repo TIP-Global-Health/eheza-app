@@ -303,6 +303,7 @@ type Revision
     | HCContactRevision HCContactId HCContact
     | Call114Revision Call114Id Call114
     | HealthCenterRevision HealthCenterId HealthCenter
+    | HealthEducationRevision HealthEducationId HealthEducation
     | HeightRevision HeightId Height
     | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant
     | IsolationRevision IsolationId Isolation
