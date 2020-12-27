@@ -381,6 +381,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityFamilyPlanning identifier ->
             getIdentifier identifier "family_planning"
 
+        BackendAuthorityHealthEducation identifier ->
+            getIdentifier identifier "health_education"
+
         BackendAuthorityHCContact identifier ->
             getIdentifier identifier "hc_contact"
 
@@ -753,6 +756,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityFamilyPlanning identifier ->
             encode Backend.Measurement.Encoder.encodeFamilyPlanning identifier
 
+        BackendAuthorityHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodeHealthEducation identifier
+
         BackendAuthorityHCContact identifier ->
             encode Backend.Measurement.Encoder.encodeHCContact identifier
 
@@ -1087,6 +1093,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityFamilyPlanning identifier ->
             FamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHealthEducation identifier ->
+            HealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityHCContact identifier ->
             HCContactRevision (toEntityUuid identifier.uuid) identifier.entity

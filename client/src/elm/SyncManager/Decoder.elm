@@ -414,6 +414,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeFamilyPlanning
                             BackendAuthorityFamilyPlanning
 
+                    "health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHealthEducation
+                            BackendAuthorityHealthEducation
+
                     "hc_contact" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeHCContact

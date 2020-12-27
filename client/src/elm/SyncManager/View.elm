@@ -414,6 +414,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityFamilyPlanning identifier ->
                 viewMeasurement identifier "Family Planning"
 
+            BackendAuthorityHealthEducation identifier ->
+                viewMeasurement identifier "Health Education"
+
             BackendAuthorityHCContact identifier ->
                 viewMeasurement identifier "HC Contact"
 
