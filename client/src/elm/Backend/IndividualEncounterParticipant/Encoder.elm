@@ -13,6 +13,7 @@ import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
+import Utils.Json exposing (encodeIfExists)
 
 
 encodeIndividualEncounterParticipant : IndividualEncounterParticipant -> List ( String, Value )
@@ -30,9 +31,9 @@ encodeIndividualEncounterParticipant data =
     , ( "outcome", maybe encodeIndividualEncounterParticipantOutcome data.outcome )
     , ( "outcome_location", maybe encodeDeliveryLocation data.deliveryLocation )
     , ( "deleted", bool data.deleted )
-    , ( "shard", maybe encodeEntityUuid data.shard )
     , ( "type", string "individual_participant" )
     ]
+        ++ encodeIfExists "shard" data.shard encodeEntityUuid
 
 
 encodeIndividualEncounterType : IndividualEncounterType -> Value

@@ -402,6 +402,7 @@ type TranslationId
     | DistributionNotice DistributionNotice
     | District
     | DOB
+    | Downloading
     | DropzoneDefaultMessage
     | DueDate
     | Edd
@@ -644,7 +645,7 @@ type TranslationId
     | Person
     | PersonHasBeenSaved
     | PertinentSymptoms
-    | PhotosDownloadStatus
+    | PhotosTransferStatus
     | PhysicalExam
     | PhysicalExamTask PhysicalExamTask
     | PlaceholderEnterHeight
@@ -827,6 +828,7 @@ type TranslationId
     | Unknown
     | Update
     | UpdateError
+    | Uploading
     | UterineMyoma
     | ValidationErrors
     | Version
@@ -2489,6 +2491,11 @@ translationSet trans =
 
         DOB ->
             { english = "DOB"
+            , kinyarwanda = Nothing
+            }
+
+        Downloading ->
+            { english = "Downloading"
             , kinyarwanda = Nothing
             }
 
@@ -4435,8 +4442,8 @@ translationSet trans =
             , kinyarwanda = Just " Ibimenyetso by'ingenzi"
             }
 
-        PhotosDownloadStatus ->
-            { english = "Photos Download Status"
+        PhotosTransferStatus ->
+            { english = "Photos Transfer Status"
             , kinyarwanda = Nothing
             }
 
@@ -5919,6 +5926,11 @@ translationSet trans =
         UpdateError ->
             { english = "Update Error"
             , kinyarwanda = Just "ikosa mwivugurura"
+            }
+
+        Uploading ->
+            { english = "Uploading"
+            , kinyarwanda = Nothing
             }
 
         UterineMyoma ->

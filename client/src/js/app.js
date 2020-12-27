@@ -498,6 +498,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .where('isSynced')
             // IndexDB doesn't index Boolean, so we use an Int to indicate "false".
             .equals(0)
+            // We upload photos one by one.
+            .limit(1)
             .toArray();
 
         if (!result[0]) {
@@ -585,11 +587,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
               await dbSync.authorityPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
             }
 
-            if (index == (result.length -1)) {
-              // As we've got async operations within the loop, we must verify that all
-              // rows were processed before sending a response.
-              return sendResultToElm(queryType, {tag: 'Success', result: "!"});
-            }
+            return sendResultToElm(queryType, {tag: 'Success', result: row});
         });
       })();
       break;
@@ -984,7 +982,10 @@ function attachDropzone() {
   dropZone = new Dropzone(selector, {
     url: "cache-upload/images",
     dictDefaultMessage: "Touch here to take a photo, or drop a photo file here.",
-    acceptedFiles: "jpg,jpeg,png,gif,image/*"
+    acceptedFiles: "jpg,jpeg,png,gif,image/*",
+    capture: 'camera',
+    resizeWidth: 600,
+    resizeHeight: 800
   });
 
   dropZone.on('complete', function(file) {
