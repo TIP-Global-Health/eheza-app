@@ -507,6 +507,10 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
             , 2
             )
 
+        NextStepHealthEducation ->
+            -- @todo
+            ( 0, 1 )
+
 
 ongoingTreatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )
 ongoingTreatmentTasksCompletedFromTotal measurements data task =

@@ -29,7 +29,7 @@ import Pages.AcuteIllnessEncounter.Utils
         , generateAssembledData
         , muacRedOnSubsequentVisit
         , noImprovementOnSubsequentVisit
-        , resolveNextStepByDiagnosis
+        , resolveNextStepFirstEncounter
         , respiratoryRateElevated
         , sendToHCOnSubsequentVisit
         )
@@ -782,7 +782,7 @@ viewActionsTakenPane language currentDate firstEncounterData subsequentEncounter
             firstEncounterData
                 |> Maybe.map
                     (\( date, measurements ) ->
-                        case resolveNextStepByDiagnosis date data.person data.diagnosis of
+                        case resolveNextStepFirstEncounter date data.person data.diagnosis of
                             -- This is COVID19 case
                             Just NextStepsIsolation ->
                                 viewActionsTakenIsolationAndContactHC language date measurements

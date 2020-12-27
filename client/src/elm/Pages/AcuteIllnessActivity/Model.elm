@@ -356,6 +356,7 @@ type NextStepsTask
     | NextStepsCall114
     | NextStepsMedicationDistribution
     | NextStepsSendToHC
+    | NextStepHealthEducation
 
 
 type alias IsolationForm =

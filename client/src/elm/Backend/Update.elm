@@ -43,8 +43,10 @@ import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.Utils
     exposing
         ( generateAssembledData
+        , mandatoryActivitiesCompletedSubsequentVisit
         , resolveAcuteIllnessDiagnosis
-        , resolveNextStepByDiagnosis
+        , resolveNextStepFirstEncounter
+        , resolveNextStepsTasks
         , talkedTo114
         )
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
@@ -2101,6 +2103,21 @@ handleRevision revision (( model, recalc ) as noChange) =
 
 generateSuspectedDiagnosisMsgs : NominalDate -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
 generateSuspectedDiagnosisMsgs currentDate before after id person =
+    generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\assembled ->
+                if List.isEmpty assembled.previousMeasurementsWithDates then
+                    generateSuspectedDiagnosisMsgsFirstEncounter currentDate before after id person
+
+                else
+                    generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate assembled
+            )
+        |> Maybe.withDefault []
+
+
+generateSuspectedDiagnosisMsgsFirstEncounter : NominalDate -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
+generateSuspectedDiagnosisMsgsFirstEncounter currentDate before after id person =
     let
         diagnosisBeforeChange =
             generateAssembledData id before
@@ -2112,16 +2129,11 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
                 |> RemoteData.toMaybe
                 |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate)
 
-        updateDiagnosisMsg diagnosis =
-            Backend.AcuteIllnessEncounter.Model.SetAcuteIllnessDiagnosis diagnosis
-                |> Backend.Model.MsgAcuteIllnessEncounter id
-                |> App.Model.MsgIndexedDb
-
-        msgsForDiagnosisChange =
+        msgsForDiagnosisUpdate =
             case diagnosisAfterChange of
                 Just newDiagnosis ->
-                    updateDiagnosisMsg newDiagnosis
-                        :: (case resolveNextStepByDiagnosis currentDate person (Just newDiagnosis) of
+                    updateDiagnosisMsg id newDiagnosis
+                        :: (case resolveNextStepFirstEncounter currentDate person (Just newDiagnosis) of
                                 Just nextStep ->
                                     [ -- Navigate to Acute Ilness NextSteps activty page.
                                       App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
@@ -2148,13 +2160,45 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
                            )
 
                 Nothing ->
-                    [ updateDiagnosisMsg NoAcuteIllnessDiagnosis ]
+                    [ updateDiagnosisMsg id NoAcuteIllnessDiagnosis ]
     in
     if diagnosisBeforeChange /= diagnosisAfterChange then
-        msgsForDiagnosisChange
+        msgsForDiagnosisUpdate
 
     else
         []
+
+
+generateSuspectedDiagnosisMsgsSubsequentEncounter : NominalDate -> Pages.AcuteIllnessEncounter.Model.AssembledData -> List App.Model.Msg
+generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate data =
+    if mandatoryActivitiesCompletedSubsequentVisit currentDate data then
+        let
+            newDiagnosis =
+                resolveAcuteIllnessDiagnosis currentDate data
+                    |> Maybe.withDefault NoAcuteIllnessDiagnosis
+
+            setActiveTaskMsg =
+                resolveNextStepsTasks currentDate data.person False (Just newDiagnosis) data.measurements
+                    |> List.head
+                    |> Maybe.map
+                        (Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask
+                            >> App.Model.MsgPageAcuteIllnessActivity data.id AcuteIllnessNextSteps
+                            >> App.Model.MsgLoggedIn
+                            >> List.singleton
+                        )
+                    |> Maybe.withDefault []
+        in
+        updateDiagnosisMsg data.id newDiagnosis :: setActiveTaskMsg
+
+    else
+        []
+
+
+updateDiagnosisMsg : AcuteIllnessEncounterId -> AcuteIllnessDiagnosis -> App.Model.Msg
+updateDiagnosisMsg id diagnosis =
+    Backend.AcuteIllnessEncounter.Model.SetAcuteIllnessDiagnosis diagnosis
+        |> Backend.Model.MsgAcuteIllnessEncounter id
+        |> App.Model.MsgIndexedDb
 
 
 generateCovidFlowDataCollectedMsgs : ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg

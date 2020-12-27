@@ -159,6 +159,9 @@ resolveNextStepsTasks currentDate person isFirstEncounter diagnosis measurements
                             || (diagnosis == Just DiagnosisRespiratoryInfectionComplicated)
                             || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
                             || (diagnosis == Just DiagnosisUndeterminedMoreEvaluationNeeded)
+
+                    NextStepHealthEducation ->
+                        False
         in
         [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
             |> List.filter expectTask
@@ -181,10 +184,13 @@ resolveNextStepsTasks currentDate person isFirstEncounter diagnosis measurements
                     NextStepsSendToHC ->
                         sendToHCOnSubsequentVisit currentDate person malariaDiagnosedAtCurrentEncounter ageMonths0To6 diagnosis measurements
 
+                    NextStepHealthEducation ->
+                        True
+
                     _ ->
                         False
         in
-        [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
+        [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepHealthEducation ]
             |> List.filter expectTask
 
 
@@ -333,7 +339,7 @@ expectActivity currentDate isFirstEncounter data activity =
 
         AcuteIllnessNextSteps ->
             if isFirstEncounter then
-                resolveNextStepByDiagnosis currentDate data.person data.diagnosis
+                resolveNextStepFirstEncounter currentDate data.person data.diagnosis
                     |> isJust
 
             else
@@ -482,8 +488,52 @@ mandatoryActivityCompletedSubsequentVisit currentDate data activity =
             False
 
 
-resolveNextStepByDiagnosis : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> Maybe NextStepsTask
-resolveNextStepByDiagnosis currentDate person maybeDiagnosis =
+resolveNextStepFirstEncounter : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> Maybe NextStepsTask
+resolveNextStepFirstEncounter currentDate person maybeDiagnosis =
+    maybeDiagnosis
+        |> Maybe.andThen
+            (\diagnosis ->
+                case diagnosis of
+                    DiagnosisCovid19 ->
+                        Just NextStepsIsolation
+
+                    DiagnosisMalariaUncomplicated ->
+                        ageDependentUncomplicatedMalariaNextStep currentDate person
+
+                    DiagnosisMalariaUncomplicatedAndPregnant ->
+                        Just NextStepsSendToHC
+
+                    DiagnosisMalariaComplicated ->
+                        Just NextStepsSendToHC
+
+                    DiagnosisGastrointestinalInfectionUncomplicated ->
+                        Just NextStepsMedicationDistribution
+
+                    DiagnosisGastrointestinalInfectionComplicated ->
+                        Just NextStepsSendToHC
+
+                    DiagnosisSimpleColdAndCough ->
+                        ageDependentARINextStep currentDate person
+
+                    DiagnosisRespiratoryInfectionUncomplicated ->
+                        ageDependentARINextStep currentDate person
+
+                    DiagnosisRespiratoryInfectionComplicated ->
+                        Just NextStepsSendToHC
+
+                    DiagnosisFeverOfUnknownOrigin ->
+                        Just NextStepsSendToHC
+
+                    DiagnosisUndeterminedMoreEvaluationNeeded ->
+                        Just NextStepsSendToHC
+
+                    NoAcuteIllnessDiagnosis ->
+                        Nothing
+            )
+
+
+resolveNextStepSubsequentEncounter : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> Maybe NextStepsTask
+resolveNextStepSubsequentEncounter currentDate person maybeDiagnosis =
     maybeDiagnosis
         |> Maybe.andThen
             (\diagnosis ->

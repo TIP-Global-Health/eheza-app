@@ -1471,6 +1471,12 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                             , isJust measurements.sendToHC
                             )
 
+                        NextStepHealthEducation ->
+                            -- @todo
+                            ( "next-steps-health-education"
+                            , False
+                            )
+
                 isActive =
                     activeTask == Just task
 
@@ -1535,6 +1541,10 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> viewSendToHCForm language currentDate
 
+                Just NextStepHealthEducation ->
+                    -- @todo
+                    emptyNode
+
                 Nothing ->
                     emptyNode
 
@@ -1588,6 +1598,10 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                 NextStepsSendToHC ->
                     Nothing
 
+                NextStepHealthEducation ->
+                    -- @todo
+                    Nothing
+
         actions =
             activeTask
                 |> Maybe.map
@@ -1611,6 +1625,10 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                                         SaveSendToHC personId measurements.sendToHC
 
                                     NextStepsMedicationDistribution ->
+                                        SaveMedicationDistribution personId measurements.medicationDistribution
+
+                                    NextStepHealthEducation ->
+                                        -- @todo
                                         SaveMedicationDistribution personId measurements.medicationDistribution
                         in
                         div [ class "actions next-steps" ]

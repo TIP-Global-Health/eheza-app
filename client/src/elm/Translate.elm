@@ -3987,6 +3987,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
+                NextStepHealthEducation ->
+                    { english = "Health Eduacation"
+                    , kinyarwanda = Nothing
+                    }
+
         No ->
             { english = "No"
             , kinyarwanda = Just "Oya"
