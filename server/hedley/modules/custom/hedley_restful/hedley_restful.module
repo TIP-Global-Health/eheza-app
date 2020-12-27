@@ -54,6 +54,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'danger_signs' => 'danger-signs',
   'exposure' => 'exposures',
   'family_planning' => 'family-plannings',
+  'health_education' => 'health_education',
   'hc_contact' => 'hc-contacts',
   'height' => 'heights',
   'isolation' => 'isolations',
