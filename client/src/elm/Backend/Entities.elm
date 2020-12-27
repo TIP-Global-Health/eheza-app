@@ -613,3 +613,11 @@ type alias AcuteIllnessNutritionId =
 
 type AcuteIllnessNutritionUuidType
     = AcuteIllnessNutritionUuidType
+
+
+type alias HealthEducationId =
+    EntityUuid HealthEducationUuidType
+
+
+type HealthEducationUuidType
+    = HealthEducationUuidType
