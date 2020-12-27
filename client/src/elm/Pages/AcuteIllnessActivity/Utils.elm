@@ -507,7 +507,7 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
             , 2
             )
 
-        NextStepHealthEducation ->
+        NextStepsHealthEducation ->
             -- @todo
             ( 0, 1 )
 

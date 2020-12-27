@@ -160,7 +160,7 @@ resolveNextStepsTasks currentDate person isFirstEncounter diagnosis measurements
                             || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
                             || (diagnosis == Just DiagnosisUndeterminedMoreEvaluationNeeded)
 
-                    NextStepHealthEducation ->
+                    NextStepsHealthEducation ->
                         False
         in
         [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
@@ -184,13 +184,13 @@ resolveNextStepsTasks currentDate person isFirstEncounter diagnosis measurements
                     NextStepsSendToHC ->
                         sendToHCOnSubsequentVisit currentDate person malariaDiagnosedAtCurrentEncounter ageMonths0To6 diagnosis measurements
 
-                    NextStepHealthEducation ->
+                    NextStepsHealthEducation ->
                         True
 
                     _ ->
                         False
         in
-        [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepHealthEducation ]
+        [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsHealthEducation ]
             |> List.filter expectTask
 
 
@@ -403,11 +403,26 @@ activityCompleted currentDate isFirstEncounter data activity =
 
             else
                 case nextStepsTasks of
-                    -- @todo Expand
+                    -- Improving, without danger signs present
+                    [ NextStepsHealthEducation ] ->
+                        -- @todo Expand
+                        False
+
+                    -- Not improving, without danger signs present
+                    [ NextStepsSendToHC, NextStepsHealthEducation ] ->
+                        -- @todo Expand
+                        isJust measurements.sendToHC
+
+                    -- Not improving, with danger signs
+                    [ NextStepsContactHC, NextStepsHealthEducation ] ->
+                        -- @todo Expand
+                        isJust measurements.hcContact
+
+                    -- Uncomplicated malarial for adult
                     [ NextStepsMedicationDistribution ] ->
                         isJust measurements.medicationDistribution
 
-                    -- @todo Expand
+                    -- Other cases of malaria
                     [ NextStepsSendToHC ] ->
                         isJust measurements.sendToHC
 

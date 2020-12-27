@@ -1471,7 +1471,7 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                             , isJust measurements.sendToHC
                             )
 
-                        NextStepHealthEducation ->
+                        NextStepsHealthEducation ->
                             -- @todo
                             ( "next-steps-health-education"
                             , False
@@ -1541,7 +1541,7 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> viewSendToHCForm language currentDate
 
-                Just NextStepHealthEducation ->
+                Just NextStepsHealthEducation ->
                     -- @todo
                     emptyNode
 
@@ -1598,7 +1598,7 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                 NextStepsSendToHC ->
                     Nothing
 
-                NextStepHealthEducation ->
+                NextStepsHealthEducation ->
                     -- @todo
                     Nothing
 
@@ -1627,7 +1627,7 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                                     NextStepsMedicationDistribution ->
                                         SaveMedicationDistribution personId measurements.medicationDistribution
 
-                                    NextStepHealthEducation ->
+                                    NextStepsHealthEducation ->
                                         -- @todo
                                         SaveMedicationDistribution personId measurements.medicationDistribution
                         in
