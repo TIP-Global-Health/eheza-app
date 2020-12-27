@@ -4,6 +4,7 @@ module Utils.Json exposing
     , decodeError
     , decodeEverySet
     , decodeNullAsEmptyArray
+    , encodeIfExists
     )
 
 import AssocList as Dict exposing (Dict)
@@ -11,6 +12,7 @@ import Date exposing (Date)
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (Decoder, andThen, decodeString, dict, fail, field, float, index, int, list, map, map2, nullable, oneOf, string, succeed, value)
+import Json.Encode exposing (Value)
 
 
 decodeArray2 : Decoder k -> Decoder v -> Decoder (Dict k v)
@@ -62,3 +64,10 @@ turns it into an `EverySet`.
 decodeEverySet : Decoder a -> Decoder (EverySet a)
 decodeEverySet =
     map EverySet.fromList << list
+
+
+encodeIfExists : String -> Maybe a -> (a -> Value) -> List ( String, Value )
+encodeIfExists name maybeVal encoder =
+    maybeVal
+        |> Maybe.map (\val -> [ ( name, encoder val ) ])
+        |> Maybe.withDefault []
