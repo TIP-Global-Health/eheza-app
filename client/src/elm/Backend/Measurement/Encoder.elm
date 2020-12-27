@@ -1797,3 +1797,26 @@ encodeAcuteIllnessNutrition =
 encodeAcuteIllnessNutritionValue : EverySet ChildNutritionSign -> List ( String, Value )
 encodeAcuteIllnessNutritionValue nutritions =
     encodeNutritionValueWithType "acute_illness_nutrition" nutritions
+
+
+encodeHealthEducation : HealthEducation -> List ( String, Value )
+encodeHealthEducation =
+    encodeAcuteIllnessMeasurement encodeHealthEducationValue
+
+
+encodeHealthEducationValue : EverySet HealthEducationSign -> List ( String, Value )
+encodeHealthEducationValue value =
+    [ ( "health_education_signs", encodeEverySet encodeHealthEducationSign value )
+    , ( "type", string "health_education" )
+    ]
+
+
+encodeHealthEducationSign : HealthEducationSign -> Value
+encodeHealthEducationSign sign =
+    string <|
+        case sign of
+            MalariaPrevention ->
+                "malaria-prevention"
+
+            NoHealthEducationSign ->
+                "none"
