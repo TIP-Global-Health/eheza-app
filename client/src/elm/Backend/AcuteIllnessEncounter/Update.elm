@@ -208,6 +208,16 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
+        SaveHealthEducation personId valueId value ->
+            ( { model | saveHealthEducation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value healthEducationEndpoint HandleSavedHealthEducation
+            )
+
+        HandleSavedHealthEducation data ->
+            ( { model | saveHealthEducation = data }
+            , Cmd.none
+            )
+
 
 updateEncounter : NominalDate -> AcuteIllnessEncounterId -> Maybe AcuteIllnessEncounter -> (AcuteIllnessEncounter -> AcuteIllnessEncounter) -> Model -> ( Model, Cmd Msg )
 updateEncounter currentDate encounterId maybeEncounter updateFunc model =
