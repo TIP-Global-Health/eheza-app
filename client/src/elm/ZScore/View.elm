@@ -283,12 +283,12 @@ weightForAge0To5Config : PlotConfig Days Kilograms
 weightForAge0To5Config =
     { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
     , toFloatY = \(Kilograms kg) -> kg
-    , input = { minY = 7, maxY = 30, minX = 0, maxX = 365 * 5 }
+    , input = { minY = 2, maxY = 30, minX = 0, maxX = 365 * 5 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
     , drawSD1 = False
     , paintLevels = True
     , xAxis =
-        { width = 806
+        { width = 725
         , minYear = 0
         , maxYear = 5
         , monthsList = [ 2, 4, 6, 8, 10 ]
