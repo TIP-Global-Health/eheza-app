@@ -447,7 +447,7 @@ mandatoryActivityCompletedFirstEncounter currentDate person measurements activit
 -}
 mandatoryActivitiesCompletedSubsequentVisit : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesCompletedSubsequentVisit currentDate data =
-    [ AcuteIllnessDangerSigns, AcuteIllnessPhysicalExam, AcuteIllnessOngoingTreatment ]
+    [ AcuteIllnessDangerSigns, AcuteIllnessPhysicalExam, AcuteIllnessOngoingTreatment, AcuteIllnessLaboratory ]
         |> List.all (mandatoryActivityCompletedSubsequentVisit currentDate data)
 
 
@@ -473,6 +473,10 @@ mandatoryActivityCompletedSubsequentVisit currentDate data activity =
         AcuteIllnessOngoingTreatment ->
             (not <| expectActivity currentDate False data AcuteIllnessOngoingTreatment)
                 || isJust measurements.treatmentOngoing
+
+        AcuteIllnessLaboratory ->
+            (not <| expectActivity currentDate False data AcuteIllnessLaboratory)
+                || isJust measurements.malariaTesting
 
         _ ->
             False
