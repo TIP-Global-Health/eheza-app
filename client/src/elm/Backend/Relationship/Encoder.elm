@@ -5,6 +5,7 @@ import Backend.Relationship.Model exposing (..)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
+import Utils.Json exposing (encodeIfExists)
 
 
 encodeRelationship : Relationship -> List ( String, Value )
@@ -13,9 +14,9 @@ encodeRelationship data =
     , encodeRelatedToField data.relatedTo
     , encodeRelatedByField data.relatedBy
     , ( "deleted", bool data.deleted )
-    , ( "shard", maybe encodeEntityUuid data.shard )
     , ( "type", string "relationship" )
     ]
+        ++ encodeIfExists "shard" data.shard encodeEntityUuid
 
 
 encodeRelationshipChanges : { old : Relationship, new : Relationship } -> List ( String, Value )
