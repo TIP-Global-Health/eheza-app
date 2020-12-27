@@ -882,6 +882,15 @@ type alias AcuteIllnessNutrition =
     AcuteIllnessMeasurement (EverySet ChildNutritionSign)
 
 
+type alias HealthEducation =
+    AcuteIllnessMeasurement (EverySet HealthEducationSign)
+
+
+type HealthEducationSign
+    = MalariaPrevention
+    | NoHealthEducationSign
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -1012,6 +1021,7 @@ type alias AcuteIllnessMeasurements =
     , treatmentOngoing : Maybe ( TreatmentOngoingId, TreatmentOngoing )
     , dangerSigns : Maybe ( AcuteIllnessDangerSignsId, AcuteIllnessDangerSigns )
     , nutrition : Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )
+    , healthEducation : Maybe ( HealthEducationId, HealthEducation )
     }
 
 
