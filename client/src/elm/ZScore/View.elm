@@ -364,12 +364,12 @@ weightForHeight0To5Config : PlotConfig Height Kilograms
 weightForHeight0To5Config =
     { toFloatX = \(ZScore.Model.Height cm) -> cm
     , toFloatY = \(Kilograms kg) -> kg
-    , input = { minY = 6, maxY = 32, minX = 65, maxX = 120 }
+    , input = { minY = 1, maxY = 32, minX = 65, maxX = 120 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
     , drawSD1 = True
     , paintLevels = True
     , xAxis =
-        { width = 650
+        { width = 660
         , minYear = 0
         , maxYear = 0
         , monthsList = []
@@ -1061,26 +1061,26 @@ zScoreLabelsWeightForHeightGirls =
 zScoreLabelsWeightForHeight0To5Boys : Svg any
 zScoreLabelsWeightForHeight0To5Boys =
     g []
-        [ text_ [ transform "matrix(1 0 0 1 722.457 148.1022)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 722.8945 193.2829)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 723.0352 228.9333)", class "one-line z-score-semibold st23" ] [ text "1" ]
-        , text_ [ transform "matrix(1 0 0 1 723.5527 264.8552)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 720.498 295.3893)", class "one-line z-score-semibold st23" ] [ text "-1" ]
-        , text_ [ transform "matrix(1 0 0 1 720.6406 320.8576)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 720.7002 344.5217)", class "z-score-semibold st23" ] [ text "-3" ]
+        [ text_ [ transform "matrix(1 0 0 1 722.457 147.1022)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.457 184.2829)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 722.457 214.9333)", class "one-line z-score-semibold st23" ] [ text "1" ]
+        , text_ [ transform "matrix(1 0 0 1 722.457 242.8552)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 720.498 268.0893)", class "one-line z-score-semibold st23" ] [ text "-1" ]
+        , text_ [ transform "matrix(1 0 0 1 720.498 289.6576)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.498 308.9217)", class "z-score-semibold st23" ] [ text "-3" ]
         ]
 
 
 zScoreLabelsWeightForHeight0To5Girls : Svg any
 zScoreLabelsWeightForHeight0To5Girls =
     g []
-        [ text_ [ transform "matrix(1 0 0 1 722.457 135.1022)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 722.8945 182.2829)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 723.0352 224.9333)", class "one-line z-score-semibold st23" ] [ text "1" ]
-        , text_ [ transform "matrix(1 0 0 1 723.5527 258.8552)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 720.498 290.3893)", class "one-line z-score-semibold st23" ] [ text "-1" ]
-        , text_ [ transform "matrix(1 0 0 1 720.6406 317.8576)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 720.7002 342.5217)", class "z-score-semibold st23" ] [ text "-3" ]
+        [ text_ [ transform "matrix(1 0 0 1 722.457 133.1022)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.457 173.2829)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 722.457 207.9333)", class "one-line z-score-semibold st23" ] [ text "1" ]
+        , text_ [ transform "matrix(1 0 0 1 722.457 238.5552)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 720.498 263.3893)", class "one-line z-score-semibold st23" ] [ text "-1" ]
+        , text_ [ transform "matrix(1 0 0 1 720.498 287.0576)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.498 307.5217)", class "z-score-semibold st23" ] [ text "-3" ]
         ]
 
 
@@ -1100,11 +1100,11 @@ zScoreLabelsHeightForAgeBoys0To5 : Svg any
 zScoreLabelsHeightForAgeBoys0To5 =
     g
         []
-        [ text_ [ transform "matrix(1 0 0 1 722.0057 133.1564)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 722.0448 168.738)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 722.4686 243.241)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 720.9237 314.6482)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 720.7001 352.5353)", class "z-score-semibold st23" ] [ text "-3" ]
+        [ text_ [ transform "matrix(1 0 0 1 722.0057 131.1564)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0057 150.738)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0057 196.241)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9237 240.7482)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9237 263.3353)", class "z-score-semibold st23" ] [ text "-3" ]
         ]
 
 
@@ -1126,11 +1126,11 @@ zScoreLabelsHeightForAgeGirls0To5 : Svg any
 zScoreLabelsHeightForAgeGirls0To5 =
     g
         []
-        [ text_ [ transform "matrix(1 0 0 1 722.0057 134.1564)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 722.0448 170.538)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 722.4686 247.241)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 720.9237 321.2482)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 720.7001 359.1353)", class "z-score-semibold st23" ] [ text "-3" ]
+        [ text_ [ transform "matrix(1 0 0 1 722.0057 132.1564)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0057 153.538)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0057 198.241)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9237 244.2482)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9237 268.1353)", class "z-score-semibold st23" ] [ text "-3" ]
         ]
 
 
@@ -1162,11 +1162,11 @@ zScoreLabelsWeightForAgeBoys =
 zScoreLabelsWeightForAge0To5Boys : Svg any
 zScoreLabelsWeightForAge0To5Boys =
     g []
-        [ text_ [ transform "matrix(1 0 0 1 722.1398 160.3553)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 721.6105 221.8234)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 722.4973 319.3636)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 719.923 391.5098)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 719.6994 419.3469)", class "z-score-semibold st23" ] [ text "-3" ]
+        [ text_ [ transform "matrix(1 0 0 1 722.1398 153.3553)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.1398 204.0234)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 722.1398 284.3636)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 719.923 343.5098)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 719.923 366.3469)", class "z-score-semibold st23" ] [ text "-3" ]
         ]
 
 
@@ -1211,11 +1211,11 @@ zScoreLabelsWeightForAge0To5Girls : Svg any
 zScoreLabelsWeightForAge0To5Girls =
     g
         []
-        [ text_ [ transform "matrix(1 0 0 1 723.707 131.6711)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 723.4619 208.8845)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 723.498 322.1838)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 720.9238 397.1916)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 720.7002 425.9709)", class "z-score-semibold st23" ] [ text "-3" ]
+        [ text_ [ transform "matrix(1 0 0 1 723.707 130.6711)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 723.707 194.8845)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 723.707 285.1838)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 720.707 348.1916)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.707 370.9709)", class "z-score-semibold st23" ] [ text "-3" ]
         ]
 
 

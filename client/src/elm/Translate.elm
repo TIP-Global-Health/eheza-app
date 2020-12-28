@@ -6132,12 +6132,12 @@ translateChartPhrase phrase =
             }
 
         WeightForLengthBoys ->
-            { english = "Weight-for-length BOYS"
+            { english = "Weight-for-height BOYS"
             , kinyarwanda = Just "Ibiro ku Uburebure umuhungu"
             }
 
         WeightForLengthGirls ->
-            { english = "Weight-for-length GIRLS"
+            { english = "Weight-for-height GIRLS"
             , kinyarwanda = Just "ibiro ku uburebure umukobwa"
             }
 
