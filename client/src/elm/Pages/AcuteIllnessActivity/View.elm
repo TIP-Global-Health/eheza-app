@@ -1629,8 +1629,7 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                                         SaveMedicationDistribution personId measurements.medicationDistribution
 
                                     NextStepsHealthEducation ->
-                                        -- @todo
-                                        SaveMedicationDistribution personId measurements.medicationDistribution
+                                        SaveHealthEducation personId measurements.healthEducation
                         in
                         div [ class "actions next-steps" ]
                             [ button
