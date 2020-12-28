@@ -388,6 +388,7 @@ type TranslationId
     | DistributionNotice DistributionNotice
     | District
     | DOB
+    | Downloading
     | DropzoneDefaultMessage
     | DueDate
     | Edd
@@ -620,7 +621,7 @@ type TranslationId
     | Person
     | PersonHasBeenSaved
     | PertinentSymptoms
-    | PhotosDownloadStatus
+    | PhotosTransferStatus
     | PhysicalExam
     | PhysicalExamTask PhysicalExamTask
     | PlaceholderEnterHeight
@@ -676,6 +677,7 @@ type TranslationId
     | RelationSuccessfulMotherWithChild
     | RemainingForDownloadLabel
     | RemainingForUploadLabel
+    | RemainingTotalToUpload
     | RenalDisease
     | ReportAge String
     | ReportDOB String
@@ -795,6 +797,7 @@ type TranslationId
     | Unknown
     | Update
     | UpdateError
+    | Uploading
     | UterineMyoma
     | ValidationErrors
     | Version
@@ -2272,6 +2275,11 @@ translationSet trans =
 
         DOB ->
             { english = "DOB"
+            , kinyarwanda = Nothing
+            }
+
+        Downloading ->
+            { english = "Downloading"
             , kinyarwanda = Nothing
             }
 
@@ -4160,8 +4168,8 @@ translationSet trans =
             , kinyarwanda = Just " Ibimenyetso by'ingenzi"
             }
 
-        PhotosDownloadStatus ->
-            { english = "Photos Download Status"
+        PhotosTransferStatus ->
+            { english = "Photos Transfer Status"
             , kinyarwanda = Nothing
             }
 
@@ -4626,6 +4634,11 @@ translationSet trans =
         RemainingForUploadLabel ->
             { english = "Remaining for Upload"
             , kinyarwanda = Just "Ibisigaye koherezwa kuri seriveri"
+            }
+
+        RemainingTotalToUpload ->
+            { english = "Remaining to upload, in total"
+            , kinyarwanda = Nothing
             }
 
         ReportAge age ->
@@ -5576,6 +5589,11 @@ translationSet trans =
         UpdateError ->
             { english = "Update Error"
             , kinyarwanda = Just "ikosa mwivugurura"
+            }
+
+        Uploading ->
+            { english = "Uploading"
+            , kinyarwanda = Nothing
             }
 
         UterineMyoma ->

@@ -63,7 +63,7 @@ determineSyncStatus model =
                             RemoteData.Success maybeData ->
                                 case maybeData of
                                     Just data ->
-                                        -- We still have date.
+                                        -- We still have data.
                                         noChange
 
                                     Nothing ->
@@ -83,13 +83,34 @@ determineSyncStatus model =
                             noChange
 
                     SyncUploadAuthority record ->
-                        if record.indexDbRemoteData == RemoteData.Success Nothing then
-                            -- We tried to fetch entities for upload from IndexDB,
-                            -- but there we non matching the query.
-                            ( SyncDownloadGeneral RemoteData.NotAsked, syncInfoAuthorities )
+                        case ( syncInfoAuthorities, record.indexDbRemoteData ) of
+                            ( Nothing, _ ) ->
+                                -- There are no authorities, so we can set the next status.
+                                ( SyncDownloadGeneral RemoteData.NotAsked
+                                , syncInfoAuthorities
+                                )
 
-                        else
-                            noChange
+                            ( Just zipper, RemoteData.Success Nothing ) ->
+                                -- We tried to fetch, but there was no more data.
+                                -- Go to the next authority if there is one,
+                                -- otherwise, to the next status.
+                                case Zipper.next zipper of
+                                    Just nextZipper ->
+                                        ( SyncUploadAuthority emptyUploadRec
+                                        , Just nextZipper
+                                        )
+
+                                    Nothing ->
+                                        -- We've reached the last element,
+                                        -- so reset authorities zipper to first element,
+                                        -- and rotate to the next status.
+                                        ( SyncDownloadGeneral RemoteData.NotAsked
+                                        , Just (Zipper.first zipper)
+                                        )
+
+                            _ ->
+                                -- Still have data to upload.
+                                noChange
 
                     SyncDownloadGeneral webData ->
                         case webData of
@@ -109,7 +130,7 @@ determineSyncStatus model =
                                 noChange
 
                     SyncDownloadAuthority webData ->
-                        case ( model.syncInfoAuthorities, webData ) of
+                        case ( syncInfoAuthorities, webData ) of
                             ( Nothing, _ ) ->
                                 -- There are no authorities, so we can set the next
                                 -- status, skipping statistics download.
@@ -120,28 +141,21 @@ determineSyncStatus model =
                             ( Just zipper, RemoteData.Success data ) ->
                                 if List.isEmpty data.entities then
                                     -- We tried to fetch, but there was no more data.
-                                    -- Check if this is the last element.
-                                    if Zipper.isLast zipper then
-                                        ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
-                                        , Just (Zipper.first zipper)
-                                        )
+                                    -- Go to the next authority if there is one,
+                                    -- otherwise, to the next status.
+                                    case Zipper.next zipper of
+                                        Just nextZipper ->
+                                            ( SyncDownloadAuthority RemoteData.NotAsked
+                                            , Just nextZipper
+                                            )
 
-                                    else
-                                        -- Go to the next authority if there is
-                                        -- otherwise, to the next status
-                                        case Zipper.next zipper of
-                                            Just nextZipper ->
-                                                ( SyncDownloadAuthority RemoteData.NotAsked
-                                                , Just nextZipper
-                                                )
-
-                                            Nothing ->
-                                                -- We've reached the last element
-                                                -- so reset it back, and rotate
-                                                -- to the next status.
-                                                ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
-                                                , Just (Zipper.first zipper)
-                                                )
+                                        Nothing ->
+                                            -- We've reached the last element,
+                                            -- so reset authorities zipper to first element,
+                                            -- and rotate to the next status.
+                                            ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
+                                            , Just (Zipper.first zipper)
+                                            )
 
                                 else
                                     -- Still have data to download.
@@ -151,7 +165,7 @@ determineSyncStatus model =
                                 noChange
 
                     SyncDownloadAuthorityDashboardStats webData ->
-                        case ( model.syncInfoAuthorities, webData ) of
+                        case ( syncInfoAuthorities, webData ) of
                             ( Nothing, _ ) ->
                                 -- There are no authorities, so we can set the next
                                 -- status.
@@ -159,28 +173,22 @@ determineSyncStatus model =
                                 , syncInfoAuthorities
                                 )
 
-                            ( Just zipper, RemoteData.Success data ) ->
-                                if Zipper.isLast zipper then
-                                    ( SyncIdle
-                                    , Just (Zipper.first zipper)
-                                    )
+                            ( Just zipper, RemoteData.Success _ ) ->
+                                -- Go to the next authority if there is
+                                -- otherwise, to the next status
+                                case Zipper.next zipper of
+                                    Just nextZipper ->
+                                        ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
+                                        , Just nextZipper
+                                        )
 
-                                else
-                                    -- Go to the next authority if there is
-                                    -- otherwise, to the next status
-                                    case Zipper.next zipper of
-                                        Just nextZipper ->
-                                            ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
-                                            , Just nextZipper
-                                            )
-
-                                        Nothing ->
-                                            -- We've reached the last element
-                                            -- so reset it back, and rotate
-                                            -- to the next status.
-                                            ( SyncIdle
-                                            , Just (Zipper.first zipper)
-                                            )
+                                    Nothing ->
+                                        -- We've reached the last element,
+                                        -- so reset authorities zipper to first element,
+                                        -- and rotate to the next status.
+                                        ( SyncIdle
+                                        , Just (Zipper.first zipper)
+                                        )
 
                             _ ->
                                 noChange
@@ -912,7 +920,7 @@ syncInfoStatusToString status =
             "Error"
 
         NotAvailable ->
-            "Not NotAvailable"
+            "Not Available"
 
         Success ->
             "Success"
@@ -930,7 +938,7 @@ syncInfoStatusFromString status =
         "Error" ->
             Just Error
 
-        "Not NotAvailable" ->
+        "Not Available" ->
             Just NotAvailable
 
         "Success" ->

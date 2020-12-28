@@ -80,6 +80,10 @@ decodeIndexDbQueryTypeResult =
                             , succeed (IndexDbQueryDeferredPhotoResult Nothing)
                             ]
 
+                    "IndexDbQueryGetTotalEntriesToUploadResult" ->
+                        field "data" decodeInt
+                            |> andThen (\val -> succeed (IndexDbQueryGetTotalEntriesToUploadResult val))
+
                     _ ->
                         fail <| queryType ++ " is not a recognized IndexDbQueryTypeResult"
             )
@@ -93,7 +97,7 @@ decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
                 case tag of
                     "Success" ->
                         oneOf
-                            [ field "data" decodeIndexDbQueryUploadPhotoResultRecord
+                            [ at [ "data", "result" ] decodeIndexDbQueryUploadPhotoResultRecord
                                 |> andThen (\record -> succeed (RemoteData.Success (Just record)))
 
                             -- In case we have no photos to upload.

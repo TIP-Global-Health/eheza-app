@@ -18,7 +18,7 @@ import Pages.Device.Model exposing (..)
 import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
-import SyncManager.Model exposing (DownloadPhotosMode(..), DownloadPhotosStatus(..), SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoStatus)
+import SyncManager.Model exposing (DownloadPhotosMode(..), DownloadPhotosStatus(..), SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoStatus, SyncStatus(..))
 import SyncManager.Utils exposing (syncInfoStatusToString)
 import Time
 import Translate exposing (Language, translate)
@@ -64,7 +64,8 @@ viewDeviceStatus language device app model =
                 , div [ class "general-sync" ]
                     [ h2 [] [ text <| translate language Translate.SyncGeneral ]
                     , viewSyncInfo language app.syncManager.syncInfoGeneral
-                    , viewDownloadPhotosInfo language app.syncManager.downloadPhotosStatus
+                    , viewTotalEntriesToUpload language app.syncManager.totalEntriesToUpload
+                    , viewPhotosTransferInfo language app.syncManager.syncStatus app.syncManager.downloadPhotosStatus
                     ]
                 , viewHealthCenters language app
                 ]
@@ -145,59 +146,75 @@ viewSyncInfo language info =
         ]
 
 
-viewDownloadPhotosInfo : Language -> DownloadPhotosStatus -> Html Msg
-viewDownloadPhotosInfo language status =
+viewTotalEntriesToUpload : Language -> Maybe Int -> Html Msg
+viewTotalEntriesToUpload language maybeTotal =
+    let
+        total =
+            maybeTotal
+                |> Maybe.map String.fromInt
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
+    in
+    div [ class "total-to-upload" ] [ text <| translate language Translate.RemainingTotalToUpload ++ ": " ++ total ]
+
+
+viewPhotosTransferInfo : Language -> SyncStatus -> DownloadPhotosStatus -> Html Msg
+viewPhotosTransferInfo language syncStatus status =
     let
         statusHtml =
-            case status of
-                DownloadPhotosIdle ->
-                    div [] [ text <| translate language Translate.IdleWaitingForSync ]
+            case syncStatus of
+                SyncUploadPhotoAuthority _ ->
+                    div [] [ text <| translate language Translate.Uploading ]
 
-                DownloadPhotosInProcess DownloadPhotosNone ->
-                    div [] [ text <| translate language Translate.Disabled ]
+                _ ->
+                    case status of
+                        DownloadPhotosIdle ->
+                            div [] [ text <| translate language Translate.IdleWaitingForSync ]
 
-                DownloadPhotosInProcess (DownloadPhotosBatch rect) ->
-                    let
-                        remaining =
-                            case rect.indexDbRemoteData of
-                                RemoteData.Success (Just result) ->
-                                    String.fromInt result.remaining
+                        DownloadPhotosInProcess DownloadPhotosNone ->
+                            div [] [ text <| translate language Translate.Disabled ]
 
-                                _ ->
-                                    ""
-                    in
-                    div []
-                        [ text <|
-                            String.fromInt (rect.batchCounter + 1)
-                                ++ " / "
-                                ++ String.fromInt rect.batchSize
-                                ++ " , "
-                        , text <|
-                            translate language Translate.RemainingForDownloadLabel
-                                ++ ": "
-                                ++ remaining
-                        ]
+                        DownloadPhotosInProcess (DownloadPhotosBatch rect) ->
+                            let
+                                remaining =
+                                    case rect.indexDbRemoteData of
+                                        RemoteData.Success (Just result) ->
+                                            String.fromInt result.remaining
 
-                DownloadPhotosInProcess (DownloadPhotosAll rect) ->
-                    let
-                        remaining =
-                            case rect.indexDbRemoteData of
-                                RemoteData.Success (Just result) ->
-                                    String.fromInt result.remaining
+                                        _ ->
+                                            ""
+                            in
+                            div []
+                                [ text <|
+                                    String.fromInt (rect.batchCounter + 1)
+                                        ++ " / "
+                                        ++ String.fromInt rect.batchSize
+                                        ++ " , "
+                                , text <|
+                                    translate language Translate.RemainingForDownloadLabel
+                                        ++ ": "
+                                        ++ remaining
+                                ]
 
-                                _ ->
-                                    ""
-                    in
-                    div []
-                        [ text <|
-                            translate language Translate.RemainingForDownloadLabel
-                                ++ ": "
-                                ++ remaining
-                        ]
+                        DownloadPhotosInProcess (DownloadPhotosAll rect) ->
+                            let
+                                remaining =
+                                    case rect.indexDbRemoteData of
+                                        RemoteData.Success (Just result) ->
+                                            String.fromInt result.remaining
+
+                                        _ ->
+                                            ""
+                            in
+                            div []
+                                [ text <|
+                                    translate language Translate.RemainingForDownloadLabel
+                                        ++ ": "
+                                        ++ remaining
+                                ]
     in
     div
-        [ class "download-photos" ]
-        [ h2 [] [ text <| translate language Translate.PhotosDownloadStatus ]
+        [ class "transfer-photos" ]
+        [ h2 [] [ text <| translate language Translate.PhotosTransferStatus ]
         , statusHtml
         ]
 
