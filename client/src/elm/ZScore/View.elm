@@ -364,24 +364,24 @@ weightForHeight0To5Config : PlotConfig Height Kilograms
 weightForHeight0To5Config =
     { toFloatX = \(ZScore.Model.Height cm) -> cm
     , toFloatY = \(Kilograms kg) -> kg
-    , input = { minY = 1, maxY = 32, minX = 65, maxX = 120 }
+    , input = { minY = 1, maxY = 32, minX = 45, maxX = 120 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
     , drawSD1 = True
     , paintLevels = True
     , xAxis =
-        { width = 660
+        { width = 645
         , minYear = 0
         , maxYear = 0
         , monthsList = []
         , innerLinesNumber = 4
-        , minLength = 65
+        , minLength = 45
         , maxLength = 120
         , xAxisType = Height
         }
     , yAxis =
         { yAxisIntervals = 2
-        , innerLinesNumber = 1
-        , spaceType = SpaceBelow
+        , innerLinesNumber = 2
+        , spaceType = SpaceAround
         , decimalPointsForText = 0
         }
     }
