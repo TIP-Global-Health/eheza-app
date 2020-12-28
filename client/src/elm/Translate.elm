@@ -679,6 +679,7 @@ type TranslationId
     | PrenatalParticipant
     | PrenatalParticipants
     | PreTermPregnancy
+    | ProvidedMalariaPreventionEducationQuestion
     | Province
     | ReasonForCSection
     | ReasonForNotIsolating ReasonForNotIsolating
@@ -4715,6 +4716,11 @@ translationSet trans =
         PreTermPregnancy ->
             { english = "Number of Pre-term Pregnancies (Live Birth)"
             , kinyarwanda = Just "Umubare w'abavutse ari bazima badashyitse"
+            }
+
+        ProvidedMalariaPreventionEducationQuestion ->
+            { english = "Have you provided health education (or anticipatory guidance) for the prevention of Uncomplicated Malaria"
+            , kinyarwanda = Nothing
             }
 
         Province ->

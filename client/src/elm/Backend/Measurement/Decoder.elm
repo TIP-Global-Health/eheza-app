@@ -1950,7 +1950,7 @@ decodeHealthEducationSign =
                         succeed MalariaPrevention
 
                     "none" ->
-                        succeed NoHealthEducationSign
+                        succeed NoHealthEducationSigns
 
                     _ ->
                         fail <|

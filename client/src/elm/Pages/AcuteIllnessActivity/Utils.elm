@@ -19,6 +19,7 @@ import Backend.Measurement.Model
         , HCContactSign(..)
         , HCContactValue
         , HCRecommendation(..)
+        , HealthEducationSign(..)
         , IsolationSign(..)
         , IsolationValue
         , MalariaRapidTestResult(..)
@@ -508,8 +509,15 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
             )
 
         NextStepsHealthEducation ->
-            -- @todo
-            ( 0, 1 )
+            let
+                form =
+                    measurements.healthEducation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> healthEducationFormWithDefault data.healthEducationForm
+            in
+            ( taskCompleted form.malariaPrevention
+            , 1
+            )
 
 
 ongoingTreatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )
@@ -1529,6 +1537,37 @@ toNutritionValueWithDefault saved form =
 toNutritionValue : NutritionForm -> Maybe (EverySet ChildNutritionSign)
 toNutritionValue form =
     Maybe.map (EverySet.fromList >> ifEverySetEmpty NormalChildNutrition) form.signs
+
+
+fromHealthEducationValue : Maybe (EverySet HealthEducationSign) -> HealthEducationForm
+fromHealthEducationValue saved =
+    { malariaPrevention = Maybe.map (EverySet.member MalariaPrevention) saved
+    }
+
+
+healthEducationFormWithDefault : HealthEducationForm -> Maybe (EverySet HealthEducationSign) -> HealthEducationForm
+healthEducationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { malariaPrevention = or form.malariaPrevention (EverySet.member MalariaPrevention value |> Just)
+                }
+            )
+
+
+toHealthEducationValueWithDefault : Maybe (EverySet HealthEducationSign) -> HealthEducationForm -> Maybe (EverySet HealthEducationSign)
+toHealthEducationValueWithDefault saved form =
+    healthEducationFormWithDefault form saved
+        |> toHealthEducationValue
+
+
+toHealthEducationValue : HealthEducationForm -> Maybe (EverySet HealthEducationSign)
+toHealthEducationValue form =
+    [ Maybe.map (ifTrue MalariaPrevention) form.malariaPrevention
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHealthEducationSigns)
 
 
 expectPhysicalExamTask : NominalDate -> Person -> Bool -> PhysicalExamTask -> Bool

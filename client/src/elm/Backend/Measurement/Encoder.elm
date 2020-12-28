@@ -1818,5 +1818,5 @@ encodeHealthEducationSign sign =
             MalariaPrevention ->
                 "malaria-prevention"
 
-            NoHealthEducationSign ->
+            NoHealthEducationSigns ->
                 "none"

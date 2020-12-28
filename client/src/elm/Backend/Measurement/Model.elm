@@ -888,7 +888,7 @@ type alias HealthEducation =
 
 type HealthEducationSign
     = MalariaPrevention
-    | NoHealthEducationSign
+    | NoHealthEducationSigns
 
 
 

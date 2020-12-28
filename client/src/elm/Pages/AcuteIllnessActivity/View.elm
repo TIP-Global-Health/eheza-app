@@ -1472,9 +1472,8 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                             )
 
                         NextStepsHealthEducation ->
-                            -- @todo
                             ( "next-steps-health-education"
-                            , False
+                            , isJust measurements.healthEducation
                             )
 
                 isActive =
@@ -1542,8 +1541,10 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                         |> viewSendToHCForm language currentDate
 
                 Just NextStepsHealthEducation ->
-                    -- @todo
-                    emptyNode
+                    measurements.healthEducation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> healthEducationFormWithDefault data.healthEducationForm
+                        |> viewHealthEducationForm language currentDate
 
                 Nothing ->
                     emptyNode
@@ -2500,6 +2501,20 @@ viewReviewDangerSignsForm language currentDate measurements form =
             Nothing
             SetDangerSign
             Translate.AcuteIllnessDangerSign
+        ]
+
+
+viewHealthEducationForm : Language -> NominalDate -> HealthEducationForm -> Html Msg
+viewHealthEducationForm language currentDate form =
+    div [ class "ui form health-education" ]
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , viewQuestionLabel language Translate.ProvidedMalariaPreventionEducationQuestion
+        , viewBoolInput
+            language
+            form.malariaPrevention
+            SetMalariaPrevention
+            "malaria-prevention"
+            Nothing
         ]
 
 

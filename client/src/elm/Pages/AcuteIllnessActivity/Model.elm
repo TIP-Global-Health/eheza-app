@@ -75,6 +75,8 @@ type Msg
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionMedicationNonAdministrationReason (Maybe MedicationNonAdministrationReason) MedicationDistributionSign MedicationNonAdministrationReason
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution ))
+    | SetMalariaPrevention Bool
+    | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation ))
       -- ONGOIN TREATMENT
     | SetActiveOngoingTreatmentTask OngoingTreatmentTask
     | SetOngoingTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
@@ -335,6 +337,7 @@ type alias NextStepsData =
     , call114Form : Call114Form
     , sendToHCForm : SendToHCForm
     , medicationDistributionForm : MedicationDistributionForm
+    , healthEducationForm : HealthEducationForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -346,6 +349,7 @@ emptyNextStepsData =
     , call114Form = emptyCall114Form
     , sendToHCForm = SendToHCForm Nothing Nothing
     , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
+    , healthEducationForm = HealthEducationForm Nothing
     , activeTask = Nothing
     }
 
@@ -411,6 +415,11 @@ type alias MedicationDistributionForm =
     , zinc : Maybe Bool
     , lemonJuiceOrHoney : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
+    }
+
+
+type alias HealthEducationForm =
+    { malariaPrevention : Maybe Bool
     }
 
 
