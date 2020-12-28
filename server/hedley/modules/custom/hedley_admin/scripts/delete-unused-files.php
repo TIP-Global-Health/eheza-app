@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Resizes large dimension images to standard size (600x800).
+ * Deletes files that are not in use.
  *
  * Drush scr
- * profiles/hedley/modules/custom/hedley_admin/scripts/resize-photos.php.
+ * profiles/hedley/modules/custom/hedley_admin/scripts/delete-unused-files.php.
  */
 
 if (!drupal_is_cli()) {
@@ -24,8 +24,6 @@ $memory_limit = drush_get_option('memory_limit', 500);
 
 $base_query = db_select('file_managed', 'files')
   ->fields('files', ['fid']);
-$base_query->condition('filesize', 250000, '>');
-$base_query->condition('filemime', 'image/jpeg');
 
 $count_query = clone $base_query;
 $count_query->condition('fid', $fid, '>');
@@ -33,11 +31,19 @@ $executed = $count_query->execute();
 $total = $executed->rowCount();
 
 if ($total == 0) {
-  drush_print("There are no images in DB.");
+  drush_print("There are no files in DB.");
   exit;
 }
 
-drush_print("$total images located.");
+drush_print("$total files located.");
+
+if ($total == 0) {
+  drush_print("There are no files in DB.");
+  exit;
+}
+
+$unused = 0;
+$unused_size = 0;
 
 $processed = 0;
 while ($processed < $total) {
@@ -54,45 +60,27 @@ while ($processed < $total) {
     ->execute()
     ->fetchAllAssoc('fid');
 
+  if (empty($rows)) {
+    // No more items left.
+    break;
+  }
+
   $ids = array_keys($rows);
   foreach ($ids as $id) {
     $file = file_load($id);
-    list($width, $height) = getimagesize($file->uri);
-
-    if ($width < 1000 && $height < 1000) {
-      continue;
-    }
-
-    $new_height = 600;
-    $new_width = 800;
-    if ($width < $height) {
-      $new_height = 800;
-      $new_width = 600;
-    }
-
-    $image = image_load($file->uri);
-
-    try {
-      image_resize($image, $new_width, $new_height);
-      image_save($image);
-      file_save($file);
-    }
-    catch (Exception $e) {
-      drush_print("Failed to resize photo with ID $file->fid");
-    }
 
     $file_usage = file_usage_list($file);
-    if (empty($file_usage['file']['node'])) {
+
+    if (!empty($file_usage['file']['node'])) {
       continue;
     }
 
-    $nodes_ids = array_keys($file_usage['file']['node']);
-    $nodes = node_load_multiple($nodes_ids);
+    $unused++;
+    $unused_size += (int) $file->filesize;
 
-    foreach ($nodes as $node) {
-      $node->field_photo[LANGUAGE_NONE][0]['width'] = $width;
-      $node->field_photo[LANGUAGE_NONE][0]['height'] = $height;
-      node_save($node);
+    $success = file_delete($file, TRUE);
+    if (!$success) {
+      drush_print("File with ID $id can't be deleted.");
     }
   }
 
@@ -105,7 +93,8 @@ while ($processed < $total) {
 
   $count = count($ids);
   $processed += $count;
-  drush_print("$processed images processed.");
+  drush_print("$processed files processed.");
 }
 
+drush_print("Total unused: $unused, total size: $unused_size");
 drush_print('Done!');
