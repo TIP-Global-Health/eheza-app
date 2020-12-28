@@ -131,13 +131,13 @@ while ($processed < $total) {
     $total_stunting['all']['severe'] += $stunting['severe'];
     $total_stunting['all']['any'] += $stunting['any'];
 
-    if ($stunting['moderate'] + $stunting['severe'] > 1) {
+    if ($stunting['any'] > 1) {
       $total_stunting['mt1']['moderate'] += $stunting['moderate'];
       $total_stunting['mt1']['severe'] += $stunting['severe'];
       $total_stunting['mt1']['any'] += $stunting['any'];
     }
 
-    if ($stunting['moderate'] + $stunting['severe'] > 2) {
+    if ($stunting['any'] > 2) {
       $total_stunting['mt2']['moderate'] += $stunting['moderate'];
       $total_stunting['mt2']['severe'] += $stunting['severe'];
       $total_stunting['mt2']['any'] += $stunting['any'];
@@ -147,13 +147,13 @@ while ($processed < $total) {
     $total_underweight['all']['severe'] += $underweight['severe'];
     $total_underweight['all']['any'] += $underweight['any'];
 
-    if ($underweight['moderate'] + $underweight['severe'] > 1) {
+    if ($underweight['any'] > 1) {
       $total_underweight['mt1']['moderate'] += $underweight['moderate'];
       $total_underweight['mt1']['severe'] += $underweight['severe'];
       $total_underweight['mt1']['any'] += $underweight['any'];
     }
 
-    if ($underweight['moderate'] + $underweight['severe'] > 2) {
+    if ($underweight['any'] > 2) {
       $total_underweight['mt2']['moderate'] += $underweight['moderate'];
       $total_underweight['mt2']['severe'] += $underweight['severe'];
       $total_underweight['mt2']['any'] += $underweight['any'];
@@ -163,13 +163,13 @@ while ($processed < $total) {
     $total_wasting['all']['severe'] += $wasting['severe'];
     $total_wasting['all']['any'] += $wasting['any'];
 
-    if ($wasting['moderate'] + $wasting['severe'] > 1) {
+    if ($wasting['any'] > 1) {
       $total_wasting['mt1']['moderate'] += $wasting['moderate'];
       $total_wasting['mt1']['severe'] += $wasting['severe'];
       $total_wasting['mt1']['any'] += $wasting['any'];
     }
 
-    if ($wasting['moderate'] + $wasting['severe'] > 2) {
+    if ($wasting['any'] > 2) {
       $total_wasting['mt2']['moderate'] += $wasting['moderate'];
       $total_wasting['mt2']['severe'] += $wasting['severe'];
       $total_wasting['mt2']['any'] += $wasting['any'];
