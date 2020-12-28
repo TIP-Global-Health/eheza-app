@@ -122,78 +122,98 @@ generatePreviousMeasurements currentEncounterId participantId db =
             )
 
 
+resolveNextStepFirstEncounter : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> Maybe NextStepsTask
+resolveNextStepFirstEncounter currentDate person diagnosis measurements =
+    resolveNextStepsTasks currentDate person True diagnosis measurements
+        |> List.head
+
+
+resolveNextStepSubsequentEncounter : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> Maybe NextStepsTask
+resolveNextStepSubsequentEncounter currentDate person diagnosis measurements =
+    resolveNextStepsTasks currentDate person False diagnosis measurements
+        |> List.head
+
+
 resolveNextStepsTasks : NominalDate -> Person -> Bool -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> List NextStepsTask
 resolveNextStepsTasks currentDate person isFirstEncounter diagnosis measurements =
+    if isFirstEncounter then
+        -- The order is important. Do not change.
+        [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
+            |> List.filter (expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements)
+
+    else
+        -- The order is important. Do not change.
+        [ NextStepsContactHC, NextStepsSendToHC, NextStepsMedicationDistribution, NextStepsHealthEducation ]
+            |> List.filter (expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements)
+
+
+expectNextStepsTaskFirstEncounter : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> NextStepsTask -> Bool
+expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements task =
     let
         ( ageMonths0To2, ageMonths0To6, ageMonths2To60 ) =
             ageInMonths currentDate person
                 |> Maybe.map (\ageMonthss -> ( ageMonthss < 2, ageMonthss < 6, ageMonthss >= 2 && ageMonthss < 60 ))
                 |> Maybe.withDefault ( False, False, False )
     in
-    if isFirstEncounter then
-        let
-            expectTask task =
-                case task of
-                    NextStepsIsolation ->
-                        diagnosis == Just DiagnosisCovid19
+    case task of
+        NextStepsIsolation ->
+            diagnosis == Just DiagnosisCovid19
 
-                    NextStepsCall114 ->
-                        diagnosis == Just DiagnosisCovid19
+        NextStepsCall114 ->
+            diagnosis == Just DiagnosisCovid19
 
-                    NextStepsContactHC ->
-                        diagnosis == Just DiagnosisCovid19 && isJust measurements.call114 && (not <| talkedTo114 measurements)
+        NextStepsContactHC ->
+            diagnosis == Just DiagnosisCovid19 && isJust measurements.call114 && (not <| talkedTo114 measurements)
 
-                    NextStepsMedicationDistribution ->
-                        (diagnosis == Just DiagnosisMalariaUncomplicated && not ageMonths0To6)
-                            || (diagnosis == Just DiagnosisGastrointestinalInfectionUncomplicated)
-                            || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths2To60)
-                            || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths2To60)
+        NextStepsMedicationDistribution ->
+            (diagnosis == Just DiagnosisMalariaUncomplicated && not ageMonths0To6)
+                || (diagnosis == Just DiagnosisGastrointestinalInfectionUncomplicated)
+                || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths2To60)
+                || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths2To60)
 
-                    NextStepsSendToHC ->
-                        (diagnosis == Just DiagnosisMalariaUncomplicated && ageMonths0To6)
-                            || (diagnosis == Just DiagnosisMalariaComplicated)
-                            || (diagnosis == Just DiagnosisMalariaUncomplicatedAndPregnant)
-                            || (diagnosis == Just DiagnosisGastrointestinalInfectionComplicated)
-                            || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths0To2)
-                            || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths0To2)
-                            || (diagnosis == Just DiagnosisRespiratoryInfectionComplicated)
-                            || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
-                            || (diagnosis == Just DiagnosisUndeterminedMoreEvaluationNeeded)
+        NextStepsSendToHC ->
+            (diagnosis == Just DiagnosisMalariaUncomplicated && ageMonths0To6)
+                || (diagnosis == Just DiagnosisMalariaComplicated)
+                || (diagnosis == Just DiagnosisMalariaUncomplicatedAndPregnant)
+                || (diagnosis == Just DiagnosisGastrointestinalInfectionComplicated)
+                || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths0To2)
+                || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths0To2)
+                || (diagnosis == Just DiagnosisRespiratoryInfectionComplicated)
+                || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
+                || (diagnosis == Just DiagnosisUndeterminedMoreEvaluationNeeded)
 
-                    NextStepsHealthEducation ->
-                        False
-        in
-        -- The order is important. Do not change.
-        [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
-            |> List.filter expectTask
+        NextStepsHealthEducation ->
+            False
 
-    else
-        let
-            malariaDiagnosedAtCurrentEncounter =
-                malariaRapidTestResult measurements == Just RapidTestPositive
 
-            expectTask task =
-                case task of
-                    NextStepsContactHC ->
-                        -- @todo
-                        False
+expectNextStepsTaskSubsequentEncounter : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> NextStepsTask -> Bool
+expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements task =
+    let
+        malariaDiagnosedAtCurrentEncounter =
+            malariaRapidTestResult measurements == Just RapidTestPositive
 
-                    NextStepsMedicationDistribution ->
-                        malariaDiagnosedAtCurrentEncounter
-                            && (diagnosis == Just DiagnosisMalariaUncomplicated && not ageMonths0To6)
+        ageMonths0To6 =
+            ageInMonths currentDate person
+                |> Maybe.map (\ageMonthss -> ageMonthss < 6)
+                |> Maybe.withDefault False
+    in
+    case task of
+        NextStepsContactHC ->
+            -- @todo
+            False
 
-                    NextStepsSendToHC ->
-                        sendToHCOnSubsequentVisit currentDate person malariaDiagnosedAtCurrentEncounter ageMonths0To6 diagnosis measurements
+        NextStepsMedicationDistribution ->
+            malariaDiagnosedAtCurrentEncounter
+                && (diagnosis == Just DiagnosisMalariaUncomplicated && not ageMonths0To6)
 
-                    NextStepsHealthEducation ->
-                        True
+        NextStepsSendToHC ->
+            sendToHCOnSubsequentVisit currentDate person malariaDiagnosedAtCurrentEncounter ageMonths0To6 diagnosis measurements
 
-                    _ ->
-                        False
-        in
-        -- The order is important. Do not change.
-        [ NextStepsContactHC, NextStepsSendToHC, NextStepsMedicationDistribution, NextStepsHealthEducation ]
-            |> List.filter expectTask
+        NextStepsHealthEducation ->
+            True
+
+        _ ->
+            False
 
 
 talkedTo114 : AcuteIllnessMeasurements -> Bool
@@ -340,12 +360,9 @@ expectActivity currentDate isFirstEncounter data activity =
                     |> not
 
         AcuteIllnessNextSteps ->
-            if isFirstEncounter then
-                resolveNextStepFirstEncounter currentDate data.person data.diagnosis
-                    |> isJust
-
-            else
-                mandatoryActivitiesCompletedSubsequentVisit currentDate data
+            resolveNextStepsTasks currentDate data.person isFirstEncounter data.diagnosis data.measurements
+                |> List.isEmpty
+                |> not
 
         _ ->
             True
@@ -501,94 +518,6 @@ mandatoryActivityCompletedSubsequentVisit currentDate data activity =
 
         _ ->
             False
-
-
-resolveNextStepFirstEncounter : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> Maybe NextStepsTask
-resolveNextStepFirstEncounter currentDate person maybeDiagnosis =
-    maybeDiagnosis
-        |> Maybe.andThen
-            (\diagnosis ->
-                case diagnosis of
-                    DiagnosisCovid19 ->
-                        Just NextStepsIsolation
-
-                    DiagnosisMalariaUncomplicated ->
-                        ageDependentUncomplicatedMalariaNextStep currentDate person
-
-                    DiagnosisMalariaUncomplicatedAndPregnant ->
-                        Just NextStepsSendToHC
-
-                    DiagnosisMalariaComplicated ->
-                        Just NextStepsSendToHC
-
-                    DiagnosisGastrointestinalInfectionUncomplicated ->
-                        Just NextStepsMedicationDistribution
-
-                    DiagnosisGastrointestinalInfectionComplicated ->
-                        Just NextStepsSendToHC
-
-                    DiagnosisSimpleColdAndCough ->
-                        ageDependentARINextStep currentDate person
-
-                    DiagnosisRespiratoryInfectionUncomplicated ->
-                        ageDependentARINextStep currentDate person
-
-                    DiagnosisRespiratoryInfectionComplicated ->
-                        Just NextStepsSendToHC
-
-                    DiagnosisFeverOfUnknownOrigin ->
-                        Just NextStepsSendToHC
-
-                    DiagnosisUndeterminedMoreEvaluationNeeded ->
-                        Just NextStepsSendToHC
-
-                    NoAcuteIllnessDiagnosis ->
-                        Nothing
-            )
-
-
-resolveNextStepSubsequentEncounter : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> Maybe NextStepsTask
-resolveNextStepSubsequentEncounter currentDate person maybeDiagnosis =
-    maybeDiagnosis
-        |> Maybe.andThen
-            (\diagnosis ->
-                case diagnosis of
-                    DiagnosisCovid19 ->
-                        Just NextStepsIsolation
-
-                    DiagnosisMalariaUncomplicated ->
-                        ageDependentUncomplicatedMalariaNextStep currentDate person
-
-                    DiagnosisMalariaUncomplicatedAndPregnant ->
-                        Just NextStepsSendToHC
-
-                    DiagnosisMalariaComplicated ->
-                        Just NextStepsSendToHC
-
-                    DiagnosisGastrointestinalInfectionUncomplicated ->
-                        Just NextStepsMedicationDistribution
-
-                    DiagnosisGastrointestinalInfectionComplicated ->
-                        Just NextStepsSendToHC
-
-                    DiagnosisSimpleColdAndCough ->
-                        ageDependentARINextStep currentDate person
-
-                    DiagnosisRespiratoryInfectionUncomplicated ->
-                        ageDependentARINextStep currentDate person
-
-                    DiagnosisRespiratoryInfectionComplicated ->
-                        Just NextStepsSendToHC
-
-                    DiagnosisFeverOfUnknownOrigin ->
-                        Just NextStepsSendToHC
-
-                    DiagnosisUndeterminedMoreEvaluationNeeded ->
-                        Just NextStepsSendToHC
-
-                    NoAcuteIllnessDiagnosis ->
-                        Nothing
-            )
 
 
 ageDependentUncomplicatedMalariaNextStep : NominalDate -> Person -> Maybe NextStepsTask

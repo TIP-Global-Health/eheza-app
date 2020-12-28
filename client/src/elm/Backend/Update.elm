@@ -2111,37 +2111,39 @@ handleRevision revision (( model, recalc ) as noChange) =
 
 generateSuspectedDiagnosisMsgs : NominalDate -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
 generateSuspectedDiagnosisMsgs currentDate before after id person =
-    generateAssembledData id after
-        |> RemoteData.toMaybe
-        |> Maybe.map
-            (\assembled ->
-                if List.isEmpty assembled.previousMeasurementsWithDates then
-                    generateSuspectedDiagnosisMsgsFirstEncounter currentDate before after id person
+    Maybe.map2
+        (\assembledBefore assembledAfter ->
+            if List.isEmpty assembledAfter.previousMeasurementsWithDates then
+                generateSuspectedDiagnosisMsgsFirstEncounter currentDate id person assembledBefore assembledAfter
 
-                else
-                    generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate assembled
-            )
+            else
+                generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate assembledAfter
+        )
+        (RemoteData.toMaybe <| generateAssembledData id before)
+        (RemoteData.toMaybe <| generateAssembledData id after)
         |> Maybe.withDefault []
 
 
-generateSuspectedDiagnosisMsgsFirstEncounter : NominalDate -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
-generateSuspectedDiagnosisMsgsFirstEncounter currentDate before after id person =
+generateSuspectedDiagnosisMsgsFirstEncounter :
+    NominalDate
+    -> AcuteIllnessEncounterId
+    -> Person
+    -> Pages.AcuteIllnessEncounter.Model.AssembledData
+    -> Pages.AcuteIllnessEncounter.Model.AssembledData
+    -> List App.Model.Msg
+generateSuspectedDiagnosisMsgsFirstEncounter currentDate id person assembledBefore assembledAfter =
     let
         diagnosisBeforeChange =
-            generateAssembledData id before
-                |> RemoteData.toMaybe
-                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate)
+            resolveAcuteIllnessDiagnosis currentDate assembledBefore
 
         diagnosisAfterChange =
-            generateAssembledData id after
-                |> RemoteData.toMaybe
-                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate)
+            resolveAcuteIllnessDiagnosis currentDate assembledAfter
 
         msgsForDiagnosisUpdate =
             case diagnosisAfterChange of
                 Just newDiagnosis ->
                     updateDiagnosisMsg id newDiagnosis
-                        :: (case resolveNextStepFirstEncounter currentDate person (Just newDiagnosis) of
+                        :: (case resolveNextStepFirstEncounter currentDate person (Just newDiagnosis) assembledAfter.measurements of
                                 Just nextStep ->
                                     [ -- Navigate to Acute Ilness NextSteps activty page.
                                       App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))

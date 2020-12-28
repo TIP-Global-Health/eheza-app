@@ -782,7 +782,7 @@ viewActionsTakenPane language currentDate firstEncounterData subsequentEncounter
             firstEncounterData
                 |> Maybe.map
                     (\( date, measurements ) ->
-                        case resolveNextStepFirstEncounter date data.person data.diagnosis of
+                        case resolveNextStepFirstEncounter date data.person data.diagnosis data.measurements of
                             -- This is COVID19 case
                             Just NextStepsIsolation ->
                                 viewActionsTakenIsolationAndContactHC language date measurements
@@ -798,6 +798,7 @@ viewActionsTakenPane language currentDate firstEncounterData subsequentEncounter
                     )
                 |> Maybe.withDefault emptyNode
 
+        -- @todo: expand for other options
         actionsTakenSubsequentEncounters =
             subsequentEncountersData
                 |> List.map
