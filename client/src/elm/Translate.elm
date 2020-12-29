@@ -729,6 +729,7 @@ type TranslationId
     | RiskFactors
     | Save
     | SaveAndNext
+    | SaveAndRecordOutcome
     | SaveError
     | Search
     | SearchByName
@@ -5248,6 +5249,11 @@ translationSet trans =
         SaveAndNext ->
             { english = "Save & Next"
             , kinyarwanda = Just "Bika & ukomeze"
+            }
+
+        SaveAndRecordOutcome ->
+            { english = "Save & Record Outcome"
+            , kinyarwanda = Nothing
             }
 
         SaveError ->

@@ -1642,13 +1642,25 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
 
                                     NextStepsHealthEducation ->
                                         SaveHealthEducation personId measurements.healthEducation nextTask
+
+                            saveLabel =
+                                case task of
+                                    NextStepsHealthEducation ->
+                                        if noImprovementOnSubsequentVisit currentDate person measurements then
+                                            Translate.Save
+
+                                        else
+                                            Translate.SaveAndRecordOutcome
+
+                                    _ ->
+                                        Translate.Save
                         in
                         div [ class "actions next-steps" ]
                             [ button
                                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                                 , onClick saveMsg
                                 ]
-                                [ text <| translate language Translate.Save ]
+                                [ text <| translate language saveLabel ]
                             ]
                     )
                 |> Maybe.withDefault emptyNode
