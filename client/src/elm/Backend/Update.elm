@@ -42,12 +42,13 @@ import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.Utils
     exposing
-        ( generateAssembledData
+        ( activityCompleted
+        , generateAssembledData
         , mandatoryActivitiesCompletedSubsequentVisit
+        , noImprovementOnSubsequentVisit
         , resolveAcuteIllnessDiagnosis
         , resolveNextStepFirstEncounter
         , resolveNextStepSubsequentEncounter
-        , talkedTo114
         )
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Person.Model
@@ -872,8 +873,6 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     , extraMsgs
                     )
 
-                -- When we see that needed data for suspected COVID 19 case was collected,
-                -- navigate to Progress Report page.
                 [ IsolationRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -881,7 +880,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateCovidFlowDataCollectedMsgs newModel)
+                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -889,8 +888,6 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     , extraMsgs
                     )
 
-                -- When we see that needed data for suspected COVID 19 case was collected,
-                -- navigate to Progress Report page.
                 [ Call114Revision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -898,7 +895,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateCovidFlowDataCollectedMsgs newModel)
+                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -906,8 +903,6 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     , extraMsgs
                     )
 
-                -- When we see that needed data for suspected COVID 19 case was collected,
-                -- navigate to Progress Report page.
                 [ HCContactRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -915,7 +910,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateCovidFlowDataCollectedMsgs newModel)
+                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -923,8 +918,6 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     , extraMsgs
                     )
 
-                -- Since we know that needed data for suspected non COVID 19 case was collected,
-                -- navigate to Progress Report page.
                 [ MedicationDistributionRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -932,7 +925,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (navigateToProgressReportPageMsg >> List.singleton)
+                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -940,8 +933,6 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     , extraMsgs
                     )
 
-                -- Since we know that needed data for suspected non COVID 19 case was collected,
-                -- navigate to Progress Report page.
                 [ SendToHCRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -949,7 +940,22 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (navigateToProgressReportPageMsg >> List.singleton)
+                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ HealthEducationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -2210,33 +2216,32 @@ updateDiagnosisMsg id diagnosis =
         |> App.Model.MsgIndexedDb
 
 
-generateCovidFlowDataCollectedMsgs : ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
-generateCovidFlowDataCollectedMsgs db id =
-    Dict.get id db.acuteIllnessMeasurements
-        |> Maybe.withDefault NotAsked
+generateAssesmentCompletedMsgs : NominalDate -> ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
+generateAssesmentCompletedMsgs currentDate after id =
+    generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.map
-            (\measurements ->
-                --Isolation measurement not taken => incomplete data.
-                if isNothing measurements.isolation then
+            (\data ->
+                let
+                    navigateToProgressReportMsg =
+                        App.Model.SetActivePage (UserPage (AcuteIllnessProgressReportPage id))
+
+                    isFirstEncounter =
+                        List.isEmpty data.previousMeasurementsWithDates
+                in
+                if not <| activityCompleted currentDate isFirstEncounter data AcuteIllnessNextSteps then
                     []
 
-                else if
-                    -- CHW first calls 114. If he managed to talk to them, it's enough to have Call 114 measurement taken.
-                    -- If not, CHW needs to call Health Center => we need to have HC Contact measurement taken.
-                    isJust measurements.call114 && (talkedTo114 measurements || isJust measurements.hcContact)
-                then
-                    [ navigateToProgressReportPageMsg id ]
+                else if isFirstEncounter then
+                    [ navigateToProgressReportMsg ]
+
+                else if noImprovementOnSubsequentVisit currentDate data.person data.measurements then
+                    [ navigateToProgressReportMsg ]
 
                 else
-                    []
+                    [ App.Model.SetActivePage (UserPage (AcuteIllnessOutcomePage data.encounter.participant)) ]
             )
         |> Maybe.withDefault []
-
-
-navigateToProgressReportPageMsg : AcuteIllnessEncounterId -> App.Model.Msg
-navigateToProgressReportPageMsg id =
-    App.Model.SetActivePage (UserPage (AcuteIllnessProgressReportPage id))
 
 
 {-| Construct an EditableSession from our data, if we have all the needed data.

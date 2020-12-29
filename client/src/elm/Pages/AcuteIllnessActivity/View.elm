@@ -1575,7 +1575,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                         if talkedTo114 measurements && call114Form.called114 == Just False then
                             [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC ]
 
-                        else if not <| talkedTo114 measurements && call114Form.called114 == Just True then
+                        else if (not <| talkedTo114 measurements) && call114Form.called114 == Just True then
                             [ NextStepsIsolation, NextStepsCall114 ]
 
                         else
@@ -1600,7 +1600,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                         if healthCenterRecommendedToCome measurements && hcContactForm.recommendations /= Just ComeToHealthCenter then
                             [ NextStepsContactHC, NextStepsHealthEducation ]
 
-                        else if not <| healthCenterRecommendedToCome measurements && hcContactForm.recommendations == Just ComeToHealthCenter then
+                        else if (not <| healthCenterRecommendedToCome measurements) && hcContactForm.recommendations == Just ComeToHealthCenter then
                             [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation ]
 
                         else

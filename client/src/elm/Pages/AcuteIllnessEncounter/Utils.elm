@@ -444,8 +444,10 @@ activityCompleted currentDate isFirstEncounter data activity =
             if isFirstEncounter then
                 case nextStepsTasks of
                     [ NextStepsIsolation, NextStepsCall114 ] ->
-                        isJust measurements.isolation
-                            && isJust measurements.hcContact
+                        isJust measurements.isolation && isJust measurements.hcContact
+
+                    [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC ] ->
+                        isJust measurements.isolation && isJust measurements.hcContact && isJust measurements.hcContact
 
                     [ NextStepsMedicationDistribution ] ->
                         isJust measurements.medicationDistribution
@@ -458,24 +460,27 @@ activityCompleted currentDate isFirstEncounter data activity =
 
             else
                 case nextStepsTasks of
-                    -- Improving, without danger signs present
+                    -- Improving, without danger signs present.
                     [ NextStepsHealthEducation ] ->
                         isJust measurements.healthEducation
 
-                    -- Not improving, without danger signs present
+                    -- Not improving, without danger signs present.
                     [ NextStepsSendToHC, NextStepsHealthEducation ] ->
                         isJust measurements.sendToHC && isJust measurements.healthEducation
 
-                    -- Not improving, with danger signs
+                    -- Not improving, with danger signs, and not instructed to send patient to health center.
                     [ NextStepsContactHC, NextStepsHealthEducation ] ->
-                        -- @todo Expand for SendToHC
                         isJust measurements.hcContact && isJust measurements.healthEducation
 
-                    -- Uncomplicated malarial for adult
+                    -- Not improving, with danger signs, and instructed to send patient to health center.
+                    [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation ] ->
+                        isJust measurements.hcContact && isJust measurements.sendToHC && isJust measurements.healthEducation
+
+                    -- Uncomplicated malarial for adult.
                     [ NextStepsMedicationDistribution ] ->
                         isJust measurements.medicationDistribution
 
-                    -- Other cases of malaria
+                    -- Other cases of malaria.
                     [ NextStepsSendToHC ] ->
                         isJust measurements.sendToHC
 
