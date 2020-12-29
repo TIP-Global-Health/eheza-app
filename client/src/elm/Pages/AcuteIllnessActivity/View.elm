@@ -64,13 +64,20 @@ view language currentDate id activity db model =
 
 viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
 viewHeaderAndContent language currentDate id activity model data =
+    let
+        isFirstEncounter =
+            List.isEmpty data.previousMeasurementsWithDates
+    in
     div [ class "page-activity acute-illness" ]
         [ viewHeader language id activity data.encounter.diagnosis
         , viewContent language currentDate id activity model data
         , viewModal <|
             warningPopup language
+                currentDate
+                isFirstEncounter
                 model.warningPopupState
                 SetWarningPopupState
+                data
         , viewModal <|
             pertinentSymptomsPopup language
                 model.showPertinentSymptomsPopup

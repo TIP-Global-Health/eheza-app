@@ -254,18 +254,12 @@ noImprovementOnSubsequentVisitWithoutDangerSigns currentDate person measurements
         && (conditionNotImprovingOnSubsequentVisit measurements
                 || sendToHCOnSubsequentVisitByVitals currentDate person measurements
                 || sendToHCOnSubsequentVisitByMuac measurements
-                || conditionNotImprovingOnSubsequentVisit measurements
            )
 
 
 noImprovementOnSubsequentVisitWithDangerSigns : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
 noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements =
     dangerSignPresentOnSubsequentVisit measurements
-        && (conditionNotImprovingOnSubsequentVisit measurements
-                || sendToHCOnSubsequentVisitByVitals currentDate person measurements
-                || sendToHCOnSubsequentVisitByMuac measurements
-                || conditionNotImprovingOnSubsequentVisit measurements
-           )
 
 
 conditionNotImprovingOnSubsequentVisit : AcuteIllnessMeasurements -> Bool

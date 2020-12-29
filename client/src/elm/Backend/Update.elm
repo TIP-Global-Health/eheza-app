@@ -873,6 +873,36 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     , extraMsgs
                     )
 
+                [ AcuteIllnessDangerSignsRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ AcuteIllnessMuacRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ AcuteIllnessNutritionRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ IsolationRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -2153,7 +2183,7 @@ generateSuspectedDiagnosisMsgsFirstEncounter currentDate id person assembledBefo
                                 Just nextStep ->
                                     [ -- Navigate to Acute Ilness NextSteps activty page.
                                       App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
-                                    , -- Focus on firs task on that page.
+                                    , -- Focus on first task on that page.
                                       Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask nextStep
                                         |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
                                         |> App.Model.MsgLoggedIn
@@ -2189,10 +2219,6 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter : NominalDate -> Pages.AcuteIl
 generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate data =
     if mandatoryActivitiesCompletedSubsequentVisit currentDate data then
         let
-            newDiagnosis =
-                resolveAcuteIllnessDiagnosis currentDate data
-                    |> Maybe.withDefault NoAcuteIllnessDiagnosis
-
             setActiveTaskMsg =
                 resolveNextStepSubsequentEncounter currentDate data
                     |> Maybe.map
@@ -2203,7 +2229,20 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate data =
                         )
                     |> Maybe.withDefault []
         in
-        updateDiagnosisMsg data.id newDiagnosis :: setActiveTaskMsg
+        [ -- Navigate to Acute Ilness NextSteps activty page.
+          App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage data.id AcuteIllnessNextSteps))
+
+        -- Show warning popup with new diagnosis.
+        , Pages.AcuteIllnessActivity.Model.SetWarningPopupState data.diagnosis
+            |> App.Model.MsgPageAcuteIllnessActivity data.id AcuteIllnessNextSteps
+            |> App.Model.MsgLoggedIn
+        , -- Set diagnosis for this encounter.
+          resolveAcuteIllnessDiagnosis currentDate data
+            |> Maybe.withDefault NoAcuteIllnessDiagnosis
+            |> updateDiagnosisMsg data.id
+        ]
+            ++ -- Focus on first task on that page.
+               setActiveTaskMsg
 
     else
         []

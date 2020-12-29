@@ -32,12 +32,21 @@ view language currentDate id db model =
     let
         data =
             generateAssembledData id db
+    in
+    viewWebData language (viewHeaderAndContent language currentDate id db model) identity data
+
+
+viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id db model data =
+    let
+        isFirstEncounter =
+            List.isEmpty data.previousMeasurementsWithDates
 
         header =
-            viewWebData language (viewHeader language) identity data
+            viewHeader language data
 
         content =
-            viewWebData language (viewContent language currentDate id model) identity data
+            viewContent language currentDate id model data
 
         endEncounterDialog =
             if model.showEndEncounetrDialog then
@@ -51,59 +60,119 @@ view language currentDate id db model =
             else
                 Nothing
     in
-    div [ class "page-encounter acute-illness" ] <|
+    div [ class "page-encounter acute-illness" ]
         [ header
         , content
         , viewModal endEncounterDialog
         , viewModal <|
             warningPopup language
+                currentDate
+                isFirstEncounter
                 model.warningPopupState
                 SetWarningPopupState
+                data
         ]
 
 
-warningPopup : Language -> Maybe AcuteIllnessDiagnosis -> (Maybe AcuteIllnessDiagnosis -> msg) -> Maybe (Html msg)
-warningPopup language maybeDiagnosis setStateMsg =
-    maybeDiagnosis
+warningPopup : Language -> NominalDate -> Bool -> Maybe AcuteIllnessDiagnosis -> (Maybe AcuteIllnessDiagnosis -> msg) -> AssembledData -> Maybe (Html msg)
+warningPopup language currentDate isFirstEncounter state setStateMsg data =
+    state
         |> Maybe.map
             (\diagnosis ->
-                let
-                    infoHeading =
-                        [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
+                if isFirstEncounter then
+                    viewWarningPopupFirstEncounter language setStateMsg diagnosis
 
-                    warningHeading =
-                        [ img [ src "assets/images/exclamation-red.png" ] []
-                        , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
-                        ]
-
-                    ( heading, content ) =
-                        case diagnosis of
-                            DiagnosisCovid19 ->
-                                ( warningHeading
-                                , [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
-                                  , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
-                                  ]
-                                )
-
-                            _ ->
-                                ( infoHeading, [] )
-                in
-                div [ class "ui active modal diagnosis-popup" ]
-                    [ div [ class "content" ] <|
-                        [ div [ class "popup-heading-wrapper" ] heading
-                        , div [ class "popup-title" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
-                        ]
-                            ++ content
-                    , div
-                        [ class "actions" ]
-                        [ button
-                            [ class "ui primary fluid button"
-                            , onClick <| setStateMsg Nothing
-                            ]
-                            [ text <| translate language Translate.Continue ]
-                        ]
-                    ]
+                else
+                    viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis data
             )
+
+
+viewWarningPopupFirstEncounter : Language -> (Maybe AcuteIllnessDiagnosis -> msg) -> AcuteIllnessDiagnosis -> Html msg
+viewWarningPopupFirstEncounter language setStateMsg diagnosis =
+    let
+        infoHeading =
+            [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
+
+        warningHeading =
+            [ img [ src "assets/images/exclamation-red.png" ] []
+            , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
+            ]
+
+        ( heading, content ) =
+            case diagnosis of
+                DiagnosisCovid19 ->
+                    ( warningHeading
+                    , [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
+                      , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
+                      ]
+                    )
+
+                _ ->
+                    ( infoHeading, [] )
+    in
+    div [ class "ui active modal diagnosis-popup" ]
+        [ div [ class "content" ] <|
+            [ div [ class "popup-heading-wrapper" ] heading
+            , div [ class "popup-title" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
+            ]
+                ++ content
+        , div
+            [ class "actions" ]
+            [ button
+                [ class "ui primary fluid button"
+                , onClick <| setStateMsg Nothing
+                ]
+                [ text <| translate language Translate.Continue ]
+            ]
+        ]
+
+
+viewWarningPopupSubsequentEncounter : Language -> NominalDate -> (Maybe AcuteIllnessDiagnosis -> msg) -> AcuteIllnessDiagnosis -> AssembledData -> Html msg
+viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis data =
+    let
+        isImproving =
+            not <| noImprovementOnSubsequentVisit currentDate data.person data.measurements
+
+        respiratoryDistress =
+            if respiratoryRateElevated currentDate data.person data.measurements then
+                p [] [ text <| translate language Translate.RespiratoryDistress ]
+
+            else
+                emptyNode
+
+        severeAcuteMalnutrition =
+            if muacRedOnSubsequentVisit data.measurements then
+                p [] [ text <| translate language Translate.SevereAcuteMalnutrition ]
+
+            else
+                emptyNode
+
+        malnutritionWithComplications =
+            if dangerSignPresentOnSubsequentVisit data.measurements then
+                p [] [ text <| translate language Translate.MalnutritionWithComplications ]
+
+            else
+                emptyNode
+    in
+    div [ class "ui active modal diagnosis-popup" ]
+        [ div [ class "content" ] <|
+            [ div [ class "popup-heading-wrapper" ]
+                [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
+            , div [ class "popup-title" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
+            , respiratoryDistress
+            , severeAcuteMalnutrition
+            , malnutritionWithComplications
+            , div [ class "popup-title" ] [ text <| translate language <| Translate.ConditionImproving isImproving ]
+            ]
+        , div
+            [ class "actions" ]
+            [ button
+                [ class "ui primary fluid button"
+                , onClick <| setStateMsg Nothing
+                ]
+                [ text <| translate language Translate.Continue ]
+            ]
+        ]
 
 
 viewHeader : Language -> AssembledData -> Html Msg
