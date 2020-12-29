@@ -705,6 +705,18 @@ type alias Isolation =
     AcuteIllnessMeasurement IsolationValue
 
 
+type alias HCContact =
+    AcuteIllnessMeasurement HCContactValue
+
+
+type alias HCContactValue =
+    { signs : EverySet HCContactSign
+    , recommendations : EverySet HCRecommendation
+    , responsePeriod : EverySet ResponsePeriod
+    , ambulanceArrivalPeriod : EverySet ResponsePeriod
+    }
+
+
 type HCContactSign
     = ContactedHealthCenter
     | NoHCContactSigns
@@ -724,18 +736,6 @@ type ResponsePeriod
     | Between1Hour2Hour
     | Between2Hour1Day
     | ResponsePeriodNotApplicable
-
-
-type alias HCContactValue =
-    { signs : EverySet HCContactSign
-    , recommendations : EverySet HCRecommendation
-    , responsePeriod : EverySet ResponsePeriod
-    , ambulanceArrivalPeriod : EverySet ResponsePeriod
-    }
-
-
-type alias HCContact =
-    AcuteIllnessMeasurement HCContactValue
 
 
 type Call114Sign

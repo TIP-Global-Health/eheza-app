@@ -1560,68 +1560,69 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                 Nothing ->
                     emptyNode
 
-        call114Form =
-            measurements.call114
-                |> Maybe.map
-                    (Tuple.second
-                        >> .value
+        tasksAfterSave =
+            case activeTask of
+                -- On first visit, ContactHC task should appear in case nurse did not talk to 114.
+                -- Therefore, when the answer to 'called 114' is changed, we adjust tasks list accirdingly.
+                Just NextStepsCall114 ->
+                    if isFirstEncounter then
+                        let
+                            call114Form =
+                                measurements.call114
+                                    |> Maybe.map (Tuple.second >> .value)
+                                    |> call114FormWithDefault data.call114Form
+                        in
+                        if talkedTo114 measurements && call114Form.called114 == Just False then
+                            [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC ]
+
+                        else if not <| talkedTo114 measurements && call114Form.called114 == Just True then
+                            [ NextStepsIsolation, NextStepsCall114 ]
+
+                        else
+                            tasks
+
+                    else
+                        tasks
+
+                -- At subsequent visit, SendToHC, task should appear in case health center adviced to send patient over.
+                -- Therefore, when the answer to this is changed, we adjust tasks list accirdingly.
+                Just NextStepsContactHC ->
+                    if isFirstEncounter then
+                        tasks
+
+                    else
+                        let
+                            hcContactForm =
+                                measurements.hcContact
+                                    |> Maybe.map (Tuple.second >> .value)
+                                    |> hcContactFormWithDefault data.hcContactForm
+                        in
+                        if healthCenterRecommendedToCome measurements && hcContactForm.recommendations /= Just ComeToHealthCenter then
+                            [ NextStepsContactHC, NextStepsHealthEducation ]
+
+                        else if not <| healthCenterRecommendedToCome measurements && hcContactForm.recommendations == Just ComeToHealthCenter then
+                            [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation ]
+
+                        else
+                            tasks
+
+                _ ->
+                    tasks
+
+        nextTask =
+            tasksAfterSave
+                |> List.filter
+                    (\task ->
+                        (Just task /= activeTask)
+                            && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
                     )
-                |> call114FormWithDefault data.call114Form
-
-        contactHCTaskDisplayed =
-            call114Form.called114 == Just False
-
-        getNextTask currentTask =
-            case currentTask of
-                NextStepsIsolation ->
-                    let
-                        tasksList =
-                            if contactHCTaskDisplayed then
-                                [ NextStepsCall114, NextStepsContactHC ]
-
-                            else
-                                [ NextStepsCall114 ]
-                    in
-                    tasksList
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                NextStepsCall114 ->
-                    let
-                        tasksList =
-                            if contactHCTaskDisplayed then
-                                [ NextStepsContactHC ]
-
-                            else
-                                [ NextStepsIsolation ]
-                    in
-                    tasksList
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                NextStepsContactHC ->
-                    [ NextStepsIsolation, NextStepsCall114 ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                NextStepsMedicationDistribution ->
-                    Nothing
-
-                NextStepsSendToHC ->
-                    Nothing
-
-                NextStepsHealthEducation ->
-                    -- @todo
-                    Nothing
+                |> List.head
 
         actions =
             activeTask
                 |> Maybe.map
                     (\task ->
                         let
-                            nextTask =
-                                getNextTask task
-
                             saveMsg =
                                 case task of
                                     NextStepsIsolation ->
@@ -1634,13 +1635,13 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                                         SaveCall114 personId measurements.call114 nextTask
 
                                     NextStepsSendToHC ->
-                                        SaveSendToHC personId measurements.sendToHC
+                                        SaveSendToHC personId measurements.sendToHC nextTask
 
                                     NextStepsMedicationDistribution ->
-                                        SaveMedicationDistribution personId measurements.medicationDistribution
+                                        SaveMedicationDistribution personId measurements.medicationDistribution nextTask
 
                                     NextStepsHealthEducation ->
-                                        SaveHealthEducation personId measurements.healthEducation
+                                        SaveHealthEducation personId measurements.healthEducation nextTask
                         in
                         div [ class "actions next-steps" ]
                             [ button
