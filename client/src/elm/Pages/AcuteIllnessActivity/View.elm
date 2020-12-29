@@ -113,12 +113,8 @@ viewHeader language id activity diagnosis =
 
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id activity model data =
-    let
-        diagnosis =
-            acuteIllnessDiagnosisToMaybe data.encounter.diagnosis
-    in
-    (viewPersonDetailsWithAlert language currentDate data.person diagnosis model.showAlertsDialog SetAlertsDialogState
-        :: viewActivity language currentDate id activity diagnosis data model
+    (viewPersonDetailsWithAlert language currentDate data model.showAlertsDialog SetAlertsDialogState
+        :: viewActivity language currentDate id activity data model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -366,14 +362,17 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
         Nothing
 
 
-viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> AssembledData -> Model -> List (Html Msg)
-viewActivity language currentDate id activity diagnosis data model =
+viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate id activity data model =
     let
         personId =
             data.participant.person
 
         measurements =
             data.measurements
+
+        diagnosis =
+            data.diagnosis
 
         isFirstEncounter =
             List.isEmpty data.previousMeasurementsWithDates
@@ -395,7 +394,7 @@ viewActivity language currentDate id activity diagnosis data model =
             viewAcuteIllnessExposure language currentDate id ( personId, measurements ) model.exposureData
 
         AcuteIllnessNextSteps ->
-            viewAcuteIllnessNextSteps language currentDate id ( personId, data.person, measurements ) isFirstEncounter diagnosis model.nextStepsData
+            viewAcuteIllnessNextSteps language currentDate id data isFirstEncounter model.nextStepsData
 
         AcuteIllnessOngoingTreatment ->
             viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) model.ongoingTreatmentData
@@ -1430,14 +1429,26 @@ viewTreatmentReviewForm language currentDate measurements form =
         |> div [ class "ui form treatment-review" ]
 
 
-viewAcuteIllnessNextSteps : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, Person, AcuteIllnessMeasurements ) -> Bool -> Maybe AcuteIllnessDiagnosis -> NextStepsData -> List (Html Msg)
-viewAcuteIllnessNextSteps language currentDate id ( personId, person, measurements ) isFirstEncounter diagnosis data =
+viewAcuteIllnessNextSteps : Language -> NominalDate -> AcuteIllnessEncounterId -> AssembledData -> Bool -> NextStepsData -> List (Html Msg)
+viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter data =
     let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        diagnosis =
+            assembled.diagnosis
+
         activity =
             AcuteIllnessNextSteps
 
         tasks =
-            resolveNextStepsTasks currentDate person isFirstEncounter diagnosis measurements
+            resolveNextStepsTasks currentDate isFirstEncounter assembled
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -1520,7 +1531,7 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                     measurements.hcContact
                         |> Maybe.map (Tuple.second >> .value)
                         |> hcContactFormWithDefault data.hcContactForm
-                        |> viewHCContactForm language currentDate measurements
+                        |> viewHCContactForm language currentDate isFirstEncounter measurements
 
                 Just NextStepsCall114 ->
                     measurements.call114
@@ -1712,8 +1723,8 @@ viewIsolationForm language currentDate measurements form =
         |> div [ class "ui form next-steps isolation" ]
 
 
-viewHCContactForm : Language -> NominalDate -> AcuteIllnessMeasurements -> HCContactForm -> Html Msg
-viewHCContactForm language currentDate measurements form =
+viewHCContactForm : Language -> NominalDate -> Bool -> AcuteIllnessMeasurements -> HCContactForm -> Html Msg
+viewHCContactForm language currentDate isFirstEncounter measurements form =
     let
         contactedHCInput =
             [ viewQuestionLabel language Translate.ContactedHCQuestion
@@ -1729,10 +1740,17 @@ viewHCContactForm language currentDate measurements form =
             case form.contactedHC of
                 Just True ->
                     let
+                        hcRespnonseOptions =
+                            if isFirstEncounter then
+                                [ SendAmbulance, HomeIsolation, ComeToHealthCenter, ChwMonitoring ]
+
+                            else
+                                [ SendAmbulance, ComeToHealthCenter ]
+
                         hcRespnonseInput =
                             [ viewQuestionLabel language Translate.HCResponseQuestion
                             , viewCheckBoxSelectCustomInput language
-                                [ SendAmbulance, HomeIsolation, ComeToHealthCenter, ChwMonitoring ]
+                                hcRespnonseOptions
                                 []
                                 form.recommendations
                                 SetHCRecommendation

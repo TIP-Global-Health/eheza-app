@@ -151,17 +151,17 @@ viewHeader language data =
 
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id model data =
-    (viewPersonDetailsWithAlert language currentDate data.person data.diagnosis model.showAlertsDialog SetAlertsDialogState
+    (viewPersonDetailsWithAlert language currentDate data model.showAlertsDialog SetAlertsDialogState
         :: viewMainPageContent language currentDate id data model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewPersonDetailsWithAlert : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> Bool -> (Bool -> msg) -> Html msg
-viewPersonDetailsWithAlert language currentDate person diagnosis isDialogOpen setAlertsDialogStateMsg =
+viewPersonDetailsWithAlert : Language -> NominalDate -> AssembledData -> Bool -> (Bool -> msg) -> Html msg
+viewPersonDetailsWithAlert language currentDate data isDialogOpen setAlertsDialogStateMsg =
     let
         alertSign =
-            if diagnosis == Just DiagnosisCovid19 then
+            if data.diagnosis == Just DiagnosisCovid19 then
                 div
                     [ class "alerts"
                     , onClick <| setAlertsDialogStateMsg True
@@ -172,10 +172,10 @@ viewPersonDetailsWithAlert language currentDate person diagnosis isDialogOpen se
                 emptyNode
 
         diagnosisTranslationId =
-            Maybe.map Translate.AcuteIllnessDiagnosis diagnosis
+            Maybe.map Translate.AcuteIllnessDiagnosis data.diagnosis
     in
     div [ class "item" ] <|
-        viewPersonDetails language currentDate person diagnosisTranslationId
+        viewPersonDetails language currentDate data.person diagnosisTranslationId
             ++ [ alertSign
                , viewModal <|
                     alertsDialog language

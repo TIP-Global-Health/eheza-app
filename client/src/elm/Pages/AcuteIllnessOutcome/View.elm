@@ -73,12 +73,8 @@ viewHeader language data =
 
 viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
 viewContent language currentDate model data =
-    let
-        diagnosis =
-            acuteIllnessDiagnosisToMaybe data.encounter.diagnosis
-    in
     div [ class "ui unstackable items" ] <|
-        viewPersonDetailsWithAlert language currentDate data.person diagnosis model.showAlertsDialog SetAlertsDialogState
+        viewPersonDetailsWithAlert language currentDate data model.showAlertsDialog SetAlertsDialogState
             :: viewAcuteIllnessOutcome language currentDate data model
 
 

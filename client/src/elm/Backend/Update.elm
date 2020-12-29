@@ -46,7 +46,7 @@ import Pages.AcuteIllnessEncounter.Utils
         , mandatoryActivitiesCompletedSubsequentVisit
         , resolveAcuteIllnessDiagnosis
         , resolveNextStepFirstEncounter
-        , resolveNextStepsTasks
+        , resolveNextStepSubsequentEncounter
         , talkedTo114
         )
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
@@ -2143,7 +2143,7 @@ generateSuspectedDiagnosisMsgsFirstEncounter currentDate id person assembledBefo
             case diagnosisAfterChange of
                 Just newDiagnosis ->
                     updateDiagnosisMsg id newDiagnosis
-                        :: (case resolveNextStepFirstEncounter currentDate person (Just newDiagnosis) assembledAfter.measurements of
+                        :: (case resolveNextStepFirstEncounter currentDate assembledAfter of
                                 Just nextStep ->
                                     [ -- Navigate to Acute Ilness NextSteps activty page.
                                       App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
@@ -2188,8 +2188,7 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate data =
                     |> Maybe.withDefault NoAcuteIllnessDiagnosis
 
             setActiveTaskMsg =
-                resolveNextStepsTasks currentDate data.person False (Just newDiagnosis) data.measurements
-                    |> List.head
+                resolveNextStepSubsequentEncounter currentDate data
                     |> Maybe.map
                         (Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask
                             >> App.Model.MsgPageAcuteIllnessActivity data.id AcuteIllnessNextSteps
