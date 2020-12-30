@@ -215,7 +215,7 @@ viewManageParticipantsContent language currentDate selectedHealthCenter id db ac
                     (\( sessionId, session ) ->
                         if session.startDate /= currentDate then
                             -- Session was not started today, therefore, we know
-                            -- it's first encounter was not started today, which indicates
+                            -- its first encounter was not started today, which indicates
                             -- subsequent visit option is needed.
                             -- This option will be provided at `active Illnesses` section.
                             ( startIllnessAction, False )
