@@ -428,14 +428,20 @@ expectActivity currentDate isFirstEncounter data activity =
                     |> List.filterMap
                         (Tuple.second
                             >> .medicationDistribution
-                            >> Maybe.map
+                            >> Maybe.andThen
                                 (Tuple.second
                                     >> .value
                                     >> .distributionSigns
                                     >> (\medications ->
-                                            (medications /= EverySet.singleton NoMedicationDistributionSigns)
-                                                -- Lemon juice does not count as a medication.
-                                                && (medications /= EverySet.singleton LemonJuiceOrHoney)
+                                            if
+                                                (medications /= EverySet.singleton NoMedicationDistributionSigns)
+                                                    -- Lemon juice does not count as a medication.
+                                                    && (medications /= EverySet.singleton LemonJuiceOrHoney)
+                                            then
+                                                Just True
+
+                                            else
+                                                Nothing
                                        )
                                 )
                         )
