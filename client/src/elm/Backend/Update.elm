@@ -46,7 +46,6 @@ import Pages.AcuteIllnessEncounter.Utils
         , generateAssembledData
         , mandatoryActivitiesCompletedSubsequentVisit
         , noImprovementOnSubsequentVisit
-        , resolveAcuteIllnessDiagnosis
         , resolveNextStepFirstEncounter
         , resolveNextStepSubsequentEncounter
         )
@@ -2155,8 +2154,8 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
             else
                 generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate assembledAfter
         )
-        (RemoteData.toMaybe <| generateAssembledData id before)
-        (RemoteData.toMaybe <| generateAssembledData id after)
+        (RemoteData.toMaybe <| generateAssembledData currentDate id before)
+        (RemoteData.toMaybe <| generateAssembledData currentDate id after)
         |> Maybe.withDefault []
 
 
@@ -2170,10 +2169,10 @@ generateSuspectedDiagnosisMsgsFirstEncounter :
 generateSuspectedDiagnosisMsgsFirstEncounter currentDate id person assembledBefore assembledAfter =
     let
         diagnosisBeforeChange =
-            resolveAcuteIllnessDiagnosis currentDate assembledBefore
+            assembledBefore.diagnosis
 
         diagnosisAfterChange =
-            resolveAcuteIllnessDiagnosis currentDate assembledAfter
+            assembledAfter.diagnosis
 
         msgsForDiagnosisUpdate =
             case diagnosisAfterChange of
@@ -2237,7 +2236,7 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate data =
             |> App.Model.MsgPageAcuteIllnessActivity data.id AcuteIllnessNextSteps
             |> App.Model.MsgLoggedIn
         , -- Set diagnosis for this encounter.
-          resolveAcuteIllnessDiagnosis currentDate data
+          data.diagnosis
             |> Maybe.withDefault NoAcuteIllnessDiagnosis
             |> updateDiagnosisMsg data.id
         ]
@@ -2257,7 +2256,7 @@ updateDiagnosisMsg id diagnosis =
 
 generateAssesmentCompletedMsgs : NominalDate -> ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
 generateAssesmentCompletedMsgs currentDate after id =
-    generateAssembledData id after
+    generateAssembledData currentDate id after
         |> RemoteData.toMaybe
         |> Maybe.map
             (\data ->

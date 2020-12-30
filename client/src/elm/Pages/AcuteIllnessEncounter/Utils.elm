@@ -44,8 +44,8 @@ import Pages.AcuteIllnessEncounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
-generateAssembledData : AcuteIllnessEncounterId -> ModelIndexedDb -> WebData AssembledData
-generateAssembledData id db =
+generateAssembledData : NominalDate -> AcuteIllnessEncounterId -> ModelIndexedDb -> WebData AssembledData
+generateAssembledData currentDate id db =
     let
         encounter =
             Dict.get id db.acuteIllnessEncounters
@@ -79,22 +79,34 @@ generateAssembledData id db =
                     )
                 |> RemoteData.withDefault []
 
+        assembled =
+            RemoteData.map AssembledData (Success id)
+                |> RemoteData.andMap encounter
+                |> RemoteData.andMap participant
+                |> RemoteData.andMap person
+                |> RemoteData.andMap measurements
+                |> RemoteData.andMap (Success previousMeasurementsWithDates)
+                |> RemoteData.andMap (Success Nothing)
+
         diagnosis =
+            Maybe.Extra.orLazy diagnosisByCurrentEncounterMeasurements (\() -> diagnosisByPreviousEncounters)
+
+        diagnosisByCurrentEncounterMeasurements =
+            assembled
+                |> RemoteData.toMaybe
+                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate)
+
+        diagnosisByPreviousEncounters =
             encounter
                 |> RemoteData.toMaybe
                 |> Maybe.andThen
                     (.participant
-                        >> getAcuteIllnessDiagnosisForParticipant db
+                        >> getAcuteIllnessDiagnosisByPreviousEncounters id db
                         >> Maybe.andThen acuteIllnessDiagnosisToMaybe
                     )
     in
-    RemoteData.map AssembledData (Success id)
-        |> RemoteData.andMap encounter
-        |> RemoteData.andMap participant
-        |> RemoteData.andMap person
-        |> RemoteData.andMap measurements
-        |> RemoteData.andMap (Success previousMeasurementsWithDates)
-        |> RemoteData.andMap (Success diagnosis)
+    assembled
+        |> RemoteData.map (\data -> { data | diagnosis = diagnosis })
 
 
 generatePreviousMeasurements : AcuteIllnessEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, AcuteIllnessMeasurements ))
@@ -119,6 +131,47 @@ generatePreviousMeasurements currentEncounterId participantId db =
                     )
                 >> List.sortWith
                     (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date1 date2)
+            )
+
+
+getAcuteIllnessDiagnosisByPreviousEncounters : AcuteIllnessEncounterId -> ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe AcuteIllnessDiagnosis
+getAcuteIllnessDiagnosisByPreviousEncounters currentEncounterId db participantId =
+    Dict.get participantId db.acuteIllnessEncountersByParticipant
+        |> Maybe.withDefault NotAsked
+        |> RemoteData.toMaybe
+        |> Maybe.map Dict.toList
+        |> Maybe.andThen
+            (List.filterMap
+                (\( encounterId, encounter ) ->
+                    -- We do not want to get data of current encounter.
+                    if encounterId == currentEncounterId then
+                        Nothing
+
+                    else
+                        Just encounter
+                )
+                >> List.sortWith
+                    (\e1 e2 -> Gizra.NominalDate.compare e2.startDate e1.startDate)
+                >> List.head
+                >> Maybe.map .diagnosis
+            )
+
+
+{-| Since there can be multiple encounters, resolved diagnosis is the one
+that was set in most recent encounter.
+-}
+getAcuteIllnessDiagnosisForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe AcuteIllnessDiagnosis
+getAcuteIllnessDiagnosisForParticipant db participantId =
+    Dict.get participantId db.acuteIllnessEncountersByParticipant
+        |> Maybe.withDefault NotAsked
+        |> RemoteData.toMaybe
+        |> Maybe.map Dict.toList
+        |> Maybe.andThen
+            (List.map Tuple.second
+                >> List.sortWith (\e1 e2 -> Gizra.NominalDate.compare e2.startDate e1.startDate)
+                >> List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis)
+                >> List.head
+                >> Maybe.map .diagnosis
             )
 
 
@@ -1072,21 +1125,3 @@ acuteIllnessDiagnosisToMaybe diagnosis =
 
     else
         Just diagnosis
-
-
-{-| Since there can be multiple encounters, resolved diagnosis is the one
-that was set in most recent encountr.
--}
-getAcuteIllnessDiagnosisForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe AcuteIllnessDiagnosis
-getAcuteIllnessDiagnosisForParticipant db participantId =
-    Dict.get participantId db.acuteIllnessEncountersByParticipant
-        |> Maybe.withDefault NotAsked
-        |> RemoteData.toMaybe
-        |> Maybe.map Dict.toList
-        |> Maybe.andThen
-            (List.map Tuple.second
-                >> List.sortWith (\e1 e2 -> Gizra.NominalDate.compare e2.startDate e1.startDate)
-                >> List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis)
-                >> List.head
-                >> Maybe.map .diagnosis
-            )

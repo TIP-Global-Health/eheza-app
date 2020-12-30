@@ -31,7 +31,7 @@ view : Language -> NominalDate -> AcuteIllnessEncounterId -> ModelIndexedDb -> M
 view language currentDate id db model =
     let
         data =
-            generateAssembledData id db
+            generateAssembledData currentDate id db
     in
     viewWebData language (viewHeaderAndContent language currentDate id db model) identity data
 

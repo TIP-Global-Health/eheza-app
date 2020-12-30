@@ -57,7 +57,7 @@ view : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivit
 view language currentDate id activity db model =
     let
         data =
-            generateAssembledData id db
+            generateAssembledData currentDate id db
     in
     viewWebData language (viewHeaderAndContent language currentDate id activity model) identity data
 
@@ -69,7 +69,7 @@ viewHeaderAndContent language currentDate id activity model data =
             List.isEmpty data.previousMeasurementsWithDates
     in
     div [ class "page-activity acute-illness" ]
-        [ viewHeader language id activity data.encounter.diagnosis
+        [ viewHeader language id activity data.diagnosis
         , viewContent language currentDate id activity model data
         , viewModal <|
             warningPopup language
@@ -86,7 +86,7 @@ viewHeaderAndContent language currentDate id activity model data =
         ]
 
 
-viewHeader : Language -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> AcuteIllnessDiagnosis -> Html Msg
+viewHeader : Language -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> Html Msg
 viewHeader language id activity diagnosis =
     let
         title =
@@ -94,9 +94,9 @@ viewHeader language id activity diagnosis =
                 AcuteIllnessNextSteps ->
                     let
                         prefix =
-                            Translate.AcuteIllnessDiagnosis diagnosis
-                                |> translate language
-                                |> (\diagnosisTitle -> diagnosisTitle ++ ": ")
+                            diagnosis
+                                |> Maybe.map (Translate.AcuteIllnessDiagnosis >> translate language >> (\diagnosisTitle -> diagnosisTitle ++ ": "))
+                                |> Maybe.withDefault ""
                     in
                     prefix ++ translate language (Translate.AcuteIllnessActivityTitle activity)
 

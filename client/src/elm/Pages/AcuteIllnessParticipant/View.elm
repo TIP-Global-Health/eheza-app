@@ -181,8 +181,7 @@ viewManageIllnessesContent language currentDate selectedHealthCenter id db activ
 
         activeIllnessesSection =
             if activeIllnessesExists then
-                [ viewButton language (SetViewMode ManageParticipants) Translate.AcuteIllnessExisting False
-                ]
+                [ viewButton language (SetViewMode ManageParticipants) Translate.AcuteIllnessExisting False ]
 
             else
                 []

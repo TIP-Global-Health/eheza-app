@@ -38,7 +38,7 @@ view language currentDate id db model =
             firstEncounterId
                 |> Maybe.map
                     (\encounterId ->
-                        generateAssembledData encounterId db
+                        generateAssembledData currentDate encounterId db
                     )
                 |> Maybe.withDefault NotAsked
 

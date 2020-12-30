@@ -107,9 +107,6 @@ viewPrenatalActions language currentDate selectedHealthCenter id db prenatalSess
                     )
                 |> Maybe.withDefault ( Nothing, 0, False )
 
-        _ =
-            Debug.log "firstEncounterInProcess" firstEncounterInProcess
-
         -- Whether first prenatal encounter for person is in process.
         -- This is True when there's only one encounter, and it's active.
         firstEncounterInProcess =
@@ -122,9 +119,6 @@ viewPrenatalActions language currentDate selectedHealthCenter id db prenatalSess
                                 (Dict.values
                                     >> (\encounters ->
                                             let
-                                                _ =
-                                                    Debug.log "encounters" encounters
-
                                                 activeEncounters =
                                                     encounters
                                                         |> List.filter (.endDate >> isNothing)
