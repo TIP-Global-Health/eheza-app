@@ -647,6 +647,34 @@ function hedley_stats_get_good_nutrition($health_center_id) {
   return $result;
 }
 
+function hedley_stats_get_all_clinic_types() {
+  return [
+    HEDLEY_PERSON_CLINIC_TYPE_FBF,
+    HEDLEY_PERSON_CLINIC_TYPE_PMTCT,
+    HEDLEY_PERSON_CLINIC_TYPE_SORWATHE,
+    HEDLEY_PERSON_CLINIC_TYPE_ACHI,
+  ];
+}
+
+function hedley_stats_get_total_encounters($health_center_id) {
+  // Return the cache if exists.
+  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS, $health_center_id)) {
+    return $cache_data;
+  }
+
+  $clinic_types = hedley_stats_get_all_clinic_types();
+
+  $result = [];
+  foreach ($clinic_types as $clinic_type) {
+    $result[$clinic_type] = hedley_stats_get_total_encounters_by_clinic_type($health_center_id, $clinic_type);
+  }
+
+  // Set the cache.
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS, $health_center_id, NULL, $result);
+
+  return $result;
+}
+
 /**
  * Return "Total Encounters" per period.
  *
@@ -658,12 +686,7 @@ function hedley_stats_get_good_nutrition($health_center_id) {
  *
  * @throws \Exception
  */
-function hedley_stats_get_total_encounters($health_center_id) {
-  // Return the cache if exists.
-  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS, $health_center_id)) {
-    return $cache_data;
-  }
-
+function hedley_stats_get_total_encounters_by_clinic_type($health_center_id, $clinic_type) {
   $result = [
     'last_year' => 0,
     'this_year' => 0,
@@ -675,22 +698,19 @@ function hedley_stats_get_total_encounters($health_center_id) {
     // Get the group type.
     hedley_stats_join_field_to_query($query, 'node', 'field_session');
     hedley_stats_join_field_to_query($query, 'node', 'field_attended');
-    hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
-    hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
+    hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, 'field_session.field_session_target_id');
+    hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, 'field_clinic.field_clinic_target_id');
 
     // Only participants who actually attended the sessions.
     $query->condition('field_attended.field_attended_value', TRUE);
 
-    // Only FBF groups.
-    $query->condition('field_group_type.field_group_type_value', 'fbf');
+    // Only of specific clinic type.
+    $query->condition('field_group_type.field_group_type_value', $clinic_type);
 
     $result[$key] = $query
       ->execute()
       ->rowCount();
   }
-
-  // Set the cache.
-  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS, $health_center_id, NULL, $result);
 
   return $result;
 }
