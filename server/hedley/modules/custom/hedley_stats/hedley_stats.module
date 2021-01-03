@@ -25,7 +25,6 @@ define('HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON', 'sync_measurements_query_grou
 define('HEDLEY_STATS_SYNC_SESSION_ATTENDANCE', 'sync_session_attendance_stats');
 define('HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES', 'sync_children_beneficiaries_stats');
 define('HEDLEY_STATS_SYNC_FAMILY_PLANNING', 'sync_family_planning_stats');
-define('HEDLEY_STATS_SYNC_GOOD_NUTRITION', 'sync_good_nutrition_stats');
 define('HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS', 'sync_total_encounters_stats');
 define('HEDLEY_STATS_SYNC_CASE_MANAGEMENT', 'sync_case_management_stats');
 
@@ -128,7 +127,6 @@ function hedley_stats_clear_caches_for_health_center($nid) {
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_STATS_CACHE, $nid);
 
   // Clear cache that doesn't have periods.
-  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_GOOD_NUTRITION, $nid);
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS, $nid);
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $nid);
 
@@ -226,7 +224,6 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
         'case_management' => [],
         'children_beneficiaries' => [],
         'completed_program' => [],
-        'good_nutrition' => NULL,
         'family_planning' => [],
         'missed_sessions' => [],
         'total_encounters' => NULL,
@@ -243,7 +240,6 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
       'case_management' => hedley_stats_get_case_management($health_center_id),
       'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, $fbf_clinics, HEDLEY_STATS_PERIOD_ONE_YEAR),
       'completed_program' => $completed_program,
-      'good_nutrition' => hedley_stats_get_good_nutrition($health_center_id),
       'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS),
       'missed_sessions' => $missed_sessions,
       'total_encounters' => hedley_stats_get_total_encounters($health_center_id),
@@ -541,123 +537,6 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
   ]);
 
   return [array_values($completed_program), array_values($missed_session)];
-}
-
-/**
- * Return "Good nutrition" percentages for last year and the year before.
- *
- * This function gets all measurements (Height, MUAC, Nutrition, Weight)
- * possible for all the people inside a health center for the last two years
- * (separated, each year inside its own array) and then it checks the number of
- * people with "Good nutrition", meaning that all measurements for that person
- * is above moderate.
- *
- * @param int $health_center_id
- *   The Health center node ID.
- *
- * @return array
- *   AN array with good nutrition stats.
- *
- * @throws \Exception
- */
-function hedley_stats_get_good_nutrition($health_center_id) {
-  return [
-    'all' =>
-      [
-        'last_year' => 0,
-        'this_year' => 0,
-      ],
-    'good' =>
-      [
-        'last_year' => 0,
-        'this_year' => 0,
-      ],
-  ];
-
-  // Return the cache if exists.
-  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_GOOD_NUTRITION, $health_center_id)) {
-    return $cache_data;
-  }
-
-  // We start from attendance for this year and last year and we get
-  // measurements by the session (Encounter) ID.
-  $people['last_year'] = hedley_stats_get_nutrition_measurements_grouped_by_person($health_center_id, HEDLEY_STATS_PERIOD_LAST_YEAR);
-  $people['this_year'] = hedley_stats_get_nutrition_measurements_grouped_by_person($health_center_id, HEDLEY_STATS_PERIOD_ONE_YEAR);
-
-  if (empty($people['last_year']) && empty($people['this_year'])) {
-    // Satisfy the elm decoder.
-    return [
-      'all' =>
-        [
-          'last_year' => 0,
-          'this_year' => 0,
-        ],
-      'good' =>
-        [
-          'last_year' => 0,
-          'this_year' => 0,
-        ],
-    ];
-  }
-
-  // Analyzing the measurements.
-  $nutrition_signs = hedley_stats_nutrition_signs_group_encounter();
-  $all_people_measured = [
-    'last_year' => count($people['last_year']),
-    'this_year' => count($people['this_year']),
-  ];
-  $people_good_nutrition = [
-    'last_year' => 0,
-    'this_year' => 0,
-  ];
-
-  // Go through all the people.
-  foreach ($people as $period => $data) {
-    foreach ($data as $person) {
-      // Define that the person has good nutrition.
-      $good_nutrition = 1;
-
-      foreach ($person as $type => $measurement) {
-        // We are interested only with the nutrition signs that match the
-        // current type.
-        $current_nutrition_signs = $nutrition_signs[$type];
-
-        // Go through all the measurements for this person.
-        foreach ($measurement as $values) {
-
-          foreach ($values as $field_name => $value) {
-            // The nutrition value should be 'none' to be considered "good".
-            if ($type == 'nutrition') {
-              if ($value != $current_nutrition_signs[$field_name][HEDLEY_STATS_GOOD]) {
-                $good_nutrition = 0;
-              }
-            }
-            // All the rest of the measurements should be bigger than "moderate"
-            // to be considered good.
-            else {
-              if ($value <= $current_nutrition_signs[$field_name][HEDLEY_STATS_MODERATE]) {
-                $good_nutrition = 0;
-              }
-            }
-          }
-        }
-      }
-
-      if ($good_nutrition) {
-        $people_good_nutrition[$period]++;
-      }
-    }
-  }
-
-  $result = [
-    'all' => $all_people_measured,
-    'good' => $people_good_nutrition,
-  ];
-
-  // Set the cache.
-  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_GOOD_NUTRITION, $health_center_id, NULL, $result);
-
-  return $result;
 }
 
 /**
