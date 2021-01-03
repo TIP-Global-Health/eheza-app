@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Dashboard.Model
     exposing
         ( CaseManagement
+        , CaseManagementData
         , CaseNutrition
         , CaseNutritionTotal
         , DashboardStats
@@ -103,18 +104,32 @@ viewMainPage language currentDate stats model =
                 |> List.indexedMap (\index empty -> ( index + 1, empty ))
                 |> Dict.fromList
 
-        caseManagements =
-            Dict.get ProgramFbf stats.caseManagement.thisYear
+        programType =
+            ProgramFbf
+
+        caseManagementsThisYear =
+            Dict.get programType stats.caseManagement.thisYear
                 |> Maybe.withDefault []
 
-        totalsGraphData =
-            caseManagements
+        caseManagementsLastYear =
+            Dict.get programType stats.caseManagement.lastYear
+                |> Maybe.withDefault []
+
+        caseNutritionTotalsThisYear =
+            caseManagementsThisYear
                 |> List.map (.nutrition >> generateCaseNutritionTotals)
+
+        caseNutritionTotalsLastYear =
+            caseManagementsLastYear
+                |> List.map (.nutrition >> generateCaseNutritionTotals)
+
+        totalsGraphData =
+            caseNutritionTotalsThisYear
                 |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
                 |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
 
         newCasesGraphData =
-            caseManagements
+            caseManagementsThisYear
                 |> List.map (.nutrition >> generateCaseNutritionNewCases currentDate)
                 |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
                 |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
@@ -123,10 +138,10 @@ viewMainPage language currentDate stats model =
         [ viewPeriodFilter language model filterPeriodsForMainPage
         , div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
-                [ viewGoodNutrition language currentPeriodStats.maybeGoodNutrition
+                [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
                 ]
             , div [ class "eight wide column" ]
-                [ Dict.get ProgramFbf currentPeriodStats.totalEncounters
+                [ Dict.get programType currentPeriodStats.totalEncounters
                     |> Maybe.map (viewTotalEncounters language)
                     |> Maybe.withDefault emptyNode
                 ]
@@ -635,39 +650,68 @@ viewPeriodFilter language model filterPeriodsPerPage =
         (List.map renderButton filterPeriodsPerPage)
 
 
-viewGoodNutrition : Language -> Maybe GoodNutrition -> Html Msg
-viewGoodNutrition language maybeNutrition =
-    case maybeNutrition of
-        Just nutrition ->
-            let
-                percentageThisYear =
-                    (toFloat nutrition.good.thisYear / toFloat nutrition.all.thisYear)
-                        * 100
-                        |> round
+viewGoodNutrition : Language -> List CaseNutritionTotal -> List CaseNutritionTotal -> Html Msg
+viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear =
+    let
+        allThisYear =
+            List.length caseNutritionTotalsThisYear
 
-                percentageLastYear =
-                    calculatePercentage nutrition.good.thisYear nutrition.good.lastYear
-                        |> round
+        allLastYear =
+            List.length caseNutritionTotalsLastYear
 
-                percentageDiff =
-                    percentageThisYear - percentageLastYear
+        goodThisYear =
+            countGoodNutrition caseNutritionTotalsThisYear
 
-                statsCard =
-                    { title = translate language <| Translate.Dashboard Translate.GoodNutritionLabel
-                    , cardClasses = "good-nutrition"
-                    , cardAction = Nothing
-                    , value = percentageThisYear
-                    , valueSeverity = Neutral
-                    , valueIsPercentage = True
-                    , previousPercentage = percentageLastYear
-                    , previousPercentageLabel = OneYear
-                    , newCases = Nothing
-                    }
-            in
-            viewCard language statsCard
+        goodLastYear =
+            countGoodNutrition caseNutritionTotalsLastYear
 
-        Nothing ->
-            emptyNode
+        countGoodNutrition : List CaseNutritionTotal -> Int
+        countGoodNutrition totalsList =
+            totalsList
+                |> List.map
+                    (\totals ->
+                        if (countAbnormal totals.stunting + countAbnormal totals.underweight + countAbnormal totals.wasting + countAbnormal totals.muac) == 0 then
+                            1
+
+                        else
+                            0
+                    )
+                |> List.sum
+
+        countAbnormal : Dict Int Nutrition -> Int
+        countAbnormal dict =
+            Dict.values dict
+                |> List.map (\abnormal -> abnormal.severeNutrition + abnormal.moderateNutrition)
+                |> List.sum
+
+        goodNutrition =
+            GoodNutrition (Periods allThisYear allLastYear) (Periods goodThisYear goodLastYear)
+
+        percentageThisYear =
+            (toFloat goodNutrition.good.thisYear / toFloat goodNutrition.all.thisYear)
+                * 100
+                |> round
+
+        percentageLastYear =
+            calculatePercentage goodNutrition.good.thisYear goodNutrition.good.lastYear
+                |> round
+
+        percentageDiff =
+            percentageThisYear - percentageLastYear
+
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.GoodNutritionLabel
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = percentageThisYear
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = percentageLastYear
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewCard language statsCard
 
 
 viewTotalEncounters : Language -> Periods -> Html Msg

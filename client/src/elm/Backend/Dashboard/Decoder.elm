@@ -18,7 +18,6 @@ decodeDashboardStats =
         |> required "children_beneficiaries" (list decodePeopleStats)
         |> required "completed_program" (list decodeParticipantStats)
         |> required "family_planning" (list decodeFamilyPlanningStats)
-        |> optional "good_nutrition" (nullable decodeGoodNutrition) Nothing
         |> required "missed_sessions" (list decodeParticipantStats)
         |> required "total_encounters" decodeTotalEncounters
         |> required "stats_cache_hash" string
@@ -147,13 +146,6 @@ decodeFamilyPlanningStats =
     succeed FamilyPlanningStats
         |> required "created" decodeYYYYMMDD
         |> required "signs" (list decodeFamilyPlanningSign)
-
-
-decodeGoodNutrition : Decoder GoodNutrition
-decodeGoodNutrition =
-    succeed GoodNutrition
-        |> required "all" decodePeriods
-        |> required "good" decodePeriods
 
 
 decodeTotalEncounters : Decoder (Dict ProgramType Periods)

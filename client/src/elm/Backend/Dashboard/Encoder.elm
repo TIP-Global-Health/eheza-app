@@ -9,7 +9,6 @@ import Backend.Dashboard.Model
         , ChildrenBeneficiariesStats
         , DashboardStats
         , FamilyPlanningStats
-        , GoodNutrition
         , Nutrition
         , NutritionStatus(..)
         , NutritionValue
@@ -36,10 +35,6 @@ encodeDashboardStats stats =
     , encodeTotalEncounters stats.totalEncounters
     , ( "stats_cache_hash", string stats.cacheHash )
     ]
-        ++ (encodeGoodNutrition stats.maybeGoodNutrition
-                |> Maybe.map List.singleton
-                |> Maybe.withDefault []
-           )
 
 
 encodeCasesManagementData : CaseManagementData -> ( String, Value )
@@ -143,20 +138,6 @@ encodeFamilyPlanningStats stats =
     [ ( "created", encodeYYYYMMDD stats.created )
     , ( "signs", list encodeFamilyPlanningSign stats.signs )
     ]
-
-
-encodeGoodNutrition : Maybe GoodNutrition -> Maybe ( String, Value )
-encodeGoodNutrition mGoodNutrition =
-    mGoodNutrition
-        |> Maybe.map
-            (\goodNutrition ->
-                ( "good_nutrition"
-                , object
-                    [ encodePeriodsAs "all" goodNutrition.all
-                    , encodePeriodsAs "good" goodNutrition.good
-                    ]
-                )
-            )
 
 
 encodeMissedSessions : List ParticipantStats -> ( String, Value )

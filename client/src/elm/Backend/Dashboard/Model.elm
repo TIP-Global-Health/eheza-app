@@ -21,7 +21,6 @@ type alias DashboardStats =
     , childrenBeneficiaries : List ChildrenBeneficiariesStats
     , completedPrograms : List ParticipantStats
     , familyPlanning : List FamilyPlanningStats
-    , maybeGoodNutrition : Maybe GoodNutrition
     , missedSessions : List ParticipantStats
     , totalEncounters : Dict ProgramType Periods
 
@@ -36,7 +35,6 @@ emptyModel =
     , childrenBeneficiaries = []
     , completedPrograms = []
     , familyPlanning = []
-    , maybeGoodNutrition = Nothing
     , missedSessions = []
     , totalEncounters = Dict.empty
     , cacheHash = ""
