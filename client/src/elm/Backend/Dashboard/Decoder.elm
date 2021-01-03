@@ -14,7 +14,7 @@ import Json.Decode.Pipeline exposing (..)
 decodeDashboardStats : Decoder DashboardStats
 decodeDashboardStats =
     succeed DashboardStats
-        |> required "case_management" (list decodeCaseManagement)
+        |> required "case_management" decodeCaseManagementData
         |> required "children_beneficiaries" (list decodePeopleStats)
         |> required "completed_program" (list decodeParticipantStats)
         |> required "family_planning" (list decodeFamilyPlanningStats)
@@ -22,6 +22,28 @@ decodeDashboardStats =
         |> required "missed_sessions" (list decodeParticipantStats)
         |> required "total_encounters" decodeTotalEncounters
         |> required "stats_cache_hash" string
+
+
+decodeCaseManagementData : Decoder CaseManagementData
+decodeCaseManagementData =
+    succeed CaseManagementData
+        |> required "this_year" decodeCaseManagementDataForYear
+        |> required "last_year" decodeCaseManagementDataForYear
+
+
+decodeCaseManagementDataForYear : Decoder (Dict ProgramType (List CaseManagement))
+decodeCaseManagementDataForYear =
+    dict (list decodeCaseManagement)
+        |> andThen
+            (\dict ->
+                LegacyDict.toList dict
+                    |> List.map
+                        (\( k, v ) ->
+                            ( programTypeFromString k, v )
+                        )
+                    |> Dict.fromList
+                    |> succeed
+            )
 
 
 decodeCaseManagement : Decoder CaseManagement

@@ -17,7 +17,7 @@ type alias ZScore =
 
 
 type alias DashboardStats =
-    { caseManagement : List CaseManagement
+    { caseManagement : CaseManagementData
     , childrenBeneficiaries : List ChildrenBeneficiariesStats
     , completedPrograms : List ParticipantStats
     , familyPlanning : List FamilyPlanningStats
@@ -32,7 +32,7 @@ type alias DashboardStats =
 
 emptyModel : DashboardStats
 emptyModel =
-    { caseManagement = []
+    { caseManagement = CaseManagementData Dict.empty Dict.empty
     , childrenBeneficiaries = []
     , completedPrograms = []
     , familyPlanning = []
@@ -40,6 +40,12 @@ emptyModel =
     , missedSessions = []
     , totalEncounters = Dict.empty
     , cacheHash = ""
+    }
+
+
+type alias CaseManagementData =
+    { thisYear : Dict ProgramType (List CaseManagement)
+    , lastYear : Dict ProgramType (List CaseManagement)
     }
 
 

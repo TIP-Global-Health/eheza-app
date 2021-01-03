@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Dashboard.Model
     exposing
         ( CaseManagement
+        , CaseManagementData
         , CaseNutrition
         , ChildrenBeneficiariesStats
         , DashboardStats
@@ -27,7 +28,7 @@ import Json.Encode.Extra exposing (maybe)
 
 encodeDashboardStats : DashboardStats -> List ( String, Value )
 encodeDashboardStats stats =
-    [ encodeCasesManagements stats.caseManagement
+    [ encodeCasesManagementData stats.caseManagement
     , encodeChildrenBeneficiaries stats.childrenBeneficiaries
     , encodeCompletedPrograms stats.completedPrograms
     , encodeFamilyPlanning stats.familyPlanning
@@ -41,9 +42,24 @@ encodeDashboardStats stats =
            )
 
 
-encodeCasesManagements : List CaseManagement -> ( String, Value )
-encodeCasesManagements statsList =
-    ( "case_management", list (encodeCaseManagement >> object) statsList )
+encodeCasesManagementData : CaseManagementData -> ( String, Value )
+encodeCasesManagementData data =
+    ( "case_management"
+    , object
+        [ ( "this_year", encodeCasesManagementForYear data.thisYear )
+        , ( "last_year", encodeCasesManagementForYear data.lastYear )
+        ]
+    )
+
+
+encodeCasesManagementForYear : Dict ProgramType (List CaseManagement) -> Value
+encodeCasesManagementForYear dict =
+    Dict.toList dict
+        |> List.map
+            (\( programType, casesList ) ->
+                ( programTypeToString programType, list (encodeCaseManagement >> object) casesList )
+            )
+        |> object
 
 
 encodeCaseManagement : CaseManagement -> List ( String, Value )

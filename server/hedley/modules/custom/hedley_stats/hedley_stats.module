@@ -561,6 +561,19 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
  * @throws \Exception
  */
 function hedley_stats_get_good_nutrition($health_center_id) {
+  return [
+    'all' =>
+      [
+        'last_year' => 0,
+        'this_year' => 0,
+      ],
+    'good' =>
+      [
+        'last_year' => 0,
+        'this_year' => 0,
+      ],
+  ];
+
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_GOOD_NUTRITION, $health_center_id)) {
     return $cache_data;
@@ -588,7 +601,7 @@ function hedley_stats_get_good_nutrition($health_center_id) {
   }
 
   // Analyzing the measurements.
-  $nutrition_signs = hedley_stats_nutrition_signs();
+  $nutrition_signs = hedley_stats_nutrition_signs_group_encounter();
   $all_people_measured = [
     'last_year' => count($people['last_year']),
     'this_year' => count($people['this_year']),
@@ -815,13 +828,13 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
   $data = hedley_stats_get_nutrition_measurements_grouped_by_person($health_center_id, $period, TRUE);
   $result = [];
 
-  foreach ($data as $data_type => $people_data) {
+  foreach ($data as $program_type => $people_data) {
     if (empty($people_data)) {
-      $result[$data_type] = [];
+      $result[$program_type] = [];
       continue;
     }
 
-    $nutrition_signs = ($data_type == 'individual') ?
+    $nutrition_signs = ($program_type == 'individual') ?
       hedley_stats_nutrition_signs_individual_encounter() :
       hedley_stats_nutrition_signs_group_encounter();
 
@@ -942,7 +955,7 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
       }
     }
 
-    $result[$data_type] = array_values($people);
+    $result[$program_type] = array_values($people);
   }
 
   // Set the cache.

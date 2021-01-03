@@ -103,14 +103,18 @@ viewMainPage language currentDate stats model =
                 |> List.indexedMap (\index empty -> ( index + 1, empty ))
                 |> Dict.fromList
 
+        caseManagements =
+            Dict.get ProgramFbf stats.caseManagement.thisYear
+                |> Maybe.withDefault []
+
         totalsGraphData =
-            stats.caseManagement
+            caseManagements
                 |> List.map (.nutrition >> generateCaseNutritionTotals)
                 |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
                 |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
 
         newCasesGraphData =
-            stats.caseManagement
+            caseManagements
                 |> List.map (.nutrition >> generateCaseNutritionNewCases currentDate)
                 |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
                 |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
@@ -365,11 +369,15 @@ viewStatsPage language currentDate stats model healthCenterId db =
         monthBeforeStats =
             filterStatsWithinPeriod currentDate modelWithLastMonth stats
 
+        currentPeriodCaseManagement =
+            Dict.get ProgramFbf currentPeriodStats.caseManagement.thisYear
+                |> Maybe.withDefault []
+
         malnourishedCurrentMonth =
-            mapMalnorishedByMonth displayedMonth currentPeriodStats.caseManagement
+            mapMalnorishedByMonth displayedMonth currentPeriodCaseManagement
 
         malnourishedPreviousMonth =
-            mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodStats.caseManagement
+            mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodCaseManagement
     in
     div [ class "dashboard stats" ]
         [ viewPeriodFilter language model filterPeriodsForStatsPage
@@ -483,7 +491,9 @@ viewCaseManagementPage language currentDate stats model =
                             { name = caseNutrition.name, nutrition = nutrition } :: accum
                         )
                         []
-                        stats.caseManagement
+                        (Dict.get ProgramFbf stats.caseManagement.thisYear
+                            |> Maybe.withDefault []
+                        )
                         |> List.filter (.nutrition >> List.all (Tuple.second >> .class >> (==) Backend.Dashboard.Model.Good) >> not)
 
                 _ ->
@@ -507,7 +517,9 @@ viewCaseManagementPage language currentDate stats model =
                                     accum
                         )
                         []
-                        stats.caseManagement
+                        (Dict.get ProgramFbf stats.caseManagement.thisYear
+                            |> Maybe.withDefault []
+                        )
                         |> List.filter
                             (.nutrition
                                 >> List.any
