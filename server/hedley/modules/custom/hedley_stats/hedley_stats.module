@@ -647,6 +647,20 @@ function hedley_stats_get_good_nutrition($health_center_id) {
   return $result;
 }
 
+/**
+ * Return "Total Encounters" per period.
+ *
+ * Includes total number of encounters for each type of clinic, and
+ * total number of individual nutrition encounters.
+ *
+ * @param int $health_center_id
+ *   The Health center node ID.
+ *
+ * @return array
+ *   AN array with total encounters.
+ *
+ * @throws \Exception
+ */
 function hedley_stats_get_total_encounters($health_center_id) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS, $health_center_id)) {
@@ -669,10 +683,12 @@ function hedley_stats_get_total_encounters($health_center_id) {
 }
 
 /**
- * Return "Total Encounters" per period.
+ * Return "Total Encounters" for specified type of clinic, per period.
  *
  * @param int $health_center_id
  *   The Health center node ID.
+ * @param $clinic_type
+ *   The type of the clinic.
  *
  * @return array
  *   AN array with total encounters.
@@ -708,6 +724,17 @@ function hedley_stats_get_total_encounters_by_clinic_type($health_center_id, $cl
   return $result;
 }
 
+/**
+ * Return "Total Encounters" for individual nutrition encounters, per period.
+ *
+ * @param int $health_center_id
+ *   The Health center node ID.
+ * 
+ * @return array
+ *   AN array with total encounters.
+ *
+ * @throws \Exception
+ */
 function hedley_stats_get_total_nutrition_encounters($health_center_id) {
   $result = [
     'last_year' => 0,
