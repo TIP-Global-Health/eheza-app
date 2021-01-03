@@ -1,7 +1,7 @@
 module Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, Nutrition, NutritionStatus(..), NutritionValue, ParticipantStats, Periods, TotalBeneficiaries)
+import Backend.Dashboard.Model exposing (..)
 import Backend.Measurement.Decoder exposing (decodeFamilyPlanningSign)
 import Backend.Person.Decoder exposing (decodeGender)
 import Dict as LegacyDict
@@ -20,7 +20,7 @@ decodeDashboardStats =
         |> required "family_planning" (list decodeFamilyPlanningStats)
         |> optional "good_nutrition" (nullable decodeGoodNutrition) Nothing
         |> required "missed_sessions" (list decodeParticipantStats)
-        |> required "total_encounters" decodePeriods
+        |> required "total_encounters" decodeTotalEncounters
         |> required "stats_cache_hash" string
 
 
@@ -134,8 +134,45 @@ decodeGoodNutrition =
         |> required "good" decodePeriods
 
 
+decodeTotalEncounters : Decoder (Dict ProgramType Periods)
+decodeTotalEncounters =
+    dict decodePeriods
+        |> andThen
+            (\dict ->
+                LegacyDict.toList dict
+                    |> List.map
+                        (\( k, v ) ->
+                            ( programTypeFromString k, v )
+                        )
+                    |> Dict.fromList
+                    |> succeed
+            )
+
+
 decodePeriods : Decoder Periods
 decodePeriods =
     succeed Periods
         |> required "last_year" decodeInt
         |> required "this_year" decodeInt
+
+
+programTypeFromString : String -> ProgramType
+programTypeFromString string =
+    case string of
+        "achi" ->
+            ProgramAchi
+
+        "fbf" ->
+            ProgramFbf
+
+        "individual" ->
+            ProgramIndividual
+
+        "pmtct" ->
+            ProgramPmtct
+
+        "sorwathe" ->
+            ProgramSorwathe
+
+        _ ->
+            ProgramUnknown

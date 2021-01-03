@@ -14,6 +14,7 @@ import Backend.Dashboard.Model
         , NutritionValue
         , ParticipantStats
         , Periods
+        , ProgramType(..)
         , TotalBeneficiaries
         )
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSign)
@@ -158,9 +159,40 @@ encodeParticipantStats stats =
     ]
 
 
-encodeTotalEncounters : Periods -> ( String, Value )
-encodeTotalEncounters periods =
-    encodePeriodsAs "total_encounters" periods
+encodeTotalEncounters : Dict ProgramType Periods -> ( String, Value )
+encodeTotalEncounters dict =
+    let
+        value =
+            Dict.toList dict
+                |> List.map
+                    (\( programType, periods ) ->
+                        encodePeriodsAs (programTypeToString programType) periods
+                    )
+                |> object
+    in
+    ( "total_encounters", value )
+
+
+programTypeToString : ProgramType -> String
+programTypeToString programType =
+    case programType of
+        ProgramAchi ->
+            "achi"
+
+        ProgramFbf ->
+            "fbf"
+
+        ProgramIndividual ->
+            "individual"
+
+        ProgramPmtct ->
+            "pmtct"
+
+        ProgramSorwathe ->
+            "sorwathe"
+
+        ProgramUnknown ->
+            "unknown"
 
 
 encodePeriodsAs : String -> Periods -> ( String, Value )

@@ -1,22 +1,4 @@
-module Backend.Dashboard.Model exposing
-    ( CaseManagement
-    , CaseNutrition
-    , CaseNutritionTotal
-    , ChildrenBeneficiariesStats
-    , DashboardStats
-    , FamilyPlanningStats
-    , GoodNutrition
-    , Nutrition
-    , NutritionStatus(..)
-    , NutritionValue
-    , ParticipantStats
-    , Periods
-    , TotalBeneficiaries
-    , emptyModel
-    , emptyNutrition
-    , emptyNutritionValue
-    , emptyTotalBeneficiaries
-    )
+module Backend.Dashboard.Model exposing (..)
 
 {-| The stats for the dashboard.
 -}
@@ -41,7 +23,7 @@ type alias DashboardStats =
     , familyPlanning : List FamilyPlanningStats
     , maybeGoodNutrition : Maybe GoodNutrition
     , missedSessions : List ParticipantStats
-    , totalEncounters : Periods
+    , totalEncounters : Dict ProgramType Periods
 
     -- Hold an md5 hash, so we'd know if we have the most up to date data.
     , cacheHash : String
@@ -56,7 +38,7 @@ emptyModel =
     , familyPlanning = []
     , maybeGoodNutrition = Nothing
     , missedSessions = []
-    , totalEncounters = Periods 0 0
+    , totalEncounters = Dict.empty
     , cacheHash = ""
     }
 
@@ -171,3 +153,12 @@ type NutritionStatus
     | Moderate
     | Neutral
     | Severe
+
+
+type ProgramType
+    = ProgramAchi
+    | ProgramFbf
+    | ProgramIndividual
+    | ProgramPmtct
+    | ProgramSorwathe
+    | ProgramUnknown

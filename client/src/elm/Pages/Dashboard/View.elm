@@ -12,6 +12,7 @@ import Backend.Dashboard.Model
         , NutritionValue
         , ParticipantStats
         , Periods
+        , ProgramType(..)
         , TotalBeneficiaries
         , emptyNutrition
         , emptyNutritionValue
@@ -121,7 +122,9 @@ viewMainPage language currentDate stats model =
                 [ viewGoodNutrition language currentPeriodStats.maybeGoodNutrition
                 ]
             , div [ class "eight wide column" ]
-                [ viewTotalEncounters language currentPeriodStats.totalEncounters
+                [ Dict.get ProgramFbf currentPeriodStats.totalEncounters
+                    |> Maybe.map (viewTotalEncounters language)
+                    |> Maybe.withDefault emptyNode
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewMonthlyChart language currentDate MonthlyChartTotals FilterBeneficiariesChart totalsGraphData model.currentBeneficiariesChartsFilter
