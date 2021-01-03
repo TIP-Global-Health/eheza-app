@@ -105,12 +105,6 @@ type alias Periods =
     }
 
 
-type alias GoodNutrition =
-    { all : Periods
-    , good : Periods
-    }
-
-
 type alias Nutrition =
     { severeNutrition : Int
     , moderateNutrition : Int

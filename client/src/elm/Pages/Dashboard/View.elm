@@ -8,7 +8,6 @@ import Backend.Dashboard.Model
         , CaseNutrition
         , CaseNutritionTotal
         , DashboardStats
-        , GoodNutrition
         , Nutrition
         , NutritionValue
         , ParticipantStats
@@ -656,9 +655,6 @@ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYe
         allThisYear =
             List.length caseNutritionTotalsThisYear
 
-        allLastYear =
-            List.length caseNutritionTotalsLastYear
-
         goodThisYear =
             countGoodNutrition caseNutritionTotalsThisYear
 
@@ -684,16 +680,13 @@ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYe
                 |> List.map (\abnormal -> abnormal.severeNutrition + abnormal.moderateNutrition)
                 |> List.sum
 
-        goodNutrition =
-            GoodNutrition (Periods allThisYear allLastYear) (Periods goodThisYear goodLastYear)
-
         percentageThisYear =
-            (toFloat goodNutrition.good.thisYear / toFloat goodNutrition.all.thisYear)
+            (toFloat goodThisYear / toFloat allThisYear)
                 * 100
                 |> round
 
         percentageLastYear =
-            calculatePercentage goodNutrition.good.thisYear goodNutrition.good.lastYear
+            calculatePercentage goodThisYear goodLastYear
                 |> round
 
         percentageDiff =
