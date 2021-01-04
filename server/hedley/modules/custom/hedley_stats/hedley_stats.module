@@ -582,7 +582,7 @@ function hedley_stats_get_total_encounters($health_center_id) {
  *
  * @param int $health_center_id
  *   The Health center node ID.
- * @param $clinic_type
+ * @param string $clinic_type
  *   The type of the clinic.
  *
  * @return array
@@ -624,7 +624,7 @@ function hedley_stats_get_total_encounters_by_clinic_type($health_center_id, $cl
  *
  * @param int $health_center_id
  *   The Health center node ID.
- * 
+ *
  * @return array
  *   AN array with total encounters.
  *
@@ -687,7 +687,7 @@ function hedley_stats_get_case_management($health_center_id) {
 function hedley_stats_get_case_management_for_period($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center_id, $period)) {
-    //return $cache_data;
+    return $cache_data;
   }
 
   $extend = ($period == HEDLEY_STATS_PERIOD_ONE_YEAR);
@@ -695,7 +695,7 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
 
   // Set the data for each month.
   $data_per_month = [];
-  for ($i = 1; $i <= $total_month ; $i++) {
+  for ($i = 1; $i <= $total_month; $i++) {
     $data_per_month[$i] = [
       'class' => 'neutral',
       'value' => 'X',
@@ -930,7 +930,7 @@ function hedley_stats_get_nutrition_measurements_grouped_by_person($health_cente
  *   The period to query.
  * @param bool $extend
  *   Optional; If True, data goes back one more month for 'one year' period.
- *s
+ *
  * @return array
  *   Nutrition measurements by clinic type, for a health center,
  *   within given period.
@@ -992,7 +992,7 @@ function hedley_stats_get_nutrition_measurements_for_clinic_type_grouped_by_pers
  *   The period to query.
  * @param bool $extend
  *   Optional; If True, data goes back one more month for 'one year' period.
- *s
+ *
  * @return array
  *   Nutrition measurements at individual encounters, for a health center,
  *   within given per period.
