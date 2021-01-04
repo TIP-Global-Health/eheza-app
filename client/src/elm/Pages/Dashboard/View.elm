@@ -28,12 +28,13 @@ import Debug exposing (toString)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, allMonths, formatYYYYMMDD, isDiffTruthy, yearYYNumber)
 import Html exposing (..)
-import Html.Attributes exposing (class, classList, src)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (..)
+import Html.Events exposing (onClick, onInput)
 import List.Extra
 import Maybe exposing (Maybe)
 import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
+import Pages.Dashboard.Utils exposing (..)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Pages.Utils exposing (calculatePercentage)
 import Path
@@ -742,11 +743,13 @@ viewFiltersPane language page model filterPeriodsPerPage =
     let
         programTypeFilterButton =
             if page == MainPage then
-                button
+                div
                     [ class "primary ui button program-type-filter"
                     , onClick <| SetModalState <| Just FiltersModal
                     ]
-                    [ translateText language <| Translate.Dashboard Translate.Filters ]
+                    [ span [] [ translateText language <| Translate.Dashboard Translate.Filters ]
+                    , span [ class "icon-settings" ] []
+                    ]
 
             else
                 emptyNode
@@ -1680,7 +1683,7 @@ viewCustomModal language model =
                         viewStatsTableModal language title data
 
                     FiltersModal ->
-                        viewFiltersModal language
+                        viewFiltersModal language model
             )
         |> viewModal
 
@@ -1714,20 +1717,46 @@ viewStatsTableModal language title data =
         ]
 
 
-viewFiltersModal : Language -> Html Msg
-viewFiltersModal language =
-    div [ class "ui tiny active modal segment blue" ]
-        [ div
-            [ class "header" ]
-            [ span
-                [ class "overlay-close right floated column"
+viewFiltersModal : Language -> Model -> Html Msg
+viewFiltersModal language model =
+    let
+        allOptions =
+            [ FilterProgramFbf
+            , FilterProgramPmtct
+            , FilterProgramSorwathe
+            , FilterProgramAchi
+            , FilterAllPrograms
+            ]
+
+        programTypeInput =
+            allOptions
+                |> List.map
+                    (\programType ->
+                        option
+                            [ value (filterProgramTypeToString programType)
+                            , selected (model.programType == programType)
+                            ]
+                            [ text <| translate language <| Translate.Dashboard <| Translate.FilterProgramType programType ]
+                    )
+                |> select
+                    [ onInput SetFilterProgramType
+                    , class "select-input"
+                    ]
+    in
+    div [ class "ui active modal" ]
+        [ div [ class "header" ]
+            [ text <| translate language <| Translate.Dashboard Translate.Filters ]
+        , div [ class "content" ]
+            [ div [ class "helper" ] [ text <| translate language <| Translate.Dashboard Translate.ProgramType ]
+            , programTypeInput
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ class "ui primary fluid button"
                 , onClick <| SetModalState Nothing
                 ]
-                [ text "X" ]
+                [ text <| translate language Translate.Close ]
             ]
-        , div
-            [ class "content" ]
-            []
         ]
 
 

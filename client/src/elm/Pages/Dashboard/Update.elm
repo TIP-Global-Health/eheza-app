@@ -2,6 +2,7 @@ module Pages.Dashboard.Update exposing (update)
 
 import App.Model
 import Pages.Dashboard.Model exposing (..)
+import Pages.Dashboard.Utils exposing (filterProgramTypeFromString)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 
 
@@ -50,6 +51,18 @@ update msg subPage model =
 
                     else
                         { model | currentBeneficiariesIncidenceChartsFilter = filter }
+            in
+            ( updatedModel
+            , Cmd.none
+            , []
+            )
+
+        SetFilterProgramType string ->
+            let
+                updatedModel =
+                    filterProgramTypeFromString string
+                        |> Maybe.map (\filter -> { model | programType = filter })
+                        |> Maybe.withDefault model
             in
             ( updatedModel
             , Cmd.none

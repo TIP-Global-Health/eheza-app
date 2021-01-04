@@ -58,7 +58,14 @@ import Pages.AcuteIllnessActivity.Model
         , SymptomsTask(..)
         )
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
-import Pages.Dashboard.Model as Dashboard exposing (BeneficiariesTableLabels(..), DashboardFilter(..), DashboardSubFilter(..), FilterPeriod(..))
+import Pages.Dashboard.Model as Dashboard
+    exposing
+        ( BeneficiariesTableLabels(..)
+        , DashboardFilter(..)
+        , DashboardSubFilter(..)
+        , FilterPeriod(..)
+        , FilterProgramType(..)
+        )
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
     exposing
@@ -195,6 +202,7 @@ type Dashboard
     | FamilyPlanningLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | Filter DashboardFilter
+    | FilterProgramType FilterProgramType
     | Filters
     | GirlsFilterLabel
     | GoodNutritionLabel
@@ -209,6 +217,7 @@ type Dashboard
     | NoDataForPeriod
     | PercentageLabel FilterPeriod
     | PeriodFilter FilterPeriod
+    | ProgramType
     | Severe
     | SeverelyMalnourished
     | StatisticsFirstWordHelper
@@ -6255,6 +6264,33 @@ translateDashboard trans =
                     , kinyarwanda = Nothing
                     }
 
+        FilterProgramType filterProgramType ->
+            case filterProgramType of
+                FilterAllPrograms ->
+                    { english = "ALL"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterProgramAchi ->
+                    { english = "ACHI"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterProgramFbf ->
+                    { english = "FBF"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterProgramPmtct ->
+                    { english = "PMTCT"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterProgramSorwathe ->
+                    { english = "SORWATHE"
+                    , kinyarwanda = Nothing
+                    }
+
         Filters ->
             { english = "Filters"
             , kinyarwanda = Nothing
@@ -6358,6 +6394,11 @@ translateDashboard trans =
                     { english = "Three months"
                     , kinyarwanda = Nothing
                     }
+
+        ProgramType ->
+            { english = "Program Type"
+            , kinyarwanda = Nothing
+            }
 
         Severe ->
             { english = "Severe"

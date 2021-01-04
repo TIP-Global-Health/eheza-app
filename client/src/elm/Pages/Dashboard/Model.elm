@@ -207,4 +207,5 @@ type Msg
     | SetFilterBeneficiariesChart DashboardFilter FilterType
     | SetFilterCaseManagement DashboardFilter
     | SetSubFilterCaseManagement DashboardSubFilter
+    | SetFilterProgramType String
     | SetActivePage Page
