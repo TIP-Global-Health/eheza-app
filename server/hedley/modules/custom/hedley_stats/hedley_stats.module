@@ -56,36 +56,14 @@ function hedley_stats_node_update($node) {
  * @throws \EntityMetadataWrapperException
  */
 function hedley_stats_trigger_stats_recalculation($node) {
-  $measurements_content_types = hedley_activity_get_measurements_content_types();
-
-  if (!in_array($node->type, $measurements_content_types)) {
-    // This is not content that affects statistics.
+  if (!hedley_stats_requires_statistics_recalculation($node->type)) {
     return;
   }
 
   $wrapper = entity_metadata_wrapper('node', $node);
-  $session_id = $wrapper->field_session->getIdentifier();
-  if (!$session_id) {
-    return;
-  }
-
-  $session_wrapper = entity_metadata_wrapper('node', $session_id);
-  $clinic_id = $session_wrapper->field_clinic->getIdentifier();
-  if (!$clinic_id) {
-    return;
-  }
-
-  $clinic_wrapper = entity_metadata_wrapper('node', $clinic_id);
-  $clinic_type = $clinic_wrapper->field_group_type->value();
-
-  if ($clinic_type != 'fbf') {
-    // This measurement does not belong to FBF group, therefore, it
-    // does not affects statistics.
-    return;
-  }
 
   if (!$wrapper->__isset('field_shards')) {
-    // Can't resolve to which health centers measurement belongs.
+    // Can't resolve to which health centers content belongs.
     return;
   }
 
@@ -95,16 +73,41 @@ function hedley_stats_trigger_stats_recalculation($node) {
     return;
   }
 
-  // Reset the cache for the stats of the health center because a measurement in
-  // it has changed.
+  // Reset statistics cache of each health center, because
+  // content affecting it's statistics has been added / changed.
   foreach ($health_centers as $health_center) {
     hedley_stats_clear_caches_for_health_center($health_center->nid);
 
-    // Now we add an AQ item to re-calculate all the stats offline.
+    // Add an AQ item to re-calculate all the statistics offline.
     hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center->nid, [
       'health_center_nid' => $health_center->nid,
     ]);
   }
+}
+
+/**
+ * Checks if content type creation/update requires statistics recalculation.
+ *
+ * @param string $type
+ *   The type of content.
+ *
+ * @return bool
+ *   True, if give content type requires statistics recalculation.
+ */
+function hedley_stats_requires_statistics_recalculation($type) {
+  $triggering_types = array_merge(
+    [
+      HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_FAMILY_PLANNING_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
+    ],
+    HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
+    HEDLEY_ACTIVITY_NUTRITION_BUNDLES,
+    HEDLEY_ACTIVITY_MUAC_BUNDLES,
+    HEDLEY_ACTIVITY_WEIGHT_BUNDLES
+  );
+
+  return in_array($type, $triggering_types);
 }
 
 /**
@@ -687,9 +690,12 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
     //return $cache_data;
   }
 
+  $extend = ($period == HEDLEY_STATS_PERIOD_ONE_YEAR);
+  $total_month = $extend ? 13 : 12;
+
   // Set the data for each month.
   $data_per_month = [];
-  for ($i = 1; $i <= 13; $i++) {
+  for ($i = 1; $i <= $total_month ; $i++) {
     $data_per_month[$i] = [
       'class' => 'neutral',
       'value' => 'X',
@@ -705,7 +711,7 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
     'nutrition_signs' => $data_per_month,
   ];
 
-  $data = hedley_stats_get_nutrition_measurements_grouped_by_person($health_center_id, $period, TRUE);
+  $data = hedley_stats_get_nutrition_measurements_grouped_by_person($health_center_id, $period, $extend);
   $result = [];
 
   foreach ($data as $program_type => $people_data) {
@@ -741,10 +747,12 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
           $date_as_timestamp = strtotime($date);
           $month = date('n', $date_as_timestamp);
 
-          // If measurement was taken over a year ago,
+          // When extend data flag is raised, meaning that we want
+          // to add one more month for current year, and if
+          // if measurement was taken over a year ago,
           // we set it at month 13. It's used to calculate the changes
-          // that took place at first month of one year period.
-          if ($date_as_timestamp < strtotime("last day of -1 year") + $one_day) {
+          // that took place at first month of current year period.
+          if ($extend && $date_as_timestamp < strtotime("last day of -1 year") + $one_day) {
             $month = '13';
           };
 
@@ -753,11 +761,13 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
             // are taken for child. For example, without height, there's no
             // z-score length and z-score bmi.
             // In such cases, there's nothing to calculate, and we move
-            // on to next value.
+            // on to next measurement.
             if (empty($value)) {
               continue;
             }
 
+            // When working with nutrition signs, we only need to set
+            // the 'class' field.
             if (in_array($type, ['nutrition', 'nutrition_nutrition'])) {
               if ($value != $current_nutrition_signs[$field_name][HEDLEY_STATS_GOOD]) {
                 $people[$id]['nutrition']['nutrition_signs'][$month]['class'] = HEDLEY_STATS_SEVERE;
@@ -765,7 +775,7 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
               else {
                 $people[$id]['nutrition']['nutrition_signs'][$month]['class'] = HEDLEY_STATS_GOOD;
               }
-
+              // Move on to next measurement.
               continue;
             }
 
