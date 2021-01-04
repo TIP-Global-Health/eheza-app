@@ -743,8 +743,7 @@ viewFiltersPane language page model filterPeriodsPerPage =
             if page == MainPage then
                 button
                     [ class "primary ui button program-type-filter"
-
-                    -- , onClick <| SetFilterPeriod period
+                    , onClick <| SetModalState <| Just FiltersModal
                     ]
                     [ translateText language <| Translate.Dashboard Translate.Filters ]
 
@@ -998,7 +997,7 @@ viewMiscCards language currentDate stats monthBeforeStats =
         totalNewBeneficiariesCard =
             { title = totalNewBeneficiariesTitle
             , cardClasses = "stats-card new-beneficiaries"
-            , cardAction = Just (ModalToggle True totalNewBeneficiariesTable totalNewBeneficiariesTitle)
+            , cardAction = Just (SetModalState <| Just (StatisticsModal totalNewBeneficiariesTitle totalNewBeneficiariesTable))
             , value = totalNewBeneficiaries
             , valueSeverity = Neutral
             , valueIsPercentage = False
@@ -1023,7 +1022,7 @@ viewMiscCards language currentDate stats monthBeforeStats =
         completedProgramCard =
             { title = completedProgramTitle
             , cardClasses = "stats-card completed-program"
-            , cardAction = Just (ModalToggle True stats.completedPrograms completedProgramTitle)
+            , cardAction = Just (SetModalState <| Just (StatisticsModal completedProgramTitle stats.completedPrograms))
             , value = completedProgramCount
             , valueSeverity = Good
             , valueIsPercentage = False
@@ -1048,7 +1047,7 @@ viewMiscCards language currentDate stats monthBeforeStats =
         missedSessionsCard =
             { title = missedSessionsTitle
             , cardClasses = "stats-card missed-sessions"
-            , cardAction = Just (ModalToggle True stats.missedSessions missedSessionsTitle)
+            , cardAction = Just (SetModalState <| Just (StatisticsModal missedSessionsTitle stats.missedSessions))
             , value = missedSessionsCount
             , valueSeverity = Severe
             , valueIsPercentage = False
@@ -1674,36 +1673,40 @@ viewStatsTableModal : Language -> Model -> Html Msg
 viewStatsTableModal language model =
     let
         participantsStatsDialog =
-            if model.modalState then
-                Just <|
-                    div [ class "ui tiny active modal segment blue" ]
-                        [ div
-                            [ class "header" ]
-                            [ div [ class "title left floated column" ] [ text model.modalTitle ]
-                            , span
-                                [ class "overlay-close right floated column"
-                                , onClick <| ModalToggle False [] ""
-                                ]
-                                [ text "X" ]
-                            ]
-                        , div
-                            [ class "content" ]
-                            [ table [ class "ui very basic collapsing celled table" ]
-                                [ thead []
-                                    [ tr []
-                                        [ th [ class "name" ] [ translateText language <| Translate.Name ]
-                                        , th [ class "mother-name" ] [ translateText language <| Translate.MotherNameLabel ]
-                                        , th [ class "phone-number" ] [ translateText language <| Translate.TelephoneNumber ]
+            model.modalState
+                |> Maybe.map
+                    (\state ->
+                        case state of
+                            StatisticsModal title data ->
+                                div [ class "ui tiny active modal segment blue" ]
+                                    [ div
+                                        [ class "header" ]
+                                        [ div [ class "title left floated column" ] [ text title ]
+                                        , span
+                                            [ class "overlay-close right floated column"
+                                            , onClick <| SetModalState Nothing
+                                            ]
+                                            [ text "X" ]
+                                        ]
+                                    , div
+                                        [ class "content" ]
+                                        [ table [ class "ui very basic collapsing celled table" ]
+                                            [ thead []
+                                                [ tr []
+                                                    [ th [ class "name" ] [ translateText language <| Translate.Name ]
+                                                    , th [ class "mother-name" ] [ translateText language <| Translate.MotherNameLabel ]
+                                                    , th [ class "phone-number" ] [ translateText language <| Translate.TelephoneNumber ]
+                                                    ]
+                                                ]
+                                            , tbody []
+                                                (List.map viewModalTableRow data)
+                                            ]
                                         ]
                                     ]
-                                , tbody []
-                                    (List.map viewModalTableRow model.modalTable)
-                                ]
-                            ]
-                        ]
 
-            else
-                Nothing
+                            _ ->
+                                emptyNode
+                    )
     in
     viewModal participantsStatsDialog
 

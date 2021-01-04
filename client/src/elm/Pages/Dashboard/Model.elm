@@ -118,9 +118,7 @@ type alias Model =
     , currentCaseManagementFilter : DashboardFilter
     , currentCaseManagementSubFilter : DashboardSubFilter
     , latestPage : DashboardPage
-    , modalTable : List ParticipantStats
-    , modalTitle : String
-    , modalState : Bool
+    , modalState : Maybe ModalState
     }
 
 
@@ -134,10 +132,13 @@ emptyModel =
     , currentCaseManagementFilter = Stunting
     , currentCaseManagementSubFilter = FilterTotal
     , latestPage = MainPage
-    , modalTable = []
-    , modalTitle = ""
-    , modalState = False
+    , modalState = Nothing
     }
+
+
+type ModalState
+    = StatisticsModal String (List ParticipantStats)
+    | FiltersModal
 
 
 {-| A record to hold the count of total signs used.
@@ -199,7 +200,7 @@ type MonthlyChartType
 
 
 type Msg
-    = ModalToggle Bool (List ParticipantStats) String
+    = SetModalState (Maybe ModalState)
     | NavigateToStuntingTable DashboardSubFilter
     | SetFilterGender FilterGender
     | SetFilterPeriod FilterPeriod
