@@ -156,6 +156,7 @@ viewMainPage language currentDate stats model =
                 ]
             , links
             ]
+        , viewCustomModal language model
         ]
 
 
@@ -506,7 +507,7 @@ viewStatsPage language currentDate stats model healthCenterId db =
                 ]
             , viewBeneficiariesTable language currentDate stats currentPeriodStats malnourishedCurrentMonth model
             , viewFamilyPlanning language currentPeriodStats
-            , viewStatsTableModal language model
+            , viewCustomModal language model
             ]
 
 
@@ -1669,46 +1670,65 @@ viewChart signs =
         [ annular signsList pieData ]
 
 
-viewStatsTableModal : Language -> Model -> Html Msg
-viewStatsTableModal language model =
-    let
-        participantsStatsDialog =
-            model.modalState
-                |> Maybe.map
-                    (\state ->
-                        case state of
-                            StatisticsModal title data ->
-                                div [ class "ui tiny active modal segment blue" ]
-                                    [ div
-                                        [ class "header" ]
-                                        [ div [ class "title left floated column" ] [ text title ]
-                                        , span
-                                            [ class "overlay-close right floated column"
-                                            , onClick <| SetModalState Nothing
-                                            ]
-                                            [ text "X" ]
-                                        ]
-                                    , div
-                                        [ class "content" ]
-                                        [ table [ class "ui very basic collapsing celled table" ]
-                                            [ thead []
-                                                [ tr []
-                                                    [ th [ class "name" ] [ translateText language <| Translate.Name ]
-                                                    , th [ class "mother-name" ] [ translateText language <| Translate.MotherNameLabel ]
-                                                    , th [ class "phone-number" ] [ translateText language <| Translate.TelephoneNumber ]
-                                                    ]
-                                                ]
-                                            , tbody []
-                                                (List.map viewModalTableRow data)
-                                            ]
-                                        ]
-                                    ]
+viewCustomModal : Language -> Model -> Html Msg
+viewCustomModal language model =
+    model.modalState
+        |> Maybe.map
+            (\state ->
+                case state of
+                    StatisticsModal title data ->
+                        viewStatsTableModal language title data
 
-                            _ ->
-                                emptyNode
-                    )
-    in
-    viewModal participantsStatsDialog
+                    FiltersModal ->
+                        viewFiltersModal language
+            )
+        |> viewModal
+
+
+viewStatsTableModal : Language -> String -> List ParticipantStats -> Html Msg
+viewStatsTableModal language title data =
+    div [ class "ui tiny active modal segment blue" ]
+        [ div
+            [ class "header" ]
+            [ div [ class "title left floated column" ] [ text title ]
+            , span
+                [ class "overlay-close right floated column"
+                , onClick <| SetModalState Nothing
+                ]
+                [ text "X" ]
+            ]
+        , div
+            [ class "content" ]
+            [ table [ class "ui very basic collapsing celled table" ]
+                [ thead []
+                    [ tr []
+                        [ th [ class "name" ] [ translateText language <| Translate.Name ]
+                        , th [ class "mother-name" ] [ translateText language <| Translate.MotherNameLabel ]
+                        , th [ class "phone-number" ] [ translateText language <| Translate.TelephoneNumber ]
+                        ]
+                    ]
+                , tbody []
+                    (List.map viewModalTableRow data)
+                ]
+            ]
+        ]
+
+
+viewFiltersModal : Language -> Html Msg
+viewFiltersModal language =
+    div [ class "ui tiny active modal segment blue" ]
+        [ div
+            [ class "header" ]
+            [ span
+                [ class "overlay-close right floated column"
+                , onClick <| SetModalState Nothing
+                ]
+                [ text "X" ]
+            ]
+        , div
+            [ class "content" ]
+            []
+        ]
 
 
 viewModalTableRow : ParticipantStats -> Html Msg
