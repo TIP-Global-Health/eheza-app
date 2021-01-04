@@ -1054,7 +1054,7 @@ function hedley_stats_get_nutrition_measurements_for_individual_encounters_group
  */
 function hedley_stats_get_base_query($health_center_id, $node_type, $period, $extend = FALSE) {
   $query = db_select('node', 'node');
-  $query->fields('node', ['nid', 'type']);
+  $query->fields('node', ['nid', 'type', 'created']);
 
   // For all measurement nodes, creation date is
   // resolved using 'field_date_measured'.
