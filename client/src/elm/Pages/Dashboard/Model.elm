@@ -1,30 +1,4 @@
-module Pages.Dashboard.Model exposing
-    ( BeneficiariesTableLabels(..)
-    , Card
-    , CardValueSeverity(..)
-    , DashboardFilter(..)
-    , DashboardSubFilter(..)
-    , FamilyPlanningSignsCounter
-    , FilterGender(..)
-    , FilterPeriod(..)
-    , FilterType(..)
-    , MalnorishedNutritionData
-    , Model
-    , MonthlyChartType(..)
-    , Msg(..)
-    , StatsCard
-    , caseManagementFilters
-    , caseManagementSubFilters
-    , emptyModel
-    , filterGenders
-    , filterPeriodsForCaseManagementPage
-    , filterPeriodsForMainPage
-    , filterPeriodsForStatsPage
-    , monthlyChartFilters
-    )
-
-{-| Filtering by period
--}
+module Pages.Dashboard.Model exposing (..)
 
 import AssocList exposing (Dict)
 import Backend.Dashboard.Model exposing (ParticipantStats)
@@ -39,6 +13,14 @@ type FilterPeriod
     | LastMonth
     | ThreeMonthsAgo
     | OneYear
+
+
+type FilterProgramType
+    = FilterAllPrograms
+    | FilterProgramAchi
+    | FilterProgramFbf
+    | FilterProgramPmtct
+    | FilterProgramSorwathe
 
 
 type BeneficiariesTableLabels
@@ -129,6 +111,7 @@ caseManagementSubFilters mainFilter =
 
 type alias Model =
     { period : FilterPeriod
+    , programType : FilterProgramType
     , beneficiariesGender : FilterGender
     , currentBeneficiariesChartsFilter : DashboardFilter
     , currentBeneficiariesIncidenceChartsFilter : DashboardFilter
@@ -144,6 +127,7 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { period = OneYear
+    , programType = FilterAllPrograms
     , beneficiariesGender = Boys
     , currentBeneficiariesChartsFilter = Stunting
     , currentBeneficiariesIncidenceChartsFilter = Stunting
