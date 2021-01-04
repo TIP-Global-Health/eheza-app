@@ -127,7 +127,7 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { period = OneYear
-    , programType = FilterAllPrograms
+    , programType = FilterProgramFbf
     , beneficiariesGender = Boys
     , currentBeneficiariesChartsFilter = Stunting
     , currentBeneficiariesIncidenceChartsFilter = Stunting

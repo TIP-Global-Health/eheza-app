@@ -6,6 +6,7 @@
 
     &.filters {
       background-color: $color-light-background;
+      min-height: 60px;
       padding: 15px 20px;
 
       .ui.button {
@@ -26,6 +27,10 @@
         &.inactive {
           background-color: transparent;
           color: $color-background;
+        }
+
+        &.program-type-filter {
+          float: right;
         }
       }
     }

@@ -195,6 +195,7 @@ type Dashboard
     | FamilyPlanningLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | Filter DashboardFilter
+    | Filters
     | GirlsFilterLabel
     | GoodNutritionLabel
     | IncidenceOf
@@ -6253,6 +6254,11 @@ translateDashboard trans =
                     { english = "Missed Sessions"
                     , kinyarwanda = Nothing
                     }
+
+        Filters ->
+            { english = "Filters"
+            , kinyarwanda = Nothing
+            }
 
         GirlsFilterLabel ->
             { english = "Girls"

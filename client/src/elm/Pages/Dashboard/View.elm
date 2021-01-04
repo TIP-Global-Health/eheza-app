@@ -139,7 +139,7 @@ viewMainPage language currentDate stats model =
                     emptyNode
     in
     div [ class "dashboard main" ]
-        [ viewPeriodFilter language model filterPeriodsForMainPage
+        [ viewFiltersPane language MainPage model filterPeriodsForMainPage
         , div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
                 [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
@@ -499,7 +499,7 @@ viewStatsPage language currentDate stats model healthCenterId db =
                 mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodCaseManagement
         in
         div [ class "dashboard stats" ]
-            [ viewPeriodFilter language model filterPeriodsForStatsPage
+            [ viewFiltersPane language StatsPage model filterPeriodsForStatsPage
             , div [ class "ui equal width grid" ]
                 [ viewMalnourishedCards language malnourishedCurrentMonth malnourishedPreviousMonth
                 , viewMiscCards language currentDate currentPeriodStats monthBeforeStats
@@ -671,7 +671,7 @@ viewCaseManagementPage language currentDate stats model =
                     |> List.reverse
         in
         div [ class "dashboard case" ]
-            [ viewPeriodFilter language model filterPeriodsForCaseManagementPage
+            [ viewFiltersPane language CaseManagementPage model filterPeriodsForCaseManagementPage
             , div [ class "ui segment blue" ]
                 [ div [ class "case-management" ]
                     [ div [ class "header" ]
@@ -736,9 +736,21 @@ viewMonthCell ( month, cellData ) =
     td [ class ] [ span [] [ text cellData.value ] ]
 
 
-viewPeriodFilter : Language -> Model -> List FilterPeriod -> Html Msg
-viewPeriodFilter language model filterPeriodsPerPage =
+viewFiltersPane : Language -> DashboardPage -> Model -> List FilterPeriod -> Html Msg
+viewFiltersPane language page model filterPeriodsPerPage =
     let
+        programTypeFilterButton =
+            if page == MainPage then
+                button
+                    [ class "primary ui button program-type-filter"
+
+                    -- , onClick <| SetFilterPeriod period
+                    ]
+                    [ translateText language <| Translate.Dashboard Translate.Filters ]
+
+            else
+                emptyNode
+
         renderButton period =
             button
                 [ classList
@@ -750,8 +762,9 @@ viewPeriodFilter language model filterPeriodsPerPage =
                 [ translateText language <| Translate.Dashboard <| Translate.PeriodFilter period
                 ]
     in
-    div [ class "ui segment filters" ]
-        (List.map renderButton filterPeriodsPerPage)
+    div [ class "ui segment filters" ] <|
+        List.map renderButton filterPeriodsPerPage
+            ++ [ programTypeFilterButton ]
 
 
 viewGoodNutrition : Language -> List CaseNutritionTotal -> List CaseNutritionTotal -> Html Msg
