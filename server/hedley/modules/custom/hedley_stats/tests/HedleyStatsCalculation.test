@@ -75,48 +75,6 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   }
 
   /**
-   * Testing the good nutrition stats.
-   */
-  public function testGoodNutrition() {
-    // Define needed measurements for the test.
-    $measurements = [
-      'good' => [
-        'nutrition' => 'none',
-        'weight' => 10,
-        'height' => 75,
-        'muac' => 13,
-      ],
-      'bad' => [
-        'nutrition' => 'edema',
-        'weight' => 5,
-        'height' => 60,
-        'muac' => 11,
-      ],
-    ];
-
-    $attendance = 10;
-    $sessions = $this->createSessionsWithAttendance($attendance, $attendance);
-
-    foreach ($sessions as $session) {
-      $measurements_state = 'bad';
-      $session_data = $session['session_data'];
-      $session_nid = $session_data['session_nid'];
-
-      foreach ($session_data['children'] as $child_nid) {
-        // Reverse the state of measurements for each child so would get equal
-        // number of good and bad measurements.
-        $measurements_state = $measurements_state == 'good' ? 'bad' : 'good';
-
-        // Create measurements.
-        $this->createNutrition($session_nid, $child_nid, $measurements[$measurements_state]['nutrition'], $session['date']);;
-        $this->createWeight($session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
-        $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
-        $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
-      }
-    }
-  }
-
-  /**
    * Testing the "case management" stats.
    */
   public function testCaseManagement() {
