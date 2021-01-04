@@ -684,7 +684,7 @@ function hedley_stats_get_case_management($health_center_id) {
 function hedley_stats_get_case_management_for_period($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center_id, $period)) {
-    return $cache_data;
+    //return $cache_data;
   }
 
   // Set the data for each month.
@@ -702,6 +702,7 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
     'underweight' => $data_per_month,
     'wasting' => $data_per_month,
     'muac' => $data_per_month,
+    'nutrition_signs' => $data_per_month,
   ];
 
   $data = hedley_stats_get_nutrition_measurements_grouped_by_person($health_center_id, $period, TRUE);
@@ -757,6 +758,17 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
               continue;
             }
 
+            if (in_array($type, ['nutrition', 'nutrition_nutrition'])) {
+              if ($value != $current_nutrition_signs[$field_name][HEDLEY_STATS_GOOD]) {
+                $people[$id]['nutrition']['nutrition_signs'][$month]['class'] = HEDLEY_STATS_SEVERE;
+              }
+              else {
+                $people[$id]['nutrition']['nutrition_signs'][$month]['class'] = HEDLEY_STATS_GOOD;
+              }
+
+              continue;
+            }
+
             // Round up the value, the class will indicate the zscore level.
             $formatted_value = number_format((float) $value, 2);
 
@@ -775,7 +787,6 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
                 else {
                   $people[$id]['nutrition']['stunting'][$month]['class'] = HEDLEY_STATS_GOOD;
                 }
-
                 break;
 
               case 'weight':
@@ -809,7 +820,6 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
                     $people[$id]['nutrition']['wasting'][$month]['class'] = HEDLEY_STATS_GOOD;
                   }
                 }
-
                 break;
 
               case 'muac':
@@ -826,7 +836,6 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
                 else {
                   $people[$id]['nutrition']['muac'][$month]['class'] = HEDLEY_STATS_GOOD;
                 }
-
                 break;
             }
           }

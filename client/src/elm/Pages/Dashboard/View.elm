@@ -300,6 +300,7 @@ generateCaseNutritionTotals caseNutrition =
     , underweight = generateTotals caseNutrition.underweight
     , wasting = generateTotals caseNutrition.wasting
     , muac = generateTotals caseNutrition.muac
+    , nutritionSigns = generateTotals caseNutrition.nutritionSigns
     }
 
 
@@ -360,6 +361,7 @@ generateCaseNutritionNewCases currentDate caseNutrition =
     , underweight = generateTotals caseNutrition.underweight
     , wasting = generateTotals caseNutrition.wasting
     , muac = generateTotals caseNutrition.muac
+    , nutritionSigns = generateTotals caseNutrition.nutritionSigns
     }
 
 
@@ -661,12 +663,29 @@ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYe
         goodLastYear =
             countGoodNutrition caseNutritionTotalsLastYear
 
+        _ =
+            Debug.log "allThisYear" allThisYear
+
+        _ =
+            Debug.log "goodThisYear" goodThisYear
+
+        _ =
+            Debug.log "goodLastYear" goodLastYear
+
         countGoodNutrition : List CaseNutritionTotal -> Int
         countGoodNutrition totalsList =
             totalsList
                 |> List.map
                     (\totals ->
-                        if (countAbnormal totals.stunting + countAbnormal totals.underweight + countAbnormal totals.wasting + countAbnormal totals.muac) == 0 then
+                        if
+                            (countAbnormal totals.stunting
+                                + countAbnormal totals.underweight
+                                + countAbnormal totals.wasting
+                                + countAbnormal totals.muac
+                                + countAbnormal totals.nutritionSigns
+                            )
+                                == 0
+                        then
                             1
 
                         else

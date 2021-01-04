@@ -62,6 +62,7 @@ decodeCaseNutrition =
         |> required "underweight" decodeNutritionValueDict
         |> required "wasting" decodeNutritionValueDict
         |> required "muac" decodeNutritionValueDict
+        |> required "nutrition_signs" decodeNutritionValueDict
 
 
 decodeNutritionValueDict : Decoder (Dict Int NutritionValue)

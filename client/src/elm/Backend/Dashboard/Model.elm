@@ -61,6 +61,7 @@ type alias CaseNutrition =
     , underweight : Dict Int NutritionValue
     , wasting : Dict Int NutritionValue
     , muac : Dict Int NutritionValue
+    , nutritionSigns : Dict Int NutritionValue
     }
 
 
@@ -69,6 +70,7 @@ type alias CaseNutritionTotal =
     , underweight : Dict Int Nutrition
     , wasting : Dict Int Nutrition
     , muac : Dict Int Nutrition
+    , nutritionSigns : Dict Int Nutrition
     }
 
 
