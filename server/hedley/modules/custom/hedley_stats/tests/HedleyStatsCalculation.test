@@ -114,16 +114,6 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
       }
     }
-
-    $good_nutrition = hedley_stats_get_good_nutrition($this->healthCenterId);
-
-    // Assert the amount of good nutrition for last year.
-    $this->assertEqual(10, $good_nutrition['all']['last_year']);
-    $this->assertEqual(5, $good_nutrition['good']['last_year']);
-
-    // Assert the amount of good nutrition for this year.
-    $this->assertEqual(10, $good_nutrition['all']['this_year']);
-    $this->assertEqual(5, $good_nutrition['good']['this_year']);
   }
 
   /**
