@@ -68,10 +68,10 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $total_encounters = hedley_stats_get_total_encounters($this->healthCenterId);
 
     // Assert the amount of attendance for last year.
-    $this->assertEqual($attendance_last_year, $total_encounters['last_year']);
+    $this->assertEqual($attendance_last_year, $total_encounters['fbf']['last_year']);
 
     // Assert the amount of attendance for this year.
-    $this->assertEqual($attendance_this_year, $total_encounters['this_year']);
+    $this->assertEqual($attendance_this_year, $total_encounters['fbf']['this_year']);
   }
 
   /**
@@ -105,7 +105,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       $measurements_state = HEDLEY_STATS_MODERATE;
 
       foreach ($session_data['children'] as $child_nid) {
-        // We want to reach the amount of severe and moderate distrubtion that
+        // We want to reach the amount of severe and moderate distribution that
         // has been set above the loop.
         $measurements_state = $measurements_state == HEDLEY_STATS_MODERATE ? HEDLEY_STATS_SEVERE : HEDLEY_STATS_MODERATE;
 
@@ -123,16 +123,16 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       $this->assertEqual(20, count($case_management));
 
       // First person should have all severe nutrition.
-      $this->assertEqual(HEDLEY_STATS_SEVERE, $case_management[0]['nutrition']['stunting'][$month]['class']);
-      $this->assertEqual(HEDLEY_STATS_SEVERE, $case_management[0]['nutrition']['underweight'][$month]['class']);
-      $this->assertEqual(HEDLEY_STATS_SEVERE, $case_management[0]['nutrition']['wasting'][$month]['class']);
-      $this->assertEqual(HEDLEY_STATS_SEVERE, $case_management[0]['nutrition']['muac'][$month]['class']);
+      $this->assertEqual(HEDLEY_STATS_SEVERE, $case_management['fbf'][0]['nutrition']['stunting'][$month]['class']);
+      $this->assertEqual(HEDLEY_STATS_SEVERE, $case_management['fbf'][0]['nutrition']['underweight'][$month]['class']);
+      $this->assertEqual(HEDLEY_STATS_SEVERE, $case_management['fbf'][0]['nutrition']['wasting'][$month]['class']);
+      $this->assertEqual(HEDLEY_STATS_SEVERE, $case_management['fbf'][0]['nutrition']['muac'][$month]['class']);
 
       // Second person should have all moderate nutrition.
-      $this->assertEqual(HEDLEY_STATS_MODERATE, $case_management[1]['nutrition']['stunting'][$month]['class']);
-      $this->assertEqual(HEDLEY_STATS_MODERATE, $case_management[1]['nutrition']['underweight'][$month]['class']);
-      $this->assertEqual(HEDLEY_STATS_MODERATE, $case_management[1]['nutrition']['wasting'][$month]['class']);
-      $this->assertEqual(HEDLEY_STATS_MODERATE, $case_management[1]['nutrition']['muac'][$month]['class']);
+      $this->assertEqual(HEDLEY_STATS_MODERATE, $case_management['fbf'][1]['nutrition']['stunting'][$month]['class']);
+      $this->assertEqual(HEDLEY_STATS_MODERATE, $case_management['fbf'][1]['nutrition']['underweight'][$month]['class']);
+      $this->assertEqual(HEDLEY_STATS_MODERATE, $case_management['fbf'][1]['nutrition']['wasting'][$month]['class']);
+      $this->assertEqual(HEDLEY_STATS_MODERATE, $case_management['fbf'][1]['nutrition']['muac'][$month]['class']);
     }
   }
 
