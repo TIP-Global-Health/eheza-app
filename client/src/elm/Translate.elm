@@ -1018,7 +1018,7 @@ translationSet trans =
 
                 NoAdverseEvent ->
                     { english = "None of the above"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
                     }
 
         AcuteIllnessAdverseEventKindsQuestion ->
@@ -1060,12 +1060,12 @@ translationSet trans =
 
                 DangerSignSpontaneousBleeding ->
                     { english = "Spontaneous Bleeding"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuva amaraso bitunguranye"
                     }
 
                 DangerSignBloodyDiarrhea ->
                     { english = "Bloody Diarrhea"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Arituma amaraso"
                     }
 
                 DangerSignNewSkinRash ->
@@ -1075,7 +1075,7 @@ translationSet trans =
 
                 NoAcuteIllnessDangerSign ->
                     { english = "None of the above"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
                     }
 
         AcuteIllnessDiagnosis diagnosis ->
@@ -1604,7 +1604,7 @@ translationSet trans =
 
                 AcuteIllnessDangerSigns ->
                     { english = "Danger Signs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibimenyetso Mpuruza"
                     }
 
         Adherence adherence ->
@@ -2153,7 +2153,7 @@ translationSet trans =
 
         ConditionImprovingQuestion ->
             { english = "Is your condition improving"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Urumva uri kworoherwa?"
             }
 
         ConfirmationRequired ->
@@ -2322,7 +2322,7 @@ translationSet trans =
             case task of
                 ReviewDangerSigns ->
                     { english = "Review Danger Signs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kureba ibimenyetso mpuruza"
                     }
 
         DateOfLastAssessment ->
@@ -3132,7 +3132,7 @@ translationSet trans =
 
         HaveAnyOfTheFollowingQuestion ->
             { english = "Do you have any of the following"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Waba wagize ibi bikurikira?"
             }
 
         HttpError error ->
