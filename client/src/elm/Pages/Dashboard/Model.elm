@@ -2,6 +2,7 @@ module Pages.Dashboard.Model exposing (..)
 
 import AssocList exposing (Dict)
 import Backend.Dashboard.Model exposing (ParticipantStats)
+import Backend.Entities exposing (VillageId)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
 import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
@@ -21,6 +22,7 @@ type FilterProgramType
     | FilterProgramFbf
     | FilterProgramPmtct
     | FilterProgramSorwathe
+    | FilterProgramCommunity
 
 
 type BeneficiariesTableLabels
@@ -112,6 +114,7 @@ caseManagementSubFilters mainFilter =
 type alias Model =
     { period : FilterPeriod
     , programType : FilterProgramType
+    , selectedVillage : Maybe VillageId
     , beneficiariesGender : FilterGender
     , currentBeneficiariesChartsFilter : DashboardFilter
     , currentBeneficiariesIncidenceChartsFilter : DashboardFilter
@@ -126,6 +129,7 @@ emptyModel : Model
 emptyModel =
     { period = OneYear
     , programType = FilterProgramFbf
+    , selectedVillage = Nothing
     , beneficiariesGender = Boys
     , currentBeneficiariesChartsFilter = Stunting
     , currentBeneficiariesIncidenceChartsFilter = Stunting
@@ -208,4 +212,5 @@ type Msg
     | SetFilterCaseManagement DashboardFilter
     | SetSubFilterCaseManagement DashboardSubFilter
     | SetFilterProgramType String
+    | SetSelectedVillage String
     | SetActivePage Page

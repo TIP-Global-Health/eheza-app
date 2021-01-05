@@ -4,6 +4,7 @@ import App.Model
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (filterProgramTypeFromString)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
+import Restful.Endpoint exposing (toEntityUuid)
 
 
 update : Msg -> DashboardPage -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -61,8 +62,25 @@ update msg subPage model =
             let
                 updatedModel =
                     filterProgramTypeFromString string
-                        |> Maybe.map (\filter -> { model | programType = filter })
+                        |> Maybe.map
+                            (\programType ->
+                                { model | programType = programType, selectedVillage = Nothing }
+                            )
                         |> Maybe.withDefault model
+            in
+            ( updatedModel
+            , Cmd.none
+            , []
+            )
+
+        SetSelectedVillage string ->
+            let
+                updatedModel =
+                    if string == "" then
+                        { model | selectedVillage = Nothing }
+
+                    else
+                        { model | selectedVillage = Just (toEntityUuid string) }
             in
             ( updatedModel
             , Cmd.none

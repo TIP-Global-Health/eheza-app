@@ -21,6 +21,9 @@ filterProgramTypeToString filterProgramType =
         FilterProgramSorwathe ->
             "sorwathe"
 
+        FilterProgramCommunity ->
+            "community"
+
 
 filterProgramTypeFromString : String -> Maybe FilterProgramType
 filterProgramTypeFromString string =
@@ -39,6 +42,9 @@ filterProgramTypeFromString string =
 
         "sorwathe" ->
             Just FilterProgramSorwathe
+
+        "community" ->
+            Just FilterProgramCommunity
 
         _ ->
             Nothing

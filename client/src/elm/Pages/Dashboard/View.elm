@@ -38,6 +38,8 @@ import Pages.Dashboard.Utils exposing (..)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Pages.Utils exposing (calculatePercentage)
 import Path
+import RemoteData
+import Restful.Endpoint exposing (fromEntityUuid)
 import Scale exposing (BandConfig, BandScale, ContinuousScale)
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
@@ -61,10 +63,10 @@ view language page currentDate healthCenterId model db =
                     (\stats ->
                         case page of
                             MainPage ->
-                                ( viewMainPage language currentDate stats model, PinCodePage )
+                                ( viewMainPage language currentDate stats db model, PinCodePage )
 
                             StatsPage ->
-                                ( viewStatsPage language currentDate stats model healthCenterId db, UserPage <| DashboardPage MainPage )
+                                ( viewStatsPage language currentDate stats healthCenterId db model, UserPage <| DashboardPage MainPage )
 
                             CaseManagementPage ->
                                 ( viewCaseManagementPage language currentDate stats model, UserPage <| DashboardPage model.latestPage )
@@ -90,8 +92,8 @@ view language page currentDate healthCenterId model db =
         ]
 
 
-viewMainPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
-viewMainPage language currentDate stats model =
+viewMainPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewMainPage language currentDate stats db model =
     let
         currentPeriodStats =
             filterStatsWithinPeriod currentDate model stats
@@ -140,7 +142,7 @@ viewMainPage language currentDate stats model =
                     emptyNode
     in
     div [ class "dashboard main" ]
-        [ viewFiltersPane language MainPage model filterPeriodsForMainPage
+        [ viewFiltersPane language MainPage filterPeriodsForMainPage model
         , div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
                 [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
@@ -157,7 +159,7 @@ viewMainPage language currentDate stats model =
                 ]
             , links
             ]
-        , viewCustomModal language model
+        , viewCustomModal language stats db model
         ]
 
 
@@ -203,6 +205,30 @@ caseManagementApplyProgramTypeFilter dict model =
         FilterProgramSorwathe ->
             Dict.get ProgramSorwathe dict
                 |> Maybe.withDefault []
+
+        FilterProgramCommunity ->
+            let
+                achi =
+                    Dict.get ProgramAchi dict
+                        |> Maybe.withDefault []
+
+                fbf =
+                    Dict.get ProgramFbf dict
+                        |> Maybe.withDefault []
+
+                pmtct =
+                    Dict.get ProgramPmtct dict
+                        |> Maybe.withDefault []
+
+                sorwathe =
+                    Dict.get ProgramSorwathe dict
+                        |> Maybe.withDefault []
+
+                individual =
+                    Dict.get ProgramIndividual dict
+                        |> Maybe.withDefault []
+            in
+            achi ++ fbf ++ pmtct ++ sorwathe ++ individual
 
 
 totalEncountersApplyProgramTypeFilter : Dict ProgramType Periods -> Model -> Periods
@@ -257,6 +283,36 @@ totalEncountersApplyProgramTypeFilter dict model =
         FilterProgramSorwathe ->
             Dict.get ProgramSorwathe dict
                 |> Maybe.withDefault emptyPeriods
+
+        FilterProgramCommunity ->
+            let
+                achi =
+                    Dict.get ProgramAchi dict
+                        |> Maybe.withDefault emptyPeriods
+
+                fbf =
+                    Dict.get ProgramFbf dict
+                        |> Maybe.withDefault emptyPeriods
+
+                pmtct =
+                    Dict.get ProgramPmtct dict
+                        |> Maybe.withDefault emptyPeriods
+
+                sorwathe =
+                    Dict.get ProgramSorwathe dict
+                        |> Maybe.withDefault emptyPeriods
+
+                individual =
+                    Dict.get ProgramIndividual dict
+                        |> Maybe.withDefault emptyPeriods
+
+                sumPeriods p1 p2 =
+                    Periods (p1.lastYear + p2.lastYear) (p1.thisYear + p2.thisYear)
+            in
+            sumPeriods achi fbf
+                |> sumPeriods pmtct
+                |> sumPeriods sorwathe
+                |> sumPeriods individual
 
 
 applyTotalBeneficiariesDenomination : Dict Int Int -> Dict Int TotalBeneficiaries -> Dict Int TotalBeneficiaries
@@ -467,8 +523,8 @@ generateCaseNutritionNewCases currentDate caseNutrition =
     }
 
 
-viewStatsPage : Language -> NominalDate -> DashboardStats -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg
-viewStatsPage language currentDate stats model healthCenterId db =
+viewStatsPage : Language -> NominalDate -> DashboardStats -> HealthCenterId -> ModelIndexedDb -> Model -> Html Msg
+viewStatsPage language currentDate stats healthCenterId db model =
     if model.programType /= FilterProgramFbf then
         emptyNode
 
@@ -501,14 +557,14 @@ viewStatsPage language currentDate stats model healthCenterId db =
                 mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodCaseManagement
         in
         div [ class "dashboard stats" ]
-            [ viewFiltersPane language StatsPage model filterPeriodsForStatsPage
+            [ viewFiltersPane language StatsPage filterPeriodsForStatsPage model
             , div [ class "ui equal width grid" ]
                 [ viewMalnourishedCards language malnourishedCurrentMonth malnourishedPreviousMonth
                 , viewMiscCards language currentDate currentPeriodStats monthBeforeStats
                 ]
             , viewBeneficiariesTable language currentDate stats currentPeriodStats malnourishedCurrentMonth model
             , viewFamilyPlanning language currentPeriodStats
-            , viewCustomModal language model
+            , viewCustomModal language stats db model
             ]
 
 
@@ -673,7 +729,7 @@ viewCaseManagementPage language currentDate stats model =
                     |> List.reverse
         in
         div [ class "dashboard case" ]
-            [ viewFiltersPane language CaseManagementPage model filterPeriodsForCaseManagementPage
+            [ viewFiltersPane language CaseManagementPage filterPeriodsForCaseManagementPage model
             , div [ class "ui segment blue" ]
                 [ div [ class "case-management" ]
                     [ div [ class "header" ]
@@ -738,8 +794,8 @@ viewMonthCell ( month, cellData ) =
     td [ class ] [ span [] [ text cellData.value ] ]
 
 
-viewFiltersPane : Language -> DashboardPage -> Model -> List FilterPeriod -> Html Msg
-viewFiltersPane language page model filterPeriodsPerPage =
+viewFiltersPane : Language -> DashboardPage -> List FilterPeriod -> Model -> Html Msg
+viewFiltersPane language page filterPeriodsPerPage model =
     let
         programTypeFilterButton =
             if page == MainPage then
@@ -1673,8 +1729,8 @@ viewChart signs =
         [ annular signsList pieData ]
 
 
-viewCustomModal : Language -> Model -> Html Msg
-viewCustomModal language model =
+viewCustomModal : Language -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewCustomModal language stats db model =
     model.modalState
         |> Maybe.map
             (\state ->
@@ -1683,7 +1739,7 @@ viewCustomModal language model =
                         viewStatsTableModal language title data
 
                     FiltersModal ->
-                        viewFiltersModal language model
+                        viewFiltersModal language stats db model
             )
         |> viewModal
 
@@ -1717,8 +1773,8 @@ viewStatsTableModal language title data =
         ]
 
 
-viewFiltersModal : Language -> Model -> Html Msg
-viewFiltersModal language model =
+viewFiltersModal : Language -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewFiltersModal language stats db model =
     let
         allOptions =
             [ FilterProgramFbf
@@ -1726,6 +1782,12 @@ viewFiltersModal language model =
             , FilterProgramSorwathe
             , FilterProgramAchi
             , FilterAllPrograms
+            , FilterProgramCommunity
+            ]
+
+        programTypeInputSection =
+            [ div [ class "helper" ] [ text <| translate language <| Translate.Dashboard Translate.ProgramType ]
+            , programTypeInput
             ]
 
         programTypeInput =
@@ -1742,14 +1804,55 @@ viewFiltersModal language model =
                     [ onInput SetFilterProgramType
                     , class "select-input"
                     ]
+
+        villageInputSection =
+            if model.programType /= FilterProgramCommunity then
+                []
+
+            else
+                db.villages
+                    |> RemoteData.toMaybe
+                    |> Maybe.map
+                        (\villages ->
+                            let
+                                emptyOption =
+                                    option [ value "", selected (model.selectedVillage == Nothing) ] [ text "" ]
+
+                                options =
+                                    Dict.keys stats.villagesWithResidents
+                                        |> List.filterMap
+                                            (\villageId ->
+                                                Dict.get villageId villages
+                                                    |> Maybe.map
+                                                        (\village ->
+                                                            option
+                                                                [ value (fromEntityUuid villageId)
+                                                                , selected (model.selectedVillage == Just villageId)
+                                                                ]
+                                                                [ text village.name ]
+                                                        )
+                                            )
+
+                                villageInput =
+                                    emptyOption
+                                        :: options
+                                        |> select
+                                            [ onInput SetSelectedVillage
+                                            , class "select-input"
+                                            ]
+                            in
+                            [ div [ class "helper" ] [ text <| translate language Translate.Village ]
+                            , villageInput
+                            ]
+                        )
+                    |> Maybe.withDefault []
     in
     div [ class "ui active modal" ]
         [ div [ class "header" ]
             [ text <| translate language <| Translate.Dashboard Translate.Filters ]
-        , div [ class "content" ]
-            [ div [ class "helper" ] [ text <| translate language <| Translate.Dashboard Translate.ProgramType ]
-            , programTypeInput
-            ]
+        , div [ class "content" ] <|
+            programTypeInputSection
+                ++ villageInputSection
         , div [ class "actions" ]
             [ button
                 [ class "ui primary fluid button"
