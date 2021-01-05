@@ -378,7 +378,11 @@ type IndexDbQueryType
     = -- Get a single photo pending uploading.
       IndexDbQueryUploadPhotoAuthority
     | IndexDbQueryUploadGeneral
-    | IndexDbQueryUploadAuthority
+      -- Query one authority at a time, to make sure
+      -- content is being uploaded in correct order,
+      -- and we present correct 'remianing for upload'
+      -- on sync screen.
+    | IndexDbQueryUploadAuthority String
       -- Get a single deferred photo.
     | IndexDbQueryDeferredPhoto
       -- When we successfully download a photo, we remove it from the `deferredPhotos` table.
@@ -459,6 +463,7 @@ type alias IndexDbQueryDeferredPhotoResultRecord =
 
 type Msg
     = MsgDebouncer (Debouncer.Msg Msg)
+    | NoOp
     | SchedulePageRefresh
     | SchedulePhotosDownload
     | RefreshPage
@@ -485,6 +490,7 @@ type Msg
     | BackendUploadGeneral (Maybe IndexDbQueryUploadGeneralResultRecord)
     | BackendUploadGeneralHandle IndexDbQueryUploadGeneralResultRecord (WebData ())
     | BackendUploadPhotoAuthorityHandle (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
+    | BackendReportState Int
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto
@@ -494,7 +500,6 @@ type Msg
     | RevisionIdAuthorityRemove HealthCenterId
     | SetLastFetchedRevisionIdAuthority (Zipper SyncInfoAuthority) Int
     | SetLastFetchedRevisionIdGeneral Int
-    | SetTotalEntriesToUpload Int
       -- UI settings
     | ResetSettings
     | SaveSettings
