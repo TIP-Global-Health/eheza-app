@@ -94,7 +94,7 @@ acuteIllnessOutcomeToString : AcuteIllnessOutcome -> String
 acuteIllnessOutcomeToString outcome =
     case outcome of
         OutcomeIllnessResolved ->
-            "lillness-resolved"
+            "illness-resolved"
 
         OutcomeLostToFollowUp ->
             "lost-to-follow-up"
