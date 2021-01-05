@@ -97,7 +97,7 @@ decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
                 case tag of
                     "Success" ->
                         oneOf
-                            [ field "data" decodeIndexDbQueryUploadPhotoResultRecord
+                            [ at [ "data", "result" ] decodeIndexDbQueryUploadPhotoResultRecord
                                 |> andThen (\record -> succeed (RemoteData.Success (Just record)))
 
                             -- In case we have no photos to upload.
