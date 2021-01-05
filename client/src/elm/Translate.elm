@@ -1222,34 +1222,34 @@ translationSet trans =
 
         AcuteIllnessOutcomeLabel ->
             { english = "Acute Illness Outcome"
-            , kinyarwanda = Just "Iherezo rw'indwara ifatiyeho\n"
+            , kinyarwanda = Just "Iherezo ry'indwara ifatiyeho\n"
             }
 
         AcuteIllnessOutcome outcome ->
             case outcome of
                 OutcomeIllnessResolved ->
                     { english = "Illness Resolved"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just " Indwara Yarakize"
                     }
 
                 OutcomeLostToFollowUp ->
                     { english = "Lost to Follow Up (or Moved out of CA?)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yaburiwe irengero"
                     }
 
                 OutcomePatientDied ->
                     { english = "Patient Died"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umurwayi yarapfuye"
                     }
 
                 OutcomeReferredToHC ->
                     { english = "Referred to Health Center"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yoherejwe ku kigo nderabuzima"
                     }
 
                 OutcomeOther ->
                     { english = "Other"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibindi"
                     }
 
         AddChild ->
@@ -4461,7 +4461,7 @@ translationSet trans =
 
                 PhysicalExamMuac ->
                     { english = "Muac"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizigira"
                     }
 
                 PhysicalExamAcuteFindings ->
@@ -4471,7 +4471,7 @@ translationSet trans =
 
                 PhysicalExamNutrition ->
                     { english = "Nutrition"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imirire"
                     }
 
         PlaceholderEnterHeight ->
@@ -6333,7 +6333,7 @@ translateActivePage page =
 
                 AcuteIllnessOutcomePage _ ->
                     { english = "Acute Illness Outcome"
-                    , kinyarwanda = Just "Iherezo rw'indwara ifatiyeho"
+                    , kinyarwanda = Just "Iherezo ry'indwara ifatiyeho"
                     }
 
 
