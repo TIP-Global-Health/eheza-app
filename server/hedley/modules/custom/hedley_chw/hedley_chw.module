@@ -20,11 +20,6 @@ function hedley_chw_node_insert($node) {
   // Create CHW group for new village.
   $wrapper = entity_metadata_wrapper('node', $node);
   $village_name = $wrapper->label();
-  $province = $wrapper->field_province->value();
-  $district = $wrapper->field_district->value();
-  $sector = $wrapper->field_sector->value();
-  $cell = $wrapper->field_cell->value();
-  $village = $wrapper->field_village->value();
   $health_center_id = $wrapper->field_health_center->getIdentifier();
 
   $clinic_node = entity_create('node', [
@@ -41,24 +36,10 @@ function hedley_chw_node_insert($node) {
 
   $clinic = $clinic_wrapper->getIdentifier();
 
-  // Add participants to CHW group, based on mother's village.
-  $residents_query = new EntityFieldQuery();
-  $result = $residents_query
-    ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'person')
-    ->propertyCondition('status', NODE_PUBLISHED)
-    ->fieldCondition('field_province', 'value', $province)
-    ->fieldCondition('field_district', 'value', $district)
-    ->fieldCondition('field_sector', 'value', $sector)
-    ->fieldCondition('field_cell', 'value', $cell)
-    ->fieldCondition('field_village', 'value', $village)
-    ->execute();
-
-  if (empty($result['node'])) {
+  $residents = hedley_chw_get_village_residents($node->id);
+  if (empty($residents)) {
     return;
   }
-
-  $residents = array_keys($result['node']);
 
   // Create participants for the clinic.
   $batch_size = 50;
@@ -128,5 +109,42 @@ function hedley_chw_node_insert($node) {
     // Free up memory.
     drupal_static_reset();
   }
+}
 
+/**
+ * Retrieves the IDs of all people that live in given village.
+ *
+ * @param int $nid
+ *   Village node ID.
+ * @param int $range
+ *   The queries' range.
+ *
+ * @return array
+ *   List of IDs of all people that live in given village.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function hedley_chw_get_village_residents($nid, $range = 1000) {
+  $wrapper = entity_metadata_wrapper('node', $nid);
+  $province = $wrapper->field_province->value();
+  $district = $wrapper->field_district->value();
+  $sector = $wrapper->field_sector->value();
+  $cell = $wrapper->field_cell->value();
+  $village = $wrapper->field_village->value();
+
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'person')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_province', 'value', $province)
+    ->fieldCondition('field_district', 'value', $district)
+    ->fieldCondition('field_sector', 'value', $sector)
+    ->fieldCondition('field_cell', 'value', $cell)
+    ->fieldCondition('field_village', 'value', $village)
+    ->addTag('exclude_deleted')
+    ->range(0, $range)
+    ->execute();
+
+  return empty($result['node']) ? [] : array_keys($result['node']);
 }
