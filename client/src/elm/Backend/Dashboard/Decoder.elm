@@ -10,7 +10,7 @@ import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
-import Restful.Endpoint exposing (toEntityUuid)
+import Restful.Endpoint exposing (decodeEntityUuid, toEntityUuid)
 
 
 decodeDashboardStats : Decoder DashboardStats
@@ -22,6 +22,7 @@ decodeDashboardStats =
         |> required "family_planning" (list decodeFamilyPlanningStats)
         |> required "missed_sessions" (list decodeParticipantStats)
         |> required "total_encounters" decodeTotalEncountersData
+        |> required "villages_with_residents" decodeVillagesWithResidents
         |> required "stats_cache_hash" string
 
 
@@ -215,3 +216,18 @@ programTypeFromString string =
 
         _ ->
             ProgramUnknown
+
+
+decodeVillagesWithResidents : Decoder (Dict VillageId (List Int))
+decodeVillagesWithResidents =
+    dict (list int)
+        |> andThen
+            (\dict ->
+                LegacyDict.toList dict
+                    |> List.map
+                        (\( k, v ) ->
+                            ( toEntityUuid k, v )
+                        )
+                    |> Dict.fromList
+                    |> succeed
+            )

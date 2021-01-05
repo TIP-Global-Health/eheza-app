@@ -14,6 +14,7 @@ import Backend.Dashboard.Model
         , NutritionValue
         , ParticipantStats
         , Periods
+        , PersonIdentifier
         , ProgramType(..)
         , TotalBeneficiaries
         , TotalEncountersData
@@ -36,6 +37,7 @@ encodeDashboardStats stats =
     , encodeFamilyPlanning stats.familyPlanning
     , encodeMissedSessions stats.missedSessions
     , encodeTotalEncountersData stats.totalEncounters
+    , encodeVillagesWithResidents stats.villagesWithResidents
     , ( "stats_cache_hash", string stats.cacheHash )
     ]
 
@@ -222,3 +224,17 @@ encodePeriods periods =
     [ ( "last_year", int periods.lastYear )
     , ( "this_year", int periods.thisYear )
     ]
+
+
+encodeVillagesWithResidents : Dict VillageId (List PersonIdentifier) -> ( String, Value )
+encodeVillagesWithResidents dict =
+    let
+        value =
+            Dict.toList dict
+                |> List.map
+                    (\( villageId, idsList ) ->
+                        ( fromEntityUuid villageId, list int idsList )
+                    )
+                |> object
+    in
+    ( "villages_with_residents", value )
