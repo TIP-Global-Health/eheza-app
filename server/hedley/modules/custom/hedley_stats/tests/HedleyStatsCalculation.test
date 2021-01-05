@@ -120,7 +120,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       $case_management = hedley_stats_get_case_management($this->healthCenterId);
 
       // Assert the amount of case management.
-      $this->assertEqual(20, count($case_management));
+      $this->assertEqual(20, count($case_management['this_year']['fbf']));
 
       // First person should have all severe nutrition.
       $this->assertEqual(HEDLEY_STATS_SEVERE, $case_management['this_year']['fbf'][0]['nutrition']['stunting'][$month]['class']);
