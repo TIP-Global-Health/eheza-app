@@ -146,7 +146,7 @@ viewMainPage language currentDate stats model =
                 [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
                 ]
             , div [ class "eight wide column" ]
-                [ totalEncountersApplyProgramTypeFilter currentPeriodStats.totalEncounters model
+                [ totalEncountersApplyProgramTypeFilter currentPeriodStats.totalEncounters.global model
                     |> viewTotalEncounters language
                 ]
             , div [ class "sixteen wide column" ]

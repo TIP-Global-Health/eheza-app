@@ -16,13 +16,16 @@ import Backend.Dashboard.Model
         , Periods
         , ProgramType(..)
         , TotalBeneficiaries
+        , TotalEncountersData
         )
+import Backend.Entities exposing (VillageId)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSign)
 import Backend.Person.Encoder exposing (encodeGender)
 import Dict as LegacyDict
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
+import Restful.Endpoint exposing (fromEntityUuid)
 
 
 encodeDashboardStats : DashboardStats -> List ( String, Value )
@@ -32,7 +35,7 @@ encodeDashboardStats stats =
     , encodeCompletedPrograms stats.completedPrograms
     , encodeFamilyPlanning stats.familyPlanning
     , encodeMissedSessions stats.missedSessions
-    , encodeTotalEncounters stats.totalEncounters
+    , encodeTotalEncountersData stats.totalEncounters
     , ( "stats_cache_hash", string stats.cacheHash )
     ]
 
@@ -157,18 +160,34 @@ encodeParticipantStats stats =
     ]
 
 
-encodeTotalEncounters : Dict ProgramType Periods -> ( String, Value )
+encodeTotalEncountersData : TotalEncountersData -> ( String, Value )
+encodeTotalEncountersData data =
+    ( "total_encounters"
+    , object
+        [ ( "global", encodeTotalEncounters data.global )
+        , ( "villages", encodeTotalEncountersForVillages data.villages )
+        ]
+    )
+
+
+encodeTotalEncountersForVillages : Dict VillageId (Dict ProgramType Periods) -> Value
+encodeTotalEncountersForVillages dict =
+    Dict.toList dict
+        |> List.map
+            (\( villageId, totalEncounters ) ->
+                ( fromEntityUuid villageId, encodeTotalEncounters totalEncounters )
+            )
+        |> object
+
+
+encodeTotalEncounters : Dict ProgramType Periods -> Value
 encodeTotalEncounters dict =
-    let
-        value =
-            Dict.toList dict
-                |> List.map
-                    (\( programType, periods ) ->
-                        encodePeriodsAs (programTypeToString programType) periods
-                    )
-                |> object
-    in
-    ( "total_encounters", value )
+    Dict.toList dict
+        |> List.map
+            (\( programType, periods ) ->
+                encodePeriodsAs (programTypeToString programType) periods
+            )
+        |> object
 
 
 programTypeToString : ProgramType -> String

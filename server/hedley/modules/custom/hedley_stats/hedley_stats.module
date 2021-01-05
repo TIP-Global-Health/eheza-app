@@ -574,7 +574,7 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
  *
  * Includes total number of encounters for each type of clinic, and
  * total number of individual nutrition encounters.
- * Results are provided for 'overall' totals, and broken down by villages.
+ * Results are provided for 'global' totals, and broken down by villages.
  *
  * @param int $health_center_id
  *   The Health center node ID.
@@ -590,7 +590,7 @@ function hedley_stats_get_total_encounters($health_center_id, $villages_with_res
     return $cache_data;
   }
 
-  $result['overall'] = hedley_stats_get_total_encounters_for_residents($health_center_id);
+  $result['global'] = hedley_stats_get_total_encounters_for_residents($health_center_id);
 
   $result['villages'] = [];
   foreach ($villages_with_residents as $village_uuid => $residents_ids) {
