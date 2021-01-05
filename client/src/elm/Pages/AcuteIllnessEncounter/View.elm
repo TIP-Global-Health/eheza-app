@@ -148,7 +148,7 @@ viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis d
                 emptyNode
 
         malnutritionWithComplications =
-            if dangerSignPresentOnSubsequentVisit data.measurements then
+            if sendToHCOnSubsequentVisitByNutrition data.measurements then
                 p [] [ text <| translate language Translate.MalnutritionWithComplications ]
 
             else

@@ -307,6 +307,7 @@ noImprovementOnSubsequentVisitWithoutDangerSigns currentDate person measurements
         && (conditionNotImprovingOnSubsequentVisit measurements
                 || sendToHCOnSubsequentVisitByVitals currentDate person measurements
                 || sendToHCOnSubsequentVisitByMuac measurements
+                || sendToHCOnSubsequentVisitByNutrition measurements
            )
 
 
