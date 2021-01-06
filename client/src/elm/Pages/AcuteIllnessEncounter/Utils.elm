@@ -265,7 +265,8 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
                     || (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && healthCenterRecommendedToCome measurements)
 
         NextStepsContactHC ->
-            noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements
+            not malariaDiagnosedAtCurrentEncounter
+                && noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements
 
         NextStepsHealthEducation ->
             not malariaDiagnosedAtCurrentEncounter
