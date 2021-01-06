@@ -75,7 +75,7 @@ type Msg
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionMedicationNonAdministrationReason (Maybe MedicationNonAdministrationReason) MedicationDistributionSign MedicationNonAdministrationReason
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution )) (Maybe NextStepsTask)
-    | SetMalariaPrevention Bool
+    | SetProvidedEducationForDiagnosis Bool
     | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation )) (Maybe NextStepsTask)
       -- ONGOIN TREATMENT
     | SetActiveOngoingTreatmentTask OngoingTreatmentTask
@@ -419,7 +419,7 @@ type alias MedicationDistributionForm =
 
 
 type alias HealthEducationForm =
-    { malariaPrevention : Maybe Bool
+    { educationForDiagnosis : Maybe Bool
     }
 
 

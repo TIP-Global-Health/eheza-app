@@ -1562,7 +1562,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                     measurements.healthEducation
                         |> Maybe.map (Tuple.second >> .value)
                         |> healthEducationFormWithDefault data.healthEducationForm
-                        |> viewHealthEducationForm language currentDate
+                        |> viewHealthEducationForm language currentDate diagnosis
 
                 Nothing ->
                     emptyNode
@@ -2541,18 +2541,28 @@ viewReviewDangerSignsForm language currentDate measurements form =
         ]
 
 
-viewHealthEducationForm : Language -> NominalDate -> HealthEducationForm -> Html Msg
-viewHealthEducationForm language currentDate form =
-    div [ class "ui form health-education" ]
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , viewQuestionLabel language Translate.ProvidedMalariaPreventionEducationQuestion
-        , viewBoolInput
-            language
-            form.malariaPrevention
-            SetMalariaPrevention
-            "malaria-prevention"
-            Nothing
-        ]
+viewHealthEducationForm : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> HealthEducationForm -> Html Msg
+viewHealthEducationForm language currentDate maybeDiagnosis form =
+    maybeDiagnosis
+        |> Maybe.map
+            (\diagnosis ->
+                div [ class "ui form health-education" ]
+                    [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                    , div [ class "label" ]
+                        [ text <| translate language Translate.ProvidedPreventionEducationQuestion
+                        , text " "
+                        , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
+                        , text "?"
+                        ]
+                    , viewBoolInput
+                        language
+                        form.educationForDiagnosis
+                        SetProvidedEducationForDiagnosis
+                        "education-for-diagnosis"
+                        Nothing
+                    ]
+            )
+        |> Maybe.withDefault emptyNode
 
 
 

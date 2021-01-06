@@ -515,7 +515,7 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                         |> Maybe.map (Tuple.second >> .value)
                         |> healthEducationFormWithDefault data.healthEducationForm
             in
-            ( taskCompleted form.malariaPrevention
+            ( taskCompleted form.educationForDiagnosis
             , 1
             )
 
@@ -1541,7 +1541,7 @@ toNutritionValue form =
 
 fromHealthEducationValue : Maybe (EverySet HealthEducationSign) -> HealthEducationForm
 fromHealthEducationValue saved =
-    { malariaPrevention = Maybe.map (EverySet.member MalariaPrevention) saved
+    { educationForDiagnosis = Maybe.map (EverySet.member MalariaPrevention) saved
     }
 
 
@@ -1551,7 +1551,7 @@ healthEducationFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { malariaPrevention = or form.malariaPrevention (EverySet.member MalariaPrevention value |> Just)
+                { educationForDiagnosis = or form.educationForDiagnosis (EverySet.member MalariaPrevention value |> Just)
                 }
             )
 
@@ -1564,7 +1564,7 @@ toHealthEducationValueWithDefault saved form =
 
 toHealthEducationValue : HealthEducationForm -> Maybe (EverySet HealthEducationSign)
 toHealthEducationValue form =
-    [ Maybe.map (ifTrue MalariaPrevention) form.malariaPrevention
+    [ Maybe.map (ifTrue MalariaPrevention) form.educationForDiagnosis
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHealthEducationSigns)

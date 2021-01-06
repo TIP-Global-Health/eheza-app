@@ -537,7 +537,7 @@ function hedley_acute_illness_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'malaria-prevention' => 'Malaria prevention',
+        'education-for-diagnosis' => 'Education for diagnosis',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

@@ -1819,7 +1819,7 @@ encodeHealthEducationSign sign =
     string <|
         case sign of
             MalariaPrevention ->
-                "malaria-prevention"
+                "education-for-diagnosis"
 
             NoHealthEducationSigns ->
                 "none"

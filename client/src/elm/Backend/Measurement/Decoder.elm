@@ -1946,7 +1946,7 @@ decodeHealthEducationSign =
         |> andThen
             (\sign ->
                 case sign of
-                    "malaria-prevention" ->
+                    "education-for-diagnosis" ->
                         succeed MalariaPrevention
 
                     "none" ->

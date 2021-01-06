@@ -1774,13 +1774,13 @@ update currentDate id db msg model =
             , appMsgs
             )
 
-        SetMalariaPrevention value ->
+        SetProvidedEducationForDiagnosis value ->
             let
                 form =
                     model.nextStepsData.healthEducationForm
 
                 updatedForm =
-                    { form | malariaPrevention = Just value }
+                    { form | educationForDiagnosis = Just value }
 
                 updatedData =
                     model.nextStepsData
