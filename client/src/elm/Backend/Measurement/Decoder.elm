@@ -122,7 +122,10 @@ decodeAcuteIllnessMeasurements =
         |> optional "send_to_hc" (decodeHead decodeSendToHC) Nothing
         |> optional "medication_distribution" (decodeHead decodeMedicationDistribution) Nothing
         |> optional "acute_illness_muac" (decodeHead decodeAcuteIllnessMuac) Nothing
+        |> optional "treatment_ongoing" (decodeHead decodeTreatmentOngoing) Nothing
+        |> optional "acute_illness_danger_signs" (decodeHead decodeAcuteIllnessDangerSigns) Nothing
         |> optional "acute_illness_nutrition" (decodeHead decodeAcuteIllnessNutrition) Nothing
+        |> optional "health_education" (decodeHead decodeHealthEducation) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1773,8 +1776,184 @@ decodeAcuteIllnessMuac =
         |> decodeAcuteIllnessMeasurement
 
 
+decodeTreatmentOngoing : Decoder TreatmentOngoing
+decodeTreatmentOngoing =
+    succeed TreatmentOngoingValue
+        |> required "treatment_ongoing" (decodeEverySet decodeTreatmentOngoingSign)
+        |> required "reason_for_not_taking" decodeReasonForNotTaking
+        |> required "missed_doses" decodeInt
+        |> required "adverse_events" (decodeEverySet decodeAdverseEvent)
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeTreatmentOngoingSign : Decoder TreatmentOngoingSign
+decodeTreatmentOngoingSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "taken-as-prescribed" ->
+                        succeed TakenAsPrescribed
+
+                    "missed-doses" ->
+                        succeed MissedDoses
+
+                    "feel-better" ->
+                        succeed FeelingBetter
+
+                    "side-effects" ->
+                        succeed SideEffects
+
+                    "none" ->
+                        succeed NoTreatmentOngoingSign
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized TreatmentOngoingSign"
+            )
+
+
+decodeReasonForNotTaking : Decoder ReasonForNotTaking
+decodeReasonForNotTaking =
+    string
+        |> andThen
+            (\reason ->
+                case reason of
+                    "adverse-event" ->
+                        succeed NotTakingAdverseEvent
+
+                    "no-money" ->
+                        succeed NotTakingNoMoney
+
+                    "memory-problems" ->
+                        succeed NotTakingMemoryProblems
+
+                    "other" ->
+                        succeed NotTakingOther
+
+                    "none" ->
+                        succeed NoReasonForNotTakingSign
+
+                    _ ->
+                        fail <|
+                            reason
+                                ++ " is not a recognized ReasonForNotTaking"
+            )
+
+
+decodeAdverseEvent : Decoder AdverseEvent
+decodeAdverseEvent =
+    string
+        |> andThen
+            (\event ->
+                case event of
+                    "rash-itching" ->
+                        succeed AdverseEventRashOrItching
+
+                    "fever" ->
+                        succeed AdverseEventFever
+
+                    "diarrhea" ->
+                        succeed AdverseEventDiarrhea
+
+                    "vomiting" ->
+                        succeed AdverseEventVomiting
+
+                    "fatigue" ->
+                        succeed AdverseEventFatigue
+
+                    "other" ->
+                        succeed AdverseEventOther
+
+                    "none" ->
+                        succeed NoAdverseEvent
+
+                    _ ->
+                        fail <|
+                            event
+                                ++ " is not a recognized AdverseEvent"
+            )
+
+
+decodeAcuteIllnessDangerSigns : Decoder AcuteIllnessDangerSigns
+decodeAcuteIllnessDangerSigns =
+    decodeEverySet decodeAcuteIllnessDangerSign
+        |> field "acute_illness_danger_signs"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeAcuteIllnessDangerSign : Decoder AcuteIllnessDangerSign
+decodeAcuteIllnessDangerSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "condition-not-improving" ->
+                        succeed DangerSignConditionNotImproving
+
+                    "unable-drink-suck" ->
+                        succeed DangerSignUnableDrinkSuck
+
+                    "vomiting" ->
+                        succeed DangerSignVomiting
+
+                    "convulsions" ->
+                        succeed DangerSignConvulsions
+
+                    "lethargy-unconsciousness" ->
+                        succeed DangerSignLethargyUnconsciousness
+
+                    "respiratory-distress" ->
+                        succeed DangerSignRespiratoryDistress
+
+                    "spontaneous-bleeding" ->
+                        succeed DangerSignSpontaneousBleeding
+
+                    "bloody-diarrhea" ->
+                        succeed DangerSignBloodyDiarrhea
+
+                    "new-skip-rash" ->
+                        succeed DangerSignNewSkinRash
+
+                    "none" ->
+                        succeed NoAcuteIllnessDangerSign
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized AcuteIllnessDangerSign"
+            )
+
+
 decodeAcuteIllnessNutrition : Decoder AcuteIllnessNutrition
 decodeAcuteIllnessNutrition =
     decodeEverySet decodeChildNutritionSign
         |> field "nutrition_signs"
         |> decodeAcuteIllnessMeasurement
+
+
+decodeHealthEducation : Decoder HealthEducation
+decodeHealthEducation =
+    decodeEverySet decodeHealthEducationSign
+        |> field "health_education_signs"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeHealthEducationSign : Decoder HealthEducationSign
+decodeHealthEducationSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "education-for-diagnosis" ->
+                        succeed MalariaPrevention
+
+                    "none" ->
+                        succeed NoHealthEducationSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized HealthEducationSign"
+            )

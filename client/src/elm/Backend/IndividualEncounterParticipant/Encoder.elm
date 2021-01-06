@@ -1,5 +1,7 @@
 module Backend.IndividualEncounterParticipant.Encoder exposing
-    ( encodeDeliveryLocation
+    ( acuteIllnessOutcomeToString
+    , encodeAcuteIllnessOutcome
+    , encodeDeliveryLocation
     , encodeIndividualEncounterParticipant
     , encodePregnancyOutcome
     , pregnancyOutcomeToString
@@ -26,7 +28,7 @@ encodeIndividualEncounterParticipant data =
       )
     , ( "expected_date_concluded", maybe encodeYYYYMMDD data.eddDate )
     , ( "date_concluded", maybe encodeYYYYMMDD data.dateConcluded )
-    , ( "outcome", maybe encodePregnancyOutcome data.outcome )
+    , ( "outcome", maybe encodeIndividualEncounterParticipantOutcome data.outcome )
     , ( "outcome_location", maybe encodeDeliveryLocation data.deliveryLocation )
     , ( "deleted", bool data.deleted )
     , ( "type", string "individual_participant" )
@@ -37,6 +39,16 @@ encodeIndividualEncounterParticipant data =
 encodeIndividualEncounterType : IndividualEncounterType -> Value
 encodeIndividualEncounterType type_ =
     encodeIndividualEncounterTypeAsString type_ |> string
+
+
+encodeIndividualEncounterParticipantOutcome : IndividualEncounterParticipantOutcome -> Value
+encodeIndividualEncounterParticipantOutcome participantOutcome =
+    case participantOutcome of
+        Pregnancy outcome ->
+            encodePregnancyOutcome outcome
+
+        AcuteIllness outcome ->
+            encodeAcuteIllnessOutcome outcome
 
 
 encodePregnancyOutcome : PregnancyOutcome -> Value
@@ -76,3 +88,30 @@ deliveryLocationToString location =
 
         HomeDelivery ->
             "home"
+
+
+acuteIllnessOutcomeToString : AcuteIllnessOutcome -> String
+acuteIllnessOutcomeToString outcome =
+    case outcome of
+        OutcomeIllnessResolved ->
+            "illness-resolved"
+
+        OutcomeLostToFollowUp ->
+            "lost-to-follow-up"
+
+        OutcomeMovedOutsideCA ->
+            "moved-out-of-ca"
+
+        OutcomePatientDied ->
+            "patient-died"
+
+        OutcomeReferredToHC ->
+            "referred-to-hc"
+
+        OutcomeOther ->
+            "other"
+
+
+encodeAcuteIllnessOutcome : AcuteIllnessOutcome -> Value
+encodeAcuteIllnessOutcome outcome =
+    acuteIllnessOutcomeToString outcome |> string

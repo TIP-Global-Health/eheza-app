@@ -16,7 +16,7 @@ import Restful.Endpoint exposing (applyBackendUrl, toCmd, withoutDecoder)
 update : IndividualEncounterParticipantId -> Maybe IndividualEncounterParticipant -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
 update participantId maybeParticipant currentDate msg model =
     case msg of
-        ClosePrenatalSession pregnancyConcludedDate pregnancyOutcome isFacilityDelivery ->
+        ClosePrenatalSession concludedDate outcome isFacilityDelivery ->
             maybeParticipant
                 |> unwrap ( model, Cmd.none )
                     (\participant ->
@@ -29,7 +29,7 @@ update participantId maybeParticipant currentDate msg model =
                                     HomeDelivery
                         in
                         ( { model | closePrenatalSession = Loading }
-                        , { participant | dateConcluded = Just pregnancyConcludedDate, outcome = Just pregnancyOutcome, deliveryLocation = Just deliveryLocation }
+                        , { participant | endDate = Just currentDate, dateConcluded = Just concludedDate, outcome = Just (Pregnancy outcome), deliveryLocation = Just deliveryLocation }
                             |> sw.patchFull individualEncounterParticipantEndpoint participantId
                             |> withoutDecoder
                             |> toCmd (RemoteData.fromResult >> HandleClosedPrenatalSession)
@@ -38,6 +38,23 @@ update participantId maybeParticipant currentDate msg model =
 
         HandleClosedPrenatalSession data ->
             ( { model | closePrenatalSession = data }
+            , Cmd.none
+            )
+
+        CloseAcuteIllnessSession outcome ->
+            maybeParticipant
+                |> unwrap ( model, Cmd.none )
+                    (\participant ->
+                        ( { model | closeAcuteIllnessSession = Loading }
+                        , { participant | endDate = Just currentDate, outcome = Just (AcuteIllness outcome) }
+                            |> sw.patchFull individualEncounterParticipantEndpoint participantId
+                            |> withoutDecoder
+                            |> toCmd (RemoteData.fromResult >> HandleClosedPrenatalSession)
+                        )
+                    )
+
+        HandleClosedAcuteIllnessSession data ->
+            ( { model | closeAcuteIllnessSession = data }
             , Cmd.none
             )
 
