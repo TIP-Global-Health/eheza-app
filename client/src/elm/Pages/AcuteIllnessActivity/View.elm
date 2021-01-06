@@ -57,20 +57,27 @@ view : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivit
 view language currentDate id activity db model =
     let
         data =
-            generateAssembledData id db
+            generateAssembledData currentDate id db
     in
     viewWebData language (viewHeaderAndContent language currentDate id activity model) identity data
 
 
 viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
 viewHeaderAndContent language currentDate id activity model data =
+    let
+        isFirstEncounter =
+            List.isEmpty data.previousMeasurementsWithDates
+    in
     div [ class "page-activity acute-illness" ]
-        [ viewHeader language id activity data.encounter.diagnosis
+        [ viewHeader language id activity data.diagnosis
         , viewContent language currentDate id activity model data
         , viewModal <|
             warningPopup language
+                currentDate
+                isFirstEncounter
                 model.warningPopupState
                 SetWarningPopupState
+                data
         , viewModal <|
             pertinentSymptomsPopup language
                 model.showPertinentSymptomsPopup
@@ -79,7 +86,7 @@ viewHeaderAndContent language currentDate id activity model data =
         ]
 
 
-viewHeader : Language -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> AcuteIllnessDiagnosis -> Html Msg
+viewHeader : Language -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> Html Msg
 viewHeader language id activity diagnosis =
     let
         title =
@@ -87,9 +94,9 @@ viewHeader language id activity diagnosis =
                 AcuteIllnessNextSteps ->
                     let
                         prefix =
-                            Translate.AcuteIllnessDiagnosis diagnosis
-                                |> translate language
-                                |> (\diagnosisTitle -> diagnosisTitle ++ ": ")
+                            diagnosis
+                                |> Maybe.map (Translate.AcuteIllnessDiagnosis >> translate language >> (\diagnosisTitle -> diagnosisTitle ++ ": "))
+                                |> Maybe.withDefault ""
                     in
                     prefix ++ translate language (Translate.AcuteIllnessActivityTitle activity)
 
@@ -113,12 +120,8 @@ viewHeader language id activity diagnosis =
 
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id activity model data =
-    let
-        diagnosis =
-            acuteIllnessDiagnosisToMaybe data.encounter.diagnosis
-    in
-    (viewPersonDetailsWithAlert language currentDate data.person diagnosis model.showAlertsDialog SetAlertsDialogState
-        :: viewActivity language currentDate id activity diagnosis data model
+    (viewPersonDetailsWithAlert language currentDate data model.showAlertsDialog SetAlertsDialogState
+        :: viewActivity language currentDate id activity data model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -366,14 +369,17 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
         Nothing
 
 
-viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> AssembledData -> Model -> List (Html Msg)
-viewActivity language currentDate id activity diagnosis data model =
+viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate id activity data model =
     let
         personId =
             data.participant.person
 
         measurements =
             data.measurements
+
+        diagnosis =
+            data.diagnosis
 
         isFirstEncounter =
             List.isEmpty data.previousMeasurementsWithDates
@@ -395,7 +401,7 @@ viewActivity language currentDate id activity diagnosis data model =
             viewAcuteIllnessExposure language currentDate id ( personId, measurements ) model.exposureData
 
         AcuteIllnessNextSteps ->
-            viewAcuteIllnessNextSteps language currentDate id ( personId, data.person, measurements ) isFirstEncounter diagnosis model.nextStepsData
+            viewAcuteIllnessNextSteps language currentDate id data isFirstEncounter model.nextStepsData
 
         AcuteIllnessOngoingTreatment ->
             viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) model.ongoingTreatmentData
@@ -1430,14 +1436,26 @@ viewTreatmentReviewForm language currentDate measurements form =
         |> div [ class "ui form treatment-review" ]
 
 
-viewAcuteIllnessNextSteps : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, Person, AcuteIllnessMeasurements ) -> Bool -> Maybe AcuteIllnessDiagnosis -> NextStepsData -> List (Html Msg)
-viewAcuteIllnessNextSteps language currentDate id ( personId, person, measurements ) isFirstEncounter diagnosis data =
+viewAcuteIllnessNextSteps : Language -> NominalDate -> AcuteIllnessEncounterId -> AssembledData -> Bool -> NextStepsData -> List (Html Msg)
+viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter data =
     let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        diagnosis =
+            assembled.diagnosis
+
         activity =
             AcuteIllnessNextSteps
 
         tasks =
-            resolveNextStepsTasks currentDate person isFirstEncounter diagnosis measurements
+            resolveNextStepsTasks currentDate isFirstEncounter assembled
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -1469,6 +1487,11 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                         NextStepsSendToHC ->
                             ( "next-steps-send-to-hc"
                             , isJust measurements.sendToHC
+                            )
+
+                        NextStepsHealthEducation ->
+                            ( "next-steps-health-education"
+                            , isJust measurements.healthEducation
                             )
 
                 isActive =
@@ -1515,7 +1538,7 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                     measurements.hcContact
                         |> Maybe.map (Tuple.second >> .value)
                         |> hcContactFormWithDefault data.hcContactForm
-                        |> viewHCContactForm language currentDate measurements
+                        |> viewHCContactForm language currentDate isFirstEncounter measurements
 
                 Just NextStepsCall114 ->
                     measurements.call114
@@ -1535,67 +1558,78 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> viewSendToHCForm language currentDate
 
+                Just NextStepsHealthEducation ->
+                    measurements.healthEducation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> healthEducationFormWithDefault data.healthEducationForm
+                        |> viewHealthEducationForm language currentDate diagnosis
+
                 Nothing ->
                     emptyNode
 
-        call114Form =
-            measurements.call114
-                |> Maybe.map
-                    (Tuple.second
-                        >> .value
+        tasksAfterSave =
+            case activeTask of
+                -- On first visit, ContactHC task should appear in case nurse did not talk to 114.
+                -- Therefore, when the answer to 'called 114' is changed, we adjust tasks list accirdingly.
+                Just NextStepsCall114 ->
+                    if isFirstEncounter then
+                        let
+                            call114Form =
+                                measurements.call114
+                                    |> Maybe.map (Tuple.second >> .value)
+                                    |> call114FormWithDefault data.call114Form
+                        in
+                        if call114Form.called114 == Just False then
+                            [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC ]
+
+                        else if call114Form.called114 == Just True then
+                            [ NextStepsIsolation, NextStepsCall114 ]
+
+                        else
+                            tasks
+
+                    else
+                        tasks
+
+                -- At subsequent visit, SendToHC, task should appear in case health center adviced to send patient over.
+                -- Therefore, when the answer to this is changed, we adjust tasks list accirdingly.
+                Just NextStepsContactHC ->
+                    if isFirstEncounter then
+                        tasks
+
+                    else
+                        let
+                            hcContactForm =
+                                measurements.hcContact
+                                    |> Maybe.map (Tuple.second >> .value)
+                                    |> hcContactFormWithDefault data.hcContactForm
+                        in
+                        if healthCenterRecommendedToCome measurements && hcContactForm.recommendations /= Just ComeToHealthCenter then
+                            [ NextStepsContactHC, NextStepsHealthEducation ]
+
+                        else if (not <| healthCenterRecommendedToCome measurements) && hcContactForm.recommendations == Just ComeToHealthCenter then
+                            [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation ]
+
+                        else
+                            tasks
+
+                _ ->
+                    tasks
+
+        nextTask =
+            tasksAfterSave
+                |> List.filter
+                    (\task ->
+                        (Just task /= activeTask)
+                            && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
                     )
-                |> call114FormWithDefault data.call114Form
-
-        contactHCTaskDisplayed =
-            call114Form.called114 == Just False
-
-        getNextTask currentTask =
-            case currentTask of
-                NextStepsIsolation ->
-                    let
-                        tasksList =
-                            if contactHCTaskDisplayed then
-                                [ NextStepsCall114, NextStepsContactHC ]
-
-                            else
-                                [ NextStepsCall114 ]
-                    in
-                    tasksList
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                NextStepsCall114 ->
-                    let
-                        tasksList =
-                            if contactHCTaskDisplayed then
-                                [ NextStepsContactHC ]
-
-                            else
-                                [ NextStepsIsolation ]
-                    in
-                    tasksList
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                NextStepsContactHC ->
-                    [ NextStepsIsolation, NextStepsCall114 ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                NextStepsMedicationDistribution ->
-                    Nothing
-
-                NextStepsSendToHC ->
-                    Nothing
+                |> List.head
 
         actions =
             activeTask
                 |> Maybe.map
                     (\task ->
                         let
-                            nextTask =
-                                getNextTask task
-
                             saveMsg =
                                 case task of
                                     NextStepsIsolation ->
@@ -1608,17 +1642,32 @@ viewAcuteIllnessNextSteps language currentDate id ( personId, person, measuremen
                                         SaveCall114 personId measurements.call114 nextTask
 
                                     NextStepsSendToHC ->
-                                        SaveSendToHC personId measurements.sendToHC
+                                        SaveSendToHC personId measurements.sendToHC nextTask
 
                                     NextStepsMedicationDistribution ->
-                                        SaveMedicationDistribution personId measurements.medicationDistribution
+                                        SaveMedicationDistribution personId measurements.medicationDistribution nextTask
+
+                                    NextStepsHealthEducation ->
+                                        SaveHealthEducation personId measurements.healthEducation nextTask
+
+                            saveLabel =
+                                case task of
+                                    NextStepsHealthEducation ->
+                                        if noImprovementOnSubsequentVisit currentDate person measurements then
+                                            Translate.Save
+
+                                        else
+                                            Translate.SaveAndRecordOutcome
+
+                                    _ ->
+                                        Translate.Save
                         in
                         div [ class "actions next-steps" ]
                             [ button
                                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                                 , onClick saveMsg
                                 ]
-                                [ text <| translate language Translate.Save ]
+                                [ text <| translate language saveLabel ]
                             ]
                     )
                 |> Maybe.withDefault emptyNode
@@ -1694,8 +1743,8 @@ viewIsolationForm language currentDate measurements form =
         |> div [ class "ui form next-steps isolation" ]
 
 
-viewHCContactForm : Language -> NominalDate -> AcuteIllnessMeasurements -> HCContactForm -> Html Msg
-viewHCContactForm language currentDate measurements form =
+viewHCContactForm : Language -> NominalDate -> Bool -> AcuteIllnessMeasurements -> HCContactForm -> Html Msg
+viewHCContactForm language currentDate isFirstEncounter measurements form =
     let
         contactedHCInput =
             [ viewQuestionLabel language Translate.ContactedHCQuestion
@@ -1711,10 +1760,17 @@ viewHCContactForm language currentDate measurements form =
             case form.contactedHC of
                 Just True ->
                     let
+                        hcRespnonseOptions =
+                            if isFirstEncounter then
+                                [ SendAmbulance, HomeIsolation, ComeToHealthCenter, ChwMonitoring ]
+
+                            else
+                                [ SendAmbulance, ComeToHealthCenter ]
+
                         hcRespnonseInput =
                             [ viewQuestionLabel language Translate.HCResponseQuestion
                             , viewCheckBoxSelectCustomInput language
-                                [ SendAmbulance, HomeIsolation, ComeToHealthCenter, ChwMonitoring ]
+                                hcRespnonseOptions
                                 []
                                 form.recommendations
                                 SetHCRecommendation
@@ -2483,6 +2539,30 @@ viewReviewDangerSignsForm language currentDate measurements form =
             SetDangerSign
             Translate.AcuteIllnessDangerSign
         ]
+
+
+viewHealthEducationForm : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> HealthEducationForm -> Html Msg
+viewHealthEducationForm language currentDate maybeDiagnosis form =
+    maybeDiagnosis
+        |> Maybe.map
+            (\diagnosis ->
+                div [ class "ui form health-education" ]
+                    [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                    , div [ class "label" ]
+                        [ text <| translate language Translate.ProvidedPreventionEducationQuestion
+                        , text " "
+                        , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
+                        , text "?"
+                        ]
+                    , viewBoolInput
+                        language
+                        form.educationForDiagnosis
+                        SetProvidedEducationForDiagnosis
+                        "education-for-diagnosis"
+                        Nothing
+                    ]
+            )
+        |> Maybe.withDefault emptyNode
 
 
 

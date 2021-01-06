@@ -1672,6 +1672,7 @@ encodeTreatmentOngoingValue value =
     , ( "reason_for_not_taking", encodeReasonForNotTakingSign value.reasonForNotTaking )
     , ( "missed_doses", int value.missedDoses )
     , ( "adverse_events", encodeEverySet encodeAdverseEvent value.adverseEvents )
+    , ( "deleted", bool False )
     , ( "type", string "treatment_ongoing" )
     ]
 
@@ -1750,6 +1751,7 @@ encodeAcuteIllnessDangerSigns =
 encodeAcuteIllnessDangerSignsValue : EverySet AcuteIllnessDangerSign -> List ( String, Value )
 encodeAcuteIllnessDangerSignsValue value =
     [ ( "acute_illness_danger_signs", encodeEverySet encodeAcuteIllnessDangerSign value )
+    , ( "deleted", bool False )
     , ( "type", string "acute_illness_danger_signs" )
     ]
 
@@ -1797,3 +1799,27 @@ encodeAcuteIllnessNutrition =
 encodeAcuteIllnessNutritionValue : EverySet ChildNutritionSign -> List ( String, Value )
 encodeAcuteIllnessNutritionValue nutritions =
     encodeNutritionValueWithType "acute_illness_nutrition" nutritions
+
+
+encodeHealthEducation : HealthEducation -> List ( String, Value )
+encodeHealthEducation =
+    encodeAcuteIllnessMeasurement encodeHealthEducationValue
+
+
+encodeHealthEducationValue : EverySet HealthEducationSign -> List ( String, Value )
+encodeHealthEducationValue value =
+    [ ( "health_education_signs", encodeEverySet encodeHealthEducationSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "health_education" )
+    ]
+
+
+encodeHealthEducationSign : HealthEducationSign -> Value
+encodeHealthEducationSign sign =
+    string <|
+        case sign of
+            MalariaPrevention ->
+                "education-for-diagnosis"
+
+            NoHealthEducationSigns ->
+                "none"

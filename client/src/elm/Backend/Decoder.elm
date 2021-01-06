@@ -92,6 +92,9 @@ decodeRevision =
                     "health_center" ->
                         decodeWithUuid HealthCenterRevision decodeHealthCenter
 
+                    "health_education" ->
+                        decodeWithUuid HealthEducationRevision decodeHealthEducation
+
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight
 

@@ -71,10 +71,12 @@ type Msg
     | SaveCall114 PersonId (Maybe ( Call114Id, Call114 )) (Maybe NextStepsTask)
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
-    | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC ))
+    | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC )) (Maybe NextStepsTask)
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionMedicationNonAdministrationReason (Maybe MedicationNonAdministrationReason) MedicationDistributionSign MedicationNonAdministrationReason
-    | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution ))
+    | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution )) (Maybe NextStepsTask)
+    | SetProvidedEducationForDiagnosis Bool
+    | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation )) (Maybe NextStepsTask)
       -- ONGOIN TREATMENT
     | SetActiveOngoingTreatmentTask OngoingTreatmentTask
     | SetOngoingTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
@@ -335,6 +337,7 @@ type alias NextStepsData =
     , call114Form : Call114Form
     , sendToHCForm : SendToHCForm
     , medicationDistributionForm : MedicationDistributionForm
+    , healthEducationForm : HealthEducationForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -346,6 +349,7 @@ emptyNextStepsData =
     , call114Form = emptyCall114Form
     , sendToHCForm = SendToHCForm Nothing Nothing
     , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
+    , healthEducationForm = HealthEducationForm Nothing
     , activeTask = Nothing
     }
 
@@ -356,6 +360,7 @@ type NextStepsTask
     | NextStepsCall114
     | NextStepsMedicationDistribution
     | NextStepsSendToHC
+    | NextStepsHealthEducation
 
 
 type alias IsolationForm =
@@ -410,6 +415,11 @@ type alias MedicationDistributionForm =
     , zinc : Maybe Bool
     , lemonJuiceOrHoney : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
+    }
+
+
+type alias HealthEducationForm =
+    { educationForDiagnosis : Maybe Bool
     }
 
 

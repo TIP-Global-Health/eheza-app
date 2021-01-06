@@ -91,6 +91,16 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create health_education content'.
+  $permissions['create health_education content'] = array(
+    'name' => 'create health_education content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create isolation content'.
   $permissions['create isolation content'] = array(
     'name' => 'create isolation content',
@@ -263,6 +273,15 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any health_education content'.
+  $permissions['delete any health_education content'] = array(
+    'name' => 'delete any health_education content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any isolation content'.
   $permissions['delete any isolation content'] = array(
     'name' => 'delete any isolation content',
@@ -419,6 +438,15 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'delete own hc_contact content'.
   $permissions['delete own hc_contact content'] = array(
     'name' => 'delete own hc_contact content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own health_education content'.
+  $permissions['delete own health_education content'] = array(
+    'name' => 'delete own health_education content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -588,6 +616,16 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'edit any hc_contact content'.
   $permissions['edit any hc_contact content'] = array(
     'name' => 'edit any hc_contact content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any health_education content'.
+  $permissions['edit any health_education content'] = array(
+    'name' => 'edit any health_education content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -768,6 +806,16 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'edit own hc_contact content'.
   $permissions['edit own hc_contact content'] = array(
     'name' => 'edit own hc_contact content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own health_education content'.
+  $permissions['edit own health_education content'] = array(
+    'name' => 'edit own health_education content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

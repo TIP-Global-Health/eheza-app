@@ -63,6 +63,7 @@ type BackendAuthorityEntity
     | BackendAuthorityDashboardStats (BackendEntity DashboardStats)
     | BackendAuthorityExposure (BackendEntity Exposure)
     | BackendAuthorityFamilyPlanning (BackendEntity FamilyPlanning)
+    | BackendAuthorityHealthEducation (BackendEntity HealthEducation)
     | BackendAuthorityHCContact (BackendEntity HCContact)
     | BackendAuthorityHeight (BackendEntity Height)
     | BackendAuthorityIndividualParticipant (BackendEntity IndividualEncounterParticipant)

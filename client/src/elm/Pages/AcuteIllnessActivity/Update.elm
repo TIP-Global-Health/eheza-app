@@ -1192,10 +1192,10 @@ update currentDate id db msg model =
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
-                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.map (\task -> ( [], Just task ))
                         |> Maybe.withDefault
                             ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
-                            , NextStepsIsolation
+                            , Nothing
                             )
 
                 appMsgs =
@@ -1213,7 +1213,7 @@ update currentDate id db msg model =
 
                 updatedData =
                     model.nextStepsData
-                        |> (\data -> { data | activeTask = Just nextTask })
+                        |> (\data -> { data | activeTask = nextTask })
             in
             ( { model | nextStepsData = updatedData }
             , Cmd.none
@@ -1412,7 +1412,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveSendToHC personId saved ->
+        SaveSendToHC personId saved nextTask_ ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1420,20 +1420,32 @@ update currentDate id db msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], Just task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+                            , Nothing
+                            )
+
                 appMsgs =
                     model.nextStepsData.sendToHCForm
                         |> toSendToHCValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->
-                                [ Backend.AcuteIllnessEncounter.Model.SaveSendToHC personId measurementId value
+                                (Backend.AcuteIllnessEncounter.Model.SaveSendToHC personId measurementId value
                                     |> Backend.Model.MsgAcuteIllnessEncounter id
                                     |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
-                                ]
+                                )
+                                    :: backToActivitiesMsg
                             )
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = nextTask })
             in
-            ( model
+            ( { model | nextStepsData = updatedData }
             , Cmd.none
             , appMsgs
             )
@@ -1488,7 +1500,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveMedicationDistribution personId saved ->
+        SaveMedicationDistribution personId saved nextTask_ ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1496,20 +1508,32 @@ update currentDate id db msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], Just task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+                            , Nothing
+                            )
+
                 appMsgs =
                     model.nextStepsData.medicationDistributionForm
                         |> toMedicationDistributionValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->
-                                [ Backend.AcuteIllnessEncounter.Model.SaveMedicationDistribution personId measurementId value
+                                (Backend.AcuteIllnessEncounter.Model.SaveMedicationDistribution personId measurementId value
                                     |> Backend.Model.MsgAcuteIllnessEncounter id
                                     |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
-                                ]
+                                )
+                                    :: backToActivitiesMsg
                             )
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = nextTask })
             in
-            ( model
+            ( { model | nextStepsData = updatedData }
             , Cmd.none
             , appMsgs
             )
@@ -1746,6 +1770,61 @@ update currentDate id db msg model =
                             )
             in
             ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetProvidedEducationForDiagnosis value ->
+            let
+                form =
+                    model.nextStepsData.healthEducationForm
+
+                updatedForm =
+                    { form | educationForDiagnosis = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | healthEducationForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHealthEducation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], Just task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+                            , Nothing
+                            )
+
+                appMsgs =
+                    model.nextStepsData.healthEducationForm
+                        |> toHealthEducationValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.AcuteIllnessEncounter.Model.SaveHealthEducation personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | nextStepsData = updatedData }
             , Cmd.none
             , appMsgs
             )

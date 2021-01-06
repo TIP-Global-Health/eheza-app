@@ -586,3 +586,9 @@ acuteIllnessNutritionEndpoint : ReadWriteEndPoint Error AcuteIllnessNutritionId 
 acuteIllnessNutritionEndpoint =
     swEndpoint "nodes/acute_illness_nutrition" decodeAcuteIllnessNutrition
         |> withValueEncoder (object << encodeAcuteIllnessNutrition)
+
+
+healthEducationEndpoint : ReadWriteEndPoint Error HealthEducationId HealthEducation HealthEducation ()
+healthEducationEndpoint =
+    swEndpoint "nodes/health_education" decodeHealthEducation
+        |> withValueEncoder (object << encodeHealthEducation)

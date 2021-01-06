@@ -22,7 +22,16 @@ import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
-import Pages.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisToMaybe, generateAssembledData, resolveNextStepByDiagnosis, sendToHCOnSubsequentVisit)
+import Pages.AcuteIllnessEncounter.Utils
+    exposing
+        ( acuteIllnessDiagnosisToMaybe
+        , dangerSignPresentOnSubsequentVisit
+        , generateAssembledData
+        , muacRedOnSubsequentVisit
+        , noImprovementOnSubsequentVisit
+        , resolveNextStepFirstEncounter
+        , respiratoryRateElevated
+        )
 import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
 import Pages.AcuteIllnessProgressReport.Model exposing (..)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
@@ -48,7 +57,7 @@ view : Language -> NominalDate -> AcuteIllnessEncounterId -> ModelIndexedDb -> M
 view language currentDate id db model =
     let
         data =
-            generateAssembledData id db
+            generateAssembledData currentDate id db
     in
     viewWebData language (viewContent language currentDate id model) identity data
 
@@ -84,7 +93,7 @@ viewContent language currentDate id model data =
                     |> Maybe.withDefault []
 
         ( _, pendingActivities ) =
-            splitActivities currentDate data
+            splitActivities currentDate isFirstEncounter data
 
         endEncounterDialog =
             if model.showEndEncounetrDialog then
@@ -203,22 +212,50 @@ viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subs
                 |> Maybe.map
                     (\diagnosis ->
                         let
-                            suffixText =
+                            diagnosisText =
+                                text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis
+
+                            ( diagnosisSuffix, additionalObservations ) =
                                 if isFirstEncounter then
-                                    []
+                                    ( [], [] )
 
                                 else
                                     let
                                         isImproving =
-                                            not <| sendToHCOnSubsequentVisit currentDate data.person data.measurements
+                                            not <| noImprovementOnSubsequentVisit currentDate data.person data.measurements
+
+                                        respiratoryDistress =
+                                            if respiratoryRateElevated currentDate data.person data.measurements then
+                                                p [] [ text <| translate language Translate.RespiratoryDistress ]
+
+                                            else
+                                                emptyNode
+
+                                        severeAcuteMalnutrition =
+                                            if muacRedOnSubsequentVisit data.measurements then
+                                                p [] [ text <| translate language Translate.SevereAcuteMalnutrition ]
+
+                                            else
+                                                emptyNode
+
+                                        malnutritionWithComplications =
+                                            if dangerSignPresentOnSubsequentVisit data.measurements then
+                                                p [] [ text <| translate language Translate.MalnutritionWithComplications ]
+
+                                            else
+                                                emptyNode
                                     in
-                                    [ text " - ["
-                                    , text <| translate language <| Translate.ConditionImproving isImproving
-                                    , text "]"
-                                    ]
+                                    ( [ text " - ["
+                                      , text <| translate language <| Translate.ConditionImproving isImproving
+                                      , text "]"
+                                      ]
+                                    , [ respiratoryDistress
+                                      , severeAcuteMalnutrition
+                                      , malnutritionWithComplications
+                                      ]
+                                    )
                         in
-                        (text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis)
-                            :: suffixText
+                        ((p [] <| diagnosisText :: diagnosisSuffix) :: additionalObservations)
                             |> div [ class "diagnosis" ]
                     )
                 |> Maybe.withDefault emptyNode
@@ -744,7 +781,7 @@ viewActionsTakenPane language currentDate firstEncounterData subsequentEncounter
             firstEncounterData
                 |> Maybe.map
                     (\( date, measurements ) ->
-                        case resolveNextStepByDiagnosis date data.person data.diagnosis of
+                        case resolveNextStepFirstEncounter date data of
                             -- This is COVID19 case
                             Just NextStepsIsolation ->
                                 viewActionsTakenIsolationAndContactHC language date measurements
@@ -760,6 +797,7 @@ viewActionsTakenPane language currentDate firstEncounterData subsequentEncounter
                     )
                 |> Maybe.withDefault emptyNode
 
+        -- @todo: expand for other options
         actionsTakenSubsequentEncounters =
             subsequentEncountersData
                 |> List.map

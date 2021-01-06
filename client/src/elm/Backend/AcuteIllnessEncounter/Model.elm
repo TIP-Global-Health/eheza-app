@@ -50,6 +50,7 @@ type alias Model =
     , saveTreatmentOngoing : WebData ()
     , saveAcuteIllnessDangerSigns : WebData ()
     , saveNutrition : WebData ()
+    , saveHealthEducation : WebData ()
     }
 
 
@@ -74,6 +75,7 @@ emptyModel =
     , saveTreatmentOngoing = NotAsked
     , saveAcuteIllnessDangerSigns = NotAsked
     , saveNutrition = NotAsked
+    , saveHealthEducation = NotAsked
     }
 
 
@@ -132,3 +134,5 @@ type Msg
     | HandleSavedAcuteIllnessDangerSigns (WebData ())
     | SaveNutrition PersonId (Maybe AcuteIllnessNutritionId) (EverySet ChildNutritionSign)
     | HandleSavedNutrition (WebData ())
+    | SaveHealthEducation PersonId (Maybe HealthEducationId) (EverySet HealthEducationSign)
+    | HandleSavedHealthEducation (WebData ())

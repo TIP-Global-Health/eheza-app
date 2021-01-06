@@ -526,6 +526,7 @@ type TranslationId
     | MakeSureYouAreConnected
     | MalariaRapidDiagnosticTest
     | MalariaRapidTestResult MalariaRapidTestResult
+    | MalnutritionWithComplications
     | MaritalStatusLabel
     | MaritalStatus MaritalStatus
     | MeasurementNoChange
@@ -678,6 +679,7 @@ type TranslationId
     | PrenatalParticipant
     | PrenatalParticipants
     | PreTermPregnancy
+    | ProvidedPreventionEducationQuestion
     | Province
     | ReasonForCSection
     | ReasonForNotIsolating ReasonForNotIsolating
@@ -715,6 +717,7 @@ type TranslationId
     | ReportCompleted { pending : Int, completed : Int }
     | ResolveMonth Bool Month
     | ResolveMonthYY Int Bool Month
+    | RespiratoryDistress
     | RespiratoryRate
     | ResponsePeriod ResponsePeriod
     | ResultOfContacting114 Recommendation114
@@ -726,6 +729,7 @@ type TranslationId
     | RiskFactors
     | Save
     | SaveAndNext
+    | SaveAndRecordOutcome
     | SaveError
     | Search
     | SearchByName
@@ -766,6 +770,7 @@ type TranslationId
     | ServiceWorkerRegErr
     | ServiceWorkerRegSuccess
     | ServiceWorkerStatus
+    | SevereAcuteMalnutrition
     | SevereHemorrhagingPreviousDelivery
     | SignOnDoorPostedQuestion
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
@@ -3548,6 +3553,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ikizamini nticyakozwe"
                     }
 
+        MalnutritionWithComplications ->
+            { english = "Malnutrition with complications"
+            , kinyarwanda = Nothing
+            }
+
         MaritalStatusLabel ->
             { english = "Marital Status"
             , kinyarwanda = Just "Irangamimerere"
@@ -3982,6 +3992,11 @@ translationSet trans =
                 NextStepsSendToHC ->
                     { english = "Send to Health Center"
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+                    }
+
+                NextStepsHealthEducation ->
+                    { english = "Health Eduacation"
+                    , kinyarwanda = Nothing
                     }
 
         No ->
@@ -4709,6 +4724,11 @@ translationSet trans =
             , kinyarwanda = Just "Umubare w'abavutse ari bazima badashyitse"
             }
 
+        ProvidedPreventionEducationQuestion ->
+            { english = "Have you provided health education (or anticipatory guidance) for the prevention of"
+            , kinyarwanda = Nothing
+            }
+
         Province ->
             { english = "Province"
             , kinyarwanda = Just "Intara"
@@ -5007,6 +5027,11 @@ translationSet trans =
         ResolveMonthYY year short month ->
             translateMonthYY month year short
 
+        RespiratoryDistress ->
+            { english = "Respiratory Distress"
+            , kinyarwanda = Nothing
+            }
+
         RespiratoryRate ->
             { english = "Respiratory Rate"
             , kinyarwanda = Just "Inshuro ahumeka"
@@ -5231,6 +5256,11 @@ translationSet trans =
             , kinyarwanda = Just "Bika & ukomeze"
             }
 
+        SaveAndRecordOutcome ->
+            { english = "Save & Record Outcome"
+            , kinyarwanda = Nothing
+            }
+
         SaveError ->
             { english = "Save Error"
             , kinyarwanda = Just "Kubika error (ikosa mu kubika)"
@@ -5429,6 +5459,11 @@ translationSet trans =
         ServiceWorkerStatus ->
             { english = "Deployment Status"
             , kinyarwanda = Just "Ibijyanye no kuvugurura no kongerera ubushobozi sisiteme"
+            }
+
+        SevereAcuteMalnutrition ->
+            { english = "Severe acute malnutrition"
+            , kinyarwanda = Nothing
             }
 
         SevereHemorrhagingPreviousDelivery ->

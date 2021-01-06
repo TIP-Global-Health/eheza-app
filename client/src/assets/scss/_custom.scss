@@ -1926,6 +1926,21 @@ input::placeholder {
   }
 }
 
+.icon-next-steps-health-education {
+  .active &:after {
+    background-image: url(#{$img-path}icon-health-education-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-health-education-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-position: 80% 55%;
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-health-education-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
 // Lists
 
 .ui.list {

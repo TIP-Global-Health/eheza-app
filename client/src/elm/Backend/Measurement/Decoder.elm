@@ -125,6 +125,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "treatment_ongoing" (decodeHead decodeTreatmentOngoing) Nothing
         |> optional "acute_illness_danger_signs" (decodeHead decodeAcuteIllnessDangerSigns) Nothing
         |> optional "acute_illness_nutrition" (decodeHead decodeAcuteIllnessNutrition) Nothing
+        |> optional "health_education" (decodeHead decodeHealthEducation) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1930,3 +1931,29 @@ decodeAcuteIllnessNutrition =
     decodeEverySet decodeChildNutritionSign
         |> field "nutrition_signs"
         |> decodeAcuteIllnessMeasurement
+
+
+decodeHealthEducation : Decoder HealthEducation
+decodeHealthEducation =
+    decodeEverySet decodeHealthEducationSign
+        |> field "health_education_signs"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeHealthEducationSign : Decoder HealthEducationSign
+decodeHealthEducationSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "education-for-diagnosis" ->
+                        succeed MalariaPrevention
+
+                    "none" ->
+                        succeed NoHealthEducationSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized HealthEducationSign"
+            )

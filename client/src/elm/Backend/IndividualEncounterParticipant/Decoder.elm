@@ -92,7 +92,7 @@ decodeDeliveryLocation =
 acuteIllnessOutcomeFromString : String -> Maybe AcuteIllnessOutcome
 acuteIllnessOutcomeFromString outcome =
     case outcome of
-        "lillness-resolved" ->
+        "illness-resolved" ->
             Just OutcomeIllnessResolved
 
         "lost-to-follow-up" ->
