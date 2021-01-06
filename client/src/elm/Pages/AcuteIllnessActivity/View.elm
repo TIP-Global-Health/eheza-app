@@ -1579,10 +1579,10 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                                     |> Maybe.map (Tuple.second >> .value)
                                     |> call114FormWithDefault data.call114Form
                         in
-                        if talkedTo114 measurements && call114Form.called114 == Just False then
+                        if call114Form.called114 == Just False then
                             [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC ]
 
-                        else if (not <| talkedTo114 measurements) && call114Form.called114 == Just True then
+                        else if call114Form.called114 == Just True then
                             [ NextStepsIsolation, NextStepsCall114 ]
 
                         else

@@ -498,10 +498,10 @@ activityCompleted currentDate isFirstEncounter data activity =
             if isFirstEncounter then
                 case nextStepsTasks of
                     [ NextStepsIsolation, NextStepsCall114 ] ->
-                        isJust measurements.isolation && isJust measurements.hcContact
+                        isJust measurements.isolation && isJust measurements.call114
 
                     [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC ] ->
-                        isJust measurements.isolation && isJust measurements.hcContact && isJust measurements.hcContact
+                        isJust measurements.isolation && isJust measurements.call114 && isJust measurements.hcContact
 
                     [ NextStepsMedicationDistribution ] ->
                         isJust measurements.medicationDistribution
