@@ -140,7 +140,7 @@ type ChartPhrase
     = AgeCompletedMonthsYears
     | Birth
     | BirthToTwoYears
-    | TwoToFiveYears
+    | BirthToFiveYears
     | FiveToNineteenYears
     | FiveToTenYears
     | HeightCm
@@ -1233,8 +1233,13 @@ translationSet trans =
                     }
 
                 OutcomeLostToFollowUp ->
-                    { english = "Lost to Follow Up (or Moved out of CA?)"
+                    { english = "Lost to Follow Up"
                     , kinyarwanda = Just "Yaburiwe irengero"
+                    }
+
+                OutcomeMovedOutsideCA ->
+                    { english = "Moved outside the catchment area"
+                    , kinyarwanda = Just "Yimukiye ahandi"
                     }
 
                 OutcomePatientDied ->
@@ -6408,9 +6413,9 @@ translateChartPhrase phrase =
             , kinyarwanda = Just "kuvuka (Kuva avutse)  kugeza ku myaka 2 Z-score"
             }
 
-        TwoToFiveYears ->
-            { english = "2 to 5 years (z-scores)"
-            , kinyarwanda = Just "Imyaka 2-5"
+        BirthToFiveYears ->
+            { english = "0 to 5 years (z-scores)"
+            , kinyarwanda = Just "Imyaka 0-5"
             }
 
         FiveToNineteenYears ->
@@ -6474,12 +6479,12 @@ translateChartPhrase phrase =
             }
 
         WeightForLengthBoys ->
-            { english = "Weight-for-length BOYS"
+            { english = "Weight-for-height BOYS"
             , kinyarwanda = Just "Ibiro ku Uburebure umuhungu"
             }
 
         WeightForLengthGirls ->
-            { english = "Weight-for-length GIRLS"
+            { english = "Weight-for-height GIRLS"
             , kinyarwanda = Just "ibiro ku uburebure umukobwa"
             }
 
