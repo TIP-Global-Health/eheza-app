@@ -30,6 +30,7 @@ import Pages.AcuteIllnessEncounter.Update
 import Pages.AcuteIllnessProgressReport.Model
 import Pages.AcuteIllnessProgressReport.Update
 import Pages.Clinics.Update
+import Pages.Dashboard.Model
 import Pages.Dashboard.Update
 import Pages.Device.Model
 import Pages.Device.Update
@@ -187,10 +188,6 @@ update msg model =
         loggedInData =
             getLoggedInData model
 
-        nurseId =
-            loggedInData
-                |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
-
         isChw =
             loggedInData
                 |> Maybe.map (Tuple.second >> .nurse >> Tuple.second >> isCommunityHealthWorker)
@@ -199,6 +196,10 @@ update msg model =
     case msg of
         MsgIndexedDb subMsg ->
             let
+                nurseId =
+                    loggedInData
+                        |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
+
                 ( subModel, subCmd, extraMsgs ) =
                     Backend.Update.updateIndexedDb currentDate nurseId model.healthCenterId isChw subMsg model.indexedDb
 
@@ -620,12 +621,25 @@ update msg model =
 
                 extraMsgs =
                     [ SetHealthCenter maybeHealthCenterId ]
+
+                cacheVillageCmd =
+                    maybeVillageId
+                        |> Maybe.map fromEntityUuid
+                        |> Maybe.withDefault ""
+                        |> cacheVillage
+
+                ( updatedModel, cmd ) =
+                    updateLoggedIn
+                        (\loggedId ->
+                            ( { loggedId | dashboardPage = Pages.Dashboard.Model.emptyModel maybeVillageId }
+                            , cacheVillageCmd
+                            , []
+                            )
+                        )
+                        { model | villageId = maybeVillageId }
             in
-            ( { model | villageId = maybeVillageId }
-            , maybeVillageId
-                |> Maybe.map fromEntityUuid
-                |> Maybe.withDefault ""
-                |> cacheVillage
+            ( updatedModel
+            , cmd
             )
                 |> sequence update extraMsgs
 
@@ -697,7 +711,7 @@ update msg model =
         SetLoggedIn nurse ->
             updateConfigured
                 (\configured ->
-                    ( { configured | loggedIn = RemoteData.map (emptyLoggedInModel model.villageId) nurse }
+                    ( { configured | loggedIn = RemoteData.map emptyLoggedInModel nurse }
                     , Cmd.none
                     , []
                     )

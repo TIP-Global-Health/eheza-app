@@ -8,6 +8,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
+import Maybe.Extra exposing (isJust)
 import Pages.Page exposing (DashboardPage(..), Page(..))
 
 
@@ -127,11 +128,12 @@ type alias Model =
     }
 
 
-emptyModel : Maybe VillageId -> Nurse -> Model
-emptyModel maybeSelectedVillage nurse =
+emptyModel : Maybe VillageId -> Model
+emptyModel maybeSelectedVillage =
     let
         ( programType, selectedVillage ) =
-            if isCommunityHealthWorker nurse then
+            if isJust maybeSelectedVillage then
+                -- This is CHW Nurse, as on CHW work with villages.
                 ( FilterProgramCommunity
                 , maybeSelectedVillage
                 )
