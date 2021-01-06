@@ -1161,7 +1161,7 @@ translationSet trans =
                     }
 
                 DiagnosisMalariaUncomplicated ->
-                    { english = "Malaria  Without Complications"
+                    { english = "Malaria Without Complications"
                     , kinyarwanda = Just "Afite Malariya yoroheje"
                     }
 
@@ -1229,7 +1229,7 @@ translationSet trans =
             case outcome of
                 OutcomeIllnessResolved ->
                     { english = "Illness Resolved"
-                    , kinyarwanda = Just " Indwara Yarakize"
+                    , kinyarwanda = Just "Indwara Yarakize"
                     }
 
                 OutcomeLostToFollowUp ->
