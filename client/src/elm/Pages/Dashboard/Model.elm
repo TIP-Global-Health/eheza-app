@@ -116,8 +116,8 @@ caseManagementSubFilters mainFilter =
 
 type alias Model =
     { period : FilterPeriod
-    , programType : FilterProgramType
-    , selectedVillage : Maybe VillageId
+    , programTypeFilter : FilterProgramType
+    , selectedVillageFilter : Maybe VillageId
     , beneficiariesGender : FilterGender
     , currentBeneficiariesChartsFilter : DashboardFilter
     , currentBeneficiariesIncidenceChartsFilter : DashboardFilter
@@ -131,7 +131,7 @@ type alias Model =
 emptyModel : Maybe VillageId -> Model
 emptyModel maybeSelectedVillage =
     let
-        ( programType, selectedVillage ) =
+        ( programTypeFilter, selectedVillage ) =
             if isJust maybeSelectedVillage then
                 -- This is CHW Nurse, as on CHW work with villages.
                 ( FilterProgramCommunity
@@ -144,8 +144,8 @@ emptyModel maybeSelectedVillage =
                 )
     in
     { period = OneYear
-    , programType = programType
-    , selectedVillage = selectedVillage
+    , programTypeFilter = programTypeFilter
+    , selectedVillageFilter = selectedVillage
     , beneficiariesGender = Boys
     , currentBeneficiariesChartsFilter = Stunting
     , currentBeneficiariesIncidenceChartsFilter = Stunting

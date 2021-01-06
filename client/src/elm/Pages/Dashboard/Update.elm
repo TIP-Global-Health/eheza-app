@@ -63,8 +63,8 @@ update msg subPage model =
                 updatedModel =
                     filterProgramTypeFromString string
                         |> Maybe.map
-                            (\programType ->
-                                { model | programType = programType, selectedVillage = Nothing }
+                            (\programTypeFilter ->
+                                { model | programTypeFilter = programTypeFilter, selectedVillageFilter = Nothing }
                             )
                         |> Maybe.withDefault model
             in
@@ -77,10 +77,10 @@ update msg subPage model =
             let
                 updatedModel =
                     if string == "" then
-                        { model | selectedVillage = Nothing }
+                        { model | selectedVillageFilter = Nothing }
 
                     else
-                        { model | selectedVillage = Just (toEntityUuid string) }
+                        { model | selectedVillageFilter = Just (toEntityUuid string) }
             in
             ( updatedModel
             , Cmd.none

@@ -137,7 +137,7 @@ viewMainPage language currentDate isChw nurse stats db model =
                 |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
 
         links =
-            case model.programType of
+            case model.programTypeFilter of
                 FilterProgramFbf ->
                     div [ class "sixteen wide column" ]
                         [ viewDashboardPagesLinks language
@@ -170,7 +170,7 @@ viewMainPage language currentDate isChw nurse stats db model =
 
 caseManagementApplyBreakdownFilters : Dict VillageId (List PersonIdentifier) -> Dict ProgramType (List CaseManagement) -> Model -> List CaseManagement
 caseManagementApplyBreakdownFilters villagesWithResidents dict model =
-    case model.programType of
+    case model.programTypeFilter of
         FilterAllPrograms ->
             let
                 achi =
@@ -214,12 +214,12 @@ caseManagementApplyBreakdownFilters villagesWithResidents dict model =
         FilterProgramCommunity ->
             let
                 villageResidents =
-                    model.selectedVillage
+                    model.selectedVillageFilter
                         |> Maybe.andThen (\village -> Dict.get village villagesWithResidents)
                         |> Maybe.withDefault []
 
                 villageFilterFunc caseManagement =
-                    if isJust model.selectedVillage then
+                    if isJust model.selectedVillageFilter then
                         List.member caseManagement.identifier villageResidents
 
                     else
@@ -260,7 +260,7 @@ totalEncountersApplyBreakdownFilters data model =
         emptyPeriods =
             Periods 0 0
     in
-    case model.programType of
+    case model.programTypeFilter of
         FilterAllPrograms ->
             let
                 achi =
@@ -310,7 +310,7 @@ totalEncountersApplyBreakdownFilters data model =
         FilterProgramCommunity ->
             let
                 dict =
-                    case model.selectedVillage of
+                    case model.selectedVillageFilter of
                         Just village ->
                             Dict.get village data.villages
                                 |> Maybe.withDefault Dict.empty
@@ -558,7 +558,7 @@ generateCaseNutritionNewCases currentDate caseNutrition =
 
 viewStatsPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> HealthCenterId -> ModelIndexedDb -> Model -> Html Msg
 viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
-    if model.programType /= FilterProgramFbf then
+    if model.programTypeFilter /= FilterProgramFbf then
         emptyNode
 
     else
@@ -654,7 +654,7 @@ mapMalnorishedByMonth mappedMonth caseManagement =
 
 viewCaseManagementPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
 viewCaseManagementPage language currentDate stats model =
-    if model.programType /= FilterProgramFbf then
+    if model.programTypeFilter /= FilterProgramFbf then
         emptyNode
 
     else
@@ -830,7 +830,7 @@ viewMonthCell ( month, cellData ) =
 viewFiltersPane : Language -> DashboardPage -> List FilterPeriod -> Model -> Html Msg
 viewFiltersPane language page filterPeriodsPerPage model =
     let
-        programTypeFilterButton =
+        programTypeFilterFilterButton =
             if page == MainPage then
                 div
                     [ class "primary ui button program-type-filter"
@@ -856,7 +856,7 @@ viewFiltersPane language page filterPeriodsPerPage model =
     in
     div [ class "ui segment filters" ] <|
         List.map renderButton filterPeriodsPerPage
-            ++ [ programTypeFilterButton ]
+            ++ [ programTypeFilterFilterButton ]
 
 
 viewGoodNutrition : Language -> List CaseNutritionTotal -> List CaseNutritionTotal -> Html Msg
@@ -1809,7 +1809,7 @@ viewStatsTableModal language title data =
 viewFiltersModal : Language -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
 viewFiltersModal language isChw nurse stats db model =
     let
-        programTypeInputSection =
+        programTypeFilterInputSection =
             if isChw then
                 -- For CHW nurses, program type is always set to FilterProgramCommunity.
                 []
@@ -1825,15 +1825,15 @@ viewFiltersModal language isChw nurse stats db model =
                         , FilterProgramCommunity
                         ]
 
-                    programTypeInput =
+                    programTypeFilterInput =
                         allOptions
                             |> List.map
-                                (\programType ->
+                                (\programTypeFilter ->
                                     option
-                                        [ value (filterProgramTypeToString programType)
-                                        , selected (model.programType == programType)
+                                        [ value (filterProgramTypeToString programTypeFilter)
+                                        , selected (model.programTypeFilter == programTypeFilter)
                                         ]
-                                        [ text <| translate language <| Translate.Dashboard <| Translate.FilterProgramType programType ]
+                                        [ text <| translate language <| Translate.Dashboard <| Translate.FilterProgramType programTypeFilter ]
                                 )
                             |> select
                                 [ onInput SetFilterProgramType
@@ -1841,11 +1841,11 @@ viewFiltersModal language isChw nurse stats db model =
                                 ]
                 in
                 [ div [ class "helper" ] [ text <| translate language <| Translate.Dashboard Translate.ProgramType ]
-                , programTypeInput
+                , programTypeFilterInput
                 ]
 
         villageInputSection =
-            if model.programType /= FilterProgramCommunity then
+            if model.programTypeFilter /= FilterProgramCommunity then
                 []
 
             else
@@ -1870,7 +1870,7 @@ viewFiltersModal language isChw nurse stats db model =
                                         options
 
                                     else
-                                        option [ value "", selected (model.selectedVillage == Nothing) ] [ text "" ]
+                                        option [ value "", selected (model.selectedVillageFilter == Nothing) ] [ text "" ]
                                             :: options
 
                                 options =
@@ -1882,7 +1882,7 @@ viewFiltersModal language isChw nurse stats db model =
                                                         (\village ->
                                                             option
                                                                 [ value (fromEntityUuid villageId)
-                                                                , selected (model.selectedVillage == Just villageId)
+                                                                , selected (model.selectedVillageFilter == Just villageId)
                                                                 ]
                                                                 [ text village.name ]
                                                         )
@@ -1902,7 +1902,7 @@ viewFiltersModal language isChw nurse stats db model =
                     |> Maybe.withDefault []
 
         closeButtonDisabled =
-            (model.programType == FilterProgramCommunity) && isNothing model.selectedVillage
+            (model.programTypeFilter == FilterProgramCommunity) && isNothing model.selectedVillageFilter
 
         closeButtonAttributes =
             if closeButtonDisabled then
@@ -1918,7 +1918,7 @@ viewFiltersModal language isChw nurse stats db model =
         [ div [ class "header" ]
             [ text <| translate language <| Translate.Dashboard Translate.Filters ]
         , div [ class "content" ] <|
-            programTypeInputSection
+            programTypeFilterInputSection
                 ++ villageInputSection
         , div [ class "actions" ]
             [ button
