@@ -271,6 +271,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
  *
  * @param int $health_center_id
  *   The health center node ID.
+ *
  * @return array
  *   List of villages UUIDs with IDs of its residents.
  *
@@ -621,7 +622,7 @@ function hedley_stats_get_total_encounters($health_center_id, $villages_with_res
  *
  * @throws \Exception
  */
-function hedley_stats_get_total_encounters_for_residents($health_center_id, $patients_ids = []) {
+function hedley_stats_get_total_encounters_for_residents($health_center_id, array $patients_ids = []) {
   $clinic_types = hedley_stats_get_all_clinic_types();
 
   $result = [];
@@ -649,7 +650,7 @@ function hedley_stats_get_total_encounters_for_residents($health_center_id, $pat
  *
  * @throws \Exception
  */
-function hedley_stats_get_total_encounters_by_clinic_type($health_center_id, $clinic_type, $patients_ids = []) {
+function hedley_stats_get_total_encounters_by_clinic_type($health_center_id, $clinic_type, array $patients_ids = []) {
   $result = [
     'last_year' => 0,
     'this_year' => 0,
@@ -696,7 +697,7 @@ function hedley_stats_get_total_encounters_by_clinic_type($health_center_id, $cl
  *
  * @throws \Exception
  */
-function hedley_stats_get_total_nutrition_encounters($health_center_id, $patients_ids = []) {
+function hedley_stats_get_total_nutrition_encounters($health_center_id, array $patients_ids = []) {
   $result = [
     'last_year' => 0,
     'this_year' => 0,
