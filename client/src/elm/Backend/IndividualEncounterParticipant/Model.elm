@@ -82,6 +82,7 @@ allPregnancyOutcome =
 type AcuteIllnessOutcome
     = OutcomeIllnessResolved
     | OutcomeLostToFollowUp
+    | OutcomeMovedOutsideCA
     | OutcomePatientDied
     | OutcomeReferredToHC
     | OutcomeOther
@@ -91,6 +92,7 @@ allAcuteIllnessOutcome : List AcuteIllnessOutcome
 allAcuteIllnessOutcome =
     [ OutcomeIllnessResolved
     , OutcomeLostToFollowUp
+    , OutcomeMovedOutsideCA
     , OutcomePatientDied
     , OutcomeReferredToHC
     , OutcomeOther
