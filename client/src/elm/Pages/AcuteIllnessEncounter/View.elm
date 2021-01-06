@@ -158,11 +158,13 @@ viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis d
         [ div [ class "content" ] <|
             [ div [ class "popup-heading-wrapper" ]
                 [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
-            , div [ class "popup-title" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
-            , respiratoryDistress
-            , severeAcuteMalnutrition
-            , malnutritionWithComplications
-            , div [ class "popup-title" ] [ text <| translate language <| Translate.ConditionImproving isImproving ]
+            , div [ class "popup-title" ]
+                [ p [] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
+                , respiratoryDistress
+                , severeAcuteMalnutrition
+                , malnutritionWithComplications
+                , p [] [ text <| translate language <| Translate.ConditionImproving isImproving ]
+                ]
             ]
         , div
             [ class "actions" ]
