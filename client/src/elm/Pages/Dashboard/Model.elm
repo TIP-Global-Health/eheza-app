@@ -2,8 +2,10 @@ module Pages.Dashboard.Model exposing (..)
 
 import AssocList exposing (Dict)
 import Backend.Dashboard.Model exposing (ParticipantStats)
-import Backend.Entities exposing (VillageId)
+import Backend.Entities exposing (HealthCenterId, VillageId)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (DashboardPage(..), Page(..))
@@ -125,11 +127,23 @@ type alias Model =
     }
 
 
-emptyModel : Model
-emptyModel =
+emptyModel : Maybe VillageId -> Nurse -> Model
+emptyModel maybeSelectedVillage nurse =
+    let
+        ( programType, selectedVillage ) =
+            if isCommunityHealthWorker nurse then
+                ( FilterProgramCommunity
+                , maybeSelectedVillage
+                )
+
+            else
+                ( FilterAllPrograms
+                , Nothing
+                )
+    in
     { period = OneYear
-    , programType = FilterProgramFbf
-    , selectedVillage = Nothing
+    , programType = programType
+    , selectedVillage = selectedVillage
     , beneficiariesGender = Boys
     , currentBeneficiariesChartsFilter = Stunting
     , currentBeneficiariesIncidenceChartsFilter = Stunting

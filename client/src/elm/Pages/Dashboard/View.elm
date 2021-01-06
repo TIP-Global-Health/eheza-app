@@ -23,10 +23,12 @@ import Backend.Dashboard.Model
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
 import Debug exposing (toString)
+import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, allMonths, formatYYYYMMDD, isDiffTruthy, yearYYNumber)
 import Html exposing (..)
@@ -57,8 +59,8 @@ import Utils.Html exposing (spinner, viewModal)
 
 {-| Shows a dashboard page.
 -}
-view : Language -> DashboardPage -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
-view language page currentDate healthCenterId model db =
+view : Language -> DashboardPage -> NominalDate -> HealthCenterId -> Bool -> Nurse -> Model -> ModelIndexedDb -> Html Msg
+view language page currentDate healthCenterId isChw nurse model db =
     let
         ( content, goBackPage ) =
             Dict.get healthCenterId db.computedDashboard
@@ -66,10 +68,10 @@ view language page currentDate healthCenterId model db =
                     (\stats ->
                         case page of
                             MainPage ->
-                                ( viewMainPage language currentDate stats db model, PinCodePage )
+                                ( viewMainPage language currentDate isChw nurse stats db model, PinCodePage )
 
                             StatsPage ->
-                                ( viewStatsPage language currentDate stats healthCenterId db model, UserPage <| DashboardPage MainPage )
+                                ( viewStatsPage language currentDate isChw nurse stats healthCenterId db model, UserPage <| DashboardPage MainPage )
 
                             CaseManagementPage ->
                                 ( viewCaseManagementPage language currentDate stats model, UserPage <| DashboardPage model.latestPage )
@@ -95,8 +97,8 @@ view language page currentDate healthCenterId model db =
         ]
 
 
-viewMainPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewMainPage language currentDate stats db model =
+viewMainPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewMainPage language currentDate isChw nurse stats db model =
     let
         currentPeriodStats =
             filterStatsWithinPeriod currentDate model stats
@@ -162,7 +164,7 @@ viewMainPage language currentDate stats db model =
                 ]
             , links
             ]
-        , viewCustomModal language stats db model
+        , viewCustomModal language isChw nurse stats db model
         ]
 
 
@@ -554,8 +556,8 @@ generateCaseNutritionNewCases currentDate caseNutrition =
     }
 
 
-viewStatsPage : Language -> NominalDate -> DashboardStats -> HealthCenterId -> ModelIndexedDb -> Model -> Html Msg
-viewStatsPage language currentDate stats healthCenterId db model =
+viewStatsPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> HealthCenterId -> ModelIndexedDb -> Model -> Html Msg
+viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
     if model.programType /= FilterProgramFbf then
         emptyNode
 
@@ -595,7 +597,7 @@ viewStatsPage language currentDate stats healthCenterId db model =
                 ]
             , viewBeneficiariesTable language currentDate stats currentPeriodStats malnourishedCurrentMonth model
             , viewFamilyPlanning language currentPeriodStats
-            , viewCustomModal language stats db model
+            , viewCustomModal language isChw nurse stats db model
             ]
 
 
@@ -1760,8 +1762,8 @@ viewChart signs =
         [ annular signsList pieData ]
 
 
-viewCustomModal : Language -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewCustomModal language stats db model =
+viewCustomModal : Language -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewCustomModal language isChw nurse stats db model =
     model.modalState
         |> Maybe.map
             (\state ->
@@ -1770,7 +1772,7 @@ viewCustomModal language stats db model =
                         viewStatsTableModal language title data
 
                     FiltersModal ->
-                        viewFiltersModal language stats db model
+                        viewFiltersModal language isChw nurse stats db model
             )
         |> viewModal
 
@@ -1804,37 +1806,43 @@ viewStatsTableModal language title data =
         ]
 
 
-viewFiltersModal : Language -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewFiltersModal language stats db model =
+viewFiltersModal : Language -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewFiltersModal language isChw nurse stats db model =
     let
-        allOptions =
-            [ FilterProgramFbf
-            , FilterProgramPmtct
-            , FilterProgramSorwathe
-            , FilterProgramAchi
-            , FilterAllPrograms
-            , FilterProgramCommunity
-            ]
-
         programTypeInputSection =
-            [ div [ class "helper" ] [ text <| translate language <| Translate.Dashboard Translate.ProgramType ]
-            , programTypeInput
-            ]
+            if isChw then
+                -- For CHW nurses, program type is always set to FilterProgramCommunity.
+                []
 
-        programTypeInput =
-            allOptions
-                |> List.map
-                    (\programType ->
-                        option
-                            [ value (filterProgramTypeToString programType)
-                            , selected (model.programType == programType)
-                            ]
-                            [ text <| translate language <| Translate.Dashboard <| Translate.FilterProgramType programType ]
-                    )
-                |> select
-                    [ onInput SetFilterProgramType
-                    , class "select-input"
-                    ]
+            else
+                let
+                    allOptions =
+                        [ FilterAllPrograms
+                        , FilterProgramFbf
+                        , FilterProgramPmtct
+                        , FilterProgramSorwathe
+                        , FilterProgramAchi
+                        , FilterProgramCommunity
+                        ]
+
+                    programTypeInput =
+                        allOptions
+                            |> List.map
+                                (\programType ->
+                                    option
+                                        [ value (filterProgramTypeToString programType)
+                                        , selected (model.programType == programType)
+                                        ]
+                                        [ text <| translate language <| Translate.Dashboard <| Translate.FilterProgramType programType ]
+                                )
+                            |> select
+                                [ onInput SetFilterProgramType
+                                , class "select-input"
+                                ]
+                in
+                [ div [ class "helper" ] [ text <| translate language <| Translate.Dashboard Translate.ProgramType ]
+                , programTypeInput
+                ]
 
         villageInputSection =
             if model.programType /= FilterProgramCommunity then
@@ -1846,14 +1854,30 @@ viewFiltersModal language stats db model =
                     |> Maybe.map
                         (\villages ->
                             let
-                                emptyOption =
-                                    option [ value "", selected (model.selectedVillage == Nothing) ] [ text "" ]
+                                authorizedVillages =
+                                    if isChw then
+                                        Dict.filter
+                                            (\villageId _ ->
+                                                EverySet.member villageId nurse.villages
+                                            )
+                                            villages
+
+                                    else
+                                        villages
+
+                                allOptions =
+                                    if isChw then
+                                        options
+
+                                    else
+                                        option [ value "", selected (model.selectedVillage == Nothing) ] [ text "" ]
+                                            :: options
 
                                 options =
                                     Dict.keys stats.villagesWithResidents
                                         |> List.filterMap
                                             (\villageId ->
-                                                Dict.get villageId villages
+                                                Dict.get villageId authorizedVillages
                                                     |> Maybe.map
                                                         (\village ->
                                                             option
@@ -1865,12 +1889,11 @@ viewFiltersModal language stats db model =
                                             )
 
                                 villageInput =
-                                    emptyOption
-                                        :: options
-                                        |> select
-                                            [ onInput SetSelectedVillage
-                                            , class "select-input"
-                                            ]
+                                    select
+                                        [ onInput SetSelectedVillage
+                                        , class "select-input"
+                                        ]
+                                        allOptions
                             in
                             [ div [ class "helper" ] [ text <| translate language Translate.Village ]
                             , villageInput

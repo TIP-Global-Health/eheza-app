@@ -206,16 +206,12 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) deviceName sele
                     [ text <| translate language Translate.Clinical ]
 
             dashboardButton =
-                if isCommunityHealthWorker nurse then
-                    emptyNode
-
-                else
-                    button
-                        [ class "ui primary button"
-                        , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
-                        ]
-                        [ text <| translate language Translate.DashboardLabel
-                        ]
+                button
+                    [ class "ui primary button"
+                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
+                    ]
+                    [ text <| translate language Translate.DashboardLabel
+                    ]
 
             participantDirectoryButton =
                 button

@@ -697,7 +697,7 @@ update msg model =
         SetLoggedIn nurse ->
             updateConfigured
                 (\configured ->
-                    ( { configured | loggedIn = RemoteData.map emptyLoggedInModel nurse }
+                    ( { configured | loggedIn = RemoteData.map (emptyLoggedInModel model.villageId) nurse }
                     , Cmd.none
                     , []
                     )

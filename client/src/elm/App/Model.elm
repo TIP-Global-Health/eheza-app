@@ -194,10 +194,10 @@ type alias LoggedInModel =
     }
 
 
-emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
-emptyLoggedInModel nurse =
+emptyLoggedInModel : Maybe VillageId -> ( NurseId, Nurse ) -> LoggedInModel
+emptyLoggedInModel selectedVillage nurse =
     { createPersonPage = Pages.Person.Model.emptyCreateModel
-    , dashboardPage = Pages.Dashboard.Model.emptyModel
+    , dashboardPage = Pages.Dashboard.Model.emptyModel selectedVillage (Tuple.second nurse)
     , editPersonPage = Pages.Person.Model.emptyEditModel
     , personsPage = Pages.People.Model.emptyModel
     , individualEncounterParticipantsPage = Pages.IndividualEncounterParticipants.Model.emptyModel
