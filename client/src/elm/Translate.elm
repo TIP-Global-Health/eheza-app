@@ -1233,8 +1233,13 @@ translationSet trans =
                     }
 
                 OutcomeLostToFollowUp ->
-                    { english = "Lost to Follow Up (or Moved out of CA?)"
+                    { english = "Lost to Follow Up"
                     , kinyarwanda = Nothing
+                    }
+
+                OutcomeMovedOutsideCA ->
+                    { english = "Moved outside the catchment area"
+                    , kinyarwanda = Just "Yimukiye ahandi"
                     }
 
                 OutcomePatientDied ->

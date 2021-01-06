@@ -99,6 +99,9 @@ acuteIllnessOutcomeToString outcome =
         OutcomeLostToFollowUp ->
             "lost-to-follow-up"
 
+        OutcomeMovedOutsideCA ->
+            "moved-out-of-ca"
+
         OutcomePatientDied ->
             "patient-died"
 
