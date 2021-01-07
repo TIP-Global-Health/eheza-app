@@ -25,6 +25,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateAcuteFindings' => [
         'class_name' => 'HedleyMigrateAcuteFindings',
       ],
+      'HedleyMigrateAcuteIllnessDangerSigns' => [
+        'class_name' => 'HedleyMigrateAcuteIllnessDangerSigns',
+      ],
       'HedleyMigrateAcuteIllnessEncounters' => [
         'class_name' => 'HedleyMigrateAcuteIllnessEncounters',
       ],
