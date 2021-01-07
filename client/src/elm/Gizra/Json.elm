@@ -3,7 +3,7 @@ module Gizra.Json exposing
     , decodeInt, decodeIntToString, decodeFloat
     , decodeEmptyArrayAs
     , decodeJsonInString
-    , dict
+    , decodeStringWithDefault, dict
     )
 
 {-| Utilities for dealing with JSON.
@@ -103,6 +103,14 @@ decodeIntToString =
     oneOf
         [ string
         , int |> andThen (\v -> succeed (String.fromInt v))
+        ]
+
+
+decodeStringWithDefault : String -> Decoder String
+decodeStringWithDefault default =
+    oneOf
+        [ string
+        , succeed default
         ]
 
 

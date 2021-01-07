@@ -27,6 +27,14 @@ function hedley_acute_illness_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'acute_illness_danger_signs' => array(
+      'name' => t('Acute Illness Danger Signs'),
+      'base' => 'node_content',
+      'description' => t('This activity appears at subsequent encounters of Acute Illness'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'acute_illness_muac' => array(
       'name' => t('Acute Illness Muac'),
       'base' => 'node_content',
@@ -69,6 +77,14 @@ function hedley_acute_illness_node_info() {
     ),
     'hc_contact' => array(
       'name' => t('HC Contact'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'health_education' => array(
+      'name' => t('Health Education'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',
@@ -141,6 +157,14 @@ function hedley_acute_illness_node_info() {
     ),
     'treatment_history' => array(
       'name' => t('Treatment History'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'treatment_ongoing' => array(
+      'name' => t('Treatment Ongoing'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

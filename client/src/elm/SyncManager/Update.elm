@@ -31,6 +31,7 @@ import SyncManager.Utils
         )
 import Time
 import Utils.WebData
+import Version
 
 
 update : NominalDate -> Time.Posix -> Int -> Device -> Msg -> Model -> SubModelReturn Model Msg
@@ -73,6 +74,9 @@ update currentDate currentTime dbVersion device msg model =
                 []
                 |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) (Maybe.Extra.toList extraMsg)
 
+        NoOp ->
+            noChange
+
         SchedulePageRefresh ->
             noChange
                 |> sequenceSubModelReturn (update currentDate currentTime dbVersion device)
@@ -99,7 +103,10 @@ update currentDate currentTime dbVersion device msg model =
                                 -- No zipper, means not subscribed yet to any
                                 -- authority. `determineSyncStatus` will take care of
                                 -- rotating if we're not on automatic sync.
+                                -- We also, schdule photos download send devicestate report,
+                                -- so that version and synced authorities get updated on backend.
                                 determineSyncStatus
+                                    |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
                             Just zipper ->
                                 let
@@ -389,15 +396,15 @@ update currentDate currentTime dbVersion device msg model =
 
                 -- When sync is completed (status is about to change to Idle), we need to decide on
                 -- additional actions:
-                -- If sync lasted  more than one minute (initial sync, for example), we refresh the page.
+                -- If sync lasted  more than 45 seconds (initial sync, for example), we refresh the page.
                 -- Otherwise, we trigger photos download.
                 extraMsgs =
                     if modelWithSyncStatus.syncStatus == SyncIdle then
-                        if authoritiesSyncTime > 60000 then
+                        if authoritiesSyncTime > 45000 then
                             [ SchedulePageRefresh ]
 
                         else
-                            [ TryDownloadingPhotos ]
+                            [ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
                     else
                         -- Sync is not completed yet - no additional actions.
@@ -535,17 +542,8 @@ update currentDate currentTime dbVersion device msg model =
                     fromEntityUuid uuid
 
                 syncInfoAuthorities =
-                    case model.syncInfoAuthorities of
-                        Just zipper ->
-                            zipper
-                                |> Zipper.toList
-                                |> List.filter (\row -> row.uuid /= uuidAsString)
-                                |> Zipper.fromList
-
-                        Nothing ->
-                            -- We don't seem to have a zipper, so we cannot add
-                            -- it.
-                            Nothing
+                    model.syncInfoAuthorities
+                        |> Maybe.andThen (Zipper.toList >> List.filter (\row -> row.uuid /= uuidAsString) >> Zipper.fromList)
 
                 cmd =
                     case syncInfoAuthorities of
@@ -553,7 +551,8 @@ update currentDate currentTime dbVersion device msg model =
                             sendSyncInfoAuthoritiesCmd zipper
 
                         Nothing ->
-                            Cmd.none
+                            -- There're no authorities to sync, so we set an empty list.
+                            sendSyncInfoAuthorities []
             in
             SubModelReturn
                 { model | syncInfoAuthorities = syncInfoAuthorities }
@@ -735,6 +734,28 @@ update currentDate currentTime dbVersion device msg model =
                 noError
                 []
 
+        BackendReportState totalToUpload ->
+            let
+                version =
+                    Version.version.build
+
+                syncedAutorities =
+                    model.syncInfoAuthorities
+                        |> Maybe.map (Zipper.toList >> List.map .uuid)
+                        |> Maybe.withDefault []
+
+                cmd =
+                    HttpBuilder.post (device.backendUrl ++ "/api/report-state")
+                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeDeviceSatateReport version totalToUpload syncedAutorities)
+                        |> HttpBuilder.send (always NoOp)
+            in
+            SubModelReturn
+                { model | totalEntriesToUpload = Just totalToUpload }
+                cmd
+                noError
+                []
+
         FetchFromIndexDbDeferredPhoto ->
             -- Get a deferred photo from IndexDB.
             case model.downloadPhotosStatus of
@@ -822,20 +843,31 @@ update currentDate currentTime dbVersion device msg model =
                         noChange
 
                     else
-                        let
-                            recordUpdated =
-                                { record
-                                    | indexDbRemoteData = RemoteData.Loading
-                                    , backendRemoteData = RemoteData.NotAsked
-                                }
-                        in
-                        update
-                            currentDate
-                            currentTime
-                            dbVersion
-                            device
-                            (QueryIndexDb IndexDbQueryUploadAuthority)
-                            { model | syncStatus = SyncUploadAuthority recordUpdated }
+                        case model.syncInfoAuthorities of
+                            Nothing ->
+                                -- No zipper, means not subscribed yet to any
+                                -- authority. `determineSyncStatus` will take care of
+                                -- rotating if we're not on automatic sync.
+                                determineSyncStatus
+
+                            Just zipper ->
+                                let
+                                    currentZipper =
+                                        Zipper.current zipper
+
+                                    recordUpdated =
+                                        { record
+                                            | indexDbRemoteData = RemoteData.Loading
+                                            , backendRemoteData = RemoteData.NotAsked
+                                        }
+                                in
+                                update
+                                    currentDate
+                                    currentTime
+                                    dbVersion
+                                    device
+                                    (QueryIndexDb <| IndexDbQueryUploadAuthority currentZipper.uuid)
+                                    { model | syncStatus = SyncUploadAuthority recordUpdated }
 
                 _ ->
                     noChange
@@ -943,11 +975,8 @@ update currentDate currentTime dbVersion device msg model =
 
                                 else
                                     HttpBuilder.post (device.backendUrl ++ "/api/sync")
-                                        |> withQueryParams
-                                            [ ( "access_token", device.accessToken )
-                                            , ( "db_version", String.fromInt dbVersion )
-                                            ]
-                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadAuthorityResultRecord result)
+                                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadAuthorityResultRecord dbVersion result)
                                         -- We don't need to decode anything, as we just want to have
                                         -- the browser download it.
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadAuthorityHandle result)
@@ -1126,11 +1155,8 @@ update currentDate currentTime dbVersion device msg model =
 
                                 else
                                     HttpBuilder.post (device.backendUrl ++ "/api/sync")
-                                        |> withQueryParams
-                                            [ ( "access_token", device.accessToken )
-                                            , ( "db_version", String.fromInt dbVersion )
-                                            ]
-                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord result)
+                                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord dbVersion result)
                                         -- We don't need to decode anything, as we just want to have
                                         -- the browser download it.
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle result)
@@ -1402,9 +1428,9 @@ update currentDate currentTime dbVersion device msg model =
                             , data = Nothing
                             }
 
-                        IndexDbQueryUploadAuthority ->
+                        IndexDbQueryUploadAuthority uuid ->
                             { queryType = "IndexDbQueryUploadAuthority"
-                            , data = Nothing
+                            , data = Just uuid
                             }
 
                         IndexDbQueryDeferredPhoto ->
@@ -1441,6 +1467,11 @@ update currentDate currentTime dbVersion device msg model =
                             in
                             { queryType = "IndexDbQueryRemoveUploadPhotos"
                             , data = Just uuidsAsString
+                            }
+
+                        IndexDbQueryGetTotalEntriesToUpload ->
+                            { queryType = "IndexDbQueryGetTotalEntriesToUpload"
+                            , data = Nothing
                             }
             in
             SubModelReturn
@@ -1487,6 +1518,15 @@ update currentDate currentTime dbVersion device msg model =
                                 dbVersion
                                 device
                                 (BackendDeferredPhotoFetch result)
+                                model
+
+                        IndexDbQueryGetTotalEntriesToUploadResult result ->
+                            update
+                                currentDate
+                                currentTime
+                                dbVersion
+                                device
+                                (BackendReportState result)
                                 model
 
                 Err error ->

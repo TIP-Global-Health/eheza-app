@@ -32,21 +32,23 @@ class RoboFile extends Tasks {
     $pantheonDirectory = '.pantheon';
 
     $result = $this
-      ->taskExec('git status -s')
+      ->taskExec('git status -s -uno')
       ->printOutput(FALSE)
       ->run();
 
     if ($result->getMessage()) {
-      throw new Exception('The working directory is dirty. Please commit any pending changes.');
+      $this->yell($result->getMessage());
+      throw new Exception('The GitHub working directory is dirty. Please commit any pending changes or add to .gitignore.');
     }
 
     $result = $this
-      ->taskExec("cd $pantheonDirectory && git status -s")
+      ->taskExec("cd $pantheonDirectory && git status -s -uno")
       ->printOutput(FALSE)
       ->run();
 
     if ($result->getMessage()) {
-      throw new Exception('The Pantheon directory is dirty. Please commit any pending changes.');
+      $this->yell($result->getMessage());
+      throw new Exception('The Pantheon working directory is dirty. Please commit any pending changes ör add to .gitignore.');
     }
 
     // Validate pantheon.upstream.yml.

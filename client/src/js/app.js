@@ -486,7 +486,7 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
 elmApp.ports.askFromIndexDb.subscribe(function(info) {
   const queryType = info.queryType;
 
-  // Some queries pass may pass us data.
+  // Some queries may pass us data.
   const data = info.data;
   switch (queryType) {
 
@@ -498,6 +498,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .where('isSynced')
             // IndexDB doesn't index Boolean, so we use an Int to indicate "false".
             .equals(0)
+            // We upload photos one by one.
+            .limit(1)
             .toArray();
 
         if (!result[0]) {
@@ -585,11 +587,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
               await dbSync.authorityPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
             }
 
-            if (index == (result.length -1)) {
-              // As we've got async operations within the loop, we must verify that all
-              // rows were processed before sending a response.
-              return sendResultToElm(queryType, {tag: 'Success', result: "!"});
-            }
+            return sendResultToElm(queryType, {tag: 'Success', result: row});
         });
       })();
       break;
@@ -628,14 +626,17 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       break;
 
     case 'IndexDbQueryUploadAuthority':
+      let authorityId = data;
+
       (async () => {
 
         const batchSize = 50;
 
         let totalEntites = await dbSync
             .shardChanges
-            .where('isSynced')
-            .notEqual(1)
+            .where('shard')
+            .equals(authorityId)
+            .and((item) => { return item.isSynced != 1; })
             .count();
 
         if (totalEntites == 0) {
@@ -645,9 +646,9 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         let entitiesResult = await dbSync
             .shardChanges
-            .where('isSynced')
-            // Don't include items that were already synced.
-            .notEqual(1)
+            .where('shard')
+            .equals(authorityId)
+            .and((item) => { return item.isSynced != 1; })
             .limit(batchSize)
             .toArray();
 
@@ -746,6 +747,17 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .delete();
       })();
       break;
+
+    case 'IndexDbQueryGetTotalEntriesToUpload':
+      (async () => {
+
+        let totalEntites = await dbSync
+            .shardChanges
+            .count();
+
+        return sendResultToElm(queryType, totalEntites);
+      })();
+        break;
 
     default:
       throw queryType + ' is not a known Query type for `askFromIndexDb`';
@@ -970,7 +982,10 @@ function attachDropzone() {
   dropZone = new Dropzone(selector, {
     url: "cache-upload/images",
     dictDefaultMessage: "Touch here to take a photo, or drop a photo file here.",
-    acceptedFiles: "jpg,jpeg,png,gif,image/*"
+    acceptedFiles: "jpg,jpeg,png,gif,image/*",
+    capture: 'camera',
+    resizeWidth: 600,
+    resizeHeight: 800
   });
 
   dropZone.on('complete', function(file) {

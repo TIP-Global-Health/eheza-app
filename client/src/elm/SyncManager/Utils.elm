@@ -63,7 +63,7 @@ determineSyncStatus model =
                             RemoteData.Success maybeData ->
                                 case maybeData of
                                     Just data ->
-                                        -- We still have date.
+                                        -- We still have data.
                                         noChange
 
                                     Nothing ->
@@ -83,13 +83,34 @@ determineSyncStatus model =
                             noChange
 
                     SyncUploadAuthority record ->
-                        if record.indexDbRemoteData == RemoteData.Success Nothing then
-                            -- We tried to fetch entities for upload from IndexDB,
-                            -- but there we non matching the query.
-                            ( SyncDownloadGeneral RemoteData.NotAsked, syncInfoAuthorities )
+                        case ( syncInfoAuthorities, record.indexDbRemoteData ) of
+                            ( Nothing, _ ) ->
+                                -- There are no authorities, so we can set the next status.
+                                ( SyncDownloadGeneral RemoteData.NotAsked
+                                , syncInfoAuthorities
+                                )
 
-                        else
-                            noChange
+                            ( Just zipper, RemoteData.Success Nothing ) ->
+                                -- We tried to fetch, but there was no more data.
+                                -- Go to the next authority if there is one,
+                                -- otherwise, to the next status.
+                                case Zipper.next zipper of
+                                    Just nextZipper ->
+                                        ( SyncUploadAuthority emptyUploadRec
+                                        , Just nextZipper
+                                        )
+
+                                    Nothing ->
+                                        -- We've reached the last element,
+                                        -- so reset authorities zipper to first element,
+                                        -- and rotate to the next status.
+                                        ( SyncDownloadGeneral RemoteData.NotAsked
+                                        , Just (Zipper.first zipper)
+                                        )
+
+                            _ ->
+                                -- Still have data to upload.
+                                noChange
 
                     SyncDownloadGeneral webData ->
                         case webData of
@@ -109,7 +130,7 @@ determineSyncStatus model =
                                 noChange
 
                     SyncDownloadAuthority webData ->
-                        case ( model.syncInfoAuthorities, webData ) of
+                        case ( syncInfoAuthorities, webData ) of
                             ( Nothing, _ ) ->
                                 -- There are no authorities, so we can set the next
                                 -- status, skipping statistics download.
@@ -120,28 +141,21 @@ determineSyncStatus model =
                             ( Just zipper, RemoteData.Success data ) ->
                                 if List.isEmpty data.entities then
                                     -- We tried to fetch, but there was no more data.
-                                    -- Check if this is the last element.
-                                    if Zipper.isLast zipper then
-                                        ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
-                                        , Just (Zipper.first zipper)
-                                        )
+                                    -- Go to the next authority if there is one,
+                                    -- otherwise, to the next status.
+                                    case Zipper.next zipper of
+                                        Just nextZipper ->
+                                            ( SyncDownloadAuthority RemoteData.NotAsked
+                                            , Just nextZipper
+                                            )
 
-                                    else
-                                        -- Go to the next authority if there is
-                                        -- otherwise, to the next status
-                                        case Zipper.next zipper of
-                                            Just nextZipper ->
-                                                ( SyncDownloadAuthority RemoteData.NotAsked
-                                                , Just nextZipper
-                                                )
-
-                                            Nothing ->
-                                                -- We've reached the last element
-                                                -- so reset it back, and rotate
-                                                -- to the next status.
-                                                ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
-                                                , Just (Zipper.first zipper)
-                                                )
+                                        Nothing ->
+                                            -- We've reached the last element,
+                                            -- so reset authorities zipper to first element,
+                                            -- and rotate to the next status.
+                                            ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
+                                            , Just (Zipper.first zipper)
+                                            )
 
                                 else
                                     -- Still have data to download.
@@ -151,7 +165,7 @@ determineSyncStatus model =
                                 noChange
 
                     SyncDownloadAuthorityDashboardStats webData ->
-                        case ( model.syncInfoAuthorities, webData ) of
+                        case ( syncInfoAuthorities, webData ) of
                             ( Nothing, _ ) ->
                                 -- There are no authorities, so we can set the next
                                 -- status.
@@ -159,28 +173,22 @@ determineSyncStatus model =
                                 , syncInfoAuthorities
                                 )
 
-                            ( Just zipper, RemoteData.Success data ) ->
-                                if Zipper.isLast zipper then
-                                    ( SyncIdle
-                                    , Just (Zipper.first zipper)
-                                    )
+                            ( Just zipper, RemoteData.Success _ ) ->
+                                -- Go to the next authority if there is
+                                -- otherwise, to the next status
+                                case Zipper.next zipper of
+                                    Just nextZipper ->
+                                        ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
+                                        , Just nextZipper
+                                        )
 
-                                else
-                                    -- Go to the next authority if there is
-                                    -- otherwise, to the next status
-                                    case Zipper.next zipper of
-                                        Just nextZipper ->
-                                            ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
-                                            , Just nextZipper
-                                            )
-
-                                        Nothing ->
-                                            -- We've reached the last element
-                                            -- so reset it back, and rotate
-                                            -- to the next status.
-                                            ( SyncIdle
-                                            , Just (Zipper.first zipper)
-                                            )
+                                    Nothing ->
+                                        -- We've reached the last element,
+                                        -- so reset authorities zipper to first element,
+                                        -- and rotate to the next status.
+                                        ( SyncIdle
+                                        , Just (Zipper.first zipper)
+                                        )
 
                             _ ->
                                 noChange
@@ -325,6 +333,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityAcuteFindings identifier ->
             getIdentifier identifier "acute_findings"
 
+        BackendAuthorityAcuteIllnessDangerSigns identifier ->
+            getIdentifier identifier "acute_illness_danger_signs"
+
         BackendAuthorityAcuteIllnessEncounter identifier ->
             getIdentifier identifier "acute_illness_encounter"
 
@@ -369,6 +380,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityFamilyPlanning identifier ->
             getIdentifier identifier "family_planning"
+
+        BackendAuthorityHealthEducation identifier ->
+            getIdentifier identifier "health_education"
 
         BackendAuthorityHCContact identifier ->
             getIdentifier identifier "hc_contact"
@@ -486,6 +500,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityTravelHistory identifier ->
             getIdentifier identifier "travel_history"
+
+        BackendAuthorityTreatmentOngoing identifier ->
+            getIdentifier identifier "treatment_ongoing"
 
         BackendAuthorityTreatmentReview identifier ->
             getIdentifier identifier "treatment_history"
@@ -691,6 +708,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityAcuteFindings identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteFindings identifier
 
+        BackendAuthorityAcuteIllnessDangerSigns identifier ->
+            encode Backend.Measurement.Encoder.encodeAcuteIllnessDangerSigns identifier
+
         BackendAuthorityAcuteIllnessEncounter identifier ->
             encode Backend.AcuteIllnessEncounter.Encoder.encodeAcuteIllnessEncounter identifier
 
@@ -735,6 +755,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityFamilyPlanning identifier ->
             encode Backend.Measurement.Encoder.encodeFamilyPlanning identifier
+
+        BackendAuthorityHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodeHealthEducation identifier
 
         BackendAuthorityHCContact identifier ->
             encode Backend.Measurement.Encoder.encodeHCContact identifier
@@ -853,6 +876,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityTravelHistory identifier ->
             encode Backend.Measurement.Encoder.encodeTravelHistory identifier
 
+        BackendAuthorityTreatmentOngoing identifier ->
+            encode Backend.Measurement.Encoder.encodeTreatmentOngoing identifier
+
         BackendAuthorityTreatmentReview identifier ->
             encode Backend.Measurement.Encoder.encodeTreatmentReview identifier
 
@@ -912,7 +938,7 @@ syncInfoStatusToString status =
             "Error"
 
         NotAvailable ->
-            "Not NotAvailable"
+            "Not Available"
 
         Success ->
             "Success"
@@ -930,7 +956,7 @@ syncInfoStatusFromString status =
         "Error" ->
             Just Error
 
-        "Not NotAvailable" ->
+        "Not Available" ->
             Just NotAvailable
 
         "Success" ->
@@ -1020,6 +1046,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityAcuteFindings identifier ->
             AcuteFindingsRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityAcuteIllnessDangerSigns identifier ->
+            AcuteIllnessDangerSignsRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityAcuteIllnessEncounter identifier ->
             AcuteIllnessEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1064,6 +1093,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityFamilyPlanning identifier ->
             FamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHealthEducation identifier ->
+            HealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityHCContact identifier ->
             HCContactRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -1181,6 +1213,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityTravelHistory identifier ->
             TravelHistoryRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTreatmentOngoing identifier ->
+            TreatmentOngoingRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityTreatmentReview identifier ->
             TreatmentReviewRevision (toEntityUuid identifier.uuid) identifier.entity

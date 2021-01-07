@@ -80,6 +80,10 @@ decodeIndexDbQueryTypeResult =
                             , succeed (IndexDbQueryDeferredPhotoResult Nothing)
                             ]
 
+                    "IndexDbQueryGetTotalEntriesToUploadResult" ->
+                        field "data" decodeInt
+                            |> andThen (\val -> succeed (IndexDbQueryGetTotalEntriesToUploadResult val))
+
                     _ ->
                         fail <| queryType ++ " is not a recognized IndexDbQueryTypeResult"
             )
@@ -93,7 +97,7 @@ decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
                 case tag of
                     "Success" ->
                         oneOf
-                            [ field "data" decodeIndexDbQueryUploadPhotoResultRecord
+                            [ at [ "data", "result" ] decodeIndexDbQueryUploadPhotoResultRecord
                                 |> andThen (\record -> succeed (RemoteData.Success (Just record)))
 
                             -- In case we have no photos to upload.
@@ -335,6 +339,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeAcuteFindings
                             BackendAuthorityAcuteFindings
 
+                    "acute_illness_danger_signs" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteIllnessDangerSigns
+                            BackendAuthorityAcuteIllnessDangerSigns
+
                     "acute_illness_encounter" ->
                         doDecode
                             Backend.AcuteIllnessEncounter.Decoder.decodeAcuteIllnessEncounter
@@ -404,6 +413,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeFamilyPlanning
                             BackendAuthorityFamilyPlanning
+
+                    "health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHealthEducation
+                            BackendAuthorityHealthEducation
 
                     "hc_contact" ->
                         doDecode
@@ -607,6 +621,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeTreatmentReview
                             BackendAuthorityTreatmentReview
+
+                    "treatment_ongoing" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTreatmentOngoing
+                            BackendAuthorityTreatmentOngoing
 
                     "vitals" ->
                         doDecode

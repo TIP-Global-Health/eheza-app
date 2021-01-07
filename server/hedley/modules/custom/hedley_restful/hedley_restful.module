@@ -41,6 +41,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'session' => 'sessions',
   // Measurements.
   'acute_findings' => 'acute-findings',
+  'acute_illness_danger_signs' => 'acute-illness-danger-signs',
   'acute_illness_muac' => 'acute-illness-muacs',
   'acute_illness_nutrition' => 'acute-illness-nutritions',
   'acute_illness_vitals' => 'acute-illness-vitals',
@@ -53,6 +54,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'danger_signs' => 'danger-signs',
   'exposure' => 'exposures',
   'family_planning' => 'family-plannings',
+  'health_education' => 'health-education',
   'hc_contact' => 'hc-contacts',
   'height' => 'heights',
   'isolation' => 'isolations',
@@ -86,6 +88,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'symptoms_respiratory' => 'symptoms-respiratory',
   'travel_history' => 'travel-histories',
   'treatment_history' => 'treatment-histories',
+  'treatment_ongoing' => 'treatment-ongoing',
   'vitals' => 'vitals',
   'weight' => 'weights',
 ];
@@ -204,6 +207,29 @@ function hedley_restful_output_for_bundles($bundleHandlers, array $nids, $accoun
 }
 
 /**
+ * Resolve nodes IDs using provided UUIDs.
+ *
+ * @param array $uuids
+ *   List of UUIDs.
+ *
+ * @return array
+ *   The Nodes IDs.
+ */
+function hedley_restful_resolve_nids_for_uuids(array $uuids) {
+  $query = db_select('field_data_field_uuid', 'uuid');
+  $query->condition('uuid.field_uuid_value', $uuids, 'IN');
+  $query->addField('uuid', 'entity_id');
+  // Limit to 500 results, to avoid running out of memory.
+  $query->range(0, 500);
+
+  $result = $query
+    ->execute()
+    ->fetchAllAssoc('entity_id');
+
+  return array_keys($result);
+}
+
+/**
  * Resolve node ID using provided UUID.
  *
  * @param string $uuid
@@ -213,15 +239,9 @@ function hedley_restful_output_for_bundles($bundleHandlers, array $nids, $accoun
  *   The Node ID. False, if not found.
  */
 function hedley_restful_resolve_nid_for_uuid($uuid) {
-  $query = db_select('field_data_field_uuid', 'uuid');
-  $query->condition('uuid.field_uuid_value', $uuid);
-  $query->addField('uuid', 'entity_id');
+  $result = hedley_restful_resolve_nids_for_uuids([$uuid]);
 
-  $result = $query
-    ->execute()
-    ->fetchField();
-
-  return empty($result) ? FALSE : $result;
+  return empty($result) ? FALSE : reset($result);
 }
 
 /**

@@ -178,6 +178,26 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
+        SaveTreatmentOngoing personId valueId value ->
+            ( { model | saveTreatmentOngoing = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value treatmentOngoingEndpoint HandleSavedTreatmentOngoing
+            )
+
+        HandleSavedTreatmentOngoing data ->
+            ( { model | saveTreatmentOngoing = data }
+            , Cmd.none
+            )
+
+        SaveAcuteIllnessDangerSigns personId valueId value ->
+            ( { model | saveAcuteIllnessDangerSigns = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value acuteIllnessDangerSignsEndpoint HandleSavedAcuteIllnessDangerSigns
+            )
+
+        HandleSavedAcuteIllnessDangerSigns data ->
+            ( { model | saveAcuteIllnessDangerSigns = data }
+            , Cmd.none
+            )
+
         SaveNutrition personId valueId value ->
             ( { model | saveNutrition = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value acuteIllnessNutritionEndpoint HandleSavedNutrition
@@ -185,6 +205,16 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         HandleSavedNutrition data ->
             ( { model | saveNutrition = data }
+            , Cmd.none
+            )
+
+        SaveHealthEducation personId valueId value ->
+            ( { model | saveHealthEducation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value healthEducationEndpoint HandleSavedHealthEducation
+            )
+
+        HandleSavedHealthEducation data ->
+            ( { model | saveHealthEducation = data }
             , Cmd.none
             )
 

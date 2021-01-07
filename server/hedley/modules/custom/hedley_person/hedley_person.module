@@ -1152,30 +1152,22 @@ function hedley_person_import_form_callback(array $form, array $form_state) {
 /**
  * Get a relationships by a person.
  *
- * @param int $person_id
- *   The person node ID.
+ * @param int $child_id
+ *   The node ID of child.
  * @param string $relation_type
- *   Optional; the type of the relation, can be either "parent" or "child".
+ *   Optional; the type of the relation, can be either "parent" or "caregiver".
  *
  * @return array
  *   Node IDs if they exist or empty array if no nodes exist.
  */
-function hedley_person_get_relationships($person_id, $relation_type = HEDLEY_PERSON_RELATED_BY_PARENT_OF) {
+function hedley_person_get_child_relationships($child_id, $relation_type = 'parent') {
   $query = new EntityFieldQuery();
   $query
     ->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'relationship')
     ->propertyCondition('status', NODE_PUBLISHED)
-    ->range(0, 1);
-
-  if ($relation_type == HEDLEY_PERSON_RELATED_BY_PARENT_OF) {
-    $query
-      ->fieldCondition('field_person', 'target_id', $person_id);
-  }
-  else {
-    $query
-      ->fieldCondition('field_related_to', 'target_id', $person_id);
-  }
+    ->fieldCondition('field_related_to', 'target_id', $child_id)
+    ->fieldCondition('field_related_by', 'value', $relation_type);
 
   $result = $query->execute();
 
