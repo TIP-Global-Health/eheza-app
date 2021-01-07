@@ -1,2 +1,2 @@
-id,field_person,field_date_measured,field_nurse,created,field_acute_illness_encounter,field_findings_signs_general,field_acute_illness_danger_signs
+id,field_person,field_date_measured,field_nurse,created,field_acute_illness_encounter,field_acute_illness_danger_signs
 194,74,2020-06-19,188,1592244289,1,condition-not-improving|convulsions
