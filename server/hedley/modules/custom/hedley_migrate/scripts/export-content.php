@@ -15,8 +15,8 @@ if (!drupal_is_cli()) {
 
 // For sample db: Rukura, Rwankuba, Test.
 $health_centers_data = [
-  7090 => ['anonymize' => TRUE],
   7091 => ['anonymize' => TRUE],
+  7092 => ['anonymize' => TRUE],
   28589 => ['anonymize' => FALSE],
 ];
 
