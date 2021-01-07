@@ -215,6 +215,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateTreatmentHistory' => [
         'class_name' => 'HedleyMigrateTreatmentHistory',
       ],
+      'HedleyMigrateTreatmentOngoing' => [
+        'class_name' => 'HedleyMigrateTreatmentOngoing',
+      ],
       'HedleyMigrateUsers' => [
         'class_name' => 'HedleyMigrateUsers',
       ],
