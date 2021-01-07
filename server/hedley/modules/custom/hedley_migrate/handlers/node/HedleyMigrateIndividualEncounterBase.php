@@ -21,6 +21,7 @@ abstract class HedleyMigrateIndividualEncounterBase extends HedleyMigrateBase {
         'id',
         'field_individual_participant',
         'field_scheduled_date',
+        'created',
       ]
     );
   }

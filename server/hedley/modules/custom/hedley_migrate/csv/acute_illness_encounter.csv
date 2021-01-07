@@ -1,2 +1,2 @@
-id,field_individual_participant,field_scheduled_date,field_acute_illness_diagnosis
-1,3,2020-11-20,covid19
+id,field_individual_participant,field_scheduled_date,created,field_acute_illness_diagnosis
+1,3,2020-11-20,1592244289,covid19

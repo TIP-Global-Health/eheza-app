@@ -1,4 +1,4 @@
-id,field_person,field_expected,field_encounter_type,field_date_concluded,field_outcome,field_outcome_location,field_expected_date_concluded
-1,6,2019-04-27,antenatal,2019-06-28,live-at-term,home,2019-06-21
-2,6,2020-10-27,nutrition,,,,
-3,6,2020-10-29,acute-illness,,,,
+id,field_person,field_expected,field_encounter_type,field_date_concluded,field_outcome,field_outcome_location,field_expected_date_concluded,created
+1,6,2019-04-27,antenatal,2019-06-28,live-at-term,home,2019-06-21,1592244289
+2,6,2020-10-27,nutrition,,,,,1592244289
+3,6,2020-10-29,acute-illness,,,,,1592244289

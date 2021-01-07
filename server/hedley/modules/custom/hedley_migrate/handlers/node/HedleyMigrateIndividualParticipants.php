@@ -36,6 +36,7 @@ class HedleyMigrateIndividualParticipants extends HedleyMigrateBase {
         'field_outcome',
         'field_outcome_location',
         'field_expected_date_concluded',
+        'created',
       ]
     );
   }
