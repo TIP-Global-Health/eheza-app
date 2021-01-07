@@ -216,6 +216,454 @@ $group_measurements = [
     ),
   ],
 ];
+$individual_participants = [
+  [
+    'id',
+    'field_person',
+    'field_expected',
+    'field_encounter_type',
+    'field_date_concluded',
+    'field_outcome',
+    'field_outcome_location',
+    'field_expected_date_concluded',
+    'created',
+  ],
+];
+$acute_illness_encounters = [
+  'id',
+  'field_individual_participant',
+  'field_scheduled_date',
+  'created',
+  'field_acute_illness_diagnosis',
+];
+$acute_illness_measurements_fields = [
+  'id',
+  'field_person',
+  'field_date_measured',
+  'field_nurse',
+  'created',
+  'field_acute_illness_encounter',
+];
+$acute_illness_measurements = [
+  'acute_findings' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_findings_signs_general',
+        'field_findings_signs_respiratory',
+      ]
+    ),
+  ],
+  'acute_illness_danger_signs' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_acute_illness_danger_signs',
+      ]
+    ),
+  ],
+  'acute_illness_muac' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_muac',
+      ]
+    ),
+  ],
+  'acute_illness_nutrition' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_nutrition_signs',
+      ]
+    ),
+  ],
+  'acute_illness_vitals' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_respiratory_rate',
+        'field_body_temperature',
+      ]
+    ),
+  ],
+  'call_114' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_114_contact',
+        'field_114_recommendation',
+        'field_site_recommendation',
+      ]
+    ),
+  ],
+  'exposure' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_exposure',
+      ]
+    ),
+  ],
+  'hc_contact' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_hc_contact',
+        'field_hc_recommendation',
+        'field_hc_response_time',
+        'field_ambulance_arrival_time',
+      ]
+    ),
+  ],
+  'health_education' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_health_education_signs',
+      ]
+    ),
+  ],
+  'isolation' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_isolation',
+        'field_reason_for_not_isolating',
+      ]
+    ),
+  ],
+  'malaria_testing' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_malaria_rapid_test',
+      ]
+    ),
+  ],
+  'medication_distribution' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_prescribed_medication',
+        'field_non_administration_reason',
+      ]
+    ),
+  ],
+  'send_to_hc' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_send_to_hc',
+      ]
+    ),
+  ],
+  'symptoms_general' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_fever_period',
+        'field_chills_period',
+        'field_night_sweats_period',
+        'field_body_aches_period',
+        'field_headache_period',
+        'field_lethargy_period',
+        'field_poor_suck_period',
+        'field_unable_to_drink_period',
+        'field_unable_to_eat_period',
+        'field_increased_thirst_period',
+        'field_dry_mouth_period',
+        'field_severe_weakness_period',
+        'field_yellow_eyes_period',
+        'field_coke_colored_urine_period',
+        'field_convulsions_period',
+        'field_spontaneos_bleeding_period',
+      ]
+    ),
+  ],
+  'symptoms_gi' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_bloody_diarrhea_period',
+        'field_non_bloody_diarrhea_period',
+        'field_nausea_period',
+        'field_vomiting_period',
+        'field_abdominal_pain_period',
+        'field_symptoms_gi_derived_signs',
+      ]
+    ),
+  ],
+  'symptoms_respiratory' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_cough_period',
+        'field_shortness_of_breath_period',
+        'field_nasal_congestion_period',
+        'field_blood_in_sputum_period',
+        'field_sore_throat_period',
+        'field_loss_of_smell_period',
+        'field_stabbing_chest_pain_period',
+      ]
+    ),
+  ],
+  'travel_history' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_travel_history',
+      ]
+    ),
+  ],
+  'treatment_history' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_treatment_history',
+      ]
+    ),
+  ],
+  'treatment_ongoing' => [
+    array_merge(
+      $acute_illness_measurements_fields,
+      [
+        'field_treatment_ongoing',
+        'field_reason_for_not_taking',
+        'field_missed_doses',
+        'field_adverse_events',
+      ]
+    ),
+  ],
+];
+$nutrition_encounters = [
+  'id',
+  'field_individual_participant',
+  'field_scheduled_date',
+  'created',
+];
+$nutrition_measurements_fields = [
+  'id',
+  'field_person',
+  'field_date_measured',
+  'field_nurse',
+  'created',
+  'field_nutrition_encounter',
+];
+$nutrition_measurements = [
+  'nutrition_height' => [
+    array_merge(
+      $nutrition_measurements_fields,
+      [
+        'field_height',
+        'field_zscore_age',
+      ]
+    ),
+  ],
+  'nutrition_muac' => [
+    array_merge(
+      $nutrition_measurements_fields,
+      [
+        'field_muac',
+      ]
+    ),
+  ],
+  'nutrition_nutrition' => [
+    array_merge(
+      $nutrition_measurements_fields,
+      [
+        'field_nutrition_signs',
+      ]
+    ),
+  ],
+  'nutrition_photo' => [
+    array_merge(
+      $nutrition_measurements_fields,
+      [
+        'field_photo',
+      ]
+    ),
+  ],
+  'nutrition_weight' => [
+    array_merge(
+      $nutrition_measurements_fields,
+      [
+        'field_weight',
+        'field_bmi',
+        'field_zscore_age',
+        'field_zscore_length',
+        'field_zscore_bmi',
+      ]
+    ),
+  ],
+];
+$prenatal_encounters = [
+  'id',
+  'field_individual_participant',
+  'field_scheduled_date',
+  'created',
+];
+$prenatal_measurements_fields = [
+  'id',
+  'field_person',
+  'field_date_measured',
+  'field_nurse',
+  'created',
+  'field_prenatal_encounter',
+];
+$prenatal_measurements = [
+  'breast_exam' => [
+    array_merge(
+      $prenatal_measurements_fields,
+      [
+        'field_breast',
+        'field_breast_self_exam',
+      ]
+    ),
+  ],
+  'core_physical_exam' => [
+    array_merge(
+      $prenatal_measurements_fields,
+      [
+        'field_head_hair',
+        'field_eyes',
+        'field_neck',
+        'field_heart',
+        'field_heart_murmur',
+        'field_lungs',
+        'field_abdomen',
+        'field_hands',
+        'field_legs',
+      ]
+    ),
+  ],
+  'danger_signs' => [
+    array_merge(
+      $prenatal_measurements_fields,
+      [
+        'field_danger_signs',
+      ]
+    ),
+  ],
+  'last_menstrual_period' => [
+    array_merge(
+      $prenatal_measurements_fields,
+      [
+        'field_last_menstrual_period',
+        'field_confident',
+      ]
+    ),
+  ],
+  'medical_history' => [
+    array_merge(
+      $prenatal_measurements_fields,
+      [
+        'field_medical_history',
+      ]
+    ),
+  ],
+  'medication' => [
+    array_merge(
+      $prenatal_measurements_fields,
+      [
+        'field_medication',
+      ]
+    ),
+  ],
+  'obstetrical_exam' => [
+    array_merge(
+      $prenatal_measurements_fields,
+      [
+        'field_fundal_height',
+        'field_fetal_presentation',
+        'field_fetal_movement',
+        'field_fetal_heart_rate',
+        'field_c_section_scar',
+      ]
+    ),
+  ],
+  'obstetric_history' => [
+    array_merge(
+      $prenatal_measurements_fields,
+      [
+        'field_currently_pregnant',
+        'field_term_pregnancy',
+        'field_preterm_pregnancy',
+        'field_stillbirths_at_term',
+        'field_stillbirths_preterm',
+        'field_abortions',
+        'field_live_children',
+      ]
+    ),
+  ],
+  'obstetric_history_step2' => [
+    array_merge(
+      $prenatal_measurements_fields,
+      [
+        'field_c_sections',
+        'field_c_section_reason',
+        'field_previous_delivery_period',
+        'field_obstetric_history',
+        'field_previous_delivery',
+      ]
+    ),
+  ],
+  'prenatal_family_planning' => [
+    array_merge(
+      $prenatal_measurements_fields,
+      [
+        'field_family_planning_signs',
+      ]
+    ),
+  ],
+  'prenatal_nutrition' => [
+    array_merge(
+      $prenatal_measurements_fields,
+      [
+        'field_height',
+        'field_weight',
+        'field_muac',
+      ]
+    ),
+  ],
+  'prenatal_photo' => [
+    array_merge(
+      $prenatal_measurements_fields,
+      [
+        'field_photo',
+      ]
+    ),
+  ],
+  'resource' => [
+    array_merge(
+      $prenatal_measurements_fields,
+      [
+        'field_resources',
+      ]
+    ),
+  ],
+  'social_history' => [
+    array_merge(
+      $prenatal_measurements_fields,
+      [
+        'field_social_history',
+        'field_partner_hiv_testing',
+      ]
+    ),
+  ],
+  'vitals' => [
+    array_merge(
+      $prenatal_measurements_fields,
+      [
+        'field_sys',
+        'field_dia',
+        'field_heart_rate',
+        'field_respiratory_rate',
+        'field_body_temperature',
+      ]
+    ),
+  ],
+];
 
 $male_first_names = hedley_migrate_male_first_names();
 $female_first_names = hedley_migrate_female_first_names();
