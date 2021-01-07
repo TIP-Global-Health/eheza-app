@@ -194,7 +194,8 @@ $group_measurements = [
   'nutrition' => [
     array_merge(
       $group_measurements_fields,
-      ['field_nutrition_signs'])
+      ['field_nutrition_signs']
+    ),
   ],
   'photo' => [
     array_merge(
