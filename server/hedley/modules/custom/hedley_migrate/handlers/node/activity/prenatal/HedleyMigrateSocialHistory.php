@@ -32,13 +32,25 @@ class HedleyMigrateSocialHistory extends HedleyMigratePrenatalMeasurementBase {
   /**
    * {@inheritdoc}
    */
+  protected function simpleMappings() {
+    $mappings = parent::simpleMappings();
+
+    return array_merge(
+      $mappings, [
+        'field_partner_hiv_testing',
+      ]
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function simpleMultipleMappings() {
     $mappings = parent::simpleMultipleMappings();
 
     return array_merge(
       $mappings, [
         'field_social_history',
-        'field_partner_hiv_testing',
       ]
     );
   }

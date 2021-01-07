@@ -980,15 +980,19 @@ foreach ($health_centers_ids as $health_center_id) {
 
   // Handling individual encounters and measurements.
   if (empty($health_center_patients_ids)) {
+    // There are no patients assigned to health center.
+    // Skip to next health center.
     continue;
   }
 
   $individual_participants_ids = hedley_migrate_resolve_for_export('individual_participant', 'field_person', [$health_center_patients_ids]);
-
   if (empty($individual_participants_ids)) {
+    // There are no individual participations for patients assigned
+    // to health center. Skip to next health center.
     continue;
   }
 
+  // Export individual participants.
   foreach ($individual_participants_ids as $individual_participant_id) {
     $wrapper = entity_metadata_wrapper('node', $individual_participant_id);
 
@@ -1005,6 +1009,7 @@ foreach ($health_centers_ids as $health_center_id) {
     ];
   }
 
+  // Export acute illness encounters.
   $acute_illness_encounters_ids = hedley_migrate_resolve_for_export('acute_illness_encounter', 'field_individual_participant', [$individual_participants_ids]);
   foreach ($acute_illness_encounters_ids as $acute_illness_encounter_id) {
     $wrapper = entity_metadata_wrapper('node', $acute_illness_encounter_id);
@@ -1018,6 +1023,183 @@ foreach ($health_centers_ids as $health_center_id) {
     ];
   }
 
+  // Export acute illness measurements.
+  foreach ($acute_illness_measurements as $type => $values) {
+    $ids = hedley_migrate_resolve_for_export($type, 'field_acute_illness_encounter', $acute_illness_encounters_ids);
+
+    foreach ($ids as $id) {
+      $wrapper = entity_metadata_wrapper('node', $id);
+      $common_values = [
+        $wrapper->getIdentifier(),
+        $wrapper->field_person->getIdentifier(),
+        hedley_migrate_export_date_field($wrapper->field_date_measured->value()),
+        $wrapper->field_nurse->getIdentifier(),
+        $wrapper->created->raw(),
+        $wrapper->field_acute_illness_encounter->getIdentifier(),
+      ];
+
+      switch ($type) {
+        case 'acute_findings':
+          $type_based_values = [
+            implode('|', $wrapper->field_findings_signs_general->value()),
+            implode('|', $wrapper->field_findings_signs_respiratory->value()),
+          ];
+          break;
+
+        case 'acute_illness_danger_signs':
+          $type_based_values = [
+            implode('|', $wrapper->field_acute_illness_danger_signs->value()),
+          ];
+          break;
+
+        case 'acute_illness_muac':
+          $type_based_values = [
+            $wrapper->field_muac->value(),
+          ];
+          break;
+
+        case 'acute_illness_nutrition':
+          $type_based_values = [
+            implode('|', $wrapper->field_nutrition_signs->value()),
+          ];
+          break;
+
+        case 'acute_illness_vitals':
+          $type_based_values = [
+            $wrapper->field_respiratory_rate->value(),
+            $wrapper->field_body_temperature->value(),
+          ];
+          break;
+
+        case 'call_114':
+          $type_based_values = [
+            implode('|', $wrapper->field_114_contact->value()),
+            implode('|', $wrapper->field_114_recommendation->value()),
+            implode('|', $wrapper->field_site_recommendation->value()),
+          ];
+          break;
+
+        case 'exposure':
+          $type_based_values = [
+            implode('|', $wrapper->field_exposure->value()),
+          ];
+          break;
+
+        case 'hc_contact':
+          $type_based_values = [
+            implode('|', $wrapper->field_hc_contact->value()),
+            implode('|', $wrapper->field_hc_recommendation->value()),
+            implode('|', $wrapper->field_hc_response_time->value()),
+            implode('|', $wrapper->field_ambulance_arrival_time->value()),
+          ];
+          break;
+
+        case 'health_education':
+          $type_based_values = [
+            implode('|', $wrapper->field_health_education_signs->value()),
+          ];
+          break;
+
+        case 'isolation':
+          $type_based_values = [
+            implode('|', $wrapper->field_isolation->value()),
+            implode('|', $wrapper->field_reason_for_not_isolating->value()),
+          ];
+          break;
+
+        case 'malaria_testing':
+          $type_based_values = [
+            $wrapper->field_malaria_rapid_test->value(),
+          ];
+          break;
+
+        case 'medication_distribution':
+          $type_based_values = [
+            implode('|', $wrapper->field_prescribed_medication->value()),
+            implode('|', $wrapper->field_non_administration_reason->value()),
+          ];
+          break;
+
+        case 'send_to_hc':
+          $type_based_values = [
+            implode('|', $wrapper->field_send_to_hc->value()),
+          ];
+          break;
+
+        case 'symptoms_general':
+          $type_based_values = [
+            $wrapper->field_fever_period->value(),
+            $wrapper->field_chills_period->value(),
+            $wrapper->field_night_sweats_period->value(),
+            $wrapper->field_body_aches_period->value(),
+            $wrapper->field_headache_period->value(),
+            $wrapper->field_lethargy_period->value(),
+            $wrapper->field_poor_suck_period->value(),
+            $wrapper->field_unable_to_drink_period->value(),
+            $wrapper->field_unable_to_eat_period->value(),
+            $wrapper->field_increased_thirst_period->value(),
+            $wrapper->field_dry_mouth_period->value(),
+            $wrapper->field_severe_weakness_period->value(),
+            $wrapper->field_yellow_eyes_period->value(),
+            $wrapper->field_coke_colored_urine_period->value(),
+            $wrapper->field_convulsions_period->value(),
+            $wrapper->field_spontaneos_bleeding_period->value(),
+          ];
+          break;
+
+        case 'symptoms_gi':
+          $type_based_values = [
+            $wrapper->field_bloody_diarrhea_period->value(),
+            $wrapper->field_non_bloody_diarrhea_period->value(),
+            $wrapper->field_nausea_period->value(),
+            $wrapper->field_vomiting_period->value(),
+            $wrapper->field_abdominal_pain_period->value(),
+            implode('|', $wrapper->field_symptoms_gi_derived_signs->value()),
+          ];
+          break;
+
+        case 'symptoms_respiratory':
+          $type_based_values = [
+            $wrapper->field_cough_period->value(),
+            $wrapper->field_shortness_of_breath_period->value(),
+            $wrapper->field_nasal_congestion_period->value(),
+            $wrapper->field_blood_in_sputum_period->value(),
+            $wrapper->field_sore_throat_period->value(),
+            $wrapper->field_loss_of_smell_period->value(),
+            $wrapper->field_stabbing_chest_pain_period->value(),
+          ];
+          break;
+
+        case 'travel_history':
+          $type_based_values = [
+            implode('|', $wrapper->field_travel_history->value()),
+          ];
+          break;
+
+        case 'treatment_history':
+          $type_based_values = [
+            implode('|', $wrapper->field_treatment_history->value()),
+          ];
+          break;
+
+        case 'treatment_ongoing':
+          $type_based_values = [
+            implode('|', $wrapper->field_treatment_ongoing->value()),
+            $wrapper->field_reason_for_not_taking->value(),
+            $wrapper->field_missed_doses->value(),
+            implode('|', $wrapper->field_adverse_events->value()),
+          ];
+          break;
+
+        default:
+          $type_based_values = [];
+      }
+
+      $acute_illness_measurements[$type][] = array_merge($common_values, $type_based_values);
+    }
+  }
+
+  // Export nutrition encounters.
   $nutrition_encounters_ids = hedley_migrate_resolve_for_export('nutrition_encounter', 'field_individual_participant', [$individual_participants_ids]);
   foreach ($nutrition_encounters_ids as $nutrition_encounter_id) {
     $wrapper = entity_metadata_wrapper('node', $nutrition_encounter_id);
@@ -1030,6 +1212,73 @@ foreach ($health_centers_ids as $health_center_id) {
     ];
   }
 
+  // Export nutrition measurements.
+  foreach ($nutrition_measurements as $type => $values) {
+    $ids = hedley_migrate_resolve_for_export($type, 'field_nutrition_encounter', $nutrition_encounters_ids);
+
+    foreach ($ids as $id) {
+      $wrapper = entity_metadata_wrapper('node', $id);
+      $common_values = [
+        $wrapper->getIdentifier(),
+        $wrapper->field_person->getIdentifier(),
+        hedley_migrate_export_date_field($wrapper->field_date_measured->value()),
+        $wrapper->field_nurse->getIdentifier(),
+        $wrapper->created->raw(),
+        $wrapper->field_nutrition_encounter->getIdentifier(),
+      ];
+
+      switch ($type) {
+        case 'nutrition_height':
+          $type_based_values = [
+            $wrapper->field_height->value(),
+            $wrapper->field_zscore_age->value(),
+          ];
+          break;
+
+        case 'nutrition_muac':
+          $type_based_values = [
+            $wrapper->field_muac->value(),
+          ];
+          break;
+
+        case 'nutrition_nutrition':
+          $type_based_values = [
+            implode('|', $wrapper->field_nutrition_signs->value()),
+          ];
+          break;
+
+        case 'nutrition_photo':
+          if ($health_centers_data[$health_center_id]['anonymize']) {
+            $gender = $wrapper->field_person->field_gender->value();
+            $birth_date = $wrapper->field_person->field_birth_date->value();
+            $photo = hedley_migrate_allocate_photo_for_person($gender, $birth_date);
+          }
+          else {
+            $image = $wrapper->field_photo->value();
+            $photo = empty($image) ? '' : hedley_migrate_export_real_image($image['fid'], $image['filename']);
+          }
+          $type_based_values = [$photo];
+          break;
+
+        case 'nutrition_weight':
+          $type_based_values = [
+            $wrapper->field_weight->value(),
+            $wrapper->field_bmi->value(),
+            $wrapper->field_zscore_age->value(),
+            $wrapper->field_zscore_length->value(),
+            $wrapper->field_zscore_bmi->value(),
+          ];
+          break;
+
+        default:
+          $type_based_values = [];
+      }
+
+      $nutrition_measurements[$type][] = array_merge($common_values, $type_based_values);
+    }
+  }
+
+  // Export prenatal encounters.
   $prenatal_encounters_ids = hedley_migrate_resolve_for_export('prenatal_encounter', 'field_individual_participant', [$individual_participants_ids]);
   foreach ($prenatal_encounters_ids as $prenatal_encounter_id) {
     $wrapper = entity_metadata_wrapper('node', $prenatal_encounter_id);
@@ -1042,6 +1291,157 @@ foreach ($health_centers_ids as $health_center_id) {
     ];
   }
 
+  // Export prenatal measurements.
+  foreach ($prenatal_measurements as $type => $values) {
+    $ids = hedley_migrate_resolve_for_export($type, 'field_prenatal_encounter', $prenatal_encounters_ids);
+
+    foreach ($ids as $id) {
+      $wrapper = entity_metadata_wrapper('node', $id);
+      $common_values = [
+        $wrapper->getIdentifier(),
+        $wrapper->field_person->getIdentifier(),
+        hedley_migrate_export_date_field($wrapper->field_date_measured->value()),
+        $wrapper->field_nurse->getIdentifier(),
+        $wrapper->created->raw(),
+        $wrapper->field_prenatal_encounter->getIdentifier(),
+      ];
+
+      switch ($type) {
+        case 'breast_exam':
+          $type_based_values = [
+            implode('|', $wrapper->field_breast->value()),
+            $wrapper->field_breast_self_exam->value(),
+          ];
+          break;
+
+        case 'core_physical_exam':
+          $type_based_values = [
+            implode('|', $wrapper->field_head_hair->value()),
+            implode('|', $wrapper->field_eyes->value()),
+            implode('|', $wrapper->field_neck->value()),
+            implode('|', $wrapper->field_heart->value()),
+            $wrapper->field_heart_murmur->value(),
+            implode('|', $wrapper->field_lungs->value()),
+            implode('|', $wrapper->field_abdomen->value()),
+            implode('|', $wrapper->field_hands->value()),
+            implode('|', $wrapper->field_legs->value()),
+          ];
+          break;
+
+        case 'danger_signs':
+          $type_based_values = [
+            implode('|', $wrapper->field_danger_signs->value()),
+          ];
+          break;
+
+        case 'last_menstrual_period':
+          $type_based_values = [
+            hedley_migrate_export_date_field($wrapper->field_last_menstrual_period->value()),
+            $wrapper->field_confident->value(),
+          ];
+          break;
+
+        case 'medical_history':
+          $type_based_values = [
+            implode('|', $wrapper->field_medical_history->value()),
+          ];
+          break;
+
+        case 'medication':
+          $type_based_values = [
+            implode('|', $wrapper->field_medication->value()),
+          ];
+          break;
+
+        case 'obstetrical_exam':
+          $type_based_values = [
+            $wrapper->field_fundal_height->value(),
+            $wrapper->field_fetal_presentation->value(),
+            $wrapper->field_fetal_movement->value(),
+            $wrapper->field_fetal_heart_rate->value(),
+            $wrapper->field_c_section_scar->value(),
+          ];
+          break;
+
+        case 'obstetric_history':
+          $type_based_values = [
+            $wrapper->field_currently_pregnant->value(),
+            $wrapper->field_term_pregnancy->value(),
+            $wrapper->field_preterm_pregnancy->value(),
+            $wrapper->field_stillbirths_at_term->value(),
+            $wrapper->field_stillbirths_preterm->value(),
+            $wrapper->field_abortions->value(),
+            $wrapper->field_live_children->value(),
+          ];
+          break;
+
+        case 'obstetric_history_step2':
+          $type_based_values = [
+            $wrapper->field_c_sections->value(),
+            implode('|', $wrapper->field_c_section_reason->value()),
+            implode('|', $wrapper->field_previous_delivery_period->value()),
+            implode('|', $wrapper->field_obstetric_history->value()),
+            implode('|', $wrapper->field_previous_delivery->value()),
+          ];
+          break;
+
+        case 'prenatal_family_planning':
+          $type_based_values = [
+            implode('|', $wrapper->field_family_planning_signs->value()),
+          ];
+          break;
+
+        case 'prenatal_nutrition':
+          $type_based_values = [
+            $wrapper->field_height->value(),
+            $wrapper->field_height->value(),
+            $wrapper->field_height->value(),
+          ];
+          break;
+
+        case 'prenatal_photo':
+          if ($health_centers_data[$health_center_id]['anonymize']) {
+            $gender = $wrapper->field_person->field_gender->value();
+            $birth_date = $wrapper->field_person->field_birth_date->value();
+            $photo = hedley_migrate_allocate_photo_for_person($gender, $birth_date);
+          }
+          else {
+            $image = $wrapper->field_photo->value();
+            $photo = empty($image) ? '' : hedley_migrate_export_real_image($image['fid'], $image['filename']);
+          }
+          $type_based_values = [$photo];
+          break;
+
+        case 'resource':
+          $type_based_values = [
+            implode('|', $wrapper->field_resources->value()),
+          ];
+          break;
+
+        case 'social_history':
+          $type_based_values = [
+            implode('|', $wrapper->field_social_history->value()),
+            $wrapper->field_partner_hiv_testing->value(),
+          ];
+          break;
+
+        case 'vitals':
+          $type_based_values = [
+            $wrapper->field_sys->value(),
+            $wrapper->field_dia->value(),
+            $wrapper->field_heart_rate->value(),
+            $wrapper->field_respiratory_rate->value(),
+            $wrapper->field_body_temperature->value(),
+          ];
+          break;
+
+        default:
+          $type_based_values = [];
+      }
+
+      $prenatal_measurements[$type][] = array_merge($common_values, $type_based_values);
+    }
+  }
 }
 
 $mapping = [
@@ -1060,9 +1460,18 @@ $mapping = [
   'prenatal_encounter' => array_values($prenatal_encounters),
 ];
 
-// Group measurements.
+// Measurements mapping.
 foreach (array_keys($group_measurements) as $type) {
   $mapping[$type] = $group_measurements[$type];
+}
+foreach (array_keys($acute_illness_measurements) as $type) {
+  $mapping[$type] = $acute_illness_measurements[$type];
+}
+foreach (array_keys($nutrition_measurements) as $type) {
+  $mapping[$type] = $nutrition_measurements[$type];
+}
+foreach (array_keys($prenatal_measurements) as $type) {
+  $mapping[$type] = $prenatal_measurements[$type];
 }
 
 foreach ($mapping as $name => $rows) {
