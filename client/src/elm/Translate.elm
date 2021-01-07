@@ -1631,12 +1631,12 @@ translationSet trans =
         AdverseEventSinglePlural val ->
             if val == 1 then
                 { english = "Adverse event"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Ikintu kidasanzwe (bitewe n'imiti wafashe)"
                 }
 
             else
                 { english = "Adverse events"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Ibintu bidasanzwe (bitewe n'imiti wafashe)"
                 }
 
         Age months days ->
@@ -4770,7 +4770,7 @@ translationSet trans =
             case reason of
                 NotTakingAdverseEvent ->
                     { english = "Adverse event"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibintu bidasanzwe (bitewe n'imiti wafashe)"
                     }
 
                 NotTakingNoMoney ->
