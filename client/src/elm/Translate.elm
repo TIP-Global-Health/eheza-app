@@ -2183,12 +2183,12 @@ translationSet trans =
         ConditionImproving isImproving ->
             if isImproving then
                 { english = "Improving"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Ari koroherwa"
                 }
 
             else
                 { english = "Not improving"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Ntago yoroherwa"
                 }
 
         ConditionImprovingQuestion ->
