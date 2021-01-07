@@ -15,9 +15,8 @@ if (!drupal_is_cli()) {
 
 // For sample db: Rukura, Rwankuba, Test.
 $health_centers_data = [
-  7091 => ['anonymize' => TRUE],
-  7092 => ['anonymize' => TRUE],
-  28589 => ['anonymize' => FALSE],
+  4 => ['anonymize' => TRUE],
+  5 => ['anonymize' => TRUE],
 ];
 
 // In case we need to pull real files, make sure
@@ -230,11 +229,13 @@ $individual_participants = [
   ],
 ];
 $acute_illness_encounters = [
-  'id',
-  'field_individual_participant',
-  'field_scheduled_date',
-  'created',
-  'field_acute_illness_diagnosis',
+  [
+    'id',
+    'field_individual_participant',
+    'field_scheduled_date',
+    'created',
+    'field_acute_illness_diagnosis',
+  ],
 ];
 $acute_illness_measurements_fields = [
   'id',
@@ -437,10 +438,12 @@ $acute_illness_measurements = [
   ],
 ];
 $nutrition_encounters = [
-  'id',
-  'field_individual_participant',
-  'field_scheduled_date',
-  'created',
+  [
+    'id',
+    'field_individual_participant',
+    'field_scheduled_date',
+    'created',
+  ],
 ];
 $nutrition_measurements_fields = [
   'id',
@@ -498,10 +501,12 @@ $nutrition_measurements = [
   ],
 ];
 $prenatal_encounters = [
-  'id',
-  'field_individual_participant',
-  'field_scheduled_date',
-  'created',
+  [
+    'id',
+    'field_individual_participant',
+    'field_scheduled_date',
+    'created',
+  ],
 ];
 $prenatal_measurements_fields = [
   'id',
@@ -779,7 +784,7 @@ foreach ($health_centers_ids as $health_center_id) {
     $group_encounters[] = [
       $wrapper->getIdentifier(),
       $wrapper->field_clinic->getIdentifier(),
-      hedley_migrate_export_date_field($wrapper->field_scheduled_date->value(), TRUE),
+      hedley_migrate_export_date2_field($wrapper->field_scheduled_date->value(), TRUE),
       $wrapper->created->raw(),
     ];
   }
@@ -796,14 +801,17 @@ foreach ($health_centers_ids as $health_center_id) {
       $wrapper->field_person->getIdentifier(),
       $wrapper->field_adult->getIdentifier(),
       $wrapper->field_adult_activities->value(),
-      hedley_migrate_export_date_field($wrapper->field_expected->value()),
+      hedley_migrate_export_date2_field($wrapper->field_expected->value()),
       $wrapper->field_clinic->getIdentifier(),
       $wrapper->created->raw(),
     ];
   }
 
   $unique_mothers_ids = array_unique($mothers_ids);
-  $people_ids = array_merge($unique_mothers_ids, array_unique($children_ids));
+  $groups_patients_ids = array_merge($unique_mothers_ids, array_unique($children_ids));
+  $health_center_patients_ids = hedley_migrate_resolve_for_export('person', 'field_health_center', [$health_center_id]);
+
+  $people_ids = array_unique(array_merge($groups_patients_ids, $health_center_patients_ids));
   foreach ($people_ids as $person_id) {
     $wrapper = entity_metadata_wrapper('node', $person_id);
     $gender = $wrapper->field_gender->value();
@@ -848,7 +856,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $first_name,
       $second_name,
       $gender,
-      date('Y-m-d', $birth_date),
+      hedley_migrate_export_date_field($birth_date),
       $wrapper->field_health_center->getIdentifier(),
       $wrapper->field_birth_date_estimated->value(),
       $wrapper->field_hmis_number->value(),
@@ -891,7 +899,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $common_values = [
         $wrapper->getIdentifier(),
         $wrapper->field_person->getIdentifier(),
-        date('Y-m-d', $wrapper->field_date_measured->value()),
+        hedley_migrate_export_date_field($wrapper->field_date_measured->value()),
         $wrapper->field_nurse->getIdentifier(),
         $wrapper->created->raw(),
         $wrapper->field_session->getIdentifier(),
@@ -969,6 +977,71 @@ foreach ($health_centers_ids as $health_center_id) {
       $group_measurements[$type][] = array_merge($common_values, $type_based_values);
     }
   }
+
+  // Handling individual encounters and measurements.
+  if (empty($health_center_patients_ids)) {
+    continue;
+  }
+
+  $individual_participants_ids = hedley_migrate_resolve_for_export('individual_participant', 'field_person', [$health_center_patients_ids]);
+
+  if (empty($individual_participants_ids)) {
+    continue;
+  }
+
+  foreach ($individual_participants_ids as $individual_participant_id) {
+    $wrapper = entity_metadata_wrapper('node', $individual_participant_id);
+
+    $individual_participants[$individual_participant_id] = [
+      $individual_participant_id,
+      $wrapper->field_person->getIdentifier(),
+      hedley_migrate_export_date2_field($wrapper->field_expected->value()),
+      $wrapper->field_encounter_type->value(),
+      hedley_migrate_export_date_field($wrapper->field_date_concluded->value()),
+      $wrapper->field_outcome->value(),
+      $wrapper->field_outcome_location->value(),
+      hedley_migrate_export_date_field($wrapper->field_expected_date_concluded->value()),
+      $wrapper->created->raw(),
+    ];
+  }
+
+  $acute_illness_encounters_ids = hedley_migrate_resolve_for_export('acute_illness_encounter', 'field_individual_participant', [$individual_participants_ids]);
+  foreach ($acute_illness_encounters_ids as $acute_illness_encounter_id) {
+    $wrapper = entity_metadata_wrapper('node', $acute_illness_encounter_id);
+
+    $acute_illness_encounters[$acute_illness_encounter_id] = [
+      $acute_illness_encounter_id,
+      $wrapper->field_individual_participant->getIdentifier(),
+      hedley_migrate_export_date2_field($wrapper->field_scheduled_date->value()),
+      $wrapper->created->raw(),
+      $wrapper->field_acute_illness_diagnosis->value(),
+    ];
+  }
+
+  $nutrition_encounters_ids = hedley_migrate_resolve_for_export('nutrition_encounter', 'field_individual_participant', [$individual_participants_ids]);
+  foreach ($nutrition_encounters_ids as $nutrition_encounter_id) {
+    $wrapper = entity_metadata_wrapper('node', $nutrition_encounter_id);
+
+    $nutrition_encounters[$nutrition_encounter_id] = [
+      $nutrition_encounter_id,
+      $wrapper->field_individual_participant->getIdentifier(),
+      hedley_migrate_export_date2_field($wrapper->field_scheduled_date->value()),
+      $wrapper->created->raw(),
+    ];
+  }
+
+  $prenatal_encounters_ids = hedley_migrate_resolve_for_export('prenatal_encounter', 'field_individual_participant', [$individual_participants_ids]);
+  foreach ($prenatal_encounters_ids as $prenatal_encounter_id) {
+    $wrapper = entity_metadata_wrapper('node', $prenatal_encounter_id);
+
+    $prenatal_encounters[$prenatal_encounter_id] = [
+      $prenatal_encounter_id,
+      $wrapper->field_individual_participant->getIdentifier(),
+      hedley_migrate_export_date2_field($wrapper->field_scheduled_date->value()),
+      $wrapper->created->raw(),
+    ];
+  }
+
 }
 
 $mapping = [
@@ -981,6 +1054,10 @@ $mapping = [
   'pmtct_participant' => $participants,
   'person' => array_values($people),
   'relationship' => array_values($relationships),
+  'individual_participant' => array_values($individual_participants),
+  'acute_illness_encounter' => array_values($acute_illness_encounters),
+  'nutrition_encounter' => array_values($nutrition_encounters),
+  'prenatal_encounter' => array_values($prenatal_encounters),
 ];
 
 // Group measurements.
