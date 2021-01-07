@@ -5029,7 +5029,7 @@ translationSet trans =
 
         RespiratoryDistress ->
             { english = "Respiratory Distress"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ahumeka bimugoye"
             }
 
         RespiratoryRate ->
@@ -5545,7 +5545,7 @@ translationSet trans =
 
         SymptomsAtFirstEncounter ->
             { english = "Symptoms at first encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibimenyetso ku isuzuma rya mbere"
             }
 
         SymptomsGeneralSign sign ->
