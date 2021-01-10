@@ -16,6 +16,19 @@ class HedleyMigratePhotos extends HedleyMigrateGroupMeasurementBase {
   protected $bundle = 'photo';
 
   /**
+   * {@inheritdoc}
+   */
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'field_photo',
+      ]
+    );
+  }
+
+  /**
    * HedleyMigratePhotos constructor.
    *
    * {@inheritdoc}
@@ -25,7 +38,7 @@ class HedleyMigratePhotos extends HedleyMigrateGroupMeasurementBase {
 
     $this->addFieldMapping('field_photo', 'field_photo');
     $this->addFieldMapping('field_photo:file_replace')
-      ->defaultValue(FILE_EXISTS_REPLACE);
+      ->defaultValue(FILE_EXISTS_RENAME);
     $this->addFieldMapping('field_photo:source_dir')
       ->defaultValue($this->getMigrateDirectory() . '/images/');
   }
