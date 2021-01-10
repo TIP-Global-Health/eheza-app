@@ -82,6 +82,39 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_acute_illness_danger_signs'.
+  $field_bases['field_acute_illness_danger_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_acute_illness_danger_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'condition-not-improving' => 'Condition not improving',
+        'unable-drink-suck' => 'Unable to to drink/suck',
+        'vomiting' => 'Vomiting',
+        'convulsions' => 'Convulsions',
+        'lethargy-unconsciousness' => 'Lethargy or unconsciousness',
+        'respiratory-distress' => 'Respiratory distress',
+        'spontaneous-bleeding' => 'Spontaneous bleeding',
+        'bloody-diarrhea' => 'Bloody Diarrhea',
+        'new-skip-rash' => 'New Skin Rash',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_acute_illness_encounter'.
   $field_bases['field_acute_illness_encounter'] = array(
     'active' => 1,
@@ -115,6 +148,36 @@ function hedley_acute_illness_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'entityreference',
+  );
+
+  // Exported field_base: 'field_adverse_events'.
+  $field_bases['field_adverse_events'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_adverse_events',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'rash-itching' => 'Rash or Itching',
+        'fever' => 'Fever',
+        'diarrhea' => 'Diarrhea',
+        'vomiting' => 'Vomiting',
+        'fatigue' => 'Fatigue',
+        'other' => 'Other',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_ambulance_arrival_time'.
@@ -458,6 +521,31 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_health_education_signs'.
+  $field_bases['field_health_education_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_health_education_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'education-for-diagnosis' => 'Education for diagnosis',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_increased_thirst_period'.
   $field_bases['field_increased_thirst_period'] = array(
     'active' => 1,
@@ -556,6 +644,21 @@ function hedley_acute_illness_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_missed_doses'.
+  $field_bases['field_missed_doses'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_missed_doses',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
   );
 
   // Exported field_base: 'field_nasal_congestion_period'.
@@ -723,6 +826,34 @@ function hedley_acute_illness_field_default_field_bases() {
         'can-not-separate' => 'Can not separate from family',
         'other' => 'Other',
         'n-a' => 'Not applicable',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_reason_for_not_taking'.
+  $field_bases['field_reason_for_not_taking'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_reason_for_not_taking',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'adverse-event' => 'Adverse event',
+        'no-money' => 'No money for medication',
+        'memory-problems' => 'Memory problems',
+        'other' => 'Other',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),
@@ -933,6 +1064,34 @@ function hedley_acute_illness_field_default_field_bases() {
         'malaria-today-helped' => 'Malaria medication today helped',
         'malaria-past-month' => 'Malaria medication within past month',
         'malaria-past-month-helped' => 'Malaria medication within past month helped',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_treatment_ongoing'.
+  $field_bases['field_treatment_ongoing'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_treatment_ongoing',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'taken-as-prescribed' => 'Taken medication as prescribed',
+        'missed-doses' => 'Missed any doses of medications',
+        'feel-better' => 'Feel better after taking medications',
+        'side-effects' => 'Experience side effects of the medication',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

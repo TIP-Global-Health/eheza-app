@@ -32,6 +32,9 @@ decodeRevision =
                     "acute_findings" ->
                         decodeWithUuid AcuteFindingsRevision decodeAcuteFindings
 
+                    "acute_illness_danger_signs" ->
+                        decodeWithUuid AcuteIllnessDangerSignsRevision decodeAcuteIllnessDangerSigns
+
                     "acute_illness_encounter" ->
                         decodeWithUuid AcuteIllnessEncounterRevision decodeAcuteIllnessEncounter
 
@@ -88,6 +91,9 @@ decodeRevision =
 
                     "health_center" ->
                         decodeWithUuid HealthCenterRevision decodeHealthCenter
+
+                    "health_education" ->
+                        decodeWithUuid HealthEducationRevision decodeHealthEducation
 
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight
@@ -214,6 +220,9 @@ decodeRevision =
 
                     "treatment_history" ->
                         decodeWithUuid TreatmentReviewRevision decodeTreatmentReview
+
+                    "treatment_ongoing" ->
+                        decodeWithUuid TreatmentOngoingRevision decodeTreatmentOngoing
 
                     "village" ->
                         decodeWithUuid VillageRevision decodeVillage

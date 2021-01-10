@@ -203,36 +203,36 @@ viewPrenatalActions language currentDate selectedHealthCenter id db prenatalSess
     in
     div []
         [ p [ class "label-antenatal-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter ]
-        , button
+        , div
             (classList
                 [ ( "ui primary button", True )
                 , ( "disabled", firstVisitButtonDisabled )
                 ]
                 :: firstVisitAction
             )
-            [ span [ class "text" ] [ text <| translate language <| Translate.IndividualEncounterFirstVisit AntenatalEncounter ]
-            , span [ class "icon-back" ] []
+            [ div [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterFirstVisit AntenatalEncounter ]
+            , div [ class "icon-back" ] []
             ]
-        , button
+        , div
             (classList
                 [ ( "ui primary button", True )
                 , ( "disabled", not firstVisitButtonDisabled || encounterWasCompletedToday )
                 ]
                 :: subsequentVisitAction
             )
-            [ span [ class "text" ] [ text <| translate language <| Translate.IndividualEncounterSubsequentVisit AntenatalEncounter ]
-            , span [ class "icon-back" ] []
+            [ div [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterSubsequentVisit AntenatalEncounter ]
+            , div [ class "icon-back" ] []
             ]
         , div [ class "separator" ] []
         , p [ class "label-pregnancy-concluded" ] [ text <| translate language Translate.PregnancyConcludedLabel ]
-        , button
+        , div
             (classList
                 [ ( "ui primary button", True )
                 , ( "disabled", List.isEmpty navigateToPregnancyOutcomeAction )
                 ]
                 :: navigateToPregnancyOutcomeAction
             )
-            [ span [ class "text" ] [ text <| translate language Translate.RecordPregnancyOutcome ]
-            , span [ class "icon-back" ] []
+            [ div [ class "button-label" ] [ text <| translate language Translate.RecordPregnancyOutcome ]
+            , div [ class "icon-back" ] []
             ]
         ]

@@ -1661,6 +1661,136 @@ encodeAcuteIllnessMuac =
     encodeAcuteIllnessMeasurement (encodeMuacValueWithType "acute_illness_muac")
 
 
+encodeTreatmentOngoing : TreatmentOngoing -> List ( String, Value )
+encodeTreatmentOngoing =
+    encodeAcuteIllnessMeasurement encodeTreatmentOngoingValue
+
+
+encodeTreatmentOngoingValue : TreatmentOngoingValue -> List ( String, Value )
+encodeTreatmentOngoingValue value =
+    [ ( "treatment_ongoing", encodeEverySet encodeTreatmentOngoingSign value.signs )
+    , ( "reason_for_not_taking", encodeReasonForNotTakingSign value.reasonForNotTaking )
+    , ( "missed_doses", int value.missedDoses )
+    , ( "adverse_events", encodeEverySet encodeAdverseEvent value.adverseEvents )
+    , ( "deleted", bool False )
+    , ( "type", string "treatment_ongoing" )
+    ]
+
+
+encodeTreatmentOngoingSign : TreatmentOngoingSign -> Value
+encodeTreatmentOngoingSign sign =
+    string <|
+        case sign of
+            TakenAsPrescribed ->
+                "taken-as-prescribed"
+
+            MissedDoses ->
+                "missed-doses"
+
+            FeelingBetter ->
+                "feel-better"
+
+            SideEffects ->
+                "side-effects"
+
+            NoTreatmentOngoingSign ->
+                "none"
+
+
+encodeReasonForNotTakingSign : ReasonForNotTaking -> Value
+encodeReasonForNotTakingSign reason =
+    string <|
+        case reason of
+            NotTakingAdverseEvent ->
+                "adverse-event"
+
+            NotTakingNoMoney ->
+                "no-money"
+
+            NotTakingMemoryProblems ->
+                "memory-problems"
+
+            NotTakingOther ->
+                "other"
+
+            NoReasonForNotTakingSign ->
+                "none"
+
+
+encodeAdverseEvent : AdverseEvent -> Value
+encodeAdverseEvent event =
+    string <|
+        case event of
+            AdverseEventRashOrItching ->
+                "rash-itching"
+
+            AdverseEventFever ->
+                "fever"
+
+            AdverseEventDiarrhea ->
+                "diarrhea"
+
+            AdverseEventVomiting ->
+                "vomiting"
+
+            AdverseEventFatigue ->
+                "fatigue"
+
+            AdverseEventOther ->
+                "other"
+
+            NoAdverseEvent ->
+                "none"
+
+
+encodeAcuteIllnessDangerSigns : AcuteIllnessDangerSigns -> List ( String, Value )
+encodeAcuteIllnessDangerSigns =
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessDangerSignsValue
+
+
+encodeAcuteIllnessDangerSignsValue : EverySet AcuteIllnessDangerSign -> List ( String, Value )
+encodeAcuteIllnessDangerSignsValue value =
+    [ ( "acute_illness_danger_signs", encodeEverySet encodeAcuteIllnessDangerSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "acute_illness_danger_signs" )
+    ]
+
+
+encodeAcuteIllnessDangerSign : AcuteIllnessDangerSign -> Value
+encodeAcuteIllnessDangerSign sign =
+    string <|
+        case sign of
+            DangerSignConditionNotImproving ->
+                "condition-not-improving"
+
+            DangerSignUnableDrinkSuck ->
+                "unable-drink-suck"
+
+            DangerSignVomiting ->
+                "vomiting"
+
+            DangerSignConvulsions ->
+                "convulsions"
+
+            DangerSignLethargyUnconsciousness ->
+                "lethargy-unconsciousness"
+
+            DangerSignRespiratoryDistress ->
+                "respiratory-distress"
+
+            DangerSignSpontaneousBleeding ->
+                "spontaneous-bleeding"
+
+            DangerSignBloodyDiarrhea ->
+                "bloody-diarrhea"
+
+            DangerSignNewSkinRash ->
+                "new-skip-rash"
+
+            NoAcuteIllnessDangerSign ->
+                "none"
+
+
 encodeAcuteIllnessNutrition : AcuteIllnessNutrition -> List ( String, Value )
 encodeAcuteIllnessNutrition =
     encodeAcuteIllnessMeasurement encodeAcuteIllnessNutritionValue
@@ -1669,3 +1799,27 @@ encodeAcuteIllnessNutrition =
 encodeAcuteIllnessNutritionValue : EverySet ChildNutritionSign -> List ( String, Value )
 encodeAcuteIllnessNutritionValue nutritions =
     encodeNutritionValueWithType "acute_illness_nutrition" nutritions
+
+
+encodeHealthEducation : HealthEducation -> List ( String, Value )
+encodeHealthEducation =
+    encodeAcuteIllnessMeasurement encodeHealthEducationValue
+
+
+encodeHealthEducationValue : EverySet HealthEducationSign -> List ( String, Value )
+encodeHealthEducationValue value =
+    [ ( "health_education_signs", encodeEverySet encodeHealthEducationSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "health_education" )
+    ]
+
+
+encodeHealthEducationSign : HealthEducationSign -> Value
+encodeHealthEducationSign sign =
+    string <|
+        case sign of
+            MalariaPrevention ->
+                "education-for-diagnosis"
+
+            NoHealthEducationSigns ->
+                "none"
