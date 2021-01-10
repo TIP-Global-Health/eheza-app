@@ -133,13 +133,6 @@ viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis d
         isImproving =
             not <| noImprovementOnSubsequentVisit currentDate data.person data.measurements
 
-        isImprovingColor =
-            if isImproving then
-                div [ class "ui active modal diagnosis-popup blue" ]
-
-            else
-                div [ class "ui active modal diagnosis-popup" ]
-
         respiratoryDistress =
             if respiratoryRateElevated currentDate data.person data.measurements then
                 p [] [ text <| translate language Translate.RespiratoryDistress ]
@@ -161,7 +154,7 @@ viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis d
             else
                 emptyNode
     in
-    isImprovingColor
+    div [ class "ui active modal diagnosis-popup" ]
         [ div [ class "content" ] <|
             [ div [ class "popup-heading-wrapper" ]
                 [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
