@@ -4725,7 +4725,7 @@ translationSet trans =
             }
 
         ProvidedPreventionEducationQuestion ->
-            { english = "Have you provided health education (or anticipatory guidance) for the prevention of"
+            { english = "Have you provided health education and anticipatory guidance for the prevention of"
             , kinyarwanda = Nothing
             }
 
