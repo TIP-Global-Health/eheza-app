@@ -3810,7 +3810,7 @@ translationSet trans =
             else
                 { english = "Missed " ++ String.fromInt val ++ " doses of medication"
                 , kinyarwanda = Just <| "Yasimbutse gufata imiti inshuro" ++ String.fromInt val
-
+                }
 
         ModeOfDelivery mode ->
             case mode of
