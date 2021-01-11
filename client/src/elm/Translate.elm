@@ -3996,7 +3996,7 @@ translationSet trans =
 
                 NextStepsHealthEducation ->
                     { english = "Health Education"
-                    , kinyarwanda = Just ""
+                    , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
         No ->
@@ -4415,7 +4415,7 @@ translationSet trans =
             }
 
         PatientIsolatedQuestion ->
-            { english = "Have you isolated the patient"
+            { english = "Have yoisolated the patient"
             , kinyarwanda = Just "Washyize umurwayi mu kato"
             }
 
@@ -4725,8 +4725,8 @@ translationSet trans =
             }
 
         ProvidedPreventionEducationQuestion ->
-            { english = "Have you provided health education (or anticipatory guidance) for the prevention of"
-            , kinyarwanda = Nothing
+            { english = "Have you provided health education and anticipatory guidance for the prevention of"
+            , kinyarwanda = Just "Mwatanze inyigisho ku buzima n' umurongo ngenderwaho ku kwirinda..."
             }
 
         Province ->
