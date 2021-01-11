@@ -38,7 +38,7 @@ class HedleyMigratePhotos extends HedleyMigrateGroupMeasurementBase {
 
     $this->addFieldMapping('field_photo', 'field_photo');
     $this->addFieldMapping('field_photo:file_replace')
-      ->defaultValue(FILE_EXISTS_RENAME);
+      ->defaultValue(FILE_EXISTS_REPLACE);
     $this->addFieldMapping('field_photo:source_dir')
       ->defaultValue($this->getMigrateDirectory() . '/images/');
   }
