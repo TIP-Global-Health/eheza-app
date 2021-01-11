@@ -5258,7 +5258,7 @@ translationSet trans =
 
         SaveAndRecordOutcome ->
             { english = "Save & Record Outcome"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Bika & Andika iherezo ry'uburwayi"
             }
 
         SaveError ->
@@ -5463,7 +5463,7 @@ translationSet trans =
 
         SevereAcuteMalnutrition ->
             { english = "Severe acute malnutrition"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Imirire mibi ikabije imaze igihe gito "
             }
 
         SevereHemorrhagingPreviousDelivery ->
