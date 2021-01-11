@@ -3757,7 +3757,7 @@ translationSet trans =
 
         MedicationTaken ->
             { english = "Medication taken"
-            , kinyarwanda = Just "Imiti yafashwe"
+            , kinyarwanda = Just "Imiti yafashe"
             }
 
         MedicationTakenAsPrescribedQuestion ->
@@ -3804,13 +3804,13 @@ translationSet trans =
         MissedDosesOfMedicatgion val ->
             if val == 0 then
                 { english = "No missed doses of medication"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Yafashe kandi arangiza neza imiti uko yayandikiwe"
                 }
 
             else
                 { english = "Missed " ++ String.fromInt val ++ " doses of medication"
-                , kinyarwanda = Nothing
-                }
+                , kinyarwanda = Just <| "Yasimbutse gufata imiti inshuro" ++ String.fromInt val
+
 
         ModeOfDelivery mode ->
             case mode of
@@ -5860,12 +5860,12 @@ translationSet trans =
         TakingMedicationAsPrescribed taking ->
             if taking then
                 { english = "Taking medication as prescribed"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Yafashe imiti uko yayandikiwe"
                 }
 
             else
                 { english = "Not taking medication as prescribed because of"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Ntabwo yafashe imiti uko yayandikiwe kubera ko"
                 }
 
         TasksCompleted completed total ->
