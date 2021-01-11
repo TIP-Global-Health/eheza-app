@@ -2188,7 +2188,7 @@ translationSet trans =
 
             else
                 { english = "Not improving"
-                , kinyarwanda = Just "Ntago yoroherwa"
+                , kinyarwanda = Just "Ntabwo ari koroherwa"
                 }
 
         ConditionImprovingQuestion ->
@@ -3555,7 +3555,7 @@ translationSet trans =
 
         MalnutritionWithComplications ->
             { english = "Malnutrition with complications"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Imirire mibi n'indwara ziyikomokaho"
             }
 
         MaritalStatusLabel ->
