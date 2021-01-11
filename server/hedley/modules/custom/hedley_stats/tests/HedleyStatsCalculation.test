@@ -65,13 +65,13 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->createSessionsWithAttendance($attendance_last_year, $attendance_this_year);
 
     // Get total encounters from the stats function.
-    $total_encounters = hedley_stats_get_total_encounters($this->healthCenterId);
+    $total_encounters = hedley_stats_get_total_encounters($this->healthCenterId, []);
 
     // Assert the amount of attendance for last year.
-    $this->assertEqual($attendance_last_year, $total_encounters['fbf']['last_year']);
+    $this->assertEqual($attendance_last_year, $total_encounters['global']['fbf']['last_year']);
 
     // Assert the amount of attendance for this year.
-    $this->assertEqual($attendance_this_year, $total_encounters['fbf']['this_year']);
+    $this->assertEqual($attendance_this_year, $total_encounters['global']['fbf']['this_year']);
   }
 
   /**

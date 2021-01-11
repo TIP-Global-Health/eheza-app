@@ -2,6 +2,7 @@ module Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Dashboard.Model exposing (..)
+import Backend.Entities exposing (VillageId)
 import Backend.Measurement.Decoder exposing (decodeFamilyPlanningSign)
 import Backend.Person.Decoder exposing (decodeGender)
 import Dict as LegacyDict
@@ -9,6 +10,7 @@ import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
+import Restful.Endpoint exposing (decodeEntityUuid, toEntityUuid)
 
 
 decodeDashboardStats : Decoder DashboardStats
@@ -19,7 +21,8 @@ decodeDashboardStats =
         |> required "completed_program" (list decodeParticipantStats)
         |> required "family_planning" (list decodeFamilyPlanningStats)
         |> required "missed_sessions" (list decodeParticipantStats)
-        |> required "total_encounters" decodeTotalEncounters
+        |> required "total_encounters" decodeTotalEncountersData
+        |> required "villages_with_residents" decodeVillagesWithResidents
         |> required "stats_cache_hash" string
 
 
@@ -149,6 +152,28 @@ decodeFamilyPlanningStats =
         |> required "signs" (list decodeFamilyPlanningSign)
 
 
+decodeTotalEncountersData : Decoder TotalEncountersData
+decodeTotalEncountersData =
+    succeed TotalEncountersData
+        |> required "global" decodeTotalEncounters
+        |> required "villages" decodeTotalEncountersForVillages
+
+
+decodeTotalEncountersForVillages : Decoder (Dict VillageId (Dict ProgramType Periods))
+decodeTotalEncountersForVillages =
+    dict decodeTotalEncounters
+        |> andThen
+            (\dict ->
+                LegacyDict.toList dict
+                    |> List.map
+                        (\( k, v ) ->
+                            ( toEntityUuid k, v )
+                        )
+                    |> Dict.fromList
+                    |> succeed
+            )
+
+
 decodeTotalEncounters : Decoder (Dict ProgramType Periods)
 decodeTotalEncounters =
     dict decodePeriods
@@ -191,3 +216,18 @@ programTypeFromString string =
 
         _ ->
             ProgramUnknown
+
+
+decodeVillagesWithResidents : Decoder (Dict VillageId (List Int))
+decodeVillagesWithResidents =
+    dict (list int)
+        |> andThen
+            (\dict ->
+                LegacyDict.toList dict
+                    |> List.map
+                        (\( k, v ) ->
+                            ( toEntityUuid k, v )
+                        )
+                    |> Dict.fromList
+                    |> succeed
+            )

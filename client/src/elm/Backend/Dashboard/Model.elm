@@ -4,6 +4,7 @@ module Backend.Dashboard.Model exposing (..)
 -}
 
 import AssocList as Dict exposing (Dict)
+import Backend.Entities exposing (VillageId)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
 import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
@@ -22,7 +23,8 @@ type alias DashboardStats =
     , completedPrograms : List ParticipantStats
     , familyPlanning : List FamilyPlanningStats
     , missedSessions : List ParticipantStats
-    , totalEncounters : Dict ProgramType Periods
+    , totalEncounters : TotalEncountersData
+    , villagesWithResidents : Dict VillageId (List PersonIdentifier)
 
     -- Hold an md5 hash, so we'd know if we have the most up to date data.
     , cacheHash : String
@@ -36,9 +38,14 @@ emptyModel =
     , completedPrograms = []
     , familyPlanning = []
     , missedSessions = []
-    , totalEncounters = Dict.empty
+    , totalEncounters = TotalEncountersData Dict.empty Dict.empty
+    , villagesWithResidents = Dict.empty
     , cacheHash = ""
     }
+
+
+type alias PersonIdentifier =
+    Int
 
 
 type alias CaseManagementData =
@@ -48,7 +55,7 @@ type alias CaseManagementData =
 
 
 type alias CaseManagement =
-    { identifier : Int
+    { identifier : PersonIdentifier
     , name : String
     , birthDate : NominalDate
     , gender : Gender
@@ -162,3 +169,9 @@ type ProgramType
     | ProgramPmtct
     | ProgramSorwathe
     | ProgramUnknown
+
+
+type alias TotalEncountersData =
+    { global : Dict ProgramType Periods
+    , villages : Dict VillageId (Dict ProgramType Periods)
+    }

@@ -201,7 +201,7 @@ type alias LoggedInModel =
 emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
     { createPersonPage = Pages.Person.Model.emptyCreateModel
-    , dashboardPage = Pages.Dashboard.Model.emptyModel
+    , dashboardPage = Pages.Dashboard.Model.emptyModel Nothing
     , editPersonPage = Pages.Person.Model.emptyEditModel
     , personsPage = Pages.People.Model.emptyModel
     , individualEncounterParticipantsPage = Pages.IndividualEncounterParticipants.Model.emptyModel

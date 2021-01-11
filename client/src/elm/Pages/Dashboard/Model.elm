@@ -2,9 +2,13 @@ module Pages.Dashboard.Model exposing (..)
 
 import AssocList exposing (Dict)
 import Backend.Dashboard.Model exposing (ParticipantStats)
+import Backend.Entities exposing (HealthCenterId, VillageId)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
+import Maybe.Extra exposing (isJust)
 import Pages.Page exposing (DashboardPage(..), Page(..))
 
 
@@ -21,6 +25,7 @@ type FilterProgramType
     | FilterProgramFbf
     | FilterProgramPmtct
     | FilterProgramSorwathe
+    | FilterProgramCommunity
 
 
 type BeneficiariesTableLabels
@@ -111,7 +116,8 @@ caseManagementSubFilters mainFilter =
 
 type alias Model =
     { period : FilterPeriod
-    , programType : FilterProgramType
+    , programTypeFilter : FilterProgramType
+    , selectedVillageFilter : Maybe VillageId
     , beneficiariesGender : FilterGender
     , currentBeneficiariesChartsFilter : DashboardFilter
     , currentBeneficiariesIncidenceChartsFilter : DashboardFilter
@@ -122,10 +128,24 @@ type alias Model =
     }
 
 
-emptyModel : Model
-emptyModel =
+emptyModel : Maybe VillageId -> Model
+emptyModel maybeSelectedVillage =
+    let
+        ( programTypeFilter, selectedVillage ) =
+            if isJust maybeSelectedVillage then
+                -- This is CHW Nurse, as on CHW work with villages.
+                ( FilterProgramCommunity
+                , maybeSelectedVillage
+                )
+
+            else
+                ( FilterAllPrograms
+                , Nothing
+                )
+    in
     { period = OneYear
-    , programType = FilterProgramFbf
+    , programTypeFilter = programTypeFilter
+    , selectedVillageFilter = selectedVillage
     , beneficiariesGender = Boys
     , currentBeneficiariesChartsFilter = Stunting
     , currentBeneficiariesIncidenceChartsFilter = Stunting
@@ -208,4 +228,5 @@ type Msg
     | SetFilterCaseManagement DashboardFilter
     | SetSubFilterCaseManagement DashboardSubFilter
     | SetFilterProgramType String
+    | SetSelectedVillage String
     | SetActivePage Page

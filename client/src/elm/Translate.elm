@@ -6649,27 +6649,32 @@ translateDashboard trans =
         FilterProgramType filterProgramType ->
             case filterProgramType of
                 FilterAllPrograms ->
-                    { english = "ALL"
+                    { english = "All"
                     , kinyarwanda = Nothing
                     }
 
                 FilterProgramAchi ->
-                    { english = "ACHI"
+                    { english = "Achi"
                     , kinyarwanda = Nothing
                     }
 
                 FilterProgramFbf ->
-                    { english = "FBF"
+                    { english = "Fbf"
                     , kinyarwanda = Nothing
                     }
 
                 FilterProgramPmtct ->
-                    { english = "PMTCT"
+                    { english = "Pmtct"
                     , kinyarwanda = Nothing
                     }
 
                 FilterProgramSorwathe ->
-                    { english = "SORWATHE"
+                    { english = "Sorwathe"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterProgramCommunity ->
+                    { english = "Community"
                     , kinyarwanda = Nothing
                     }
 
