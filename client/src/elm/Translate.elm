@@ -1617,7 +1617,7 @@ translationSet trans =
 
                 AcuteIllnessOngoingTreatment ->
                     { english = "Treatment Review"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kureba imiti yahawe"
                     }
 
                 AcuteIllnessDangerSigns ->
