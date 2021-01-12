@@ -1026,7 +1026,7 @@ translationSet trans =
 
                 AdverseEventOther ->
                     { english = "Other"
-                    , kinyarwanda = Just "ibindi"
+                    , kinyarwanda = Just "Ibindi"
                     }
 
                 NoAdverseEvent ->
@@ -3696,7 +3696,7 @@ translationSet trans =
 
         MedicationDosesMissedQuestion ->
             { english = "Did you miss any doses of medications"
-            , kinyarwanda = Just "Waba hari imiti wibagiwe gufata?"
+            , kinyarwanda = Just "Waba hari imiti wibagiwe gufata"
             }
 
         MedicationForFeverPast6Hours ->
@@ -3717,7 +3717,7 @@ translationSet trans =
 
         MedicationFeelBetterAfterTakingQuestion ->
             { english = "Do you feel better after taking medications"
-            , kinyarwanda = Just "Wumva umeze neza nyuma yo gufata imiti?"
+            , kinyarwanda = Just "Wumva umeze neza nyuma yo gufata imiti"
             }
 
         MedicationForMalariaToday ->
@@ -3762,7 +3762,7 @@ translationSet trans =
 
         MedicationTakenAsPrescribedQuestion ->
             { english = "Did you take the medication as prescribed"
-            , kinyarwanda = Just "Wafashe imiti neza uko wayandikiwe na muganga?"
+            , kinyarwanda = Just "Wafashe imiti neza uko wayandikiwe na muganga"
             }
 
         MentalHealthHistory ->
@@ -3809,7 +3809,7 @@ translationSet trans =
 
             else
                 { english = "Missed " ++ String.fromInt val ++ " doses of medication"
-                , kinyarwanda = Just <| "Yasimbutse gufata imiti inshuro" ++ String.fromInt val
+                , kinyarwanda = Just <| "Yasimbutse gufata imiti inshuro " ++ String.fromInt val
                 }
 
         ModeOfDelivery mode ->
@@ -4415,7 +4415,7 @@ translationSet trans =
             }
 
         PatientIsolatedQuestion ->
-            { english = "Have yoisolated the patient"
+            { english = "Have you isolated the patient"
             , kinyarwanda = Just "Washyize umurwayi mu kato"
             }
 
@@ -4785,7 +4785,7 @@ translationSet trans =
 
                 NotTakingOther ->
                     { english = "Other"
-                    , kinyarwanda = Just "ibindi"
+                    , kinyarwanda = Just "Ibindi"
                     }
 
                 NoReasonForNotTakingSign ->
@@ -5463,7 +5463,7 @@ translationSet trans =
 
         SevereAcuteMalnutrition ->
             { english = "Severe acute malnutrition"
-            , kinyarwanda = Just "Imirire mibi ikabije imaze igihe gito "
+            , kinyarwanda = Just "Imirire mibi ikabije imaze igihe gito"
             }
 
         SevereHemorrhagingPreviousDelivery ->
