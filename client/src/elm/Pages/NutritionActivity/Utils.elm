@@ -1,13 +1,66 @@
-module Pages.NutritionActivity.Utils exposing (fromHeightValue, fromMuacValue, fromNutritionValue, fromWeightValue, heightFormWithDefault, muacFormWithDefault, nutritionFormWithDefault, resolvePreviousIndividualValue, toHeightValue, toHeightValueWithDefault, toMuacValue, toMuacValueWithDefault, toNutritionValue, toNutritionValueWithDefault, toWeightValue, toWeightValueWithDefault, weightFormWithDefault)
+module Pages.NutritionActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), HeightInCm(..), MuacInCm(..), NutritionMeasurement, NutritionMeasurements, WeightInKg(..))
+import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
+import Backend.Person.Model exposing (Person)
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra exposing (or, unwrap)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
+import Maybe.Extra exposing (isJust, or, unwrap)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
 import Pages.Utils exposing (ifEverySetEmpty, valueConsideringIsDirtyField)
+
+
+expectActivity : NominalDate -> Person -> Bool -> NutritionMeasurements -> NutritionActivity -> Bool
+expectActivity currentDate child isChw measurements activity =
+    case activity of
+        -- Do not show for community health workers.
+        Height ->
+            not isChw
+
+        -- Show for children that are at least 6 month old.
+        Muac ->
+            child.birthDate
+                |> Maybe.map
+                    (\birthDate -> diffMonths birthDate currentDate > 5)
+                |> Maybe.withDefault False
+
+        SendToHC ->
+            mandatoryActivitiesCompleted measurements
+
+        _ ->
+            True
+
+
+activityCompleted : NominalDate -> Person -> Bool -> NutritionMeasurements -> NutritionActivity -> Bool
+activityCompleted currentDate child isChw measurements activity =
+    case activity of
+        Height ->
+            isJust measurements.height
+
+        Muac ->
+            isJust measurements.muac
+
+        Nutrition ->
+            isJust measurements.nutrition
+
+        Photo ->
+            isJust measurements.photo
+
+        Weight ->
+            isJust measurements.weight
+
+        SendToHC ->
+            -- @todo
+            {--isJust measurements.sendToHC  || --}
+            not <| expectActivity currentDate child isChw measurements SendToHC
+
+
+mandatoryActivitiesCompleted : NutritionMeasurements -> Bool
+mandatoryActivitiesCompleted measurements =
+    -- @todo
+    True
 
 
 resolvePreviousIndividualValue : AssembledData -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a )) -> (a -> b) -> Maybe ( NominalDate, b )

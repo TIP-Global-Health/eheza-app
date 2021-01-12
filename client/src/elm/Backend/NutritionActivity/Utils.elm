@@ -1,4 +1,4 @@
-module Backend.NutritionActivity.Utils exposing (decodeActivityFromString, encodeActivityAsString, expectActivity, getActivityIcon, getAllActivities)
+module Backend.NutritionActivity.Utils exposing (..)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -11,9 +11,6 @@ expected (and not completed).
 -}
 
 import Backend.NutritionActivity.Model exposing (..)
-import Backend.Person.Model exposing (Person)
-import Gizra.NominalDate exposing (NominalDate, diffMonths)
-import Translate exposing (Language, translate)
 
 
 {-| Used for URL etc., not for display in the normal UI (since we'd translate
@@ -37,6 +34,9 @@ encodeActivityAsString activity =
         Weight ->
             "nutrition-weight"
 
+        SendToHC ->
+            "nutrition-send-to-hc"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -57,6 +57,9 @@ decodeActivityFromString s =
 
         "nutrition-weight" ->
             Just Weight
+
+        "nutrition-send-to-hc" ->
+            Just SendToHC
 
         _ ->
             Nothing
@@ -90,25 +93,10 @@ getActivityIcon activity =
         Weight ->
             "weight"
 
+        SendToHC ->
+            "send-to-hc"
+
 
 getAllActivities : List NutritionActivity
 getAllActivities =
-    [ Height, Muac, Nutrition, Weight, Photo ]
-
-
-expectActivity : NominalDate -> Person -> Bool -> NutritionActivity -> Bool
-expectActivity currentDate child isChw activity =
-    case activity of
-        -- Do not show for community health workers.
-        Height ->
-            isChw |> not
-
-        -- Show for children that are 6 month old, or older than that.
-        Muac ->
-            child.birthDate
-                |> Maybe.map
-                    (\birthDate -> diffMonths birthDate currentDate > 5)
-                |> Maybe.withDefault False
-
-        _ ->
-            True
+    [ Height, Muac, Nutrition, Weight, Photo, SendToHC ]

@@ -6,7 +6,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (NutritionMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
-import Backend.NutritionActivity.Utils exposing (expectActivity, getActivityIcon, getAllActivities)
+import Backend.NutritionActivity.Utils exposing (getActivityIcon, getAllActivities)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.Person.Model exposing (Person)
 import Gizra.Html exposing (emptyNode)
@@ -15,6 +15,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
+import Pages.NutritionActivity.Utils exposing (activityCompleted, expectActivity)
 import Pages.NutritionEncounter.Model exposing (..)
 import Pages.NutritionEncounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -81,25 +82,8 @@ viewMainPageContent language currentDate id isChw data model =
 
         ( completedActivities, pendingActivities ) =
             getAllActivities
-                |> List.filter (expectActivity currentDate data.person isChw)
-                |> List.partition
-                    (\activity ->
-                        case activity of
-                            Height ->
-                                isJust measurements.height
-
-                            Muac ->
-                                isJust measurements.muac
-
-                            Nutrition ->
-                                isJust measurements.nutrition
-
-                            Photo ->
-                                isJust measurements.photo
-
-                            Weight ->
-                                isJust measurements.weight
-                    )
+                |> List.filter (expectActivity currentDate data.person isChw measurements)
+                |> List.partition (activityCompleted currentDate data.person isChw measurements)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities

@@ -4158,6 +4158,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
                     }
 
+                Backend.NutritionActivity.Model.SendToHC ->
+                    { english = "@todo"
+                    , kinyarwanda = Nothing
+                    }
+
         NutritionActivityTitle activity ->
             case activity of
                 Backend.NutritionActivity.Model.Muac ->
@@ -4183,6 +4188,11 @@ translationSet trans =
                 Backend.NutritionActivity.Model.Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
+                    }
+
+                Backend.NutritionActivity.Model.SendToHC ->
+                    { english = "Send to Health Center"
+                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
         NutritionHelper ->

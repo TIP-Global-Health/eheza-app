@@ -11,3 +11,4 @@ type NutritionActivity
     | Nutrition
     | Photo
     | Weight
+    | SendToHC
