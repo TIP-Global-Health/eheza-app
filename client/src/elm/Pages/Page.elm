@@ -44,8 +44,8 @@ import Activity.Model exposing (Activity(..))
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
+import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Initiator)
-import NutritionActivity.Model exposing (NutritionActivity(..))
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 
 

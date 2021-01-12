@@ -5,8 +5,8 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionActivity.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
-import NutritionActivity.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language)
 

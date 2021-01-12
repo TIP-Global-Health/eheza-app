@@ -8,6 +8,7 @@ import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
+import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Session.Utils exposing (getSession)
 import Backend.Update
@@ -22,7 +23,6 @@ import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode
 import Json.Encode
-import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessActivity.Update
 import Pages.AcuteIllnessEncounter.Model

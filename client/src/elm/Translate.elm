@@ -32,6 +32,7 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
+import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model
     exposing
         ( EducationLevel(..)
@@ -47,7 +48,6 @@ import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
 import Http
 import Measurement.Model exposing (FloatInputConstraints)
-import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.AcuteIllnessActivity.Model
     exposing
         ( DangerSignsTask(..)
@@ -4133,54 +4133,54 @@ translationSet trans =
 
         NutritionActivityHelper activity ->
             case activity of
-                NutritionActivity.Model.Muac ->
+                Backend.NutritionActivity.Model.Muac ->
                     { english = "Make sure to measure at the center of the baby’s upper arm."
                     , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe guoima ikizigira cy'akaboko"
                     }
 
-                NutritionActivity.Model.Height ->
+                Backend.NutritionActivity.Model.Height ->
                     { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight."
                     , kinyarwanda = Just "Saba Umubyeyi guhagarara inyuma y’umwana we agaramye, afata umutwe ku gice cy’amatwi. Sunikira akabaho ku buryo gakora mu bworo by’ibirenge byombi."
                     }
 
-                NutritionActivity.Model.Nutrition ->
+                Backend.NutritionActivity.Model.Nutrition ->
                     { english = "Explain to the mother how to check the malnutrition signs for their own child."
                     , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye."
                     }
 
-                NutritionActivity.Model.Photo ->
+                Backend.NutritionActivity.Model.Photo ->
                     { english = "Take each baby’s photo at each health assessment. Photos should show the entire body of each child."
                     , kinyarwanda = Just "Fata ifoto ya buri mwana kuri buri bikorwa by'ipimwa Ifoto igomba kwerekana ibice by'umubiri wose by'umwana"
                     }
 
-                NutritionActivity.Model.Weight ->
+                Backend.NutritionActivity.Model.Weight ->
                     { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on."
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
                     }
 
         NutritionActivityTitle activity ->
             case activity of
-                NutritionActivity.Model.Muac ->
+                Backend.NutritionActivity.Model.Muac ->
                     { english = "MUAC"
                     , kinyarwanda = Just "Ikizigira cy'akaboko"
                     }
 
-                NutritionActivity.Model.Height ->
+                Backend.NutritionActivity.Model.Height ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"
                     }
 
-                NutritionActivity.Model.Nutrition ->
+                Backend.NutritionActivity.Model.Nutrition ->
                     { english = "Nutrition"
                     , kinyarwanda = Just "Imirire"
                     }
 
-                NutritionActivity.Model.Photo ->
+                Backend.NutritionActivity.Model.Photo ->
                     { english = "Photo"
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                NutritionActivity.Model.Weight ->
+                Backend.NutritionActivity.Model.Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
                     }

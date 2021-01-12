@@ -1,4 +1,4 @@
-module NutritionActivity.Utils exposing (decodeActivityFromString, encodeActivityAsString, expectActivity, getActivityIcon, getAllActivities)
+module Backend.NutritionActivity.Utils exposing (decodeActivityFromString, encodeActivityAsString, expectActivity, getActivityIcon, getAllActivities)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -10,9 +10,9 @@ expected (and not completed).
 
 -}
 
+import Backend.NutritionActivity.Model exposing (..)
 import Backend.Person.Model exposing (Person)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
-import NutritionActivity.Model exposing (..)
 import Translate exposing (Language, translate)
 
 
