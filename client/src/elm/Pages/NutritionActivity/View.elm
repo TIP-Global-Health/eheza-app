@@ -134,7 +134,7 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
             viewWeightContent language currentDate zscores isChw assembled model.weightData previousGroupWeight
 
         SendToHC ->
-            viewSendToHCContent language currentDate assembled.measurements model.sendToHCData
+            viewSendToHCContent language currentDate assembled model.sendToHCData
 
 
 viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> HeightData -> Maybe ( NominalDate, Float ) -> List (Html Msg)
@@ -540,11 +540,11 @@ viewWeightContent language currentDate zscores isChw assembled data previousGrou
     ]
 
 
-viewSendToHCContent : Language -> NominalDate -> NutritionMeasurements -> SendToHCData -> List (Html Msg)
-viewSendToHCContent language currentDate measurements data =
+viewSendToHCContent : Language -> NominalDate -> AssembledData -> SendToHCData -> List (Html Msg)
+viewSendToHCContent language currentDate assembled data =
     let
         form =
-            measurements.sendToHC
+            assembled.measurements.sendToHC
                 |> Maybe.map (Tuple.second >> .value)
                 |> sendToHCFormWithDefault data.form
 
@@ -553,6 +553,9 @@ viewSendToHCContent language currentDate measurements data =
 
         totalTasks =
             2
+
+        disabled =
+            tasksCompleted /= totalTasks
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -577,6 +580,13 @@ viewSendToHCContent language currentDate measurements data =
                     SetHandReferralForm
                     "hand-referral-form"
                     Nothing
+                ]
+            , div [ class "actions" ]
+                [ button
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
+                    , onClick <| SaveSendToHC assembled.participant.person assembled.measurements.sendToHC
+                    ]
+                    [ text <| translate language Translate.Save ]
                 ]
             ]
         ]
