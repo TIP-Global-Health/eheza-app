@@ -9,6 +9,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Pages.AcuteIllnessActivity.Utils exposing (toSendToHCValueWithDefault)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -252,6 +253,66 @@ update currentDate id db msg model =
                             []
                             (\value ->
                                 [ Backend.NutritionEncounter.Model.SaveWeight personId measurementId value
+                                    |> Backend.Model.MsgNutritionEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetReferToHealthCenter value ->
+            let
+                form =
+                    model.sendToHCData.form
+
+                updatedForm =
+                    { form | referToHealthCenter = Just value }
+
+                updatedData =
+                    model.sendToHCData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | sendToHCData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHandReferralForm value ->
+            let
+                form =
+                    model.sendToHCData.form
+
+                updatedForm =
+                    { form | handReferralForm = Just value }
+
+                updatedData =
+                    model.sendToHCData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | sendToHCData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveSendToHC personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.sendToHCData.form
+                        |> toSendToHCValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.NutritionEncounter.Model.SaveSendToHC personId measurementId value
                                     |> Backend.Model.MsgNutritionEncounter id
                                     |> App.Model.MsgIndexedDb
                                 , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id

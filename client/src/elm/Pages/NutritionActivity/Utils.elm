@@ -52,9 +52,8 @@ activityCompleted currentDate child isChw measurements activity =
             isJust measurements.weight
 
         SendToHC ->
-            -- @todo
-            {--isJust measurements.sendToHC  || --}
-            not <| expectActivity currentDate child isChw measurements SendToHC
+            (not <| expectActivity currentDate child isChw measurements SendToHC)
+                || isJust measurements.sendToHC
 
 
 mandatoryActivitiesCompleted : NutritionMeasurements -> Bool
