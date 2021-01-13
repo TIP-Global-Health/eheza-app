@@ -66,6 +66,7 @@ var tableForType = {
     nutrition_muac: 'shards',
     nutrition_nutrition: 'shards',
     nutrition_photo: 'shards',
+    nutrition_send_to_hc: 'shards',
     nutrition_weight: 'shards',
     obstetric_history: 'shards',
     obstetric_history_step2: 'shards',
