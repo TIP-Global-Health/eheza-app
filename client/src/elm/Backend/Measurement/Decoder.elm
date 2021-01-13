@@ -102,6 +102,7 @@ decodeNutritionMeasurements =
         |> optional "nutrition_nutrition" (decodeHead decodeNutritionNutrition) Nothing
         |> optional "nutrition_photo" (decodeHead decodeNutritionPhoto) Nothing
         |> optional "nutrition_weight" (decodeHead decodeNutritionWeight) Nothing
+        |> optional "nutrition_send_to_hc" (decodeHead decodeNutritionSendToHC) Nothing
 
 
 decodeAcuteIllnessMeasurements : Decoder AcuteIllnessMeasurements
@@ -1051,6 +1052,13 @@ decodeNutritionWeight : Decoder NutritionWeight
 decodeNutritionWeight =
     field "weight" decodeFloat
         |> map WeightInKg
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionSendToHC : Decoder NutritionSendToHC
+decodeNutritionSendToHC =
+    decodeEverySet decodeSendToHCSign
+        |> field "send_to_hc"
         |> decodeNutritionMeasurement
 
 

@@ -1288,14 +1288,19 @@ malariaRapidTestResultAsString sign =
 
 encodeSendToHC : SendToHC -> List ( String, Value )
 encodeSendToHC =
-    encodeAcuteIllnessMeasurement encodeSendToHCValue
+    encodeAcuteIllnessMeasurement (encodeSendToHCValueWithType "send_to_hc")
 
 
-encodeSendToHCValue : EverySet SendToHCSign -> List ( String, Value )
-encodeSendToHCValue value =
+encodeNutritionSendToHC : NutritionSendToHC -> List ( String, Value )
+encodeNutritionSendToHC =
+    encodeNutritionMeasurement (encodeSendToHCValueWithType "nutrition_send_to_hc")
+
+
+encodeSendToHCValueWithType : String -> EverySet SendToHCSign -> List ( String, Value )
+encodeSendToHCValueWithType type_ value =
     [ ( "send_to_hc", encodeEverySet encondeSendToHCSign value )
     , ( "deleted", bool False )
-    , ( "type", string "send_to_hc" )
+    , ( "type", string type_ )
     ]
 
 
