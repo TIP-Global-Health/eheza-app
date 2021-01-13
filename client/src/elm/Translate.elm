@@ -6654,17 +6654,17 @@ translateDashboard trans =
                     }
 
                 FilterProgramAchi ->
-                    { english = "Achi"
+                    { english = "ACHI"
                     , kinyarwanda = Nothing
                     }
 
                 FilterProgramFbf ->
-                    { english = "Fbf"
+                    { english = "FBF"
                     , kinyarwanda = Nothing
                     }
 
                 FilterProgramPmtct ->
-                    { english = "Pmtct"
+                    { english = "PMTCT"
                     , kinyarwanda = Nothing
                     }
 
