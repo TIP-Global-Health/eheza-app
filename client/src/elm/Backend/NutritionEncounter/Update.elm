@@ -84,3 +84,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveWeight = data }
             , Cmd.none
             )
+
+        SaveSendToHC personId valueId value ->
+            ( { model | saveSendToHC = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value nutritionSendToHCEndpoint HandleSavedSendToHC
+            )
+
+        HandleSavedSendToHC data ->
+            ( { model | saveSendToHC = data }
+            , Cmd.none
+            )
