@@ -61,7 +61,7 @@ activityCompleted currentDate child isChw measurements activity =
 mandatoryActivitiesCompleted : NominalDate -> Person -> Bool -> NutritionMeasurements -> Bool
 mandatoryActivitiesCompleted currentDate child isChw measurements =
     [ Height, Muac, Nutrition, Weight ]
-        |> List.filter (activityCompleted currentDate child isChw measurements)
+        |> List.filter (not << activityCompleted currentDate child isChw measurements)
         |> List.isEmpty
 
 
