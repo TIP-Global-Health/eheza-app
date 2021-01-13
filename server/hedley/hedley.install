@@ -598,3 +598,10 @@ function hedley_update_7027() {
 function hedley_update_7028() {
   module_enable(['hedley_stats', 'hedley_general']);
 }
+
+/**
+ * Enable the Hedley Nutrition module.
+ */
+function hedley_update_7029() {
+  module_enable(['hedley_nutrition']);
+}

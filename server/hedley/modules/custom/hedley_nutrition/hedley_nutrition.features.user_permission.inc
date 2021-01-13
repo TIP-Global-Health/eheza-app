@@ -1,0 +1,63 @@
+<?php
+
+/**
+ * @file
+ * hedley_nutrition.features.user_permission.inc
+ */
+
+/**
+ * Implements hook_user_default_permissions().
+ */
+function hedley_nutrition_user_default_permissions() {
+  $permissions = array();
+
+  // Exported permission: 'create nutrition_send_to_hc content'.
+  $permissions['create nutrition_send_to_hc content'] = array(
+    'name' => 'create nutrition_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any nutrition_send_to_hc content'.
+  $permissions['delete any nutrition_send_to_hc content'] = array(
+    'name' => 'delete any nutrition_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own nutrition_send_to_hc content'.
+  $permissions['delete own nutrition_send_to_hc content'] = array(
+    'name' => 'delete own nutrition_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any nutrition_send_to_hc content'.
+  $permissions['edit any nutrition_send_to_hc content'] = array(
+    'name' => 'edit any nutrition_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own nutrition_send_to_hc content'.
+  $permissions['edit own nutrition_send_to_hc content'] = array(
+    'name' => 'edit own nutrition_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  return $permissions;
+}
