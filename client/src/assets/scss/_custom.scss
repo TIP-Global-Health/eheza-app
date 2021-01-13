@@ -452,6 +452,11 @@ h3.ui.header {
   background-size: 78px 78px;
 }
 
+.icon-task-send-to-hc {
+  background-image: url(#{$img-path}icon-health-center-white.svg);
+  background-size: 78px 78px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {
