@@ -27,7 +27,7 @@ expectActivity currentDate child isChw measurements activity =
                 |> Maybe.withDefault False
 
         SendToHC ->
-            mandatoryActivitiesCompleted measurements
+            mandatoryActivitiesCompleted currentDate child isChw measurements
 
         _ ->
             True
@@ -37,10 +37,12 @@ activityCompleted : NominalDate -> Person -> Bool -> NutritionMeasurements -> Nu
 activityCompleted currentDate child isChw measurements activity =
     case activity of
         Height ->
-            isJust measurements.height
+            (not <| expectActivity currentDate child isChw measurements Height)
+                || isJust measurements.height
 
         Muac ->
-            isJust measurements.muac
+            (not <| expectActivity currentDate child isChw measurements Height)
+                || isJust measurements.muac
 
         Nutrition ->
             isJust measurements.nutrition
@@ -56,10 +58,11 @@ activityCompleted currentDate child isChw measurements activity =
                 || isJust measurements.sendToHC
 
 
-mandatoryActivitiesCompleted : NutritionMeasurements -> Bool
-mandatoryActivitiesCompleted measurements =
-    -- @todo
-    True
+mandatoryActivitiesCompleted : NominalDate -> Person -> Bool -> NutritionMeasurements -> Bool
+mandatoryActivitiesCompleted currentDate child isChw measurements =
+    [ Height, Muac, Nutrition, Weight ]
+        |> List.filter (activityCompleted currentDate child isChw measurements)
+        |> List.isEmpty
 
 
 resolvePreviousIndividualValue : AssembledData -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a )) -> (a -> b) -> Maybe ( NominalDate, b )
