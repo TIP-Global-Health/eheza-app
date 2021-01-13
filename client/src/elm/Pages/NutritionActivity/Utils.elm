@@ -1,7 +1,17 @@
 module Pages.NutritionActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), HeightInCm(..), MuacInCm(..), NutritionMeasurement, NutritionMeasurements, WeightInKg(..))
+import Backend.Measurement.Model
+    exposing
+        ( ChildNutritionSign(..)
+        , HeightInCm(..)
+        , MuacInCm(..)
+        , MuacIndication(..)
+        , NutritionMeasurement
+        , NutritionMeasurements
+        , WeightInKg(..)
+        )
+import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Person)
 import EverySet exposing (EverySet)
@@ -31,14 +41,27 @@ expectActivity currentDate zscores child isChw measurements activity =
 
         SendToHC ->
             if mandatoryActivitiesCompleted currentDate zscores child isChw measurements then
-                measurements.weight
-                    |> Maybe.andThen
-                        (Tuple.second
-                            >> .value
-                            >> (\(WeightInKg weight) -> calculateZScoreWeightForAge currentDate zscores child (Just weight))
-                        )
-                    |> Maybe.map zScoreWeightForAgeAbnormal
-                    |> Maybe.withDefault False
+                let
+                    abnormalMuac =
+                        measurements.muac
+                            |> Maybe.map
+                                (Tuple.second
+                                    >> .value
+                                    >> muacAbnormal
+                                )
+                            |> Maybe.withDefault False
+
+                    abnormalWeightForAgeZScore =
+                        measurements.weight
+                            |> Maybe.andThen
+                                (Tuple.second
+                                    >> .value
+                                    >> (\(WeightInKg weight) -> calculateZScoreWeightForAge currentDate zscores child (Just weight))
+                                )
+                            |> Maybe.map zScoreWeightForAgeAbnormal
+                            |> Maybe.withDefault False
+                in
+                abnormalMuac || abnormalWeightForAgeZScore
 
             else
                 False
@@ -242,3 +265,18 @@ zScoreWeightForAgeSevere zScore =
 zScoreWeightForAgeModerate : Float -> Bool
 zScoreWeightForAgeModerate zScore =
     zScore > -3 && zScore <= -2
+
+
+muacAbnormal : MuacInCm -> Bool
+muacAbnormal muac =
+    muacSevere muac || muacModerate muac
+
+
+muacSevere : MuacInCm -> Bool
+muacSevere muac =
+    muacIndication muac == MuacRed
+
+
+muacModerate : MuacInCm -> Bool
+muacModerate muac =
+    muacIndication muac == MuacYellow
