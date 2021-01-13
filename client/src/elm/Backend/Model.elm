@@ -321,6 +321,7 @@ type Revision
     | NutritionMuacRevision NutritionMuacId NutritionMuac
     | NutritionNutritionRevision NutritionNutritionId NutritionNutrition
     | NutritionPhotoRevision NutritionPhotoId NutritionPhoto
+    | NutritionSendToHCRevision NutritionSendToHCId NutritionSendToHC
     | NutritionWeightRevision NutritionWeightId NutritionWeight
     | ObstetricalExamRevision ObstetricalExamId ObstetricalExam
     | ObstetricHistoryRevision ObstetricHistoryId ObstetricHistory

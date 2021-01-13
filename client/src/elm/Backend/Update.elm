@@ -1902,6 +1902,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        NutritionSendToHCRevision uuid data ->
+            ( mapNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | sendToHC = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         NutritionWeightRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId

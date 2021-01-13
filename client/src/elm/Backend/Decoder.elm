@@ -149,6 +149,9 @@ decodeRevision =
                     "nutrition_photo" ->
                         decodeWithUuid NutritionPhotoRevision decodeNutritionPhoto
 
+                    "nutrition_send_to_hc" ->
+                        decodeWithUuid NutritionSendToHCRevision decodeNutritionSendToHC
+
                     "nutrition_weight" ->
                         decodeWithUuid NutritionWeightRevision decodeNutritionWeight
 
