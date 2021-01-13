@@ -10,10 +10,13 @@ import Maybe.Extra exposing (isJust, or, unwrap)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
 import Pages.Utils exposing (ifEverySetEmpty, valueConsideringIsDirtyField)
+import Utils.NominalDate exposing (diffDays)
+import ZScore.Model exposing (Kilograms(..))
+import ZScore.Utils exposing (zScoreWeightForAge)
 
 
-expectActivity : NominalDate -> Person -> Bool -> NutritionMeasurements -> NutritionActivity -> Bool
-expectActivity currentDate child isChw measurements activity =
+expectActivity : NominalDate -> ZScore.Model.Model -> Person -> Bool -> NutritionMeasurements -> NutritionActivity -> Bool
+expectActivity currentDate zscores child isChw measurements activity =
     case activity of
         -- Do not show for community health workers.
         Height ->
@@ -27,21 +30,32 @@ expectActivity currentDate child isChw measurements activity =
                 |> Maybe.withDefault False
 
         SendToHC ->
-            mandatoryActivitiesCompleted currentDate child isChw measurements
+            if mandatoryActivitiesCompleted currentDate zscores child isChw measurements then
+                measurements.weight
+                    |> Maybe.andThen
+                        (Tuple.second
+                            >> .value
+                            >> (\(WeightInKg weight) -> calculateZScoreWeightForAge currentDate zscores child (Just weight))
+                        )
+                    |> Maybe.map zScoreWeightForAgeAbnormal
+                    |> Maybe.withDefault False
+
+            else
+                False
 
         _ ->
             True
 
 
-activityCompleted : NominalDate -> Person -> Bool -> NutritionMeasurements -> NutritionActivity -> Bool
-activityCompleted currentDate child isChw measurements activity =
+activityCompleted : NominalDate -> ZScore.Model.Model -> Person -> Bool -> NutritionMeasurements -> NutritionActivity -> Bool
+activityCompleted currentDate zscores child isChw measurements activity =
     case activity of
         Height ->
-            (not <| expectActivity currentDate child isChw measurements Height)
+            (not <| expectActivity currentDate zscores child isChw measurements Height)
                 || isJust measurements.height
 
         Muac ->
-            (not <| expectActivity currentDate child isChw measurements Height)
+            (not <| expectActivity currentDate zscores child isChw measurements Height)
                 || isJust measurements.muac
 
         Nutrition ->
@@ -54,14 +68,14 @@ activityCompleted currentDate child isChw measurements activity =
             isJust measurements.weight
 
         SendToHC ->
-            (not <| expectActivity currentDate child isChw measurements SendToHC)
+            (not <| expectActivity currentDate zscores child isChw measurements SendToHC)
                 || isJust measurements.sendToHC
 
 
-mandatoryActivitiesCompleted : NominalDate -> Person -> Bool -> NutritionMeasurements -> Bool
-mandatoryActivitiesCompleted currentDate child isChw measurements =
+mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> Person -> Bool -> NutritionMeasurements -> Bool
+mandatoryActivitiesCompleted currentDate zscores child isChw measurements =
     [ Height, Muac, Nutrition, Weight ]
-        |> List.filter (not << activityCompleted currentDate child isChw measurements)
+        |> List.filter (not << activityCompleted currentDate zscores child isChw measurements)
         |> List.isEmpty
 
 
@@ -194,3 +208,37 @@ toWeightValueWithDefault saved form =
 toWeightValue : WeightForm -> Maybe WeightInKg
 toWeightValue form =
     Maybe.map WeightInKg form.weight
+
+
+calculateZScoreWeightForAge : NominalDate -> ZScore.Model.Model -> Person -> Maybe Float -> Maybe Float
+calculateZScoreWeightForAge currentDate zscores person maybeWeight =
+    let
+        maybeAgeInDays =
+            Maybe.map
+                (\birthDate -> diffDays birthDate currentDate)
+                person.birthDate
+    in
+    maybeWeight
+        |> Maybe.andThen
+            (\weight ->
+                Maybe.andThen
+                    (\ageInDays ->
+                        zScoreWeightForAge zscores ageInDays person.gender (Kilograms weight)
+                    )
+                    maybeAgeInDays
+            )
+
+
+zScoreWeightForAgeAbnormal : Float -> Bool
+zScoreWeightForAgeAbnormal zScore =
+    zScoreWeightForAgeSevere zScore || zScoreWeightForAgeModerate zScore
+
+
+zScoreWeightForAgeSevere : Float -> Bool
+zScoreWeightForAgeSevere zScore =
+    zScore <= -3
+
+
+zScoreWeightForAgeModerate : Float -> Bool
+zScoreWeightForAgeModerate zScore =
+    zScore > -3 && zScore <= -2

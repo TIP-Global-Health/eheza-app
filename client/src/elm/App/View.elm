@@ -424,7 +424,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get id loggedInModel.nutritionEncounterPages
                                     |> Maybe.withDefault Pages.NutritionEncounter.Model.emptyModel
                         in
-                        Pages.NutritionEncounter.View.view model.language currentDate id isChw model.indexedDb page_
+                        Pages.NutritionEncounter.View.view model.language currentDate model.zscores id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionEncounter id)
                             |> flexPageWrapper model
 

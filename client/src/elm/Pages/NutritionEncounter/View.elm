@@ -25,10 +25,11 @@ import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays)
 import Utils.WebData exposing (viewWebData)
+import ZScore.Model
 
 
-view : Language -> NominalDate -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id isChw db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores id isChw db model =
     let
         data =
             generateAssembledData id db
@@ -37,7 +38,7 @@ view language currentDate id isChw db model =
             viewWebData language (viewHeader language) identity data
 
         content =
-            viewWebData language (viewContent language currentDate id isChw model) identity data
+            viewWebData language (viewContent language currentDate zscores id isChw model) identity data
     in
     div [ class "page-encounter nutrition" ] <|
         [ header
@@ -66,24 +67,24 @@ viewHeader language data =
         ]
 
 
-viewContent : Language -> NominalDate -> NutritionEncounterId -> Bool -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id isChw model data =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> Bool -> Model -> AssembledData -> Html Msg
+viewContent language currentDate zscores id isChw model data =
     ((viewPersonDetails language currentDate data.person Nothing |> div [ class "item" ])
-        :: viewMainPageContent language currentDate id isChw data model
+        :: viewMainPageContent language currentDate zscores id isChw data model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewMainPageContent : Language -> NominalDate -> NutritionEncounterId -> Bool -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate id isChw data model =
+viewMainPageContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> Bool -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate zscores id isChw data model =
     let
         measurements =
             data.measurements
 
         ( completedActivities, pendingActivities ) =
             getAllActivities
-                |> List.filter (expectActivity currentDate data.person isChw measurements)
-                |> List.partition (activityCompleted currentDate data.person isChw measurements)
+                |> List.filter (expectActivity currentDate zscores data.person isChw measurements)
+                |> List.partition (activityCompleted currentDate zscores data.person isChw measurements)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities

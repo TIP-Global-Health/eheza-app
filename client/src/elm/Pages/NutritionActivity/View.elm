@@ -46,7 +46,7 @@ import Translate exposing (Language, TranslationId, translate)
 import Utils.NominalDate exposing (Days(..), diffDays)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
-import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
+import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
 
 view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> ModelIndexedDb -> Model -> Html Msg
@@ -134,7 +134,7 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
             viewWeightContent language currentDate zscores isChw assembled model.weightData previousGroupWeight
 
         SendToHC ->
-            viewSendToHCContent language currentDate assembled model.sendToHCData
+            viewSendToHCContent language currentDate zscores assembled model.sendToHCData
 
 
 viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> HeightData -> Maybe ( NominalDate, Float ) -> List (Html Msg)
@@ -450,15 +450,7 @@ viewWeightContent language currentDate zscores isChw assembled data previousGrou
             resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
 
         zScoreForAgeText =
-            form.weight
-                |> Maybe.andThen
-                    (\weight ->
-                        Maybe.andThen
-                            (\ageInDays ->
-                                zScoreWeightForAge zscores ageInDays assembled.person.gender (Kilograms weight)
-                            )
-                            maybeAgeInDays
-                    )
+            calculateZScoreWeightForAge currentDate zscores assembled.person form.weight
                 |> Maybe.map viewZScore
                 |> Maybe.withDefault (translate language Translate.NotAvailable)
 
@@ -540,8 +532,8 @@ viewWeightContent language currentDate zscores isChw assembled data previousGrou
     ]
 
 
-viewSendToHCContent : Language -> NominalDate -> AssembledData -> SendToHCData -> List (Html Msg)
-viewSendToHCContent language currentDate assembled data =
+viewSendToHCContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> SendToHCData -> List (Html Msg)
+viewSendToHCContent language currentDate zscores assembled data =
     let
         form =
             assembled.measurements.sendToHC
