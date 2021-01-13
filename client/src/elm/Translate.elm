@@ -6659,22 +6659,22 @@ translateDashboard trans =
                     }
 
                 FilterProgramFbf ->
-                    { english = "Fbf"
+                    { english = "FBF"
                     , kinyarwanda = Nothing
                     }
 
                 FilterProgramPmtct ->
-                    { english = "Pmtct"
+                    { english = "PMTCT"
                     , kinyarwanda = Nothing
                     }
 
                 FilterProgramSorwathe ->
-                    { english = "Sorwathe"
+                    { english = "SORWATHE"
                     , kinyarwanda = Nothing
                     }
 
                 FilterProgramCommunity ->
-                    { english = "Community"
+                    { english = "COMMUNITY"
                     , kinyarwanda = Nothing
                     }
 
