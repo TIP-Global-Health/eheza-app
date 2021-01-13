@@ -438,6 +438,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityNutritionPhoto identifier ->
             getIdentifier identifier "nutrition_photo"
 
+        BackendAuthorityNutritionSendToHC identifier ->
+            getIdentifier identifier "nutrition_send_to_hc"
+
         BackendAuthorityNutritionWeight identifier ->
             getIdentifier identifier "nutrition_weight"
 
@@ -813,6 +816,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityNutritionPhoto identifier ->
             encode Backend.Measurement.Encoder.encodeNutritionPhoto identifier
 
+        BackendAuthorityNutritionSendToHC identifier ->
+            encode Backend.Measurement.Encoder.encodeNutritionSendToHC identifier
+
         BackendAuthorityNutritionWeight identifier ->
             encode Backend.Measurement.Encoder.encodeNutritionWeight identifier
 
@@ -1150,6 +1156,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityNutritionPhoto identifier ->
             NutritionPhotoRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutritionSendToHC identifier ->
+            NutritionSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityNutritionWeight identifier ->
             NutritionWeightRevision (toEntityUuid identifier.uuid) identifier.entity

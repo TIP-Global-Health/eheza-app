@@ -82,6 +82,7 @@ type BackendAuthorityEntity
     | BackendAuthorityNutritionMuac (BackendEntity NutritionMuac)
     | BackendAuthorityNutritionNutrition (BackendEntity NutritionNutrition)
     | BackendAuthorityNutritionPhoto (BackendEntity NutritionPhoto)
+    | BackendAuthorityNutritionSendToHC (BackendEntity NutritionSendToHC)
     | BackendAuthorityNutritionWeight (BackendEntity NutritionWeight)
     | BackendAuthorityObstetricHistory (BackendEntity ObstetricHistory)
     | BackendAuthorityObstetricHistoryStep2 (BackendEntity ObstetricHistoryStep2)

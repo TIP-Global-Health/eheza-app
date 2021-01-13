@@ -509,6 +509,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeNutritionPhoto
                             BackendAuthorityNutritionPhoto
 
+                    "nutrition_send_to_hc" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionSendToHC
+                            BackendAuthorityNutritionSendToHC
+
                     "nutrition_weight" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeNutritionWeight

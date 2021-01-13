@@ -471,6 +471,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityNutritionPhoto identifier ->
                 viewMeasurement identifier "Nutrition Photo"
 
+            BackendAuthorityNutritionSendToHC identifier ->
+                viewMeasurement identifier "Nutrition Send to HC"
+
             BackendAuthorityNutritionWeight identifier ->
                 viewMeasurement identifier "Nutrition Weight"
 
