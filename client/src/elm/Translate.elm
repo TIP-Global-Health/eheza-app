@@ -6654,7 +6654,7 @@ translateDashboard trans =
                     }
 
                 FilterProgramAchi ->
-                    { english = "Achi"
+                    { english = "ACHI"
                     , kinyarwanda = Nothing
                     }
 
