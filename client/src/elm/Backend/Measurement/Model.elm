@@ -215,6 +215,10 @@ type alias NutritionWeight =
     NutritionMeasurement WeightInKg
 
 
+type alias NutritionSendToHC =
+    NutritionMeasurement (EverySet SendToHCSign)
+
+
 
 -- PRENATAL MEASUREMENTS
 
@@ -996,6 +1000,7 @@ type alias NutritionMeasurements =
     , nutrition : Maybe ( NutritionNutritionId, NutritionNutrition )
     , photo : Maybe ( NutritionPhotoId, NutritionPhoto )
     , weight : Maybe ( NutritionWeightId, NutritionWeight )
+    , sendToHC : Maybe ( NutritionSendToHCId, NutritionSendToHC )
     }
 
 
