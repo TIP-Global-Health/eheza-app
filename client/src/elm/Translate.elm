@@ -6669,12 +6669,12 @@ translateDashboard trans =
                     }
 
                 FilterProgramSorwathe ->
-                    { english = "SORWATHE"
+                    { english = "Sorwathe"
                     , kinyarwanda = Nothing
                     }
 
                 FilterProgramCommunity ->
-                    { english = "COMMUNITY"
+                    { english = "Community"
                     , kinyarwanda = Nothing
                     }
 
