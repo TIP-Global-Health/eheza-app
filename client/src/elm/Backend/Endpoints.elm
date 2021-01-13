@@ -596,5 +596,5 @@ healthEducationEndpoint =
 
 nutritionSendToHCEndpoint : ReadWriteEndPoint Error NutritionSendToHCId NutritionSendToHC NutritionSendToHC ()
 nutritionSendToHCEndpoint =
-    swEndpoint "nodes/send_to_hc" decodeNutritionSendToHC
+    swEndpoint "nodes/nutrition_send_to_hc" decodeNutritionSendToHC
         |> withValueEncoder (object << encodeNutritionSendToHC)

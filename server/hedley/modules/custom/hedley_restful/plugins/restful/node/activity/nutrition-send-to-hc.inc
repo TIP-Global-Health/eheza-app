@@ -15,4 +15,3 @@ $plugin = array(
   'class' => 'HedleyRestfulNutritionSendToHC',
   'authentication_types' => TRUE,
 );
-s
