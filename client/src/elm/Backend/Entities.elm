@@ -621,3 +621,11 @@ type alias HealthEducationId =
 
 type HealthEducationUuidType
     = HealthEducationUuidType
+
+
+type alias NutritionSendToHCId =
+    EntityUuid NutritionSendToHCIdUuidType
+
+
+type NutritionSendToHCIdUuidType
+    = NutritionSendToHCIdUuidType
