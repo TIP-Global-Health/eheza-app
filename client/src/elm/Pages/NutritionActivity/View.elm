@@ -20,13 +20,27 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Utils exposing (..)
 import Measurement.View exposing (viewMeasurementFloatDiff, viewMuacIndication, zScoreForHeightOrLength)
+import Pages.AcuteIllnessActivity.Model exposing (SendToHCForm)
+import Pages.AcuteIllnessActivity.Utils exposing (sendToHCFormWithDefault)
+import Pages.AcuteIllnessActivity.View exposing (viewSendToHCActionLabel)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
 import Pages.NutritionEncounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
-import Pages.Utils exposing (taskCompleted, viewCheckBoxMultipleSelectInput, viewCustomLabel, viewLabel, viewMeasurementInput, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement)
+import Pages.Utils
+    exposing
+        ( taskCompleted
+        , viewBoolInput
+        , viewCheckBoxMultipleSelectInput
+        , viewCustomLabel
+        , viewLabel
+        , viewMeasurementInput
+        , viewPhotoThumbFromPhotoUrl
+        , viewPreviousMeasurement
+        , viewQuestionLabel
+        )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.NominalDate exposing (Days(..), diffDays)
@@ -120,8 +134,7 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
             viewWeightContent language currentDate zscores isChw assembled model.weightData previousGroupWeight
 
         SendToHC ->
-            -- @todo
-            []
+            viewSendToHCContent language currentDate assembled.measurements model.sendToHCData
 
 
 viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> HeightData -> Maybe ( NominalDate, Float ) -> List (Html Msg)
@@ -522,6 +535,49 @@ viewWeightContent language currentDate zscores isChw assembled data previousGrou
                 , onClick <| SaveWeight assembled.participant.person assembled.measurements.weight
                 ]
                 [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
+
+
+viewSendToHCContent : Language -> NominalDate -> NutritionMeasurements -> SendToHCData -> List (Html Msg)
+viewSendToHCContent language currentDate measurements data =
+    let
+        form =
+            measurements.sendToHC
+                |> Maybe.map (Tuple.second >> .value)
+                |> sendToHCFormWithDefault data.form
+
+        tasksCompleted =
+            taskCompleted form.handReferralForm + taskCompleted form.referToHealthCenter
+
+        totalTasks =
+            2
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form send-to-hc" ]
+                [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                , div [ class "instructions" ]
+                    [ viewSendToHCActionLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
+                    , viewSendToHCActionLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
+                    ]
+                , viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
+                , viewBoolInput
+                    language
+                    form.referToHealthCenter
+                    SetReferToHealthCenter
+                    "refer-to-hc"
+                    Nothing
+                , viewQuestionLabel language Translate.HandedReferralFormQuestion
+                , viewBoolInput
+                    language
+                    form.handReferralForm
+                    SetHandReferralForm
+                    "hand-referral-form"
+                    Nothing
+                ]
             ]
         ]
     ]

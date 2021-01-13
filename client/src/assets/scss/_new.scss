@@ -708,7 +708,8 @@ div.page-activity {
     }
 }
 
-// Prenatal Encounter and Nutrition Encounter pages
+// Prenatal Encounter, Nutrition Encounter and
+// Acute Illness Encounter pages
 div.page-encounter.nutrition,
 div.page-encounter.prenatal,
 div.page-encounter.acute-illness {
@@ -781,7 +782,6 @@ div.page-activity.acute-illness {
       }
     }
 }
-
 
 // Acute Illness Encounter page
 div.page-encounter.acute-illness {
@@ -987,7 +987,7 @@ div.page-activity.acute-illness {
   }
 }
 
-// Prenatal Activity page
+// Prenatal Activity and Nutrition Activity pages
 div.page-activity.prenatal,
 div.page-activity.nutrition {
 
@@ -1273,6 +1273,81 @@ div.page-activity.nutrition {
 
     .form.patient-provisions {
       min-height: 335px;
+    }
+  }
+}
+
+// Acute Illness Activity page
+div.page-activity.nutrition {
+
+  .ui.full.segment {
+
+    .full.content {
+      min-height: 210px;
+    }
+
+    .symptoms-form.gi .symptoms {
+      margin-bottom: 30px;
+    }
+
+    .ui.form {
+      min-height: 210px;
+    }
+
+    .ui.form.send-to-hc {
+
+      h2 {
+        text-transform: uppercase;
+      }
+
+      @include next-steps;
+    }
+
+    .label {
+      margin-bottom: 5px;
+    }
+
+    .form-input.yes-no {
+      margin-left: 25px;
+      padding-bottom: 15px;
+
+      label {
+        font-size: 25px;
+        margin-left: 10px;
+      }
+
+      label:before {
+        background-color: transparent;
+        border: 2px solid $color-gray-border;
+        border-radius: 13px;
+        content: " ";
+        display: inline-block;
+        height: 26px;
+        margin-right: 10px;
+        position: relative;
+        top: 5px;
+        width: 26px;
+      }
+
+      input[type=radio] {
+        display: none;
+      }
+
+      input[type=radio]:checked + label:after {
+        background: $color-text;
+        border-radius: 7px;
+        content: " ";
+        display: block;
+        height: 14px;
+        left: 30px;
+        position: absolute;
+        top: 25px;
+        width: 14px;
+      }
+
+      &.derived {
+        margin-left: 70px;
+      }
     }
   }
 }
