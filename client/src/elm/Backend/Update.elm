@@ -2213,52 +2213,56 @@ handleRevision revision (( model, recalc ) as noChange) =
 
 generateNutritionAssessmentMsgs : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> ModelIndexedDb -> NutritionEncounterId -> Person -> List App.Model.Msg
 generateNutritionAssessmentMsgs currentDate zscores isChw before after id person =
-    Maybe.map
-        (\assembledAfter ->
-            if
-                not <|
-                    Pages.NutritionActivity.Utils.mandatoryActivitiesCompleted
-                        currentDate
-                        zscores
-                        assembledAfter.person
-                        isChw
-                        assembledAfter.measurements
-            then
-                []
+    if not isChw then
+        []
 
-            else
-                Maybe.map
-                    (\assembledBefore ->
-                        let
-                            assesmentBefore =
-                                Pages.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembledBefore
+    else
+        Maybe.map
+            (\assembledAfter ->
+                if
+                    not <|
+                        Pages.NutritionActivity.Utils.mandatoryActivitiesCompleted
+                            currentDate
+                            zscores
+                            assembledAfter.person
+                            isChw
+                            assembledAfter.measurements
+                then
+                    []
 
-                            assesmentAfter =
-                                Pages.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembledAfter
-                        in
-                        if
-                            List.isEmpty assesmentAfter
-                                || ((List.length assesmentBefore == List.length assesmentAfter)
-                                        && List.all (\item -> List.member item assesmentBefore) assesmentAfter
-                                   )
-                        then
-                            []
+                else
+                    Maybe.map
+                        (\assembledBefore ->
+                            let
+                                assesmentBefore =
+                                    Pages.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembledBefore
 
-                        else
-                            [ -- Navigate to Nutritionencounter page.
-                              App.Model.SetActivePage (UserPage (NutritionEncounterPage id))
+                                assesmentAfter =
+                                    Pages.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembledAfter
+                            in
+                            if
+                                List.isEmpty assesmentAfter
+                                    || ((List.length assesmentBefore == List.length assesmentAfter)
+                                            && List.all (\item -> List.member item assesmentBefore) assesmentAfter
+                                       )
+                            then
+                                []
 
-                            -- Show warning popup with new assesment.
-                            , Pages.NutritionEncounter.Model.SetWarningPopupState assesmentAfter
-                                |> App.Model.MsgPageNutritionEncounter id
-                                |> App.Model.MsgLoggedIn
-                            ]
-                    )
-                    (RemoteData.toMaybe <| Pages.NutritionEncounter.Utils.generateAssembledData id before)
-                    |> Maybe.withDefault []
-        )
-        (RemoteData.toMaybe <| Pages.NutritionEncounter.Utils.generateAssembledData id after)
-        |> Maybe.withDefault []
+                            else
+                                [ -- Navigate to Nutritionencounter page.
+                                  App.Model.SetActivePage (UserPage (NutritionEncounterPage id))
+
+                                -- Show warning popup with new assesment.
+                                , Pages.NutritionEncounter.Model.SetWarningPopupState assesmentAfter
+                                    |> App.Model.MsgPageNutritionEncounter id
+                                    |> App.Model.MsgLoggedIn
+                                ]
+                        )
+                        (RemoteData.toMaybe <| Pages.NutritionEncounter.Utils.generateAssembledData id before)
+                        |> Maybe.withDefault []
+            )
+            (RemoteData.toMaybe <| Pages.NutritionEncounter.Utils.generateAssembledData id after)
+            |> Maybe.withDefault []
 
 
 generateSuspectedDiagnosisMsgs : NominalDate -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg

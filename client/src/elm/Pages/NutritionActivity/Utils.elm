@@ -40,7 +40,7 @@ expectActivity currentDate zscores child isChw measurements activity =
                 |> Maybe.withDefault False
 
         SendToHC ->
-            if mandatoryActivitiesCompleted currentDate zscores child isChw measurements then
+            if isChw && mandatoryActivitiesCompleted currentDate zscores child isChw measurements then
                 let
                     abnormalMuac =
                         measurements.muac
@@ -67,14 +67,18 @@ expectActivity currentDate zscores child isChw measurements activity =
                 False
 
         HealthEducation ->
-            measurements.weight
-                |> Maybe.andThen
-                    (Tuple.second
-                        >> .value
-                        >> (\(WeightInKg weight) -> calculateZScoreWeightForAge currentDate zscores child (Just weight))
-                    )
-                |> Maybe.map zScoreWeightForAgeModerate
-                |> Maybe.withDefault False
+            if isChw && mandatoryActivitiesCompleted currentDate zscores child isChw measurements then
+                measurements.weight
+                    |> Maybe.andThen
+                        (Tuple.second
+                            >> .value
+                            >> (\(WeightInKg weight) -> calculateZScoreWeightForAge currentDate zscores child (Just weight))
+                        )
+                    |> Maybe.map zScoreWeightForAgeModerate
+                    |> Maybe.withDefault False
+
+            else
+                False
 
         _ ->
             True
