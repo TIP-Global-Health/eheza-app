@@ -21,7 +21,7 @@ import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Utils exposing (..)
 import Measurement.View exposing (viewMeasurementFloatDiff, viewMuacIndication, zScoreForHeightOrLength)
 import Pages.AcuteIllnessActivity.Model exposing (SendToHCForm)
-import Pages.AcuteIllnessActivity.Utils exposing (sendToHCFormWithDefault)
+import Pages.AcuteIllnessActivity.Utils exposing (healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Pages.AcuteIllnessActivity.View exposing (viewSendToHCActionLabel)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
@@ -137,8 +137,7 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
             viewSendToHCContent language currentDate zscores assembled model.sendToHCData
 
         Backend.NutritionActivity.Model.HealthEducation ->
-            -- @todo
-            []
+            viewHealthEducationContent language currentDate zscores assembled model.healthEducationData
 
 
 viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> HeightData -> Maybe ( NominalDate, Float ) -> List (Html Msg)
@@ -581,6 +580,53 @@ viewSendToHCContent language currentDate zscores assembled data =
                 [ button
                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
                     , onClick <| SaveSendToHC assembled.participant.person assembled.measurements.sendToHC
+                    ]
+                    [ text <| translate language Translate.Save ]
+                ]
+            ]
+        ]
+    ]
+
+
+viewHealthEducationContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> HealthEducationData -> List (Html Msg)
+viewHealthEducationContent language currentDate zscores assembled data =
+    let
+        form =
+            assembled.measurements.healthEducation
+                |> Maybe.map (Tuple.second >> .value)
+                |> healthEducationFormWithDefault data.form
+
+        tasksCompleted =
+            taskCompleted form.educationForDiagnosis
+
+        totalTasks =
+            1
+
+        disabled =
+            tasksCompleted /= totalTasks
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form health-education" ]
+                [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                , div [ class "label" ]
+                    [ text <| translate language Translate.ProvidedPreventionEducationQuestion
+                    , text " "
+                    , text <| translate language Translate.ModeratelyUnderweight
+                    , text "?"
+                    ]
+                , viewBoolInput
+                    language
+                    form.educationForDiagnosis
+                    SetProvidedEducationForDiagnosis
+                    "education-for-diagnosis"
+                    Nothing
+                ]
+            , div [ class "actions" ]
+                [ button
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
+                    , onClick <| SaveHealthEducation assembled.participant.person assembled.measurements.healthEducation
                     ]
                     [ text <| translate language Translate.Save ]
                 ]

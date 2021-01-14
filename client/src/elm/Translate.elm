@@ -557,6 +557,7 @@ type TranslationId
     | MissedDosesOfMedicatgion Int
     | ModeOfDelivery ModeOfDelivery
     | ModeOfDeliveryLabel
+    | ModeratelyUnderweight
     | Month
     | MonthAbbrev
     | MonthsOld
@@ -3837,6 +3838,11 @@ translationSet trans =
         ModeOfDeliveryLabel ->
             { english = "Mode of delivery"
             , kinyarwanda = Just "Uburyo yabyayemo"
+            }
+
+        ModeratelyUnderweight ->
+            { english = "Moderately Underweight"
+            , kinyarwanda = Nothing
             }
 
         Month ->
