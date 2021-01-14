@@ -92,7 +92,7 @@ activityCompleted currentDate zscores child isChw measurements activity =
                 || isJust measurements.height
 
         Muac ->
-            (not <| expectActivity currentDate zscores child isChw measurements Height)
+            (not <| expectActivity currentDate zscores child isChw measurements Muac)
                 || isJust measurements.muac
 
         Nutrition ->
