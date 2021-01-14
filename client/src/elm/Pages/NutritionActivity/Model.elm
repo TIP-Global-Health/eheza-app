@@ -3,7 +3,7 @@ module Pages.NutritionActivity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Measurement.Model exposing (DropZoneFile)
-import Pages.AcuteIllnessActivity.Model exposing (SendToHCForm)
+import Pages.AcuteIllnessActivity.Model exposing (HealthEducationForm, SendToHCForm)
 import Pages.Page exposing (Page)
 
 
@@ -22,6 +22,8 @@ type Msg
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SaveSendToHC PersonId (Maybe ( NutritionSendToHCId, NutritionSendToHC ))
+    | SetProvidedEducationForDiagnosis Bool
+    | SaveHealthEducation PersonId (Maybe ( NutritionHealthEducationId, NutritionHealthEducation ))
 
 
 type alias Model =
@@ -31,6 +33,7 @@ type alias Model =
     , photoData : PhotoData
     , weightData : WeightData
     , sendToHCData : SendToHCData
+    , healthEducationData : HealthEducationData
     }
 
 
@@ -42,6 +45,7 @@ emptyModel =
     , photoData = emptyPhotoData
     , weightData = emptyWeightData
     , sendToHCData = emptySendToHCData
+    , healthEducationData = emptyHealthEducationData
     }
 
 
@@ -136,4 +140,15 @@ type alias SendToHCData =
 emptySendToHCData : SendToHCData
 emptySendToHCData =
     { form = SendToHCForm Nothing Nothing
+    }
+
+
+type alias HealthEducationData =
+    { form : HealthEducationForm
+    }
+
+
+emptyHealthEducationData : HealthEducationData
+emptyHealthEducationData =
+    { form = HealthEducationForm Nothing
     }
