@@ -38,7 +38,7 @@ encodeActivityAsString activity =
             "nutrition-send-to-hc"
 
         HealthEducation ->
-            "nutrition-health-educaiton"
+            "nutrition-health-education"
 
 
 {-| The inverse of encodeActivityTypeAsString
@@ -64,7 +64,7 @@ decodeActivityFromString s =
         "nutrition-send-to-hc" ->
             Just SendToHC
 
-        "nutrition-health-educaiton" ->
+        "nutrition-health-education" ->
             Just HealthEducation
 
         _ ->
@@ -103,7 +103,7 @@ getActivityIcon activity =
             "send-to-hc"
 
         HealthEducation ->
-            "health-educaiton"
+            "health-education"
 
 
 getAllActivities : List NutritionActivity
