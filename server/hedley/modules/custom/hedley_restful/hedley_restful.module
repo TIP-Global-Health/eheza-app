@@ -67,6 +67,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'mother_fbf' => 'mother-fbfs',
   'muac' => 'muacs',
   'nutrition' => 'nutritions',
+  'nutrition_health_education' => 'nutrition-health-education',
   'nutrition_height' => 'nutrition-heights',
   'nutrition_muac' => 'nutrition-muacs',
   'nutrition_nutrition' => 'nutrition-nutritions',
