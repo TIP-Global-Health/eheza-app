@@ -1808,14 +1808,19 @@ encodeAcuteIllnessNutritionValue nutritions =
 
 encodeHealthEducation : HealthEducation -> List ( String, Value )
 encodeHealthEducation =
-    encodeAcuteIllnessMeasurement encodeHealthEducationValue
+    encodeAcuteIllnessMeasurement (encodeHealthEducationValueWithType "health_education")
 
 
-encodeHealthEducationValue : EverySet HealthEducationSign -> List ( String, Value )
-encodeHealthEducationValue value =
+encodeNutritionHealthEducation : NutritionHealthEducation -> List ( String, Value )
+encodeNutritionHealthEducation =
+    encodeNutritionMeasurement (encodeHealthEducationValueWithType "nutrition_health_education")
+
+
+encodeHealthEducationValueWithType : String -> EverySet HealthEducationSign -> List ( String, Value )
+encodeHealthEducationValueWithType type_ value =
     [ ( "health_education_signs", encodeEverySet encodeHealthEducationSign value )
     , ( "deleted", bool False )
-    , ( "type", string "health_education" )
+    , ( "type", string type_ )
     ]
 
 

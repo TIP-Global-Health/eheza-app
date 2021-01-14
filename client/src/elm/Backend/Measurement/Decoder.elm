@@ -103,6 +103,7 @@ decodeNutritionMeasurements =
         |> optional "nutrition_photo" (decodeHead decodeNutritionPhoto) Nothing
         |> optional "nutrition_weight" (decodeHead decodeNutritionWeight) Nothing
         |> optional "nutrition_send_to_hc" (decodeHead decodeNutritionSendToHC) Nothing
+        |> optional "nutrition_health_education" (decodeHead decodeNutritionHealthEducation) Nothing
 
 
 decodeAcuteIllnessMeasurements : Decoder AcuteIllnessMeasurements
@@ -1946,6 +1947,13 @@ decodeHealthEducation =
     decodeEverySet decodeHealthEducationSign
         |> field "health_education_signs"
         |> decodeAcuteIllnessMeasurement
+
+
+decodeNutritionHealthEducation : Decoder NutritionHealthEducation
+decodeNutritionHealthEducation =
+    decodeEverySet decodeHealthEducationSign
+        |> field "health_education_signs"
+        |> decodeNutritionMeasurement
 
 
 decodeHealthEducationSign : Decoder HealthEducationSign
