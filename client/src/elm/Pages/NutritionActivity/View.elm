@@ -136,6 +136,10 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
         SendToHC ->
             viewSendToHCContent language currentDate zscores assembled model.sendToHCData
 
+        Backend.NutritionActivity.Model.HealthEducation ->
+            -- @todo
+            []
+
 
 viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> HeightData -> Maybe ( NominalDate, Float ) -> List (Html Msg)
 viewHeightContent language currentDate zscores assembled data previousGroupValue =

@@ -4158,8 +4158,15 @@ translationSet trans =
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
                     }
 
+                -- No helper for activity.
                 Backend.NutritionActivity.Model.SendToHC ->
-                    { english = "@todo"
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                -- No helper for activity.
+                Backend.NutritionActivity.Model.HealthEducation ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -4193,6 +4200,11 @@ translationSet trans =
                 Backend.NutritionActivity.Model.SendToHC ->
                     { english = "Send to Health Center"
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+                    }
+
+                Backend.NutritionActivity.Model.HealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
         NutritionHelper ->

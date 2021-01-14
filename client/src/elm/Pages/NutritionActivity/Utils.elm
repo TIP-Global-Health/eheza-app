@@ -66,6 +66,16 @@ expectActivity currentDate zscores child isChw measurements activity =
             else
                 False
 
+        HealthEducation ->
+            measurements.weight
+                |> Maybe.andThen
+                    (Tuple.second
+                        >> .value
+                        >> (\(WeightInKg weight) -> calculateZScoreWeightForAge currentDate zscores child (Just weight))
+                    )
+                |> Maybe.map zScoreWeightForAgeModerate
+                |> Maybe.withDefault False
+
         _ ->
             True
 
@@ -92,6 +102,10 @@ activityCompleted currentDate zscores child isChw measurements activity =
 
         SendToHC ->
             (not <| expectActivity currentDate zscores child isChw measurements SendToHC)
+                || isJust measurements.sendToHC
+
+        HealthEducation ->
+            (not <| expectActivity currentDate zscores child isChw measurements HealthEducation)
                 || isJust measurements.sendToHC
 
 
