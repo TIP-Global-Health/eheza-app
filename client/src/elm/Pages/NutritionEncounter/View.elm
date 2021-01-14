@@ -33,16 +33,27 @@ view language currentDate zscores id isChw db model =
     let
         data =
             generateAssembledData id db
+    in
+    viewWebData language (viewHeaderAndContent language currentDate zscores id isChw db model) identity data
 
+
+viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate zscores id isChw db model data =
+    let
         header =
-            viewWebData language (viewHeader language) identity data
+            viewHeader language data
 
         content =
-            viewWebData language (viewContent language currentDate zscores id isChw model) identity data
+            viewContent language currentDate zscores id isChw model data
     in
-    div [ class "page-encounter nutrition" ] <|
+    div [ class "page-encounter nutrition" ]
         [ header
         , content
+        , viewModal <|
+            warningPopup language
+                currentDate
+                model.warningPopupState
+                data
         ]
 
 
@@ -193,3 +204,33 @@ viewMainPageContent language currentDate zscores id isChw data model =
     [ tabs
     , content
     ]
+
+
+warningPopup : Language -> NominalDate -> List NutritionAssesment -> AssembledData -> Maybe (Html Msg)
+warningPopup language currentDate state data =
+    if List.isEmpty state then
+        Nothing
+
+    else
+        let
+            infoHeading =
+                [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
+
+            assessments =
+                List.map (\assessment -> p [] [ text <| translate language <| Translate.NutritionAssesment assessment ]) state
+        in
+        Just <|
+            div [ class "ui active modal diagnosis-popup" ]
+                [ div [ class "content" ] <|
+                    [ div [ class "popup-heading-wrapper" ] infoHeading
+                    , div [ class "popup-title" ] assessments
+                    ]
+                , div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick <| SetWarningPopupState []
+                        ]
+                        [ text <| translate language Translate.Continue ]
+                    ]
+                ]

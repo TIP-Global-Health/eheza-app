@@ -61,6 +61,7 @@ import Pages.AcuteIllnessActivity.Model
         )
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Dashboard.Model as Dashboard exposing (BeneficiariesTableLabels(..), DashboardFilter(..), DashboardSubFilter(..), FilterPeriod(..))
+import Pages.NutritionEncounter.Model exposing (NutritionAssesment(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
     exposing
@@ -606,6 +607,7 @@ type TranslationId
     | NumberOfStillbirthsPreTerm
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
+    | NutritionAssesment NutritionAssesment
     | NutritionHelper
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
@@ -4211,6 +4213,28 @@ translationSet trans =
                 Backend.NutritionActivity.Model.HealthEducation ->
                     { english = "Health Education"
                     , kinyarwanda = Just "Inyigisho ku buzima"
+                    }
+
+        NutritionAssesment assessment ->
+            case assessment of
+                AssesmentMuacModerate ->
+                    { english = "Moderate value for MUAC"
+                    , kinyarwanda = Nothing
+                    }
+
+                AssesmentMuacSevere ->
+                    { english = "Severe value for MUAC"
+                    , kinyarwanda = Nothing
+                    }
+
+                AssesmentUnderweightModerate ->
+                    { english = "Moderately underweight"
+                    , kinyarwanda = Nothing
+                    }
+
+                AssesmentUnderweightSevere ->
+                    { english = "Severely underweight"
+                    , kinyarwanda = Nothing
                     }
 
         NutritionHelper ->

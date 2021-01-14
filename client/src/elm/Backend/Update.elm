@@ -43,12 +43,14 @@ import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.Utils
     exposing
         ( activityCompleted
-        , generateAssembledData
         , mandatoryActivitiesCompletedSubsequentVisit
         , noImprovementOnSubsequentVisit
         , resolveNextStepFirstEncounter
         , resolveNextStepSubsequentEncounter
         )
+import Pages.NutritionActivity.Utils
+import Pages.NutritionEncounter.Model
+import Pages.NutritionEncounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
@@ -56,10 +58,11 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyBackendUrl, toCmd, toTask, withoutDecoder)
 import SyncManager.Model exposing (IndexDbQueryType(..))
 import Task
+import ZScore.Model
 
 
-updateIndexedDb : NominalDate -> Maybe NurseId -> Maybe HealthCenterId -> Bool -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
+updateIndexedDb : NominalDate -> ZScore.Model.Model -> Maybe NurseId -> Maybe HealthCenterId -> Bool -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
+updateIndexedDb currentDate zscores nurseId healthCenterId isChw msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -159,7 +162,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate nurseId healthCenterId isChw) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate zscores nurseId healthCenterId isChw) extraMsgs
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions
@@ -741,6 +744,24 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                 |> Maybe.withDefault []
                     in
                     ( newModel, extraMsgs )
+
+                processRevisionAndAssess participantId encounterId =
+                    let
+                        person =
+                            Dict.get participantId model.people
+                                |> Maybe.withDefault NotAsked
+                                |> RemoteData.toMaybe
+
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map2 (generateNutritionAssessmentMsgs currentDate zscores isChw model newModel)
+                                encounterId
+                                person
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel, extraMsgs )
             in
             case revisions of
                 -- Special handling for a single attendance revision, which means
@@ -909,7 +930,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -924,7 +945,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -939,7 +960,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -954,7 +975,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -969,7 +990,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -984,8 +1005,38 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ NutritionMuacRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssess data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ NutritionNutritionRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssess data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ NutritionWeightRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssess data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1284,7 +1335,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             , relationshipCmd
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate nurseId healthCenterId isChw) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate zscores nurseId healthCenterId isChw) extraMsgs
 
         HandlePostedRelationship personId initiator data ->
             let
@@ -2160,6 +2211,56 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
 
+generateNutritionAssessmentMsgs : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> ModelIndexedDb -> NutritionEncounterId -> Person -> List App.Model.Msg
+generateNutritionAssessmentMsgs currentDate zscores isChw before after id person =
+    Maybe.map
+        (\assembledAfter ->
+            if
+                not <|
+                    Pages.NutritionActivity.Utils.mandatoryActivitiesCompleted
+                        currentDate
+                        zscores
+                        assembledAfter.person
+                        isChw
+                        assembledAfter.measurements
+            then
+                []
+
+            else
+                Maybe.map
+                    (\assembledBefore ->
+                        let
+                            assesmentBefore =
+                                Pages.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembledBefore
+
+                            assesmentAfter =
+                                Pages.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembledAfter
+                        in
+                        if
+                            List.isEmpty assesmentAfter
+                                || ((List.length assesmentBefore == List.length assesmentAfter)
+                                        && List.all (\item -> List.member item assesmentBefore) assesmentAfter
+                                   )
+                        then
+                            []
+
+                        else
+                            [ -- Navigate to Nutritionencounter page.
+                              App.Model.SetActivePage (UserPage (NutritionEncounterPage id))
+
+                            -- Show warning popup with new assesment.
+                            , Pages.NutritionEncounter.Model.SetWarningPopupState assesmentAfter
+                                |> App.Model.MsgPageNutritionEncounter id
+                                |> App.Model.MsgLoggedIn
+                            ]
+                    )
+                    (RemoteData.toMaybe <| Pages.NutritionEncounter.Utils.generateAssembledData id before)
+                    |> Maybe.withDefault []
+        )
+        (RemoteData.toMaybe <| Pages.NutritionEncounter.Utils.generateAssembledData id after)
+        |> Maybe.withDefault []
+
+
 generateSuspectedDiagnosisMsgs : NominalDate -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
 generateSuspectedDiagnosisMsgs currentDate before after id person =
     Maybe.map2
@@ -2170,8 +2271,8 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
             else
                 generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate assembledAfter
         )
-        (RemoteData.toMaybe <| generateAssembledData currentDate id before)
-        (RemoteData.toMaybe <| generateAssembledData currentDate id after)
+        (RemoteData.toMaybe <| Pages.AcuteIllnessEncounter.Utils.generateAssembledData currentDate id before)
+        (RemoteData.toMaybe <| Pages.AcuteIllnessEncounter.Utils.generateAssembledData currentDate id after)
         |> Maybe.withDefault []
 
 
@@ -2270,9 +2371,9 @@ updateDiagnosisMsg id diagnosis =
         |> App.Model.MsgIndexedDb
 
 
-generateAssesmentCompletedMsgs : NominalDate -> ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
-generateAssesmentCompletedMsgs currentDate after id =
-    generateAssembledData currentDate id after
+generateAcuteIllnessAssesmentCompletedMsgs : NominalDate -> ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
+generateAcuteIllnessAssesmentCompletedMsgs currentDate after id =
+    Pages.AcuteIllnessEncounter.Utils.generateAssembledData currentDate id after
         |> RemoteData.toMaybe
         |> Maybe.map
             (\data ->
