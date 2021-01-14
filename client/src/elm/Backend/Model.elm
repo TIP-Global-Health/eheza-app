@@ -317,6 +317,7 @@ type Revision
     | MuacRevision MuacId Muac
     | NurseRevision NurseId Nurse
     | NutritionEncounterRevision NutritionEncounterId NutritionEncounter
+    | NutritionHealthEducationRevision NutritionHealthEducationId NutritionHealthEducation
     | NutritionHeightRevision NutritionHeightId NutritionHeight
     | NutritionMuacRevision NutritionMuacId NutritionMuac
     | NutritionNutritionRevision NutritionNutritionId NutritionNutrition
