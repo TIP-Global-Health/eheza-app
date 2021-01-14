@@ -106,7 +106,7 @@ activityCompleted currentDate zscores child isChw measurements activity =
 
         HealthEducation ->
             (not <| expectActivity currentDate zscores child isChw measurements HealthEducation)
-                || isJust measurements.sendToHC
+                || isJust measurements.healthEducation
 
 
 mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> Person -> Bool -> NutritionMeasurements -> Bool
