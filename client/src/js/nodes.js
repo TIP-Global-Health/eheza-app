@@ -275,7 +275,7 @@
         }).catch(sendErrorResponses);
     }
 
-    async function postNode (request, type) {
+    function postNode (request, type) {
         return dbSync.open().catch(databaseError).then(function () {
             return getTableForType(type).then(function (table) {
                 return request.json().catch(jsonError).then(function (json) {
