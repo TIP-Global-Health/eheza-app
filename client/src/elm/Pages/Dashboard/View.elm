@@ -855,7 +855,9 @@ viewFiltersPane language page filterPeriodsPerPage model =
                 ]
 
         selectedProgram =
-            [ span [ class "label" ] [ text <| translate language Translate.SelectedProgram ++ ": " ] ]
+            [ span [ class "label" ] [ text <| translate language Translate.SelectedProgram ++ ": " ]
+            , text <| translate language <| Translate.Dashboard <| Translate.FilterProgramType <| model.programTypeFilter
+            ]
     in
     div [ class "ui segment filters" ] <|
         List.map renderButton filterPeriodsPerPage
