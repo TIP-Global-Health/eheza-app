@@ -9,6 +9,10 @@
       min-height: 60px;
       padding: 15px 20px;
 
+      .label {
+        color: $color-white;
+      }
+
       .ui.button {
         font-size: 22px;
         line-height: 30px;
