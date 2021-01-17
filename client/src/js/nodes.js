@@ -749,15 +749,9 @@
         });
     }
 
-    // This is meant for the end of a promise chain. If we've rejected with a
-    // `Response` object, then we resolve instead, so that we'll send the
-    // response. (Otherwise, we'll send a network error).
+    // This is meant for the end of a promise chain.
     function sendErrorResponses (err) {
-        if (err instanceof Response) {
-            return Promise.resolve(err);
-        } else {
-            return Promise.reject(err);
-        }
+        return Promise.reject(err);
     }
 
     function databaseError (err) {
