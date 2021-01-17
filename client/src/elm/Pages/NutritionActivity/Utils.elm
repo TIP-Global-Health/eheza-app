@@ -51,6 +51,15 @@ expectActivity currentDate zscores child isChw measurements activity =
                                 )
                             |> Maybe.withDefault False
 
+                    edemaPresent =
+                        measurements.nutrition
+                            |> Maybe.map
+                                (Tuple.second
+                                    >> .value
+                                    >> EverySet.member Edema
+                                )
+                            |> Maybe.withDefault False
+
                     abnormalWeightForAgeZScore =
                         measurements.weight
                             |> Maybe.andThen
@@ -61,7 +70,7 @@ expectActivity currentDate zscores child isChw measurements activity =
                             |> Maybe.map zScoreWeightForAgeAbnormal
                             |> Maybe.withDefault False
                 in
-                abnormalMuac || abnormalWeightForAgeZScore
+                abnormalMuac || abnormalWeightForAgeZScore || malnutritionSignEdemaRecorded measurements
 
             else
                 False
@@ -298,3 +307,14 @@ muacSevere muac =
 muacModerate : MuacInCm -> Bool
 muacModerate muac =
     muacIndication muac == MuacYellow
+
+
+malnutritionSignEdemaRecorded : NutritionMeasurements -> Bool
+malnutritionSignEdemaRecorded measurements =
+    measurements.nutrition
+        |> Maybe.map
+            (Tuple.second
+                >> .value
+                >> EverySet.member Edema
+            )
+        |> Maybe.withDefault False

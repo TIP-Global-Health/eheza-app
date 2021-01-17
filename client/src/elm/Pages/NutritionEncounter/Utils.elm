@@ -9,7 +9,15 @@ import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime)
 import Maybe.Extra exposing (isJust, unwrap)
-import Pages.NutritionActivity.Utils exposing (calculateZScoreWeightForAge, muacModerate, muacSevere, zScoreWeightForAgeModerate, zScoreWeightForAgeSevere)
+import Pages.NutritionActivity.Utils
+    exposing
+        ( calculateZScoreWeightForAge
+        , malnutritionSignEdemaRecorded
+        , muacModerate
+        , muacSevere
+        , zScoreWeightForAgeModerate
+        , zScoreWeightForAgeSevere
+        )
 import Pages.NutritionEncounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
@@ -139,6 +147,13 @@ generateNutritionAssesment currentDate zscores assembled =
                         else
                             Nothing
                     )
+
+        assementByNutritionSigns =
+            if malnutritionSignEdemaRecorded assembled.measurements then
+                Just AssesmentEdema
+
+            else
+                Nothing
     in
-    [ assesmentByMuac, assesmentByWeightForAgeZScore ]
+    [ assesmentByMuac, assesmentByWeightForAgeZScore, assementByNutritionSigns ]
         |> List.filterMap identity

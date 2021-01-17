@@ -4217,6 +4217,11 @@ translationSet trans =
 
         NutritionAssesment assessment ->
             case assessment of
+                AssesmentEdema ->
+                    { english = "Malnutrition Sign: Edema"
+                    , kinyarwanda = Nothing
+                    }
+
                 AssesmentMuacModerate ->
                     { english = "Moderate value for MUAC"
                     , kinyarwanda = Nothing
