@@ -2214,6 +2214,7 @@ handleRevision revision (( model, recalc ) as noChange) =
 generateNutritionAssessmentMsgs : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> NutritionEncounterId -> Person -> List App.Model.Msg
 generateNutritionAssessmentMsgs currentDate zscores isChw after id person =
     if not isChw then
+        -- Assement is done only for CHW.
         []
 
     else
@@ -2229,6 +2230,7 @@ generateNutritionAssessmentMsgs currentDate zscores isChw after id person =
                             assembledAfter.measurements
                 in
                 if not mandatoryActivitiesCompleted then
+                    -- Assement is done only when all mandatory measurements were recorded.
                     []
 
                 else
@@ -2237,6 +2239,7 @@ generateNutritionAssessmentMsgs currentDate zscores isChw after id person =
                             Pages.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembledAfter
                     in
                     if List.isEmpty assesmentAfter then
+                        -- View assement when we have items at assement list.
                         []
 
                     else
