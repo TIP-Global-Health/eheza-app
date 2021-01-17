@@ -479,7 +479,7 @@
 
                 return Promise.reject(response);
             }
-        });
+        }).catch(sendErrorResponses);
     }
 
     // Fields which we index along with type, so we can search for them.
