@@ -20,6 +20,7 @@ define('HEDLEY_PERSON_RELATED_BY_PARENT_OF', 'parent');
 define('HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR', 'caregiver');
 define('HEDLEY_PERSON_CLINIC_TYPE_SORWATHE', 'sorwathe');
 define('HEDLEY_PERSON_CLINIC_TYPE_ACHI', 'achi');
+define('HEDLEY_PERSON_CLINIC_TYPE_CHW', 'chw');
 
 // Import CSV column mapping:
 define('HEDLEY_PERSON_COLUMN_UNIQUE_ID', 0);
