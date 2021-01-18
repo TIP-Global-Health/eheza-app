@@ -857,13 +857,24 @@ viewFiltersPane language page filterPeriodsPerPage model =
         selectedProgram =
             [ span [ class "label" ]
                 [ text <| translate language Translate.SelectedProgram ++ ": "
-                , translateText language <| Translate.Dashboard <| Translate.FilterProgramType <| model.programTypeFilter
+                , translateText language <| Translate.Dashboard <| Translate.FilterProgramType model.programTypeFilter
                 ]
             ]
+
+        selectedVillage =
+            if model.programTypeFilter == FilterProgramCommunity && isJust model.selectedVillageFilter then
+                span [ class "label" ]
+                    [ text <| translate language Translate.SelectedVillage ++ ": "
+                    , text (toString model.selectedVillageFilter)
+                    ]
+
+            else
+                emptyNode
     in
     div [ class "ui segment filters" ] <|
         List.map renderButton filterPeriodsPerPage
             ++ selectedProgram
+            ++ [ selectedVillage ]
             ++ [ programTypeFilterFilterButton ]
 
 
