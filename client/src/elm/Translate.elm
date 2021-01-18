@@ -752,6 +752,7 @@ type TranslationId
     | SelectAllSigns
     | SelectDangerSigns
     | SelectedProgram
+    | SelectedVillage
     | SelectEncounterType
     | SelectExistingAcuteIllness
     | SelectExistingAcuteIllnessToRecordOutcome
@@ -5329,6 +5330,11 @@ translationSet trans =
 
         SelectedProgram ->
             { english = "Selected Program"
+            , kinyarwanda = Nothing
+            }
+
+        SelectedVillage ->
+            { english = "Selected Village"
             , kinyarwanda = Nothing
             }
 
