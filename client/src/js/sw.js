@@ -109,6 +109,17 @@ function sendRevisions (revisions) {
     });
 }
 
+function gatherWords (text) {
+  // Split on spaces, and remove blanks from result.
+  return (text || '').split(/\s+/).flatMap(function (word) {
+    if (word) {
+      return [word.toLowerCase()];
+    } else {
+      return [];
+    }
+  });
+}
+
 /**
  * @DEPRECATED
  * Kept here for now, to avoid deleting from other places, which should happen

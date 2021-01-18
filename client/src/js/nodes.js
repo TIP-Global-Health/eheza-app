@@ -48,6 +48,36 @@
                 dbSync[table.name] = table;
             });
 
+            dbSync.shards.hook('creating', function (primKey, obj, trans) {
+              console.log('creating');
+              if (obj.type === 'person') {
+                if (typeof obj.label == 'string') {
+                  obj.name_search = gatherWords(obj.label);
+                }
+              }
+            });
+
+            dbSync.shards.hook('updating', function (mods, primKey, obj, trans) {
+              console.log('updating');
+              if (obj.type === 'person') {
+                if (mods.hasOwnProperty("label")) {
+                  if (typeof mods.label == 'string') {
+                    return {
+                      name_search: gatherWords(mods.label)
+                    };
+                  } else {
+                    return {
+                      name_search: []
+                    };
+                  }
+                } else {
+                  return {
+                    name_search: gatherWords(obj.label)
+                  };
+                }
+              }
+            });
+
             // A hook to create matching row in `authorityPhotoUploadChanges`, if entity has a photo.
             dbSync.shardChanges.hook('creating', function (primKey, obj, transaction) {
                 const self = this;
