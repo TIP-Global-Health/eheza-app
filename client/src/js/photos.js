@@ -29,6 +29,19 @@
                     return cachedResponse;
                 }
 
+                let url = new URL(event.request.url);
+                let params = new URLSearchParams(url.search.slice(1));
+
+                if (!params.has('access_token')) {
+                  // We can't try fetching photo from server, because we were
+                  // not provided with access token. This happens when APP tries
+                  // to view photo before it got downloaded. Respond with a 404.
+                  return new Response('', {
+                      status: 404,
+                      statusText: 'Not Found'
+                  });
+                }
+
                 try {
                     // Try to get photo from server.
                     var response = await fetch(event.request);
@@ -55,9 +68,6 @@
 
                 // We got the image, so cache it but without
                 // the `access_token` param.
-                let url = new URL(event.request.url);
-                let params = new URLSearchParams(url.search.slice(1));
-
                 params.delete('access_token');
 
                 url.search = params.toString();

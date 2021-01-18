@@ -48,6 +48,34 @@
                 dbSync[table.name] = table;
             });
 
+            dbSync.shards.hook('creating', function (primKey, obj, trans) {
+              if (obj.type === 'person') {
+                if (typeof obj.label == 'string') {
+                  obj.name_search = gatherWords(obj.label);
+                }
+              }
+            });
+
+            dbSync.shards.hook('updating', function (mods, primKey, obj, trans) {
+              if (obj.type === 'person') {
+                if (mods.hasOwnProperty("label")) {
+                  if (typeof mods.label == 'string') {
+                    return {
+                      name_search: gatherWords(mods.label)
+                    };
+                  } else {
+                    return {
+                      name_search: []
+                    };
+                  }
+                } else {
+                  return {
+                    name_search: gatherWords(obj.label)
+                  };
+                }
+              }
+            });
+
             // A hook to create matching row in `authorityPhotoUploadChanges`, if entity has a photo.
             dbSync.shardChanges.hook('creating', function (primKey, obj, transaction) {
                 const self = this;
@@ -275,7 +303,7 @@
         }).catch(sendErrorResponses);
     }
 
-    async function postNode (request, type) {
+    function postNode (request, type) {
         return dbSync.open().catch(databaseError).then(function () {
             return getTableForType(type).then(function (table) {
                 return request.json().catch(jsonError).then(function (json) {
@@ -479,7 +507,7 @@
 
                 return Promise.reject(response);
             }
-        });
+        }).catch(sendErrorResponses);
     }
 
     // Fields which we index along with type, so we can search for them.
