@@ -49,7 +49,6 @@
             });
 
             dbSync.shards.hook('creating', function (primKey, obj, trans) {
-              console.log('creating');
               if (obj.type === 'person') {
                 if (typeof obj.label == 'string') {
                   obj.name_search = gatherWords(obj.label);
@@ -58,7 +57,6 @@
             });
 
             dbSync.shards.hook('updating', function (mods, primKey, obj, trans) {
-              console.log('updating');
               if (obj.type === 'person') {
                 if (mods.hasOwnProperty("label")) {
                   if (typeof mods.label == 'string') {
