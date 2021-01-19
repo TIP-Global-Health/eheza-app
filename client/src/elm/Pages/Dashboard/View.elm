@@ -873,7 +873,7 @@ viewFiltersPane language page filterPeriodsPerPage db model =
                                         Dict.get villageId villages
                                             |> Maybe.map
                                                 (\village ->
-                                                    span [ class "label" ]
+                                                    span [ class "village-label" ]
                                                         [ text <| translate language Translate.SelectedVillage ++ ": "
                                                         , text village.name
                                                         ]
