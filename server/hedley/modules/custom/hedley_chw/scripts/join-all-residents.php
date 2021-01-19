@@ -62,8 +62,6 @@ foreach ($villages as $village) {
   $relationships_query_count = clone $relationships_query;
   $count = $relationships_query_count->count()->execute();
 
-  drush_print("There are $count relationships.");
-
   if ($count == 0) {
     drush_print("There are no relationships in village with ID $village.");
     continue;
@@ -74,6 +72,8 @@ foreach ($villages as $village) {
     drush_print("Can't located CHW group for village $village.");
     continue;
   }
+  drush_print("group: $chw_group.");
+
 
   // Execute creation in a batch.
   while ($offset < $count) {
@@ -87,11 +87,12 @@ foreach ($villages as $village) {
       break;
     }
 
+
+
     $keys = array_keys($result['node']);
     $relationships = node_load_multiple($keys);
 
-    foreach ($relationships as $relationship_id) {
-      $relationship = node_load($relationship_id);
+    foreach ($relationships as $relationship) {
       $relationship_wrapper = entity_metadata_wrapper('node', $relationship);
 
       // Skip relationships where child age is over 5 years.
