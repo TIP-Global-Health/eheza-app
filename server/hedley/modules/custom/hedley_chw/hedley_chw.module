@@ -129,11 +129,6 @@ function hedley_chw_process_new_village($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
   $village_id = $node->nid;
   $village_name = $wrapper->label();
-  $province = $wrapper->field_province->value();
-  $district = $wrapper->field_district->value();
-  $sector = $wrapper->field_sector->value();
-  $cell = $wrapper->field_cell->value();
-  $village = $wrapper->field_village->value();
   $health_center_id = $wrapper->field_health_center->getIdentifier();
 
   $clinic_node = entity_create('node', [

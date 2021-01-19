@@ -48,22 +48,21 @@ foreach ($villages as $village) {
   $batch_size = drush_get_option('batch', 50);
   $offset = 0;
 
-  // A query that loads relationship for village. Since we create relations
-  // only for adults, we won't get duplicates here.
-  $relationships_query = new EntityFieldQuery();
-  $relationships_query
+  // A query that loads participation for adult residents og the village.
+  $participations_query = new EntityFieldQuery();
+  $participations_query
     ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'relationship')
+    ->entityCondition('bundle', 'pmtct_participant')
     ->propertyCondition('status', NODE_PUBLISHED)
-    ->fieldCondition('field_person', 'target_id', $residents, 'IN')
+    ->fieldCondition('field_adult', 'target_id', $residents, 'IN')
     ->propertyOrderBy('nid', 'ASC')
     ->addTag('exclude_deleted');
 
-  $relationships_query_count = clone $relationships_query;
-  $count = $relationships_query_count->count()->execute();
+  $participations_query_count = clone $participations_query;
+  $count = $participations_query_count->count()->execute();
 
   if ($count == 0) {
-    drush_print("There are no relationships in village with ID $village.");
+    drush_print("There are no participations for village with ID $village.");
     continue;
   }
 
@@ -72,12 +71,10 @@ foreach ($villages as $village) {
     drush_print("Can't located CHW group for village $village.");
     continue;
   }
-  drush_print("group: $chw_group.");
-
 
   // Execute creation in a batch.
   while ($offset < $count) {
-    $query = clone $relationships_query;
+    $query = clone $participations_query;
 
     $result = $query
       ->range($offset, $batch_size)
@@ -87,35 +84,50 @@ foreach ($villages as $village) {
       break;
     }
 
-
-
     $keys = array_keys($result['node']);
-    $relationships = node_load_multiple($keys);
+    $participations = node_load_multiple($keys);
 
-    foreach ($relationships as $relationship) {
-      $relationship_wrapper = entity_metadata_wrapper('node', $relationship);
+    foreach ($participations as $participation) {
+      $participation_wrapper = entity_metadata_wrapper('node', $participation);
 
-      // Skip relationships where child age is over 5 years.
-      $child = $relationship_wrapper->field_related_to->getIdentifier();
+      // Do not proceed, if we can't resolve participation group.
+      $clinic = $participation_wrapper->field_clinic->getIdentifier();
+      if (empty($clinic)) {
+        drush_print("Participation with ID $participation->nid don't have clinic assigned.");
+        continue;
+      }
+
+      $clinic_wrapper = entity_metadata_wrapper('node', $clinic);
+      $clinic_type = $clinic_wrapper->field_group_type->value();
+      $allowed_types = [
+        HEDLEY_PERSON_CLINIC_TYPE_FBF,
+        HEDLEY_PERSON_CLINIC_TYPE_PMTCT,
+      ];
+
+      if (!in_array($clinic_type, $allowed_types)) {
+        continue;
+      }
+
+      // Skip participations where child age is over 5 years.
+      $child = $participation_wrapper->field_person->getIdentifier();
       $child_wrapper = entity_metadata_wrapper('node', $child);
       $child_birth_date = $child_wrapper->field_birth_date->value();
       if ($child_birth_date < strtotime("-5 year")) {
         continue;
       }
 
-      $adult = $relationship_wrapper->field_person->getIdentifier();
+      $adult = $participation_wrapper->field_adult->getIdentifier();
 
       $already_participate = hedley_chw_participate_in_group($child, $adult, $chw_group);
       if ($already_participate) {
         continue;
       }
 
-      $related_by = $relationship_wrapper->field_related_by->value();
+      $related_by = $participation_wrapper->field_related_by->value();
       $adult_activities = $related_by == HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR ?
         HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_CAREGIVER : HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_MOTHER;
 
-      drush_print('Before add');
-      hedley_chw_add_group_participation($adult, $child, $chw_group, $adult_activities, $relationship->uid);
+      hedley_chw_add_group_participation($adult, $child, $chw_group, $adult_activities, $participation->uid);
       $total_created++;
     }
 
