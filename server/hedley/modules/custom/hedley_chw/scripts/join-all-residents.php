@@ -123,7 +123,7 @@ foreach ($villages as $village) {
         continue;
       }
 
-      $adult_activities = HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_MOTHER;
+      $adult_activities = $participation_wrapper->field_adult_activities->value();
       hedley_chw_add_group_participation($adult, $child, $chw_group, $adult_activities, $participation->uid);
       $total_created++;
     }
