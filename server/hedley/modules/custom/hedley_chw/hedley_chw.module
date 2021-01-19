@@ -136,7 +136,7 @@ function hedley_chw_process_new_participation($node) {
 
   // Do not proceed, if we can't resolve participation group.
   $clinic_id = $wrapper->field_clinic->getIdentifier();
-  if (empty($clinic)) {
+  if (empty($clinic_id)) {
     return;
   }
 
@@ -162,16 +162,21 @@ function hedley_chw_process_new_participation($node) {
     return;
   }
 
-  // Do not proceed, if adult with child already participate in CHW group.
+  // Do not proceed, if CHW group for village can not be located.
   $chw_group_id = hedley_chw_find_village_group($village_id);
+  if (empty($chw_group_id)) {
+    return;
+  }
+
+  // Do not proceed, if adult with child already participate in CHW group.
   $already_participate = hedley_chw_participate_in_group($child_id, $adult_id, $chw_group_id);
   if ($already_participate) {
     return;
   }
 
   // Add new participation to CHW group.
-  $adult_activities =  $wrapper->field_adult_activities->value();
-  hedley_chw_add_group_participation($adult_id, $chw_group_id, $clinic, $adult_activities, $node->uid);
+  $adult_activities = $wrapper->field_adult_activities->value();
+  hedley_chw_add_group_participation($adult_id, $child_id, $chw_group_id, $adult_activities, $node->uid);
 }
 
 /**
@@ -244,6 +249,7 @@ function hedley_chw_find_village_group($village_id) {
  *   CHW group node ID.
  *
  * @return bool
+ *   True, if adult+child pair participate in group.
  */
 function hedley_chw_participate_in_group($child_id, $adult_id, $group_id) {
   $query = new EntityFieldQuery();
