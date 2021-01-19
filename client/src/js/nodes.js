@@ -176,7 +176,7 @@
         return dbSync.open().catch(databaseError).then(function () {
             if (type === 'syncmetadata') {
                 // For the syncmetadata type, we actually delete
-                return dbSync.syncMetadata.delete(uuid).catch(databaseError).then(sendSyncData).then(function () {
+                return dbSync.syncMetadata.delete(uuid).catch(databaseError).then(function () {
                     var response = new Response(null, {
                         status: 204,
                         statusText: 'Deleted'
@@ -775,26 +775,6 @@
                 return Promise.reject("UUID unexpectedly not found.");
             }
         });
-    }
-
-    // This is meant for the end of a promise chain. If we've rejected with a
-    // `Response` object, then we resolve instead, so that we'll send the
-    // response. (Otherwise, we'll send a network error).
-    function sendErrorResponses (err) {
-        if (err instanceof Response) {
-            return Promise.resolve(err);
-        } else {
-            return Promise.reject(err);
-        }
-    }
-
-    function databaseError (err) {
-        var response = new Response(JSON.stringify(err), {
-            status: 500,
-            statusText: 'Database Error'
-        });
-
-        return Promise.reject(response);
     }
 
     function jsonError (err) {

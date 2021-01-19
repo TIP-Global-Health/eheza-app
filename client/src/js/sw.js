@@ -120,9 +120,16 @@ function gatherWords (text) {
   });
 }
 
-/**
- * @DEPRECATED
- * Kept here for now, to avoid deleting from other places, which should happen
- * in a follow up.
- */
-function sendSyncData () {}
+// This is meant for the end of a promise chain.
+function sendErrorResponses (err) {
+    return Promise.reject(err);
+}
+
+function databaseError (err) {
+    var response = new Response(JSON.stringify(err), {
+        status: 500,
+        statusText: 'Database Error'
+    });
+
+    return Promise.reject(response);
+}
