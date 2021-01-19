@@ -33,9 +33,10 @@ if (empty($result['node'])) {
 
 $villages = array_keys($result['node']);
 $total_villages = count($villages);
-drush_print("There are $total_villages villages.");
+drush_print("Located $total_villages villages.");
 
 foreach ($villages as $village) {
+  drush_print('');
   drush_print("Processing village with ID $village.");
 
   $residents = hedley_chw_get_village_residents($village);
@@ -48,7 +49,7 @@ foreach ($villages as $village) {
   $batch_size = drush_get_option('batch', 50);
   $offset = 0;
 
-  // A query that loads participation for adult residents og the village.
+  // A query that loads participation for adult residents of the village.
   $participations_query = new EntityFieldQuery();
   $participations_query
     ->entityCondition('entity_type', 'node')
