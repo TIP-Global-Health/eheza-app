@@ -94,7 +94,7 @@ function hedley_chw_find_village_group($village_id) {
 
   $result = $query
     ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'group')
+    ->entityCondition('bundle', 'clinic')
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_village_ref', 'target_id', $village_id)
     ->range(0, 1)
