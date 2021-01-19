@@ -123,10 +123,7 @@ foreach ($villages as $village) {
         continue;
       }
 
-      $related_by = $participation_wrapper->field_related_by->value();
-      $adult_activities = $related_by == HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR ?
-        HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_CAREGIVER : HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_MOTHER;
-
+      $adult_activities = HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_MOTHER;
       hedley_chw_add_group_participation($adult, $child, $chw_group, $adult_activities, $participation->uid);
       $total_created++;
     }
