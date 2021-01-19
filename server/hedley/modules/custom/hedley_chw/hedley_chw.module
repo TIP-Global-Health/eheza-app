@@ -86,7 +86,7 @@ function hedley_chw_find_person_village($person_id) {
     ->range(0, 1)
     ->execute();
 
-  return empty($result['node']) ? FALSE : key($result(['node']));
+  return empty($result['node']) ? FALSE : key($result['node']);
 }
 
 function hedley_chw_find_village_group($village_id) {
@@ -100,7 +100,7 @@ function hedley_chw_find_village_group($village_id) {
     ->range(0, 1)
     ->execute();
 
-  return empty($result['node']) ? FALSE : key($result(['node']));
+  return empty($result['node']) ? FALSE : key($result['node']);
 }
 
 function hedley_chw_participate_in_group($child_id, $adult_id, $group_id) {
