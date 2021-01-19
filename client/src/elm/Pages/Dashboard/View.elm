@@ -890,8 +890,8 @@ viewFiltersPane language page filterPeriodsPerPage db model =
     div [ class "ui segment filters" ] <|
         List.map renderButton filterPeriodsPerPage
             ++ selectedProgram
+            ++ [ programTypeFilterFilterButton, br [] [] ]
             ++ [ selectedVillage ]
-            ++ [ programTypeFilterFilterButton ]
 
 
 viewGoodNutrition : Language -> List CaseNutritionTotal -> List CaseNutritionTotal -> Html Msg

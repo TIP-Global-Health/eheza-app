@@ -5334,7 +5334,7 @@ translationSet trans =
             }
 
         SelectedVillage ->
-            { english = "Selected Village"
+            { english = "Village"
             , kinyarwanda = Nothing
             }
 
