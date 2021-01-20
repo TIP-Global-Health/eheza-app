@@ -48,7 +48,8 @@ async function handleEvent(event, url, type, uuid) {
         statusText: 'Not Found'
     });
 
-    // If placeholder still indicates tha DB was not initialized.
+    // If placeholder still indicates tha DB was not initialized,
+    // initialize it.
     if (dbSync === null) {
         // Check if IndexedDB exists.
         var dbExists = await Dexie.exists('sync');
