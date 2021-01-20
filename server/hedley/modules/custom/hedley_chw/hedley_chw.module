@@ -140,10 +140,16 @@ function hedley_chw_process_new_participation($node) {
     return;
   }
 
-  // Do not proceed, if added participation is for CHW group.
+  // Do not proceed, if added participation is for CHW/ACHI group.
   $clinic_wrapper = entity_metadata_wrapper('node', $clinic_id);
   $clinic_type = $clinic_wrapper->field_group_type->value();
-  if ($clinic_type == HEDLEY_PERSON_CLINIC_TYPE_CHW) {
+
+  $types_to_skip = [
+    HEDLEY_PERSON_CLINIC_TYPE_CHW,
+    HEDLEY_PERSON_CLINIC_TYPE_ACHI,
+  ];
+
+  if (in_array($clinic_type, $types_to_skip)) {
     return;
   }
 
