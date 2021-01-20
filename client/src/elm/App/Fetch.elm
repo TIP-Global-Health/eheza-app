@@ -207,9 +207,9 @@ fetch model =
                 Pages.AcuteIllnessProgressReport.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
-        UserPage (AcuteIllnessOutcomePage id) ->
-            Pages.AcuteIllnessOutcome.Fetch.fetch id model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage (AcuteIllnessOutcomePage id) ->
+                Pages.AcuteIllnessOutcome.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
 
 
 {-| Given a `Msg`, do we need to fetch the data it would fetch? We only answer
