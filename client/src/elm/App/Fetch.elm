@@ -56,151 +56,156 @@ fetch model =
         currentDate =
             fromLocalDateTime model.currentTime
     in
-    case model.activePage of
-        DevicePage ->
-            List.map MsgIndexedDb Pages.Device.Fetch.fetch
+    if not model.serviceWorker.active then
+        -- Do not fetch anything, until service worker is active.
+        []
 
-        PinCodePage ->
-            List.map MsgIndexedDb Pages.PinCode.Fetch.fetch
+    else
+        case model.activePage of
+            DevicePage ->
+                List.map MsgIndexedDb Pages.Device.Fetch.fetch
 
-        PageNotFound _ ->
-            []
+            PinCodePage ->
+                List.map MsgIndexedDb Pages.PinCode.Fetch.fetch
 
-        ServiceWorkerPage ->
-            []
+            PageNotFound _ ->
+                []
 
-        UserPage MyAccountPage ->
-            []
+            ServiceWorkerPage ->
+                []
 
-        UserPage ClinicalPage ->
-            Pages.Clinical.Fetch.fetch model.villageId model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage MyAccountPage ->
+                []
 
-        UserPage (ClinicsPage clinicId) ->
-            Pages.Clinics.Fetch.fetch clinicId
-                |> List.map MsgIndexedDb
+            UserPage ClinicalPage ->
+                Pages.Clinical.Fetch.fetch model.villageId model.indexedDb
+                    |> List.map MsgIndexedDb
 
-        UserPage (DashboardPage subPage) ->
-            getLoggedInData model
-                |> Maybe.map
-                    (\( healthCenterId, loggedIn ) ->
-                        Pages.Dashboard.Fetch.fetch healthCenterId loggedIn.dashboardPage
-                            |> List.map MsgIndexedDb
-                    )
-                |> Maybe.withDefault []
+            UserPage (ClinicsPage clinicId) ->
+                Pages.Clinics.Fetch.fetch clinicId
+                    |> List.map MsgIndexedDb
 
-        UserPage (ClinicalProgressReportPage prenatalEncounterId) ->
-            Pages.ClinicalProgressReport.Fetch.fetch prenatalEncounterId model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage (DashboardPage subPage) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( healthCenterId, loggedIn ) ->
+                            Pages.Dashboard.Fetch.fetch healthCenterId loggedIn.dashboardPage
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
 
-        UserPage (CreatePersonPage relatedId _) ->
-            Pages.Person.Fetch.fetchForCreateOrEdit relatedId model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage (ClinicalProgressReportPage prenatalEncounterId) ->
+                Pages.ClinicalProgressReport.Fetch.fetch prenatalEncounterId model.indexedDb
+                    |> List.map MsgIndexedDb
 
-        UserPage (EditPersonPage relatedId) ->
-            Pages.Person.Fetch.fetchForCreateOrEdit (Just relatedId) model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage (CreatePersonPage relatedId _) ->
+                Pages.Person.Fetch.fetchForCreateOrEdit relatedId model.indexedDb
+                    |> List.map MsgIndexedDb
 
-        UserPage (DemographicsReportPage prenatalEncounterId) ->
-            Pages.DemographicsReport.Fetch.fetch prenatalEncounterId model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage (EditPersonPage relatedId) ->
+                Pages.Person.Fetch.fetchForCreateOrEdit (Just relatedId) model.indexedDb
+                    |> List.map MsgIndexedDb
 
-        UserPage (PersonPage id initiator) ->
-            Pages.Person.Fetch.fetch id initiator model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage (DemographicsReportPage prenatalEncounterId) ->
+                Pages.DemographicsReport.Fetch.fetch prenatalEncounterId model.indexedDb
+                    |> List.map MsgIndexedDb
 
-        UserPage (PersonsPage relation initiator) ->
-            getLoggedInData model
-                |> Maybe.map
-                    (\( _, loggedIn ) ->
-                        Pages.People.Fetch.fetch relation initiator loggedIn.personsPage
-                            |> List.map MsgIndexedDb
-                    )
-                |> Maybe.withDefault []
+            UserPage (PersonPage id initiator) ->
+                Pages.Person.Fetch.fetch id initiator model.indexedDb
+                    |> List.map MsgIndexedDb
 
-        UserPage (PrenatalParticipantPage personId) ->
-            getLoggedInData model
-                |> Maybe.map
-                    (\( _, loggedIn ) ->
-                        Pages.PrenatalParticipant.Fetch.fetch personId model.indexedDb
-                            |> List.map MsgIndexedDb
-                    )
-                |> Maybe.withDefault []
+            UserPage (PersonsPage relation initiator) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( _, loggedIn ) ->
+                            Pages.People.Fetch.fetch relation initiator loggedIn.personsPage
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
 
-        UserPage (NutritionParticipantPage personId) ->
-            getLoggedInData model
-                |> Maybe.map
-                    (\( _, loggedIn ) ->
-                        Pages.NutritionParticipant.Fetch.fetch personId model.indexedDb
-                            |> List.map MsgIndexedDb
-                    )
-                |> Maybe.withDefault []
+            UserPage (PrenatalParticipantPage personId) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( _, loggedIn ) ->
+                            Pages.PrenatalParticipant.Fetch.fetch personId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
 
-        UserPage (AcuteIllnessParticipantPage personId) ->
-            getLoggedInData model
-                |> Maybe.map
-                    (\( _, loggedIn ) ->
-                        Pages.AcuteIllnessParticipant.Fetch.fetch personId model.indexedDb
-                            |> List.map MsgIndexedDb
-                    )
-                |> Maybe.withDefault []
+            UserPage (NutritionParticipantPage personId) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( _, loggedIn ) ->
+                            Pages.NutritionParticipant.Fetch.fetch personId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
 
-        UserPage (IndividualEncounterParticipantsPage encounterType) ->
-            getLoggedInData model
-                |> Maybe.map
-                    (\( _, loggedIn ) ->
-                        Pages.IndividualEncounterParticipants.Fetch.fetch encounterType loggedIn.individualEncounterParticipantsPage
-                            |> List.map MsgIndexedDb
-                    )
-                |> Maybe.withDefault []
+            UserPage (AcuteIllnessParticipantPage personId) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( _, loggedIn ) ->
+                            Pages.AcuteIllnessParticipant.Fetch.fetch personId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
 
-        UserPage (RelationshipPage id1 id2 _) ->
-            Pages.Relationship.Fetch.fetch id1 id2 model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage (IndividualEncounterParticipantsPage encounterType) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( _, loggedIn ) ->
+                            Pages.IndividualEncounterParticipants.Fetch.fetch encounterType loggedIn.individualEncounterParticipantsPage
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
 
-        UserPage (SessionPage sessionId sessionPage) ->
-            Pages.Session.Fetch.fetch currentDate sessionId sessionPage model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage (RelationshipPage id1 id2 _) ->
+                Pages.Relationship.Fetch.fetch id1 id2 model.indexedDb
+                    |> List.map MsgIndexedDb
 
-        UserPage (PrenatalEncounterPage id) ->
-            Pages.PrenatalEncounter.Fetch.fetch id model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage (SessionPage sessionId sessionPage) ->
+                Pages.Session.Fetch.fetch currentDate sessionId sessionPage model.indexedDb
+                    |> List.map MsgIndexedDb
 
-        UserPage (PrenatalActivityPage prenatalEncounterId _) ->
-            Pages.PrenatalActivity.Fetch.fetch prenatalEncounterId model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage (PrenatalEncounterPage id) ->
+                Pages.PrenatalEncounter.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
 
-        UserPage IndividualEncounterTypesPage ->
-            Pages.IndividualEncounterTypes.Fetch.fetch
-                |> List.map MsgIndexedDb
+            UserPage (PrenatalActivityPage prenatalEncounterId _) ->
+                Pages.PrenatalActivity.Fetch.fetch prenatalEncounterId model.indexedDb
+                    |> List.map MsgIndexedDb
 
-        UserPage (PregnancyOutcomePage id) ->
-            Pages.PregnancyOutcome.Fetch.fetch id model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage IndividualEncounterTypesPage ->
+                Pages.IndividualEncounterTypes.Fetch.fetch
+                    |> List.map MsgIndexedDb
 
-        UserPage (NutritionEncounterPage id) ->
-            Pages.NutritionEncounter.Fetch.fetch id model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage (PregnancyOutcomePage id) ->
+                Pages.PregnancyOutcome.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
 
-        UserPage (NutritionActivityPage id _) ->
-            Pages.NutritionActivity.Fetch.fetch id model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage (NutritionEncounterPage id) ->
+                Pages.NutritionEncounter.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
 
-        UserPage (AcuteIllnessEncounterPage id) ->
-            Pages.AcuteIllnessEncounter.Fetch.fetch id model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage (NutritionActivityPage id _) ->
+                Pages.NutritionActivity.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
 
-        UserPage (AcuteIllnessActivityPage id _) ->
-            Pages.AcuteIllnessActivity.Fetch.fetch id model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage (AcuteIllnessEncounterPage id) ->
+                Pages.AcuteIllnessEncounter.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
 
-        UserPage (NutritionProgressReportPage nutritionEncounterId) ->
-            Pages.NutritionProgressReport.Fetch.fetch nutritionEncounterId model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage (AcuteIllnessActivityPage id _) ->
+                Pages.AcuteIllnessActivity.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
 
-        UserPage (AcuteIllnessProgressReportPage id) ->
-            Pages.AcuteIllnessProgressReport.Fetch.fetch id model.indexedDb
-                |> List.map MsgIndexedDb
+            UserPage (NutritionProgressReportPage nutritionEncounterId) ->
+                Pages.NutritionProgressReport.Fetch.fetch nutritionEncounterId model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (AcuteIllnessProgressReportPage id) ->
+                Pages.AcuteIllnessProgressReport.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
 
         UserPage (AcuteIllnessOutcomePage id) ->
             Pages.AcuteIllnessOutcome.Fetch.fetch id model.indexedDb
