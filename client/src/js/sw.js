@@ -122,7 +122,11 @@ function gatherWords (text) {
 
 // This is meant for the end of a promise chain.
 function sendErrorResponses (err) {
-    return Promise.reject(err);
+    if (err instanceof Response) {
+        return Promise.resolve(err);
+    } else {
+        return Promise.reject(err);
+    }
 }
 
 function databaseError (err) {
