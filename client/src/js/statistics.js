@@ -26,15 +26,15 @@ var statsUrlRegex = /\/sw\/statistics/;
 // If placeholder still indicates tha DB was not initialized,
 // initialize it.
 self.addEventListener('fetch', event => {
-  var url = new URL(event.request.url);
-  var matches = statsUrlRegex.exec(url.pathname);
+    var url = new URL(event.request.url);
+    var matches = statsUrlRegex.exec(url.pathname);
 
-  if (matches) {
-    event.respondWith(handleEvent(event));
-  }
+    if (matches) {
+      event.respondWith(handleEvent(event));
+    }
 });
 
-async function handleEvent(event, url, type, uuid) {
+async function handleEvent(event) {
     var notFoundResponse = new Response('', {
         status: 404,
         statusText: 'Not Found'
@@ -64,7 +64,7 @@ async function handleEvent(event, url, type, uuid) {
 
       // If we get here, respond with a 404
       return notFoundResponse;
-});
+}
 
 function index (url) {
     var params = url.searchParams;
