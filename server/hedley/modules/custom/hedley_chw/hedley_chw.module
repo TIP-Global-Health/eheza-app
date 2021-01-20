@@ -106,7 +106,7 @@ function hedley_chw_process_new_village($node) {
       $adult_activities = $related_by == HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR ?
         HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_CAREGIVER : HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_MOTHER;
 
-      hedley_chw_add_group_participation($adult, $child, $clinic, $adult_activities, $node->uid);
+      hedley_person_create_pmtct_participant($adult, $child, $adult_activities, $clinic, $node->uid);
     }
 
     $offset += $batch_size;
@@ -176,7 +176,7 @@ function hedley_chw_process_new_participation($node) {
 
   // Add new participation to CHW group.
   $adult_activities = $wrapper->field_adult_activities->value();
-  hedley_chw_add_group_participation($adult_id, $child_id, $chw_group_id, $adult_activities, $node->uid);
+  hedley_person_create_pmtct_participant($adult_id, $child_id, $adult_activities, $chw_group_id, $node->uid);
 }
 
 /**
@@ -304,37 +304,4 @@ function hedley_chw_get_village_residents($village_id) {
     ->execute();
 
   return empty($result['node']) ? [] : array_keys($result['node']);
-}
-
-/**
- * Creates a participation for adult+chld pair at given group.
- *
- * @param int $adult
- *   Adult node ID.
- * @param int $child
- *   Child node ID.
- * @param int $group
- *   CHW group node ID.
- * @param string $adult_activities
- *   Either 'mother' or 'caregiver'.
- * @param int $author
- *   User ID which will be considered the author of created participation.
- *
- * @throws \EntityMetadataWrapperException
- */
-function hedley_chw_add_group_participation($adult, $child, $group, $adult_activities, $author) {
-  $node = entity_create('node', [
-    'type' => 'pmtct_participant',
-    'uid' => $author,
-  ]);
-  $wrapper = entity_metadata_wrapper('node', $node);
-  $wrapper->field_adult->set($adult);
-  $wrapper->field_person->set($child);
-  $wrapper->field_adult_activities->set($adult_activities);
-  $wrapper->field_expected->set([
-    'value' => date('Y-m-d'),
-    'value2' => NULL,
-  ]);
-  $wrapper->field_clinic->set($group);
-  $wrapper->save();
 }

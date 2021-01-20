@@ -125,7 +125,7 @@ foreach ($villages as $village) {
       }
 
       $adult_activities = $participation_wrapper->field_adult_activities->value();
-      hedley_chw_add_group_participation($adult, $child, $chw_group, $adult_activities, $participation->uid);
+      hedley_person_create_pmtct_participant($adult, $child, $adult_activities, $chw_group, $participation->uid);
       $total_created++;
     }
 
