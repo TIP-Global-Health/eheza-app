@@ -15,9 +15,9 @@
  *  This file is responsible for fetching cached photos, and also for caching
  *  them once they are uploaded via Dropzone.
  */
-(function () {
-    self.addEventListener('fetch', function ( event) {
+(() => {
 
+    self.addEventListener('fetch', function ( event) {
 
         if (event.request.method === 'GET' && photosDownloadUrlRegex.test(event.request.url)) {
 
@@ -76,9 +76,11 @@
             }());
         }
 
+        var uploadUrlMatch = photosUploadUrlRegex.test(event.request.url);
+
         // Handle GET for images which we've uploaded to the cache, but which
         // have not yet reached the backend.
-        if ((event.request.method === 'GET') && photosUploadUrlRegex.test(event.request.url)) {
+        if ((event.request.method === 'GET') && uploadUrlMatch) {
             var response = caches.open(photosUploadCache).then(function (cache) {
                 return cache.match(event.request.url).then(function(response) {
                     if (response) {
@@ -96,7 +98,7 @@
         }
 
         // Handle the POST requests from Dropzone, uploading the image to our cache
-        if ((event.request.method === 'POST') && photosUploadUrlRegex.test(event.request.url)) {
+        if ((event.request.method === 'POST') && uploadUrlMatch) {
             var response = caches.open(photosUploadCache).then (function (cache) {
                   var url = (new URL("cache-upload/images/" + Date.now(), location.href)).toString();
                   return event.request.formData().then(function (formData) {
@@ -145,4 +147,5 @@
             event.respondWith(response);
         }
     });
+
 })();
