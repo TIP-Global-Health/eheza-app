@@ -855,11 +855,15 @@ viewFiltersPane language page filterPeriodsPerPage db model =
                 ]
 
         selectedProgram =
-            [ span [ class "label" ]
-                [ text <| translate language Translate.SelectedProgram ++ ": "
-                , translateText language <| Translate.Dashboard <| Translate.FilterProgramType model.programTypeFilter
+            if model.programTypeFilter == FilterProgramCommunity && isJust model.selectedVillageFilter then
+                [emptyNode]
+
+            else
+                [ span [ class "label" ]
+                    [ text <| translate language Translate.SelectedProgram ++ ": "
+                    , translateText language <| Translate.Dashboard <| Translate.FilterProgramType model.programTypeFilter
+                    ]
                 ]
-            ]
 
         selectedVillage =
             if model.programTypeFilter == FilterProgramCommunity && isJust model.selectedVillageFilter then
@@ -873,7 +877,7 @@ viewFiltersPane language page filterPeriodsPerPage db model =
                                         Dict.get villageId villages
                                             |> Maybe.map
                                                 (\village ->
-                                                    span [ class "village-label" ]
+                                                    span [ class "label" ]
                                                         [ text <| translate language Translate.SelectedVillage ++ ": "
                                                         , text village.name
                                                         ]
@@ -890,8 +894,8 @@ viewFiltersPane language page filterPeriodsPerPage db model =
     div [ class "ui segment filters" ] <|
         List.map renderButton filterPeriodsPerPage
             ++ selectedProgram
-            ++ [ programTypeFilterFilterButton, br [] [] ]
             ++ [ selectedVillage ]
+            ++ [ programTypeFilterFilterButton ]
 
 
 viewGoodNutrition : Language -> List CaseNutritionTotal -> List CaseNutritionTotal -> Html Msg
