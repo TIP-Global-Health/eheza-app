@@ -32,11 +32,11 @@
         var matches = statsUrlRegex.exec(url.pathname);
 
         if (matches) {
-          event.respondWith(handleEvent(event));
+          event.respondWith(handleEvent(event, url));
         }
     });
 
-    async function handleEvent(event) {
+    async function handleEvent(event, url) {
         var notFoundResponse = new Response('', {
             status: 404,
             statusText: 'Not Found'
