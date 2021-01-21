@@ -856,7 +856,7 @@ viewFiltersPane language page filterPeriodsPerPage db model =
 
         selectedProgram =
             if model.programTypeFilter == FilterProgramCommunity && isJust model.selectedVillageFilter then
-                [emptyNode]
+                [ emptyNode ]
 
             else
                 [ span [ class "label" ]
