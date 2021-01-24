@@ -854,19 +854,8 @@ viewFiltersPane language page filterPeriodsPerPage db model =
                 [ translateText language <| Translate.Dashboard <| Translate.PeriodFilter period
                 ]
 
-        selectedProgram =
-            if model.programTypeFilter == FilterProgramCommunity && isJust model.selectedVillageFilter then
-                [ emptyNode ]
-
-            else
-                [ span [ class "label" ]
-                    [ text <| translate language Translate.SelectedProgram ++ ": "
-                    , translateText language <| Translate.Dashboard <| Translate.FilterProgramType model.programTypeFilter
-                    ]
-                ]
-
-        selectedVillage =
-            if model.programTypeFilter == FilterProgramCommunity && isJust model.selectedVillageFilter then
+        labelSelected =
+            if model.programTypeFilter == FilterProgramCommunity then
                 db.villages
                     |> RemoteData.toMaybe
                     |> Maybe.map
@@ -889,13 +878,14 @@ viewFiltersPane language page filterPeriodsPerPage db model =
                     |> Maybe.withDefault emptyNode
 
             else
-                emptyNode
+                span [ class "label" ]
+                    [ text <| translate language Translate.SelectedProgram ++ ": "
+                    , translateText language <| Translate.Dashboard <| Translate.FilterProgramType model.programTypeFilter
+                    ]
     in
     div [ class "ui segment filters" ] <|
         List.map renderButton filterPeriodsPerPage
-            ++ selectedProgram
-            ++ [ selectedVillage ]
-            ++ [ programTypeFilterFilterButton ]
+            ++ [ labelSelected, programTypeFilterFilterButton ]
 
 
 viewGoodNutrition : Language -> List CaseNutritionTotal -> List CaseNutritionTotal -> Html Msg
