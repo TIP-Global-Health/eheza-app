@@ -5330,12 +5330,12 @@ translationSet trans =
 
         SelectedProgram ->
             { english = "Selected Program"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Porogaramu Yatoranyijwe"
             }
 
         SelectedVillage ->
             { english = "Selected Village"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umudugudu Watoranyijwe"
             }
 
         SelectEncounterType ->
