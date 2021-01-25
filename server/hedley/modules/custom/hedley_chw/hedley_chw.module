@@ -36,7 +36,7 @@ function hedley_chw_node_insert($node) {
 
   $clinic = $clinic_wrapper->getIdentifier();
 
-  $residents = hedley_chw_get_village_residents($node->id);
+  $residents = hedley_chw_get_village_residents($node->nid);
   if (empty($residents)) {
     return;
   }
