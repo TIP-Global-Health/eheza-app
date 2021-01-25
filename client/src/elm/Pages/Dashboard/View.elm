@@ -861,7 +861,7 @@ viewFiltersPane language page filterPeriodsPerPage db model =
                     |> Maybe.map
                         (\villages ->
                             model.selectedVillageFilter
-                                |> Maybe.map
+                                |> Maybe.andThen
                                     (\villageId ->
                                         Dict.get villageId villages
                                             |> Maybe.map
@@ -871,7 +871,6 @@ viewFiltersPane language page filterPeriodsPerPage db model =
                                                         , text village.name
                                                         ]
                                                 )
-                                            |> Maybe.withDefault emptyNode
                                     )
                                 |> Maybe.withDefault emptyNode
                         )
