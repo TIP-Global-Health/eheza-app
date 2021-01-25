@@ -858,7 +858,7 @@ viewFiltersPane language page filterPeriodsPerPage db model =
             if model.programTypeFilter == FilterProgramCommunity then
                 db.villages
                     |> RemoteData.toMaybe
-                    |> Maybe.map
+                    |> Maybe.andThen
                         (\villages ->
                             model.selectedVillageFilter
                                 |> Maybe.andThen
@@ -872,7 +872,6 @@ viewFiltersPane language page filterPeriodsPerPage db model =
                                                         ]
                                                 )
                                     )
-                                |> Maybe.withDefault emptyNode
                         )
                     |> Maybe.withDefault emptyNode
 
