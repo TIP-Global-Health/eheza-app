@@ -74,7 +74,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                                 ( viewStatsPage language currentDate isChw nurse stats healthCenterId db model, UserPage <| DashboardPage MainPage )
 
                             CaseManagementPage ->
-                                ( viewCaseManagementPage language currentDate stats model, UserPage <| DashboardPage model.latestPage )
+                                ( viewCaseManagementPage language currentDate stats db model, UserPage <| DashboardPage model.latestPage )
                     )
                 |> Maybe.withDefault ( spinner, PinCodePage )
 
@@ -147,7 +147,7 @@ viewMainPage language currentDate isChw nurse stats db model =
                     emptyNode
     in
     div [ class "dashboard main" ]
-        [ viewFiltersPane language MainPage filterPeriodsForMainPage model
+        [ viewFiltersPane language MainPage filterPeriodsForMainPage db model
         , div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
                 [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
@@ -590,7 +590,7 @@ viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
                 mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodCaseManagement
         in
         div [ class "dashboard stats" ]
-            [ viewFiltersPane language StatsPage filterPeriodsForStatsPage model
+            [ viewFiltersPane language StatsPage filterPeriodsForStatsPage db model
             , div [ class "ui equal width grid" ]
                 [ viewMalnourishedCards language malnourishedCurrentMonth malnourishedPreviousMonth
                 , viewMiscCards language currentDate currentPeriodStats monthBeforeStats
@@ -652,8 +652,8 @@ mapMalnorishedByMonth mappedMonth caseManagement =
             []
 
 
-viewCaseManagementPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
-viewCaseManagementPage language currentDate stats model =
+viewCaseManagementPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewCaseManagementPage language currentDate stats db model =
     if model.programTypeFilter /= FilterProgramFbf then
         emptyNode
 
@@ -762,7 +762,7 @@ viewCaseManagementPage language currentDate stats model =
                     |> List.reverse
         in
         div [ class "dashboard case" ]
-            [ viewFiltersPane language CaseManagementPage filterPeriodsForCaseManagementPage model
+            [ viewFiltersPane language CaseManagementPage filterPeriodsForCaseManagementPage db model
             , div [ class "ui segment blue" ]
                 [ div [ class "case-management" ]
                     [ div [ class "header" ]
@@ -827,8 +827,8 @@ viewMonthCell ( month, cellData ) =
     td [ class ] [ span [] [ text cellData.value ] ]
 
 
-viewFiltersPane : Language -> DashboardPage -> List FilterPeriod -> Model -> Html Msg
-viewFiltersPane language page filterPeriodsPerPage model =
+viewFiltersPane : Language -> DashboardPage -> List FilterPeriod -> ModelIndexedDb -> Model -> Html Msg
+viewFiltersPane language page filterPeriodsPerPage db model =
     let
         programTypeFilterFilterButton =
             if page == MainPage then
@@ -853,10 +853,37 @@ viewFiltersPane language page filterPeriodsPerPage model =
                 ]
                 [ translateText language <| Translate.Dashboard <| Translate.PeriodFilter period
                 ]
+
+        labelSelected =
+            if model.programTypeFilter == FilterProgramCommunity then
+                db.villages
+                    |> RemoteData.toMaybe
+                    |> Maybe.andThen
+                        (\villages ->
+                            model.selectedVillageFilter
+                                |> Maybe.andThen
+                                    (\villageId ->
+                                        Dict.get villageId villages
+                                            |> Maybe.map
+                                                (\village ->
+                                                    span [ class "label" ]
+                                                        [ text <| translate language Translate.SelectedVillage ++ ": "
+                                                        , text village.name
+                                                        ]
+                                                )
+                                    )
+                        )
+                    |> Maybe.withDefault emptyNode
+
+            else
+                span [ class "label" ]
+                    [ text <| translate language Translate.SelectedProgram ++ ": "
+                    , translateText language <| Translate.Dashboard <| Translate.FilterProgramType model.programTypeFilter
+                    ]
     in
     div [ class "ui segment filters" ] <|
         List.map renderButton filterPeriodsPerPage
-            ++ [ programTypeFilterFilterButton ]
+            ++ [ labelSelected, programTypeFilterFilterButton ]
 
 
 viewGoodNutrition : Language -> List CaseNutritionTotal -> List CaseNutritionTotal -> Html Msg

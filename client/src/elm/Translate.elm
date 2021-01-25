@@ -751,6 +751,8 @@ type TranslationId
     | SelectAntenatalVisit
     | SelectAllSigns
     | SelectDangerSigns
+    | SelectedProgram
+    | SelectedVillage
     | SelectEncounterType
     | SelectExistingAcuteIllness
     | SelectExistingAcuteIllnessToRecordOutcome
@@ -5324,6 +5326,16 @@ translationSet trans =
         SelectDangerSigns ->
             { english = "Please select one or more of the danger signs the patient is experiencing"
             , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umubyeyi yaba afite"
+            }
+
+        SelectedProgram ->
+            { english = "Selected Program"
+            , kinyarwanda = Just "Porogaramu Yatoranyijwe"
+            }
+
+        SelectedVillage ->
+            { english = "Selected Village"
+            , kinyarwanda = Just "Umudugudu Watoranyijwe"
             }
 
         SelectEncounterType ->
