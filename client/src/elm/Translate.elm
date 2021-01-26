@@ -2193,7 +2193,7 @@ translationSet trans =
 
         ConditionImprovingQuestion ->
             { english = "Is your condition improving"
-            , kinyarwanda = Just "Urumva uri kworoherwa?"
+            , kinyarwanda = Just "Urumva uri koroherwa?"
             }
 
         ConfirmationRequired ->
@@ -3172,7 +3172,7 @@ translationSet trans =
 
         HowMany ->
             { english = "How many"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ingahe"
             }
 
         HaveAnyOfTheFollowingQuestion ->
