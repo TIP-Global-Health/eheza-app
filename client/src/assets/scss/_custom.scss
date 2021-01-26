@@ -1210,6 +1210,13 @@ input::placeholder {
       margin-left: 0;
     }
 
+    &.blue {
+      border-top: 15px solid $color-primary;
+
+      .button {
+        background-color: $color-primary;
+      }
+    }
   }
 
   > .icon:first-child+*,

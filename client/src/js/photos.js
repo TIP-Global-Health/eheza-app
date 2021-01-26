@@ -15,9 +15,9 @@
  *  This file is responsible for fetching cached photos, and also for caching
  *  them once they are uploaded via Dropzone.
  */
-(function () {
-    self.addEventListener('fetch', function ( event) {
+(() => {
 
+    self.addEventListener('fetch', function ( event) {
 
         if (event.request.method === 'GET' && photosDownloadUrlRegex.test(event.request.url)) {
 
@@ -27,6 +27,19 @@
                 if (cachedResponse) {
                     // Photo is in the cache.
                     return cachedResponse;
+                }
+
+                let url = new URL(event.request.url);
+                let params = new URLSearchParams(url.search.slice(1));
+
+                if (!params.has('access_token')) {
+                  // We can't try fetching photo from server, because we were
+                  // not provided with access token. This happens when APP tries
+                  // to view photo before it got downloaded. Respond with a 404.
+                  return new Response('', {
+                      status: 404,
+                      statusText: 'Not Found'
+                  });
                 }
 
                 try {
@@ -55,9 +68,6 @@
 
                 // We got the image, so cache it but without
                 // the `access_token` param.
-                let url = new URL(event.request.url);
-                let params = new URLSearchParams(url.search.slice(1));
-
                 params.delete('access_token');
 
                 url.search = params.toString();
@@ -66,9 +76,11 @@
             }());
         }
 
+        var uploadUrlMatch = photosUploadUrlRegex.test(event.request.url);
+
         // Handle GET for images which we've uploaded to the cache, but which
         // have not yet reached the backend.
-        if ((event.request.method === 'GET') && photosUploadUrlRegex.test(event.request.url)) {
+        if ((event.request.method === 'GET') && uploadUrlMatch) {
             var response = caches.open(photosUploadCache).then(function (cache) {
                 return cache.match(event.request.url).then(function(response) {
                     if (response) {
@@ -86,7 +98,7 @@
         }
 
         // Handle the POST requests from Dropzone, uploading the image to our cache
-        if ((event.request.method === 'POST') && photosUploadUrlRegex.test(event.request.url)) {
+        if ((event.request.method === 'POST') && uploadUrlMatch) {
             var response = caches.open(photosUploadCache).then (function (cache) {
                   var url = (new URL("cache-upload/images/" + Date.now(), location.href)).toString();
                   return event.request.formData().then(function (formData) {
@@ -135,4 +147,5 @@
             event.respondWith(response);
         }
     });
+
 })();

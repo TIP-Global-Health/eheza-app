@@ -112,9 +112,31 @@ function sendRevisions (revisions) {
     });
 }
 
-/**
- * @DEPRECATED
- * Kept here for now, to avoid deleting from other places, which should happen
- * in a follow up.
- */
-function sendSyncData () {}
+function gatherWords (text) {
+  // Split on spaces, and remove blanks from result.
+  return (text || '').split(/\s+/).flatMap(function (word) {
+    if (word) {
+      return [word.toLowerCase()];
+    } else {
+      return [];
+    }
+  });
+}
+
+// This is meant for the end of a promise chain.
+function sendErrorResponses (err) {
+    if (err instanceof Response) {
+        return Promise.resolve(err);
+    } else {
+        return Promise.reject(err);
+    }
+}
+
+function databaseError (err) {
+    var response = new Response(JSON.stringify(err), {
+        status: 500,
+        statusText: 'Database Error'
+    });
+
+    return Promise.reject(response);
+}

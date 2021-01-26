@@ -256,6 +256,45 @@ dbSync.version(15).upgrade(function (tx) {
     })
 });
 
+dbSync.shards.hook('creating', function (primKey, obj, trans) {
+  if (obj.type === 'person') {
+    if (typeof obj.label == 'string') {
+      obj.name_search = gatherWords(obj.label);
+    }
+  }
+});
+
+dbSync.shards.hook('updating', function (mods, primKey, obj, trans) {
+  if (obj.type === 'person') {
+    if (mods.hasOwnProperty("label")) {
+      if (typeof mods.label == 'string') {
+        return {
+          name_search: gatherWords(mods.label)
+        };
+      } else {
+        return {
+          name_search: []
+        };
+      }
+    } else {
+      return {
+        name_search: gatherWords(obj.label)
+      };
+    }
+  }
+});
+
+function gatherWords (text) {
+  // Split on spaces, and remove blanks from result.
+  return (text || '').split(/\s+/).flatMap(function (word) {
+    if (word) {
+      return [word.toLowerCase()];
+    } else {
+      return [];
+    }
+  });
+}
+
 /**
  * The DB version on the backend.
  *
@@ -874,49 +913,6 @@ function getRandom8Digits () {
 
   return timestamp.slice(timestamp.length - 8);
 }
-
-function gatherWords (text) {
-  // Split on spaces, and remove blanks from result.
-  return (text || '').split(/\s+/).flatMap(function (word) {
-    if (word) {
-      return [word.toLowerCase()];
-    } else {
-      return [];
-    }
-  });
-}
-
-// Hooks that index persons for searching name.
-dbSync.shards.hook("creating", function (primKey, obj, trans) {
-  if (obj.type === 'person') {
-    if (typeof obj.label == 'string') {
-      obj.name_search = gatherWords(obj.label);
-    }
-  }
-});
-
-dbSync.shards.hook("updating", function (mods, primKey, obj, trans) {
-  if (obj.type === 'person') {
-    if (mods.hasOwnProperty("label")) {
-      if (typeof mods.label == 'string') {
-        return {
-          name_search: gatherWords(mods.label)
-        };
-      } else {
-        return {
-          name_search: []
-        };
-      }
-    } else {
-      return {
-        name_search: gatherWords(obj.label)
-      };
-    }
-  }
-});
-
-
-
 
 ///////////////////////////////////////////////////
 
