@@ -5900,7 +5900,7 @@ translationSet trans =
 
         ToThePatient ->
             { english = "to the patient"
-            , kinyarwanda = Just "ku umurwayi"
+            , kinyarwanda = Just "ku murwayi"
             }
 
         Training ->
