@@ -1896,7 +1896,7 @@ translationSet trans =
 
         Celsius ->
             { english = "Celsius"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Serisiyusi"
             }
 
         CelsiusAbbrev ->
