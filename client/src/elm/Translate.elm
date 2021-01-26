@@ -3333,12 +3333,12 @@ translationSet trans =
         IntractableVomiting isIntractable ->
             if isIntractable then
                 { english = "Intractable Vomiting"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Kuruka Bikabije"
                 }
 
             else
                 { english = "Non-intractable Vomiting"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Kuruka Bidakabije"
                 }
 
         IntractableVomitingQuestion ->
