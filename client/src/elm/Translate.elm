@@ -1851,7 +1851,7 @@ translationSet trans =
 
         ByMouthTwiceADayForXDays days ->
             { english = "by mouth twice per day x " ++ String.fromInt days ++ " days"
-            , kinyarwanda = Just <| " inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
+            , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
             }
 
         Call114 ->
@@ -2193,7 +2193,7 @@ translationSet trans =
 
         ConditionImprovingQuestion ->
             { english = "Is your condition improving"
-            , kinyarwanda = Just "Urumva uri koroherwa?"
+            , kinyarwanda = Just "Urumva uri koroherwa"
             }
 
         ConfirmationRequired ->
@@ -5849,7 +5849,7 @@ translationSet trans =
 
             else
                 { english = value ++ " tablets"
-                , kinyarwanda = Just <| " ibinini " ++ value
+                , kinyarwanda = Just <| "ibinini " ++ value
                 }
 
         TakenCareOfBy ->
