@@ -1,6 +1,7 @@
 port module SyncManager.Update exposing (subscriptions, update)
 
 import App.Model exposing (SubModelReturn)
+import App.Ports exposing (bindDropZone)
 import App.Utils exposing (sequenceSubModelReturn)
 import AssocList as Dict exposing (Dict)
 import Backend.Model
@@ -313,7 +314,22 @@ update currentDate currentTime dbVersion device msg model =
                                 in
                                 SubModelReturn
                                     { model | syncStatus = SyncDownloadAuthorityDashboardStats RemoteData.Loading, syncInfoAuthorities = syncInfoAuthorities }
-                                    (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
+                                    (Cmd.batch
+                                        [ cmd
+                                        , setSyncInfoAurhoritiesCmd
+
+                                        -- We may get to situation where sync unbinds the DropZone.
+                                        -- For example, when at group session - photo measurement form,
+                                        -- and sync downloads a new revision of some entity.
+                                        -- This causes a rebuild of editable session, which, when rebuilt,
+                                        -- causes the View of the page to be rebuilt as well.
+                                        -- As a result, we end up with unbound DropZone container.
+                                        -- Therefore, we try to bind DropZone when sync ends.
+                                        -- This is ok, as the command will not proceed, unless it
+                                        -- detects DropZone contaier element on the page.
+                                        , bindDropZone ()
+                                        ]
+                                    )
                                     noError
                                     []
 
