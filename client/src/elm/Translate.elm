@@ -453,7 +453,7 @@ type TranslationId
     | Gender Gender
     | GenderLabel
     | GestationalDiabetesPreviousPregnancy
-    | Glass
+    | Glass String
     | GoHome
     | GroupAssessment
     | Gravida
@@ -1846,12 +1846,12 @@ translationSet trans =
 
         ByMouthDaylyForXDays days ->
             { english = "by mouth daily x " ++ String.fromInt days ++ " days"
-            , kinyarwanda = Just <| "Inshuro anywa imiti ku munsi / mu  minsi " ++ String.fromInt days
+            , kinyarwanda = Just <| "ku munsi / mu  minsi " ++ String.fromInt days
             }
 
         ByMouthTwiceADayForXDays days ->
             { english = "by mouth twice per day x " ++ String.fromInt days ++ " days"
-            , kinyarwanda = Just <| "Kunywa umuti inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
+            , kinyarwanda = Just <| " inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
             }
 
         Call114 ->
@@ -2907,9 +2907,9 @@ translationSet trans =
             , kinyarwanda = Just "Ubushize yarwaye Diyabete itewe no gutwita"
             }
 
-        Glass ->
-            { english = "Glass"
-            , kinyarwanda = Just "Ikirahuri cyo kunyweramo"
+        Glass value ->
+            { english = value ++ " Glass"
+            , kinyarwanda = Just <| "Ikirahuri " ++ value
             }
 
         GoHome ->
@@ -5849,7 +5849,7 @@ translationSet trans =
 
             else
                 { english = value ++ " tablets"
-                , kinyarwanda = Just <| value ++ " ibinini"
+                , kinyarwanda = Just <| " ibinini " ++ value
                 }
 
         TakenCareOfBy ->
