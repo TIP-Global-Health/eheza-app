@@ -1239,12 +1239,12 @@ translationSet trans =
 
                 OutcomeLostToFollowUp ->
                     { english = "Lost to Follow Up"
-                    , kinyarwanda = Just "Yaburiwe irengero"
+                    , kinyarwanda = Just "Umurwayi yaburiwe irengero"
                     }
 
                 OutcomeMovedOutsideCA ->
                     { english = "Moved outside the catchment area"
-                    , kinyarwanda = Just "Yimukiye ahandi"
+                    , kinyarwanda = Just "Umurwayi yimukiye ahandi"
                     }
 
                 OutcomePatientDied ->
