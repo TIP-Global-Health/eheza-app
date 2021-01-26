@@ -453,7 +453,7 @@ type TranslationId
     | Gender Gender
     | GenderLabel
     | GestationalDiabetesPreviousPregnancy
-    | Glass
+    | Glass String
     | GoHome
     | GroupAssessment
     | Gravida
@@ -1239,12 +1239,12 @@ translationSet trans =
 
                 OutcomeLostToFollowUp ->
                     { english = "Lost to Follow Up"
-                    , kinyarwanda = Just "Yaburiwe irengero"
+                    , kinyarwanda = Just "Umurwayi yaburiwe irengero"
                     }
 
                 OutcomeMovedOutsideCA ->
                     { english = "Moved outside the catchment area"
-                    , kinyarwanda = Just "Yimukiye ahandi"
+                    , kinyarwanda = Just "Umurwayi yimukiye ahandi"
                     }
 
                 OutcomePatientDied ->
@@ -1376,7 +1376,7 @@ translationSet trans =
 
                 ChildActivity Activity.Model.Muac ->
                     { english = "Make sure to measure at the center of the baby’s upper arm."
-                    , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe guoima ikizigira cy'akaboko"
+                    , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe gupima ikizigira cy'akaboko"
                     }
 
                 ChildActivity Activity.Model.NutritionSigns ->
@@ -1846,12 +1846,12 @@ translationSet trans =
 
         ByMouthDaylyForXDays days ->
             { english = "by mouth daily x " ++ String.fromInt days ++ " days"
-            , kinyarwanda = Just <| "Inshuro anywa imiti ku munsi / mu  minsi " ++ String.fromInt days
+            , kinyarwanda = Just <| "ku munsi / mu  minsi " ++ String.fromInt days
             }
 
         ByMouthTwiceADayForXDays days ->
             { english = "by mouth twice per day x " ++ String.fromInt days ++ " days"
-            , kinyarwanda = Just <| "Kunywa umuti inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
+            , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
             }
 
         Call114 ->
@@ -1896,7 +1896,7 @@ translationSet trans =
 
         Celsius ->
             { english = "Celsius"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Serisiyusi"
             }
 
         CelsiusAbbrev ->
@@ -2099,8 +2099,8 @@ translationSet trans =
             }
 
         ContactWithCOVID19SymptomsHelper ->
-            { english = "Symptoms include fever, dry cough, and shortness of breath"
-            , kinyarwanda = Just "Ibimenyetso birimo umuriro, inkorora y'akayi no guhumeka nabi"
+            { english = "Symptoms include: fever, dry cough, and shortness of breath"
+            , kinyarwanda = Just "Ibimenyetso birimo: umuriro, inkorora y'akayi no guhumeka nabi"
             }
 
         ContactWithCOVID19SymptomsQuestion ->
@@ -2193,7 +2193,7 @@ translationSet trans =
 
         ConditionImprovingQuestion ->
             { english = "Is your condition improving"
-            , kinyarwanda = Just "Urumva uri kworoherwa?"
+            , kinyarwanda = Just "Urumva uri koroherwa"
             }
 
         ConfirmationRequired ->
@@ -2907,9 +2907,9 @@ translationSet trans =
             , kinyarwanda = Just "Ubushize yarwaye Diyabete itewe no gutwita"
             }
 
-        Glass ->
-            { english = "Glass"
-            , kinyarwanda = Just "Ikirahuri cyo kunyweramo"
+        Glass value ->
+            { english = value ++ " Glass"
+            , kinyarwanda = Just <| "Ikirahuri " ++ value
             }
 
         GoHome ->
@@ -3172,7 +3172,7 @@ translationSet trans =
 
         HowMany ->
             { english = "How many"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ingahe"
             }
 
         HaveAnyOfTheFollowingQuestion ->
@@ -3333,12 +3333,12 @@ translationSet trans =
         IntractableVomiting isIntractable ->
             if isIntractable then
                 { english = "Intractable Vomiting"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Kuruka Bikabije"
                 }
 
             else
                 { english = "Non-intractable Vomiting"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Kuruka Bidakabije"
                 }
 
         IntractableVomitingQuestion ->
@@ -3891,7 +3891,7 @@ translationSet trans =
 
         MuacHelper ->
             { english = "Make sure to measure at the center of the baby’s upper arm."
-            , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe guoima ikizigira cy'akaboko"
+            , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe gupima ikizigira cy'akaboko"
             }
 
         MuacIndication indication ->
@@ -4135,7 +4135,7 @@ translationSet trans =
             case activity of
                 NutritionActivity.Model.Muac ->
                     { english = "Make sure to measure at the center of the baby’s upper arm."
-                    , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe guoima ikizigira cy'akaboko"
+                    , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe gupima ikizigira cy'akaboko"
                     }
 
                 NutritionActivity.Model.Height ->
@@ -5849,7 +5849,7 @@ translationSet trans =
 
             else
                 { english = value ++ " tablets"
-                , kinyarwanda = Just <| value ++ " ibinini"
+                , kinyarwanda = Just <| "ibinini " ++ value
                 }
 
         TakenCareOfBy ->
@@ -5900,7 +5900,7 @@ translationSet trans =
 
         ToThePatient ->
             { english = "to the patient"
-            , kinyarwanda = Just "ku umurwayi"
+            , kinyarwanda = Just "ku murwayi"
             }
 
         Training ->

@@ -2180,7 +2180,7 @@ viewTabletsPrescription language dosage duration =
 viewOralSolutionPrescription : Language -> String -> Html any
 viewOralSolutionPrescription language dosage =
     div [ class "prescription" ]
-        [ span [] [ text <| dosage ++ " " ++ translate language Translate.Glass ]
+        [ span [] [ text <| translate language (Translate.Glass dosage) ]
         , text " "
         , text <| translate language Translate.AfterEachLiquidStool
         , text "."
