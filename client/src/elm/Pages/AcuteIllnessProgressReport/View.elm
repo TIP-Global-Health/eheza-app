@@ -908,14 +908,63 @@ viewActionsTakenIsolationAndContactHC language currentDate measurements =
 viewActionsTakenMedicationDistribution : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> Html Msg
 viewActionsTakenMedicationDistribution language currentDate person diagnosis measurements =
     let
-        medicationSigns =
+        distributionSigns =
             Maybe.map (Tuple.second >> .value >> .distributionSigns) measurements.medicationDistribution
+
+        nonAdministrationSigns =
+            Maybe.map
+                (Tuple.second
+                    >> .value
+                    >> .nonAdministrationSigns
+                    >> EverySet.toList
+                )
+                measurements.medicationDistribution
+
+        resolveNonAdministrationReason medicine =
+            nonAdministrationSigns
+                |> Maybe.andThen
+                    (List.filterMap
+                        (\sign ->
+                            case sign of
+                                MedicationAmoxicillin reason ->
+                                    if medicine == Amoxicillin then
+                                        Just reason
+
+                                    else
+                                        Nothing
+
+                                MedicationCoartem reason ->
+                                    if medicine == Coartem then
+                                        Just reason
+
+                                    else
+                                        Nothing
+
+                                MedicationORS reason ->
+                                    if medicine == ORS then
+                                        Just reason
+
+                                    else
+                                        Nothing
+
+                                MedicationZinc reason ->
+                                    if medicine == Zinc then
+                                        Just reason
+
+                                    else
+                                        Nothing
+
+                                NoMedicationNonAdministrationSigns ->
+                                    Nothing
+                        )
+                        >> List.head
+                    )
     in
     case diagnosis of
         Just DiagnosisMalariaUncomplicated ->
             let
                 coartemPrescribed =
-                    Maybe.map (EverySet.member Coartem) medicationSigns
+                    Maybe.map (EverySet.member Coartem) distributionSigns
                         |> Maybe.withDefault False
             in
             if coartemPrescribed then
@@ -930,12 +979,20 @@ viewActionsTakenMedicationDistribution language currentDate person diagnosis mea
                     |> Maybe.withDefault emptyNode
 
             else
-                emptyNode
+                resolveNonAdministrationReason Coartem
+                    |> Maybe.map
+                        (\reason ->
+                            div [ class "malaria-uncomplicated" ]
+                                [ viewAdministeredMedicationLabel language Translate.NotAdministered (Translate.MedicationDistributionSign Coartem) "icon-pills" (Just currentDate)
+                                , viewNonAdministrationReason language reason
+                                ]
+                        )
+                    |> Maybe.withDefault emptyNode
 
         Just DiagnosisGastrointestinalInfectionUncomplicated ->
             let
                 orsPrescribed =
-                    Maybe.map (EverySet.member ORS) medicationSigns
+                    Maybe.map (EverySet.member ORS) distributionSigns
                         |> Maybe.withDefault False
 
                 orsAction =
@@ -950,10 +1007,17 @@ viewActionsTakenMedicationDistribution language currentDate person diagnosis mea
                             |> Maybe.withDefault []
 
                     else
-                        []
+                        resolveNonAdministrationReason ORS
+                            |> Maybe.map
+                                (\reason ->
+                                    [ viewAdministeredMedicationLabel language Translate.NotAdministered (Translate.MedicationDistributionSign ORS) "icon-oral-solution" (Just currentDate)
+                                    , viewNonAdministrationReason language reason
+                                    ]
+                                )
+                            |> Maybe.withDefault []
 
                 zincPrescribed =
-                    Maybe.map (EverySet.member Zinc) medicationSigns
+                    Maybe.map (EverySet.member Zinc) distributionSigns
                         |> Maybe.withDefault False
 
                 zincAction =
@@ -968,7 +1032,14 @@ viewActionsTakenMedicationDistribution language currentDate person diagnosis mea
                             |> Maybe.withDefault []
 
                     else
-                        []
+                        resolveNonAdministrationReason Zinc
+                            |> Maybe.map
+                                (\reason ->
+                                    [ viewAdministeredMedicationLabel language Translate.NotAdministered (Translate.MedicationDistributionSign Zinc) "icon-pills" (Just currentDate)
+                                    , viewNonAdministrationReason language reason
+                                    ]
+                                )
+                            |> Maybe.withDefault []
             in
             if orsPrescribed || zincPrescribed then
                 div [ class "gastrointestinal-uncomplicated" ] <|
@@ -984,7 +1055,7 @@ viewActionsTakenMedicationDistribution language currentDate person diagnosis mea
         Just DiagnosisRespiratoryInfectionUncomplicated ->
             let
                 amoxicillinPrescribed =
-                    Maybe.map (EverySet.member Amoxicillin) medicationSigns
+                    Maybe.map (EverySet.member Amoxicillin) distributionSigns
                         |> Maybe.withDefault False
             in
             if amoxicillinPrescribed then
@@ -999,10 +1070,24 @@ viewActionsTakenMedicationDistribution language currentDate person diagnosis mea
                     |> Maybe.withDefault emptyNode
 
             else
-                emptyNode
+                resolveNonAdministrationReason Amoxicillin
+                    |> Maybe.map
+                        (\reason ->
+                            div [ class "respiratory-infection-uncomplicated" ]
+                                [ viewAdministeredMedicationLabel language Translate.NotAdministered (Translate.MedicationDistributionSign Amoxicillin) "icon-pills" (Just currentDate)
+                                , viewNonAdministrationReason language reason
+                                ]
+                        )
+                    |> Maybe.withDefault emptyNode
 
         _ ->
             emptyNode
+
+
+viewNonAdministrationReason : Language -> MedicationNonAdministrationReason -> Html any
+viewNonAdministrationReason language reason =
+    div [ class "non-administration-reason" ]
+        [ text <| translate language <| Translate.MedicationNonAdministrationReason reason ]
 
 
 viewActionsTakenSendToHC : Language -> NominalDate -> AcuteIllnessMeasurements -> Html Msg

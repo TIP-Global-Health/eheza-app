@@ -595,6 +595,7 @@ type TranslationId
     | Normal
     | NoChildrenRegisteredInTheSystem
     | NoParticipantsFound
+    | NotAdministered
     | NotAvailable
     | NotConnected
     | NumberOfAbortions
@@ -4089,6 +4090,11 @@ translationSet trans =
         NoParticipantsFound ->
             { english = "No participants found"
             , kinyarwanda = Just "Ntamuntu ugaragaye"
+            }
+
+        NotAdministered ->
+            { english = "Not administered"
+            , kinyarwanda = Nothing
             }
 
         NotAvailable ->
