@@ -441,7 +441,6 @@ type TranslationId
     | FetalPresentationLabel
     | FetalPresentation FetalPresentation
     | Fetch
-    | Fever
     | FilterByName
     | FirstAntenatalVisit
     | FirstName
@@ -809,7 +808,6 @@ type TranslationId
     | SubmitPairingCode
     | Success
     | SyncGeneral
-    | Tachypnea
     | TabletSinglePlural String
     | TakenCareOfBy
     | TakingMedicationAsPrescribed Bool
@@ -2842,11 +2840,6 @@ translationSet trans =
         Fetch ->
             { english = "Fetch"
             , kinyarwanda = Just "Gushakisha"
-            }
-
-        Fever ->
-            { english = "Fever"
-            , kinyarwanda = Just "Umuriro"
             }
 
         FilterByName ->
@@ -5834,11 +5827,6 @@ translationSet trans =
         SyncGeneral ->
             { english = "Sync Status (General)"
             , kinyarwanda = Just "Ibijyanye no guhuza amakuru yafashwe n'igikoresho cy'ikoranabuhanga n'abitse kuri seriveri"
-            }
-
-        Tachypnea ->
-            { english = "Tachypnea (fast resp. rate)"
-            , kinyarwanda = Just "Guhumeka vuba vuba"
             }
 
         TabletSinglePlural value ->
