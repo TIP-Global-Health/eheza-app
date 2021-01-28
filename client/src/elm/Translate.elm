@@ -5837,8 +5837,8 @@ translationSet trans =
             }
 
         Tachypnea ->
-            { english = "Respiratory Rate"
-            , kinyarwanda = Just "Inshuro ahumeka"
+            { english = "Tachypnea (fast resp. rate)"
+            , kinyarwanda = Just "Guhumeka vuba vuba"
             }
 
         TabletSinglePlural value ->

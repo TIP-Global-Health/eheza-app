@@ -692,12 +692,12 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                                     |> List.singleton
 
                             feverRow =
-                                td [ class "first" ] [ text <| translate language Translate.Fever ]
+                                td [ class "first" ] [ text <| translate language Translate.BodyTemperature ]
                                     :: List.map viewBodyTemperatureCell bodyTemperatures
                                     |> tr []
 
                             tachypneaRow =
-                                td [ class "first" ] [ text <| translate language Translate.Tachypnea ]
+                                td [ class "first" ] [ text <| translate language Translate.RespiratoryRate ]
                                     :: List.map viewRespiratoryRateCell respiratoryRates
                                     |> tr []
 
