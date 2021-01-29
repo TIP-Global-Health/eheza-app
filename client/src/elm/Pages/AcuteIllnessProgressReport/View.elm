@@ -29,6 +29,7 @@ import Pages.AcuteIllnessEncounter.Utils
         , generateAssembledData
         , muacRedOnSubsequentVisit
         , noImprovementOnSubsequentVisit
+        , resolveMedicationsNonAdministrationReasons
         , resolveNextStepFirstEncounter
         , respiratoryRateElevated
         )
@@ -911,54 +912,20 @@ viewActionsTakenMedicationDistribution language currentDate person diagnosis mea
         distributionSigns =
             Maybe.map (Tuple.second >> .value >> .distributionSigns) measurements.medicationDistribution
 
-        nonAdministrationSigns =
-            Maybe.map
-                (Tuple.second
-                    >> .value
-                    >> .nonAdministrationSigns
-                    >> EverySet.toList
-                )
-                measurements.medicationDistribution
+        nonAdministrationReasons =
+            resolveMedicationsNonAdministrationReasons measurements
 
-        resolveNonAdministrationReason medicine =
-            nonAdministrationSigns
-                |> Maybe.andThen
-                    (List.filterMap
-                        (\sign ->
-                            case sign of
-                                MedicationAmoxicillin reason ->
-                                    if medicine == Amoxicillin then
-                                        Just reason
+        resolveNonAdministrationReason medicine_ =
+            nonAdministrationReasons
+                |> List.filterMap
+                    (\( medicine, reason ) ->
+                        if medicine == medicine_ then
+                            Just reason
 
-                                    else
-                                        Nothing
-
-                                MedicationCoartem reason ->
-                                    if medicine == Coartem then
-                                        Just reason
-
-                                    else
-                                        Nothing
-
-                                MedicationORS reason ->
-                                    if medicine == ORS then
-                                        Just reason
-
-                                    else
-                                        Nothing
-
-                                MedicationZinc reason ->
-                                    if medicine == Zinc then
-                                        Just reason
-
-                                    else
-                                        Nothing
-
-                                NoMedicationNonAdministrationSigns ->
-                                    Nothing
-                        )
-                        >> List.head
+                        else
+                            Nothing
                     )
+                |> List.head
     in
     case diagnosis of
         Just DiagnosisMalariaUncomplicated ->

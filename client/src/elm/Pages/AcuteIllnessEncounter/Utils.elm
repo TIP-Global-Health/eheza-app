@@ -21,6 +21,8 @@ import Backend.Measurement.Model
         , IsolationValue
         , MalariaRapidTestResult(..)
         , MedicationDistributionSign(..)
+        , MedicationNonAdministrationReason(..)
+        , MedicationNonAdministrationSign(..)
         , MuacIndication(..)
         , ReasonForNotIsolating(..)
         , Recommendation114(..)
@@ -210,6 +212,12 @@ expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements task
             ageInMonths currentDate person
                 |> Maybe.map (\ageMonthss -> ( ageMonthss < 2, ageMonthss < 6, ageMonthss >= 2 && ageMonthss < 60 ))
                 |> Maybe.withDefault ( False, False, False )
+
+        prescribeMedication =
+            (diagnosis == Just DiagnosisMalariaUncomplicated && not ageMonths0To6)
+                || (diagnosis == Just DiagnosisGastrointestinalInfectionUncomplicated)
+                || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths2To60)
+                || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths2To60)
     in
     case task of
         NextStepsIsolation ->
@@ -222,10 +230,7 @@ expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements task
             diagnosis == Just DiagnosisCovid19 && isJust measurements.call114 && (not <| talkedTo114 measurements)
 
         NextStepsMedicationDistribution ->
-            (diagnosis == Just DiagnosisMalariaUncomplicated && not ageMonths0To6)
-                || (diagnosis == Just DiagnosisGastrointestinalInfectionUncomplicated)
-                || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths2To60)
-                || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths2To60)
+            prescribeMedication
 
         NextStepsSendToHC ->
             sendToHCByMalariaTesting ageMonths0To6 diagnosis
@@ -235,9 +240,61 @@ expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements task
                 || (diagnosis == Just DiagnosisRespiratoryInfectionComplicated)
                 || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
                 || (diagnosis == Just DiagnosisUndeterminedMoreEvaluationNeeded)
+                -- Medication was perscribed, but it's out of stock, or patient is alergic.
+                || (prescribeMedication && sendToHCDueToMedicationNonAdministration measurements)
 
         NextStepsHealthEducation ->
             False
+
+
+{-| Send patient to health center if patient is alergic to any of prescribed medications,
+or, if any of prescribed medications is out of stock.
+-}
+sendToHCDueToMedicationNonAdministration : AcuteIllnessMeasurements -> Bool
+sendToHCDueToMedicationNonAdministration measurements =
+    resolveMedicationsNonAdministrationReasons measurements
+        |> List.filter
+            (\( _, reason ) ->
+                reason == NonAdministrationLackOfStock || reason == NonAdministrationKnownAllergy
+            )
+        |> List.isEmpty
+        |> not
+
+
+resolveMedicationsNonAdministrationReasons : AcuteIllnessMeasurements -> List ( MedicationDistributionSign, MedicationNonAdministrationReason )
+resolveMedicationsNonAdministrationReasons measurements =
+    let
+        nonAdministrationSigns =
+            Maybe.map
+                (Tuple.second
+                    >> .value
+                    >> .nonAdministrationSigns
+                    >> EverySet.toList
+                )
+                measurements.medicationDistribution
+    in
+    nonAdministrationSigns
+        |> Maybe.map
+            (List.filterMap
+                (\sign ->
+                    case sign of
+                        MedicationAmoxicillin reason ->
+                            Just ( Amoxicillin, reason )
+
+                        MedicationCoartem reason ->
+                            Just ( Coartem, reason )
+
+                        MedicationORS reason ->
+                            Just ( ORS, reason )
+
+                        MedicationZinc reason ->
+                            Just ( Zinc, reason )
+
+                        NoMedicationNonAdministrationSigns ->
+                            Nothing
+                )
+            )
+        |> Maybe.withDefault []
 
 
 expectNextStepsTaskSubsequentEncounter : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> NextStepsTask -> Bool
@@ -259,6 +316,8 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
         NextStepsSendToHC ->
             if malariaDiagnosedAtCurrentEncounter then
                 sendToHCByMalariaTesting ageMonths0To6 diagnosis
+                    || -- Medication was perscribed, but it's out of stock, or patient is alergic.
+                       sendToHCDueToMedicationNonAdministration measurements
 
             else
                 noImprovementOnSubsequentVisitWithoutDangerSigns currentDate person measurements
