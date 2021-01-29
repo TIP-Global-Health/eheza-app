@@ -566,6 +566,11 @@ activityCompleted currentDate isFirstEncounter data activity =
                     [ NextStepsMedicationDistribution ] ->
                         isJust measurements.medicationDistribution
 
+                    -- When medication was prescribed, but it is out
+                    -- of stock, or patient is alergic.
+                    [ NextStepsMedicationDistribution, NextStepsSendToHC ] ->
+                        isJust measurements.medicationDistribution && isJust measurements.sendToHC
+
                     [ NextStepsSendToHC ] ->
                         isJust measurements.sendToHC
 
@@ -593,6 +598,11 @@ activityCompleted currentDate isFirstEncounter data activity =
                     -- Uncomplicated malarial for adult.
                     [ NextStepsMedicationDistribution ] ->
                         isJust measurements.medicationDistribution
+
+                    -- Uncomplicated malarial for adult, when medicine is out
+                    -- of stock, or patient is alergic.
+                    [ NextStepsMedicationDistribution, NextStepsSendToHC ] ->
+                        isJust measurements.medicationDistribution && isJust measurements.sendToHC
 
                     -- Other cases of malaria.
                     [ NextStepsSendToHC ] ->
