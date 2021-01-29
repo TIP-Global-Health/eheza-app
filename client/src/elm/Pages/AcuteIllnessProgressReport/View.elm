@@ -1041,12 +1041,8 @@ viewActionsTakenMedicationDistribution language currentDate person diagnosis mea
                                 )
                             |> Maybe.withDefault []
             in
-            if orsPrescribed || zincPrescribed then
-                div [ class "gastrointestinal-uncomplicated" ] <|
-                    (orsAction ++ zincAction)
-
-            else
-                emptyNode
+            div [ class "gastrointestinal-uncomplicated" ] <|
+                (orsAction ++ zincAction)
 
         Just DiagnosisSimpleColdAndCough ->
             div [ class "simple-cough-and-cold" ]
