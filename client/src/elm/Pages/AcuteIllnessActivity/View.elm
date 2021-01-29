@@ -2345,7 +2345,7 @@ viewOngoingTreatmentReviewForm language currentDate measurements form =
                         [ div [ class "ui grid" ]
                             [ div [ class "one wide column" ] []
                             , div [ class "four wide column" ]
-                                [ viewQuestionLabel language Translate.HowMany ]
+                                [ viewQuestionLabel language Translate.HowManyDose ]
                             , div [ class "four wide column" ]
                                 [ viewNumberInput language
                                     form.totalMissedDoses
