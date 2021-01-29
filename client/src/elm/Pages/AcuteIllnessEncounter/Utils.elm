@@ -213,7 +213,7 @@ expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements task
                 |> Maybe.map (\ageMonthss -> ( ageMonthss < 2, ageMonthss < 6, ageMonthss >= 2 && ageMonthss < 60 ))
                 |> Maybe.withDefault ( False, False, False )
 
-        prescribeMedication =
+        medicationPrescribed =
             (diagnosis == Just DiagnosisMalariaUncomplicated && not ageMonths0To6)
                 || (diagnosis == Just DiagnosisGastrointestinalInfectionUncomplicated)
                 || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths2To60)
@@ -230,7 +230,7 @@ expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements task
             diagnosis == Just DiagnosisCovid19 && isJust measurements.call114 && (not <| talkedTo114 measurements)
 
         NextStepsMedicationDistribution ->
-            prescribeMedication
+            medicationPrescribed
 
         NextStepsSendToHC ->
             sendToHCByMalariaTesting ageMonths0To6 diagnosis
@@ -241,7 +241,7 @@ expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements task
                 || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
                 || (diagnosis == Just DiagnosisUndeterminedMoreEvaluationNeeded)
                 -- Medication was perscribed, but it's out of stock, or patient is alergic.
-                || (prescribeMedication && sendToHCDueToMedicationNonAdministration measurements)
+                || (medicationPrescribed && sendToHCDueToMedicationNonAdministration measurements)
 
         NextStepsHealthEducation ->
             False
