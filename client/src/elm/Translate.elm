@@ -485,7 +485,7 @@ type TranslationId
     | HIVStatusLabel
     | Home
     | HouseholdSize
-    | HowMany
+    | HowManyDose
     | HaveAnyOfTheFollowingQuestion
     | HttpError Http.Error
     | HypertensionBeforePregnancy
@@ -3170,8 +3170,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        HowMany ->
-            { english = "How many"
+        HowManyDose ->
+            { english = "How many Doses"
             , kinyarwanda = Just "Ingahe"
             }
 
