@@ -198,7 +198,7 @@ resolveNextStepsTasks currentDate isFirstEncounter data =
 
     else if mandatoryActivitiesCompletedSubsequentVisit currentDate data then
         -- The order is important. Do not change.
-        [ NextStepsContactHC, NextStepsSendToHC, NextStepsMedicationDistribution, NextStepsHealthEducation ]
+        [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsHealthEducation ]
             |> List.filter (expectNextStepsTaskSubsequentEncounter currentDate data.person data.diagnosis data.measurements)
 
     else
