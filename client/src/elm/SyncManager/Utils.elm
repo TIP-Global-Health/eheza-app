@@ -1,5 +1,6 @@
 module SyncManager.Utils exposing (..)
 
+import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
 import Backend.Clinic.Encoder
 import Backend.Counseling.Encoder
@@ -34,15 +35,26 @@ according to the order `SyncStatus` is defined.
 determineSyncStatus : Page -> Model -> Model
 determineSyncStatus activePage model =
     let
-        syncCycleRotate =
-            case model.syncCycle of
-                SyncManager.Model.SyncCycleOn ->
+        syncCycleOn =
+            model.syncCycle == SyncManager.Model.SyncCycleOn
+
+        -- Determine if we're on session page where it's possible to
+        -- take a photo. If so, we'll halt sync, since it may
+        -- create problems with Dropzone binding / file saving at local cache.
+        photoPage =
+            case activePage of
+                -- Activity page where pictures are taken in bulk.
+                UserPage (SessionPage _ (ActivityPage (ChildActivity ChildPicture))) ->
+                    True
+
+                -- Participant page, where activites are taken for a child.
+                UserPage (SessionPage _ (ChildPage _)) ->
                     True
 
                 _ ->
                     False
     in
-    if syncCycleRotate then
+    if syncCycleOn && not photoPage then
         let
             syncStatus =
                 model.syncStatus
