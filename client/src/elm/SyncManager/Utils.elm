@@ -21,6 +21,7 @@ import Backend.Village.Encoder
 import Editable
 import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import RemoteData
 import Restful.Endpoint exposing (toEntityUuid)
 import SyncManager.Model exposing (..)
@@ -30,8 +31,8 @@ import Utils.WebData
 {-| Decide on the Sync status. Either keep the exiting one, or set the next one,
 according to the order `SyncStatus` is defined.
 -}
-determineSyncStatus : Model -> Model
-determineSyncStatus model =
+determineSyncStatus : Page -> Model -> Model
+determineSyncStatus activePage model =
     let
         syncCycleRotate =
             case model.syncCycle of
