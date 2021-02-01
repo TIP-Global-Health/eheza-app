@@ -129,9 +129,10 @@ encodeDataForDeferredPhotos photoUrl entityIdentifier =
         |> Json.Encode.encode 0
 
 
-encodeDeviceSatateReport : String -> Int -> List String -> List ( String, Value )
-encodeDeviceSatateReport version totalToUpload syncedAutorities =
+encodeDeviceSatateReport : String -> String -> Int -> List String -> List ( String, Value )
+encodeDeviceSatateReport version phase totalToUpload syncedAutorities =
     [ ( "version", string version )
+    , ( "phase", string phase )
     , ( "total_to_upload", int totalToUpload )
     , ( "synced_authorities", list string syncedAutorities )
     ]

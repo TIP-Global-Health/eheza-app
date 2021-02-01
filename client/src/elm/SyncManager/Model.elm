@@ -217,7 +217,6 @@ type alias Model =
     -- `idle` - 50; which is the minimum we will allow.
     -- `sync` - 10000. The means that sync will sit idle for 10 seconds.
     , syncSpeed : Editable SyncSpeed
-    , totalEntriesToUpload : Maybe Int
     }
 
 
@@ -232,7 +231,6 @@ emptyModel flags =
     , downloadPhotosBatchSize = flags.batchSize
     , syncCycle = SyncCycleOn
     , syncSpeed = Editable.ReadOnly flags.syncSpeed
-    , totalEntriesToUpload = Nothing
     }
 
 

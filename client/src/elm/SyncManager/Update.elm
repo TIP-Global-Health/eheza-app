@@ -442,6 +442,8 @@ update currentDate currentTime dbVersion device msg model =
             case model.syncStatus of
                 SyncIdle ->
                     determineSyncStatus
+                        -- We send state report when we begin the sync.
+                        |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
                 SyncUploadGeneral _ ->
                     update
@@ -755,6 +757,13 @@ update currentDate currentTime dbVersion device msg model =
                 version =
                     Version.version.build
 
+                phase =
+                    if model.syncStatus == SyncIdle then
+                        "sync-end"
+
+                    else
+                        "sync-start"
+
                 syncedAutorities =
                     model.syncInfoAuthorities
                         |> Maybe.map (Zipper.toList >> List.map .uuid)
@@ -763,11 +772,10 @@ update currentDate currentTime dbVersion device msg model =
                 cmd =
                     HttpBuilder.post (device.backendUrl ++ "/api/report-state")
                         |> withQueryParams [ ( "access_token", device.accessToken ) ]
-                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeDeviceSatateReport version totalToUpload syncedAutorities)
+                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeDeviceSatateReport version phase totalToUpload syncedAutorities)
                         |> HttpBuilder.send (always NoOp)
             in
-            SubModelReturn
-                { model | totalEntriesToUpload = Just totalToUpload }
+            SubModelReturn model
                 cmd
                 noError
                 []

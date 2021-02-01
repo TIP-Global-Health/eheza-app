@@ -22,6 +22,7 @@ features[field_base][] = field_health_centers
 features[field_base][] = field_phone
 features[field_base][] = field_pin_code
 features[field_base][] = field_role
+features[field_base][] = field_sync_phase
 features[field_base][] = field_total_to_upload
 features[field_base][] = field_version
 features[field_base][] = field_villages
