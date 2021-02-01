@@ -583,31 +583,34 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
               }
               catch (e) {
                   // Network error.
-                  return sendResultToElm(queryType,{tag: 'Error', error: 'FetchError', reason: e.toString()});
+                  return sendResultToElm(queryType, {tag: 'Error', error: 'NetworkError', reason: e.toString()});
               }
 
-              if (response.ok) {
-                try {
-                  var json = await response.json();
-                }
-                catch (e) {
-                  // Bad JSON.
-                  return sendResultToElm(queryType,{tag: 'Error', error: 'BadJson', reason: e.toString()});
-                }
-
-                const changes = {
-                  'fileId': parseInt(json.data[0].id),
-                  'remoteFileName': json.data[0].label,
-                  'isSynced': 1,
-                }
-
-                // Update IndexDb to hold the fileId. As there could have been multiple
-                // operations on the same entity, we replace all the photo occurrences.
-                // For example, lets say a person's photo was changed, and later also
-                // their name. So on the two records there were created on the
-                // photoUploadChanges table, the same photo local URL will appear.
-                await dbSync.authorityPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
+              if (!response.ok) {
+                return sendResultToElm(queryType, {tag: 'Error', error: 'UploadError', reason: row.photo});
               }
+
+              // Response indicated success.
+              try {
+                var json = await response.json();
+              }
+              catch (e) {
+                // Bad JSON.
+                return sendResultToElm(queryType, {tag: 'Error', error: 'BadJson', reason: row.photo});
+              }
+
+              const changes = {
+                'fileId': parseInt(json.data[0].id),
+                'remoteFileName': json.data[0].label,
+                'isSynced': 1,
+              }
+
+              // Update IndexDb to hold the fileId. As there could have been multiple
+              // operations on the same entity, we replace all the photo occurrences.
+              // For example, lets say a person's photo was changed, and later also
+              // their name. So on the two records there were created on the
+              // photoUploadChanges table, the same photo local URL will appear.
+              await dbSync.authorityPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
             }
             else {
               // Photo is registered in IndexDB, but doesn't appear in the cache.

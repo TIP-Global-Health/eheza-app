@@ -442,6 +442,17 @@ update currentDate currentTime dbVersion device msg model =
             case model.syncStatus of
                 SyncIdle ->
                     determineSyncStatus
+                        -- We send state report when we begin the sync.
+                        |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
+
+                SyncUploadPhotoAuthority _ _ ->
+                    update
+                        currentDate
+                        currentTime
+                        dbVersion
+                        device
+                        BackendPhotoUploadAuthority
+                        model
 
                 SyncUploadGeneral _ ->
                     update
@@ -450,15 +461,6 @@ update currentDate currentTime dbVersion device msg model =
                         dbVersion
                         device
                         FetchFromIndexDbUploadGeneral
-                        model
-
-                SyncUploadPhotoAuthority _ ->
-                    update
-                        currentDate
-                        currentTime
-                        dbVersion
-                        device
-                        BackendPhotoUploadAuthority
                         model
 
                 SyncUploadAuthority _ ->
@@ -495,6 +497,15 @@ update currentDate currentTime dbVersion device msg model =
                         dbVersion
                         device
                         BackendAuthorityDashboardStatsFetch
+                        model
+
+                SyncReportIncident incidentType ->
+                    update
+                        currentDate
+                        currentTime
+                        dbVersion
+                        device
+                        (BackendReportSyncIncident incidentType)
                         model
 
         BackendFetchPhotos ->
@@ -755,6 +766,13 @@ update currentDate currentTime dbVersion device msg model =
                 version =
                     Version.version.build
 
+                phase =
+                    if model.syncStatus == SyncIdle then
+                        "sync-end"
+
+                    else
+                        "sync-start"
+
                 syncedAutorities =
                     model.syncInfoAuthorities
                         |> Maybe.map (Zipper.toList >> List.map .uuid)
@@ -763,11 +781,25 @@ update currentDate currentTime dbVersion device msg model =
                 cmd =
                     HttpBuilder.post (device.backendUrl ++ "/api/report-state")
                         |> withQueryParams [ ( "access_token", device.accessToken ) ]
-                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeDeviceSatateReport version totalToUpload syncedAutorities)
+                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeDeviceSatateReport version phase totalToUpload syncedAutorities)
                         |> HttpBuilder.send (always NoOp)
             in
             SubModelReturn
-                { model | totalEntriesToUpload = Just totalToUpload }
+                model
+                cmd
+                noError
+                []
+
+        BackendReportSyncIncident incidentType ->
+            let
+                cmd =
+                    HttpBuilder.post (device.backendUrl ++ "/api/report-sync-incident")
+                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeSyncIncident incidentType)
+                        |> HttpBuilder.send (always NoOp)
+            in
+            SubModelReturn
+                (SyncManager.Utils.determineSyncStatus model)
                 cmd
                 noError
                 []
@@ -890,7 +922,7 @@ update currentDate currentTime dbVersion device msg model =
 
         BackendPhotoUploadAuthority ->
             case model.syncStatus of
-                SyncUploadPhotoAuthority webData ->
+                SyncUploadPhotoAuthority errorsCount webData ->
                     if RemoteData.isLoading webData then
                         noChange
 
@@ -901,7 +933,7 @@ update currentDate currentTime dbVersion device msg model =
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryUploadPhotoAuthority)
-                            { model | syncStatus = SyncUploadPhotoAuthority RemoteData.Loading }
+                            { model | syncStatus = SyncUploadPhotoAuthority errorsCount RemoteData.Loading }
 
                 _ ->
                     noChange
@@ -911,9 +943,9 @@ update currentDate currentTime dbVersion device msg model =
             -- with file blobs. This handler however is for post upload attempt
             -- (success or not), to set RemoteData accordingly.
             case model.syncStatus of
-                SyncUploadPhotoAuthority _ ->
+                SyncUploadPhotoAuthority errorsCount _ ->
                     SubModelReturn
-                        (SyncManager.Utils.determineSyncStatus { model | syncStatus = SyncUploadPhotoAuthority remoteData })
+                        (SyncManager.Utils.determineSyncStatus { model | syncStatus = SyncUploadPhotoAuthority errorsCount remoteData })
                         Cmd.none
                         noError
                         []
