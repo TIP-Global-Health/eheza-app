@@ -20,6 +20,9 @@ define('HEDLEY_PERSON_RELATED_BY_PARENT_OF', 'parent');
 define('HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR', 'caregiver');
 define('HEDLEY_PERSON_CLINIC_TYPE_SORWATHE', 'sorwathe');
 define('HEDLEY_PERSON_CLINIC_TYPE_ACHI', 'achi');
+define('HEDLEY_PERSON_CLINIC_TYPE_CHW', 'chw');
+define('HEDLEY_PERSON_CLINIC_TYPE_FBF', 'fbf');
+define('HEDLEY_PERSON_CLINIC_TYPE_PMTCT', 'pmtct');
 
 // Import CSV column mapping:
 define('HEDLEY_PERSON_COLUMN_UNIQUE_ID', 0);
@@ -863,7 +866,7 @@ function hedley_person_import_patient($patient_type, array $values) {
       $group_id = hedley_person_resolve_content_by_name('clinic', $group);
 
       if (!empty($group_id)) {
-        if (!hedley_person_create_pmtct_participant($wrapper->getIdentifier(), $adult_id, $relation, $group_id)) {
+        if (!hedley_person_create_pmtct_participant($adult_id, $wrapper->getIdentifier(), $relation, $group_id)) {
           return "Import was successful, but failed to add adult-child pair to $group group.";
         }
       }
@@ -959,23 +962,25 @@ function hedley_person_create_relationship($child_id, $adult_id, $relation) {
 }
 
 /**
- * Creates a pmtct_participant node for adult-child pair.
+ * Creates a participation for adult+chld pair at given group.
  *
- * @param int $child_id
- *   Child node ID.
  * @param int $adult_id
  *   Adult node ID.
+ * @param int $child_id
+ *   Child node ID.
  * @param string $relation
- *   Either 'parent' or 'caregiver'.
+ *   Either 'parent', 'mother', or 'caregiver'.
  * @param int $group_id
  *   Group node ID.
+ * @param int $author
+ *   User ID which will be considered the author of created participation.
  *
  * @return bool
  *   TRUE on success, FALSE otherwise.
  */
-function hedley_person_create_pmtct_participant($child_id, $adult_id, $relation, $group_id) {
+function hedley_person_create_pmtct_participant($adult_id, $child_id, $relation, $group_id, $author = FALSE) {
   try {
-    $pmtct_participant = hedley_person_create_basic_node('pmtct_participant');
+    $pmtct_participant = hedley_person_create_basic_node('pmtct_participant', $author);
   }
   catch (Exception $e) {
     return FALSE;
