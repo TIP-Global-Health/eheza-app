@@ -38,6 +38,7 @@ features[field_instance][] = user-user-field_clinics
 features[field_instance][] = user-user-field_health_centers
 features[field_instance][] = user-user-field_phone
 features[field_instance][] = user-user-field_pin_code
+features[field_instance][] = user-user-field_sync_phase
 features[field_instance][] = user-user-field_total_to_upload
 features[field_instance][] = user-user-field_version
 features[node][] = nurse
