@@ -220,7 +220,6 @@ type alias Model =
     -- `idle` - 50; which is the minimum we will allow.
     -- `sync` - 10000. The means that sync will sit idle for 10 seconds.
     , syncSpeed : Editable SyncSpeed
-    , totalEntriesToUpload : Maybe Int
     }
 
 
@@ -235,7 +234,6 @@ emptyModel flags =
     , downloadPhotosBatchSize = flags.batchSize
     , syncCycle = SyncCycleOn
     , syncSpeed = Editable.ReadOnly flags.syncSpeed
-    , totalEntriesToUpload = Nothing
     }
 
 
@@ -349,11 +347,14 @@ type alias IndexDbUploadRemoteData a =
 type SyncStatus
     = SyncIdle
     | SyncUploadGeneral (UploadRec IndexDbQueryUploadGeneralResultRecord)
-    | SyncUploadPhotoAuthority (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
+      -- Int is used for a counter, to track file upload errors.
+      -- If counter exceeds threshold, sync will be stopped.
+    | SyncUploadPhotoAuthority Int (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
     | SyncUploadAuthority (UploadRec IndexDbQueryUploadAuthorityResultRecord)
     | SyncDownloadGeneral (WebData (DownloadSyncResponse BackendGeneralEntity))
     | SyncDownloadAuthority (WebData (DownloadSyncResponse BackendAuthorityEntity))
     | SyncDownloadAuthorityDashboardStats (WebData (DownloadSyncResponse BackendAuthorityEntity))
+    | SyncReportIncident SyncIncidentType
 
 
 type DownloadPhotosStatus
@@ -408,8 +409,9 @@ type IndexDbQueryTypeResult
 
 
 type UploadPhotoError
-    = FetchError String
-    | BadJson String
+    = BadJson String
+    | NetworkError String
+    | UploadError String
 
 
 {-| The info we get from query to `generalPhotoUploadChanges`.
@@ -462,6 +464,17 @@ type alias IndexDbQueryDeferredPhotoResultRecord =
     }
 
 
+type SyncIncidentType
+    = FileUploadIncident IncidentContnentIdentifier
+    | ContentUploadIncident IncidentContnentIdentifier
+
+
+type alias IncidentContnentIdentifier =
+    -- For file upload incident, identifier is the cache url of file.
+    -- For content upload, it's the UUID of uploaded entity.
+    String
+
+
 type Msg
     = MsgDebouncer (Debouncer.Msg Msg)
     | NoOp
@@ -492,6 +505,7 @@ type Msg
     | BackendUploadGeneralHandle IndexDbQueryUploadGeneralResultRecord (WebData ())
     | BackendUploadPhotoAuthorityHandle (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
     | BackendReportState Int
+    | BackendReportSyncIncident SyncIncidentType
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto

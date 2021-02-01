@@ -27,6 +27,14 @@ function hedley_device_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'sync_incident' => array(
+      'name' => t('Sync incident'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
   );
   drupal_alter('node_info', $items);
   return $items;

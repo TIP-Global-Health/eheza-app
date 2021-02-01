@@ -2,6 +2,7 @@ module Pages.Activity.Update exposing (updateChild, updateMother)
 
 import Activity.Model exposing (ChildActivity(..), CompletedAndPending)
 import Activity.Utils
+import App.Ports exposing (bindDropZone)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (MeasurementData, MotherMeasurements)
@@ -98,6 +99,15 @@ updateChild currentDate msg model session activity childForm =
 
         SetSelectedTab val ->
             let
+                cmd =
+                    -- When switching tabs at ChildPicture activity, bind
+                    -- DropZone to be able to take pictures.
+                    if activity == ChildPicture then
+                        bindDropZone ()
+
+                    else
+                        Cmd.none
+
                 outMsg =
                     if List.member activity [ Height, Muac, Weight ] |> not then
                         Nothing
@@ -116,7 +126,7 @@ updateChild currentDate msg model session activity childForm =
             in
             ChildUpdateReturns
                 { model | selectedTab = val }
-                Cmd.none
+                cmd
                 Nothing
                 outMsg
                 Nothing

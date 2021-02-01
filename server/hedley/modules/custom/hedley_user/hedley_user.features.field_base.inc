@@ -194,6 +194,31 @@ function hedley_user_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_sync_phase'.
+  $field_bases['field_sync_phase'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_sync_phase',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'sync-start' => 'Sync start',
+        'sync-end' => 'Sync end',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_total_to_upload'.
   $field_bases['field_total_to_upload'] = array(
     'active' => 1,
