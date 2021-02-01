@@ -1014,6 +1014,8 @@ function hedley_person_create_pmtct_participant($child_id, $adult_id, $relation,
  *
  * @param string $type
  *   Node bundle.
+ * @param int $author_id
+ *   Optional; The ID of node author. Defaults to global user ID.
  *
  * @return object
  *   Neely created node.
@@ -1021,14 +1023,17 @@ function hedley_person_create_pmtct_participant($child_id, $adult_id, $relation,
  * @throws \Exception
  *   In case Save operation fails.
  */
-function hedley_person_create_basic_node($type) {
-  global $user;
+function hedley_person_create_basic_node($type, $author_id = FALSE) {
+  if (empty($author_id)) {
+    global $user;
+    $author_id = $user->uid;
+  }
 
   $node = new stdClass();
   $node->type = $type;
   node_object_prepare($node);
   $node->language = LANGUAGE_NONE;
-  $node->uid = $user->uid;
+  $node->uid = $author_id;
   $node->status = 1;
   // Mark node as imported, to be able to identify it at hook_insert().
   $node->imported = 1;

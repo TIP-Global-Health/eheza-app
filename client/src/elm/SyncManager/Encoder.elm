@@ -3,6 +3,7 @@ module SyncManager.Encoder exposing
     , encodeDeviceSatateReport
     , encodeIndexDbQueryUploadAuthorityResultRecord
     , encodeIndexDbQueryUploadGeneralResultRecord
+    , encodeSyncIncident
     )
 
 import AssocList as Dict
@@ -11,7 +12,16 @@ import Backend.Person.Encoder
 import Json.Encode exposing (Value, int, list, null, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Maybe.Extra exposing (isJust)
-import SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntityIdentifier, BackendGeneralEntity(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadGeneralResultRecord, UploadMethod(..))
+import SyncManager.Model
+    exposing
+        ( BackendAuthorityEntity(..)
+        , BackendEntityIdentifier
+        , BackendGeneralEntity(..)
+        , IndexDbQueryUploadAuthorityResultRecord
+        , IndexDbQueryUploadGeneralResultRecord
+        , SyncIncidentType(..)
+        , UploadMethod(..)
+        )
 import SyncManager.Utils
 
 
@@ -136,6 +146,20 @@ encodeDeviceSatateReport version phase totalToUpload syncedAutorities =
     , ( "total_to_upload", int totalToUpload )
     , ( "synced_authorities", list string syncedAutorities )
     ]
+
+
+encodeSyncIncident : SyncIncidentType -> List ( String, Value )
+encodeSyncIncident incidentType =
+    case incidentType of
+        FileUploadIncident identifier ->
+            [ ( "incident_type", string "file-upload" )
+            , ( "content_identifier", string identifier )
+            ]
+
+        ContentUploadIncident identifier ->
+            [ ( "incident_type", string "content-upload" )
+            , ( "content_identifier", string identifier )
+            ]
 
 
 encodeUploadMethod : UploadMethod -> Value
