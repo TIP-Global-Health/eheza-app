@@ -2242,7 +2242,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
                     measurements.treatmentOngoing
                         |> Maybe.map (Tuple.second >> .value)
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
-                        |> viewOngoingTreatmentReviewForm language currentDate measurements
+                        |> viewOngoingTreatmentReviewForm language currentDate SetTotalMissedDoses measurements
 
         actions =
             let
@@ -2273,8 +2273,8 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
     ]
 
 
-viewOngoingTreatmentReviewForm : Language -> NominalDate -> AcuteIllnessMeasurements -> OngoingTreatmentReviewForm -> Html Msg
-viewOngoingTreatmentReviewForm language currentDate measurements form =
+viewOngoingTreatmentReviewForm : Language -> NominalDate -> (String -> Msg) -> AcuteIllnessMeasurements -> OngoingTreatmentReviewForm -> Html Msg
+viewOngoingTreatmentReviewForm language currentDate setMissedDose measurements form =
     let
         takenAsPrescribedUpdateFunc value form_ =
             if value then
@@ -2342,17 +2342,35 @@ viewOngoingTreatmentReviewForm language currentDate measurements form =
 
                 totalMissedDosesInput =
                     if missedDoses then
+                        let
+                            selectMissedDoseInput =
+                                option
+                                    [ value ""
+                                    , selected (form.totalMissedDoses == Nothing)
+                                    ]
+                                    [ text "" ]
+                                    :: (List.repeat 22 ""
+                                            |> List.indexedMap
+                                                (\index _ ->
+                                                    let
+                                                        indexAsString =
+                                                            String.fromInt index
+                                                    in
+                                                    option
+                                                        [ value indexAsString
+                                                        , selected (form.totalMissedDoses == Just index)
+                                                        ]
+                                                        [ text indexAsString ]
+                                                )
+                                       )
+                                    |> select [ onInput setMissedDose ]
+                        in
                         [ div [ class "ui grid" ]
                             [ div [ class "one wide column" ] []
                             , div [ class "four wide column" ]
                                 [ viewQuestionLabel language Translate.HowManyDose ]
                             , div [ class "four wide column" ]
-                                [ viewNumberInput language
-                                    form.totalMissedDoses
-                                    String.fromInt
-                                    SetTotalMissedDoses
-                                    "total-missed-doses"
-                                ]
+                                [ selectMissedDoseInput ]
                             ]
                         ]
 
