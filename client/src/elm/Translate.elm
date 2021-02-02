@@ -1304,7 +1304,7 @@ translationSet trans =
 
         Administered ->
             { english = "Administered"
-            , kinyarwanda = Just "Umuti watanzwe"
+            , kinyarwanda = Just "Umuti watanzwe:"
             }
 
         AdministeredMedicationQuestion ->
