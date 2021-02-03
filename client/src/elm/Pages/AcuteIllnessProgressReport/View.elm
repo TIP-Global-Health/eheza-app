@@ -24,8 +24,7 @@ import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.AcuteIllnessEncounter.Utils
     exposing
-        ( acuteIllnessDiagnosisToMaybe
-        , dangerSignPresentOnSubsequentVisit
+        ( dangerSignPresentOnSubsequentVisit
         , generateAssembledData
         , muacRedOnSubsequentVisit
         , noImprovementOnSubsequentVisit
@@ -106,6 +105,9 @@ viewContent language currentDate id model data =
 
             else
                 Nothing
+
+        diagnosis =
+            Maybe.map Tuple.second data.diagnosis
     in
     div [ class "page-report acute-illness" ]
         [ div
@@ -116,7 +118,7 @@ viewContent language currentDate id model data =
             , viewSymptomsPane language currentDate isFirstEncounter firstEncounterData
             , viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data
             , viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData data
-            , viewEndEncounterButton language isFirstEncounter data.measurements pendingActivities data.diagnosis SetEndEncounterDialogState
+            , viewEndEncounterButton language isFirstEncounter data.measurements pendingActivities diagnosis SetEndEncounterDialogState
             ]
         , viewModal endEncounterDialog
         ]
@@ -208,7 +210,7 @@ viewAssessmentPane :
 viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subsequentEncountersData data =
     let
         assessment =
-            data.diagnosis
+            Maybe.map Tuple.second data.diagnosis
                 |> Maybe.map
                     (\diagnosis ->
                         let
@@ -787,7 +789,11 @@ viewActionsTakenPane language currentDate firstEncounterData subsequentEncounter
                                 viewActionsTakenIsolationAndContactHC language date measurements
 
                             Just NextStepsMedicationDistribution ->
-                                viewActionsTakenMedicationDistribution language date data.person data.diagnosis measurements
+                                let
+                                    diagnosis =
+                                        Maybe.map Tuple.second data.diagnosis
+                                in
+                                viewActionsTakenMedicationDistribution language date data.person diagnosis measurements
 
                             Just NextStepsSendToHC ->
                                 viewActionsTakenSendToHC language date measurements

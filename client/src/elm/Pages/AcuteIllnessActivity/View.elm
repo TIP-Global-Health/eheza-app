@@ -69,7 +69,7 @@ viewHeaderAndContent language currentDate id activity model data =
             List.isEmpty data.previousMeasurementsWithDates
     in
     div [ class "page-activity acute-illness" ]
-        [ viewHeader language id activity data.diagnosis
+        [ viewHeader language id activity <| Maybe.map Tuple.second data.diagnosis
         , viewContent language currentDate id activity model data
         , viewModal <|
             warningPopup language
@@ -379,7 +379,7 @@ viewActivity language currentDate id activity data model =
             data.measurements
 
         diagnosis =
-            data.diagnosis
+            Maybe.map Tuple.second data.diagnosis
 
         isFirstEncounter =
             List.isEmpty data.previousMeasurementsWithDates
@@ -1449,7 +1449,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
             assembled.measurements
 
         diagnosis =
-            assembled.diagnosis
+            Maybe.map Tuple.second assembled.diagnosis
 
         activity =
             AcuteIllnessNextSteps
