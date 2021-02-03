@@ -798,6 +798,7 @@ type MedicationNonAdministrationReason
     = NonAdministrationLackOfStock
     | NonAdministrationKnownAllergy
     | NonAdministrationPatientDeclined
+    | NonAdministrationPatientUnableToAfford
     | NonAdministrationOther
 
 

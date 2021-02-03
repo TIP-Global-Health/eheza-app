@@ -4052,6 +4052,11 @@ translationSet trans =
                     , kinyarwanda = Just "Umurwayi yanze"
                     }
 
+                NonAdministrationPatientUnableToAfford ->
+                    { english = "Patient unable to afford"
+                    , kinyarwanda = Nothing
+                    }
+
                 NonAdministrationOther ->
                     { english = "Other"
                     , kinyarwanda = Just "Ibindi"

@@ -1989,8 +1989,8 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                     in
                     [ viewQuestionLabel language Translate.WhyNot
                     , viewCheckBoxSelectInput language
-                        [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy ]
-                        [ NonAdministrationPatientDeclined, NonAdministrationOther ]
+                        [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientDeclined ]
+                        [ NonAdministrationPatientUnableToAfford, NonAdministrationOther ]
                         currentValue
                         (SetMedicationDistributionMedicationNonAdministrationReason currentValue medication)
                         Translate.MedicationNonAdministrationReason
