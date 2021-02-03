@@ -210,16 +210,16 @@ viewAssessmentPane :
 viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subsequentEncountersData data =
     let
         assessment =
-            Maybe.map Tuple.second data.diagnosis
+            data.diagnosis
                 |> Maybe.map
-                    (\diagnosis ->
+                    (\( date, diagnosis ) ->
                         let
                             diagnosisText =
                                 text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis
 
-                            ( diagnosisSuffix, additionalObservations ) =
+                            ( diagnosisSuffix, additionalObservations, diagnosisDate ) =
                                 if isFirstEncounter then
-                                    ( [], [] )
+                                    ( [], [], emptyNode )
 
                                 else
                                     let
@@ -255,17 +255,35 @@ viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subs
                                       , severeAcuteMalnutrition
                                       , malnutritionWithComplications
                                       ]
+                                    , p [ class "diagnosis-date" ] [ text <| formatDDMMYY date ++ ":" ]
                                     )
+
+                            currentDiagnosisHtml =
+                                div [ class "diagnosis" ] <|
+                                    [ diagnosisDate
+                                    , p [] <| diagnosisText :: diagnosisSuffix
+                                    ]
+                                        ++ additionalObservations
+
+                            previousDiagnosisHtml =
+                                data.previousDiagnosis
+                                    |> Maybe.map
+                                        (\( datePrevious, previousDiagnosis ) ->
+                                            div [ class "diagnosis" ]
+                                                [ p [ class "diagnosis-date" ] [ text <| formatDDMMYY datePrevious ++ ":" ]
+                                                , p [] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning previousDiagnosis ]
+                                                ]
+                                        )
+                                    |> Maybe.withDefault emptyNode
                         in
-                        ((p [] <| diagnosisText :: diagnosisSuffix) :: additionalObservations)
-                            |> div [ class "diagnosis" ]
+                        [ previousDiagnosisHtml, currentDiagnosisHtml ]
                     )
-                |> Maybe.withDefault emptyNode
+                |> Maybe.withDefault []
     in
     div [ class "pane assessment" ]
         [ viewItemHeading language Translate.Assessment "blue"
         , assessment
-            :: viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subsequentEncountersData
+            ++ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subsequentEncountersData
             |> div [ class "pane-content" ]
         ]
 
