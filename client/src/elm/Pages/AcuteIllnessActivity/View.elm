@@ -1,4 +1,12 @@
-module Pages.AcuteIllnessActivity.View exposing (view, viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
+module Pages.AcuteIllnessActivity.View exposing
+    ( renderDatePart
+    , view
+    , viewAdministeredMedicationLabel
+    , viewHCRecommendation
+    , viewOralSolutionPrescription
+    , viewSendToHCActionLabel
+    , viewTabletsPrescription
+    )
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
