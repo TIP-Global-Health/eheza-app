@@ -2274,7 +2274,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
 
 
 viewOngoingTreatmentReviewForm : Language -> NominalDate -> (String -> Msg) -> AcuteIllnessMeasurements -> OngoingTreatmentReviewForm -> Html Msg
-viewOngoingTreatmentReviewForm language currentDate setMissedDoseMsg measurements form =
+viewOngoingTreatmentReviewForm language currentDate setMissedDosesMsg measurements form =
     let
         takenAsPrescribedUpdateFunc value form_ =
             if value then
@@ -2363,7 +2363,7 @@ viewOngoingTreatmentReviewForm language currentDate setMissedDoseMsg measurement
                                                         [ text indexAsString ]
                                                 )
                                        )
-                                    |> select [ onInput setMissedDoseMsg ]
+                                    |> select [ onInput setMissedDosesMsg ]
                         in
                         [ div [ class "ui grid" ]
                             [ div [ class "one wide column" ] []
