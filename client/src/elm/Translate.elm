@@ -595,7 +595,6 @@ type TranslationId
     | Normal
     | NoChildrenRegisteredInTheSystem
     | NoParticipantsFound
-    | NotAdministered
     | NotAvailable
     | NotConnected
     | NumberOfAbortions
@@ -690,6 +689,7 @@ type TranslationId
     | ReceivedMosquitoNet
     | Recommendation114 Recommendation114
     | RecommendationSite RecommendationSite
+    | RecommendedButNotGivenDueTo
     | RecordAcuteIllnessOutcome
     | RecordPregnancyOutcome
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
@@ -4052,6 +4052,11 @@ translationSet trans =
                     , kinyarwanda = Just "Umurwayi yanze"
                     }
 
+                NonAdministrationPatientUnableToAfford ->
+                    { english = "Patient unable to afford"
+                    , kinyarwanda = Nothing
+                    }
+
                 NonAdministrationOther ->
                     { english = "Other"
                     , kinyarwanda = Just "Ibindi"
@@ -4090,11 +4095,6 @@ translationSet trans =
         NoParticipantsFound ->
             { english = "No participants found"
             , kinyarwanda = Just "Ntamuntu ugaragaye"
-            }
-
-        NotAdministered ->
-            { english = "Not administered"
-            , kinyarwanda = Nothing
             }
 
         NotAvailable ->
@@ -4887,6 +4887,11 @@ translationSet trans =
                     { english = "Not Applicable"
                     , kinyarwanda = Just "Ibi ntibikorwa"
                     }
+
+        RecommendedButNotGivenDueTo ->
+            { english = "recommended but not given due to"
+            , kinyarwanda = Nothing
+            }
 
         RecordAcuteIllnessOutcome ->
             { english = "Record Acute Illness Outcome"

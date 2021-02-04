@@ -20,7 +20,7 @@ import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isNothing)
 import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
-import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
+import Pages.AcuteIllnessActivity.View exposing (renderDatePart, viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.AcuteIllnessEncounter.Utils
     exposing
@@ -953,9 +953,7 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
                 resolveNonAdministrationReason Coartem
                     |> Maybe.map
                         (\reason ->
-                            [ viewAdministeredMedicationLabel language Translate.NotAdministered (Translate.MedicationDistributionSign Coartem) "icon-pills" (Just date)
-                            , viewNonAdministrationReason language reason
-                            ]
+                            [ viewNonAdministrationReason language (Translate.MedicationDistributionSign Coartem) "icon-pills" (Just date) reason ]
                         )
                     |> Maybe.withDefault []
 
@@ -980,9 +978,7 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
                         resolveNonAdministrationReason ORS
                             |> Maybe.map
                                 (\reason ->
-                                    [ viewAdministeredMedicationLabel language Translate.NotAdministered (Translate.MedicationDistributionSign ORS) "icon-oral-solution" (Just date)
-                                    , viewNonAdministrationReason language reason
-                                    ]
+                                    [ viewNonAdministrationReason language (Translate.MedicationDistributionSign ORS) "icon-oral-solution" (Just date) reason ]
                                 )
                             |> Maybe.withDefault []
 
@@ -1005,9 +1001,7 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
                         resolveNonAdministrationReason Zinc
                             |> Maybe.map
                                 (\reason ->
-                                    [ viewAdministeredMedicationLabel language Translate.NotAdministered (Translate.MedicationDistributionSign Zinc) "icon-pills" (Just date)
-                                    , viewNonAdministrationReason language reason
-                                    ]
+                                    [ viewNonAdministrationReason language (Translate.MedicationDistributionSign Zinc) "icon-pills" (Just date) reason ]
                                 )
                             |> Maybe.withDefault []
             in
@@ -1036,9 +1030,7 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
                 resolveNonAdministrationReason Amoxicillin
                     |> Maybe.map
                         (\reason ->
-                            [ viewAdministeredMedicationLabel language Translate.NotAdministered (Translate.MedicationDistributionSign Amoxicillin) "icon-pills" (Just date)
-                            , viewNonAdministrationReason language reason
-                            ]
+                            [ viewNonAdministrationReason language (Translate.MedicationDistributionSign Amoxicillin) "icon-pills" (Just date) reason ]
                         )
                     |> Maybe.withDefault []
 
@@ -1046,10 +1038,29 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
             []
 
 
-viewNonAdministrationReason : Language -> MedicationNonAdministrationReason -> Html any
-viewNonAdministrationReason language reason =
+viewNonAdministrationReaso1 : Language -> MedicationNonAdministrationReason -> Html any
+viewNonAdministrationReaso1 language reason =
     div [ class "non-administration-reason" ]
         [ text <| translate language <| Translate.MedicationNonAdministrationReason reason ]
+
+
+viewNonAdministrationReason : Language -> TranslationId -> String -> Maybe NominalDate -> MedicationNonAdministrationReason -> Html any
+viewNonAdministrationReason language medicineTranslationId iconClass maybeDate reason =
+    let
+        message =
+            div [] <|
+                [ span [ class "medicine" ] [ text <| translate language medicineTranslationId ]
+                , text " "
+                , text <| translate language <| Translate.RecommendedButNotGivenDueTo
+                , text ": "
+                , text <| translate language <| Translate.MedicationNonAdministrationReason reason
+                ]
+                    ++ renderDatePart language maybeDate
+    in
+    div [ class "header non-administration-reason" ] <|
+        [ i [ class iconClass ] []
+        , message
+        ]
 
 
 viewActionsTakenSendToHC : Language -> NominalDate -> AcuteIllnessMeasurements -> List (Html Msg)

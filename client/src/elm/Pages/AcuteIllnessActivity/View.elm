@@ -1,4 +1,12 @@
-module Pages.AcuteIllnessActivity.View exposing (view, viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
+module Pages.AcuteIllnessActivity.View exposing
+    ( renderDatePart
+    , view
+    , viewAdministeredMedicationLabel
+    , viewHCRecommendation
+    , viewOralSolutionPrescription
+    , viewSendToHCActionLabel
+    , viewTabletsPrescription
+    )
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -2013,7 +2021,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                     in
                     [ viewQuestionLabel language Translate.WhyNot
                     , viewCheckBoxSelectInput language
-                        [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy ]
+                        [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
                         [ NonAdministrationPatientDeclined, NonAdministrationOther ]
                         currentValue
                         (SetMedicationDistributionMedicationNonAdministrationReason currentValue medication)
