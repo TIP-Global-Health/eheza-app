@@ -819,6 +819,7 @@ type TranslationId
     | TermPregnancy
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
+    | To
     | ToThePatient
     | Training
     | TrainingGroupEncounterCreateSuccessMessage
@@ -5896,6 +5897,11 @@ translationSet trans =
         ThisGroupHasNoMothers ->
             { english = "This Group has no mothers assigned to it."
             , kinyarwanda = Just "Iki cyiciro nta mubyeyi cyagenewe."
+            }
+
+        To ->
+            { english = " to "
+            , kinyarwanda = Just " kuri "
             }
 
         ToThePatient ->
