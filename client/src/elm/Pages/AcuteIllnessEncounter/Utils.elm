@@ -889,28 +889,40 @@ feverAtPhysicalExam measurements =
 
 respiratoryRateElevated : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
 respiratoryRateElevated currentDate person measurements =
-    Maybe.map2
-        (\measurement ageMonths ->
+    Maybe.map
+        (\measurement ->
             let
+                maybeAgeMonths =
+                    ageInMonths currentDate person
+
                 respiratoryRate =
                     Tuple.second measurement
                         |> .value
                         |> .respiratoryRate
             in
-            if ageMonths < 12 then
-                respiratoryRate >= 50
-
-            else if ageMonths < 60 then
-                respiratoryRate >= 40
-
-            else if ageMonths < 144 then
-                respiratoryRate >= 35
-
-            else
-                respiratoryRate >= 30
+            respiratoryRateElevatedForAge maybeAgeMonths respiratoryRate
         )
         measurements.vitals
-        (ageInMonths currentDate person)
+        |> Maybe.withDefault False
+
+
+respiratoryRateElevatedForAge : Maybe Int -> Int -> Bool
+respiratoryRateElevatedForAge maybeAgeMonths rate =
+    maybeAgeMonths
+        |> Maybe.map
+            (\ageMonths ->
+                if ageMonths < 12 then
+                    rate >= 50
+
+                else if ageMonths < 60 then
+                    rate >= 40
+
+                else if ageMonths < 144 then
+                    rate >= 35
+
+                else
+                    rate >= 30
+            )
         |> Maybe.withDefault False
 
 
