@@ -263,7 +263,7 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
             else
                 -- No improvement, without danger signs.
                 noImprovementOnSubsequentVisitWithoutDangerSigns currentDate person measurements
-                    && -- No improvement, with danger signs, and diagnosis is not Covid19.
+                    || -- No improvement, with danger signs, and diagnosis is not Covid19.
                        (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && diagnosis /= Just DiagnosisCovid19)
                     || -- No improvement, with danger signs, diagnosis is Covid19, and HC recomended to send patient over.
                        (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements
