@@ -2160,7 +2160,7 @@ viewAdministeredMedicationLabel language administerTranslationId medicineTransla
     div [ class "header" ] <|
         [ i [ class iconClass ] []
         , text <| translate language administerTranslationId
-        , text " "
+        , text ": "
         , span [ class "medicine" ] [ text <| translate language medicineTranslationId ]
         ]
             ++ renderDatePart language maybeDate
