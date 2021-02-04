@@ -2368,7 +2368,7 @@ viewOngoingTreatmentReviewForm language currentDate setMissedDosesMsg measuremen
                         [ div [ class "ui grid" ]
                             [ div [ class "one wide column" ] []
                             , div [ class "four wide column" ]
-                                [ viewQuestionLabel language Translate.HowManyDose ]
+                                [ viewQuestionLabel language Translate.HowManyDoses ]
                             , div [ class "four wide column" ]
                                 [ missedDosesInput ]
                             ]
