@@ -2274,7 +2274,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
 
 
 viewOngoingTreatmentReviewForm : Language -> NominalDate -> (String -> Msg) -> AcuteIllnessMeasurements -> OngoingTreatmentReviewForm -> Html Msg
-viewOngoingTreatmentReviewForm language currentDate setMissedDose measurements form =
+viewOngoingTreatmentReviewForm language currentDate setMissedDoseMsg measurements form =
     let
         takenAsPrescribedUpdateFunc value form_ =
             if value then
@@ -2343,7 +2343,7 @@ viewOngoingTreatmentReviewForm language currentDate setMissedDose measurements f
                 totalMissedDosesInput =
                     if missedDoses then
                         let
-                            selectMissedDoseInput =
+                            missedDosesInput =
                                 option
                                     [ value ""
                                     , selected (form.totalMissedDoses == Nothing)
@@ -2363,14 +2363,14 @@ viewOngoingTreatmentReviewForm language currentDate setMissedDose measurements f
                                                         [ text indexAsString ]
                                                 )
                                        )
-                                    |> select [ onInput setMissedDose ]
+                                    |> select [ onInput setMissedDoseMsg ]
                         in
                         [ div [ class "ui grid" ]
                             [ div [ class "one wide column" ] []
                             , div [ class "four wide column" ]
                                 [ viewQuestionLabel language Translate.HowManyDose ]
                             , div [ class "four wide column" ]
-                                [ selectMissedDoseInput ]
+                                [ missedDosesInput ]
                             ]
                         ]
 
