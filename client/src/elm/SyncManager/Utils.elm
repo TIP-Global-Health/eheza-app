@@ -69,22 +69,46 @@ determineSyncStatus activePage model =
                 -- Cases are ordered by the cycle order.
                 case syncStatus of
                     SyncIdle ->
-                        ( SyncUploadPhotoAuthority RemoteData.NotAsked, syncInfoAuthorities )
+                        ( SyncUploadPhotoAuthority 0 RemoteData.NotAsked, syncInfoAuthorities )
 
-                    SyncUploadPhotoAuthority webData ->
+                    SyncUploadPhotoAuthority errorsCount webData ->
                         case webData of
                             RemoteData.Success maybeData ->
                                 case maybeData of
                                     Just data ->
-                                        -- We still have data.
-                                        noChange
+                                        -- We still have data. Reset errors counter to 0, since last upload was succesfull.
+                                        ( SyncUploadPhotoAuthority 0 webData, syncInfoAuthorities )
 
                                     Nothing ->
                                         -- No more photos to upload.
                                         ( SyncUploadGeneral emptyUploadRec, syncInfoAuthorities )
 
+                            RemoteData.Failure error ->
+                                let
+                                    handleNonNetworkError reason =
+                                        if errorsCount > fileUploadFailureThreshold then
+                                            -- Threshold exceeded - report an incident and stop current sync cycle.
+                                            ( SyncReportIncident (FileUploadIncident reason), syncInfoAuthorities )
+
+                                        else
+                                            -- Threshold not exceeded - increase counter and try uploading again.
+                                            ( SyncUploadPhotoAuthority (errorsCount + 1) webData, syncInfoAuthorities )
+                                in
+                                case error of
+                                    NetworkError _ ->
+                                        noChange
+
+                                    BadJson reason ->
+                                        handleNonNetworkError reason
+
+                                    UploadError reason ->
+                                        handleNonNetworkError reason
+
                             _ ->
                                 noChange
+
+                    SyncReportIncident _ ->
+                        ( SyncIdle, syncInfoAuthorities )
 
                     SyncUploadGeneral record ->
                         if record.indexDbRemoteData == RemoteData.Success Nothing then
@@ -1211,3 +1235,8 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityVitals identifier ->
             VitalsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+
+fileUploadFailureThreshold : Int
+fileUploadFailureThreshold =
+    5

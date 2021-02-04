@@ -6666,7 +6666,7 @@ translateHttpError error =
     case error of
         Http.NetworkError ->
             { english = "Something went wrong. Please refresh the page and try again. If problem persisits, please contact system administrator."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hari ikitagenze neza. Ongera ugerageze ukoraho, niba ikibazo gikomeje hamagara umuyobozi wa sisiteme."
             }
 
         Http.Timeout ->

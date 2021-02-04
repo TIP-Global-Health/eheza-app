@@ -64,7 +64,6 @@ viewDeviceStatus language device app model =
                 , div [ class "general-sync" ]
                     [ h2 [] [ text <| translate language Translate.SyncGeneral ]
                     , viewSyncInfo language app.syncManager.syncInfoGeneral
-                    , viewTotalEntriesToUpload language app.syncManager.totalEntriesToUpload
                     , viewPhotosTransferInfo language app.syncManager.syncStatus app.syncManager.downloadPhotosStatus
                     ]
                 , viewHealthCenters language app
@@ -146,23 +145,12 @@ viewSyncInfo language info =
         ]
 
 
-viewTotalEntriesToUpload : Language -> Maybe Int -> Html Msg
-viewTotalEntriesToUpload language maybeTotal =
-    let
-        total =
-            maybeTotal
-                |> Maybe.map String.fromInt
-                |> Maybe.withDefault (translate language Translate.NotAvailable)
-    in
-    div [ class "total-to-upload" ] [ text <| translate language Translate.RemainingTotalToUpload ++ ": " ++ total ]
-
-
 viewPhotosTransferInfo : Language -> SyncStatus -> DownloadPhotosStatus -> Html Msg
 viewPhotosTransferInfo language syncStatus status =
     let
         statusHtml =
             case syncStatus of
-                SyncUploadPhotoAuthority _ ->
+                SyncUploadPhotoAuthority _ _ ->
                     div [] [ text <| translate language Translate.Uploading ]
 
                 _ ->
