@@ -586,6 +586,7 @@ type TranslationId
     | NoActivitiesPendingForThisParticipant
     | NoGroupsFound
     | NoMatchesFound
+    | NotSentPatientToHCReason NotSentPatientToHCReason
     | MedicationNonAdministrationReason MedicationNonAdministrationReason
     | NoParticipantsPending
     | NoParticipantsPendingForThisActivity
@@ -4026,6 +4027,28 @@ translationSet trans =
             { english = "No matches found"
             , kinyarwanda = Nothing
             }
+
+        NotSentPatientToHCReason reason ->
+            case reason of
+                ClientRefused ->
+                    { english = "Client refused"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoAmbulance ->
+                    { english = "No ambulance available"
+                    , kinyarwanda = Nothing
+                    }
+
+                ClientUnableToAffordFees ->
+                    { english = "Client unable to afford fees"
+                    , kinyarwanda = Nothing
+                    }
+
+                NotSentPatientToHCOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
 
         MedicationNonAdministrationReason reason ->
             case reason of

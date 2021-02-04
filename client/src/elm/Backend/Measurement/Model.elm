@@ -823,6 +823,13 @@ type alias AcuteIllnessMuac =
     AcuteIllnessMeasurement MuacInCm
 
 
+type NotSentPatientToHCReason
+    = ClientRefused
+    | NoAmbulance
+    | ClientUnableToAffordFees
+    | NotSentPatientToHCOther
+
+
 type TreatmentOngoingSign
     = TakenAsPrescribed
     | MissedDoses
