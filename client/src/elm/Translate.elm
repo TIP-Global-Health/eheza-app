@@ -3171,7 +3171,7 @@ translationSet trans =
             }
 
         HowManyDose ->
-            { english = "How many Doses"
+            { english = "How many doses"
             , kinyarwanda = Just "Ingahe"
             }
 
