@@ -381,7 +381,9 @@ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subs
                                         , div [ class "treatment-comment" ]
                                             [ text "- "
                                             , text <| translate language <| Translate.AdverseEventSinglePlural <| List.length events
+                                            , text " "
                                             , text <| translate language <| Translate.To
+                                            , text " "
                                             , text medications
                                             , text ": "
                                             , text <| String.join ", " events

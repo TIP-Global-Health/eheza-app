@@ -5900,8 +5900,8 @@ translationSet trans =
             }
 
         To ->
-            { english = " to "
-            , kinyarwanda = Just " kuri "
+            { english = "to"
+            , kinyarwanda = Just "kuri"
             }
 
         ToThePatient ->
