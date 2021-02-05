@@ -348,7 +348,7 @@ emptyNextStepsData =
     { isolationForm = IsolationForm Nothing Nothing Nothing Nothing
     , hcContactForm = HCContactForm Nothing Nothing Nothing Nothing
     , call114Form = emptyCall114Form
-    , sendToHCForm = SendToHCForm Nothing Nothing
+    , sendToHCForm = SendToHCForm Nothing Nothing Nothing
     , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
     , healthEducationForm = HealthEducationForm Nothing
     , activeTask = Nothing
@@ -406,6 +406,7 @@ emptyCall114Form =
 type alias SendToHCForm =
     { handReferralForm : Maybe Bool
     , referToHealthCenter : Maybe Bool
+    , notReferredToHealthCenter : Maybe (EverySet NotSentPatientToHCReason)
     }
 
 

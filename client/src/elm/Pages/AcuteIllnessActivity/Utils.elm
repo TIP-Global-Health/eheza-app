@@ -1168,6 +1168,7 @@ fromSendToHCValue : Maybe (EverySet SendToHCSign) -> SendToHCForm
 fromSendToHCValue saved =
     { handReferralForm = Maybe.map (EverySet.member HandReferrerForm) saved
     , referToHealthCenter = Maybe.map (EverySet.member ReferToHealthCenter) saved
+    , notReferredToHealthCenter = Maybe.map (EverySet.member NotSentPatientToHCReason)
     }
 
 

@@ -1922,19 +1922,44 @@ viewCall114Form language currentDate measurements form =
 
 viewSendToHCForm : Language -> NominalDate -> SendToHCForm -> Html Msg
 viewSendToHCForm language currentDate form =
+    let
+        notSentToHCSection =
+            let
+                notSentToHCReason =
+                    form.referToHealthCenter
+                        |> Maybe.withDefault False
+
+                notSentToHCReasonInput =
+                    if notSentToHCReason then
+                        [ viewQuestionLabel language Translate.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, NotSentPatientToHCOther ]
+                            []
+                            form.notReferredToHealthCenter
+                            SetNotSentToHC
+                            Translate.NotSentPatientToHCReason
+                        ]
+
+                    else
+                        []
+            in
+            [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
+            , viewBoolInput
+                language
+                form.referToHealthCenter
+                SetReferToHealthCenter
+                "refer-to-hc"
+                Nothing
+            ]
+                ++ notSentToHCReasonInput
+    in
     div [ class "ui form send-to-hc" ]
         [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
         , div [ class "instructions" ]
             [ viewSendToHCActionLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
             , viewSendToHCActionLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
             ]
-        , viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
-        , viewBoolInput
-            language
-            form.referToHealthCenter
-            SetReferToHealthCenter
-            "refer-to-hc"
-            Nothing
+        , notSentToHCSection
         , viewQuestionLabel language Translate.HandedReferralFormQuestion
         , viewBoolInput
             language

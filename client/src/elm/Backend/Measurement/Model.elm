@@ -775,6 +775,12 @@ type alias Call114 =
     AcuteIllnessMeasurement Call114Value
 
 
+type alias SendToHCValue =
+    { signs : EverySet SendToHCSign
+    , notReferredToHealthCenter : EverySet NotSentPatientToHCReason
+    }
+
+
 type SendToHCSign
     = HandReferrerForm
     | ReferToHealthCenter
