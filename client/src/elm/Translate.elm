@@ -4097,7 +4097,7 @@ translationSet trans =
 
         NotTaken ->
             { english = "Not taken"
-            , kinywarwanda = Just "Nta bipimo byafashwe"
+            , kinyarwanda = Just "Nta bipimo byafashwe"
             }
 
         NumberOfAbortions ->
