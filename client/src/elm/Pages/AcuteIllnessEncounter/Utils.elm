@@ -917,9 +917,6 @@ respiratoryRateElevatedForAge maybeAgeMonths rate =
                 else if ageMonths < 60 then
                     rate >= 40
 
-                else if ageMonths < 144 then
-                    rate >= 35
-
                 else
                     rate >= 30
             )
