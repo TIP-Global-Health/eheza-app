@@ -76,6 +76,10 @@ viewContent language currentDate id model data =
             else
                 List.head data.previousMeasurementsWithDates
 
+        illnessBeganDate =
+            Maybe.map Tuple.first firstEncounterData
+                |> Maybe.withDefault currentDate
+
         subsequentEncountersData =
             if isFirstEncounter then
                 []
@@ -114,7 +118,7 @@ viewContent language currentDate id model data =
     div [ class "page-report acute-illness" ]
         [ div
             [ class "ui report unstackable items" ]
-            [ viewHeader language currentDate id
+            [ viewHeader language illnessBeganDate id
             , viewPersonInfo language currentDate data.person data.measurements
             , viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subsequentEncountersData data
             , viewSymptomsPane language currentDate isFirstEncounter firstEncounterData
@@ -127,7 +131,7 @@ viewContent language currentDate id model data =
 
 
 viewHeader : Language -> NominalDate -> AcuteIllnessEncounterId -> Html Msg
-viewHeader language currentDate id =
+viewHeader language date id =
     div [ class "report-header" ]
         [ a
             [ class "icon-back"
@@ -139,7 +143,7 @@ viewHeader language currentDate id =
         , p [ class "date" ]
             [ text <| translate language Translate.CurrentIllnessBegan
             , text " - "
-            , text <| renderDate language currentDate
+            , text <| renderDate language date
             ]
         ]
 
