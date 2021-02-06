@@ -63,6 +63,13 @@
           margin-right: 5px;
           width: 50px;
         }
+
+        &.icon-open-book {
+          background: url(#{$img-path}icon-open-book.svg) center center no-repeat;
+          background-size: 36px 36px;
+          height: 36px;
+          width: 52px;
+        }
       }
     }
 
