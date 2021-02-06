@@ -808,7 +808,7 @@ resolveNonCovid19AcuteIllnessDiagnosis currentDate person covid19ByPartialSet me
         else if respiratoryInfectionDangerSignsPresent measurements then
             Just DiagnosisRespiratoryInfectionComplicated
 
-        else if gastrointestinalInfectionDangerSignsPresent measurements then
+        else if gastrointestinalInfectionDangerSignsPresent False measurements then
             Just DiagnosisGastrointestinalInfectionComplicated
 
         else if respiratoryInfectionSymptomsPresent measurements then
@@ -856,7 +856,7 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements
                         if respiratoryInfectionDangerSignsPresent measurements then
                             Just DiagnosisRespiratoryInfectionComplicated
 
-                        else if nonBloodyDiarrheaAtSymptoms measurements then
+                        else if gastrointestinalInfectionDangerSignsPresent True measurements then
                             -- Fever with Diarrhea is considered to be a complicated case.
                             Just DiagnosisGastrointestinalInfectionComplicated
 
@@ -1109,8 +1109,8 @@ respiratoryInfectionDangerSignsPresent measurements =
         |> Maybe.withDefault False
 
 
-gastrointestinalInfectionDangerSignsPresent : AcuteIllnessMeasurements -> Bool
-gastrointestinalInfectionDangerSignsPresent measurements =
+gastrointestinalInfectionDangerSignsPresent : Bool -> AcuteIllnessMeasurements -> Bool
+gastrointestinalInfectionDangerSignsPresent fever measurements =
     Maybe.map
         (\symptomsGI ->
             let
@@ -1130,7 +1130,11 @@ gastrointestinalInfectionDangerSignsPresent measurements =
                     symptomAppearsAtSymptomsDict Vomiting symptomsGIDict
                         && EverySet.member IntractableVomiting symptomsGISet
             in
-            bloodyDiarrhea || (nonBloodyDiarrhea && intractableVomiting)
+            if fever then
+                bloodyDiarrhea || nonBloodyDiarrhea || intractableVomiting
+
+            else
+                bloodyDiarrhea || (nonBloodyDiarrhea && intractableVomiting)
         )
         measurements.symptomsGI
         |> Maybe.withDefault False
