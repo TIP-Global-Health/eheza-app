@@ -902,6 +902,16 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     , extraMsgs
                     )
 
+                [ TreatmentOngoingRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ IsolationRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
