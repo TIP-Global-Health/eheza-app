@@ -8,7 +8,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Gender(..), Person)
-import Backend.Person.Utils exposing (ageInYears, isChildUnderAgeOf5, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAnAdult)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
@@ -30,6 +30,7 @@ import Pages.AcuteIllnessEncounter.Utils
         , noImprovementOnSubsequentVisit
         , resolveNextStepFirstEncounter
         , respiratoryRateElevated
+        , respiratoryRateElevatedForAge
         )
 import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
 import Pages.AcuteIllnessProgressReport.Model exposing (..)
@@ -639,13 +640,16 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
             maybeRespiratoryRate
                 |> Maybe.map
                     (\respiratoryRate_ ->
-                        if respiratoryRate_ < 20 then
-                            td [] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
+                        if respiratoryRateElevatedForAge maybeAgeMonths respiratoryRate_ then
+                            td [ class "red" ] [ text <| translate language <| Translate.BpmUnit respiratoryRate_ ]
 
                         else
-                            td [ class "red" ] [ text <| translate language <| Translate.BpmUnit respiratoryRate_ ]
+                            td [] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
                     )
                 |> Maybe.withDefault (td [] [ text <| translate language Translate.NotTaken ])
+
+        maybeAgeMonths =
+            ageInMonths currentDate data.person
 
         viewMuacCell maybeMuac =
             maybeMuac
