@@ -48,5 +48,6 @@ type alias AssembledData =
     , person : Person
     , measurements : AcuteIllnessMeasurements
     , previousMeasurementsWithDates : List ( NominalDate, AcuteIllnessMeasurements )
-    , diagnosis : Maybe AcuteIllnessDiagnosis
+    , diagnosis : Maybe ( NominalDate, AcuteIllnessDiagnosis )
+    , previousDiagnosis : Maybe ( NominalDate, AcuteIllnessDiagnosis )
     }
