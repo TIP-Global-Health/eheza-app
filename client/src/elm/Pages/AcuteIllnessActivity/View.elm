@@ -1570,7 +1570,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
         tasksAfterSave =
             case activeTask of
                 -- On first visit, ContactHC task should appear in case nurse did not talk to 114.
-                -- Therefore, when the answer to 'called 114' is changed, we adjust tasks list accirdingly.
+                -- Therefore, when the answer to 'called 114' is changed, we adjust tasks list accordingly.
                 Just NextStepsCall114 ->
                     if isFirstEncounter then
                         let
@@ -1592,7 +1592,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                         tasks
 
                 -- At subsequent visit, SendToHC, task should appear in case health center adviced to send patient over.
-                -- Therefore, when the answer to this is changed, we adjust tasks list accirdingly.
+                -- Therefore, when the answer to this is changed, we adjust tasks list accordingly.
                 Just NextStepsContactHC ->
                     if isFirstEncounter then
                         tasks
