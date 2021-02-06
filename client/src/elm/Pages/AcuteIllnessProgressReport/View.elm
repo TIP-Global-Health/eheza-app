@@ -24,8 +24,7 @@ import Pages.AcuteIllnessActivity.View exposing (renderDatePart, viewAdministere
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.AcuteIllnessEncounter.Utils
     exposing
-        ( acuteIllnessDiagnosisToMaybe
-        , dangerSignPresentOnSubsequentVisit
+        ( dangerSignPresentOnSubsequentVisit
         , generateAssembledData
         , muacRedOnSubsequentVisit
         , noImprovementOnSubsequentVisit
@@ -107,6 +106,9 @@ viewContent language currentDate id model data =
 
             else
                 Nothing
+
+        diagnosis =
+            Maybe.map Tuple.second data.diagnosis
     in
     div [ class "page-report acute-illness" ]
         [ div
@@ -117,7 +119,7 @@ viewContent language currentDate id model data =
             , viewSymptomsPane language currentDate isFirstEncounter firstEncounterData
             , viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data
             , viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData data
-            , viewEndEncounterButton language isFirstEncounter data.measurements pendingActivities data.diagnosis SetEndEncounterDialogState
+            , viewEndEncounterButton language isFirstEncounter data.measurements pendingActivities diagnosis SetEndEncounterDialogState
             ]
         , viewModal endEncounterDialog
         ]
@@ -211,14 +213,14 @@ viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subs
         assessment =
             data.diagnosis
                 |> Maybe.map
-                    (\diagnosis ->
+                    (\( date, diagnosis ) ->
                         let
                             diagnosisText =
                                 text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis
 
-                            ( diagnosisSuffix, additionalObservations ) =
+                            ( diagnosisSuffix, additionalObservations, diagnosisDate ) =
                                 if isFirstEncounter then
-                                    ( [], [] )
+                                    ( [], [], emptyNode )
 
                                 else
                                     let
@@ -254,17 +256,35 @@ viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subs
                                       , severeAcuteMalnutrition
                                       , malnutritionWithComplications
                                       ]
+                                    , p [ class "diagnosis-date" ] [ text <| formatDDMMYY date ++ ":" ]
                                     )
+
+                            currentDiagnosisHtml =
+                                div [ class "diagnosis" ] <|
+                                    [ diagnosisDate
+                                    , p [] <| diagnosisText :: diagnosisSuffix
+                                    ]
+                                        ++ additionalObservations
+
+                            previousDiagnosisHtml =
+                                data.previousDiagnosis
+                                    |> Maybe.map
+                                        (\( datePrevious, previousDiagnosis ) ->
+                                            div [ class "diagnosis" ]
+                                                [ p [ class "diagnosis-date" ] [ text <| formatDDMMYY datePrevious ++ ":" ]
+                                                , p [] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning previousDiagnosis ]
+                                                ]
+                                        )
+                                    |> Maybe.withDefault emptyNode
                         in
-                        ((p [] <| diagnosisText :: diagnosisSuffix) :: additionalObservations)
-                            |> div [ class "diagnosis" ]
+                        [ previousDiagnosisHtml, currentDiagnosisHtml ]
                     )
-                |> Maybe.withDefault emptyNode
+                |> Maybe.withDefault []
     in
     div [ class "pane assessment" ]
         [ viewItemHeading language Translate.Assessment "blue"
         , assessment
-            :: viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subsequentEncountersData
+            ++ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subsequentEncountersData
             |> div [ class "pane-content" ]
         ]
 
@@ -382,6 +402,10 @@ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subs
                                         , div [ class "treatment-comment" ]
                                             [ text "- "
                                             , text <| translate language <| Translate.AdverseEventSinglePlural <| List.length events
+                                            , text " "
+                                            , text <| translate language <| Translate.To
+                                            , text " "
+                                            , text medications
                                             , text ": "
                                             , text <| String.join ", " events
                                             , text "."
@@ -610,7 +634,7 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                         else
                             td [ class "red" ] [ text <| String.fromFloat bodyTemperature_ ++ " " ++ translate language Translate.CelsiusAbbrev ]
                     )
-                |> Maybe.withDefault (td [] [])
+                |> Maybe.withDefault (td [] [ text <| translate language Translate.NotTaken ])
 
         viewRespiratoryRateCell maybeRespiratoryRate =
             maybeRespiratoryRate
@@ -622,7 +646,7 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                         else
                             td [ class "red" ] [ text <| translate language <| Translate.BpmUnit respiratoryRate_ ]
                     )
-                |> Maybe.withDefault (td [] [])
+                |> Maybe.withDefault (td [] [ text <| translate language Translate.NotTaken ])
 
         viewMuacCell maybeMuac =
             maybeMuac
@@ -642,7 +666,7 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                         in
                         td [ class muacColor ] [ text <| String.fromFloat muac_ ]
                     )
-                |> Maybe.withDefault (td [] [])
+                |> Maybe.withDefault (td [] [ text <| translate language Translate.NotTaken ])
 
         allEncountersData =
             firstEncounterData
@@ -693,12 +717,12 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                                     |> List.singleton
 
                             feverRow =
-                                td [ class "first" ] [ text <| translate language Translate.Fever ]
+                                td [ class "first" ] [ text <| translate language Translate.BodyTemperature ]
                                     :: List.map viewBodyTemperatureCell bodyTemperatures
                                     |> tr []
 
                             tachypneaRow =
-                                td [ class "first" ] [ text <| translate language Translate.Tachypnea ]
+                                td [ class "first" ] [ text <| translate language Translate.RespiratoryRate ]
                                     :: List.map viewRespiratoryRateCell respiratoryRates
                                     |> tr []
 
@@ -778,6 +802,9 @@ viewActionsTakenPane :
     -> Html Msg
 viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData data =
     let
+        diagnosis =
+            Maybe.map Tuple.second data.diagnosis
+
         actionsTakenFirstEncounter =
             firstEncounterData
                 |> Maybe.map
@@ -788,10 +815,10 @@ viewActionsTakenPane language currentDate firstEncounterData subsequentEncounter
                                 viewActionsTakenCovid19 language date measurements
 
                             Just NextStepsMedicationDistribution ->
-                                viewActionsTakenNonCovid19 language date data.person data.diagnosis measurements
+                                viewActionsTakenNonCovid19 language date data.person diagnosis measurements
 
                             Just NextStepsSendToHC ->
-                                viewActionsTakenNonCovid19 language date data.person data.diagnosis measurements
+                                viewActionsTakenNonCovid19 language date data.person diagnosis measurements
 
                             _ ->
                                 emptyNode
@@ -800,7 +827,7 @@ viewActionsTakenPane language currentDate firstEncounterData subsequentEncounter
 
         actionsTakenSubsequentEncounters =
             subsequentEncountersData
-                |> List.map (\( date, measurements ) -> viewActionsTakenNonCovid19 language date data.person data.diagnosis measurements)
+                |> List.map (\( date, measurements ) -> viewActionsTakenNonCovid19 language date data.person diagnosis measurements)
                 |> List.reverse
 
         content =

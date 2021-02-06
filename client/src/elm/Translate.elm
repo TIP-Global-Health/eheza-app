@@ -441,7 +441,6 @@ type TranslationId
     | FetalPresentationLabel
     | FetalPresentation FetalPresentation
     | Fetch
-    | Fever
     | FilterByName
     | FirstAntenatalVisit
     | FirstName
@@ -485,7 +484,7 @@ type TranslationId
     | HIVStatusLabel
     | Home
     | HouseholdSize
-    | HowMany
+    | HowManyDoses
     | HaveAnyOfTheFollowingQuestion
     | HttpError Http.Error
     | HypertensionBeforePregnancy
@@ -597,6 +596,7 @@ type TranslationId
     | NoParticipantsFound
     | NotAvailable
     | NotConnected
+    | NotTaken
     | NumberOfAbortions
     | NumberOfChildrenUnder5
     | NumberOfCSections
@@ -810,7 +810,6 @@ type TranslationId
     | SubmitPairingCode
     | Success
     | SyncGeneral
-    | Tachypnea
     | TabletSinglePlural String
     | TakenCareOfBy
     | TakingMedicationAsPrescribed Bool
@@ -820,6 +819,7 @@ type TranslationId
     | TermPregnancy
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
+    | To
     | ToThePatient
     | Training
     | TrainingGroupEncounterCreateSuccessMessage
@@ -2845,11 +2845,6 @@ translationSet trans =
             , kinyarwanda = Just "Gushakisha"
             }
 
-        Fever ->
-            { english = "Fever"
-            , kinyarwanda = Just "Umuriro"
-            }
-
         FilterByName ->
             { english = "Filter by name"
             , kinyarwanda = Just "Hitamo izina ryuwo ushaka"
@@ -3171,8 +3166,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        HowMany ->
-            { english = "How many"
+        HowManyDoses ->
+            { english = "How many doses"
             , kinyarwanda = Just "Ingahe"
             }
 
@@ -4105,6 +4100,11 @@ translationSet trans =
         NotConnected ->
             { english = "Not Connected"
             , kinyarwanda = Just "Ntamurandasi"
+            }
+
+        NotTaken ->
+            { english = "Not taken"
+            , kinyarwanda = Just "Nta bipimo byafashwe"
             }
 
         NumberOfAbortions ->
@@ -5847,11 +5847,6 @@ translationSet trans =
             , kinyarwanda = Just "Ibijyanye no guhuza amakuru yafashwe n'igikoresho cy'ikoranabuhanga n'abitse kuri seriveri"
             }
 
-        Tachypnea ->
-            { english = "Tachypnea (fast resp. rate)"
-            , kinyarwanda = Just "Guhumeka vuba vuba"
-            }
-
         TabletSinglePlural value ->
             if value == "1" then
                 { english = "1 tablet"
@@ -5907,6 +5902,11 @@ translationSet trans =
         ThisGroupHasNoMothers ->
             { english = "This Group has no mothers assigned to it."
             , kinyarwanda = Just "Iki cyiciro nta mubyeyi cyagenewe."
+            }
+
+        To ->
+            { english = "to"
+            , kinyarwanda = Just "kuri"
             }
 
         ToThePatient ->
@@ -7059,7 +7059,7 @@ translateHttpError error =
     case error of
         Http.NetworkError ->
             { english = "Something went wrong. Please refresh the page and try again. If problem persisits, please contact system administrator."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hari ikitagenze neza. Ongera ugerageze ukoraho, niba ikibazo gikomeje hamagara umuyobozi wa sisiteme."
             }
 
         Http.Timeout ->

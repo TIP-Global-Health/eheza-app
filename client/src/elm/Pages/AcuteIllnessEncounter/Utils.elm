@@ -39,7 +39,7 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, isNothing)
 import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..), NextStepsTask(..), PhysicalExamTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (expectPhysicalExamTask, symptomsGeneralDangerSigns)
 import Pages.AcuteIllnessEncounter.Model exposing (..)
@@ -89,26 +89,32 @@ generateAssembledData currentDate id db =
                 |> RemoteData.andMap measurements
                 |> RemoteData.andMap (Success previousMeasurementsWithDates)
                 |> RemoteData.andMap (Success Nothing)
+                |> RemoteData.andMap (Success Nothing)
 
-        diagnosis =
-            Maybe.Extra.orLazy diagnosisByCurrentEncounterMeasurements (\() -> diagnosisByPreviousEncounters)
+        ( currentDiagnosis, previousDiagnosis ) =
+            if isJust diagnosisByCurrentEncounterMeasurements then
+                ( diagnosisByCurrentEncounterMeasurements, currentByPreviousEncounters )
+
+            else
+                ( currentByPreviousEncounters, previousByPreviousEncounters )
 
         diagnosisByCurrentEncounterMeasurements =
             assembled
                 |> RemoteData.toMaybe
                 |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate)
+                |> Maybe.map (\diagnosis -> ( currentDate, diagnosis ))
 
-        diagnosisByPreviousEncounters =
+        ( currentByPreviousEncounters, previousByPreviousEncounters ) =
             encounter
                 |> RemoteData.toMaybe
-                |> Maybe.andThen
+                |> Maybe.map
                     (.participant
                         >> getAcuteIllnessDiagnosisByPreviousEncounters id db
-                        >> Maybe.andThen acuteIllnessDiagnosisToMaybe
                     )
+                |> Maybe.withDefault ( Nothing, Nothing )
     in
     assembled
-        |> RemoteData.map (\data -> { data | diagnosis = diagnosis })
+        |> RemoteData.map (\data -> { data | diagnosis = currentDiagnosis, previousDiagnosis = previousDiagnosis })
 
 
 generatePreviousMeasurements : AcuteIllnessEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, AcuteIllnessMeasurements ))
@@ -136,27 +142,44 @@ generatePreviousMeasurements currentEncounterId participantId db =
             )
 
 
-getAcuteIllnessDiagnosisByPreviousEncounters : AcuteIllnessEncounterId -> ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe AcuteIllnessDiagnosis
+getAcuteIllnessDiagnosisByPreviousEncounters :
+    AcuteIllnessEncounterId
+    -> ModelIndexedDb
+    -> IndividualEncounterParticipantId
+    -> ( Maybe ( NominalDate, AcuteIllnessDiagnosis ), Maybe ( NominalDate, AcuteIllnessDiagnosis ) )
 getAcuteIllnessDiagnosisByPreviousEncounters currentEncounterId db participantId =
-    Dict.get participantId db.acuteIllnessEncountersByParticipant
-        |> Maybe.withDefault NotAsked
-        |> RemoteData.toMaybe
-        |> Maybe.map Dict.toList
-        |> Maybe.andThen
-            (List.filterMap
-                (\( encounterId, encounter ) ->
-                    -- We do not want to get data of current encounter.
-                    if encounterId == currentEncounterId then
-                        Nothing
+    let
+        encountersWithDiagnosis =
+            Dict.get participantId db.acuteIllnessEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map Dict.toList
+                |> Maybe.map
+                    (List.filterMap
+                        (\( encounterId, encounter ) ->
+                            -- We do not want to get data of current encounter,
+                            -- and those that do not have diagnosis set.
+                            if encounterId == currentEncounterId || encounter.diagnosis == NoAcuteIllnessDiagnosis then
+                                Nothing
 
-                    else
-                        Just encounter
-                )
-                >> List.sortWith
-                    (\e1 e2 -> Gizra.NominalDate.compare e2.startDate e1.startDate)
-                >> List.head
-                >> Maybe.map .diagnosis
-            )
+                            else
+                                Just ( encounter.startDate, encounter.diagnosis )
+                        )
+                        >> List.sortWith (\( d1, _ ) ( d2, _ ) -> Gizra.NominalDate.compare d2 d1)
+                    )
+                |> Maybe.withDefault []
+    in
+    case encountersWithDiagnosis of
+        [ current ] ->
+            ( Just current, Nothing )
+
+        [ current, previous ] ->
+            ( Just current, Just previous )
+
+        -- Since it's not possible to have more than 2 diagnosis,
+        -- we get here when there're no diagnosis at all.
+        _ ->
+            ( Nothing, Nothing )
 
 
 {-| Since there can be multiple encounters, resolved diagnosis is the one
@@ -191,15 +214,19 @@ resolveNextStepSubsequentEncounter currentDate data =
 
 resolveNextStepsTasks : NominalDate -> Bool -> AssembledData -> List NextStepsTask
 resolveNextStepsTasks currentDate isFirstEncounter data =
+    let
+        diagnosis =
+            Maybe.map Tuple.second data.diagnosis
+    in
     if isFirstEncounter then
         -- The order is important. Do not change.
         [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
-            |> List.filter (expectNextStepsTaskFirstEncounter currentDate data.person data.diagnosis data.measurements)
+            |> List.filter (expectNextStepsTaskFirstEncounter currentDate data.person diagnosis data.measurements)
 
     else if mandatoryActivitiesCompletedSubsequentVisit currentDate data then
         -- The order is important. Do not change.
         [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsHealthEducation ]
-            |> List.filter (expectNextStepsTaskSubsequentEncounter currentDate data.person data.diagnosis data.measurements)
+            |> List.filter (expectNextStepsTaskSubsequentEncounter currentDate data.person diagnosis data.measurements)
 
     else
         []
@@ -320,12 +347,20 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
                        sendToHCDueToMedicationNonAdministration measurements
 
             else
+                -- No improvement, without danger signs.
                 noImprovementOnSubsequentVisitWithoutDangerSigns currentDate person measurements
-                    || (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && healthCenterRecommendedToCome measurements)
+                    || -- No improvement, with danger signs, and diagnosis is not Covid19.
+                       (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && diagnosis /= Just DiagnosisCovid19)
+                    || -- No improvement, with danger signs, diagnosis is Covid19, and HC recomended to send patient over.
+                       (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements
+                            && (diagnosis == Just DiagnosisCovid19)
+                            && healthCenterRecommendedToCome measurements
+                       )
 
         NextStepsContactHC ->
             not malariaDiagnosedAtCurrentEncounter
-                && noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements
+                && -- No improvement, with danger signs, and diagnosis is Covid19.
+                   (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && diagnosis == Just DiagnosisCovid19)
 
         NextStepsHealthEducation ->
             not malariaDiagnosedAtCurrentEncounter
@@ -528,7 +563,7 @@ activityCompleted currentDate isFirstEncounter data activity =
             data.measurements
 
         diagnosis =
-            data.diagnosis
+            Maybe.map Tuple.second data.diagnosis
     in
     case activity of
         AcuteIllnessSymptoms ->
@@ -1196,12 +1231,3 @@ symptomAppearsAtSymptomsDict symptom dict =
     Dict.get symptom dict
         |> Maybe.map ((<) 0)
         |> Maybe.withDefault False
-
-
-acuteIllnessDiagnosisToMaybe : AcuteIllnessDiagnosis -> Maybe AcuteIllnessDiagnosis
-acuteIllnessDiagnosisToMaybe diagnosis =
-    if diagnosis == NoAcuteIllnessDiagnosis then
-        Nothing
-
-    else
-        Just diagnosis

@@ -902,6 +902,16 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     , extraMsgs
                     )
 
+                [ TreatmentOngoingRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnose data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ IsolationRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -2169,10 +2179,10 @@ generateSuspectedDiagnosisMsgsFirstEncounter :
 generateSuspectedDiagnosisMsgsFirstEncounter currentDate id person assembledBefore assembledAfter =
     let
         diagnosisBeforeChange =
-            assembledBefore.diagnosis
+            Maybe.map Tuple.second assembledBefore.diagnosis
 
         diagnosisAfterChange =
-            assembledAfter.diagnosis
+            Maybe.map Tuple.second assembledAfter.diagnosis
 
         msgsForDiagnosisUpdate =
             case diagnosisAfterChange of
@@ -2232,11 +2242,12 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate data =
           App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage data.id AcuteIllnessNextSteps))
 
         -- Show warning popup with new diagnosis.
-        , Pages.AcuteIllnessActivity.Model.SetWarningPopupState data.diagnosis
+        , Maybe.map Tuple.second data.diagnosis
+            |> Pages.AcuteIllnessActivity.Model.SetWarningPopupState
             |> App.Model.MsgPageAcuteIllnessActivity data.id AcuteIllnessNextSteps
             |> App.Model.MsgLoggedIn
         , -- Set diagnosis for this encounter.
-          data.diagnosis
+          Maybe.map Tuple.second data.diagnosis
             |> Maybe.withDefault NoAcuteIllnessDiagnosis
             |> updateDiagnosisMsg data.id
         ]

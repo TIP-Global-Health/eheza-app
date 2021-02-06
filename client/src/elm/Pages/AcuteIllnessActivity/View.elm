@@ -77,7 +77,7 @@ viewHeaderAndContent language currentDate id activity model data =
             List.isEmpty data.previousMeasurementsWithDates
     in
     div [ class "page-activity acute-illness" ]
-        [ viewHeader language id activity data.diagnosis
+        [ viewHeader language id activity <| Maybe.map Tuple.second data.diagnosis
         , viewContent language currentDate id activity model data
         , viewModal <|
             warningPopup language
@@ -387,7 +387,7 @@ viewActivity language currentDate id activity data model =
             data.measurements
 
         diagnosis =
-            data.diagnosis
+            Maybe.map Tuple.second data.diagnosis
 
         isFirstEncounter =
             List.isEmpty data.previousMeasurementsWithDates
@@ -1457,7 +1457,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
             assembled.measurements
 
         diagnosis =
-            assembled.diagnosis
+            Maybe.map Tuple.second assembled.diagnosis
 
         activity =
             AcuteIllnessNextSteps
@@ -1578,7 +1578,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
         tasksAfterSave =
             case activeTask of
                 -- On first visit, ContactHC task should appear in case nurse did not talk to 114.
-                -- Therefore, when the answer to 'called 114' is changed, we adjust tasks list accirdingly.
+                -- Therefore, when the answer to 'called 114' is changed, we adjust tasks list accordingly.
                 Just NextStepsCall114 ->
                     if isFirstEncounter then
                         let
@@ -2200,7 +2200,7 @@ viewAdministeredMedicationLabel language administerTranslationId medicineTransla
     div [ class "header" ] <|
         [ i [ class iconClass ] []
         , text <| translate language administerTranslationId
-        , text " "
+        , text ": "
         , span [ class "medicine" ] [ text <| translate language medicineTranslationId ]
         ]
             ++ renderDatePart language maybeDate
@@ -2282,7 +2282,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
                     measurements.treatmentOngoing
                         |> Maybe.map (Tuple.second >> .value)
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
-                        |> viewOngoingTreatmentReviewForm language currentDate measurements
+                        |> viewOngoingTreatmentReviewForm language currentDate SetTotalMissedDoses measurements
 
         actions =
             let
@@ -2313,8 +2313,8 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
     ]
 
 
-viewOngoingTreatmentReviewForm : Language -> NominalDate -> AcuteIllnessMeasurements -> OngoingTreatmentReviewForm -> Html Msg
-viewOngoingTreatmentReviewForm language currentDate measurements form =
+viewOngoingTreatmentReviewForm : Language -> NominalDate -> (String -> Msg) -> AcuteIllnessMeasurements -> OngoingTreatmentReviewForm -> Html Msg
+viewOngoingTreatmentReviewForm language currentDate setMissedDosesMsg measurements form =
     let
         takenAsPrescribedUpdateFunc value form_ =
             if value then
@@ -2382,17 +2382,35 @@ viewOngoingTreatmentReviewForm language currentDate measurements form =
 
                 totalMissedDosesInput =
                     if missedDoses then
+                        let
+                            missedDosesInput =
+                                option
+                                    [ value ""
+                                    , selected (form.totalMissedDoses == Nothing)
+                                    ]
+                                    [ text "" ]
+                                    :: (List.repeat 22 ""
+                                            |> List.indexedMap
+                                                (\index _ ->
+                                                    let
+                                                        indexAsString =
+                                                            String.fromInt index
+                                                    in
+                                                    option
+                                                        [ value indexAsString
+                                                        , selected (form.totalMissedDoses == Just index)
+                                                        ]
+                                                        [ text indexAsString ]
+                                                )
+                                       )
+                                    |> select [ onInput setMissedDosesMsg ]
+                        in
                         [ div [ class "ui grid" ]
                             [ div [ class "one wide column" ] []
                             , div [ class "four wide column" ]
-                                [ viewQuestionLabel language Translate.HowMany ]
+                                [ viewQuestionLabel language Translate.HowManyDoses ]
                             , div [ class "four wide column" ]
-                                [ viewNumberInput language
-                                    form.totalMissedDoses
-                                    String.fromInt
-                                    SetTotalMissedDoses
-                                    "total-missed-doses"
-                                ]
+                                [ missedDosesInput ]
                             ]
                         ]
 
