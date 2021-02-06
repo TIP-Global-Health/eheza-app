@@ -609,7 +609,7 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                         else
                             td [ class "red" ] [ text <| String.fromFloat bodyTemperature_ ++ " " ++ translate language Translate.CelsiusAbbrev ]
                     )
-                |> Maybe.withDefault (td [] [])
+                |> Maybe.withDefault (td [] [ text <| translate language Translate.NotTaken ])
 
         viewRespiratoryRateCell maybeRespiratoryRate =
             maybeRespiratoryRate
@@ -621,7 +621,7 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                         else
                             td [ class "red" ] [ text <| translate language <| Translate.BpmUnit respiratoryRate_ ]
                     )
-                |> Maybe.withDefault (td [] [])
+                |> Maybe.withDefault (td [] [ text <| translate language Translate.NotTaken ])
 
         viewMuacCell maybeMuac =
             maybeMuac
@@ -641,7 +641,7 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                         in
                         td [ class muacColor ] [ text <| String.fromFloat muac_ ]
                     )
-                |> Maybe.withDefault (td [] [])
+                |> Maybe.withDefault (td [] [ text <| translate language Translate.NotTaken ])
 
         allEncountersData =
             firstEncounterData

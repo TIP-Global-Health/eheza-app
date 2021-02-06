@@ -596,6 +596,7 @@ type TranslationId
     | NoParticipantsFound
     | NotAvailable
     | NotConnected
+    | NotTaken
     | NumberOfAbortions
     | NumberOfChildrenUnder5
     | NumberOfCSections
@@ -4092,6 +4093,11 @@ translationSet trans =
         NotConnected ->
             { english = "Not Connected"
             , kinyarwanda = Just "Ntamurandasi"
+            }
+
+        NotTaken ->
+            { english = "Not taken"
+            , kinyarwanda = Just "Nta bipimo byafashwe"
             }
 
         NumberOfAbortions ->
