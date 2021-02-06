@@ -1333,7 +1333,7 @@ getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form =
         nonAdministrationSigns =
             form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
     in
-    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientDeclined, NonAdministrationOther ]
+    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientDeclined, NonAdministrationPatientUnableToAfford, NonAdministrationOther ]
         |> List.filterMap
             (\reason ->
                 if EverySet.member (reasonToSignFunc reason) nonAdministrationSigns then

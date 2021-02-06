@@ -52,7 +52,7 @@
           background: url(#{$img-path}icon-oral-solution.svg) center center no-repeat;
           background-size: 26px 32px;
           height: 32px;
-          margin-right: 22px;
+          margin-right: 27px;
           width: 32px;
         }
 
@@ -60,6 +60,7 @@
           background: url(#{$img-path}icon-pills.svg) center center no-repeat;
           background-size: 36px 50px;
           height: 36px;
+          margin-right: 5px;
           width: 50px;
         }
       }
@@ -67,6 +68,11 @@
 
     .prescription {
       margin-left: 54px;
+    }
+
+    .non-administration-reason {
+      align-items: center;
+      display: flex;
     }
   }
 }

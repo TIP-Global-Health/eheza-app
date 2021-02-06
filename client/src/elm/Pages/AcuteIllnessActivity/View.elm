@@ -1,4 +1,12 @@
-module Pages.AcuteIllnessActivity.View exposing (view, viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
+module Pages.AcuteIllnessActivity.View exposing
+    ( renderDatePart
+    , view
+    , viewAdministeredMedicationLabel
+    , viewHCRecommendation
+    , viewOralSolutionPrescription
+    , viewSendToHCActionLabel
+    , viewTabletsPrescription
+    )
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -1591,8 +1599,8 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                     else
                         tasks
 
-                -- At subsequent visit, SendToHC, task should appear in case health center adviced to send patient over.
-                -- Therefore, when the answer to this is changed, we adjust tasks list accordingly.
+                -- At subsequent visit, SendToHC task should appear in case health center adviced to send patient over.
+                -- Therefore, when the answer to this is changed, we adjust tasks list accirdingly.
                 Just NextStepsContactHC ->
                     if isFirstEncounter then
                         tasks
@@ -1612,6 +1620,38 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
 
                         else
                             tasks
+
+                -- If medication is prescribed, but it's out of stock, or partient
+                -- if alergic, SendToHC should appear, so that patient is dircted to the HC.
+                Just NextStepsMedicationDistribution ->
+                    let
+                        medicationDistributionForm =
+                            measurements.medicationDistribution
+                                |> Maybe.map (Tuple.second >> .value)
+                                |> medicationDistributionFormWithDefault data.medicationDistributionForm
+
+                        medicationOutOfStockOrPatientAlergic =
+                            medicationDistributionForm.nonAdministrationSigns
+                                |> Maybe.map
+                                    (\signs ->
+                                        [ MedicationAmoxicillin NonAdministrationLackOfStock
+                                        , MedicationAmoxicillin NonAdministrationKnownAllergy
+                                        , MedicationCoartem NonAdministrationLackOfStock
+                                        , MedicationCoartem NonAdministrationKnownAllergy
+                                        , MedicationORS NonAdministrationLackOfStock
+                                        , MedicationORS NonAdministrationKnownAllergy
+                                        , MedicationZinc NonAdministrationLackOfStock
+                                        , MedicationZinc NonAdministrationKnownAllergy
+                                        ]
+                                            |> List.any (\option -> EverySet.member option signs)
+                                    )
+                                |> Maybe.withDefault False
+                    in
+                    if medicationOutOfStockOrPatientAlergic then
+                        [ NextStepsMedicationDistribution, NextStepsSendToHC ]
+
+                    else
+                        [ NextStepsMedicationDistribution ]
 
                 _ ->
                     tasks
@@ -1981,7 +2021,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                     in
                     [ viewQuestionLabel language Translate.WhyNot
                     , viewCheckBoxSelectInput language
-                        [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy ]
+                        [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
                         [ NonAdministrationPatientDeclined, NonAdministrationOther ]
                         currentValue
                         (SetMedicationDistributionMedicationNonAdministrationReason currentValue medication)
