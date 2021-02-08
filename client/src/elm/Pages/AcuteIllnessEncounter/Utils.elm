@@ -73,7 +73,7 @@ generateAssembledData currentDate id db =
                             |> Maybe.withDefault NotAsked
                     )
 
-        previousMeasurementsWithDates =
+        previousEncountersData =
             encounter
                 |> RemoteData.andThen
                     (\encounter_ ->
@@ -87,7 +87,7 @@ generateAssembledData currentDate id db =
                 |> RemoteData.andMap participant
                 |> RemoteData.andMap person
                 |> RemoteData.andMap measurements
-                |> RemoteData.andMap (Success previousMeasurementsWithDates)
+                |> RemoteData.andMap (Success previousEncountersData)
                 |> RemoteData.andMap (Success Nothing)
                 |> RemoteData.andMap (Success Nothing)
 
@@ -117,7 +117,11 @@ generateAssembledData currentDate id db =
         |> RemoteData.map (\data -> { data | diagnosis = currentDiagnosis, previousDiagnosis = previousDiagnosis })
 
 
-generatePreviousMeasurements : AcuteIllnessEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, AcuteIllnessMeasurements ))
+generatePreviousMeasurements :
+    AcuteIllnessEncounterId
+    -> IndividualEncounterParticipantId
+    -> ModelIndexedDb
+    -> WebData (List ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements ))
 generatePreviousMeasurements currentEncounterId participantId db =
     Dict.get participantId db.acuteIllnessEncountersByParticipant
         |> Maybe.withDefault NotAsked
@@ -132,13 +136,13 @@ generatePreviousMeasurements currentEncounterId participantId db =
                         else
                             case Dict.get encounterId db.acuteIllnessMeasurements of
                                 Just (Success data) ->
-                                    Just ( encounter.startDate, data )
+                                    Just ( ( encounter.startDate, encounter.diagnosis ), data )
 
                                 _ ->
                                     Nothing
                     )
                 >> List.sortWith
-                    (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date1 date2)
+                    (\( ( date1, _ ), _ ) ( ( date2, _ ), _ ) -> Gizra.NominalDate.compare date1 date2)
             )
 
 
@@ -500,7 +504,7 @@ expectActivity currentDate isFirstEncounter data activity =
                 -- test positive to Malaria during previous encounters,
                 -- we want patient to take Malaria test.
                 feverRecorded data.measurements
-                    && (data.previousMeasurementsWithDates
+                    && (data.previousEncountersData
                             |> List.filter
                                 (Tuple.second
                                     >> .malariaTesting
@@ -520,7 +524,7 @@ expectActivity currentDate isFirstEncounter data activity =
 
             else
                 -- Show activity, if medication was perscribed at any of previous encounters.
-                data.previousMeasurementsWithDates
+                data.previousEncountersData
                     |> List.filterMap
                         (Tuple.second
                             >> .medicationDistribution
@@ -756,7 +760,7 @@ resolveAcuteIllnessDiagnosis : NominalDate -> AssembledData -> Maybe AcuteIllnes
 resolveAcuteIllnessDiagnosis currentDate data =
     let
         isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
+            List.isEmpty data.previousEncountersData
     in
     if isFirstEncounter then
         let
@@ -1022,7 +1026,7 @@ respiratoryRateElevatedForAge maybeAgeMonths rate =
                     rate >= 40
 
                 else
-                    rate >= 30
+                    rate > 30
             )
         |> Maybe.withDefault False
 

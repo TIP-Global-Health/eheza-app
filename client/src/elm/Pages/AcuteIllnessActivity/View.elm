@@ -74,7 +74,7 @@ viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Acu
 viewHeaderAndContent language currentDate id activity model data =
     let
         isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
+            List.isEmpty data.previousEncountersData
     in
     div [ class "page-activity acute-illness" ]
         [ viewHeader language id activity <| Maybe.map Tuple.second data.diagnosis
@@ -390,7 +390,7 @@ viewActivity language currentDate id activity data model =
             Maybe.map Tuple.second data.diagnosis
 
         isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
+            List.isEmpty data.previousEncountersData
     in
     case activity of
         AcuteIllnessSymptoms ->
