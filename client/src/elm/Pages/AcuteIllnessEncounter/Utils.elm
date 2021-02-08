@@ -117,7 +117,11 @@ generateAssembledData currentDate id db =
         |> RemoteData.map (\data -> { data | diagnosis = currentDiagnosis, previousDiagnosis = previousDiagnosis })
 
 
-generatePreviousMeasurements : AcuteIllnessEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, AcuteIllnessMeasurements ))
+generatePreviousMeasurements :
+    AcuteIllnessEncounterId
+    -> IndividualEncounterParticipantId
+    -> ModelIndexedDb
+    -> WebData (List ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements ))
 generatePreviousMeasurements currentEncounterId participantId db =
     Dict.get participantId db.acuteIllnessEncountersByParticipant
         |> Maybe.withDefault NotAsked
@@ -132,13 +136,13 @@ generatePreviousMeasurements currentEncounterId participantId db =
                         else
                             case Dict.get encounterId db.acuteIllnessMeasurements of
                                 Just (Success data) ->
-                                    Just ( encounter.startDate, data )
+                                    Just ( ( encounter.startDate, encounter.diagnosis ), data )
 
                                 _ ->
                                     Nothing
                     )
                 >> List.sortWith
-                    (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date1 date2)
+                    (\( ( date1, _ ), _ ) ( ( date2, _ ), _ ) -> Gizra.NominalDate.compare date1 date2)
             )
 
 

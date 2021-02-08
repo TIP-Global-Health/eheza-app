@@ -69,15 +69,19 @@ viewContent language currentDate id model data =
         isFirstEncounter =
             List.isEmpty data.previousMeasurementsWithDates
 
+        dateAndDiagnosis =
+            data.diagnosis
+                |> Maybe.withDefault ( currentDate, NoAcuteIllnessDiagnosis )
+
         firstEncounterData =
             if isFirstEncounter then
-                Just ( currentDate, data.measurements )
+                Just ( dateAndDiagnosis, data.measurements )
 
             else
                 List.head data.previousMeasurementsWithDates
 
         illnessBeganDate =
-            Maybe.map Tuple.first firstEncounterData
+            Maybe.map (Tuple.first >> Tuple.first) firstEncounterData
                 |> Maybe.withDefault currentDate
 
         subsequentEncountersData =
@@ -93,7 +97,7 @@ viewContent language currentDate id model data =
                                     data.previousMeasurementsWithDates
                                         |> List.filter (\( date, _ ) -> date /= firstEncounterDate)
                             in
-                            previousEncountersData ++ [ ( currentDate, data.measurements ) ]
+                            previousEncountersData ++ [ ( dateAndDiagnosis, data.measurements ) ]
                         )
                     |> Maybe.withDefault []
 
@@ -209,8 +213,8 @@ viewAssessmentPane :
     Language
     -> NominalDate
     -> Bool
-    -> Maybe ( NominalDate, AcuteIllnessMeasurements )
-    -> List ( NominalDate, AcuteIllnessMeasurements )
+    -> Maybe ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements )
+    -> List ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements )
     -> AssembledData
     -> Html Msg
 viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subsequentEncountersData data =
@@ -298,8 +302,8 @@ viewTreatmentSigns :
     Language
     -> NominalDate
     -> Bool
-    -> Maybe ( NominalDate, AcuteIllnessMeasurements )
-    -> List ( NominalDate, AcuteIllnessMeasurements )
+    -> Maybe ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements )
+    -> List ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements )
     -> List (Html Msg)
 viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subsequentEncountersData =
     firstEncounterData
@@ -432,7 +436,7 @@ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subs
                         subsequentEncountersData
                             |> List.reverse
                             |> List.map
-                                (\( date, subsequentEncounterMeasurements ) ->
+                                (\( ( date, _ ), subsequentEncounterMeasurements ) ->
                                     subsequentEncounterMeasurements.treatmentOngoing
                                         |> Maybe.map
                                             (Tuple.second
@@ -454,7 +458,7 @@ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subs
         |> Maybe.withDefault []
 
 
-viewSymptomsPane : Language -> NominalDate -> Bool -> Maybe ( NominalDate, AcuteIllnessMeasurements ) -> Html Msg
+viewSymptomsPane : Language -> NominalDate -> Bool -> Maybe ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements ) -> Html Msg
 viewSymptomsPane language currentDate isFirstEncounter firstEncounterData =
     let
         headingTransId =
@@ -467,7 +471,7 @@ viewSymptomsPane language currentDate isFirstEncounter firstEncounterData =
         symptomsTable =
             firstEncounterData
                 |> Maybe.map
-                    (\( firstEncounterDate, measurements ) ->
+                    (\( ( firstEncounterDate, _ ), measurements ) ->
                         let
                             symptomsMaxDuration getFunc measurement =
                                 measurement
@@ -620,8 +624,8 @@ viewTimeLineBottom =
 viewPhysicalExamPane :
     Language
     -> NominalDate
-    -> Maybe ( NominalDate, AcuteIllnessMeasurements )
-    -> List ( NominalDate, AcuteIllnessMeasurements )
+    -> Maybe ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements )
+    -> List ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements )
     -> AssembledData
     -> Html Msg
 viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data =
@@ -692,7 +696,7 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                         let
                             dates =
                                 groupOfFour
-                                    |> List.map Tuple.first
+                                    |> List.map (Tuple.first >> Tuple.first)
 
                             bodyTemperatures =
                                 groupOfFour
@@ -804,8 +808,8 @@ viewNutritionSigns language dateOfLastAssessment signs =
 viewActionsTakenPane :
     Language
     -> NominalDate
-    -> Maybe ( NominalDate, AcuteIllnessMeasurements )
-    -> List ( NominalDate, AcuteIllnessMeasurements )
+    -> Maybe ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements )
+    -> List ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements )
     -> AssembledData
     -> Html Msg
 viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData data =
@@ -816,17 +820,17 @@ viewActionsTakenPane language currentDate firstEncounterData subsequentEncounter
         actionsTakenFirstEncounter =
             firstEncounterData
                 |> Maybe.map
-                    (\( date, measurements ) ->
+                    (\( ( date, firstDiagnosis ), measurements ) ->
                         case resolveNextStepFirstEncounter date data of
                             -- This is COVID19 case
                             Just NextStepsIsolation ->
                                 viewActionsTakenCovid19 language date measurements
 
                             Just NextStepsMedicationDistribution ->
-                                viewActionsTakenNonCovid19 language date data.person diagnosis measurements
+                                viewActionsTakenNonCovid19 language date data.person firstDiagnosis measurements
 
                             Just NextStepsSendToHC ->
-                                viewActionsTakenNonCovid19 language date data.person diagnosis measurements
+                                viewActionsTakenNonCovid19 language date data.person firstDiagnosis measurements
 
                             _ ->
                                 emptyNode
@@ -835,7 +839,7 @@ viewActionsTakenPane language currentDate firstEncounterData subsequentEncounter
 
         actionsTakenSubsequentEncounters =
             subsequentEncountersData
-                |> List.map (\( date, measurements ) -> viewActionsTakenNonCovid19 language date data.person diagnosis measurements)
+                |> List.map (\( ( date, subsequentEncounterDiagnosis ), measurements ) -> viewActionsTakenNonCovid19 language date data.person subsequentEncounterDiagnosis measurements)
                 |> List.reverse
 
         content =
@@ -938,7 +942,7 @@ viewContacedHCAction language date measurements =
         |> Maybe.withDefault []
 
 
-viewActionsTakenNonCovid19 : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> Html Msg
+viewActionsTakenNonCovid19 : Language -> NominalDate -> Person -> AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> Html Msg
 viewActionsTakenNonCovid19 language date person diagnosis measurements =
     viewActionsTakenMedicationDistribution language date person diagnosis measurements
         ++ viewContacedHCAction language date measurements
@@ -946,7 +950,7 @@ viewActionsTakenNonCovid19 language date person diagnosis measurements =
         |> div [ class "encounter-actions" ]
 
 
-viewActionsTakenMedicationDistribution : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> List (Html Msg)
+viewActionsTakenMedicationDistribution : Language -> NominalDate -> Person -> AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> List (Html Msg)
 viewActionsTakenMedicationDistribution language date person diagnosis measurements =
     let
         distributionSigns =
@@ -968,7 +972,7 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
                 |> List.head
     in
     case diagnosis of
-        Just DiagnosisMalariaUncomplicated ->
+        DiagnosisMalariaUncomplicated ->
             let
                 coartemPrescribed =
                     Maybe.map (EverySet.member Coartem) distributionSigns
@@ -992,7 +996,7 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
                         )
                     |> Maybe.withDefault []
 
-        Just DiagnosisGastrointestinalInfectionUncomplicated ->
+        DiagnosisGastrointestinalInfectionUncomplicated ->
             let
                 orsPrescribed =
                     Maybe.map (EverySet.member ORS) distributionSigns
@@ -1042,10 +1046,10 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
             in
             orsAction ++ zincAction
 
-        Just DiagnosisSimpleColdAndCough ->
+        DiagnosisSimpleColdAndCough ->
             [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign LemonJuiceOrHoney) "icon-pills" (Just date) ]
 
-        Just DiagnosisRespiratoryInfectionUncomplicated ->
+        DiagnosisRespiratoryInfectionUncomplicated ->
             let
                 amoxicillinPrescribed =
                     Maybe.map (EverySet.member Amoxicillin) distributionSigns
