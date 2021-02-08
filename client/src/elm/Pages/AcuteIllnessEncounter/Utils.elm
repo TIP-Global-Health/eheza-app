@@ -1026,7 +1026,7 @@ respiratoryRateElevatedForAge maybeAgeMonths rate =
                     rate >= 40
 
                 else
-                    rate >= 30
+                    rate > 30
             )
         |> Maybe.withDefault False
 
