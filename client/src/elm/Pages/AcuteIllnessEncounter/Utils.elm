@@ -73,7 +73,7 @@ generateAssembledData currentDate id db =
                             |> Maybe.withDefault NotAsked
                     )
 
-        previousMeasurementsWithDates =
+        previousEncountersData =
             encounter
                 |> RemoteData.andThen
                     (\encounter_ ->
@@ -87,7 +87,7 @@ generateAssembledData currentDate id db =
                 |> RemoteData.andMap participant
                 |> RemoteData.andMap person
                 |> RemoteData.andMap measurements
-                |> RemoteData.andMap (Success previousMeasurementsWithDates)
+                |> RemoteData.andMap (Success previousEncountersData)
                 |> RemoteData.andMap (Success Nothing)
                 |> RemoteData.andMap (Success Nothing)
 
@@ -504,7 +504,7 @@ expectActivity currentDate isFirstEncounter data activity =
                 -- test positive to Malaria during previous encounters,
                 -- we want patient to take Malaria test.
                 feverRecorded data.measurements
-                    && (data.previousMeasurementsWithDates
+                    && (data.previousEncountersData
                             |> List.filter
                                 (Tuple.second
                                     >> .malariaTesting
@@ -524,7 +524,7 @@ expectActivity currentDate isFirstEncounter data activity =
 
             else
                 -- Show activity, if medication was perscribed at any of previous encounters.
-                data.previousMeasurementsWithDates
+                data.previousEncountersData
                     |> List.filterMap
                         (Tuple.second
                             >> .medicationDistribution
@@ -760,7 +760,7 @@ resolveAcuteIllnessDiagnosis : NominalDate -> AssembledData -> Maybe AcuteIllnes
 resolveAcuteIllnessDiagnosis currentDate data =
     let
         isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
+            List.isEmpty data.previousEncountersData
     in
     if isFirstEncounter then
         let

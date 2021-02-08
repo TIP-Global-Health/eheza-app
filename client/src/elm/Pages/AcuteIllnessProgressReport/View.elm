@@ -67,7 +67,7 @@ viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> Ass
 viewContent language currentDate id model data =
     let
         isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
+            List.isEmpty data.previousEncountersData
 
         dateAndDiagnosis =
             data.diagnosis
@@ -78,7 +78,7 @@ viewContent language currentDate id model data =
                 Just ( dateAndDiagnosis, data.measurements )
 
             else
-                List.head data.previousMeasurementsWithDates
+                List.head data.previousEncountersData
 
         illnessBeganDate =
             Maybe.map (Tuple.first >> Tuple.first) firstEncounterData
@@ -94,7 +94,7 @@ viewContent language currentDate id model data =
                         (\( firstEncounterDate, _ ) ->
                             let
                                 previousEncountersData =
-                                    data.previousMeasurementsWithDates
+                                    data.previousEncountersData
                                         |> List.filter (\( date, _ ) -> date /= firstEncounterDate)
                             in
                             previousEncountersData ++ [ ( dateAndDiagnosis, data.measurements ) ]

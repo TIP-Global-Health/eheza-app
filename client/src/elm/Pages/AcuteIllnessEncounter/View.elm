@@ -40,7 +40,7 @@ viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Mod
 viewHeaderAndContent language currentDate id db model data =
     let
         isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
+            List.isEmpty data.previousEncountersData
 
         header =
             viewHeader language data
@@ -181,7 +181,7 @@ viewHeader : Language -> AssembledData -> Html Msg
 viewHeader language data =
     let
         isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
+            List.isEmpty data.previousEncountersData
 
         label =
             if isFirstEncounter then
@@ -299,7 +299,7 @@ viewMainPageContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Asse
 viewMainPageContent language currentDate id data model =
     let
         isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
+            List.isEmpty data.previousEncountersData
 
         measurements =
             data.measurements

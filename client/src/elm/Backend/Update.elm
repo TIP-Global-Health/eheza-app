@@ -2158,7 +2158,7 @@ generateSuspectedDiagnosisMsgs : NominalDate -> ModelIndexedDb -> ModelIndexedDb
 generateSuspectedDiagnosisMsgs currentDate before after id person =
     Maybe.map2
         (\assembledBefore assembledAfter ->
-            if List.isEmpty assembledAfter.previousMeasurementsWithDates then
+            if List.isEmpty assembledAfter.previousEncountersData then
                 generateSuspectedDiagnosisMsgsFirstEncounter currentDate id person assembledBefore assembledAfter
 
             else
@@ -2276,7 +2276,7 @@ generateAssesmentCompletedMsgs currentDate after id =
                         App.Model.SetActivePage (UserPage (AcuteIllnessProgressReportPage id))
 
                     isFirstEncounter =
-                        List.isEmpty data.previousMeasurementsWithDates
+                        List.isEmpty data.previousEncountersData
                 in
                 if not <| activityCompleted currentDate isFirstEncounter data AcuteIllnessNextSteps then
                     []

@@ -1595,7 +1595,7 @@ expectPhysicalExamTask currentDate person isFirstEncounter task =
 
 resolvePreviousValue : AssembledData -> (AcuteIllnessMeasurements -> Maybe ( id, AcuteIllnessMeasurement a )) -> (a -> b) -> Maybe b
 resolvePreviousValue assembled measurementFunc valueFunc =
-    assembled.previousMeasurementsWithDates
+    assembled.previousEncountersData
         |> List.filterMap
             (\( _, measurements ) ->
                 measurementFunc measurements
