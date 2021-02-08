@@ -20,7 +20,7 @@ import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isNothing)
 import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
-import Pages.AcuteIllnessActivity.View exposing (renderDatePart, viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
+import Pages.AcuteIllnessActivity.View exposing (renderDatePart, viewActionTakenLabel, viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewTabletsPrescription)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.AcuteIllnessEncounter.Utils
     exposing
@@ -885,7 +885,7 @@ viewActionsTakenCovid19 language date measurements =
                                             |> Maybe.map (Translate.ResultOfContactingRecommendedSite >> viewRecommendation)
                                             |> Maybe.withDefault emptyNode
                                 in
-                                [ viewSendToHCActionLabel language Translate.Contacted114 "icon-phone" (Just date)
+                                [ viewActionTakenLabel language Translate.Contacted114 "icon-phone" (Just date)
                                 , recommenationOf114
                                 , recommenationOfSite
                                 ]
@@ -905,7 +905,7 @@ viewActionsTakenCovid19 language date measurements =
 
         patientIsolatedAction =
             if patientIsolated then
-                [ viewSendToHCActionLabel language Translate.IsolatedAtHome "icon-patient-in-bed" (Just date) ]
+                [ viewActionTakenLabel language Translate.IsolatedAtHome "icon-patient-in-bed" (Just date) ]
 
             else
                 []
@@ -931,7 +931,7 @@ viewContacedHCAction language date measurements =
                                         |> List.head
                                         |> Maybe.withDefault HCRecommendationNotApplicable
                             in
-                            [ viewSendToHCActionLabel language Translate.ContactedHC "icon-phone" (Just date)
+                            [ viewActionTakenLabel language Translate.ContactedHC "icon-phone" (Just date)
                             , viewHCRecommendationActionTaken language recommendation
                             ]
 
@@ -947,6 +947,7 @@ viewActionsTakenNonCovid19 language date person diagnosis measurements =
     viewActionsTakenMedicationDistribution language date person diagnosis measurements
         ++ viewContacedHCAction language date measurements
         ++ viewActionsTakenSendToHC language date measurements
+        ++ viewActionsTakenHealthEducation language date measurements
         |> div [ class "encounter-actions" ]
 
 
@@ -1077,12 +1078,6 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
             []
 
 
-viewNonAdministrationReaso1 : Language -> MedicationNonAdministrationReason -> Html any
-viewNonAdministrationReaso1 language reason =
-    div [ class "non-administration-reason" ]
-        [ text <| translate language <| Translate.MedicationNonAdministrationReason reason ]
-
-
 viewNonAdministrationReason : Language -> TranslationId -> String -> Maybe NominalDate -> MedicationNonAdministrationReason -> Html any
 viewNonAdministrationReason language medicineTranslationId iconClass maybeDate reason =
     let
@@ -1114,7 +1109,7 @@ viewActionsTakenSendToHC language date measurements =
 
         completedFormAction =
             if completedForm then
-                [ viewSendToHCActionLabel language Translate.CompletedHCReferralForm "icon-forms" (Just date) ]
+                [ viewActionTakenLabel language Translate.CompletedHCReferralForm "icon-forms" (Just date) ]
 
             else
                 []
@@ -1125,7 +1120,7 @@ viewActionsTakenSendToHC language date measurements =
 
         sentToHCAction =
             if sentToHC then
-                [ viewSendToHCActionLabel language Translate.SentPatientToHC "icon-shuttle" (Just date) ]
+                [ viewActionTakenLabel language Translate.SentPatientToHC "icon-shuttle" (Just date) ]
 
             else
                 []
@@ -1143,3 +1138,33 @@ viewHCRecommendationActionTaken language recommendation =
             [ viewHCRecommendation language recommendation
             , span [] [ text "." ]
             ]
+
+
+viewActionsTakenHealthEducation : Language -> NominalDate -> AcuteIllnessMeasurements -> List (Html Msg)
+viewActionsTakenHealthEducation language date measurements =
+    let
+        healthEducationProvided =
+            Maybe.map
+                (Tuple.second
+                    >> .value
+                    >> EverySet.toList
+                    >> (\signs ->
+                            case signs of
+                                [] ->
+                                    False
+
+                                [ NoHealthEducationSigns ] ->
+                                    False
+
+                                _ ->
+                                    True
+                       )
+                )
+                measurements.healthEducation
+                |> Maybe.withDefault False
+    in
+    if healthEducationProvided then
+        [ viewActionTakenLabel language Translate.ProvidedHealthEducationAction "icon-open-book" (Just date) ]
+
+    else
+        []

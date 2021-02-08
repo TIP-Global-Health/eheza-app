@@ -1,10 +1,10 @@
 module Pages.AcuteIllnessActivity.View exposing
     ( renderDatePart
     , view
+    , viewActionTakenLabel
     , viewAdministeredMedicationLabel
     , viewHCRecommendation
     , viewOralSolutionPrescription
-    , viewSendToHCActionLabel
     , viewTabletsPrescription
     )
 
@@ -1965,8 +1965,8 @@ viewSendToHCForm language currentDate form =
     div [ class "ui form send-to-hc" ]
         [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
         , div [ class "instructions" ]
-            [ viewSendToHCActionLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
-            , viewSendToHCActionLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
+            [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
+            , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
             ]
         , viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
         , viewBoolInput
@@ -1985,8 +1985,8 @@ viewSendToHCForm language currentDate form =
         ]
 
 
-viewSendToHCActionLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
-viewSendToHCActionLabel language actionTranslationId iconClass maybeDate =
+viewActionTakenLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
+viewActionTakenLabel language actionTranslationId iconClass maybeDate =
     div [ class "header" ] <|
         [ i [ class iconClass ] []
         , text <| translate language actionTranslationId
