@@ -788,7 +788,7 @@ type SendToHCSign
 
 
 type alias SendToHC =
-    AcuteIllnessMeasurement (EverySet SendToHCSign)
+    AcuteIllnessMeasurement SendToHCValue
 
 
 type MedicationDistributionSign
