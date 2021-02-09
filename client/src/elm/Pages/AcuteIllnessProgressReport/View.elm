@@ -28,6 +28,7 @@ import Pages.AcuteIllnessEncounter.Utils
         , generateAssembledData
         , muacRedOnSubsequentVisit
         , noImprovementOnSubsequentVisit
+        , resolveAcuteIllnessDiagnosis
         , resolveMedicationsNonAdministrationReasons
         , resolveNextStepFirstEncounter
         , respiratoryRateElevated
@@ -69,13 +70,16 @@ viewContent language currentDate id model data =
         isFirstEncounter =
             List.isEmpty data.previousEncountersData
 
-        dateAndDiagnosis =
-            data.diagnosis
-                |> Maybe.withDefault ( currentDate, NoAcuteIllnessDiagnosis )
+        diagnosisByCurrentEncounterMeasurements =
+            resolveAcuteIllnessDiagnosis currentDate data
+                |> Maybe.withDefault NoAcuteIllnessDiagnosis
+
+        currentEncounterData =
+            ( ( currentDate, diagnosisByCurrentEncounterMeasurements ), data.measurements )
 
         firstEncounterData =
             if isFirstEncounter then
-                Just ( dateAndDiagnosis, data.measurements )
+                Just currentEncounterData
 
             else
                 List.head data.previousEncountersData
@@ -97,7 +101,7 @@ viewContent language currentDate id model data =
                                     data.previousEncountersData
                                         |> List.filter (\( date, _ ) -> date /= firstEncounterDate)
                             in
-                            previousEncountersData ++ [ ( dateAndDiagnosis, data.measurements ) ]
+                            previousEncountersData ++ [ currentEncounterData ]
                         )
                     |> Maybe.withDefault []
 
