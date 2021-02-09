@@ -4050,7 +4050,7 @@ translationSet trans =
 
                 NonAdministrationPatientUnableToAfford ->
                     { english = "Patient unable to afford"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
                     }
 
                 NonAdministrationOther ->
