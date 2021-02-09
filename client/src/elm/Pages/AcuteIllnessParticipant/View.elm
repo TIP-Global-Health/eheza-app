@@ -383,7 +383,7 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter session
             maybeActiveEncounterId
                 |> Maybe.map navigateToEncounterAction
                 |> Maybe.withDefault
-                    (emptyAcuteIllnessEncounter sessionId currentDate (Just selectedHealthCenter)
+                    (emptyAcuteIllnessEncounter sessionId currentDate 1 (Just selectedHealthCenter)
                         |> Backend.Model.PostAcuteIllnessEncounter
                         |> MsgBackend
                     )

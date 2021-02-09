@@ -1466,7 +1466,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                         (\( sessionId, _ ) ->
                             case encounterType of
                                 AcuteIllnessEncounter ->
-                                    [ emptyAcuteIllnessEncounter sessionId currentDate healthCenterId
+                                    [ emptyAcuteIllnessEncounter sessionId currentDate 1 healthCenterId
                                         |> Backend.Model.PostAcuteIllnessEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
