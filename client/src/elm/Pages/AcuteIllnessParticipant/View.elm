@@ -152,7 +152,7 @@ viewManageIllnessesContent language currentDate selectedHealthCenter id db activ
                             ( maybeActiveEncounterId
                                 |> Maybe.map navigateToEncounterAction
                                 |> Maybe.withDefault startIllnessAction
-                            , -- We do not allow to create multiple encounters for same illness on the same day.
+                            , -- We do not allow to create multiple illnesses on the same day.
                               -- Therefore, we disable the button.
                               encounterWasCompletedToday
                             )
