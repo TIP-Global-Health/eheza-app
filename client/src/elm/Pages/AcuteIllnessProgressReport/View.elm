@@ -1012,7 +1012,7 @@ viewActionsTakenSendToHC language currentDate measurements =
             Maybe.map (Tuple.second >> .value) measurements.sendToHC
 
         completedForm =
-            Maybe.map (EverySet.member HandReferrerForm) sendToHCSigns
+            Maybe.map (.signs >> EverySet.member HandReferrerForm) sendToHCSigns
                 |> Maybe.withDefault False
 
         completedFormAction =
@@ -1023,7 +1023,7 @@ viewActionsTakenSendToHC language currentDate measurements =
                 []
 
         sentToHC =
-            Maybe.map (EverySet.member ReferToHealthCenter) sendToHCSigns
+            Maybe.map (.signs >> EverySet.member ReferToHealthCenter) sendToHCSigns
                 |> Maybe.withDefault False
 
         sentToHCAction =

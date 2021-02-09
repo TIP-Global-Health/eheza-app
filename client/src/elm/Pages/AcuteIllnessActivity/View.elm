@@ -1923,14 +1923,14 @@ viewCall114Form language currentDate measurements form =
 viewSendToHCForm : Language -> NominalDate -> SendToHCForm -> Html Msg
 viewSendToHCForm language currentDate form =
     let
-        notSentToHCSection =
+        sendToHCSection =
             let
-                notSentToHCReason =
+                sentToHealthCenter =
                     form.referToHealthCenter
-                        |> Maybe.withDefault False
+                        |> Maybe.withDefault True
 
                 notSentToHCReasonInput =
-                    if notSentToHCReason then
+                    if not sentToHealthCenter then
                         [ viewQuestionLabel language Translate.WhyNot
                         , viewCheckBoxSelectInput language
                             [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, NotSentPatientToHCOther ]
@@ -1955,11 +1955,11 @@ viewSendToHCForm language currentDate form =
     in
     div [ class "ui form send-to-hc" ]
         [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
+        , div [ class "instructions" ] <|
             [ viewSendToHCActionLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
             , viewSendToHCActionLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
             ]
-        , notSentToHCSection
+                ++ sendToHCSection
         , viewQuestionLabel language Translate.HandedReferralFormQuestion
         , viewBoolInput
             language
