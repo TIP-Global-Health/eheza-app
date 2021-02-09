@@ -14,7 +14,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Pages.AcuteIllnessEncounter.Utils exposing (getAcuteIllnessDiagnosisForParticipant)
+import Pages.AcuteIllnessEncounter.Utils exposing (compareAcuteIllnessEncounterDataDesc, getAcuteIllnessDiagnosisForParticipant)
 import Pages.AcuteIllnessParticipant.Model exposing (..)
 import Pages.AcuteIllnessParticipant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -325,7 +325,7 @@ viewActiveIllness language currentDate selectedHealthCenter db viewMode sessionI
             sessionEncounters
                 |> Maybe.andThen
                     (List.map Tuple.second
-                        >> List.sortWith (\e1 e2 -> Gizra.NominalDate.compare e2.startDate e1.startDate)
+                        >> List.sortWith compareAcuteIllnessEncounterDataDesc
                         >> List.filter (\encounter -> encounter.diagnosis /= NoAcuteIllnessDiagnosis)
                         >> List.head
                         >> Maybe.map .diagnosis

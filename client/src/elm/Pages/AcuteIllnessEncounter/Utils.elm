@@ -218,7 +218,7 @@ getAcuteIllnessDiagnosisForParticipant db participantId =
         |> Maybe.map Dict.toList
         |> Maybe.andThen
             (List.map Tuple.second
-                >> List.sortWith (\e1 e2 -> Gizra.NominalDate.compare e2.startDate e1.startDate)
+                >> List.sortWith compareAcuteIllnessEncounterDataDesc
                 >> List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis)
                 >> List.head
                 >> Maybe.map .diagnosis

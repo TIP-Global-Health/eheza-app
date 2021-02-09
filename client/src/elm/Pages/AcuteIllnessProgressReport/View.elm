@@ -825,7 +825,7 @@ viewActionsTakenPane language currentDate firstEncounterData subsequentEncounter
                 |> Maybe.map
                     (\dataFirst ->
                         case resolveNextStepFirstEncounter dataFirst.startDate data of
-                            -- This is COVID19 case
+                            -- This is COVID19 case.
                             Just NextStepsIsolation ->
                                 viewActionsTakenCovid19 language dataFirst.startDate dataFirst.measurements
 
