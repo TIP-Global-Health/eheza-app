@@ -370,20 +370,23 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter session
                 |> List.head
                 |> Maybe.map Tuple.first
 
-        encounterWasCompletedToday =
+        encounterSequenceNumberForToday =
             encounters
                 |> List.filter
                     (\( _, encounter ) ->
                         encounter.startDate == currentDate && encounter.endDate == Just currentDate
                     )
-                |> List.isEmpty
-                |> not
+                |> List.sortBy (Tuple.second >> .sequenceNumber)
+                |> List.reverse
+                |> List.head
+                |> Maybe.map (Tuple.second >> .sequenceNumber >> (+) 1)
+                |> Maybe.withDefault 1
 
         action =
             maybeActiveEncounterId
                 |> Maybe.map navigateToEncounterAction
                 |> Maybe.withDefault
-                    (emptyAcuteIllnessEncounter sessionId currentDate 1 (Just selectedHealthCenter)
+                    (emptyAcuteIllnessEncounter sessionId currentDate encounterSequenceNumberForToday (Just selectedHealthCenter)
                         |> Backend.Model.PostAcuteIllnessEncounter
                         |> MsgBackend
                     )
@@ -397,10 +400,7 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter session
     in
     Just <|
         div
-            [ classList
-                [ ( "ui primary button active-illness", True )
-                , ( "disabled", encounterWasCompletedToday )
-                ]
+            [ class "ui primary button active-illness"
             , onClick action
             ]
             [ div [ class "button-label" ]
