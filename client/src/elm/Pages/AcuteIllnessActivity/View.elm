@@ -1987,7 +1987,14 @@ viewSendToHCForm language currentDate form =
 
 viewActionTakenLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
 viewActionTakenLabel language actionTranslationId iconClass maybeDate =
-    div [ class "header" ] <|
+    let
+        message =
+            div [] <|
+                (text <| translate language actionTranslationId)
+                    :: renderDatePart language maybeDate
+                    ++ [ text "." ]
+    in
+    div [ class "header icon-label" ] <|
         [ i [ class iconClass ] []
         , text <| translate language actionTranslationId
         ]
@@ -2197,14 +2204,20 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
 
 viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> Maybe NominalDate -> Html any
 viewAdministeredMedicationLabel language administerTranslationId medicineTranslationId iconClass maybeDate =
-    div [ class "header" ] <|
+    let
+        message =
+            div [] <|
+                [ text <| translate language administerTranslationId
+                , text ": "
+                , span [ class "medicine" ] [ text <| translate language medicineTranslationId ]
+                ]
+                    ++ renderDatePart language maybeDate
+                    ++ [ text ":" ]
+    in
+    div [ class "header icon-label" ] <|
         [ i [ class iconClass ] []
-        , text <| translate language administerTranslationId
-        , text ": "
-        , span [ class "medicine" ] [ text <| translate language medicineTranslationId ]
+        , message
         ]
-            ++ renderDatePart language maybeDate
-            ++ [ text ":" ]
 
 
 viewTabletsPrescription : Language -> String -> TranslationId -> Html any

@@ -1091,7 +1091,7 @@ viewNonAdministrationReason language medicineTranslationId iconClass maybeDate r
                 ]
                     ++ renderDatePart language maybeDate
     in
-    div [ class "header non-administration-reason" ] <|
+    div [ class "header icon-label" ] <|
         [ i [ class iconClass ] []
         , message
         ]
