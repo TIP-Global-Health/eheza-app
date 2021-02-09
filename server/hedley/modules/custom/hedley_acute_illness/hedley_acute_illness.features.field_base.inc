@@ -891,6 +891,21 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_sequence_number'.
+  $field_bases['field_sequence_number'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_sequence_number',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   // Exported field_base: 'field_severe_weakness_period'.
   $field_bases['field_severe_weakness_period'] = array(
     'active' => 1,
