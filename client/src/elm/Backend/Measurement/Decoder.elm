@@ -1314,8 +1314,9 @@ malariaRapidTestResultFromString result =
 
 decodeSendToHC : Decoder SendToHC
 decodeSendToHC =
-    decodeEverySet decodeSendToHCSign
-        |> field "send_to_hc"
+    succeed SendToHCValue
+        |> required "send_to_hc" (decodeEverySet decodeSendToHCSign)
+        |> required "not_sent_to_hc" decodeNotSentToHC
         |> decodeAcuteIllnessMeasurement
 
 
@@ -1338,6 +1339,31 @@ decodeSendToHCSign =
                         fail <|
                             sign
                                 ++ " is not a recognized SendToHCSign"
+            )
+
+
+decodeNotSentToHC : Decoder NotSentPatientToHCReason
+decodeNotSentToHC =
+    string
+        |> andThen
+            (\event ->
+                case event of
+                    "client-refused" ->
+                        succeed ClientRefused
+
+                    "no-ambulance" ->
+                        succeed NoAmbulance
+
+                    "unable-to-afford-fee" ->
+                        succeed ClientUnableToAffordFees
+
+                    "other" ->
+                        succeed NotSentPatientToHCOther
+
+                    _ ->
+                        fail <|
+                            event
+                                ++ " is not a recognized NotSentPatientToHCReason "
             )
 
 
