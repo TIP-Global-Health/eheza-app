@@ -1412,6 +1412,23 @@ update currentDate id db msg model =
             , []
             )
 
+        SetNotSentToHC value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | notReferredToHealthCenter = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveSendToHC personId saved nextTask_ ->
             let
                 measurementId =

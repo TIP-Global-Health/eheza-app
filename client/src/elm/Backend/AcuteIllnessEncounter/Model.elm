@@ -110,7 +110,7 @@ type Msg
     | HandleSavedAcuteFindings (WebData ())
     | SaveMalariaTesting PersonId (Maybe MalariaTestingId) MalariaRapidTestResult
     | HandleSavedMalariaTesting (WebData ())
-    | SaveSendToHC PersonId (Maybe SendToHCId) (EverySet SendToHCSign)
+    | SaveSendToHC PersonId (Maybe SendToHCId) SendToHCValue
     | HandleSavedSendToHC (WebData ())
     | SaveMedicationDistribution PersonId (Maybe MedicationDistributionId) MedicationDistributionValue
     | HandleSavedMedicationDistribution (WebData ())
