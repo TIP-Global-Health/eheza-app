@@ -145,14 +145,20 @@ generatePreviousMeasurements currentEncounterId participantId db =
             )
 
 
-compareAcuteIllnessEncounterDataDesc : AcuteIllnessEncounterData -> AcuteIllnessEncounterData -> Order
+compareAcuteIllnessEncounterDataDesc :
+    { a | startDate : NominalDate, sequenceNumber : Int }
+    -> { a | startDate : NominalDate, sequenceNumber : Int }
+    -> Order
 compareAcuteIllnessEncounterDataDesc data1 data2 =
     compareAcuteIllnessEncounterDataAsc data2 data1
 
 
-compareAcuteIllnessEncounterDataAsc : AcuteIllnessEncounterData -> AcuteIllnessEncounterData -> Order
+compareAcuteIllnessEncounterDataAsc :
+    { a | startDate : NominalDate, sequenceNumber : Int }
+    -> { a | startDate : NominalDate, sequenceNumber : Int }
+    -> Order
 compareAcuteIllnessEncounterDataAsc data1 data2 =
-    case Gizra.NominalDate.compare data1.date data2.date of
+    case Gizra.NominalDate.compare data1.startDate data2.startDate of
         LT ->
             LT
 
@@ -175,20 +181,18 @@ getAcuteIllnessDiagnosisByPreviousEncounters currentEncounterId db participantId
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
                 |> Maybe.map Dict.toList
-                |> Maybe.map
-                    (List.filterMap
-                        (\( encounterId, encounter ) ->
-                            -- We do not want to get data of current encounter,
-                            -- and those that do not have diagnosis set.
-                            if encounterId == currentEncounterId || encounter.diagnosis == NoAcuteIllnessDiagnosis then
-                                Nothing
-
-                            else
-                                Just ( encounter.startDate, encounter.diagnosis )
-                        )
-                        >> List.sortWith (\( d1, _ ) ( d2, _ ) -> Gizra.NominalDate.compare d2 d1)
-                    )
                 |> Maybe.withDefault []
+                |> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncounterDataDesc e1 e2)
+                |> List.filterMap
+                    (\( encounterId, encounter ) ->
+                        -- We do not want to get data of current encounter,
+                        -- and those that do not have diagnosis set.
+                        if encounterId == currentEncounterId || encounter.diagnosis == NoAcuteIllnessDiagnosis then
+                            Nothing
+
+                        else
+                            Just ( encounter.startDate, encounter.diagnosis )
+                    )
     in
     case encountersWithDiagnosis of
         [ current ] ->
