@@ -325,7 +325,8 @@ viewActiveIllness language currentDate selectedHealthCenter db viewMode sessionI
             sessionEncounters
                 |> Maybe.andThen
                     (List.map Tuple.second
-                        >> List.sortWith (\e1 e2 -> Gizra.NominalDate.compare e1.startDate e2.startDate)
+                        >> List.sortWith (\e1 e2 -> Gizra.NominalDate.compare e2.startDate e1.startDate)
+                        >> List.filter (\encounter -> encounter.diagnosis /= NoAcuteIllnessDiagnosis)
                         >> List.head
                         >> Maybe.map .diagnosis
                     )
