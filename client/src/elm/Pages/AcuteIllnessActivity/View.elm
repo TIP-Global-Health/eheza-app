@@ -1996,10 +1996,8 @@ viewActionTakenLabel language actionTranslationId iconClass maybeDate =
     in
     div [ class "header icon-label" ] <|
         [ i [ class iconClass ] []
-        , text <| translate language actionTranslationId
+        , message
         ]
-            ++ renderDatePart language maybeDate
-            ++ [ text "." ]
 
 
 viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> MedicationDistributionForm -> Html Msg
