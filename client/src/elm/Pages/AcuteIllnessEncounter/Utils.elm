@@ -1131,7 +1131,7 @@ gastrointestinalInfectionDangerSignsPresent fever measurements =
                         && EverySet.member IntractableVomiting symptomsGISet
             in
             if fever then
-                bloodyDiarrhea || nonBloodyDiarrhea || intractableVomiting
+                bloodyDiarrhea || nonBloodyDiarrhea
 
             else
                 bloodyDiarrhea || (nonBloodyDiarrhea && intractableVomiting)
