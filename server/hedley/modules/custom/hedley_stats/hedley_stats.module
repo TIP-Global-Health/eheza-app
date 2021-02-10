@@ -212,8 +212,8 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   try {
     $wrapper = entity_metadata_wrapper('node', $health_center_id);
 
-    // Exact date and time on which statistics were generated.
-    $timestamp = date('d-m-Y H:i:s', time() - date('Z'));
+    // UTC date and time on which statistics were generated.
+    $timestamp = date('d-m-Y, H:i', time() - date('Z'));
 
     // First check if the HC has "FBF" clinics, only those have stats for
     // the dashboards and we shouldn't send any stats from a HC without
