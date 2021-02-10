@@ -484,7 +484,7 @@ type TranslationId
     | HIVStatusLabel
     | Home
     | HouseholdSize
-    | HowMany
+    | HowManyDoses
     | HaveAnyOfTheFollowingQuestion
     | HttpError Http.Error
     | HypertensionBeforePregnancy
@@ -597,6 +597,7 @@ type TranslationId
     | NoParticipantsFound
     | NotAvailable
     | NotConnected
+    | NotTaken
     | NumberOfAbortions
     | NumberOfChildrenUnder5
     | NumberOfCSections
@@ -679,6 +680,7 @@ type TranslationId
     | PrenatalParticipant
     | PrenatalParticipants
     | PreTermPregnancy
+    | ProvidedHealthEducationAction
     | ProvidedPreventionEducationQuestion
     | Province
     | ReasonForCSection
@@ -689,6 +691,7 @@ type TranslationId
     | ReceivedMosquitoNet
     | Recommendation114 Recommendation114
     | RecommendationSite RecommendationSite
+    | RecommendedButNotGivenDueTo
     | RecordAcuteIllnessOutcome
     | RecordPregnancyOutcome
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
@@ -818,6 +821,7 @@ type TranslationId
     | TermPregnancy
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
+    | To
     | ToThePatient
     | Training
     | TrainingGroupEncounterCreateSuccessMessage
@@ -3164,8 +3168,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        HowMany ->
-            { english = "How many"
+        HowManyDoses ->
+            { english = "How many doses"
             , kinyarwanda = Just "Ingahe"
             }
 
@@ -4067,6 +4071,11 @@ translationSet trans =
                     , kinyarwanda = Just "Umurwayi yanze"
                     }
 
+                NonAdministrationPatientUnableToAfford ->
+                    { english = "Patient unable to afford"
+                    , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
+                    }
+
                 NonAdministrationOther ->
                     { english = "Other"
                     , kinyarwanda = Just "Ibindi"
@@ -4115,6 +4124,11 @@ translationSet trans =
         NotConnected ->
             { english = "Not Connected"
             , kinyarwanda = Just "Ntamurandasi"
+            }
+
+        NotTaken ->
+            { english = "Not taken"
+            , kinyarwanda = Just "Nta bipimo byafashwe"
             }
 
         NumberOfAbortions ->
@@ -4740,6 +4754,11 @@ translationSet trans =
             , kinyarwanda = Just "Umubare w'abavutse ari bazima badashyitse"
             }
 
+        ProvidedHealthEducationAction ->
+            { english = "Provided health education and anticipatory guidance"
+            , kinyarwanda = Nothing
+            }
+
         ProvidedPreventionEducationQuestion ->
             { english = "Have you provided health education and anticipatory guidance for the prevention of"
             , kinyarwanda = Just "Mwatanze inyigisho ku buzima n' umurongo ngenderwaho ku kwirinda"
@@ -4897,6 +4916,11 @@ translationSet trans =
                     { english = "Not Applicable"
                     , kinyarwanda = Just "Ibi ntibikorwa"
                     }
+
+        RecommendedButNotGivenDueTo ->
+            { english = "recommended but not given due to"
+            , kinyarwanda = Nothing
+            }
 
         RecordAcuteIllnessOutcome ->
             { english = "Record Acute Illness Outcome"
@@ -5907,6 +5931,11 @@ translationSet trans =
         ThisGroupHasNoMothers ->
             { english = "This Group has no mothers assigned to it."
             , kinyarwanda = Just "Iki cyiciro nta mubyeyi cyagenewe."
+            }
+
+        To ->
+            { english = "to"
+            , kinyarwanda = Just "kuri"
             }
 
         ToThePatient ->

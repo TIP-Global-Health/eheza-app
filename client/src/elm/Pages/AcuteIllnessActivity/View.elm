@@ -1,4 +1,12 @@
-module Pages.AcuteIllnessActivity.View exposing (view, viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewSendToHCActionLabel, viewTabletsPrescription)
+module Pages.AcuteIllnessActivity.View exposing
+    ( renderDatePart
+    , view
+    , viewActionTakenLabel
+    , viewAdministeredMedicationLabel
+    , viewHCRecommendation
+    , viewOralSolutionPrescription
+    , viewTabletsPrescription
+    )
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -66,10 +74,10 @@ viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Acu
 viewHeaderAndContent language currentDate id activity model data =
     let
         isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
+            List.isEmpty data.previousEncountersData
     in
     div [ class "page-activity acute-illness" ]
-        [ viewHeader language id activity data.diagnosis
+        [ viewHeader language id activity <| Maybe.map Tuple.second data.diagnosis
         , viewContent language currentDate id activity model data
         , viewModal <|
             warningPopup language
@@ -379,10 +387,10 @@ viewActivity language currentDate id activity data model =
             data.measurements
 
         diagnosis =
-            data.diagnosis
+            Maybe.map Tuple.second data.diagnosis
 
         isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
+            List.isEmpty data.previousEncountersData
     in
     case activity of
         AcuteIllnessSymptoms ->
@@ -1449,7 +1457,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
             assembled.measurements
 
         diagnosis =
-            assembled.diagnosis
+            Maybe.map Tuple.second assembled.diagnosis
 
         activity =
             AcuteIllnessNextSteps
@@ -1570,7 +1578,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
         tasksAfterSave =
             case activeTask of
                 -- On first visit, ContactHC task should appear in case nurse did not talk to 114.
-                -- Therefore, when the answer to 'called 114' is changed, we adjust tasks list accirdingly.
+                -- Therefore, when the answer to 'called 114' is changed, we adjust tasks list accordingly.
                 Just NextStepsCall114 ->
                     if isFirstEncounter then
                         let
@@ -1591,7 +1599,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                     else
                         tasks
 
-                -- At subsequent visit, SendToHC, task should appear in case health center adviced to send patient over.
+                -- At subsequent visit, SendToHC task should appear in case health center adviced to send patient over.
                 -- Therefore, when the answer to this is changed, we adjust tasks list accirdingly.
                 Just NextStepsContactHC ->
                     if isFirstEncounter then
@@ -1612,6 +1620,38 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
 
                         else
                             tasks
+
+                -- If medication is prescribed, but it's out of stock, or partient
+                -- if alergic, SendToHC should appear, so that patient is dircted to the HC.
+                Just NextStepsMedicationDistribution ->
+                    let
+                        medicationDistributionForm =
+                            measurements.medicationDistribution
+                                |> Maybe.map (Tuple.second >> .value)
+                                |> medicationDistributionFormWithDefault data.medicationDistributionForm
+
+                        medicationOutOfStockOrPatientAlergic =
+                            medicationDistributionForm.nonAdministrationSigns
+                                |> Maybe.map
+                                    (\signs ->
+                                        [ MedicationAmoxicillin NonAdministrationLackOfStock
+                                        , MedicationAmoxicillin NonAdministrationKnownAllergy
+                                        , MedicationCoartem NonAdministrationLackOfStock
+                                        , MedicationCoartem NonAdministrationKnownAllergy
+                                        , MedicationORS NonAdministrationLackOfStock
+                                        , MedicationORS NonAdministrationKnownAllergy
+                                        , MedicationZinc NonAdministrationLackOfStock
+                                        , MedicationZinc NonAdministrationKnownAllergy
+                                        ]
+                                            |> List.any (\option -> EverySet.member option signs)
+                                    )
+                                |> Maybe.withDefault False
+                    in
+                    if medicationOutOfStockOrPatientAlergic then
+                        [ NextStepsMedicationDistribution, NextStepsSendToHC ]
+
+                    else
+                        [ NextStepsMedicationDistribution ]
 
                 _ ->
                     tasks
@@ -1956,8 +1996,8 @@ viewSendToHCForm language currentDate form =
     div [ class "ui form send-to-hc" ]
         [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
         , div [ class "instructions" ] <|
-            [ viewSendToHCActionLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
-            , viewSendToHCActionLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
+            [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
+            , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
             ]
                 ++ sendToHCSection
         , viewQuestionLabel language Translate.HandedReferralFormQuestion
@@ -1970,8 +2010,8 @@ viewSendToHCForm language currentDate form =
         ]
 
 
-viewSendToHCActionLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
-viewSendToHCActionLabel language actionTranslationId iconClass maybeDate =
+viewActionTakenLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
+viewActionTakenLabel language actionTranslationId iconClass maybeDate =
     div [ class "header" ] <|
         [ i [ class iconClass ] []
         , text <| translate language actionTranslationId
@@ -2006,7 +2046,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                     in
                     [ viewQuestionLabel language Translate.WhyNot
                     , viewCheckBoxSelectInput language
-                        [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy ]
+                        [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
                         [ NonAdministrationPatientDeclined, NonAdministrationOther ]
                         currentValue
                         (SetMedicationDistributionMedicationNonAdministrationReason currentValue medication)
@@ -2185,7 +2225,7 @@ viewAdministeredMedicationLabel language administerTranslationId medicineTransla
     div [ class "header" ] <|
         [ i [ class iconClass ] []
         , text <| translate language administerTranslationId
-        , text " "
+        , text ": "
         , span [ class "medicine" ] [ text <| translate language medicineTranslationId ]
         ]
             ++ renderDatePart language maybeDate
@@ -2267,7 +2307,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
                     measurements.treatmentOngoing
                         |> Maybe.map (Tuple.second >> .value)
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
-                        |> viewOngoingTreatmentReviewForm language currentDate measurements
+                        |> viewOngoingTreatmentReviewForm language currentDate SetTotalMissedDoses measurements
 
         actions =
             let
@@ -2298,8 +2338,8 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
     ]
 
 
-viewOngoingTreatmentReviewForm : Language -> NominalDate -> AcuteIllnessMeasurements -> OngoingTreatmentReviewForm -> Html Msg
-viewOngoingTreatmentReviewForm language currentDate measurements form =
+viewOngoingTreatmentReviewForm : Language -> NominalDate -> (String -> Msg) -> AcuteIllnessMeasurements -> OngoingTreatmentReviewForm -> Html Msg
+viewOngoingTreatmentReviewForm language currentDate setMissedDosesMsg measurements form =
     let
         takenAsPrescribedUpdateFunc value form_ =
             if value then
@@ -2367,17 +2407,35 @@ viewOngoingTreatmentReviewForm language currentDate measurements form =
 
                 totalMissedDosesInput =
                     if missedDoses then
+                        let
+                            missedDosesInput =
+                                option
+                                    [ value ""
+                                    , selected (form.totalMissedDoses == Nothing)
+                                    ]
+                                    [ text "" ]
+                                    :: (List.repeat 22 ""
+                                            |> List.indexedMap
+                                                (\index _ ->
+                                                    let
+                                                        indexAsString =
+                                                            String.fromInt index
+                                                    in
+                                                    option
+                                                        [ value indexAsString
+                                                        , selected (form.totalMissedDoses == Just index)
+                                                        ]
+                                                        [ text indexAsString ]
+                                                )
+                                       )
+                                    |> select [ onInput setMissedDosesMsg ]
+                        in
                         [ div [ class "ui grid" ]
                             [ div [ class "one wide column" ] []
                             , div [ class "four wide column" ]
-                                [ viewQuestionLabel language Translate.HowMany ]
+                                [ viewQuestionLabel language Translate.HowManyDoses ]
                             , div [ class "four wide column" ]
-                                [ viewNumberInput language
-                                    form.totalMissedDoses
-                                    String.fromInt
-                                    SetTotalMissedDoses
-                                    "total-missed-doses"
-                                ]
+                                [ missedDosesInput ]
                             ]
                         ]
 

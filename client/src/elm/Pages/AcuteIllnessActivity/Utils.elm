@@ -1341,7 +1341,7 @@ getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form =
         nonAdministrationSigns =
             form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
     in
-    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientDeclined, NonAdministrationOther ]
+    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientDeclined, NonAdministrationPatientUnableToAfford, NonAdministrationOther ]
         |> List.filterMap
             (\reason ->
                 if EverySet.member (reasonToSignFunc reason) nonAdministrationSigns then
@@ -1603,7 +1603,7 @@ expectPhysicalExamTask currentDate person isFirstEncounter task =
 
 resolvePreviousValue : AssembledData -> (AcuteIllnessMeasurements -> Maybe ( id, AcuteIllnessMeasurement a )) -> (a -> b) -> Maybe b
 resolvePreviousValue assembled measurementFunc valueFunc =
-    assembled.previousMeasurementsWithDates
+    assembled.previousEncountersData
         |> List.filterMap
             (\( _, measurements ) ->
                 measurementFunc measurements
