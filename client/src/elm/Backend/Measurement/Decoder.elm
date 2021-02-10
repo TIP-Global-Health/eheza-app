@@ -1342,7 +1342,7 @@ decodeSendToHCSign =
             )
 
 
-decodeNotSentToHC : Decoder NotSentPatientToHCReason
+decodeNotSentToHC : Decoder ReasonForNotSendingToHC
 decodeNotSentToHC =
     string
         |> andThen
@@ -1363,7 +1363,7 @@ decodeNotSentToHC =
                     _ ->
                         fail <|
                             event
-                                ++ " is not a recognized NotSentPatientToHCReason "
+                                ++ "is not a recognized ReasonForNotSendingToHC"
             )
 
 

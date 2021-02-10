@@ -1969,15 +1969,15 @@ viewSendToHCForm language currentDate form =
                     form.referToHealthCenter
                         |> Maybe.withDefault True
 
-                notSentToHCReasonInput =
+                reasonForNotSendingToHCInput =
                     if not sentToHealthCenter then
                         [ viewQuestionLabel language Translate.WhyNot
                         , viewCheckBoxSelectInput language
                             [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, NotSentPatientToHCOther ]
                             []
-                            form.notReferredToHealthCenter
+                            form.reasonForNotSendingToHc
                             SetNotSentToHC
-                            Translate.NotSentPatientToHCReason
+                            Translate.ReasonForNotSendingToHC
                         ]
 
                     else
@@ -1991,7 +1991,7 @@ viewSendToHCForm language currentDate form =
                 "refer-to-hc"
                 Nothing
             ]
-                ++ notSentToHCReasonInput
+                ++ reasonForNotSendingToHCInput
     in
     div [ class "ui form send-to-hc" ]
         [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]

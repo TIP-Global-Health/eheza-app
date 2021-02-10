@@ -586,7 +586,7 @@ type TranslationId
     | NoActivitiesPendingForThisParticipant
     | NoGroupsFound
     | NoMatchesFound
-    | NotSentPatientToHCReason NotSentPatientToHCReason
+    | ReasonForNotSendingToHC ReasonForNotSendingToHC
     | MedicationNonAdministrationReason MedicationNonAdministrationReason
     | NoParticipantsPending
     | NoParticipantsPendingForThisActivity
@@ -4032,7 +4032,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        NotSentPatientToHCReason reason ->
+        ReasonForNotSendingToHC reason ->
             case reason of
                 ClientRefused ->
                     { english = "Client refused"

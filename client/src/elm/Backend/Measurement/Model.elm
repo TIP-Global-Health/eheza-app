@@ -830,7 +830,7 @@ type alias AcuteIllnessMuac =
     AcuteIllnessMeasurement MuacInCm
 
 
-type NotSentPatientToHCReason
+type ReasonForNotSendingToHC
     = ClientRefused
     | NoAmbulance
     | ClientUnableToAffordFees
