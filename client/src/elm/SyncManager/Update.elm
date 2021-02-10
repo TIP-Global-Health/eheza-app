@@ -444,7 +444,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                 SyncIdle ->
                     determineSyncStatus
                         -- We send state report when we begin the sync.
-                        |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
+                        |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) [ QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
                 SyncUploadPhotoAuthority _ _ ->
                     update
@@ -510,6 +510,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                     update
                         currentDate
                         currentTime
+                        activePage
                         dbVersion
                         device
                         (BackendReportSyncIncident incidentType)
@@ -807,7 +808,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                         |> HttpBuilder.send (always NoOp)
             in
             SubModelReturn
-                (SyncManager.Utils.determineSyncStatus model)
+                (SyncManager.Utils.determineSyncStatus activePage model)
                 cmd
                 noError
                 []

@@ -198,6 +198,7 @@ type Dashboard
     | GirlsFilterLabel
     | GoodNutritionLabel
     | IncidenceOf
+    | LastUpdated
     | LoadingDataGeneral
     | MissedSessionsLabel
     | Moderate
@@ -6266,6 +6267,11 @@ translateDashboard trans =
 
         IncidenceOf ->
             { english = "Incidence of"
+            , kinyarwanda = Nothing
+            }
+
+        LastUpdated ->
+            { english = "Last updated"
             , kinyarwanda = Nothing
             }
 
