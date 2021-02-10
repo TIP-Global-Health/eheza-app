@@ -211,6 +211,10 @@ function hedley_stats_calculate_stats_worker($queue_item) {
 function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   try {
     $wrapper = entity_metadata_wrapper('node', $health_center_id);
+
+    // Exact date and time on which statistics were generated.
+    $timestamp = date('d-m-Y H:i:s', time() - date('Z'));
+
     // First check if the HC has "FBF" clinics, only those have stats for
     // the dashboards and we shouldn't send any stats from a HC without
     // FBF clinics.
@@ -230,6 +234,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
         'family_planning' => [],
         'missed_sessions' => [],
         'total_encounters' => NULL,
+        'timestamp' => $timestamp,
       ];
     }
 
@@ -247,6 +252,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
       'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS),
       'missed_sessions' => $missed_sessions,
       'total_encounters' => hedley_stats_get_total_encounters($health_center_id),
+      'timestamp' => $timestamp,
     ];
 
     $stats['stats_cache_hash'] = md5(serialize($stats));
