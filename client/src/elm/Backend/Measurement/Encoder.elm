@@ -1314,7 +1314,7 @@ encondeSendToHCSign sign =
                 "none"
 
 
-encodeNotSentToHCReason : NotSentPatientToHCReason -> Value
+encodeNotSentToHCReason : ReasonForNotSendingToHC -> Value
 encodeNotSentToHCReason event =
     string <|
         case event of
@@ -1327,8 +1327,11 @@ encodeNotSentToHCReason event =
             ClientUnableToAffordFees ->
                 "unable-to-afford-fee"
 
-            NotSentPatientToHCOther ->
+            ReasonForNotSendingToHCOther ->
                 "other"
+
+            NoReasonForNotSendingToHC ->
+                "no-reason"
 
 
 encodeMedicationDistribution : MedicationDistribution -> List ( String, Value )

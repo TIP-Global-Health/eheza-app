@@ -1358,7 +1358,10 @@ decodeNotSentToHC =
                         succeed ClientUnableToAffordFees
 
                     "other" ->
-                        succeed NotSentPatientToHCOther
+                        succeed ReasonForNotSendingToHCOther
+
+                    "no-reason" ->
+                        succeed NoReasonForNotSendingToHC
 
                     _ ->
                         fail <|

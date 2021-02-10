@@ -72,7 +72,7 @@ type Msg
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC )) (Maybe NextStepsTask)
-    | SetNotSentToHC NotSentPatientToHCReason
+    | SetNotSentToHC ReasonForNotSendingToHC
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionMedicationNonAdministrationReason (Maybe MedicationNonAdministrationReason) MedicationDistributionSign MedicationNonAdministrationReason
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution )) (Maybe NextStepsTask)

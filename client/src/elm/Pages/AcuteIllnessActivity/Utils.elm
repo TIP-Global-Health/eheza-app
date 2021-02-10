@@ -1169,7 +1169,7 @@ fromSendToHCValue : Maybe SendToHCValue -> SendToHCForm
 fromSendToHCValue saved =
     { handReferralForm = Maybe.map (.signs >> EverySet.member HandReferrerForm) saved
     , referToHealthCenter = Maybe.map (.signs >> EverySet.member ReferToHealthCenter) saved
-    , notReferredToHealthCenter = Maybe.map .notReferredToHC saved
+    , reasonForNotSendingToHc = Maybe.map .notReferredToHC saved
     }
 
 
@@ -1181,7 +1181,7 @@ sendToHCFormWithDefault form saved =
             (\value ->
                 { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
                 , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
-                , notReferredToHealthCenter = or form.notReferredToHealthCenter (value.notReferredToHC |> Just)
+                , reasonForNotSendingToHc = or form.reasonForNotSendingToHc (value.notReferredToHC |> Just)
                 }
             )
 
@@ -1203,7 +1203,7 @@ toSendToHCValue form =
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
     in
     Maybe.map SendToHCValue signs
-        |> andMap form.notReferredToHealthCenter
+        |> andMap form.reasonForNotSendingToHc
 
 
 fromMedicationDistributionValue : Maybe MedicationDistributionValue -> MedicationDistributionForm

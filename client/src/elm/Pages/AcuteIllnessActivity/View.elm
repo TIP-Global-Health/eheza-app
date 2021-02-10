@@ -1973,7 +1973,7 @@ viewSendToHCForm language currentDate form =
                     if not sentToHealthCenter then
                         [ viewQuestionLabel language Translate.WhyNot
                         , viewCheckBoxSelectInput language
-                            [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, NotSentPatientToHCOther ]
+                            [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
                             []
                             form.reasonForNotSendingToHc
                             SetNotSentToHC

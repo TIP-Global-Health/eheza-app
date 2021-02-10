@@ -4049,8 +4049,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NotSentPatientToHCOther ->
+                ReasonForNotSendingToHCOther ->
                     { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoReasonForNotSendingToHC ->
+                    { english = "No Reason"
                     , kinyarwanda = Nothing
                     }
 

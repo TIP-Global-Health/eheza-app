@@ -777,7 +777,7 @@ type alias Call114 =
 
 type alias SendToHCValue =
     { signs : EverySet SendToHCSign
-    , notReferredToHC : NotSentPatientToHCReason
+    , notReferredToHC : ReasonForNotSendingToHC
     }
 
 
@@ -834,7 +834,8 @@ type ReasonForNotSendingToHC
     = ClientRefused
     | NoAmbulance
     | ClientUnableToAffordFees
-    | NotSentPatientToHCOther
+    | ReasonForNotSendingToHCOther
+    | NoReasonForNotSendingToHC
 
 
 type TreatmentOngoingSign
