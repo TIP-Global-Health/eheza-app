@@ -818,9 +818,6 @@ viewActionsTakenPane :
     -> Html Msg
 viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData data =
     let
-        diagnosis =
-            Maybe.map Tuple.second data.diagnosis
-
         actionsTakenFirstEncounter =
             firstEncounterData
                 |> Maybe.map
