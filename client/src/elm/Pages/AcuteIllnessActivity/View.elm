@@ -18,7 +18,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears, isPersonAFertileWoman)
+import Backend.Person.Utils exposing (ageInMonths, ageInYears, isPersonAFertileWoman)
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -35,6 +35,7 @@ import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.AcuteIllnessEncounter.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.View exposing (viewPersonDetailsWithAlert, warningPopup)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.PrenatalActivity.View exposing (viewConditionalAlert)
 import Pages.Utils
     exposing
         ( isTaskCompleted
@@ -801,9 +802,39 @@ viewVitalsForm language currentDate assembled form_ =
 
         bodyTemperaturePreviousValue =
             resolvePreviousValue assembled .vitals .bodyTemperature
+
+        respiratoryRateAlert =
+            ageInMonths currentDate assembled.person
+                |> Maybe.map
+                    (\ageMonths ->
+                        let
+                            ( redCondition, yellowCondition ) =
+                                if ageMonths < 12 then
+                                    ( [ [ (>) 12 ], [ (<=) 50 ] ]
+                                    , []
+                                    )
+
+                                else if ageMonths < 60 then
+                                    ( [ [ (>) 12 ], [ (<=) 40 ] ]
+                                    , []
+                                    )
+
+                                else
+                                    ( [ [ (>) 12 ], [ (<) 30 ] ]
+                                    , [ [ (<=) 21, (>=) 30 ] ]
+                                    )
+                        in
+                        viewConditionalAlert form.respiratoryRate redCondition yellowCondition
+                    )
+                |> Maybe.withDefault emptyNode
     in
     div [ class "ui form physical-exam vitals" ]
-        [ viewLabel language Translate.RespiratoryRate
+        [ div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.RespiratoryRate ]
+            , div [ class "four wide column" ]
+                [ respiratoryRateAlert ]
+            ]
         , viewMeasurementInput
             language
             (Maybe.map toFloat form.respiratoryRate)
@@ -812,7 +843,15 @@ viewVitalsForm language currentDate assembled form_ =
             Translate.BpmUnitLabel
         , viewPreviousMeasurement language respiratoryRatePreviousValue Translate.BpmUnitLabel
         , div [ class "separator" ] []
-        , viewLabel language Translate.BodyTemperature
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.BodyTemperature ]
+            , div [ class "four wide column" ]
+                [ viewConditionalAlert form.bodyTemperature
+                    [ [ (>) 35 ], [ (<) 37.5 ] ]
+                    []
+                ]
+            ]
         , viewMeasurementInput
             language
             form.bodyTemperature

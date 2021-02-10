@@ -1,4 +1,4 @@
-module Pages.PrenatalActivity.View exposing (view)
+module Pages.PrenatalActivity.View exposing (view, viewConditionalAlert)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
