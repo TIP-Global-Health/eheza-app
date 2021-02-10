@@ -1322,7 +1322,7 @@ encodeNotSentToHCReason event =
                 "client-refused"
 
             NoAmbulance ->
-                "not-ambulance"
+                "no-ambulance"
 
             ClientUnableToAffordFees ->
                 "unable-to-afford-fee"
