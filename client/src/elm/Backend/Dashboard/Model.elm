@@ -43,7 +43,10 @@ type alias DashboardStats =
     , missedSessions : List ParticipantStats
     , totalEncounters : Periods
 
-    -- Hold an md5 hash, so we'd know if we have the most up to date data.
+    -- UTC Date and time on which statistics were generated.
+    , timestamp : String
+
+    -- An md5 hash, using which we know if we have the most up to date data.
     , cacheHash : String
     }
 
@@ -57,6 +60,7 @@ emptyModel =
     , maybeGoodNutrition = Nothing
     , missedSessions = []
     , totalEncounters = Periods 0 0
+    , timestamp = ""
     , cacheHash = ""
     }
 

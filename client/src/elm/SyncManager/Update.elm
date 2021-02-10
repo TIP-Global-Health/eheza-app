@@ -16,6 +16,7 @@ import Json.Decode exposing (Value, decodeValue)
 import Json.Encode
 import List.Zipper as Zipper
 import Maybe.Extra
+import Pages.Page exposing (Page)
 import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseAuthorityStats, decodeDownloadSyncResponseGeneral)
@@ -35,8 +36,8 @@ import Utils.WebData
 import Version
 
 
-update : NominalDate -> Time.Posix -> Int -> Device -> Msg -> Model -> SubModelReturn Model Msg
-update currentDate currentTime dbVersion device msg model =
+update : NominalDate -> Time.Posix -> Page -> Int -> Device -> Msg -> Model -> SubModelReturn Model Msg
+update currentDate currentTime activePage dbVersion device msg model =
     let
         noChange =
             SubModelReturn model Cmd.none noError []
@@ -52,7 +53,7 @@ update currentDate currentTime dbVersion device msg model =
 
         determineSyncStatus =
             SubModelReturn
-                (SyncManager.Utils.determineSyncStatus model)
+                (SyncManager.Utils.determineSyncStatus activePage model)
                 Cmd.none
                 noError
                 []
@@ -73,19 +74,19 @@ update currentDate currentTime dbVersion device msg model =
                 (Cmd.map MsgDebouncer subCmd)
                 noError
                 []
-                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) (Maybe.Extra.toList extraMsg)
+                |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) (Maybe.Extra.toList extraMsg)
 
         NoOp ->
             noChange
 
         SchedulePageRefresh ->
             noChange
-                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device)
+                |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device)
                     [ MsgDebouncer <| provideInput RefreshPage ]
 
         SchedulePhotosDownload ->
             noChange
-                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device)
+                |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device)
                     [ MsgDebouncer <| provideInput TryDownloadingPhotos ]
 
         RefreshPage ->
@@ -107,7 +108,7 @@ update currentDate currentTime dbVersion device msg model =
                                 -- We also, schdule photos download send devicestate report,
                                 -- so that version and synced authorities get updated on backend.
                                 determineSyncStatus
-                                    |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
+                                    |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) [ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
                             Just zipper ->
                                 let
@@ -246,7 +247,7 @@ update currentDate currentTime dbVersion device msg model =
                             zipper
 
                 modelWithSyncStatus =
-                    SyncManager.Utils.determineSyncStatus
+                    SyncManager.Utils.determineSyncStatus activePage
                         { model
                             | syncStatus = SyncDownloadAuthority webData
                             , syncInfoAuthorities = Just syncInfoAuthorities
@@ -400,7 +401,7 @@ update currentDate currentTime dbVersion device msg model =
                             zipper
 
                 modelWithSyncStatus =
-                    SyncManager.Utils.determineSyncStatus
+                    SyncManager.Utils.determineSyncStatus activePage
                         { model
                             | syncStatus = SyncDownloadAuthorityDashboardStats webData
                             , syncInfoAuthorities = Just syncInfoAuthorities
@@ -436,19 +437,20 @@ update currentDate currentTime dbVersion device msg model =
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityDashboardStatsFetchHandle")
                 appMsgs
-                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) extraMsgs
+                |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) extraMsgs
 
         BackendFetchMain ->
             case model.syncStatus of
                 SyncIdle ->
                     determineSyncStatus
                         -- We send state report when we begin the sync.
-                        |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
+                        |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) [ QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
                 SyncUploadPhotoAuthority _ _ ->
                     update
                         currentDate
                         currentTime
+                        activePage
                         dbVersion
                         device
                         BackendPhotoUploadAuthority
@@ -458,6 +460,7 @@ update currentDate currentTime dbVersion device msg model =
                     update
                         currentDate
                         currentTime
+                        activePage
                         dbVersion
                         device
                         FetchFromIndexDbUploadGeneral
@@ -467,6 +470,7 @@ update currentDate currentTime dbVersion device msg model =
                     update
                         currentDate
                         currentTime
+                        activePage
                         dbVersion
                         device
                         FetchFromIndexDbUploadAuthority
@@ -476,6 +480,7 @@ update currentDate currentTime dbVersion device msg model =
                     update
                         currentDate
                         currentTime
+                        activePage
                         dbVersion
                         device
                         BackendGeneralFetch
@@ -485,6 +490,7 @@ update currentDate currentTime dbVersion device msg model =
                     update
                         currentDate
                         currentTime
+                        activePage
                         dbVersion
                         device
                         BackendAuthorityFetch
@@ -494,6 +500,7 @@ update currentDate currentTime dbVersion device msg model =
                     update
                         currentDate
                         currentTime
+                        activePage
                         dbVersion
                         device
                         BackendAuthorityDashboardStatsFetch
@@ -503,6 +510,7 @@ update currentDate currentTime dbVersion device msg model =
                     update
                         currentDate
                         currentTime
+                        activePage
                         dbVersion
                         device
                         (BackendReportSyncIncident incidentType)
@@ -521,6 +529,7 @@ update currentDate currentTime dbVersion device msg model =
                     update
                         currentDate
                         currentTime
+                        activePage
                         dbVersion
                         device
                         FetchFromIndexDbDeferredPhoto
@@ -560,7 +569,7 @@ update currentDate currentTime dbVersion device msg model =
                 cmd
                 noError
                 []
-                |> sequenceSubModelReturn (update currentDate currentTime dbVersion device) [ TrySyncing ]
+                |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) [ TrySyncing ]
 
         RevisionIdAuthorityRemove uuid ->
             -- Remove authority from Local storage.
@@ -629,7 +638,7 @@ update currentDate currentTime dbVersion device msg model =
 
                 _ ->
                     SubModelReturn
-                        (SyncManager.Utils.determineSyncStatus model)
+                        (SyncManager.Utils.determineSyncStatus activePage model)
                         Cmd.none
                         noError
                         []
@@ -725,7 +734,7 @@ update currentDate currentTime dbVersion device msg model =
                             model.syncInfoGeneral
 
                 modelWithSyncStatus =
-                    SyncManager.Utils.determineSyncStatus { model | syncStatus = SyncDownloadGeneral webData }
+                    SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = SyncDownloadGeneral webData }
             in
             SubModelReturn
                 { modelWithSyncStatus | syncInfoGeneral = syncInfoGeneral }
@@ -799,7 +808,7 @@ update currentDate currentTime dbVersion device msg model =
                         |> HttpBuilder.send (always NoOp)
             in
             SubModelReturn
-                (SyncManager.Utils.determineSyncStatus model)
+                (SyncManager.Utils.determineSyncStatus activePage model)
                 cmd
                 noError
                 []
@@ -826,6 +835,7 @@ update currentDate currentTime dbVersion device msg model =
                         update
                             currentDate
                             currentTime
+                            activePage
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryDeferredPhoto)
@@ -847,6 +857,7 @@ update currentDate currentTime dbVersion device msg model =
                         update
                             currentDate
                             currentTime
+                            activePage
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryDeferredPhoto)
@@ -874,6 +885,7 @@ update currentDate currentTime dbVersion device msg model =
                         update
                             currentDate
                             currentTime
+                            activePage
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryUploadGeneral)
@@ -912,6 +924,7 @@ update currentDate currentTime dbVersion device msg model =
                                 update
                                     currentDate
                                     currentTime
+                                    activePage
                                     dbVersion
                                     device
                                     (QueryIndexDb <| IndexDbQueryUploadAuthority currentZipper.uuid)
@@ -930,6 +943,7 @@ update currentDate currentTime dbVersion device msg model =
                         update
                             currentDate
                             currentTime
+                            activePage
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryUploadPhotoAuthority)
@@ -945,7 +959,7 @@ update currentDate currentTime dbVersion device msg model =
             case model.syncStatus of
                 SyncUploadPhotoAuthority errorsCount _ ->
                     SubModelReturn
-                        (SyncManager.Utils.determineSyncStatus { model | syncStatus = SyncUploadPhotoAuthority errorsCount remoteData })
+                        (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = SyncUploadPhotoAuthority errorsCount remoteData })
                         Cmd.none
                         noError
                         []
@@ -965,7 +979,7 @@ update currentDate currentTime dbVersion device msg model =
                             model.syncStatus
             in
             SubModelReturn
-                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = syncStatus })
                 Cmd.none
                 noError
                 []
@@ -1033,7 +1047,7 @@ update currentDate currentTime dbVersion device msg model =
                                 { model | syncStatus = SyncUploadAuthority recordUpdated, syncInfoAuthorities = syncInfoAuthorities }
                         in
                         SubModelReturn
-                            (SyncManager.Utils.determineSyncStatus modelUpdated)
+                            (SyncManager.Utils.determineSyncStatus activePage modelUpdated)
                             (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
                             noError
                             []
@@ -1065,7 +1079,7 @@ update currentDate currentTime dbVersion device msg model =
                                         |> Maybe.withDefault ( model.syncInfoAuthorities, Cmd.none )
                             in
                             SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoAuthorities = syncInfoAuthorities })
+                                (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = syncStatus, syncInfoAuthorities = syncInfoAuthorities })
                                 setSyncInfoAurhoritiesCmd
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadAuthorityHandle")
                                 []
@@ -1121,7 +1135,7 @@ update currentDate currentTime dbVersion device msg model =
 
                                 subModelReturn =
                                     SubModelReturn
-                                        (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoAuthorities = syncInfoAuthorities })
+                                        (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = syncStatus, syncInfoAuthorities = syncInfoAuthorities })
                                         (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
                                         noError
                                         []
@@ -1132,7 +1146,7 @@ update currentDate currentTime dbVersion device msg model =
                             else
                                 subModelReturn
                                     |> sequenceSubModelReturn
-                                        (update currentDate currentTime dbVersion device)
+                                        (update currentDate currentTime activePage dbVersion device)
                                         [ QueryIndexDb <| IndexDbQueryRemoveUploadPhotos uploadPhotosToDelete
                                         ]
 
@@ -1155,7 +1169,7 @@ update currentDate currentTime dbVersion device msg model =
                             model.syncStatus
             in
             SubModelReturn
-                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = syncStatus })
                 Cmd.none
                 noError
                 []
@@ -1213,7 +1227,7 @@ update currentDate currentTime dbVersion device msg model =
                                 { model | syncStatus = SyncUploadGeneral recordUpdated, syncInfoGeneral = syncInfoGeneral }
                         in
                         SubModelReturn
-                            (SyncManager.Utils.determineSyncStatus modelUpdated)
+                            (SyncManager.Utils.determineSyncStatus activePage modelUpdated)
                             setSyncInfoGeneralCmd
                             noError
                             []
@@ -1238,7 +1252,7 @@ update currentDate currentTime dbVersion device msg model =
                                     sendSyncInfoGeneralCmd syncInfoGeneral
                             in
                             SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral })
+                                (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral })
                                 setSyncInfoGeneralCmd
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadGeneralHandle")
                                 []
@@ -1281,7 +1295,7 @@ update currentDate currentTime dbVersion device msg model =
                                     deleteEntitiesThatWereUploaded { type_ = "General", localId = localIds }
                             in
                             SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral })
+                                (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral })
                                 (Cmd.batch [ cmd, setSyncInfoGeneralCmd ])
                                 noError
                                 []
@@ -1411,6 +1425,7 @@ update currentDate currentTime dbVersion device msg model =
                         update
                             currentDate
                             currentTime
+                            activePage
                             dbVersion
                             device
                             (QueryIndexDb <| IndexDbQueryUpdateDeferredPhotoAttempts result)
@@ -1446,6 +1461,7 @@ update currentDate currentTime dbVersion device msg model =
                     update
                         currentDate
                         currentTime
+                        activePage
                         dbVersion
                         device
                         (QueryIndexDb <| IndexDbQueryRemoveDeferredPhoto result.uuid)
@@ -1536,6 +1552,7 @@ update currentDate currentTime dbVersion device msg model =
                             update
                                 currentDate
                                 currentTime
+                                activePage
                                 dbVersion
                                 device
                                 (BackendUploadPhotoAuthorityHandle remoteData)
@@ -1545,6 +1562,7 @@ update currentDate currentTime dbVersion device msg model =
                             update
                                 currentDate
                                 currentTime
+                                activePage
                                 dbVersion
                                 device
                                 (BackendUploadAuthority result)
@@ -1554,6 +1572,7 @@ update currentDate currentTime dbVersion device msg model =
                             update
                                 currentDate
                                 currentTime
+                                activePage
                                 dbVersion
                                 device
                                 (BackendUploadGeneral result)
@@ -1563,6 +1582,7 @@ update currentDate currentTime dbVersion device msg model =
                             update
                                 currentDate
                                 currentTime
+                                activePage
                                 dbVersion
                                 device
                                 (BackendDeferredPhotoFetch result)
@@ -1572,6 +1592,7 @@ update currentDate currentTime dbVersion device msg model =
                             update
                                 currentDate
                                 currentTime
+                                activePage
                                 dbVersion
                                 device
                                 (BackendReportState result)
@@ -1710,6 +1731,7 @@ update currentDate currentTime dbVersion device msg model =
                     update
                         currentDate
                         currentTime
+                        activePage
                         dbVersion
                         device
                         BackendFetchMain
@@ -1725,6 +1747,7 @@ update currentDate currentTime dbVersion device msg model =
                     update
                         currentDate
                         currentTime
+                        activePage
                         dbVersion
                         device
                         BackendFetchPhotos

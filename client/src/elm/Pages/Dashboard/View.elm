@@ -115,7 +115,8 @@ viewMainPage language currentDate stats model =
                 |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
     in
     div [ class "dashboard main" ]
-        [ viewPeriodFilter language model filterPeriodsForMainPage
+        [ div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
+        , viewPeriodFilter language model filterPeriodsForMainPage
         , div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
                 [ viewGoodNutrition language currentPeriodStats.maybeGoodNutrition
