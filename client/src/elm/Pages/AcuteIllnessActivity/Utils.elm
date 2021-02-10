@@ -1597,9 +1597,9 @@ resolvePreviousValue : AssembledData -> (AcuteIllnessMeasurements -> Maybe ( id,
 resolvePreviousValue assembled measurementFunc valueFunc =
     assembled.previousEncountersData
         |> List.filterMap
-            (\( _, measurements ) ->
-                measurementFunc measurements
-                    |> Maybe.map (Tuple.second >> .value >> valueFunc)
+            (.measurements
+                >> measurementFunc
+                >> Maybe.map (Tuple.second >> .value >> valueFunc)
             )
         |> List.reverse
         |> List.head

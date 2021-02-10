@@ -121,7 +121,7 @@ generatePreviousMeasurements :
     AcuteIllnessEncounterId
     -> IndividualEncounterParticipantId
     -> ModelIndexedDb
-    -> WebData (List ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements ))
+    -> WebData (List AcuteIllnessEncounterData)
 generatePreviousMeasurements currentEncounterId participantId db =
     Dict.get participantId db.acuteIllnessEncountersByParticipant
         |> Maybe.withDefault NotAsked
@@ -135,15 +135,38 @@ generatePreviousMeasurements currentEncounterId participantId db =
 
                         else
                             case Dict.get encounterId db.acuteIllnessMeasurements of
-                                Just (Success data) ->
-                                    Just ( ( encounter.startDate, encounter.diagnosis ), data )
+                                Just (Success measurements) ->
+                                    Just (AcuteIllnessEncounterData encounterId encounter.startDate encounter.sequenceNumber encounter.diagnosis measurements)
 
                                 _ ->
                                     Nothing
                     )
-                >> List.sortWith
-                    (\( ( date1, _ ), _ ) ( ( date2, _ ), _ ) -> Gizra.NominalDate.compare date1 date2)
+                >> List.sortWith compareAcuteIllnessEncounterDataAsc
             )
+
+
+compareAcuteIllnessEncounterDataDesc :
+    { a | startDate : NominalDate, sequenceNumber : Int }
+    -> { a | startDate : NominalDate, sequenceNumber : Int }
+    -> Order
+compareAcuteIllnessEncounterDataDesc data1 data2 =
+    compareAcuteIllnessEncounterDataAsc data2 data1
+
+
+compareAcuteIllnessEncounterDataAsc :
+    { a | startDate : NominalDate, sequenceNumber : Int }
+    -> { a | startDate : NominalDate, sequenceNumber : Int }
+    -> Order
+compareAcuteIllnessEncounterDataAsc data1 data2 =
+    case Gizra.NominalDate.compare data1.startDate data2.startDate of
+        LT ->
+            LT
+
+        GT ->
+            GT
+
+        EQ ->
+            compare data1.sequenceNumber data2.sequenceNumber
 
 
 getAcuteIllnessDiagnosisByPreviousEncounters :
@@ -158,20 +181,18 @@ getAcuteIllnessDiagnosisByPreviousEncounters currentEncounterId db participantId
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
                 |> Maybe.map Dict.toList
-                |> Maybe.map
-                    (List.filterMap
-                        (\( encounterId, encounter ) ->
-                            -- We do not want to get data of current encounter,
-                            -- and those that do not have diagnosis set.
-                            if encounterId == currentEncounterId || encounter.diagnosis == NoAcuteIllnessDiagnosis then
-                                Nothing
-
-                            else
-                                Just ( encounter.startDate, encounter.diagnosis )
-                        )
-                        >> List.sortWith (\( d1, _ ) ( d2, _ ) -> Gizra.NominalDate.compare d2 d1)
-                    )
                 |> Maybe.withDefault []
+                |> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncounterDataDesc e1 e2)
+                |> List.filterMap
+                    (\( encounterId, encounter ) ->
+                        -- We do not want to get data of current encounter,
+                        -- and those that do not have diagnosis set.
+                        if encounterId == currentEncounterId || encounter.diagnosis == NoAcuteIllnessDiagnosis then
+                            Nothing
+
+                        else
+                            Just ( encounter.startDate, encounter.diagnosis )
+                    )
     in
     case encountersWithDiagnosis of
         [ current ] ->
@@ -197,7 +218,7 @@ getAcuteIllnessDiagnosisForParticipant db participantId =
         |> Maybe.map Dict.toList
         |> Maybe.andThen
             (List.map Tuple.second
-                >> List.sortWith (\e1 e2 -> Gizra.NominalDate.compare e2.startDate e1.startDate)
+                >> List.sortWith compareAcuteIllnessEncounterDataDesc
                 >> List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis)
                 >> List.head
                 >> Maybe.map .diagnosis
@@ -506,7 +527,7 @@ expectActivity currentDate isFirstEncounter data activity =
                 feverRecorded data.measurements
                     && (data.previousEncountersData
                             |> List.filter
-                                (Tuple.second
+                                (.measurements
                                     >> .malariaTesting
                                     >> Maybe.map
                                         (Tuple.second
@@ -526,7 +547,7 @@ expectActivity currentDate isFirstEncounter data activity =
                 -- Show activity, if medication was perscribed at any of previous encounters.
                 data.previousEncountersData
                     |> List.filterMap
-                        (Tuple.second
+                        (.measurements
                             >> .medicationDistribution
                             >> Maybe.andThen
                                 (Tuple.second

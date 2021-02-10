@@ -46,6 +46,7 @@ import Pages.AcuteIllnessEncounter.Utils
         , generateAssembledData
         , mandatoryActivitiesCompletedSubsequentVisit
         , noImprovementOnSubsequentVisit
+        , resolveAcuteIllnessDiagnosis
         , resolveNextStepFirstEncounter
         , resolveNextStepSubsequentEncounter
         )
@@ -1466,7 +1467,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                         (\( sessionId, _ ) ->
                             case encounterType of
                                 AcuteIllnessEncounter ->
-                                    [ emptyAcuteIllnessEncounter sessionId currentDate healthCenterId
+                                    [ emptyAcuteIllnessEncounter sessionId currentDate 1 healthCenterId
                                         |> Backend.Model.PostAcuteIllnessEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
@@ -2228,6 +2229,19 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter : NominalDate -> Pages.AcuteIl
 generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate data =
     if mandatoryActivitiesCompletedSubsequentVisit currentDate data then
         let
+            diagnosisByCurrentEncounterMeasurements =
+                resolveAcuteIllnessDiagnosis currentDate data
+                    |> Maybe.withDefault NoAcuteIllnessDiagnosis
+
+            setDiagnosisMsg =
+                -- We have an update to diagnosis based on current measurments,
+                -- and it is not yet set for the encounter.
+                if data.encounter.diagnosis == NoAcuteIllnessDiagnosis && diagnosisByCurrentEncounterMeasurements /= NoAcuteIllnessDiagnosis then
+                    [ updateDiagnosisMsg data.id diagnosisByCurrentEncounterMeasurements ]
+
+                else
+                    []
+
             setActiveTaskMsg =
                 resolveNextStepSubsequentEncounter currentDate data
                     |> Maybe.map
@@ -2246,11 +2260,9 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate data =
             |> Pages.AcuteIllnessActivity.Model.SetWarningPopupState
             |> App.Model.MsgPageAcuteIllnessActivity data.id AcuteIllnessNextSteps
             |> App.Model.MsgLoggedIn
-        , -- Set diagnosis for this encounter.
-          Maybe.map Tuple.second data.diagnosis
-            |> Maybe.withDefault NoAcuteIllnessDiagnosis
-            |> updateDiagnosisMsg data.id
         ]
+            ++ -- Set diagnosis for this encounter.
+               setDiagnosisMsg
             ++ -- Focus on first task on that page.
                setActiveTaskMsg
 

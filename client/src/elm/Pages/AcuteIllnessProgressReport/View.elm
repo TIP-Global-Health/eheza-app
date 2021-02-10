@@ -21,7 +21,7 @@ import Maybe.Extra exposing (isNothing)
 import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
 import Pages.AcuteIllnessActivity.View exposing (renderDatePart, viewActionTakenLabel, viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewTabletsPrescription)
-import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
+import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
 import Pages.AcuteIllnessEncounter.Utils
     exposing
         ( dangerSignPresentOnSubsequentVisit
@@ -75,7 +75,11 @@ viewContent language currentDate id model data =
                 |> Maybe.withDefault NoAcuteIllnessDiagnosis
 
         currentEncounterData =
-            ( ( currentDate, diagnosisByCurrentEncounterMeasurements ), data.measurements )
+            AcuteIllnessEncounterData id
+                data.encounter.startDate
+                data.encounter.sequenceNumber
+                diagnosisByCurrentEncounterMeasurements
+                data.measurements
 
         firstEncounterData =
             if isFirstEncounter then
@@ -85,7 +89,7 @@ viewContent language currentDate id model data =
                 List.head data.previousEncountersData
 
         illnessBeganDate =
-            Maybe.map (Tuple.first >> Tuple.first) firstEncounterData
+            Maybe.map .startDate firstEncounterData
                 |> Maybe.withDefault currentDate
 
         subsequentEncountersData =
@@ -95,11 +99,11 @@ viewContent language currentDate id model data =
             else
                 firstEncounterData
                     |> Maybe.map
-                        (\( firstEncounterDate, _ ) ->
+                        (\dataFirst ->
                             let
                                 previousEncountersData =
                                     data.previousEncountersData
-                                        |> List.filter (\( date, _ ) -> date /= firstEncounterDate)
+                                        |> List.filter (.id >> (/=) dataFirst.id)
                             in
                             previousEncountersData ++ [ currentEncounterData ]
                         )
@@ -217,8 +221,8 @@ viewAssessmentPane :
     Language
     -> NominalDate
     -> Bool
-    -> Maybe ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements )
-    -> List ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements )
+    -> Maybe AcuteIllnessEncounterData
+    -> List AcuteIllnessEncounterData
     -> AssembledData
     -> Html Msg
 viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subsequentEncountersData data =
@@ -306,17 +310,17 @@ viewTreatmentSigns :
     Language
     -> NominalDate
     -> Bool
-    -> Maybe ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements )
-    -> List ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements )
+    -> Maybe AcuteIllnessEncounterData
+    -> List AcuteIllnessEncounterData
     -> List (Html Msg)
 viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subsequentEncountersData =
     firstEncounterData
         |> Maybe.map
-            (\( _, firstEncounterMeasurements ) ->
+            (\dataFirst ->
                 if isFirstEncounter then
                     let
                         treatmentReview =
-                            firstEncounterMeasurements.treatmentReview
+                            dataFirst.measurements.treatmentReview
                                 |> Maybe.map (Tuple.second >> .value)
 
                         viewTreatmentSignInfo sign signHelped signTransId =
@@ -350,7 +354,7 @@ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subs
                 else
                     let
                         prescribedMedication =
-                            firstEncounterMeasurements.medicationDistribution
+                            dataFirst.measurements.medicationDistribution
                                 |> Maybe.map
                                     (Tuple.second
                                         >> .value
@@ -440,8 +444,8 @@ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subs
                         subsequentEncountersData
                             |> List.reverse
                             |> List.map
-                                (\( ( date, _ ), subsequentEncounterMeasurements ) ->
-                                    subsequentEncounterMeasurements.treatmentOngoing
+                                (\dataSubsequent ->
+                                    dataSubsequent.measurements.treatmentOngoing
                                         |> Maybe.map
                                             (Tuple.second
                                                 >> .value
@@ -450,7 +454,7 @@ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subs
                                                     [ div [ class "visit-date" ]
                                                         [ text <| translate language <| Translate.On
                                                         , text " "
-                                                        , text <| formatDDMMYY date
+                                                        , text <| formatDDMMYY dataSubsequent.startDate
                                                         , text " :"
                                                         ]
                                                     ]
@@ -462,7 +466,7 @@ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subs
         |> Maybe.withDefault []
 
 
-viewSymptomsPane : Language -> NominalDate -> Bool -> Maybe ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements ) -> Html Msg
+viewSymptomsPane : Language -> NominalDate -> Bool -> Maybe AcuteIllnessEncounterData -> Html Msg
 viewSymptomsPane language currentDate isFirstEncounter firstEncounterData =
     let
         headingTransId =
@@ -475,7 +479,7 @@ viewSymptomsPane language currentDate isFirstEncounter firstEncounterData =
         symptomsTable =
             firstEncounterData
                 |> Maybe.map
-                    (\( ( firstEncounterDate, _ ), measurements ) ->
+                    (\dataFirst ->
                         let
                             symptomsMaxDuration getFunc measurement =
                                 measurement
@@ -484,9 +488,9 @@ viewSymptomsPane language currentDate isFirstEncounter firstEncounterData =
 
                             maxDuration =
                                 List.maximum
-                                    [ symptomsMaxDuration .value measurements.symptomsGeneral
-                                    , symptomsMaxDuration .value measurements.symptomsRespiratory
-                                    , symptomsMaxDuration (.value >> .signs) measurements.symptomsGI
+                                    [ symptomsMaxDuration .value dataFirst.measurements.symptomsGeneral
+                                    , symptomsMaxDuration .value dataFirst.measurements.symptomsRespiratory
+                                    , symptomsMaxDuration (.value >> .signs) dataFirst.measurements.symptomsGI
                                     ]
                                     |> Maybe.withDefault 1
 
@@ -502,7 +506,7 @@ viewSymptomsPane language currentDate isFirstEncounter firstEncounterData =
                                         )
 
                             symptomsGeneral duration =
-                                measurements.symptomsGeneral
+                                dataFirst.measurements.symptomsGeneral
                                     |> Maybe.map
                                         (Tuple.second
                                             >> .value
@@ -512,7 +516,7 @@ viewSymptomsPane language currentDate isFirstEncounter firstEncounterData =
                                     |> Maybe.withDefault []
 
                             symptomsRespiratory duration =
-                                measurements.symptomsRespiratory
+                                dataFirst.measurements.symptomsRespiratory
                                     |> Maybe.map
                                         (Tuple.second
                                             >> .value
@@ -522,7 +526,7 @@ viewSymptomsPane language currentDate isFirstEncounter firstEncounterData =
                                     |> Maybe.withDefault []
 
                             symptomsGI duration =
-                                measurements.symptomsGI
+                                dataFirst.measurements.symptomsGI
                                     |> Maybe.map
                                         (\measurement ->
                                             Tuple.second measurement
@@ -549,7 +553,7 @@ viewSymptomsPane language currentDate isFirstEncounter firstEncounterData =
                                     |> Maybe.withDefault []
 
                             values =
-                                List.repeat maxDuration firstEncounterDate
+                                List.repeat maxDuration dataFirst.startDate
                                     |> List.indexedMap
                                         (\index date ->
                                             ( Date.add Date.Days (-1 * index) date |> formatDDMMYY
@@ -628,8 +632,8 @@ viewTimeLineBottom =
 viewPhysicalExamPane :
     Language
     -> NominalDate
-    -> Maybe ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements )
-    -> List ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements )
+    -> Maybe AcuteIllnessEncounterData
+    -> List AcuteIllnessEncounterData
     -> AssembledData
     -> Html Msg
 viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data =
@@ -686,10 +690,7 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
 
         allEncountersData =
             firstEncounterData
-                |> Maybe.map
-                    (\( date, measurements ) ->
-                        ( date, measurements ) :: subsequentEncountersData
-                    )
+                |> Maybe.map (\dataFirst -> dataFirst :: subsequentEncountersData)
                 |> Maybe.withDefault []
 
         tables =
@@ -699,13 +700,12 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                     (\groupOfFour ->
                         let
                             dates =
-                                groupOfFour
-                                    |> List.map (Tuple.first >> Tuple.first)
+                                List.map .startDate groupOfFour
 
                             bodyTemperatures =
                                 groupOfFour
                                     |> List.map
-                                        (Tuple.second
+                                        (.measurements
                                             >> .vitals
                                             >> Maybe.map (Tuple.second >> .value >> .bodyTemperature)
                                         )
@@ -713,7 +713,7 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                             respiratoryRates =
                                 groupOfFour
                                     |> List.map
-                                        (Tuple.second
+                                        (.measurements
                                             >> .vitals
                                             >> Maybe.map (Tuple.second >> .value >> .respiratoryRate)
                                         )
@@ -721,7 +721,7 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                             muacs =
                                 groupOfFour
                                     |> List.map
-                                        (Tuple.second
+                                        (.measurements
                                             >> .muac
                                             >> Maybe.map (Tuple.second >> .value)
                                         )
@@ -812,38 +812,31 @@ viewNutritionSigns language dateOfLastAssessment signs =
 viewActionsTakenPane :
     Language
     -> NominalDate
-    -> Maybe ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements )
-    -> List ( ( NominalDate, AcuteIllnessDiagnosis ), AcuteIllnessMeasurements )
+    -> Maybe AcuteIllnessEncounterData
+    -> List AcuteIllnessEncounterData
     -> AssembledData
     -> Html Msg
 viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData data =
     let
-        diagnosis =
-            Maybe.map Tuple.second data.diagnosis
-
         actionsTakenFirstEncounter =
             firstEncounterData
                 |> Maybe.map
-                    (\( ( date, firstDiagnosis ), measurements ) ->
-                        case resolveNextStepFirstEncounter date data of
-                            -- This is COVID19 case
-                            Just NextStepsIsolation ->
-                                viewActionsTakenCovid19 language date measurements
-
-                            Just NextStepsMedicationDistribution ->
-                                viewActionsTakenNonCovid19 language date data.person firstDiagnosis measurements
-
-                            Just NextStepsSendToHC ->
-                                viewActionsTakenNonCovid19 language date data.person firstDiagnosis measurements
+                    (\dataFirst ->
+                        case dataFirst.diagnosis of
+                            DiagnosisCovid19 ->
+                                viewActionsTakenCovid19 language dataFirst.startDate dataFirst.measurements
 
                             _ ->
-                                emptyNode
+                                viewActionsTakenNonCovid19 language dataFirst.startDate data.person dataFirst.diagnosis dataFirst.measurements
                     )
                 |> Maybe.withDefault emptyNode
 
         actionsTakenSubsequentEncounters =
             subsequentEncountersData
-                |> List.map (\( ( date, subsequentEncounterDiagnosis ), measurements ) -> viewActionsTakenNonCovid19 language date data.person subsequentEncounterDiagnosis measurements)
+                |> List.map
+                    (\dataSubsequent ->
+                        viewActionsTakenNonCovid19 language dataSubsequent.startDate data.person dataSubsequent.diagnosis dataSubsequent.measurements
+                    )
                 |> List.reverse
 
         content =
@@ -1095,7 +1088,7 @@ viewNonAdministrationReason language medicineTranslationId iconClass maybeDate r
                 ]
                     ++ renderDatePart language maybeDate
     in
-    div [ class "header non-administration-reason" ] <|
+    div [ class "header icon-label" ] <|
         [ i [ class iconClass ] []
         , message
         ]

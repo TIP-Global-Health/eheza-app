@@ -12,15 +12,17 @@ type alias AcuteIllnessEncounter =
     { participant : IndividualEncounterParticipantId
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , sequenceNumber : Int
     , diagnosis : AcuteIllnessDiagnosis
     , shard : Maybe HealthCenterId
     }
 
 
-emptyAcuteIllnessEncounter : IndividualEncounterParticipantId -> NominalDate -> Maybe HealthCenterId -> AcuteIllnessEncounter
-emptyAcuteIllnessEncounter participant startDate shard =
+emptyAcuteIllnessEncounter : IndividualEncounterParticipantId -> NominalDate -> Int -> Maybe HealthCenterId -> AcuteIllnessEncounter
+emptyAcuteIllnessEncounter participant startDate sequenceNumber shard =
     { participant = participant
     , startDate = startDate
+    , sequenceNumber = sequenceNumber
     , endDate = Nothing
     , diagnosis = NoAcuteIllnessDiagnosis
     , shard = shard
