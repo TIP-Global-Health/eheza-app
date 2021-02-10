@@ -810,13 +810,13 @@ viewVitalsForm language currentDate assembled form_ =
                         let
                             ( redCondition, yellowCondition ) =
                                 if ageMonths < 12 then
-                                    ( [ [ (>) 12 ], [ (<) 50 ] ]
-                                    , [ [ (<=) 41, (>=) 50 ] ]
+                                    ( [ [ (>) 12 ], [ (<=) 50 ] ]
+                                    , []
                                     )
 
                                 else if ageMonths < 60 then
-                                    ( [ [ (>) 12 ], [ (<) 40 ] ]
-                                    , [ [ (<=) 31, (>=) 40 ] ]
+                                    ( [ [ (>) 12 ], [ (<=) 40 ] ]
+                                    , []
                                     )
 
                                 else
