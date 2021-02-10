@@ -136,7 +136,7 @@ generatePreviousMeasurements currentEncounterId participantId db =
                         else
                             case Dict.get encounterId db.acuteIllnessMeasurements of
                                 Just (Success measurements) ->
-                                    Just (AcuteIllnessEncounterData encounter.startDate encounter.sequenceNumber encounter.diagnosis measurements)
+                                    Just (AcuteIllnessEncounterData encounterId encounter.startDate encounter.sequenceNumber encounter.diagnosis measurements)
 
                                 _ ->
                                     Nothing

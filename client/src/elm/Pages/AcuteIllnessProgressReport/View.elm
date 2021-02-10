@@ -75,7 +75,8 @@ viewContent language currentDate id model data =
                 |> Maybe.withDefault NoAcuteIllnessDiagnosis
 
         currentEncounterData =
-            AcuteIllnessEncounterData data.encounter.startDate
+            AcuteIllnessEncounterData id
+                data.encounter.startDate
                 data.encounter.sequenceNumber
                 diagnosisByCurrentEncounterMeasurements
                 data.measurements
@@ -102,7 +103,7 @@ viewContent language currentDate id model data =
                             let
                                 previousEncountersData =
                                     data.previousEncountersData
-                                        |> List.filter (.startDate >> (/=) dataFirst.startDate)
+                                        |> List.filter (.id >> (/=) dataFirst.id)
                             in
                             previousEncountersData ++ [ currentEncounterData ]
                         )
@@ -824,19 +825,12 @@ viewActionsTakenPane language currentDate firstEncounterData subsequentEncounter
             firstEncounterData
                 |> Maybe.map
                     (\dataFirst ->
-                        case resolveNextStepFirstEncounter dataFirst.startDate data of
-                            -- This is COVID19 case.
-                            Just NextStepsIsolation ->
+                        case dataFirst.diagnosis of
+                            DiagnosisCovid19 ->
                                 viewActionsTakenCovid19 language dataFirst.startDate dataFirst.measurements
 
-                            Just NextStepsMedicationDistribution ->
-                                viewActionsTakenNonCovid19 language dataFirst.startDate data.person dataFirst.diagnosis dataFirst.measurements
-
-                            Just NextStepsSendToHC ->
-                                viewActionsTakenNonCovid19 language dataFirst.startDate data.person dataFirst.diagnosis dataFirst.measurements
-
                             _ ->
-                                emptyNode
+                                viewActionsTakenNonCovid19 language dataFirst.startDate data.person dataFirst.diagnosis dataFirst.measurements
                     )
                 |> Maybe.withDefault emptyNode
 

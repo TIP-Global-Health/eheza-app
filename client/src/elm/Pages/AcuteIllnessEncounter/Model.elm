@@ -62,7 +62,8 @@ type alias AssembledData =
 
 
 type alias AcuteIllnessEncounterData =
-    { startDate : NominalDate
+    { id : AcuteIllnessEncounterId
+    , startDate : NominalDate
     , sequenceNumber : Int
     , diagnosis : AcuteIllnessDiagnosis
     , measurements : AcuteIllnessMeasurements
