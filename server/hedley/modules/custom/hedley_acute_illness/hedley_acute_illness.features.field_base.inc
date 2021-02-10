@@ -761,6 +761,33 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_not_sent_to_hc_reason'.
+  $field_bases['field_not_sent_to_hc_reason'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_not_sent_to_hc_reason',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'client-refused' => 'Client refused',
+        'not-ambulance' => 'No ambulance available',
+        'unable-to-afford-fee' => 'Client unable to afford fees',
+        'other' => 'Other',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_poor_suck_period'.
   $field_bases['field_poor_suck_period'] = array(
     'active' => 1,

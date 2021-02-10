@@ -4199,6 +4199,43 @@ function hedley_acute_illness_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-send_to_hc-field_not_sent_to_hc_reason'.
+  $field_instances['node-send_to_hc-field_not_sent_to_hc_reason'] = array(
+    'bundle' => 'send_to_hc',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_not_sent_to_hc_reason',
+    'label' => 'Not Sent To HC Reason',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 8,
+    ),
+  );
+
   // Exported field_instance: 'node-send_to_hc-field_nurse'.
   $field_instances['node-send_to_hc-field_nurse'] = array(
     'bundle' => 'send_to_hc',
@@ -7657,6 +7694,7 @@ function hedley_acute_illness_field_default_field_instances() {
   t('Night Sweats Period');
   t('Non Administration reason');
   t('Non Bloody Diarrhea Period');
+  t('Not Sent To HC Reason');
   t('Nurse');
   t('Nutrition Signs');
   t('Peron');
