@@ -1975,7 +1975,7 @@ viewSendToHCForm language currentDate form =
                         , viewCheckBoxSelectInput language
                             [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
                             []
-                            form.reasonForNotSendingToHc
+                            form.reasonForNotSendingToHC
                             SetNotSentToHC
                             Translate.ReasonForNotSendingToHC
                         ]

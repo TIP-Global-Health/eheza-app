@@ -777,7 +777,7 @@ type alias Call114 =
 
 type alias SendToHCValue =
     { signs : EverySet SendToHCSign
-    , notReferredToHC : ReasonForNotSendingToHC
+    , reasonForNotSendingToHC : ReasonForNotSendingToHC
     }
 
 

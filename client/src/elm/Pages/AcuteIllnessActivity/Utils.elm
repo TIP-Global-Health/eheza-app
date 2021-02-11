@@ -511,7 +511,7 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                         |> Maybe.map
                             (\sentToHC ->
                                 if not sentToHC then
-                                    if isJust form.reasonForNotSendingToHc then
+                                    if isJust form.reasonForNotSendingToHC then
                                         ( 2, 2 )
 
                                     else
@@ -1186,7 +1186,7 @@ fromSendToHCValue : Maybe SendToHCValue -> SendToHCForm
 fromSendToHCValue saved =
     { handReferralForm = Maybe.map (.signs >> EverySet.member HandReferrerForm) saved
     , referToHealthCenter = Maybe.map (.signs >> EverySet.member ReferToHealthCenter) saved
-    , reasonForNotSendingToHc = Maybe.map .notReferredToHC saved
+    , reasonForNotSendingToHC = Maybe.map .reasonForNotSendingToHC saved
     }
 
 
@@ -1198,7 +1198,7 @@ sendToHCFormWithDefault form saved =
             (\value ->
                 { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
                 , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
-                , reasonForNotSendingToHc = or form.reasonForNotSendingToHc (value.notReferredToHC |> Just)
+                , reasonForNotSendingToHC = or form.reasonForNotSendingToHC (value.reasonForNotSendingToHC |> Just)
                 }
             )
 
@@ -1220,7 +1220,7 @@ toSendToHCValue form =
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
 
         reasonForNotSendingToHC =
-            form.reasonForNotSendingToHc
+            form.reasonForNotSendingToHC
                 |> Maybe.withDefault NoReasonForNotSendingToHC
                 |> Just
     in

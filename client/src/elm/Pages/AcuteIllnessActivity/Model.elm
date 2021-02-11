@@ -406,7 +406,7 @@ emptyCall114Form =
 type alias SendToHCForm =
     { handReferralForm : Maybe Bool
     , referToHealthCenter : Maybe Bool
-    , reasonForNotSendingToHc : Maybe ReasonForNotSendingToHC
+    , reasonForNotSendingToHC : Maybe ReasonForNotSendingToHC
     }
 
 

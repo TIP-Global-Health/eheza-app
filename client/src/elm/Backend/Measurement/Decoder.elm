@@ -1360,7 +1360,7 @@ decodeNotSentToHC =
                     "other" ->
                         succeed ReasonForNotSendingToHCOther
 
-                    "no-reason" ->
+                    "none" ->
                         succeed NoReasonForNotSendingToHC
 
                     _ ->
