@@ -1723,7 +1723,7 @@ annular signsList arcs =
 withinThreePreviousMonths : Int -> Int -> Bool
 withinThreePreviousMonths currentMonth monthNumber =
     if monthNumber == 13 then
-        -- This indicates that we looka at data for 13 month ago.
+        -- This indicates that we look at data of 13 months ago month.
         -- It's for sure not within last 3 month.
         False
 
