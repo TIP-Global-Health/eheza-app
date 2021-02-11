@@ -29,6 +29,7 @@ import Backend.Measurement.Model
         , MedicationNonAdministrationSign(..)
         , MuacInCm(..)
         , ReasonForNotIsolating(..)
+        , ReasonForNotSendingToHC(..)
         , ReasonForNotTaking(..)
         , Recommendation114(..)
         , RecommendationSite(..)
@@ -1217,9 +1218,14 @@ toSendToHCValue form =
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
+
+        reasonForNotSendingToHC =
+            form.reasonForNotSendingToHc
+                |> Maybe.withDefault NoReasonForNotSendingToHC
+                |> Just
     in
     Maybe.map SendToHCValue signs
-        |> andMap form.reasonForNotSendingToHc
+        |> andMap reasonForNotSendingToHC
 
 
 fromMedicationDistributionValue : Maybe MedicationDistributionValue -> MedicationDistributionForm
