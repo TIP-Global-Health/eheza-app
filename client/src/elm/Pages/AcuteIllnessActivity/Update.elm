@@ -1418,7 +1418,7 @@ update currentDate id db msg model =
                     model.nextStepsData.sendToHCForm
 
                 updatedForm =
-                    { form | reasonForNotSendingToHc = Just value }
+                    { form | reasonForNotSendingToHC = Just value }
 
                 updatedData =
                     model.nextStepsData
