@@ -259,7 +259,7 @@ viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subs
                                                 emptyNode
 
                                         malnutritionWithComplications =
-                                            if dangerSignPresentOnSubsequentVisit data.measurements then
+                                            if sendToHCOnSubsequentVisitByNutrition data.measurements then
                                                 p [] [ text <| translate language Translate.MalnutritionWithComplications ]
 
                                             else
