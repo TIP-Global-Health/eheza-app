@@ -4221,7 +4221,7 @@ function hedley_acute_illness_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_not_sent_to_hc_reason',
+    'field_name' => 'not_sent_to_hc',
     'label' => 'Not Sent To HC Reason',
     'required' => 1,
     'settings' => array(

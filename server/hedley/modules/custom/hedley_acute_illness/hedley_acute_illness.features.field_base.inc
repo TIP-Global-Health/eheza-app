@@ -771,7 +771,7 @@ function hedley_acute_illness_field_default_field_bases() {
     'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_not_sent_to_hc_reason',
+    'field_name' => 'not_sent_to_hc',
     'indexes' => array(
       'value' => array(
         0 => 'value',
