@@ -1294,7 +1294,7 @@ encodeSendToHC =
 encodeSendToHCValue : SendToHCValue -> List ( String, Value )
 encodeSendToHCValue value =
     [ ( "send_to_hc", encodeEverySet encondeSendToHCSign value.signs )
-    , ( "reason_for_not_sending_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
+    , ( "not_sending_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
     , ( "deleted", bool False )
     , ( "type", string "send_to_hc" )
     ]
