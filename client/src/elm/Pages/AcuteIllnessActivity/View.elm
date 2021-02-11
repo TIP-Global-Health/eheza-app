@@ -848,7 +848,7 @@ viewVitalsForm language currentDate assembled form_ =
                 [ viewLabel language Translate.BodyTemperature ]
             , div [ class "four wide column" ]
                 [ viewConditionalAlert form.bodyTemperature
-                    [ [ (>) 35 ], [ (<) 37.5 ] ]
+                    [ [ (>) 35 ], [ (<=) 37.5 ] ]
                     []
                 ]
             ]
