@@ -4200,7 +4200,7 @@ function hedley_acute_illness_field_default_field_instances() {
   );
 
   // Exported field_instance: 'node-send_to_hc-field_reason_for_not_sending_to_hc'.
-  $field_instances['node-send_to_hc-field_reason_for_not_sending_to_hc'] = array(
+  $field_instances['node-send_to_hc-field_not_sending_to_hc'] = array(
     'bundle' => 'send_to_hc',
     'default_value' => NULL,
     'deleted' => 0,
@@ -4221,7 +4221,7 @@ function hedley_acute_illness_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_reason_for_not_sending_to_hc',
+    'field_name' => 'field_not_sending_to_hc',
     'label' => 'Not Sent To HC Reason',
     'required' => 1,
     'settings' => array(
