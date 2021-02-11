@@ -641,15 +641,18 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
         viewDateCell date =
             th [] [ text <| formatDDMMYY date ]
 
+        viewValueNormal =
+            td [] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
+
         viewBodyTemperatureCell maybeBodyTemperature =
             maybeBodyTemperature
                 |> Maybe.map
                     (\bodyTemperature_ ->
-                        if bodyTemperature_ < 37.5 then
-                            td [] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
+                        if bodyTemperature_ < 35 || bodyTemperature_ >= 37.5 then
+                            td [ class "red" ] [ text <| String.fromFloat bodyTemperature_ ++ " " ++ translate language Translate.CelsiusAbbrev ]
 
                         else
-                            td [ class "red" ] [ text <| String.fromFloat bodyTemperature_ ++ " " ++ translate language Translate.CelsiusAbbrev ]
+                            viewValueNormal
                     )
                 |> Maybe.withDefault (td [] [ text <| translate language Translate.NotTaken ])
 
@@ -657,11 +660,11 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
             maybeRespiratoryRate
                 |> Maybe.map
                     (\respiratoryRate_ ->
-                        if respiratoryRateElevatedForAge maybeAgeMonths respiratoryRate_ then
+                        if respiratoryRate_ < 12 || respiratoryRateElevatedForAge maybeAgeMonths respiratoryRate_ then
                             td [ class "red" ] [ text <| translate language <| Translate.BpmUnit respiratoryRate_ ]
 
                         else
-                            td [] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
+                            viewValueNormal
                     )
                 |> Maybe.withDefault (td [] [ text <| translate language Translate.NotTaken ])
 
