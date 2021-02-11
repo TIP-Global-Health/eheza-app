@@ -765,13 +765,13 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
-  // Exported field_base: 'field_not_sent_to_hc_reason'.
-  $field_bases['field_not_sent_to_hc_reason'] = array(
+  // Exported field_base: 'field_reason_for_not_sending_to_hc'.
+  $field_bases['field_reason_for_not_sending_to_hc'] = array(
     'active' => 1,
     'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'not_sent_to_hc',
+    'field_name' => 'field_reason_for_not_sending_to_hc',
     'indexes' => array(
       'value' => array(
         0 => 'value',

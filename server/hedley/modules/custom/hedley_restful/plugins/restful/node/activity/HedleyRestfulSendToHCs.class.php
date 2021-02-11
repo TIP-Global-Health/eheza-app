@@ -21,7 +21,7 @@ class HedleyRestfulSendToHCs extends HedleyRestfulAcuteIllnessActivityBase {
    * {@inheritdoc}
    */
   protected $fields = [
-    'not_sent_to_hc',
+    'field_reason_for_not_sending_to_hc',
   ];
 
 }
