@@ -1976,7 +1976,7 @@ viewSendToHCForm language currentDate form =
                             [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
                             []
                             form.reasonForNotSendingToHC
-                            SetNotSentToHC
+                            SetReasonForNotSendingToHC
                             Translate.ReasonForNotSendingToHC
                         ]
 

@@ -1294,7 +1294,7 @@ encodeSendToHC =
 encodeSendToHCValue : SendToHCValue -> List ( String, Value )
 encodeSendToHCValue value =
     [ ( "send_to_hc", encodeEverySet encondeSendToHCSign value.signs )
-    , ( "not_sent_to_hc", encodeNotSentToHCReason value.reasonForNotSendingToHC )
+    , ( "not_sent_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
     , ( "deleted", bool False )
     , ( "type", string "send_to_hc" )
     ]
@@ -1314,8 +1314,8 @@ encondeSendToHCSign sign =
                 "none"
 
 
-encodeNotSentToHCReason : ReasonForNotSendingToHC -> Value
-encodeNotSentToHCReason event =
+encodeReasonForNotSendingToHC : ReasonForNotSendingToHC -> Value
+encodeReasonForNotSendingToHC event =
     string <|
         case event of
             ClientRefused ->

@@ -1412,7 +1412,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SetNotSentToHC value ->
+        SetReasonForNotSendingToHC value ->
             let
                 form =
                     model.nextStepsData.sendToHCForm
