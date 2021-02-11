@@ -24,8 +24,7 @@ import Pages.AcuteIllnessActivity.View exposing (renderDatePart, viewActionTaken
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
 import Pages.AcuteIllnessEncounter.Utils
     exposing
-        ( dangerSignPresentOnSubsequentVisit
-        , generateAssembledData
+        ( generateAssembledData
         , muacRedOnSubsequentVisit
         , noImprovementOnSubsequentVisit
         , resolveAcuteIllnessDiagnosis
@@ -33,6 +32,7 @@ import Pages.AcuteIllnessEncounter.Utils
         , resolveNextStepFirstEncounter
         , respiratoryRateElevated
         , respiratoryRateElevatedForAge
+        , sendToHCOnSubsequentVisitByNutrition
         )
 import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
 import Pages.AcuteIllnessProgressReport.Model exposing (..)
@@ -259,7 +259,7 @@ viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subs
                                                 emptyNode
 
                                         malnutritionWithComplications =
-                                            if dangerSignPresentOnSubsequentVisit data.measurements then
+                                            if sendToHCOnSubsequentVisitByNutrition data.measurements then
                                                 p [] [ text <| translate language Translate.MalnutritionWithComplications ]
 
                                             else

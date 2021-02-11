@@ -713,7 +713,7 @@ update currentDate id db msg model =
                     model.laboratoryData.malariaTestingForm
 
                 updatedForm =
-                    { form | rapidTestResult = malariaRapidTestResultFromString value }
+                    { form | rapidTestResult = malariaRapidTestResultFromString value, isPregnant = Nothing }
 
                 updatedData =
                     model.laboratoryData

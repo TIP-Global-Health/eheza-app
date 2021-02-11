@@ -994,7 +994,7 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
             tasks
                 |> List.map
                     (\task ->
-                        ( task, laboratoryTasksCompletedFromTotal measurements data task )
+                        ( task, laboratoryTasksCompletedFromTotal currentDate person measurements data task )
                     )
                 |> Dict.fromList
 

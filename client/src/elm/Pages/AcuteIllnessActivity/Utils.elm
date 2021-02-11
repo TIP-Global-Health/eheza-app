@@ -45,7 +45,7 @@ import Backend.Measurement.Model
         , TreatmentReviewSign(..)
         )
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5)
+import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAFertileWoman)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
@@ -226,8 +226,8 @@ physicalExamTasksCompletedFromTotal measurements data task =
             )
 
 
-laboratoryTasksCompletedFromTotal : AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
-laboratoryTasksCompletedFromTotal measurements data task =
+laboratoryTasksCompletedFromTotal : NominalDate -> Person -> AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
+laboratoryTasksCompletedFromTotal currentDate person measurements data task =
     case task of
         LaboratoryMalariaTesting ->
             let
@@ -235,9 +235,23 @@ laboratoryTasksCompletedFromTotal measurements data task =
                     measurements.malariaTesting
                         |> Maybe.map (Tuple.second >> .value)
                         |> malariaTestingFormWithDefault data.malariaTestingForm
+
+                testResultPositive =
+                    form.rapidTestResult == Just RapidTestPositive || form.rapidTestResult == Just RapidTestPositiveAndPregnant
+
+                ( isPregnantActive, isPregnantCompleted ) =
+                    if testResultPositive && isPersonAFertileWoman currentDate person then
+                        if isJust form.isPregnant then
+                            ( 1, 1 )
+
+                        else
+                            ( 1, 0 )
+
+                    else
+                        ( 0, 0 )
             in
-            ( taskCompleted form.rapidTestResult
-            , 1
+            ( taskCompleted form.rapidTestResult + isPregnantCompleted
+            , 1 + isPregnantActive
             )
 
 
