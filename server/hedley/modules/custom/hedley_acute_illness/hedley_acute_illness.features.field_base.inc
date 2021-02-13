@@ -765,10 +765,10 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
-  // Exported field_base: 'field_reason_for_not_sending_to_hc'.
+  // Exported field_base: 'field_not_sending_to_hc'.
   $field_bases['field_not_sending_to_hc'] = array(
     'active' => 1,
-    'cardinality' => -1,
+    'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_not_sending_to_hc',
@@ -786,7 +786,6 @@ function hedley_acute_illness_field_default_field_bases() {
         'unable-to-afford-fee' => 'Client unable to afford fees',
         'other' => 'Other',
         'none' => 'None',
-
       ),
       'allowed_values_function' => '',
     ),

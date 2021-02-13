@@ -4199,7 +4199,7 @@ function hedley_acute_illness_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-send_to_hc-field_reason_for_not_sending_to_hc'.
+  // Exported field_instance: 'node-send_to_hc-field_not_sending_to_hc'.
   $field_instances['node-send_to_hc-field_not_sending_to_hc'] = array(
     'bundle' => 'send_to_hc',
     'default_value' => NULL,
@@ -4222,8 +4222,8 @@ function hedley_acute_illness_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_not_sending_to_hc',
-    'label' => 'Not Sent To HC Reason',
-    'required' => 1,
+    'label' => 'Reason for Not Sending to HC',
+    'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
     ),
@@ -7694,13 +7694,13 @@ function hedley_acute_illness_field_default_field_instances() {
   t('Night Sweats Period');
   t('Non Administration reason');
   t('Non Bloody Diarrhea Period');
-  t('Not Sent To HC Reason');
   t('Nurse');
   t('Nutrition Signs');
   t('Peron');
   t('Person');
   t('Poor Suck Period');
   t('Prescribed medication');
+  t('Reason for Not Sending to HC');
   t('Reason for not isolating');
   t('Reason for not taking');
   t('Respiratory rate');
