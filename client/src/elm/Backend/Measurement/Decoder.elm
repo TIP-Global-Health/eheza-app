@@ -1316,7 +1316,7 @@ decodeSendToHC : Decoder SendToHC
 decodeSendToHC =
     succeed SendToHCValue
         |> required "send_to_hc" (decodeEverySet decodeSendToHCSign)
-        |> required "not_sending_to_hc" decodeReasonForNotSendingToHC
+        |> required "reason_not_sent_to_hc" decodeReasonForNotSendingToHC
         |> decodeAcuteIllnessMeasurement
 
 
