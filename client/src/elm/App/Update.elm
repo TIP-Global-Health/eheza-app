@@ -27,6 +27,10 @@ import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessActivity.Update
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.Update
+import Pages.AcuteIllnessOutcome.Model
+import Pages.AcuteIllnessOutcome.Update
+import Pages.AcuteIllnessParticipant.Model
+import Pages.AcuteIllnessParticipant.Update
 import Pages.AcuteIllnessProgressReport.Model
 import Pages.AcuteIllnessProgressReport.Update
 import Pages.Clinics.Update
@@ -304,6 +308,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageAcuteIllnessParticipant id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.acuteIllnessParticipantPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.AcuteIllnessParticipant.Model.emptyModel
+                                        |> Pages.AcuteIllnessParticipant.Update.update currentDate id subMsg
+                            in
+                            ( { data | acuteIllnessParticipantPages = Dict.insert id subModel data.acuteIllnessParticipantPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessParticipant id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPageSession sessionId subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -419,6 +436,19 @@ update msg model =
                             ( { data | acuteIllnessProgressReportPages = Dict.insert id subModel data.acuteIllnessProgressReportPages }
                             , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport id) subCmd
                             , extraMsgs
+                            )
+
+                        MsgPageAcuteIllnessOutcome id subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    data.acuteIllnessOutcomePages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.AcuteIllnessOutcome.Model.emptyModel
+                                        |> Pages.AcuteIllnessOutcome.Update.update currentDate id subMsg
+                            in
+                            ( { data | acuteIllnessOutcomePages = Dict.insert id subModel data.acuteIllnessOutcomePages }
+                            , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessOutcome id) subCmd
+                            , appMsgs
                             )
                 )
                 model
@@ -570,6 +600,13 @@ update msg model =
                                         >> List.singleton
                                     )
                                 |> Maybe.withDefault []
+
+                        -- When navigating to Acute Illness participant page, set initial view mode.
+                        UserPage (AcuteIllnessParticipantPage participantId) ->
+                            Pages.AcuteIllnessParticipant.Model.SetViewMode Pages.AcuteIllnessParticipant.Model.ManageIllnesses
+                                |> MsgPageAcuteIllnessParticipant participantId
+                                |> MsgLoggedIn
+                                |> List.singleton
 
                         _ ->
                             []

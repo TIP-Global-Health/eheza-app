@@ -52,7 +52,7 @@
           background: url(#{$img-path}icon-oral-solution.svg) center center no-repeat;
           background-size: 26px 32px;
           height: 32px;
-          margin-right: 22px;
+          margin-right: 27px;
           width: 32px;
         }
 
@@ -60,13 +60,26 @@
           background: url(#{$img-path}icon-pills.svg) center center no-repeat;
           background-size: 36px 50px;
           height: 36px;
+          margin-right: 5px;
           width: 50px;
+        }
+
+        &.icon-open-book {
+          background: url(#{$img-path}icon-open-book.svg) center center no-repeat;
+          background-size: 36px 36px;
+          height: 36px;
+          width: 52px;
         }
       }
     }
 
     .prescription {
       margin-left: 54px;
+    }
+
+    .icon-label {
+      align-items: center;
+      display: flex;
     }
   }
 }
@@ -596,7 +609,7 @@ div.page-person {
 // Common for Prenatal Encounter and Prenatal Activity pages
 div.page-encounter,
 div.page-activity,
-div.page-pregnancy-outcome {
+div.page-outcome {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -812,7 +825,8 @@ div.page-activity.acute-illness {
     }
 
     .ui.form.medication-distribution,
-    .ui.form.send-to-hc {
+    .ui.form.send-to-hc,
+    .ui.form.health-education {
 
       h2 {
         text-transform: uppercase;
@@ -841,6 +855,13 @@ div.page-activity.acute-illness {
         }
       }
 
+    }
+
+    .ui.form.physical-exam.vitals {
+
+      .label {
+        line-height: 40px;
+      }
     }
 
     .label {
@@ -940,6 +961,20 @@ div.page-activity.acute-illness {
       width: 60%;
     }
 
+    .form-input.number {
+
+      input {
+        background-color: $color-white;
+        border: 2px solid $color-gray-border;
+        font-size: 22px;
+        font-weight: bold;
+        height: 35px;
+        text-align: center;
+        text-align: -webkit-center;
+        width: 100%;
+      }
+    }
+
     .checkbox-select-input {
       padding-bottom: 15px;
 
@@ -1033,6 +1068,7 @@ div.page-activity.nutrition {
           border: 2px solid $color-gray-border;
           background-color: $color-white;
           width: 100%;
+          text-align: center;
           text-align: -webkit-center;
           font-weight: bold;
         }
@@ -1261,8 +1297,7 @@ div.page-activity.nutrition {
   }
 }
 
-// Pregnancy Outcome page
-div.page-pregnancy-outcome {
+div.page-outcome {
 
   .tasks-count {
     background: $color-primary;
@@ -1281,6 +1316,14 @@ div.page-pregnancy-outcome {
         margin-bottom: 40px;
       }
     }
+  }
+
+}
+
+// Pregnancy Outcome page
+div.page-outcome.pregnancy {
+
+  .ui.full.segment {
 
     .form-input {
       margin-bottom: 30px;
@@ -1353,6 +1396,24 @@ div.page-pregnancy-outcome {
       }
     }
 
+  }
+}
+
+// Acute Illness Outcome page
+div.page-outcome.pregnancy {
+
+  .ui.full.segment {
+
+    .form-input {
+      margin-bottom: 30px;
+
+      &.pregnancy-outcome {
+        background: $color-white;
+        border: 2px solid $color-light-gray;
+        padding: 5px;
+        width: 73%;
+      }
+    }
   }
 }
 
@@ -1858,27 +1919,39 @@ div.page-participant.prenatal {
     margin-top: 105px;
   }
 
-  button.ui.primary.button {
-    height: 60px;
-    margin-bottom: 20px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 0;
-    width: 100%;
+  div.ui.primary.button {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
 
-    .text {
-      float: left;
-      line-height: 60px;
-      margin-left: 40px;
+    .button-label {
       text-align: left;
-      width: 80%;
+
+      .encounter-label {
+        margin-bottom: 15px;
+      }
     }
 
     .icon-back {
-      float: left;
-      margin-top: 17px;
       transform: rotate(180deg);
     }
+  }
+}
+
+div.page-participant.acute-illness {
+
+  .active-illnesses {
+    height: 250px;
+    overflow-y: auto;
+
+    .active-illness {
+      margin-bottom: 10px;
+    }
+  }
+
+  .start-new-encounter {
+    margin-top: 50px
   }
 }
 
@@ -1963,7 +2036,21 @@ div.page-report.acute-illness {
 
       .diagnosis {
         color: $color-red-alert;
-        margin-bottom: 10px;
+        margin-bottom: 20px;
+
+        p {
+          margin-bottom: 5px;
+        }
+
+        .diagnosis-date {
+          color: $color-light-blue;
+        }
+      }
+
+      .visit-date {
+        color: $color-light-blue;
+        font-size: 20px;
+        margin-bottom: 5px;
       }
 
       .treatment-comment {
@@ -2053,9 +2140,10 @@ div.page-report.acute-illness {
     }
 
     div.pane.physical-exam .ui.table {
+      border: 0;
       color: $color-text;
       margin: 0;
-      padding: 10px;
+      padding: 5px 10px;
       text-align: center;
     }
 
@@ -2066,6 +2154,7 @@ div.page-report.acute-illness {
     div.pane.physical-exam .ui.table thead th {
       background-color: $color-white;
       color: $color-text;
+      width: 135px;
 
       &.first {
         text-align: left;
@@ -2075,6 +2164,12 @@ div.page-report.acute-illness {
 
     div.pane.physical-exam .ui.table tbody td {
       font-weight: 600;
+      width: 135px;
+
+      &.first {
+        text-align: left;
+        width: 190px;
+      }
 
       &.red {
         color: $color-red-alert;
@@ -2086,11 +2181,6 @@ div.page-report.acute-illness {
 
       &.green {
         color: $color-green;
-      }
-
-      &.first {
-        text-align: left;
-        width: 190px;
       }
     }
 

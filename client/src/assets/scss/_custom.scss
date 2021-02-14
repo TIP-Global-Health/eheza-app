@@ -447,6 +447,11 @@ h3.ui.header {
   background-size: 78px 78px;
 }
 
+.icon-task-ongoing-treatment {
+  background-image: url(#{$img-path}icon-ongoing-treatment.svg);
+  background-size: 78px 78px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {
@@ -1205,6 +1210,13 @@ input::placeholder {
       margin-left: 0;
     }
 
+    &.blue {
+      border-top: 15px solid $color-primary;
+
+      .button {
+        background-color: $color-primary;
+      }
+    }
   }
 
   > .icon:first-child+*,
@@ -1890,6 +1902,23 @@ input::placeholder {
   }
 }
 
+.icon-danger-signs {
+  .active &:after {
+    background-image: url(#{$img-path}icon-danger-signs-white.svg), url(#{$img-path}icon-selected-circle.svg);
+    background-size: 83px 83px;
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-danger-signs-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-size: 83px 83px;
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-danger-signs-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-size: 83px 83px;
+  }
+}
+
 .icon-physical-exam-nutrition {
   .active &:after {
     background-image: url(#{$img-path}icon-nutrition-white.svg), url(#{$img-path}icon-selected-circle.svg);
@@ -1901,6 +1930,21 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-nutrition-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-next-steps-health-education {
+  .active &:after {
+    background-image: url(#{$img-path}icon-health-education-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-health-education-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-position: 80% 55%;
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-health-education-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 

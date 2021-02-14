@@ -71,10 +71,25 @@ type Msg
     | SaveCall114 PersonId (Maybe ( Call114Id, Call114 )) (Maybe NextStepsTask)
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
-    | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC ))
+    | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC )) (Maybe NextStepsTask)
+    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionMedicationNonAdministrationReason (Maybe MedicationNonAdministrationReason) MedicationDistributionSign MedicationNonAdministrationReason
-    | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution ))
+    | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution )) (Maybe NextStepsTask)
+    | SetProvidedEducationForDiagnosis Bool
+    | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation )) (Maybe NextStepsTask)
+      -- ONGOIN TREATMENT
+    | SetActiveOngoingTreatmentTask OngoingTreatmentTask
+    | SetOngoingTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
+    | SetReasonForNotTaking ReasonForNotTaking
+    | SetTotalMissedDoses String
+    | SetAdverseEvent AdverseEvent
+    | SaveOngoingTreatmentReview PersonId (Maybe ( TreatmentOngoingId, TreatmentOngoing ))
+      -- DANGER SIGNS
+    | SetActiveDangerSignsTask DangerSignsTask
+    | SetConditionImproving Bool
+    | SetDangerSign AcuteIllnessDangerSign
+    | SaveReviewDangerSigns PersonId (Maybe ( AcuteIllnessDangerSignsId, AcuteIllnessDangerSigns ))
 
 
 type alias Model =
@@ -84,6 +99,8 @@ type alias Model =
     , exposureData : ExposureData
     , priorTreatmentData : PriorTreatmentData
     , nextStepsData : NextStepsData
+    , ongoingTreatmentData : OngoingTreatmentData
+    , dangerSignsData : DangerSignsData
     , showAlertsDialog : Bool
     , showPertinentSymptomsPopup : Bool
     , warningPopupState : Maybe AcuteIllnessDiagnosis
@@ -98,6 +115,8 @@ emptyModel =
     , exposureData = emptyExposureData
     , priorTreatmentData = emptyPriorTreatmentData
     , nextStepsData = emptyNextStepsData
+    , ongoingTreatmentData = emptyOngoingTreatmentData
+    , dangerSignsData = emptyDangerSignsData
     , showAlertsDialog = False
     , showPertinentSymptomsPopup = False
     , warningPopupState = Nothing
@@ -319,6 +338,7 @@ type alias NextStepsData =
     , call114Form : Call114Form
     , sendToHCForm : SendToHCForm
     , medicationDistributionForm : MedicationDistributionForm
+    , healthEducationForm : HealthEducationForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -328,8 +348,9 @@ emptyNextStepsData =
     { isolationForm = IsolationForm Nothing Nothing Nothing Nothing
     , hcContactForm = HCContactForm Nothing Nothing Nothing Nothing
     , call114Form = emptyCall114Form
-    , sendToHCForm = SendToHCForm Nothing Nothing
+    , sendToHCForm = SendToHCForm Nothing Nothing Nothing
     , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
+    , healthEducationForm = HealthEducationForm Nothing
     , activeTask = Nothing
     }
 
@@ -340,6 +361,7 @@ type NextStepsTask
     | NextStepsCall114
     | NextStepsMedicationDistribution
     | NextStepsSendToHC
+    | NextStepsHealthEducation
 
 
 type alias IsolationForm =
@@ -384,6 +406,7 @@ emptyCall114Form =
 type alias SendToHCForm =
     { handReferralForm : Maybe Bool
     , referToHealthCenter : Maybe Bool
+    , reasonForNotSendingToHC : Maybe ReasonForNotSendingToHC
     }
 
 
@@ -394,4 +417,93 @@ type alias MedicationDistributionForm =
     , zinc : Maybe Bool
     , lemonJuiceOrHoney : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
+    }
+
+
+type alias HealthEducationForm =
+    { educationForDiagnosis : Maybe Bool
+    }
+
+
+
+-- ONGOING TREATMENT
+
+
+type alias OngoingTreatmentData =
+    { treatmentReviewForm : OngoingTreatmentReviewForm
+    , activeTask : OngoingTreatmentTask
+    }
+
+
+emptyOngoingTreatmentData : OngoingTreatmentData
+emptyOngoingTreatmentData =
+    { treatmentReviewForm = emptyOngoingTreatmentReviewForm
+    , activeTask = OngoingTreatmentReview
+    }
+
+
+type OngoingTreatmentTask
+    = OngoingTreatmentReview
+
+
+type alias OngoingTreatmentReviewForm =
+    { takenAsPrescribed : Maybe Bool
+    , missedDoses : Maybe Bool
+    , feelingBetter : Maybe Bool
+    , sideEffects : Maybe Bool
+    , reasonForNotTaking : Maybe ReasonForNotTaking
+    , reasonForNotTakingDirty : Bool
+    , totalMissedDoses : Maybe Int
+    , totalMissedDosesDirty : Bool
+    , adverseEvents : Maybe (List AdverseEvent)
+    , adverseEventsDirty : Bool
+    }
+
+
+emptyOngoingTreatmentReviewForm : OngoingTreatmentReviewForm
+emptyOngoingTreatmentReviewForm =
+    { takenAsPrescribed = Nothing
+    , missedDoses = Nothing
+    , feelingBetter = Nothing
+    , sideEffects = Nothing
+    , reasonForNotTaking = Nothing
+    , reasonForNotTakingDirty = False
+    , totalMissedDoses = Nothing
+    , totalMissedDosesDirty = False
+    , adverseEvents = Nothing
+    , adverseEventsDirty = False
+    }
+
+
+
+-- DANGER SIGNS
+
+
+type alias DangerSignsData =
+    { reviewDangerSignsForm : ReviewDangerSignsForm
+    , activeTask : DangerSignsTask
+    }
+
+
+emptyDangerSignsData : DangerSignsData
+emptyDangerSignsData =
+    { reviewDangerSignsForm = emptyReviewDangerSignsForm
+    , activeTask = ReviewDangerSigns
+    }
+
+
+type DangerSignsTask
+    = ReviewDangerSigns
+
+
+type alias ReviewDangerSignsForm =
+    { conditionImproving : Maybe Bool
+    , symptoms : Maybe (List AcuteIllnessDangerSign)
+    }
+
+
+emptyReviewDangerSignsForm : ReviewDangerSignsForm
+emptyReviewDangerSignsForm =
+    { conditionImproving = Nothing
+    , symptoms = Nothing
     }

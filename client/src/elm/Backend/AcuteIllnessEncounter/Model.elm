@@ -12,15 +12,17 @@ type alias AcuteIllnessEncounter =
     { participant : IndividualEncounterParticipantId
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , sequenceNumber : Int
     , diagnosis : AcuteIllnessDiagnosis
     , shard : Maybe HealthCenterId
     }
 
 
-emptyAcuteIllnessEncounter : IndividualEncounterParticipantId -> NominalDate -> Maybe HealthCenterId -> AcuteIllnessEncounter
-emptyAcuteIllnessEncounter participant startDate shard =
+emptyAcuteIllnessEncounter : IndividualEncounterParticipantId -> NominalDate -> Int -> Maybe HealthCenterId -> AcuteIllnessEncounter
+emptyAcuteIllnessEncounter participant startDate sequenceNumber shard =
     { participant = participant
     , startDate = startDate
+    , sequenceNumber = sequenceNumber
     , endDate = Nothing
     , diagnosis = NoAcuteIllnessDiagnosis
     , shard = shard
@@ -47,7 +49,10 @@ type alias Model =
     , saveCall114 : WebData ()
     , saveTreatmentReview : WebData ()
     , saveMuac : WebData ()
+    , saveTreatmentOngoing : WebData ()
+    , saveAcuteIllnessDangerSigns : WebData ()
     , saveNutrition : WebData ()
+    , saveHealthEducation : WebData ()
     }
 
 
@@ -69,7 +74,10 @@ emptyModel =
     , saveCall114 = NotAsked
     , saveTreatmentReview = NotAsked
     , saveMuac = NotAsked
+    , saveTreatmentOngoing = NotAsked
+    , saveAcuteIllnessDangerSigns = NotAsked
     , saveNutrition = NotAsked
+    , saveHealthEducation = NotAsked
     }
 
 
@@ -104,7 +112,7 @@ type Msg
     | HandleSavedAcuteFindings (WebData ())
     | SaveMalariaTesting PersonId (Maybe MalariaTestingId) MalariaRapidTestResult
     | HandleSavedMalariaTesting (WebData ())
-    | SaveSendToHC PersonId (Maybe SendToHCId) (EverySet SendToHCSign)
+    | SaveSendToHC PersonId (Maybe SendToHCId) SendToHCValue
     | HandleSavedSendToHC (WebData ())
     | SaveMedicationDistribution PersonId (Maybe MedicationDistributionId) MedicationDistributionValue
     | HandleSavedMedicationDistribution (WebData ())
@@ -122,5 +130,11 @@ type Msg
     | HandleSavedTreatmentReview (WebData ())
     | SaveMuac PersonId (Maybe AcuteIllnessMuacId) MuacInCm
     | HandleSavedMuac (WebData ())
+    | SaveTreatmentOngoing PersonId (Maybe TreatmentOngoingId) TreatmentOngoingValue
+    | HandleSavedTreatmentOngoing (WebData ())
+    | SaveAcuteIllnessDangerSigns PersonId (Maybe AcuteIllnessDangerSignsId) (EverySet AcuteIllnessDangerSign)
+    | HandleSavedAcuteIllnessDangerSigns (WebData ())
     | SaveNutrition PersonId (Maybe AcuteIllnessNutritionId) (EverySet ChildNutritionSign)
     | HandleSavedNutrition (WebData ())
+    | SaveHealthEducation PersonId (Maybe HealthEducationId) (EverySet HealthEducationSign)
+    | HandleSavedHealthEducation (WebData ())

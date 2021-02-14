@@ -366,6 +366,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityAcuteFindings identifier ->
                 viewMeasurement identifier "Acute Findings"
 
+            BackendAuthorityAcuteIllnessDangerSigns identifier ->
+                viewMeasurement identifier "AcuteI llness Danger Signs"
+
             BackendAuthorityAcuteIllnessEncounter identifier ->
                 text ("Acute Illness Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
 
@@ -410,6 +413,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityFamilyPlanning identifier ->
                 viewMeasurement identifier "Family Planning"
+
+            BackendAuthorityHealthEducation identifier ->
+                viewMeasurement identifier "Health Education"
 
             BackendAuthorityHCContact identifier ->
                 viewMeasurement identifier "HC Contact"
@@ -527,6 +533,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityTravelHistory identifier ->
                 viewMeasurement identifier "Travel History"
+
+            BackendAuthorityTreatmentOngoing identifier ->
+                viewMeasurement identifier "Treatment Ongoing"
 
             BackendAuthorityTreatmentReview identifier ->
                 viewMeasurement identifier "Treatment Review"

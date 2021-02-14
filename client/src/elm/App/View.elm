@@ -19,6 +19,9 @@ import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessActivity.View
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.View
+import Pages.AcuteIllnessOutcome.Model
+import Pages.AcuteIllnessOutcome.View
+import Pages.AcuteIllnessParticipant.Model
 import Pages.AcuteIllnessParticipant.View
 import Pages.AcuteIllnessProgressReport.Model
 import Pages.AcuteIllnessProgressReport.View
@@ -324,7 +327,13 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     AcuteIllnessParticipantPage id ->
-                        Pages.AcuteIllnessParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.acuteIllnessParticipantPages
+                                    |> Maybe.withDefault Pages.AcuteIllnessParticipant.Model.emptyModel
+                        in
+                        Pages.AcuteIllnessParticipant.View.view model.language currentDate healthCenterId id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessParticipant id)
                             |> flexPageWrapper model
 
                     IndividualEncounterParticipantsPage encounterType ->
@@ -462,6 +471,16 @@ viewUserPage page deviceName model configured =
                         Pages.AcuteIllnessProgressReport.View.view model.language currentDate encounterId model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport encounterId)
                             |> oldPageWrapper model
+
+                    AcuteIllnessOutcomePage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.acuteIllnessOutcomePages
+                                    |> Maybe.withDefault Pages.AcuteIllnessOutcome.Model.emptyModel
+                        in
+                        Pages.AcuteIllnessOutcome.View.view model.language currentDate id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessOutcome id)
+                            |> flexPageWrapper model
 
             else
                 Pages.PinCode.View.view model.language
