@@ -19,6 +19,7 @@ encodeAcuteIllnessEncounter session =
             , ( "value2", maybe encodeYYYYMMDD session.endDate )
             ]
       )
+    , ( "sequence_number", int session.sequenceNumber )
     , ( "individual_participant", encodeEntityUuid session.participant )
     , ( "acute_illness_diagnosis", encodeAcuteIllnessDiagnosis session.diagnosis )
     , ( "deleted", bool False )

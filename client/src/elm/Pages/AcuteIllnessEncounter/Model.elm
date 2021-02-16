@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.Model exposing (AssembledData, Model, Msg(..), Tab(..), emptyModel)
+module Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterData, AssembledData, Model, Msg(..), Tab(..), emptyModel)
 
 import Backend.AcuteIllnessEncounter.Model exposing (..)
 import Backend.Entities exposing (..)
@@ -47,6 +47,24 @@ type alias AssembledData =
     , participant : IndividualEncounterParticipant
     , person : Person
     , measurements : AcuteIllnessMeasurements
-    , previousMeasurementsWithDates : List ( NominalDate, AcuteIllnessMeasurements )
-    , diagnosis : Maybe AcuteIllnessDiagnosis
+    , previousEncountersData : List AcuteIllnessEncounterData
+
+    -- The diagnosis that we have right now.
+    -- This can be the diagnosis of first encounter, or one of
+    -- subsequent encounters, where diagnoses was updated to
+    -- Malaria (this is the only case when we allow to update a diagnosis).
+    , diagnosis : Maybe ( NominalDate, AcuteIllnessDiagnosis )
+
+    -- In case diagnosis was updated to Malaria, stores the original
+    -- diagnosis that was determined at first encounter.
+    , previousDiagnosis : Maybe ( NominalDate, AcuteIllnessDiagnosis )
+    }
+
+
+type alias AcuteIllnessEncounterData =
+    { id : AcuteIllnessEncounterId
+    , startDate : NominalDate
+    , sequenceNumber : Int
+    , diagnosis : AcuteIllnessDiagnosis
+    , measurements : AcuteIllnessMeasurements
     }

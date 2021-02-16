@@ -308,12 +308,8 @@ function hedley_user_field_default_field_instances() {
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'image',
-        'settings' => array(
-          'image_link' => '',
-          'image_style' => '',
-        ),
-        'type' => 'image',
+        'settings' => array(),
+        'type' => 'hidden',
         'weight' => 0,
       ),
     ),
@@ -353,13 +349,9 @@ function hedley_user_field_default_field_instances() {
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'entityreference',
-        'settings' => array(
-          'bypass_access' => FALSE,
-          'link' => FALSE,
-        ),
-        'type' => 'entityreference_label',
-        'weight' => 2,
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 8,
       ),
     ),
     'entity_type' => 'user',
@@ -393,7 +385,7 @@ function hedley_user_field_default_field_instances() {
           'link' => FALSE,
         ),
         'type' => 'entityreference_label',
-        'weight' => 4,
+        'weight' => 6,
       ),
     ),
     'entity_type' => 'user',
@@ -425,9 +417,8 @@ function hedley_user_field_default_field_instances() {
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'text',
         'settings' => array(),
-        'type' => 'text_default',
+        'type' => 'hidden',
         'weight' => 1,
       ),
     ),
@@ -462,7 +453,7 @@ function hedley_user_field_default_field_instances() {
         'module' => 'text',
         'settings' => array(),
         'type' => 'text_default',
-        'weight' => 3,
+        'weight' => 2,
       ),
     ),
     'entity_type' => 'user',
@@ -484,6 +475,37 @@ function hedley_user_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'user-user-field_sync_phase'.
+  $field_instances['user-user-field_sync_phase'] = array(
+    'bundle' => 'user',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 4,
+      ),
+    ),
+    'entity_type' => 'user',
+    'field_name' => 'field_sync_phase',
+    'label' => 'Sync phase',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => 0,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 15,
+    ),
+  );
+
   // Exported field_instance: 'user-user-field_total_to_upload'.
   $field_instances['user-user-field_total_to_upload'] = array(
     'bundle' => 'user',
@@ -501,7 +523,7 @@ function hedley_user_field_default_field_instances() {
           'thousand_separator' => '',
         ),
         'type' => 'number_integer',
-        'weight' => 6,
+        'weight' => 5,
       ),
     ),
     'entity_type' => 'user',
@@ -536,7 +558,7 @@ function hedley_user_field_default_field_instances() {
         'module' => 'text',
         'settings' => array(),
         'type' => 'text_default',
-        'weight' => 5,
+        'weight' => 3,
       ),
     ),
     'entity_type' => 'user',
@@ -569,6 +591,7 @@ function hedley_user_field_default_field_instances() {
   t('Phone');
   t('Profile photo');
   t('Role');
+  t('Sync phase');
   t('Total to upload');
   t('UUID');
   t('Version');

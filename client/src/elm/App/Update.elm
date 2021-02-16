@@ -601,6 +601,13 @@ update msg model =
                                     )
                                 |> Maybe.withDefault []
 
+                        -- When navigating to Acute Illness participant page, set initial view mode.
+                        UserPage (AcuteIllnessParticipantPage participantId) ->
+                            Pages.AcuteIllnessParticipant.Model.SetViewMode Pages.AcuteIllnessParticipant.Model.ManageIllnesses
+                                |> MsgPageAcuteIllnessParticipant participantId
+                                |> MsgLoggedIn
+                                |> List.singleton
+
                         _ ->
                             []
             in
@@ -695,7 +702,7 @@ update msg model =
                         updateSubModel
                             subMsg
                             model.syncManager
-                            (\subMsg_ subModel -> SyncManager.Update.update currentDate model.currentTime model.dbVersion device subMsg_ subModel)
+                            (\subMsg_ subModel -> SyncManager.Update.update currentDate model.currentTime model.activePage model.dbVersion device subMsg_ subModel)
                             (\subModel model_ -> { model_ | syncManager = subModel })
                             (\subCmds -> MsgSyncManager subCmds)
                             model

@@ -40,7 +40,7 @@ viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Mod
 viewHeaderAndContent language currentDate id db model data =
     let
         isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
+            List.isEmpty data.previousEncountersData
 
         header =
             viewHeader language data
@@ -154,7 +154,7 @@ viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis d
             else
                 emptyNode
     in
-    div [ class "ui active modal diagnosis-popup" ]
+    div [ classList [ ( "ui active modal diagnosis-popup", True ), ( "blue", isImproving ) ] ]
         [ div [ class "content" ] <|
             [ div [ class "popup-heading-wrapper" ]
                 [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
@@ -181,7 +181,7 @@ viewHeader : Language -> AssembledData -> Html Msg
 viewHeader language data =
     let
         isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
+            List.isEmpty data.previousEncountersData
 
         label =
             if isFirstEncounter then
@@ -193,7 +193,7 @@ viewHeader language data =
             else
                 let
                     diagnosisLabel =
-                        data.diagnosis
+                        Maybe.map Tuple.second data.diagnosis
                             |> Maybe.map (Translate.AcuteIllnessDiagnosis >> translate language)
                             |> Maybe.withDefault ""
 
@@ -231,8 +231,11 @@ viewContent language currentDate id model data =
 viewPersonDetailsWithAlert : Language -> NominalDate -> AssembledData -> Bool -> (Bool -> msg) -> Html msg
 viewPersonDetailsWithAlert language currentDate data isDialogOpen setAlertsDialogStateMsg =
     let
+        diagnosis =
+            Maybe.map Tuple.second data.diagnosis
+
         alertSign =
-            if data.diagnosis == Just DiagnosisCovid19 then
+            if diagnosis == Just DiagnosisCovid19 then
                 div
                     [ class "alerts"
                     , onClick <| setAlertsDialogStateMsg True
@@ -243,7 +246,7 @@ viewPersonDetailsWithAlert language currentDate data isDialogOpen setAlertsDialo
                 emptyNode
 
         diagnosisTranslationId =
-            Maybe.map Translate.AcuteIllnessDiagnosis data.diagnosis
+            Maybe.map Translate.AcuteIllnessDiagnosis diagnosis
     in
     div [ class "item" ] <|
         viewPersonDetails language currentDate data.person diagnosisTranslationId
@@ -296,7 +299,7 @@ viewMainPageContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Asse
 viewMainPageContent language currentDate id data model =
     let
         isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
+            List.isEmpty data.previousEncountersData
 
         measurements =
             data.measurements
@@ -378,10 +381,13 @@ viewMainPageContent language currentDate id data model =
                         ]
                     ]
 
+        diagnosis =
+            Maybe.map Tuple.second data.diagnosis
+
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEndEncounterButton language isFirstEncounter measurements pendingActivities data.diagnosis SetEndEncounterDialogState
+                , viewEndEncounterButton language isFirstEncounter measurements pendingActivities diagnosis SetEndEncounterDialogState
                 ]
     in
     [ tabs
