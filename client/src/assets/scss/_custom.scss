@@ -1940,7 +1940,7 @@ input::placeholder {
 
   .completed &:after {
     background-image: url(#{$img-path}icon-new-health-education-white.svg), url(#{$img-path}icon-completed-circle.svg);
-    background-position: 80% 55%;
+    background-size: 83px 83px;
   }
 
   &:after {
