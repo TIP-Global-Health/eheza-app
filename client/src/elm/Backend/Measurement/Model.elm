@@ -775,6 +775,12 @@ type alias Call114 =
     AcuteIllnessMeasurement Call114Value
 
 
+type alias SendToHCValue =
+    { signs : EverySet SendToHCSign
+    , reasonForNotSendingToHC : ReasonForNotSendingToHC
+    }
+
+
 type SendToHCSign
     = HandReferrerForm
     | ReferToHealthCenter
@@ -782,7 +788,7 @@ type SendToHCSign
 
 
 type alias SendToHC =
-    AcuteIllnessMeasurement (EverySet SendToHCSign)
+    AcuteIllnessMeasurement SendToHCValue
 
 
 type MedicationDistributionSign
@@ -822,6 +828,14 @@ type alias MedicationDistribution =
 
 type alias AcuteIllnessMuac =
     AcuteIllnessMeasurement MuacInCm
+
+
+type ReasonForNotSendingToHC
+    = ClientRefused
+    | NoAmbulance
+    | ClientUnableToAffordFees
+    | ReasonForNotSendingToHCOther
+    | NoReasonForNotSendingToHC
 
 
 type TreatmentOngoingSign

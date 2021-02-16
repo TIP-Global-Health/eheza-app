@@ -1291,9 +1291,10 @@ encodeSendToHC =
     encodeAcuteIllnessMeasurement encodeSendToHCValue
 
 
-encodeSendToHCValue : EverySet SendToHCSign -> List ( String, Value )
+encodeSendToHCValue : SendToHCValue -> List ( String, Value )
 encodeSendToHCValue value =
-    [ ( "send_to_hc", encodeEverySet encondeSendToHCSign value )
+    [ ( "send_to_hc", encodeEverySet encondeSendToHCSign value.signs )
+    , ( "reason_not_sent_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
     , ( "deleted", bool False )
     , ( "type", string "send_to_hc" )
     ]
@@ -1310,6 +1311,26 @@ encondeSendToHCSign sign =
                 "refer-to-hc"
 
             NoSendToHCSigns ->
+                "none"
+
+
+encodeReasonForNotSendingToHC : ReasonForNotSendingToHC -> Value
+encodeReasonForNotSendingToHC event =
+    string <|
+        case event of
+            ClientRefused ->
+                "client-refused"
+
+            NoAmbulance ->
+                "no-ambulance"
+
+            ClientUnableToAffordFees ->
+                "unable-to-afford-fee"
+
+            ReasonForNotSendingToHCOther ->
+                "other"
+
+            NoReasonForNotSendingToHC ->
                 "none"
 
 

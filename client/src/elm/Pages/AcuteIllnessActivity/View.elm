@@ -2001,19 +2001,44 @@ viewCall114Form language currentDate measurements form =
 
 viewSendToHCForm : Language -> NominalDate -> SendToHCForm -> Html Msg
 viewSendToHCForm language currentDate form =
+    let
+        sendToHCSection =
+            let
+                sentToHealthCenter =
+                    form.referToHealthCenter
+                        |> Maybe.withDefault True
+
+                reasonForNotSendingToHCInput =
+                    if not sentToHealthCenter then
+                        [ viewQuestionLabel language Translate.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
+                            []
+                            form.reasonForNotSendingToHC
+                            SetReasonForNotSendingToHC
+                            Translate.ReasonForNotSendingToHC
+                        ]
+
+                    else
+                        []
+            in
+            [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
+            , viewBoolInput
+                language
+                form.referToHealthCenter
+                SetReferToHealthCenter
+                "refer-to-hc"
+                Nothing
+            ]
+                ++ reasonForNotSendingToHCInput
+    in
     div [ class "ui form send-to-hc" ]
         [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
+        , div [ class "instructions" ] <|
             [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
             , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
             ]
-        , viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
-        , viewBoolInput
-            language
-            form.referToHealthCenter
-            SetReferToHealthCenter
-            "refer-to-hc"
-            Nothing
+                ++ sendToHCSection
         , viewQuestionLabel language Translate.HandedReferralFormQuestion
         , viewBoolInput
             language

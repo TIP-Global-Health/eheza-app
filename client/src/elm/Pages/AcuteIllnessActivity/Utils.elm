@@ -29,11 +29,13 @@ import Backend.Measurement.Model
         , MedicationNonAdministrationSign(..)
         , MuacInCm(..)
         , ReasonForNotIsolating(..)
+        , ReasonForNotSendingToHC(..)
         , ReasonForNotTaking(..)
         , Recommendation114(..)
         , RecommendationSite(..)
         , ResponsePeriod(..)
         , SendToHCSign(..)
+        , SendToHCValue
         , SymptomsGIDerivedSign(..)
         , SymptomsGISign(..)
         , SymptomsGIValue
@@ -517,9 +519,25 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                     measurements.sendToHC
                         |> Maybe.map (Tuple.second >> .value)
                         |> sendToHCFormWithDefault data.sendToHCForm
+
+                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+                    form.referToHealthCenter
+                        |> Maybe.map
+                            (\sentToHC ->
+                                if not sentToHC then
+                                    if isJust form.reasonForNotSendingToHC then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
             in
-            ( taskCompleted form.handReferralForm + taskCompleted form.handReferralForm
-            , 2
+            ( reasonForNotSentActive + taskCompleted form.handReferralForm
+            , reasonForNotSentCompleted + 1
             )
 
         NextStepsHealthEducation ->
@@ -1178,38 +1196,50 @@ toTreatmentReviewValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTreatmentReviewSigns)
 
 
-fromSendToHCValue : Maybe (EverySet SendToHCSign) -> SendToHCForm
+fromSendToHCValue : Maybe SendToHCValue -> SendToHCForm
 fromSendToHCValue saved =
-    { handReferralForm = Maybe.map (EverySet.member HandReferrerForm) saved
-    , referToHealthCenter = Maybe.map (EverySet.member ReferToHealthCenter) saved
+    { handReferralForm = Maybe.map (.signs >> EverySet.member HandReferrerForm) saved
+    , referToHealthCenter = Maybe.map (.signs >> EverySet.member ReferToHealthCenter) saved
+    , reasonForNotSendingToHC = Maybe.map .reasonForNotSendingToHC saved
     }
 
 
-sendToHCFormWithDefault : SendToHCForm -> Maybe (EverySet SendToHCSign) -> SendToHCForm
+sendToHCFormWithDefault : SendToHCForm -> Maybe SendToHCValue -> SendToHCForm
 sendToHCFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value |> Just)
-                , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value |> Just)
+                { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
+                , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
+                , reasonForNotSendingToHC = or form.reasonForNotSendingToHC (value.reasonForNotSendingToHC |> Just)
                 }
             )
 
 
-toSendToHCValueWithDefault : Maybe (EverySet SendToHCSign) -> SendToHCForm -> Maybe (EverySet SendToHCSign)
+toSendToHCValueWithDefault : Maybe SendToHCValue -> SendToHCForm -> Maybe SendToHCValue
 toSendToHCValueWithDefault saved form =
     sendToHCFormWithDefault form saved
         |> toSendToHCValue
 
 
-toSendToHCValue : SendToHCForm -> Maybe (EverySet SendToHCSign)
+toSendToHCValue : SendToHCForm -> Maybe SendToHCValue
 toSendToHCValue form =
-    [ Maybe.map (ifTrue HandReferrerForm) form.handReferralForm
-    , Maybe.map (ifTrue ReferToHealthCenter) form.referToHealthCenter
-    ]
-        |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
+    let
+        signs =
+            [ Maybe.map (ifTrue HandReferrerForm) form.handReferralForm
+            , Maybe.map (ifTrue ReferToHealthCenter) form.referToHealthCenter
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
+
+        reasonForNotSendingToHC =
+            form.reasonForNotSendingToHC
+                |> Maybe.withDefault NoReasonForNotSendingToHC
+                |> Just
+    in
+    Maybe.map SendToHCValue signs
+        |> andMap reasonForNotSendingToHC
 
 
 fromMedicationDistributionValue : Maybe MedicationDistributionValue -> MedicationDistributionForm

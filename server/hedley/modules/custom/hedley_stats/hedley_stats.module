@@ -1303,7 +1303,7 @@ function hedley_stats_handle_cache($method, $cache_name, $health_center_id, $per
 
     case HEDLEY_STATS_CACHE_SET:
       if ($cache_data) {
-        cache_set($cache_id, $cache_data, 'cache', CACHE_TEMPORARY);
+        cache_set($cache_id, $cache_data);
       }
       break;
 
