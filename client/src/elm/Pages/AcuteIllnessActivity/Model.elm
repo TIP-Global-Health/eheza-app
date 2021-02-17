@@ -56,6 +56,7 @@ type Msg
     | SetActiveNextStepsTask NextStepsTask
     | SetPatientIsolated Bool
     | SetHealthEducation Bool
+    | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | SetSignOnDoor Bool
     | SetReasonForNotIsolating ReasonForNotIsolating
     | SaveIsolation PersonId (Maybe ( IsolationId, Isolation )) (Maybe NextStepsTask)
