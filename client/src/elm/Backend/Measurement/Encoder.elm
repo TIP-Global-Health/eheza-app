@@ -1827,9 +1827,10 @@ encodeHealthEducation =
     encodeAcuteIllnessMeasurement encodeHealthEducationValue
 
 
-encodeHealthEducationValue : EverySet HealthEducationSign -> List ( String, Value )
+encodeHealthEducationValue : HealthEducationValue -> List ( String, Value )
 encodeHealthEducationValue value =
-    [ ( "health_education_signs", encodeEverySet encodeHealthEducationSign value )
+    [ ( "health_education_signs", encodeEverySet encodeHealthEducationSign value.signs )
+    , ( "reason_for_not_Providing_education", encodeReasonForNotProvidingHealthEducation value.reasonForNotProvidingEducation )
     , ( "deleted", bool False )
     , ( "type", string "health_education" )
     ]
@@ -1843,4 +1844,24 @@ encodeHealthEducationSign sign =
                 "education-for-diagnosis"
 
             NoHealthEducationSigns ->
+                "none"
+
+
+encodeReasonForNotProvidingHealthEducation : ReasonForNotProvidingHealthEducation -> Value
+encodeReasonForNotProvidingHealthEducation reason =
+    string <|
+        case reason of
+            PatientNeedsEmergencyReferral ->
+                "needs-emergency-referral"
+
+            ReceivedEmergencyCase ->
+                "received-emergency-case"
+
+            LackOfAppropriateEducationUserGuide ->
+                "lack-of-appropriate-education-guide"
+
+            PatientRefused ->
+                "patient-refused"
+
+            NoReasonForNotProvidingHealthEducation ->
                 "none"
