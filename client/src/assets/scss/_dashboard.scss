@@ -1,6 +1,11 @@
 .dashboard {
   margin-top: -15px;
 
+  .timestamp {
+    color: $color-white;
+    text-align: center;
+  }
+
   .ui.segment {
     padding: 1.5rem 2rem;
 

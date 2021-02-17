@@ -147,7 +147,8 @@ viewMainPage language currentDate isChw nurse stats db model =
                     emptyNode
     in
     div [ class "dashboard main" ]
-        [ viewFiltersPane language MainPage filterPeriodsForMainPage db model
+        [ div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
+        , viewFiltersPane language MainPage filterPeriodsForMainPage db model
         , div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
                 [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
@@ -2146,18 +2147,24 @@ annular signsList arcs =
 
 withinThreePreviousMonths : Int -> Int -> Bool
 withinThreePreviousMonths currentMonth monthNumber =
-    case currentMonth of
-        1 ->
-            monthNumber > 9
+    if monthNumber == 13 then
+        -- This indicates that we look at data of 13 months ago month.
+        -- It's for sure not within last 3 month.
+        False
 
-        2 ->
-            monthNumber > 10 || monthNumber == 1
+    else
+        case currentMonth of
+            1 ->
+                monthNumber > 9
 
-        3 ->
-            monthNumber == 12 || monthNumber == 1 || monthNumber == 2
+            2 ->
+                monthNumber > 10 || monthNumber == 1
 
-        _ ->
-            monthNumber < currentMonth && monthNumber >= (currentMonth - 3)
+            3 ->
+                monthNumber == 12 || monthNumber == 1 || monthNumber == 2
+
+            _ ->
+                monthNumber < currentMonth && monthNumber >= (currentMonth - 3)
 
 
 resolvePreviousMonth : Int -> Int

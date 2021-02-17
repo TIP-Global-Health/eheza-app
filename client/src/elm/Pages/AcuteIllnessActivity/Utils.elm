@@ -29,11 +29,13 @@ import Backend.Measurement.Model
         , MedicationNonAdministrationSign(..)
         , MuacInCm(..)
         , ReasonForNotIsolating(..)
+        , ReasonForNotSendingToHC(..)
         , ReasonForNotTaking(..)
         , Recommendation114(..)
         , RecommendationSite(..)
         , ResponsePeriod(..)
         , SendToHCSign(..)
+        , SendToHCValue
         , SymptomsGIDerivedSign(..)
         , SymptomsGISign(..)
         , SymptomsGIValue
@@ -45,7 +47,7 @@ import Backend.Measurement.Model
         , TreatmentReviewSign(..)
         )
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5)
+import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAFertileWoman)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
@@ -226,8 +228,8 @@ physicalExamTasksCompletedFromTotal measurements data task =
             )
 
 
-laboratoryTasksCompletedFromTotal : AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
-laboratoryTasksCompletedFromTotal measurements data task =
+laboratoryTasksCompletedFromTotal : NominalDate -> Person -> AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
+laboratoryTasksCompletedFromTotal currentDate person measurements data task =
     case task of
         LaboratoryMalariaTesting ->
             let
@@ -235,9 +237,23 @@ laboratoryTasksCompletedFromTotal measurements data task =
                     measurements.malariaTesting
                         |> Maybe.map (Tuple.second >> .value)
                         |> malariaTestingFormWithDefault data.malariaTestingForm
+
+                testResultPositive =
+                    form.rapidTestResult == Just RapidTestPositive || form.rapidTestResult == Just RapidTestPositiveAndPregnant
+
+                ( isPregnantActive, isPregnantCompleted ) =
+                    if testResultPositive && isPersonAFertileWoman currentDate person then
+                        if isJust form.isPregnant then
+                            ( 1, 1 )
+
+                        else
+                            ( 1, 0 )
+
+                    else
+                        ( 0, 0 )
             in
-            ( taskCompleted form.rapidTestResult
-            , 1
+            ( taskCompleted form.rapidTestResult + isPregnantCompleted
+            , 1 + isPregnantActive
             )
 
 
@@ -503,9 +519,25 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                     measurements.sendToHC
                         |> Maybe.map (Tuple.second >> .value)
                         |> sendToHCFormWithDefault data.sendToHCForm
+
+                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+                    form.referToHealthCenter
+                        |> Maybe.map
+                            (\sentToHC ->
+                                if not sentToHC then
+                                    if isJust form.reasonForNotSendingToHC then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
             in
-            ( taskCompleted form.handReferralForm + taskCompleted form.handReferralForm
-            , 2
+            ( reasonForNotSentActive + taskCompleted form.handReferralForm
+            , reasonForNotSentCompleted + 1
             )
 
         NextStepsHealthEducation ->
@@ -1164,38 +1196,50 @@ toTreatmentReviewValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTreatmentReviewSigns)
 
 
-fromSendToHCValue : Maybe (EverySet SendToHCSign) -> SendToHCForm
+fromSendToHCValue : Maybe SendToHCValue -> SendToHCForm
 fromSendToHCValue saved =
-    { handReferralForm = Maybe.map (EverySet.member HandReferrerForm) saved
-    , referToHealthCenter = Maybe.map (EverySet.member ReferToHealthCenter) saved
+    { handReferralForm = Maybe.map (.signs >> EverySet.member HandReferrerForm) saved
+    , referToHealthCenter = Maybe.map (.signs >> EverySet.member ReferToHealthCenter) saved
+    , reasonForNotSendingToHC = Maybe.map .reasonForNotSendingToHC saved
     }
 
 
-sendToHCFormWithDefault : SendToHCForm -> Maybe (EverySet SendToHCSign) -> SendToHCForm
+sendToHCFormWithDefault : SendToHCForm -> Maybe SendToHCValue -> SendToHCForm
 sendToHCFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value |> Just)
-                , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value |> Just)
+                { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
+                , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
+                , reasonForNotSendingToHC = or form.reasonForNotSendingToHC (value.reasonForNotSendingToHC |> Just)
                 }
             )
 
 
-toSendToHCValueWithDefault : Maybe (EverySet SendToHCSign) -> SendToHCForm -> Maybe (EverySet SendToHCSign)
+toSendToHCValueWithDefault : Maybe SendToHCValue -> SendToHCForm -> Maybe SendToHCValue
 toSendToHCValueWithDefault saved form =
     sendToHCFormWithDefault form saved
         |> toSendToHCValue
 
 
-toSendToHCValue : SendToHCForm -> Maybe (EverySet SendToHCSign)
+toSendToHCValue : SendToHCForm -> Maybe SendToHCValue
 toSendToHCValue form =
-    [ Maybe.map (ifTrue HandReferrerForm) form.handReferralForm
-    , Maybe.map (ifTrue ReferToHealthCenter) form.referToHealthCenter
-    ]
-        |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
+    let
+        signs =
+            [ Maybe.map (ifTrue HandReferrerForm) form.handReferralForm
+            , Maybe.map (ifTrue ReferToHealthCenter) form.referToHealthCenter
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
+
+        reasonForNotSendingToHC =
+            form.reasonForNotSendingToHC
+                |> Maybe.withDefault NoReasonForNotSendingToHC
+                |> Just
+    in
+    Maybe.map SendToHCValue signs
+        |> andMap reasonForNotSendingToHC
 
 
 fromMedicationDistributionValue : Maybe MedicationDistributionValue -> MedicationDistributionForm
@@ -1333,7 +1377,7 @@ getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form =
         nonAdministrationSigns =
             form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
     in
-    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientDeclined, NonAdministrationOther ]
+    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientDeclined, NonAdministrationPatientUnableToAfford, NonAdministrationOther ]
         |> List.filterMap
             (\reason ->
                 if EverySet.member (reasonToSignFunc reason) nonAdministrationSigns then
@@ -1595,11 +1639,11 @@ expectPhysicalExamTask currentDate person isFirstEncounter task =
 
 resolvePreviousValue : AssembledData -> (AcuteIllnessMeasurements -> Maybe ( id, AcuteIllnessMeasurement a )) -> (a -> b) -> Maybe b
 resolvePreviousValue assembled measurementFunc valueFunc =
-    assembled.previousMeasurementsWithDates
+    assembled.previousEncountersData
         |> List.filterMap
-            (\( _, measurements ) ->
-                measurementFunc measurements
-                    |> Maybe.map (Tuple.second >> .value >> valueFunc)
+            (.measurements
+                >> measurementFunc
+                >> Maybe.map (Tuple.second >> .value >> valueFunc)
             )
         |> List.reverse
         |> List.head

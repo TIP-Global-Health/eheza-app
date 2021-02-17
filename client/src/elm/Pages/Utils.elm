@@ -206,7 +206,7 @@ viewNumberInput language maybeCurrentValue toStringFunc setMsg inputClass =
         [ input
             [ type_ "number"
             , Html.Attributes.min "0"
-            , Html.Attributes.max "99"
+            , Html.Attributes.max "21"
             , onInput setMsg
             , value currentValue
             ]

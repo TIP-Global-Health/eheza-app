@@ -13,12 +13,29 @@ include_once 'hedley_chw.features.inc';
  * Crate CHW group for newly created village.
  */
 function hedley_chw_node_insert($node) {
+  hedley_chw_process_new_participation($node);
+  hedley_chw_process_new_village($node);
+}
+
+/**
+ * For newly created villages, adds a CHW group and assigns participations.
+ *
+ * For every adult that resides in village, we pull adults children /
+ * caregiven, and add adult+child participations to CHW group.
+ *
+ * @param object $node
+ *   Newly created village.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function hedley_chw_process_new_village($node) {
   if ($node->type != 'village') {
     return;
   }
 
   // Create CHW group for new village.
   $wrapper = entity_metadata_wrapper('node', $node);
+  $village_id = $node->nid;
   $village_name = $wrapper->label();
   $health_center_id = $wrapper->field_health_center->getIdentifier();
 
@@ -30,13 +47,14 @@ function hedley_chw_node_insert($node) {
   $clinic_wrapper = entity_metadata_wrapper('node', $clinic_node);
   $clinic_wrapper->title->set("$village_name CHW group");
   $clinic_wrapper->field_health_center->set($health_center_id);
-  $clinic_wrapper->field_village_ref->set($node->nid);
+  $clinic_wrapper->field_village_ref->set($village_id);
   $clinic_wrapper->field_group_type->set('chw');
   $clinic_wrapper->save();
 
   $clinic = $clinic_wrapper->getIdentifier();
 
-  $residents = hedley_chw_get_village_residents($node->nid);
+  // Add participants to CHW group, based on mother's village.
+  $residents = hedley_chw_get_village_residents($village_id);
   if (empty($residents)) {
     return;
   }
@@ -88,20 +106,7 @@ function hedley_chw_node_insert($node) {
       $adult_activities = $related_by == HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR ?
         HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_CAREGIVER : HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_MOTHER;
 
-      $participant_node = entity_create('node', [
-        'type' => 'pmtct_participant',
-        'uid' => $node->uid,
-      ]);
-      $participant_wrapper = entity_metadata_wrapper('node', $participant_node);
-      $participant_wrapper->field_adult->set($adult);
-      $participant_wrapper->field_person->set($child);
-      $participant_wrapper->field_adult_activities->set($adult_activities);
-      $participant_wrapper->field_expected->set([
-        'value' => date('Y-m-d'),
-        'value2' => NULL,
-      ]);
-      $participant_wrapper->field_clinic->set($clinic);
-      $participant_wrapper->save();
+      hedley_person_create_pmtct_participant($adult, $child, $adult_activities, $clinic, $node->uid);
     }
 
     $offset += $batch_size;
@@ -109,6 +114,164 @@ function hedley_chw_node_insert($node) {
     // Free up memory.
     drupal_static_reset();
   }
+}
+
+/**
+ * When participation is added, create additional one for village CHW group.
+ *
+ * If participation is not to CHW clinic, locate CHW group based on adults'
+ * geolocation fields, and add the CHW participation.
+ *
+ * @param object $node
+ *   Newly created village.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function hedley_chw_process_new_participation($node) {
+  if ($node->type != 'pmtct_participant') {
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  // Do not proceed, if we can't resolve participation group.
+  $clinic_id = $wrapper->field_clinic->getIdentifier();
+  if (empty($clinic_id)) {
+    return;
+  }
+
+  // Do not proceed, if added participation is for CHW/ACHI group.
+  $clinic_wrapper = entity_metadata_wrapper('node', $clinic_id);
+  $clinic_type = $clinic_wrapper->field_group_type->value();
+
+  $types_to_skip = [
+    HEDLEY_PERSON_CLINIC_TYPE_CHW,
+    HEDLEY_PERSON_CLINIC_TYPE_ACHI,
+  ];
+
+  if (in_array($clinic_type, $types_to_skip)) {
+    return;
+  }
+
+  // Do not proceed, if child is more than 5 years old.
+  $child_id = $wrapper->field_person->getIdentifier();
+  $child_wrapper = entity_metadata_wrapper('node', $child_id);
+  $child_birth_date = $child_wrapper->field_birth_date->value();
+  if ($child_birth_date < strtotime("-5 year")) {
+    return;
+  }
+
+  // Do not proceed, if we can't locate adults village.
+  $adult_id = $wrapper->field_adult->getIdentifier();
+  $village_id = hedley_chw_find_person_village($adult_id);
+  if (empty($village_id)) {
+    return;
+  }
+
+  // Do not proceed, if CHW group for village can not be located.
+  $chw_group_id = hedley_chw_find_village_group($village_id);
+  if (empty($chw_group_id)) {
+    return;
+  }
+
+  // Do not proceed, if adult with child already participate in CHW group.
+  $already_participate = hedley_chw_participate_in_group($child_id, $adult_id, $chw_group_id);
+  if ($already_participate) {
+    return;
+  }
+
+  // Add new participation to CHW group.
+  $adult_activities = $wrapper->field_adult_activities->value();
+  hedley_person_create_pmtct_participant($adult_id, $child_id, $adult_activities, $chw_group_id, $node->uid);
+}
+
+/**
+ * Finds the village where given person resides.
+ *
+ * @param int $person_id
+ *   Person node ID.
+ *
+ * @return int|bool
+ *   Village node ID, or False, if not found.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function hedley_chw_find_person_village($person_id) {
+  $wrapper = entity_metadata_wrapper('node', $person_id);
+  $province = $wrapper->field_province->value();
+  $district = $wrapper->field_district->value();
+  $sector = $wrapper->field_sector->value();
+  $cell = $wrapper->field_cell->value();
+  $village = $wrapper->field_village->value();
+
+  $query = new EntityFieldQuery();
+
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'village')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_province', 'value', $province)
+    ->fieldCondition('field_district', 'value', $district)
+    ->fieldCondition('field_sector', 'value', $sector)
+    ->fieldCondition('field_cell', 'value', $cell)
+    ->fieldCondition('field_village', 'value', $village)
+    ->range(0, 1)
+    ->execute();
+
+  return empty($result['node']) ? FALSE : key($result['node']);
+}
+
+/**
+ * Finds CHW group of given village.
+ *
+ * @param int $village_id
+ *   Village node ID.
+ *
+ * @return int|bool
+ *   CHW group node ID, or False, if not found.
+ */
+function hedley_chw_find_village_group($village_id) {
+  $query = new EntityFieldQuery();
+
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'clinic')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_village_ref', 'target_id', $village_id)
+    ->range(0, 1)
+    ->execute();
+
+  return empty($result['node']) ? FALSE : key($result['node']);
+}
+
+/**
+ * Checks if given adult+child pair participate in given group.
+ *
+ * @param int $child_id
+ *   Child node ID.
+ * @param int $adult_id
+ *   Adult node ID.
+ * @param int $group_id
+ *   CHW group node ID.
+ *
+ * @return bool
+ *   True, if adult+child pair participate in group.
+ */
+function hedley_chw_participate_in_group($child_id, $adult_id, $group_id) {
+  $query = new EntityFieldQuery();
+
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'pmtct_participant')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_person', 'target_id', $child_id)
+    ->fieldCondition('field_adult', 'target_id', $adult_id)
+    ->fieldCondition('field_clinic', 'target_id', $group_id)
+    ->addTag('exclude_deleted')
+    ->range(0, 1)
+    ->execute();
+
+  return !empty($result['node']);
 }
 
 /**

@@ -38,6 +38,7 @@ encodeDashboardStats stats =
     , encodeMissedSessions stats.missedSessions
     , encodeTotalEncountersData stats.totalEncounters
     , encodeVillagesWithResidents stats.villagesWithResidents
+    , ( "timestamp", string stats.timestamp )
     , ( "stats_cache_hash", string stats.cacheHash )
     ]
 

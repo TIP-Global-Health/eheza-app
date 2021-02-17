@@ -23,6 +23,7 @@ decodeDashboardStats =
         |> required "missed_sessions" (list decodeParticipantStats)
         |> required "total_encounters" decodeTotalEncountersData
         |> required "villages_with_residents" decodeVillagesWithResidents
+        |> required "timestamp" string
         |> required "stats_cache_hash" string
 
 

@@ -72,6 +72,7 @@ type Msg
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC )) (Maybe NextStepsTask)
+    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionMedicationNonAdministrationReason (Maybe MedicationNonAdministrationReason) MedicationDistributionSign MedicationNonAdministrationReason
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution )) (Maybe NextStepsTask)
@@ -347,7 +348,7 @@ emptyNextStepsData =
     { isolationForm = IsolationForm Nothing Nothing Nothing Nothing
     , hcContactForm = HCContactForm Nothing Nothing Nothing Nothing
     , call114Form = emptyCall114Form
-    , sendToHCForm = SendToHCForm Nothing Nothing
+    , sendToHCForm = SendToHCForm Nothing Nothing Nothing
     , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
     , healthEducationForm = HealthEducationForm Nothing
     , activeTask = Nothing
@@ -405,6 +406,7 @@ emptyCall114Form =
 type alias SendToHCForm =
     { handReferralForm : Maybe Bool
     , referToHealthCenter : Maybe Bool
+    , reasonForNotSendingToHC : Maybe ReasonForNotSendingToHC
     }
 
 

@@ -6,6 +6,7 @@
  */
 
 define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 15);
+define('HEDLEY_RESTFUL_INCIDENT_TYPE_CONTENT_UPLOAD', 'content-upload');
 
 /**
  * Nodes synced to all devices.
@@ -414,4 +415,77 @@ function hedley_restful_resolve_device_by_token($token) {
   $auth_token = entity_load_single('restful_token_auth', $auth_token_id);
 
   return $auth_token->uid;
+}
+
+/**
+ * For new incident, record and generate a notification mail.
+ *
+ * @param string $incident_type
+ *   Either 'content-upload ' or 'file-upload'.
+ * @param string $content_identifier
+ *   A unique identifier for node or file.
+ * @param int $device_id
+ *   User ID of device Robot user.
+ * @param string $details
+ *   Additional details. Add for for content upload. Empty for files upload.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function hedley_restful_report_sync_incident($incident_type, $content_identifier, $device_id, $details = '') {
+  // Check if we already know about this incident.
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'sync_incident')
+    ->propertyCondition('uid', $device_id)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_incident_type', 'value', $incident_type)
+    ->fieldCondition('field_content_identifier', 'value', $content_identifier)
+    ->count()
+    ->execute();
+
+  if ($result > 0) {
+    // We know of this incident already.
+    return;
+  }
+
+  // It's a new incident. Create a record.
+  $incident = hedley_person_create_basic_node('sync_incident', $device_id);
+  $wrapper = entity_metadata_wrapper('node', $incident);
+  $wrapper->field_incident_type->set($incident_type);
+  $wrapper->field_content_identifier->set($content_identifier);
+  $wrapper->field_incident_details->set($details);
+  $wrapper->save();
+
+  // Send a notification mail about newly created incident.
+  $params = [
+    'device_id' => $device_id,
+    'incident_type' => $incident_type,
+    'details' => $details,
+  ];
+
+  $to = variable_get('hedley_restful_incident_notifiers_list', 'tip-incident@gizra.com');
+  $mail_result = drupal_mail('hedley_restful', 'incident_notificationy', $to, language_default(), $params);
+  if (empty($mail_result['result'])) {
+    watchdog('restful', 'Could not send incident notification email', [], WATCHDOG_ERROR);
+  }
+}
+
+/**
+ * Implements hook_mail().
+ *
+ * Alters subject and body of 'incident notification' mail.
+ */
+function hedley_restful_mail($key, &$message, $params) {
+  if ($key != 'incident_notification') {
+    return;
+  }
+
+  $account = user_load($params['device_id']);
+  $stage = ($params['incident_type'] == HEDLEY_RESTFUL_INCIDENT_TYPE_CONTENT_UPLOAD) ? 'content upload' : 'file upload';
+
+  $message['subject'] = "Sync incident: $account->name reported a problem during $stage.";
+  if ($params['incident_type'] == HEDLEY_RESTFUL_INCIDENT_TYPE_CONTENT_UPLOAD) {
+    $message['body'][] = $params['details'];
+  }
 }
