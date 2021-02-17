@@ -2704,7 +2704,7 @@ viewHealthEducationForm language currentDate maybeDiagnosis form =
             maybeDiagnosis
                 |> Maybe.map
                     (\diagnosis ->
-                        [ viewQuestionLabel language Translate.ProvidedPreventionEducationQuestion
+                        [ text <| translate language <| Translate.ProvidedPreventionEducationQuestion
                         , text " "
                         , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
                         , text "?"
