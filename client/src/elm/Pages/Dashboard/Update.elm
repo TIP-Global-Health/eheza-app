@@ -2,14 +2,16 @@ module Pages.Dashboard.Update exposing (update)
 
 import App.Model
 import Pages.Dashboard.Model exposing (..)
+import Pages.Dashboard.Utils exposing (filterProgramTypeFromString)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
+import Restful.Endpoint exposing (toEntityUuid)
 
 
 update : Msg -> DashboardPage -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update msg subPage model =
     case msg of
-        ModalToggle state table title ->
-            ( { model | modalTable = table, modalState = state, modalTitle = title }
+        SetModalState state ->
+            ( { model | modalState = state }
             , Cmd.none
             , []
             )
@@ -50,6 +52,35 @@ update msg subPage model =
 
                     else
                         { model | currentBeneficiariesIncidenceChartsFilter = filter }
+            in
+            ( updatedModel
+            , Cmd.none
+            , []
+            )
+
+        SetFilterProgramType string ->
+            let
+                updatedModel =
+                    filterProgramTypeFromString string
+                        |> Maybe.map
+                            (\programTypeFilter ->
+                                { model | programTypeFilter = programTypeFilter, selectedVillageFilter = Nothing }
+                            )
+                        |> Maybe.withDefault model
+            in
+            ( updatedModel
+            , Cmd.none
+            , []
+            )
+
+        SetSelectedVillage string ->
+            let
+                updatedModel =
+                    if string == "" then
+                        { model | selectedVillageFilter = Nothing }
+
+                    else
+                        { model | selectedVillageFilter = Just (toEntityUuid string) }
             in
             ( updatedModel
             , Cmd.none

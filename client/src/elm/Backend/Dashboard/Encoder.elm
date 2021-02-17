@@ -4,46 +4,63 @@ import AssocList as Dict exposing (Dict)
 import Backend.Dashboard.Model
     exposing
         ( CaseManagement
+        , CaseManagementData
         , CaseNutrition
         , ChildrenBeneficiariesStats
         , DashboardStats
         , FamilyPlanningStats
-        , GoodNutrition
         , Nutrition
         , NutritionStatus(..)
         , NutritionValue
         , ParticipantStats
         , Periods
+        , PersonIdentifier
+        , ProgramType(..)
         , TotalBeneficiaries
+        , TotalEncountersData
         )
+import Backend.Entities exposing (VillageId)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSign)
 import Backend.Person.Encoder exposing (encodeGender)
 import Dict as LegacyDict
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
+import Restful.Endpoint exposing (fromEntityUuid)
 
 
 encodeDashboardStats : DashboardStats -> List ( String, Value )
 encodeDashboardStats stats =
-    [ encodeCasesManagements stats.caseManagement
+    [ encodeCasesManagementData stats.caseManagement
     , encodeChildrenBeneficiaries stats.childrenBeneficiaries
     , encodeCompletedPrograms stats.completedPrograms
     , encodeFamilyPlanning stats.familyPlanning
     , encodeMissedSessions stats.missedSessions
-    , encodeTotalEncounters stats.totalEncounters
+    , encodeTotalEncountersData stats.totalEncounters
+    , encodeVillagesWithResidents stats.villagesWithResidents
     , ( "timestamp", string stats.timestamp )
     , ( "stats_cache_hash", string stats.cacheHash )
     ]
-        ++ (encodeGoodNutrition stats.maybeGoodNutrition
-                |> Maybe.map List.singleton
-                |> Maybe.withDefault []
-           )
 
 
-encodeCasesManagements : List CaseManagement -> ( String, Value )
-encodeCasesManagements statsList =
-    ( "case_management", list (encodeCaseManagement >> object) statsList )
+encodeCasesManagementData : CaseManagementData -> ( String, Value )
+encodeCasesManagementData data =
+    ( "case_management"
+    , object
+        [ ( "this_year", encodeCasesManagementForYear data.thisYear )
+        , ( "last_year", encodeCasesManagementForYear data.lastYear )
+        ]
+    )
+
+
+encodeCasesManagementForYear : Dict ProgramType (List CaseManagement) -> Value
+encodeCasesManagementForYear dict =
+    Dict.toList dict
+        |> List.map
+            (\( programType, casesList ) ->
+                ( programTypeToString programType, list (encodeCaseManagement >> object) casesList )
+            )
+        |> object
 
 
 encodeCaseManagement : CaseManagement -> List ( String, Value )
@@ -62,6 +79,7 @@ encodeCaseNutrition caseNutrition =
     , ( "underweight", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.underweight) )
     , ( "wasting", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.wasting) )
     , ( "muac", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.muac) )
+    , ( "nutrition_signs", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.nutritionSigns) )
     ]
 
 
@@ -129,20 +147,6 @@ encodeFamilyPlanningStats stats =
     ]
 
 
-encodeGoodNutrition : Maybe GoodNutrition -> Maybe ( String, Value )
-encodeGoodNutrition mGoodNutrition =
-    mGoodNutrition
-        |> Maybe.map
-            (\goodNutrition ->
-                ( "good_nutrition"
-                , object
-                    [ encodePeriodsAs "all" goodNutrition.all
-                    , encodePeriodsAs "good" goodNutrition.good
-                    ]
-                )
-            )
-
-
 encodeMissedSessions : List ParticipantStats -> ( String, Value )
 encodeMissedSessions statsList =
     ( "missed_sessions", list (encodeParticipantStats >> object) statsList )
@@ -159,9 +163,56 @@ encodeParticipantStats stats =
     ]
 
 
-encodeTotalEncounters : Periods -> ( String, Value )
-encodeTotalEncounters periods =
-    encodePeriodsAs "total_encounters" periods
+encodeTotalEncountersData : TotalEncountersData -> ( String, Value )
+encodeTotalEncountersData data =
+    ( "total_encounters"
+    , object
+        [ ( "global", encodeTotalEncounters data.global )
+        , ( "villages", encodeTotalEncountersForVillages data.villages )
+        ]
+    )
+
+
+encodeTotalEncountersForVillages : Dict VillageId (Dict ProgramType Periods) -> Value
+encodeTotalEncountersForVillages dict =
+    Dict.toList dict
+        |> List.map
+            (\( villageId, totalEncounters ) ->
+                ( fromEntityUuid villageId, encodeTotalEncounters totalEncounters )
+            )
+        |> object
+
+
+encodeTotalEncounters : Dict ProgramType Periods -> Value
+encodeTotalEncounters dict =
+    Dict.toList dict
+        |> List.map
+            (\( programType, periods ) ->
+                encodePeriodsAs (programTypeToString programType) periods
+            )
+        |> object
+
+
+programTypeToString : ProgramType -> String
+programTypeToString programType =
+    case programType of
+        ProgramAchi ->
+            "achi"
+
+        ProgramFbf ->
+            "fbf"
+
+        ProgramIndividual ->
+            "individual"
+
+        ProgramPmtct ->
+            "pmtct"
+
+        ProgramSorwathe ->
+            "sorwathe"
+
+        ProgramUnknown ->
+            "unknown"
 
 
 encodePeriodsAs : String -> Periods -> ( String, Value )
@@ -174,3 +225,17 @@ encodePeriods periods =
     [ ( "last_year", int periods.lastYear )
     , ( "this_year", int periods.thisYear )
     ]
+
+
+encodeVillagesWithResidents : Dict VillageId (List PersonIdentifier) -> ( String, Value )
+encodeVillagesWithResidents dict =
+    let
+        value =
+            Dict.toList dict
+                |> List.map
+                    (\( villageId, idsList ) ->
+                        ( fromEntityUuid villageId, list int idsList )
+                    )
+                |> object
+    in
+    ( "villages_with_residents", value )

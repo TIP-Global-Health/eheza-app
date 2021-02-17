@@ -205,32 +205,13 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) deviceName sele
                     ]
                     [ text <| translate language Translate.Clinical ]
 
-            healthCenterGotFbfClinic =
-                healthCenterId
-                    |> Maybe.andThen
-                        (\id ->
-                            db.clinics
-                                |> RemoteData.toMaybe
-                                |> Maybe.map
-                                    (Dict.values
-                                        >> List.filter (\clinic -> clinic.healthCenterId == id && clinic.clinicType == Fbf)
-                                        >> List.isEmpty
-                                        >> not
-                                    )
-                        )
-                    |> Maybe.withDefault False
-
             dashboardButton =
-                if not (isCommunityHealthWorker nurse) && healthCenterGotFbfClinic then
-                    button
-                        [ class "ui primary button"
-                        , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
-                        ]
-                        [ text <| translate language Translate.DashboardLabel
-                        ]
-
-                else
-                    emptyNode
+                button
+                    [ class "ui primary button"
+                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
+                    ]
+                    [ text <| translate language Translate.DashboardLabel
+                    ]
 
             participantDirectoryButton =
                 button
