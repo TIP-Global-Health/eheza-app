@@ -854,6 +854,14 @@ type ReasonForNotTaking
     | NoReasonForNotTakingSign
 
 
+type ReasonForNotProvidingHealthEducation
+    = PatientNeedsEmergencyReferral
+    | ReceivedEmergencyCase
+    | LackOfAppropriateEducationUserGuide
+    | PatientRefused
+    | NoReasonForNotProvidingHealthEducation
+
+
 type AdverseEvent
     = AdverseEventRashOrItching
     | AdverseEventFever
