@@ -905,8 +905,14 @@ type alias AcuteIllnessNutrition =
     AcuteIllnessMeasurement (EverySet ChildNutritionSign)
 
 
+type alias HealthEducationValue =
+    { signs : EverySet HealthEducationSign
+    , reasonForNotProvidingEducation : ReasonForNotProvidingHealthEducation
+    }
+
+
 type alias HealthEducation =
-    AcuteIllnessMeasurement (EverySet HealthEducationSign)
+    AcuteIllnessMeasurement (EverySet HealthEducationValue)
 
 
 type HealthEducationSign
