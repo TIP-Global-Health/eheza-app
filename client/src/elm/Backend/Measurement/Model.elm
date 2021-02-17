@@ -912,7 +912,7 @@ type alias HealthEducationValue =
 
 
 type alias HealthEducation =
-    AcuteIllnessMeasurement (EverySet HealthEducationValue)
+    AcuteIllnessMeasurement HealthEducationValue
 
 
 type HealthEducationSign
