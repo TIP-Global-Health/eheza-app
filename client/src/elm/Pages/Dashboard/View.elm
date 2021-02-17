@@ -831,18 +831,44 @@ viewMonthCell ( month, cellData ) =
 viewFiltersPane : Language -> DashboardPage -> List FilterPeriod -> ModelIndexedDb -> Model -> Html Msg
 viewFiltersPane language page filterPeriodsPerPage db model =
     let
-        programTypeFilterFilterButton =
+        ( programTypeFilterFilterButton, labelSelected ) =
             if page == MainPage then
-                div
+                ( div
                     [ class "primary ui button program-type-filter"
                     , onClick <| SetModalState <| Just FiltersModal
                     ]
                     [ span [] [ translateText language <| Translate.Dashboard Translate.Filters ]
                     , span [ class "icon-settings" ] []
                     ]
+                , if model.programTypeFilter == FilterProgramCommunity then
+                    db.villages
+                        |> RemoteData.toMaybe
+                        |> Maybe.andThen
+                            (\villages ->
+                                model.selectedVillageFilter
+                                    |> Maybe.andThen
+                                        (\villageId ->
+                                            Dict.get villageId villages
+                                                |> Maybe.map
+                                                    (\village ->
+                                                        span [ class "label" ]
+                                                            [ text <| translate language Translate.SelectedVillage ++ ": "
+                                                            , text village.name
+                                                            ]
+                                                    )
+                                        )
+                            )
+                        |> Maybe.withDefault emptyNode
+
+                  else
+                    span [ class "label" ]
+                        [ text <| translate language Translate.SelectedProgram ++ ": "
+                        , translateText language <| Translate.Dashboard <| Translate.FilterProgramType model.programTypeFilter
+                        ]
+                )
 
             else
-                emptyNode
+                ( emptyNode, emptyNode )
 
         renderButton period =
             button
@@ -854,33 +880,6 @@ viewFiltersPane language page filterPeriodsPerPage db model =
                 ]
                 [ translateText language <| Translate.Dashboard <| Translate.PeriodFilter period
                 ]
-
-        labelSelected =
-            if model.programTypeFilter == FilterProgramCommunity then
-                db.villages
-                    |> RemoteData.toMaybe
-                    |> Maybe.andThen
-                        (\villages ->
-                            model.selectedVillageFilter
-                                |> Maybe.andThen
-                                    (\villageId ->
-                                        Dict.get villageId villages
-                                            |> Maybe.map
-                                                (\village ->
-                                                    span [ class "label" ]
-                                                        [ text <| translate language Translate.SelectedVillage ++ ": "
-                                                        , text village.name
-                                                        ]
-                                                )
-                                    )
-                        )
-                    |> Maybe.withDefault emptyNode
-
-            else
-                span [ class "label" ]
-                    [ text <| translate language Translate.SelectedProgram ++ ": "
-                    , translateText language <| Translate.Dashboard <| Translate.FilterProgramType model.programTypeFilter
-                    ]
     in
     div [ class "ui segment filters" ] <|
         List.map renderButton filterPeriodsPerPage
