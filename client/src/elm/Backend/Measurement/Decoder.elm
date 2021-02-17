@@ -1966,7 +1966,7 @@ decodeHealthEducation : Decoder HealthEducation
 decodeHealthEducation =
     succeed HealthEducationValue
         |> required "health_education_signs" (decodeEverySet decodeHealthEducationSign)
-        |> optional "reason_for_not_Providing_education" decodeReasonForNotProvidingHealthEducation NoReasonForNotProvidingHealthEducation
+        |> optional "reason_not_given_education" decodeReasonForNotProvidingHealthEducation NoReasonForNotProvidingHealthEducation
         |> decodeAcuteIllnessMeasurement
 
 
