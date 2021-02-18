@@ -1528,8 +1528,8 @@ translationSet trans =
             }
 
         BarcodePhotoHelper ->
-            { english = "Take a picture of the barcode on the Malaria medication"
-            , kinyarwanda = Just "Fata ifoto ya kodi ndangamuti ku muti wa malariya"
+            { english = "Take a picture of the barcode on the RDT package."
+            , kinyarwanda = Just "Fata ifoto ya kodi ndangamuti kuri pack ya Igikoresho Gipima Malariya"
             }
 
         BeginNewEncounter ->
