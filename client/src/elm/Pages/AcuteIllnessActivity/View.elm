@@ -2681,13 +2681,13 @@ viewHealthEducationForm language currentDate maybeDiagnosis form =
             (\diagnosis ->
                 div [ class "ui form health-education" ]
                     [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                    , div [ class "instructions" ]
+                        [ text <| translate language Translate.ProvideHealthEducation
+                        , text " "
+                        , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
+                        ]
                     , div [ class "label" ]
-                        [ div [ class "instructions" ]
-                            [ text <| translate language Translate.ProvideHealthEducation
-                            , text " "
-                            , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
-                            ]
-                        , text <| translate language Translate.ProvidedPreventionEducationQuestion
+                        [ text <| translate language Translate.ProvidedPreventionEducationQuestion
                         , text " "
                         , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
                         , text "?"
