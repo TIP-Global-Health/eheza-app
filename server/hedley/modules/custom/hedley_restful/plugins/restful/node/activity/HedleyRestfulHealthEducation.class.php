@@ -21,7 +21,7 @@ class HedleyRestfulHealthEducation extends HedleyRestfulAcuteIllnessActivityBase
    * {@inheritdoc}
    */
   protected $fields = [
-    'field_reason_not_given_education'
+    'field_reason_not_given_education',
   ];
 
 }
