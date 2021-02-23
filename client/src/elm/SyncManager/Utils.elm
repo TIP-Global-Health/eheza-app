@@ -388,6 +388,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityAttendance identifier ->
             getIdentifier identifier "attendance"
 
+        BackendAuthorityBarcodeScan identifier ->
+            getIdentifier identifier "barcode_scan"
+
         BackendAuthorityBreastExam identifier ->
             getIdentifier identifier "breast_exam"
 
@@ -763,6 +766,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityAttendance identifier ->
             encode Backend.Measurement.Encoder.encodeAttendance identifier
 
+        BackendAuthorityBarcodeScan identifier ->
+            encode Backend.Measurement.Encoder.encodeBarcodeScan identifier
+
         BackendAuthorityBreastExam identifier ->
             encode Backend.Measurement.Encoder.encodeBreastExam identifier
 
@@ -1100,6 +1106,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityAttendance identifier ->
             AttendanceRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityBarcodeScan identifier ->
+            BarcodeScanRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityBreastExam identifier ->
             BreastExamRevision (toEntityUuid identifier.uuid) identifier.entity

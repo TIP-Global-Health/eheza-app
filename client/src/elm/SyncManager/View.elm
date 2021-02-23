@@ -384,6 +384,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityAttendance identifier ->
                 viewMeasurement identifier "Attendance"
 
+            BackendAuthorityBarcodeScan identifier ->
+                viewMeasurement identifier "Barcode Scan"
+
             BackendAuthorityBreastExam identifier ->
                 viewMeasurement identifier "Breast Exam"
 
