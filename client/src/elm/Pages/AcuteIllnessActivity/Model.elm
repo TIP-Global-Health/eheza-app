@@ -242,7 +242,7 @@ type alias LaboratoryData =
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { malariaTestingForm = MalariaTestingForm Nothing Nothing
-    , barcodeScanForm = BarcodeScanForm Nothing Nothing
+    , barcodeScanForm = BarcodeScanForm Nothing
     , activeTask = LaboratoryMalariaTesting
     }
 
@@ -259,8 +259,7 @@ type alias MalariaTestingForm =
 
 
 type alias BarcodeScanForm =
-    { url : Maybe PhotoUrl
-    , barcode : Maybe String
+    { barcode : Maybe String
     }
 
 

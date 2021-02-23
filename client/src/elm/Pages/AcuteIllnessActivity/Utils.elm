@@ -264,7 +264,7 @@ laboratoryTasksCompletedFromTotal currentDate person measurements data task =
                         |> Maybe.map (Tuple.second >> .value)
                         |> barcodeScanFormWithDefault data.barcodeScanForm
             in
-            ( taskCompleted form.url
+            ( taskCompleted form.barcode
             , 1
             )
 
@@ -902,11 +902,7 @@ barcodeScanFormWithDefault form saved =
     saved
         |> unwrap
             form
-            (\savedBarcode ->
-                { url = form.url
-                , barcode = or form.barcode (Just savedBarcode)
-                }
-            )
+            (\savedBarcode -> { barcode = or form.barcode (Just savedBarcode) })
 
 
 toBarcodeScanValueWithDefault : Maybe String -> BarcodeScanForm -> Maybe String

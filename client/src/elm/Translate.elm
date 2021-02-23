@@ -1767,7 +1767,7 @@ translationSet trans =
             }
 
         BarcodeScanHelper ->
-            { english = "Take a picture of the barcode on the RDT package."
+            { english = "Take a picture of the barcode on the RDT package"
             , kinyarwanda = Just "Fata ifoto ya kodi iri ku gapaki k'igikoresho gipima malariya cya TDR"
             }
 
