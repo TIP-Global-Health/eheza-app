@@ -218,13 +218,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
-        SaveBarcodePhoto personId valueId value ->
-            ( { model | saveBarcodePhoto = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value barcodePhotoEndpoint HandleSavedBarcodePhoto
+        SaveBarcodeScan personId valueId value ->
+            ( { model | saveBarcodeScan = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value barcodeScanEndpoint HandleSavedBarcodeScan
             )
 
-        HandleSavedBarcodePhoto data ->
-            ( { model | saveBarcodePhoto = data }
+        HandleSavedBarcodeScan data ->
+            ( { model | saveBarcodeScan = data }
             , Cmd.none
             )
 

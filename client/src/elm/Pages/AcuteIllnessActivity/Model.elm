@@ -44,7 +44,7 @@ type Msg
     | SetIsPregnant Bool
     | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
     | DropZoneComplete DropZoneFile
-    | SaveBarcodePhoto PersonId (Maybe ( BarcodePhotoId, BarcodePhoto ))
+    | SaveBarcodeScan PersonId (Maybe ( BarcodeScanId, BarcodeScan ))
       -- EXPOSURE Msgs
     | SetActiveExposureTask ExposureTask
     | SetCovid19Country Bool
@@ -234,7 +234,7 @@ type alias NutritionForm =
 
 type alias LaboratoryData =
     { malariaTestingForm : MalariaTestingForm
-    , barcodePhotoForm : BarcodePhotoForm
+    , barcodeScanForm : BarcodeScanForm
     , activeTask : LaboratoryTask
     }
 
@@ -242,14 +242,14 @@ type alias LaboratoryData =
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { malariaTestingForm = MalariaTestingForm Nothing Nothing
-    , barcodePhotoForm = BarcodePhotoForm Nothing
+    , barcodeScanForm = BarcodeScanForm Nothing Nothing
     , activeTask = LaboratoryMalariaTesting
     }
 
 
 type LaboratoryTask
     = LaboratoryMalariaTesting
-    | LaboratoryBarcodePhoto
+    | LaboratoryBarcodeScan
 
 
 type alias MalariaTestingForm =
@@ -258,8 +258,10 @@ type alias MalariaTestingForm =
     }
 
 
-type alias BarcodePhotoForm =
-    { url : Maybe PhotoUrl }
+type alias BarcodeScanForm =
+    { url : Maybe PhotoUrl
+    , barcode : Maybe String
+    }
 
 
 

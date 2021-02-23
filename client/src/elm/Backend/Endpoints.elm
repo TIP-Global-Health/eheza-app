@@ -594,7 +594,7 @@ healthEducationEndpoint =
         |> withValueEncoder (object << encodeHealthEducation)
 
 
-barcodePhotoEndpoint : ReadWriteEndPoint Error BarcodePhotoId BarcodePhoto BarcodePhoto ()
-barcodePhotoEndpoint =
-    swEndpoint "nodes/barcode_photo" decodeBarcodePhoto
-        |> withValueEncoder (object << encodeBarcodePhoto)
+barcodeScanEndpoint : ReadWriteEndPoint Error BarcodeScanId BarcodeScan BarcodeScan ()
+barcodeScanEndpoint =
+    swEndpoint "nodes/barcode_scan" decodeBarcodeScan
+        |> withValueEncoder (object << encodeBarcodeScan)

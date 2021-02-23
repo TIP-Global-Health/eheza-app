@@ -50,8 +50,8 @@ decodeRevision =
                     "attendance" ->
                         decodeWithUuid AttendanceRevision decodeAttendance
 
-                    "barcode_photo" ->
-                        decodeWithUuid BarcodePhotoRevision decodeBarcodePhoto
+                    "barcode_scan" ->
+                        decodeWithUuid BarcodeScanRevision decodeBarcodeScan
 
                     "breast_exam" ->
                         decodeWithUuid BreastExamRevision decodeBreastExam

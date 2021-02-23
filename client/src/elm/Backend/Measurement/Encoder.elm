@@ -1846,6 +1846,14 @@ encodeHealthEducationSign sign =
                 "none"
 
 
-encodeBarcodePhoto : BarcodePhoto -> List ( String, Value )
-encodeBarcodePhoto =
-    encodeAcuteIllnessMeasurement encodePhotoUrl
+encodeBarcodeScan : BarcodeScan -> List ( String, Value )
+encodeBarcodeScan =
+    encodeAcuteIllnessMeasurement encodeBarcodeScanValue
+
+
+encodeBarcodeScanValue : String -> List ( String, Value )
+encodeBarcodeScanValue value =
+    [ ( "barcode", string value )
+    , ( "deleted", bool False )
+    , ( "type", string "barcode_scan" )
+    ]

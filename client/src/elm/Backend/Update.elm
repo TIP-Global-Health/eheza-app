@@ -873,7 +873,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     , extraMsgs
                     )
 
-                [ BarcodePhotoRevision uuid data ] ->
+                [ BarcodeScanRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnose data.participantId data.encounterId
@@ -1662,10 +1662,10 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
-        BarcodePhotoRevision uuid data ->
+        BarcodeScanRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | barcodePhoto = Just ( uuid, data ) })
+                (\measurements -> { measurements | barcodeScan = Just ( uuid, data ) })
                 model
             , recalc
             )

@@ -906,8 +906,8 @@ type HealthEducationSign
     | NoHealthEducationSigns
 
 
-type alias BarcodePhoto =
-    AcuteIllnessMeasurement PhotoUrl
+type alias BarcodeScan =
+    AcuteIllnessMeasurement String
 
 
 
@@ -1041,7 +1041,7 @@ type alias AcuteIllnessMeasurements =
     , dangerSigns : Maybe ( AcuteIllnessDangerSignsId, AcuteIllnessDangerSigns )
     , nutrition : Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )
     , healthEducation : Maybe ( HealthEducationId, HealthEducation )
-    , barcodePhoto : Maybe ( BarcodePhotoId, BarcodePhoto )
+    , barcodeScan : Maybe ( BarcodeScanId, BarcodeScan )
     }
 
 

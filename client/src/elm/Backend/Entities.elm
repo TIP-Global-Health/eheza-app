@@ -623,9 +623,9 @@ type HealthEducationUuidType
     = HealthEducationUuidType
 
 
-type alias BarcodePhotoId =
-    EntityUuid BarcodePhotoUuidType
+type alias BarcodeScanId =
+    EntityUuid BarcodeScanUuidType
 
 
-type BarcodePhotoUuidType
-    = BarcodePhotoUuidType
+type BarcodeScanUuidType
+    = BarcodeScanUuidType

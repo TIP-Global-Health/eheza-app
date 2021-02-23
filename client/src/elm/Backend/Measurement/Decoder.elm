@@ -126,7 +126,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "acute_illness_danger_signs" (decodeHead decodeAcuteIllnessDangerSigns) Nothing
         |> optional "acute_illness_nutrition" (decodeHead decodeAcuteIllnessNutrition) Nothing
         |> optional "health_education" (decodeHead decodeHealthEducation) Nothing
-        |> optional "barcode_photo" (decodeHead decodeBarcodePhoto) Nothing
+        |> optional "barcode_scan" (decodeHead decodeBarcodeScan) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1989,8 +1989,7 @@ decodeHealthEducationSign =
             )
 
 
-decodeBarcodePhoto : Decoder BarcodePhoto
-decodeBarcodePhoto =
-    field "photo" string
-        |> map PhotoUrl
+decodeBarcodeScan : Decoder BarcodeScan
+decodeBarcodeScan =
+    field "barcode" string
         |> decodeAcuteIllnessMeasurement

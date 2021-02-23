@@ -287,7 +287,7 @@ type Revision
     | AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
     | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
     | AttendanceRevision AttendanceId Attendance
-    | BarcodePhotoRevision BarcodePhotoId BarcodePhoto
+    | BarcodeScanRevision BarcodeScanId BarcodeScan
     | BreastExamRevision BreastExamId BreastExam
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
     | ChildFbfRevision ChildFbfId Fbf

@@ -301,7 +301,7 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
-    | BarcodePhotoHelper
+    | BarcodeScanHelper
     | BeginNewEncounter
     | BloodPressure
     | BloodPressureElevatedOcassions
@@ -1766,7 +1766,7 @@ translationSet trans =
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
-        BarcodePhotoHelper ->
+        BarcodeScanHelper ->
             { english = "Take a picture of the barcode on the RDT package."
             , kinyarwanda = Just "Fata ifoto ya kodi iri ku gapaki k'igikoresho gipima malariya cya TDR"
             }
@@ -3390,7 +3390,7 @@ translationSet trans =
                     , kinyarwanda = Just "Malariya"
                     }
 
-                LaboratoryBarcodePhoto ->
+                LaboratoryBarcodeScan ->
                     { english = "Photo of Barcode"
                     , kinyarwanda = Just "Ifoto ya kodi ndangamuti"
                     }

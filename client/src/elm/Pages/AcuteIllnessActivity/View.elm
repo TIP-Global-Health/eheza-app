@@ -963,7 +963,7 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
         tasks =
             LaboratoryMalariaTesting
                 :: (if rdtExecuted then
-                        [ LaboratoryBarcodePhoto ]
+                        [ LaboratoryBarcodeScan ]
 
                     else
                         []
@@ -981,9 +981,9 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                             , isJust measurements.malariaTesting
                             )
 
-                        LaboratoryBarcodePhoto ->
+                        LaboratoryBarcodeScan ->
                             ( "laboratory-barcode-photo"
-                            , isJust measurements.barcodePhoto
+                            , isJust measurements.barcodeScan
                             )
 
                 isActive =
@@ -1025,11 +1025,11 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                         |> malariaTestingFormWithDefault data.malariaTestingForm
                         |> viewMalariaTestingForm language currentDate person
 
-                LaboratoryBarcodePhoto ->
-                    measurements.barcodePhoto
+                LaboratoryBarcodeScan ->
+                    measurements.barcodeScan
                         |> Maybe.map (Tuple.second >> .value)
-                        |> barcodePhotoFormWithDefault data.barcodePhotoForm
-                        |> viewBarcodePhotoForm language currentDate
+                        |> barcodeScanFormWithDefault data.barcodeScanForm
+                        |> viewBarcodeScanForm language currentDate
 
         actions =
             let
@@ -1038,8 +1038,8 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                         LaboratoryMalariaTesting ->
                             SaveMalariaTesting personId measurements.malariaTesting
 
-                        LaboratoryBarcodePhoto ->
-                            SaveBarcodePhoto personId measurements.barcodePhoto
+                        LaboratoryBarcodeScan ->
+                            SaveBarcodeScan personId measurements.barcodeScan
             in
             div [ class "actions malaria-testing" ]
                 [ button
@@ -1115,13 +1115,13 @@ viewMalariaTestingForm language currentDate person form =
             ++ isPregnantInput
 
 
-viewBarcodePhotoForm : Language -> NominalDate -> BarcodePhotoForm -> Html Msg
-viewBarcodePhotoForm language currentDate form =
+viewBarcodeScanForm : Language -> NominalDate -> BarcodeScanForm -> Html Msg
+viewBarcodeScanForm language currentDate form =
     div [ class "ui form laboratory barcode-photo" ]
         [ divKeyed [ class "ui full segment photo" ]
             [ keyedDivKeyed "content"
                 [ class "content" ]
-                [ p [] [ text <| translate language Translate.BarcodePhotoHelper ++ "." ]
+                [ p [] [ text <| translate language Translate.BarcodeScanHelper ++ "." ]
                     |> keyed "help"
                 , keyedDivKeyed "grid"
                     [ class "ui grid" ]

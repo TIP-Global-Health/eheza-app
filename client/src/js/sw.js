@@ -33,7 +33,7 @@ var tableForType = {
     acute_illness_nutrition: 'shards',
     acute_illness_vitals: 'shards',
     attendance: 'shards',
-    barcode_photo: 'shards',
+    barcode_scan: 'shards',
     breast_exam: 'shards',
     call_114: 'shards',
     catchment_area: 'nodes',

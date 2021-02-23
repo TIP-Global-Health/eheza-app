@@ -610,7 +610,7 @@ activityCompleted currentDate isFirstEncounter data activity =
                     malariaRapidTestResultExecuted measurements
             in
             isJust measurements.malariaTesting
-                && (not rdtExecuted || (rdtExecuted && isJust measurements.barcodePhoto))
+                && (not rdtExecuted || (rdtExecuted && isJust measurements.barcodeScan))
 
         AcuteIllnessExposure ->
             mandatoryActivityCompletedFirstEncounter currentDate person measurements AcuteIllnessExposure

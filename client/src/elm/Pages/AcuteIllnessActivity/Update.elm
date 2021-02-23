@@ -710,7 +710,7 @@ update currentDate id db msg model =
                         LaboratoryMalariaTesting ->
                             Cmd.none
 
-                        LaboratoryBarcodePhoto ->
+                        LaboratoryBarcodeScan ->
                             App.Ports.bindDropZone ()
             in
             ( { model | laboratoryData = updatedData }
@@ -792,26 +792,26 @@ update currentDate id db msg model =
                 , saveMsg
                 )
                     -- RDT ran, therfore, we move to 'Barcode photo' task.
-                    |> sequenceExtra (update currentDate id db) [ SetActiveLaboratoryTask LaboratoryBarcodePhoto ]
+                    |> sequenceExtra (update currentDate id db) [ SetActiveLaboratoryTask LaboratoryBarcodeScan ]
 
         DropZoneComplete result ->
             let
                 form =
-                    model.laboratoryData.barcodePhotoForm
+                    model.laboratoryData.barcodeScanForm
 
                 updatedForm =
                     { form | url = Just (PhotoUrl result.url) }
 
                 updatedData =
                     model.laboratoryData
-                        |> (\data -> { data | barcodePhotoForm = updatedForm })
+                        |> (\data -> { data | barcodeScanForm = updatedForm })
             in
             ( { model | laboratoryData = updatedData }
             , Cmd.none
             , []
             )
 
-        SaveBarcodePhoto personId saved ->
+        SaveBarcodeScan personId saved ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -820,12 +820,12 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 appMsgs =
-                    model.laboratoryData.barcodePhotoForm
-                        |> toBarcodePhotoValueWithDefault measurement
+                    model.laboratoryData.barcodeScanForm
+                        |> toBarcodeScanValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->
-                                [ Backend.AcuteIllnessEncounter.Model.SaveBarcodePhoto personId measurementId value
+                                [ Backend.AcuteIllnessEncounter.Model.SaveBarcodeScan personId measurementId value
                                     |> Backend.Model.MsgAcuteIllnessEncounter id
                                     |> App.Model.MsgIndexedDb
                                 , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
