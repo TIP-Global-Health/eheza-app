@@ -1118,7 +1118,8 @@ viewMalariaTestingForm language currentDate person form =
 viewBarcodeScanForm : Language -> NominalDate -> BarcodeScanForm -> Html Msg
 viewBarcodeScanForm language currentDate form =
     div [ class "ui form laboratory barcode-photo" ]
-        [ divKeyed [ class "ui full segment photo" ]
+        [ p [] [ text <| Maybe.withDefault "no barcode" form.barcode ]
+        , divKeyed [ class "ui full segment photo" ]
             [ keyedDivKeyed "content"
                 [ class "content" ]
                 [ p [] [ text <| translate language Translate.BarcodeScanHelper ++ "." ]
@@ -1139,10 +1140,7 @@ viewBarcodeScanForm language currentDate form =
                             [ class "dz-message"
                             , attribute "data-dz-message" ""
                             ]
-                            [ span
-                                []
-                                [ text <| translate language Translate.DropzoneDefaultMessage ]
-                            ]
+                            [ span [] [ text <| translate language Translate.DropzoneDefaultMessage ] ]
                         ]
                         |> keyed "dropzone"
                     ]

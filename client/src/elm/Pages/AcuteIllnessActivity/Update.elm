@@ -800,7 +800,7 @@ update currentDate id db msg model =
                     model.laboratoryData.barcodeScanForm
 
                 updatedForm =
-                    { form | url = Just (PhotoUrl result.url) }
+                    { form | url = Just (PhotoUrl result.url), barcode = Just result.url }
 
                 updatedData =
                     model.laboratoryData

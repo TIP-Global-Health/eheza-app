@@ -264,7 +264,7 @@ laboratoryTasksCompletedFromTotal currentDate person measurements data task =
                         |> Maybe.map (Tuple.second >> .value)
                         |> barcodeScanFormWithDefault data.barcodeScanForm
             in
-            ( taskCompleted form.barcode
+            ( taskCompleted form.url
             , 1
             )
 
