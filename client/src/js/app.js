@@ -988,6 +988,26 @@ function attachDropzone() {
   });
 
   dropZone.on('complete', function(file) {
+    var cacheUrl = JSON.parse(file.xhr.responseText).url;
+    console.log(cacheUrl);
+
+    const { createWorker } = Tesseract;
+    const worker = createWorker({
+      workerPath: 'bower_components/tesseract/dist/worker.min.js',
+      langPath: 'assets/lang-data',
+      corePath: 'bower_components/tesseract/tesseract-core.wasm.js',
+      logger: m => console.log(m)
+    });
+
+    (async () => {
+      await worker.load();
+      await worker.loadLanguage('eng');
+      await worker.initialize('eng');
+      const { data: { text } } = await worker.recognize(cacheUrl);
+      console.log(text);
+      await worker.terminate();
+    })();
+
     // We just send the `file` back into Elm, via the view ... Elm can
     // decode the file as it pleases.
     var event = makeCustomEvent("dropzonecomplete", {

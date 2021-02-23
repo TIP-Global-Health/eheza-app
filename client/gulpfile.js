@@ -172,8 +172,8 @@ gulp.task("copy:fonts", function() {
 });
 
 // Copy index.html and CNAME files to the "serve" directory
-gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon",
-  "copy:fonts"
+gulp.task("copy:dev", ["copy:bower", "copy:tesseract", "copy:images", "copy:favicon",
+  "copy:fonts", "copy:lang-data"
 ], function() {
   return gulp.src(["src/index.html", "src/CNAME", "src/js/**/*"])
     .pipe(gulp.dest("serve"))
@@ -195,6 +195,18 @@ gulp.task("copy:bower", function() {
     }))
 });
 
+// Copy bower.
+gulp.task("copy:tesseract", function() {
+  // There are unused Dexie files that causes trouble for uglify later
+  return gulp.src([
+    "node_modules/tesseract.js/**/*",
+    "node_modules/tesseract.js-core/**/*"
+  ]).pipe(gulp.dest("serve/bower_components/tesseract"))
+    .pipe($.size({
+      title: "Tesseract"
+    }))
+});
+
 // Copy images.
 gulp.task("copy:images", function() {
   return gulp.src(["src/assets/images/**/*"])
@@ -210,6 +222,15 @@ gulp.task("copy:favicon", function() {
     .pipe(gulp.dest("serve/"))
     .pipe($.size({
       title: "Assets favicon"
+    }));
+});
+
+// Copy lang data
+gulp.task("copy:lang-data", function() {
+  return gulp.src(["src/assets/lang-data/**/*"])
+    .pipe(gulp.dest("serve/assets/lang-data"))
+    .pipe($.size({
+      title: "Lang Data"
     }));
 });
 
@@ -380,7 +401,7 @@ gulp.task("serve:prod", function() {
 });
 
 var precacheFileGlob =
-  '*.{js,html,css,png,jpg,gif,svg,eot,ttf,woff,woff2,json}';
+  '*.{js,html,css,png,jpg,gif,svg,eot,ttf,woff,woff2,json,traineddata}';
 
 // We cache bower_components individually, since they often include things
 // we don't need.

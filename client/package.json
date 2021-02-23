@@ -6,7 +6,9 @@
   "dependencies": {
     "workbox-build": "^4.3.1",
     "include-media": "^1.4.9",
-    "webdriverio": "^5.9.1"
+    "webdriverio": "^5.9.1",
+    "tesseract.js": "^2.1.4",
+    "tesseract.js-core": "^2.2.0"
   },
   "devDependencies": {
     "browser-sync": "^2.26.5",
