@@ -863,7 +863,7 @@ update msg model =
                             App.Ports.bindDropZone ()
 
                         UserPage (AcuteIllnessActivityPage _ AcuteIllnessLaboratory) ->
-                            App.Ports.bindDropZone ()
+                            App.Ports.bindDropZoneForTesseract ()
 
                         _ ->
                             Cmd.none

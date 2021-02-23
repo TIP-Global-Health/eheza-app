@@ -1,4 +1,4 @@
-module Measurement.Decoder exposing (decodeDropZoneFile)
+module Measurement.Decoder exposing (decodeDropZoneFile, decodeDropZoneText)
 
 import Gizra.Json exposing (decodeJsonInString)
 import Json.Decode exposing (..)
@@ -11,3 +11,8 @@ decodeDropZoneFile =
     succeed DropZoneFile
         |> requiredAt [ "detail", "file", "xhr", "responseText" ]
             (decodeJsonInString (field "url" string))
+
+
+decodeDropZoneText : Decoder String
+decodeDropZoneText =
+    at [ "detail", "text" ] string

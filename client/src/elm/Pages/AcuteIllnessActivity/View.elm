@@ -27,7 +27,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Decoder exposing (decodeDropZoneFile)
+import Measurement.Decoder exposing (decodeDropZoneText)
 import Measurement.Utils exposing (getInputConstraintsMuac)
 import Measurement.View exposing (viewMuacIndication)
 import Pages.AcuteIllnessActivity.Model exposing (..)
@@ -1126,15 +1126,12 @@ viewBarcodeScanForm language currentDate form =
                     |> keyed "help"
                 , keyedDivKeyed "grid"
                     [ class "ui grid" ]
-                    [ Maybe.map viewPhotoThumbFromPhotoUrl form.url
-                        |> showMaybe
-                        |> List.singleton
-                        |> div [ class "eight wide column" ]
+                    [ div [ class "four wide column" ] []
                         |> keyed "thumbnail"
                     , div
                         [ id "dropzone"
                         , class "eight wide column dropzone"
-                        , on "dropzonecomplete" (Json.Decode.map DropZoneComplete decodeDropZoneFile)
+                        , on "dropzonecomplete" (Json.Decode.map DropZoneComplete decodeDropZoneText)
                         ]
                         [ div
                             [ class "dz-message"

@@ -711,7 +711,7 @@ update currentDate id db msg model =
                             Cmd.none
 
                         LaboratoryBarcodeScan ->
-                            App.Ports.bindDropZone ()
+                            App.Ports.bindDropZoneForTesseract ()
             in
             ( { model | laboratoryData = updatedData }
             , cmd
@@ -796,11 +796,29 @@ update currentDate id db msg model =
 
         DropZoneComplete result ->
             let
+                barcode =
+                    String.lines result
+                        |> List.filterMap
+                            (\row ->
+                                if String.contains "Lot No" row then
+                                    String.indexes ":" row
+                                        |> List.head
+                                        |> Maybe.map
+                                            (\cutFrom ->
+                                                String.dropLeft (cutFrom + 1) row
+                                                    |> String.trim
+                                            )
+
+                                else
+                                    Nothing
+                            )
+                        |> List.head
+
                 form =
                     model.laboratoryData.barcodeScanForm
 
                 updatedForm =
-                    { form | url = Just (PhotoUrl result.url), barcode = Just result.url }
+                    { form | barcode = barcode }
 
                 updatedData =
                     model.laboratoryData

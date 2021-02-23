@@ -930,6 +930,10 @@ elmApp.ports.bindDropZone.subscribe(function() {
   waitForElement('dropzone', attachDropzone, null);
 });
 
+elmApp.ports.bindDropZoneForTesseract.subscribe(function() {
+  waitForElement('dropzone', attachTesseractDropzone, null);
+});
+
 /**
  * Wait for id to appear before invoking related functions.
  */
@@ -988,6 +992,49 @@ function attachDropzone() {
   });
 
   dropZone.on('complete', function(file) {
+    // We just send the `file` back into Elm, via the view ... Elm can
+    // decode the file as it pleases.
+    var event = makeCustomEvent("dropzonecomplete", {
+      file: file
+    });
+
+    element.dispatchEvent(event);
+
+    dropZone.removeFile(file);
+  });
+}
+
+function attachTesseractDropzone() {
+  console.log('attachTesseractDropzone');
+  // We could make this dynamic, if needed
+  var selector = "#dropzone";
+  var element = document.querySelector(selector);
+
+  if (element) {
+    if (element.dropZone) {
+      // Bail, since already initialized
+      return;
+    } else {
+      // If we had one, and it's gone away, destroy it.
+      if (dropZone) dropZone.destroy();
+    }
+  } else {
+    // If we don't find it, do nothing.
+    return;
+  }
+
+  // TODO: Feed the dictDefaultMessage in as a param, so we can use the
+  // translated version.
+  dropZone = new Dropzone(selector, {
+    url: "cache-upload/images",
+    dictDefaultMessage: "Touch here to take a photo, or drop a photo file here.",
+    acceptedFiles: "jpg,jpeg,png,gif,image/*",
+    capture: 'camera'
+  });
+
+  dropZone.on('complete', function(file) {
+    console.log('complete');
+
     var cacheUrl = JSON.parse(file.xhr.responseText).url;
     console.log(cacheUrl);
 
@@ -1004,17 +1051,19 @@ function attachDropzone() {
       await worker.loadLanguage('eng');
       await worker.initialize('eng');
       const { data: { text } } = await worker.recognize(cacheUrl);
+
       console.log(text);
+
+      var event = makeCustomEvent("dropzonecomplete", {
+        text: text
+      });
+
+      element.dispatchEvent(event);
+
       await worker.terminate();
     })();
 
-    // We just send the `file` back into Elm, via the view ... Elm can
-    // decode the file as it pleases.
-    var event = makeCustomEvent("dropzonecomplete", {
-      file: file
-    });
 
-    element.dispatchEvent(event);
 
     dropZone.removeFile(file);
   });

@@ -43,7 +43,7 @@ type Msg
     | SetRapidTestResult String
     | SetIsPregnant Bool
     | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
-    | DropZoneComplete DropZoneFile
+    | DropZoneComplete String
     | SaveBarcodeScan PersonId (Maybe ( BarcodeScanId, BarcodeScan ))
       -- EXPOSURE Msgs
     | SetActiveExposureTask ExposureTask
