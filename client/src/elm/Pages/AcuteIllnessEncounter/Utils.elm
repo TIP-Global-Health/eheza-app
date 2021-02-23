@@ -517,7 +517,7 @@ expectActivity currentDate isFirstEncounter data activity =
     case activity of
         AcuteIllnessLaboratory ->
             if isFirstEncounter then
-                mandatoryActivitiesCompletedFirstEncounter currentDate data.person data.measurements
+                mandatoryActivitiesCompletedFirstEncounter currentDate data
                     && feverRecorded data.measurements
 
             else
@@ -592,11 +592,11 @@ activityCompleted currentDate isFirstEncounter data activity =
     in
     case activity of
         AcuteIllnessSymptoms ->
-            mandatoryActivityCompletedFirstEncounter currentDate person measurements AcuteIllnessSymptoms
+            mandatoryActivityCompletedFirstEncounter currentDate data AcuteIllnessSymptoms
 
         AcuteIllnessPhysicalExam ->
             if isFirstEncounter then
-                mandatoryActivityCompletedFirstEncounter currentDate person measurements AcuteIllnessPhysicalExam
+                mandatoryActivityCompletedFirstEncounter currentDate data AcuteIllnessPhysicalExam
 
             else
                 mandatoryActivityCompletedSubsequentVisit currentDate data AcuteIllnessPhysicalExam
@@ -605,15 +605,14 @@ activityCompleted currentDate isFirstEncounter data activity =
             isJust measurements.treatmentReview
 
         AcuteIllnessLaboratory ->
-            let
-                rdtExecuted =
-                    malariaRapidTestResultExecuted measurements
-            in
-            isJust measurements.malariaTesting
-                && (not rdtExecuted || (rdtExecuted && isJust measurements.barcodeScan))
+            if isFirstEncounter then
+                mandatoryActivityCompletedFirstEncounter currentDate data AcuteIllnessLaboratory
+
+            else
+                mandatoryActivityCompletedSubsequentVisit currentDate data AcuteIllnessLaboratory
 
         AcuteIllnessExposure ->
-            mandatoryActivityCompletedFirstEncounter currentDate person measurements AcuteIllnessExposure
+            mandatoryActivityCompletedFirstEncounter currentDate data AcuteIllnessExposure
 
         AcuteIllnessNextSteps ->
             let
@@ -686,14 +685,21 @@ activityCompleted currentDate isFirstEncounter data activity =
 {-| These are the activities that are mandatory for us to come up with diagnosis during first encounter.
 Covid19 diagnosis is special, therefore, we assume here that Covid19 is negative.
 -}
-mandatoryActivitiesCompletedFirstEncounter : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
-mandatoryActivitiesCompletedFirstEncounter currentDate person measurements =
-    [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPhysicalExam ]
-        |> List.all (mandatoryActivityCompletedFirstEncounter currentDate person measurements)
+mandatoryActivitiesCompletedFirstEncounter : NominalDate -> AssembledData -> Bool
+mandatoryActivitiesCompletedFirstEncounter currentDate data =
+    [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory ]
+        |> List.all (mandatoryActivityCompletedFirstEncounter currentDate data)
 
 
-mandatoryActivityCompletedFirstEncounter : NominalDate -> Person -> AcuteIllnessMeasurements -> AcuteIllnessActivity -> Bool
-mandatoryActivityCompletedFirstEncounter currentDate person measurements activity =
+mandatoryActivityCompletedFirstEncounter : NominalDate -> AssembledData -> AcuteIllnessActivity -> Bool
+mandatoryActivityCompletedFirstEncounter currentDate data activity =
+    let
+        person =
+            data.person
+
+        measurements =
+            data.measurements
+    in
     case activity of
         AcuteIllnessSymptoms ->
             isJust measurements.symptomsGeneral
@@ -709,6 +715,16 @@ mandatoryActivityCompletedFirstEncounter currentDate person measurements activit
         AcuteIllnessExposure ->
             isJust measurements.travelHistory
                 && isJust measurements.exposure
+
+        AcuteIllnessLaboratory ->
+            let
+                rdtExecuted =
+                    malariaRapidTestExecuted measurements
+            in
+            (not <| expectActivity currentDate True data AcuteIllnessLaboratory)
+                || (isJust measurements.malariaTesting
+                        && (not rdtExecuted || (rdtExecuted && isJust measurements.barcodeScan))
+                   )
 
         _ ->
             False
@@ -746,8 +762,14 @@ mandatoryActivityCompletedSubsequentVisit currentDate data activity =
                 || isJust measurements.treatmentOngoing
 
         AcuteIllnessLaboratory ->
+            let
+                rdtExecuted =
+                    malariaRapidTestExecuted measurements
+            in
             (not <| expectActivity currentDate False data AcuteIllnessLaboratory)
-                || isJust measurements.malariaTesting
+                || (isJust measurements.malariaTesting
+                        && (not rdtExecuted || (rdtExecuted && isJust measurements.barcodeScan))
+                   )
 
         _ ->
             False
@@ -798,7 +820,7 @@ resolveAcuteIllnessDiagnosis currentDate data =
             Just DiagnosisCovid19
 
         else
-            resolveNonCovid19AcuteIllnessDiagnosis currentDate data.person covid19ByPartialSet data.measurements
+            resolveNonCovid19AcuteIllnessDiagnosis currentDate covid19ByPartialSet data
 
     else
         malariaRapidTestResult data.measurements
@@ -897,10 +919,17 @@ covid19Diagnosed measurements =
     )
 
 
-resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveNonCovid19AcuteIllnessDiagnosis currentDate person covid19ByPartialSet measurements =
+resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Bool -> AssembledData -> Maybe AcuteIllnessDiagnosis
+resolveNonCovid19AcuteIllnessDiagnosis currentDate covid19ByPartialSet data =
+    let
+        person =
+            data.person
+
+        measurements =
+            data.measurements
+    in
     -- Verify that we have enough data to make a decision on diagnosis.
-    if mandatoryActivitiesCompletedFirstEncounter currentDate person measurements then
+    if mandatoryActivitiesCompletedFirstEncounter currentDate data then
         if feverRecorded measurements then
             resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements
 
@@ -1063,8 +1092,8 @@ malariaRapidTestResult measurements =
         |> Maybe.map (Tuple.second >> .value)
 
 
-malariaRapidTestResultExecuted : AcuteIllnessMeasurements -> Bool
-malariaRapidTestResultExecuted measurements =
+malariaRapidTestExecuted : AcuteIllnessMeasurements -> Bool
+malariaRapidTestExecuted measurements =
     let
         rdtResult =
             malariaRapidTestResult measurements

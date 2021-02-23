@@ -970,7 +970,7 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                    )
 
         rdtExecuted =
-            malariaRapidTestResultExecuted measurements
+            malariaRapidTestExecuted measurements
 
         viewTask task =
             let
