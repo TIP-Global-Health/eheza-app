@@ -687,7 +687,7 @@ Covid19 diagnosis is special, therefore, we assume here that Covid19 is negative
 -}
 mandatoryActivitiesCompletedFirstEncounter : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesCompletedFirstEncounter currentDate data =
-    [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory ]
+    [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPhysicalExam ]
         |> List.all (mandatoryActivityCompletedFirstEncounter currentDate data)
 
 
@@ -809,6 +809,9 @@ resolveAcuteIllnessDiagnosis currentDate data =
     let
         isFirstEncounter =
             List.isEmpty data.previousEncountersData
+
+        measurements =
+            data.measurements
     in
     if isFirstEncounter then
         let
@@ -822,28 +825,37 @@ resolveAcuteIllnessDiagnosis currentDate data =
         else
             resolveNonCovid19AcuteIllnessDiagnosis currentDate covid19ByPartialSet data
 
+    else if malariaRapidTestExecuted measurements && isNothing measurements.barcodeScan then
+        -- We do not determine a diagnosis until the Malaria test kit barcode is scanned.
+        Nothing
+
     else
-        malariaRapidTestResult data.measurements
-            |> Maybe.andThen
-                (\testResult ->
-                    case testResult of
-                        RapidTestPositive ->
-                            if dangerSignPresentOnSubsequentVisit data.measurements then
-                                Just DiagnosisMalariaComplicated
+        resolveMalariaDiagnosisForPositiveRDT data.measurements
 
-                            else
-                                Just DiagnosisMalariaUncomplicated
 
-                        RapidTestPositiveAndPregnant ->
-                            if dangerSignPresentOnSubsequentVisit data.measurements then
-                                Just DiagnosisMalariaComplicated
+resolveMalariaDiagnosisForPositiveRDT : AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveMalariaDiagnosisForPositiveRDT measurements =
+    malariaRapidTestResult measurements
+        |> Maybe.andThen
+            (\testResult ->
+                case testResult of
+                    RapidTestPositive ->
+                        if dangerSignPresentOnSubsequentVisit measurements then
+                            Just DiagnosisMalariaComplicated
 
-                            else
-                                Just DiagnosisMalariaUncomplicatedAndPregnant
+                        else
+                            Just DiagnosisMalariaUncomplicated
 
-                        _ ->
-                            Nothing
-                )
+                    RapidTestPositiveAndPregnant ->
+                        if dangerSignPresentOnSubsequentVisit measurements then
+                            Just DiagnosisMalariaComplicated
+
+                        else
+                            Just DiagnosisMalariaUncomplicatedAndPregnant
+
+                    _ ->
+                        Nothing
+            )
 
 
 covid19Diagnosed : AcuteIllnessMeasurements -> ( Bool, Bool )
@@ -962,38 +974,30 @@ resolveNonCovid19AcuteIllnessDiagnosis currentDate covid19ByPartialSet data =
 
 resolveAcuteIllnessDiagnosisByLaboratoryResults : Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
 resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements =
-    malariaRapidTestResult measurements
-        |> Maybe.andThen
-            (\testResult ->
-                case testResult of
-                    RapidTestPositive ->
-                        if malarialDangerSignsPresent measurements then
-                            Just DiagnosisMalariaComplicated
+    if malariaRapidTestExecuted measurements then
+        if isNothing measurements.barcodeScan then
+            -- We do not determine a diagnosis until the Malaria test kit barcode is scanned.
+            Nothing
 
-                        else
-                            Just DiagnosisMalariaUncomplicated
+        else
+            resolveMalariaDiagnosisForPositiveRDT measurements
+                |> Maybe.Extra.orElse
+                    (if respiratoryInfectionDangerSignsPresent measurements then
+                        Just DiagnosisRespiratoryInfectionComplicated
 
-                    RapidTestPositiveAndPregnant ->
-                        if malarialDangerSignsPresent measurements then
-                            Just DiagnosisMalariaComplicated
+                     else if gastrointestinalInfectionDangerSignsPresent True measurements then
+                        -- Fever with Diarrhea is considered to be a complicated case.
+                        Just DiagnosisGastrointestinalInfectionComplicated
 
-                        else
-                            Just DiagnosisMalariaUncomplicatedAndPregnant
+                     else if covid19ByPartialSet then
+                        Just DiagnosisCovid19
 
-                    _ ->
-                        if respiratoryInfectionDangerSignsPresent measurements then
-                            Just DiagnosisRespiratoryInfectionComplicated
+                     else
+                        Just DiagnosisFeverOfUnknownOrigin
+                    )
 
-                        else if gastrointestinalInfectionDangerSignsPresent True measurements then
-                            -- Fever with Diarrhea is considered to be a complicated case.
-                            Just DiagnosisGastrointestinalInfectionComplicated
-
-                        else if covid19ByPartialSet then
-                            Just DiagnosisCovid19
-
-                        else
-                            Just DiagnosisFeverOfUnknownOrigin
-            )
+    else
+        Nothing
 
 
 countSymptoms : Maybe ( id, m ) -> (m -> Dict k v) -> List k -> Int
