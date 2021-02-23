@@ -289,6 +289,9 @@ medicationNonAdministrationReasonFromString reason =
         "patient-declined" ->
             Just NonAdministrationPatientDeclined
 
+        "patient-unable-to-afford" ->
+            Just NonAdministrationPatientUnableToAfford
+
         "other" ->
             Just NonAdministrationOther
 
@@ -307,6 +310,9 @@ medicationNonAdministrationReasonToString reason =
 
         NonAdministrationPatientDeclined ->
             "patient-declined"
+
+        NonAdministrationPatientUnableToAfford ->
+            "patient-unable-to-afford"
 
         NonAdministrationOther ->
             "other"

@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
-import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
+import Backend.IndividualEncounterParticipant.Utils exposing (emptyIndividualEncounterParticipant, isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
@@ -121,12 +121,7 @@ viewActions language currentDate selectedHealthCenter id db sessions =
                             )
                         -- If nutrition session does not exist, create it.
                         |> Maybe.withDefault
-                            [ IndividualEncounterParticipant id
-                                Backend.IndividualEncounterParticipant.Model.NutritionEncounter
-                                currentDate
-                                Nothing
-                                Nothing
-                                (Just selectedHealthCenter)
+                            [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.NutritionEncounter selectedHealthCenter
                                 |> Backend.Model.PostIndividualSession
                                 |> App.Model.MsgIndexedDb
                                 |> onClick
@@ -147,19 +142,19 @@ viewActions language currentDate selectedHealthCenter id db sessions =
                     Translate.IndividualEncounterSelectVisit
                         Backend.IndividualEncounterParticipant.Model.NutritionEncounter
             ]
-        , button
+        , div
             (classList
                 [ ( "ui primary button", True )
                 , ( "disabled", encounterWasCompletedToday )
                 ]
                 :: action
             )
-            [ span [ class "text" ]
+            [ div [ class "button-label" ]
                 [ text <|
                     translate language <|
                         Translate.IndividualEncounterLabel
                             Backend.IndividualEncounterParticipant.Model.NutritionEncounter
                 ]
-            , span [ class "icon-back" ] []
+            , div [ class "icon-back" ] []
             ]
         ]

@@ -7,14 +7,19 @@ import Backend.Measurement.Model
         ( AcuteFindingsGeneralSign(..)
         , AcuteFindingsRespiratorySign(..)
         , AcuteFindingsValue
+        , AcuteIllnessDangerSign(..)
+        , AcuteIllnessMeasurement
         , AcuteIllnessMeasurements
         , AcuteIllnessVitalsValue
+        , AdverseEvent(..)
         , Call114Sign(..)
         , Call114Value
+        , ChildNutritionSign(..)
         , ExposureSign(..)
         , HCContactSign(..)
         , HCContactValue
         , HCRecommendation(..)
+        , HealthEducationSign(..)
         , IsolationSign(..)
         , IsolationValue
         , MalariaRapidTestResult(..)
@@ -22,27 +27,34 @@ import Backend.Measurement.Model
         , MedicationDistributionValue
         , MedicationNonAdministrationReason(..)
         , MedicationNonAdministrationSign(..)
+        , MuacInCm(..)
         , PhotoUrl(..)
         , ReasonForNotIsolating(..)
+        , ReasonForNotSendingToHC(..)
+        , ReasonForNotTaking(..)
         , Recommendation114(..)
         , RecommendationSite(..)
         , ResponsePeriod(..)
         , SendToHCSign(..)
+        , SendToHCValue
         , SymptomsGIDerivedSign(..)
         , SymptomsGISign(..)
         , SymptomsGIValue
         , SymptomsGeneralSign(..)
         , SymptomsRespiratorySign(..)
         , TravelHistorySign(..)
+        , TreatmentOngoingSign(..)
+        , TreatmentOngoingValue
         , TreatmentReviewSign(..)
         )
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths, ageInYears)
+import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAFertileWoman)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
-import Pages.PrenatalActivity.Utils exposing (ifNullableTrue, ifTrue)
+import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
+import Pages.PrenatalActivity.Utils exposing (ifFalse, ifNullableTrue, ifTrue)
 import Pages.Utils exposing (ifEverySetEmpty, maybeValueConsideringIsDirtyField, taskCompleted, valueConsideringIsDirtyField)
 
 
@@ -183,6 +195,17 @@ physicalExamTasksCompletedFromTotal measurements data task =
             , 2
             )
 
+        PhysicalExamMuac ->
+            let
+                form =
+                    measurements.muac
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> muacFormWithDefault data.muacForm
+            in
+            ( taskCompleted form.muac
+            , 1
+            )
+
         PhysicalExamAcuteFindings ->
             let
                 form =
@@ -194,9 +217,20 @@ physicalExamTasksCompletedFromTotal measurements data task =
             , 2
             )
 
+        PhysicalExamNutrition ->
+            let
+                form =
+                    measurements.nutrition
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> nutritionFormWithDefault data.nutritionForm
+            in
+            ( taskCompleted form.signs
+            , 1
+            )
 
-laboratoryTasksCompletedFromTotal : AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
-laboratoryTasksCompletedFromTotal measurements data task =
+
+laboratoryTasksCompletedFromTotal : NominalDate -> Person -> AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
+laboratoryTasksCompletedFromTotal currentDate person measurements data task =
     case task of
         LaboratoryMalariaTesting ->
             let
@@ -204,9 +238,23 @@ laboratoryTasksCompletedFromTotal measurements data task =
                     measurements.malariaTesting
                         |> Maybe.map (Tuple.second >> .value)
                         |> malariaTestingFormWithDefault data.malariaTestingForm
+
+                testResultPositive =
+                    form.rapidTestResult == Just RapidTestPositive || form.rapidTestResult == Just RapidTestPositiveAndPregnant
+
+                ( isPregnantActive, isPregnantCompleted ) =
+                    if testResultPositive && isPersonAFertileWoman currentDate person then
+                        if isJust form.isPregnant then
+                            ( 1, 1 )
+
+                        else
+                            ( 1, 0 )
+
+                    else
+                        ( 0, 0 )
             in
-            ( taskCompleted form.rapidTestResult
-            , 1
+            ( taskCompleted form.rapidTestResult + isPregnantCompleted
+            , 1 + isPregnantActive
             )
 
         LaboratoryBarcodePhoto ->
@@ -483,8 +531,113 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                     measurements.sendToHC
                         |> Maybe.map (Tuple.second >> .value)
                         |> sendToHCFormWithDefault data.sendToHCForm
+
+                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+                    form.referToHealthCenter
+                        |> Maybe.map
+                            (\sentToHC ->
+                                if not sentToHC then
+                                    if isJust form.reasonForNotSendingToHC then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
             in
-            ( taskCompleted form.handReferralForm + taskCompleted form.handReferralForm
+            ( reasonForNotSentActive + taskCompleted form.handReferralForm
+            , reasonForNotSentCompleted + 1
+            )
+
+        NextStepsHealthEducation ->
+            let
+                form =
+                    measurements.healthEducation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> healthEducationFormWithDefault data.healthEducationForm
+            in
+            ( taskCompleted form.educationForDiagnosis
+            , 1
+            )
+
+
+ongoingTreatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )
+ongoingTreatmentTasksCompletedFromTotal measurements data task =
+    case task of
+        OngoingTreatmentReview ->
+            let
+                form =
+                    measurements.treatmentOngoing
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
+
+                ( takenAsPrescribedActive, takenAsPrescribedComleted ) =
+                    form.takenAsPrescribed
+                        |> Maybe.map
+                            (\takenAsPrescribed ->
+                                if not takenAsPrescribed then
+                                    if isJust form.reasonForNotTaking then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+
+                ( missedDosesActive, missedDosesCompleted ) =
+                    form.missedDoses
+                        |> Maybe.map
+                            (\missedDoses ->
+                                if missedDoses then
+                                    if isJust form.totalMissedDoses then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+
+                ( adverseEventsActive, adverseEventsCompleted ) =
+                    form.sideEffects
+                        |> Maybe.map
+                            (\sideEffects ->
+                                if sideEffects then
+                                    if isJust form.adverseEvents then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+            in
+            ( takenAsPrescribedActive + missedDosesActive + adverseEventsActive + taskCompleted form.feelingBetter
+            , takenAsPrescribedComleted + missedDosesCompleted + adverseEventsCompleted + 1
+            )
+
+
+dangerSignsTasksCompletedFromTotal : AcuteIllnessMeasurements -> DangerSignsData -> DangerSignsTask -> ( Int, Int )
+dangerSignsTasksCompletedFromTotal measurements data task =
+    case task of
+        ReviewDangerSigns ->
+            let
+                form =
+                    measurements.dangerSigns
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> reviewDangerSignsFormWithDefault data.reviewDangerSignsForm
+            in
+            ( taskCompleted form.conditionImproving + taskCompleted form.symptoms
             , 2
             )
 
@@ -1069,38 +1222,50 @@ toTreatmentReviewValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTreatmentReviewSigns)
 
 
-fromSendToHCValue : Maybe (EverySet SendToHCSign) -> SendToHCForm
+fromSendToHCValue : Maybe SendToHCValue -> SendToHCForm
 fromSendToHCValue saved =
-    { handReferralForm = Maybe.map (EverySet.member HandReferrerForm) saved
-    , referToHealthCenter = Maybe.map (EverySet.member ReferToHealthCenter) saved
+    { handReferralForm = Maybe.map (.signs >> EverySet.member HandReferrerForm) saved
+    , referToHealthCenter = Maybe.map (.signs >> EverySet.member ReferToHealthCenter) saved
+    , reasonForNotSendingToHC = Maybe.map .reasonForNotSendingToHC saved
     }
 
 
-sendToHCFormWithDefault : SendToHCForm -> Maybe (EverySet SendToHCSign) -> SendToHCForm
+sendToHCFormWithDefault : SendToHCForm -> Maybe SendToHCValue -> SendToHCForm
 sendToHCFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value |> Just)
-                , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value |> Just)
+                { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
+                , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
+                , reasonForNotSendingToHC = or form.reasonForNotSendingToHC (value.reasonForNotSendingToHC |> Just)
                 }
             )
 
 
-toSendToHCValueWithDefault : Maybe (EverySet SendToHCSign) -> SendToHCForm -> Maybe (EverySet SendToHCSign)
+toSendToHCValueWithDefault : Maybe SendToHCValue -> SendToHCForm -> Maybe SendToHCValue
 toSendToHCValueWithDefault saved form =
     sendToHCFormWithDefault form saved
         |> toSendToHCValue
 
 
-toSendToHCValue : SendToHCForm -> Maybe (EverySet SendToHCSign)
+toSendToHCValue : SendToHCForm -> Maybe SendToHCValue
 toSendToHCValue form =
-    [ Maybe.map (ifTrue HandReferrerForm) form.handReferralForm
-    , Maybe.map (ifTrue ReferToHealthCenter) form.referToHealthCenter
-    ]
-        |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
+    let
+        signs =
+            [ Maybe.map (ifTrue HandReferrerForm) form.handReferralForm
+            , Maybe.map (ifTrue ReferToHealthCenter) form.referToHealthCenter
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
+
+        reasonForNotSendingToHC =
+            form.reasonForNotSendingToHC
+                |> Maybe.withDefault NoReasonForNotSendingToHC
+                |> Just
+    in
+    Maybe.map SendToHCValue signs
+        |> andMap reasonForNotSendingToHC
 
 
 fromMedicationDistributionValue : Maybe MedicationDistributionValue -> MedicationDistributionForm
@@ -1238,7 +1403,7 @@ getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form =
         nonAdministrationSigns =
             form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
     in
-    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientDeclined, NonAdministrationOther ]
+    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientDeclined, NonAdministrationPatientUnableToAfford, NonAdministrationOther ]
         |> List.filterMap
             (\reason ->
                 if EverySet.member (reasonToSignFunc reason) nonAdministrationSigns then
@@ -1269,8 +1434,245 @@ nonAdministrationReasonToSign sign reason =
             NoMedicationNonAdministrationSigns
 
 
+fromMuacValue : Maybe MuacInCm -> MuacForm
+fromMuacValue saved =
+    { muac = Maybe.map (\(MuacInCm cm) -> cm) saved
+    , muacDirty = False
+    }
+
+
+muacFormWithDefault : MuacForm -> Maybe MuacInCm -> MuacForm
+muacFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { muac = valueConsideringIsDirtyField form.muacDirty form.muac (value |> (\(MuacInCm cm) -> cm))
+                , muacDirty = form.muacDirty
+                }
+            )
+
+
+toMuacValueWithDefault : Maybe MuacInCm -> MuacForm -> Maybe MuacInCm
+toMuacValueWithDefault saved form =
+    muacFormWithDefault form saved
+        |> toMuacValue
+
+
+toMuacValue : MuacForm -> Maybe MuacInCm
+toMuacValue form =
+    Maybe.map MuacInCm form.muac
+
+
+fromOngoingTreatmentReviewValue : Maybe TreatmentOngoingValue -> OngoingTreatmentReviewForm
+fromOngoingTreatmentReviewValue saved =
+    { takenAsPrescribed = Maybe.map (.signs >> EverySet.member TakenAsPrescribed) saved
+    , missedDoses = Maybe.map (.signs >> EverySet.member MissedDoses) saved
+    , feelingBetter = Maybe.map (.signs >> EverySet.member FeelingBetter) saved
+    , sideEffects = Maybe.map (.signs >> EverySet.member SideEffects) saved
+    , reasonForNotTaking = Maybe.map .reasonForNotTaking saved
+    , reasonForNotTakingDirty = False
+    , totalMissedDoses = Maybe.map .missedDoses saved
+    , totalMissedDosesDirty = False
+    , adverseEvents = Maybe.map (.adverseEvents >> EverySet.toList) saved
+    , adverseEventsDirty = False
+    }
+
+
+ongoingTreatmentReviewFormWithDefault : OngoingTreatmentReviewForm -> Maybe TreatmentOngoingValue -> OngoingTreatmentReviewForm
+ongoingTreatmentReviewFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { takenAsPrescribed = or form.takenAsPrescribed (EverySet.member TakenAsPrescribed value.signs |> Just)
+                , missedDoses = or form.missedDoses (EverySet.member MissedDoses value.signs |> Just)
+                , feelingBetter = or form.feelingBetter (EverySet.member FeelingBetter value.signs |> Just)
+                , sideEffects = or form.sideEffects (EverySet.member SideEffects value.signs |> Just)
+                , reasonForNotTaking = valueConsideringIsDirtyField form.reasonForNotTakingDirty form.reasonForNotTaking value.reasonForNotTaking
+                , reasonForNotTakingDirty = form.reasonForNotTakingDirty
+                , totalMissedDoses = valueConsideringIsDirtyField form.totalMissedDosesDirty form.totalMissedDoses value.missedDoses
+                , totalMissedDosesDirty = form.totalMissedDosesDirty
+                , adverseEvents = maybeValueConsideringIsDirtyField form.adverseEventsDirty form.adverseEvents (value.adverseEvents |> EverySet.toList |> Just)
+                , adverseEventsDirty = form.adverseEventsDirty
+                }
+            )
+
+
+toOngoingTreatmentReviewValueWithDefault : Maybe TreatmentOngoingValue -> OngoingTreatmentReviewForm -> Maybe TreatmentOngoingValue
+toOngoingTreatmentReviewValueWithDefault saved form =
+    ongoingTreatmentReviewFormWithDefault form saved
+        |> toOngoingTreatmentReviewValue
+
+
+toOngoingTreatmentReviewValue : OngoingTreatmentReviewForm -> Maybe TreatmentOngoingValue
+toOngoingTreatmentReviewValue form =
+    let
+        signs =
+            [ Maybe.map (ifTrue TakenAsPrescribed) form.takenAsPrescribed
+            , Maybe.map (ifTrue MissedDoses) form.missedDoses
+            , Maybe.map (ifTrue FeelingBetter) form.feelingBetter
+            , Maybe.map (ifTrue SideEffects) form.sideEffects
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTreatmentOngoingSign)
+    in
+    Maybe.map TreatmentOngoingValue signs
+        |> andMap (form.reasonForNotTaking |> Maybe.withDefault NoReasonForNotTakingSign |> Just)
+        |> andMap (form.totalMissedDoses |> Maybe.withDefault 0 |> Just)
+        |> andMap (form.adverseEvents |> fromListWithDefaultValue NoAdverseEvent |> Just)
+
+
+fromReviewDangerSignsValue : Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm
+fromReviewDangerSignsValue saved =
+    { conditionImproving = Maybe.map (EverySet.member DangerSignConditionNotImproving >> not) saved
+    , symptoms =
+        Maybe.map
+            (EverySet.remove DangerSignConditionNotImproving
+                >> ifEverySetEmpty NoAcuteIllnessDangerSign
+                >> EverySet.toList
+            )
+            saved
+    }
+
+
+reviewDangerSignsFormWithDefault : ReviewDangerSignsForm -> Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm
+reviewDangerSignsFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { conditionImproving = or form.conditionImproving (EverySet.member DangerSignConditionNotImproving value |> not |> Just)
+                , symptoms =
+                    or form.symptoms
+                        (EverySet.remove DangerSignConditionNotImproving value
+                            |> ifEverySetEmpty NoAcuteIllnessDangerSign
+                            |> EverySet.toList
+                            |> Just
+                        )
+                }
+            )
+
+
+toReviewDangerSignsValueWithDefault : Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm -> Maybe (EverySet AcuteIllnessDangerSign)
+toReviewDangerSignsValueWithDefault saved form =
+    reviewDangerSignsFormWithDefault form saved
+        |> toReviewDangerSignsValue
+
+
+toReviewDangerSignsValue : ReviewDangerSignsForm -> Maybe (EverySet AcuteIllnessDangerSign)
+toReviewDangerSignsValue form =
+    Maybe.map2
+        (\conditionImproving symptoms ->
+            let
+                conditionNotImprovingSet =
+                    if conditionImproving then
+                        EverySet.empty
+
+                    else
+                        EverySet.singleton DangerSignConditionNotImproving
+
+                symptomsSet =
+                    if List.member NoAcuteIllnessDangerSign symptoms && (not <| EverySet.isEmpty conditionNotImprovingSet) then
+                        EverySet.empty
+
+                    else
+                        EverySet.fromList symptoms
+            in
+            EverySet.union conditionNotImprovingSet symptomsSet
+        )
+        form.conditionImproving
+        form.symptoms
+
+
+fromNutritionValue : Maybe (EverySet ChildNutritionSign) -> NutritionForm
+fromNutritionValue saved =
+    { signs = Maybe.map EverySet.toList saved }
+
+
+nutritionFormWithDefault : NutritionForm -> Maybe (EverySet ChildNutritionSign) -> NutritionForm
+nutritionFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value -> { signs = or form.signs (EverySet.toList value |> Just) })
+
+
+toNutritionValueWithDefault : Maybe (EverySet ChildNutritionSign) -> NutritionForm -> Maybe (EverySet ChildNutritionSign)
+toNutritionValueWithDefault saved form =
+    nutritionFormWithDefault form saved
+        |> toNutritionValue
+
+
+toNutritionValue : NutritionForm -> Maybe (EverySet ChildNutritionSign)
+toNutritionValue form =
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NormalChildNutrition) form.signs
+
+
+fromHealthEducationValue : Maybe (EverySet HealthEducationSign) -> HealthEducationForm
+fromHealthEducationValue saved =
+    { educationForDiagnosis = Maybe.map (EverySet.member MalariaPrevention) saved
+    }
+
+
+healthEducationFormWithDefault : HealthEducationForm -> Maybe (EverySet HealthEducationSign) -> HealthEducationForm
+healthEducationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { educationForDiagnosis = or form.educationForDiagnosis (EverySet.member MalariaPrevention value |> Just)
+                }
+            )
+
+
+toHealthEducationValueWithDefault : Maybe (EverySet HealthEducationSign) -> HealthEducationForm -> Maybe (EverySet HealthEducationSign)
+toHealthEducationValueWithDefault saved form =
+    healthEducationFormWithDefault form saved
+        |> toHealthEducationValue
+
+
+toHealthEducationValue : HealthEducationForm -> Maybe (EverySet HealthEducationSign)
+toHealthEducationValue form =
+    [ Maybe.map (ifTrue MalariaPrevention) form.educationForDiagnosis
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHealthEducationSigns)
+
+
+expectPhysicalExamTask : NominalDate -> Person -> Bool -> PhysicalExamTask -> Bool
+expectPhysicalExamTask currentDate person isFirstEncounter task =
+    case task of
+        PhysicalExamVitals ->
+            True
+
+        -- We show Muac for children under age of 5.
+        PhysicalExamMuac ->
+            isChildUnderAgeOf5 currentDate person
+
+        -- We show Nutrition for children under age of 5.
+        PhysicalExamNutrition ->
+            isChildUnderAgeOf5 currentDate person
+
+        -- We show Acute Finding only on first encounter
+        PhysicalExamAcuteFindings ->
+            isFirstEncounter
+
+
 
 -- HELPER FUNCTIONS
+
+
+resolvePreviousValue : AssembledData -> (AcuteIllnessMeasurements -> Maybe ( id, AcuteIllnessMeasurement a )) -> (a -> b) -> Maybe b
+resolvePreviousValue assembled measurementFunc valueFunc =
+    assembled.previousEncountersData
+        |> List.filterMap
+            (.measurements
+                >> measurementFunc
+                >> Maybe.map (Tuple.second >> .value >> valueFunc)
+            )
+        |> List.reverse
+        |> List.head
 
 
 withDefaultValue : a -> Maybe a -> EverySet a

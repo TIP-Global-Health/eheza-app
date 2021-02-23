@@ -32,8 +32,17 @@ decodeRevision =
                     "acute_findings" ->
                         decodeWithUuid AcuteFindingsRevision decodeAcuteFindings
 
+                    "acute_illness_danger_signs" ->
+                        decodeWithUuid AcuteIllnessDangerSignsRevision decodeAcuteIllnessDangerSigns
+
                     "acute_illness_encounter" ->
                         decodeWithUuid AcuteIllnessEncounterRevision decodeAcuteIllnessEncounter
+
+                    "acute_illness_muac" ->
+                        decodeWithUuid AcuteIllnessMuacRevision decodeAcuteIllnessMuac
+
+                    "acute_illness_nutrition" ->
+                        decodeWithUuid AcuteIllnessNutritionRevision decodeAcuteIllnessNutrition
 
                     "acute_illness_vitals" ->
                         decodeWithUuid AcuteIllnessVitalsRevision decodeAcuteIllnessVitals
@@ -85,6 +94,9 @@ decodeRevision =
 
                     "health_center" ->
                         decodeWithUuid HealthCenterRevision decodeHealthCenter
+
+                    "health_education" ->
+                        decodeWithUuid HealthEducationRevision decodeHealthEducation
 
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight
@@ -200,17 +212,20 @@ decodeRevision =
                     "symptoms_general" ->
                         decodeWithUuid SymptomsGeneralRevision decodeSymptomsGeneral
 
-                    "symptoms_respiratory" ->
-                        decodeWithUuid SymptomsRespiratoryRevision decodeSymptomsRespiratory
-
                     "symptoms_gi" ->
                         decodeWithUuid SymptomsGIRevision decodeSymptomsGI
+
+                    "symptoms_respiratory" ->
+                        decodeWithUuid SymptomsRespiratoryRevision decodeSymptomsRespiratory
 
                     "travel_history" ->
                         decodeWithUuid TravelHistoryRevision decodeTravelHistory
 
                     "treatment_history" ->
                         decodeWithUuid TreatmentReviewRevision decodeTreatmentReview
+
+                    "treatment_ongoing" ->
+                        decodeWithUuid TreatmentOngoingRevision decodeTreatmentOngoing
 
                     "village" ->
                         decodeWithUuid VillageRevision decodeVillage

@@ -115,7 +115,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    */
   public function getForAllDevices() {
     $request = $this->getRequest();
-    $handlers_by_types = $this->entitiesForAllDevices();
+    $this->validateDbVersion($request['db_version']);
 
     // Note that 0 is fine, so we can't use `empty`.
     if (!isset($request['base_revision'])) {
@@ -123,20 +123,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       // This can be 0 if the client knows nothing.
       throw new RestfulBadRequestException('Must provide base_revision, indicating the last revision the client already has.');
     }
-
     $base = $request['base_revision'];
 
-    // Check database version on client side ... refuse to send stuff until
-    // they upgrade.
-    if (!isset($request['db_version'])) {
-      throw new RestfulBadRequestException('Must provide db_version, indicating the version of your local IndexedDB.');
-    }
-
-    $db_version = intval($request['db_version']);
-
-    if ($db_version < HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION) {
-      throw new RestfulBadRequestException('Must update your client before syncing further.');
-    }
+    $handlers_by_types = $this->entitiesForAllDevices();
 
     // Start building up a query, which we'll use in a couple of ways.
     $query = db_select('node', 'node');
@@ -234,7 +223,13 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    */
   public function getForHealthCenter($uuid) {
     $request = $this->getRequest();
+    $this->validateDbVersion($request['db_version']);
+
     $handlers_by_types = $this->entitiesForHealthCenters();
+
+    if (isset($request['statistics'])) {
+      return self::getForHealthCenterStatistics($uuid);
+    }
 
     // Note that 0 is fine, so we can't use `empty`.
     if (!isset($request['base_revision'])) {
@@ -244,18 +239,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     }
 
     $base = $request['base_revision'];
-
-    // Check database version on client side ... refuse to send stuff until
-    // they upgrade.
-    if (!isset($request['db_version'])) {
-      throw new RestfulBadRequestException('Must provide db_version, indicating the version of your local IndexedDB.');
-    }
-
-    $db_version = intval($request['db_version']);
-
-    if ($db_version < HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION) {
-      throw new RestfulBadRequestException('Must update your client before syncing further.');
-    }
 
     $query = db_select('node', 'node');
 
@@ -374,21 +357,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'health_center_nid' => $health_center_id,
         ]);
       }
-
-      // Here we check if the output is empty OR that is less than a full
-      // output response (Meaning sync is done), this means the HC has
-      // finished syncing all data, now we have to send the stats which
-      // should be already calculated by the worker.
-      if (!empty($cache_data) && (empty($output) || count($output) < self::HEDLEY_RESTFUL_DB_QUERY_RANGE)) {
-        // This means the stats already have been calculated and cached.
-        // The cache is set in the calculating function itself.
-        if (!isset($request['stats_cache_hash']) || (isset($request['stats_cache_hash']) && $cache_data != $request['stats_cache_hash'])) {
-          $stats = hedley_stats_calculate_stats_for_health_center($health_center_id);
-
-          $output[] = $stats;
-          $count++;
-        }
-      }
     }
 
     return [
@@ -397,6 +365,39 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'revision_count' => $count,
       'batch' => $output,
     ];
+  }
+
+  /**
+   * Download statistics for Health Center.
+   *
+   * @param string $uuid
+   *   The UUID of the health center.
+   *
+   * @return array
+   *   A representation of the required revisions
+   */
+  public function getForHealthCenterStatistics($uuid) {
+    $return = [
+      'batch' => [],
+    ];
+
+    $health_center_id = hedley_restful_resolve_nid_for_uuid($uuid);
+    if (!$health_center_id) {
+      return $return;
+    }
+
+    $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id);
+    if (empty($cache_data)) {
+      return $return;
+    }
+
+    $request = $this->getRequest();
+
+    if (!isset($request['stats_cache_hash']) || $cache_data != $request['stats_cache_hash']) {
+      $return['batch'][] = hedley_stats_calculate_stats_for_health_center($health_center_id);
+    }
+
+    return $return;
   }
 
   /**
@@ -412,6 +413,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
   public function handleChanges() {
     watchdog('debug', 'Processing sync upload request');
     $request = $this->getRequest();
+    $this->validateDbVersion($request['db_version']);
     $handlersForTypes = $this->allEntities();
     $account = $this->getAccount();
 
@@ -465,9 +467,14 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'status',
           'shard',
           // When creating a session, we provide clinic_type so it is
-          // recorded on client. We don't actiually need to pass this through,
+          // recorded on client. We don't actually need to pass this through,
           // so, we filter it out here.
           'clinic_type',
+          // We do not support marking content as deleted from client,
+          // therefore, we do not want to pass 'deleted' indication.
+          // Also, not most content types do not have 'field_deleted, and
+          // passing 'deleted' indicator will cause error.
+          'deleted',
         ];
 
         // Do not ignore 'health center' field for person,
@@ -516,6 +523,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       watchdog('debug', $m1, [], WATCHDOG_ERROR);
       watchdog('debug', $m2, [], WATCHDOG_ERROR);
 
+      $details = $m1 . PHP_EOL . PHP_EOL . $m2;
+      hedley_restful_report_sync_incident('content-upload', $item['uuid'], $account->uid, $details);
+
       throw $e;
     }
 
@@ -524,6 +534,24 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     watchdog('debug', "Sync upload by $user with $total changes was successful");
 
     return [];
+  }
+
+  /**
+   * Validates that client originating the request is updated to latest version.
+   *
+   * @param string $db_version
+   *   Version of local IndexedDB, passed as part of request.
+   *
+   * @throws \RestfulBadRequestException
+   */
+  public function validateDbVersion($db_version) {
+    if (empty($db_version)) {
+      throw new RestfulBadRequestException('Must provide db_version, indicating the version of your local IndexedDB.');
+    }
+
+    if (intval($db_version) < HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION) {
+      throw new RestfulBadRequestException('Must update your client before syncing further.');
+    }
   }
 
 }

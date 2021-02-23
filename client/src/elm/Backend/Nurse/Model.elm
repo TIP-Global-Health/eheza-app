@@ -10,6 +10,7 @@ type alias Nurse =
     , villages : EverySet VillageId
     , roles : EverySet Role
     , email : Maybe String
+    , pinCode : String
     }
 
 

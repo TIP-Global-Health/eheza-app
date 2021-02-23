@@ -23,7 +23,7 @@ symlink_externals
 cd server || exit 1
 
 # Install Robo.li.
-ddev composer install
+ddev . "cd .. && composer install"
 
 # Authenticate with Terminus.
 ddev . terminus auth:login --machine-token="$TERMINUS_TOKEN"
@@ -36,3 +36,6 @@ git clone ***REMOVED*** .pantheon
 
 # Make the DDEV container aware of your ssh.
 ddev auth ssh
+
+# Workaround for non-matching NPM/node version inside DDEV and Travis.
+git checkout ../client/package-lock.json

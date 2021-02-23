@@ -1,27 +1,10 @@
-module Backend.Dashboard.Model exposing
-    ( CaseManagement
-    , CaseNutrition
-    , CaseNutritionTotal
-    , ChildrenBeneficiariesStats
-    , DashboardStats
-    , FamilyPlanningStats
-    , GoodNutrition
-    , Nutrition
-    , NutritionStatus(..)
-    , NutritionValue
-    , ParticipantStats
-    , Periods
-    , TotalBeneficiaries
-    , emptyModel
-    , emptyNutrition
-    , emptyNutritionValue
-    , emptyTotalBeneficiaries
-    )
+module Backend.Dashboard.Model exposing (..)
 
 {-| The stats for the dashboard.
 -}
 
 import AssocList as Dict exposing (Dict)
+import Backend.Entities exposing (VillageId)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
 import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
@@ -35,30 +18,48 @@ type alias ZScore =
 
 
 type alias DashboardStats =
-    { caseManagement : List CaseManagement
+    { caseManagement : CaseManagementData
     , childrenBeneficiaries : List ChildrenBeneficiariesStats
     , completedPrograms : List ParticipantStats
     , familyPlanning : List FamilyPlanningStats
-    , maybeGoodNutrition : Maybe GoodNutrition
     , missedSessions : List ParticipantStats
-    , totalEncounters : Periods
+    , totalEncounters : TotalEncountersData
+    , villagesWithResidents : Dict VillageId (List PersonIdentifier)
+
+    -- UTC Date and time on which statistics were generated.
+    , timestamp : String
+
+    -- An md5 hash, using which we know if we have the most up to date data.
+    , cacheHash : String
     }
 
 
 emptyModel : DashboardStats
 emptyModel =
-    { caseManagement = []
+    { caseManagement = CaseManagementData Dict.empty Dict.empty
     , childrenBeneficiaries = []
     , completedPrograms = []
     , familyPlanning = []
-    , maybeGoodNutrition = Nothing
     , missedSessions = []
-    , totalEncounters = Periods 0 0
+    , totalEncounters = TotalEncountersData Dict.empty Dict.empty
+    , villagesWithResidents = Dict.empty
+    , timestamp = ""
+    , cacheHash = ""
+    }
+
+
+type alias PersonIdentifier =
+    Int
+
+
+type alias CaseManagementData =
+    { thisYear : Dict ProgramType (List CaseManagement)
+    , lastYear : Dict ProgramType (List CaseManagement)
     }
 
 
 type alias CaseManagement =
-    { identifier : Int
+    { identifier : PersonIdentifier
     , name : String
     , birthDate : NominalDate
     , gender : Gender
@@ -71,6 +72,7 @@ type alias CaseNutrition =
     , underweight : Dict Int NutritionValue
     , wasting : Dict Int NutritionValue
     , muac : Dict Int NutritionValue
+    , nutritionSigns : Dict Int NutritionValue
     }
 
 
@@ -79,6 +81,7 @@ type alias CaseNutritionTotal =
     , underweight : Dict Int Nutrition
     , wasting : Dict Int Nutrition
     , muac : Dict Int Nutrition
+    , nutritionSigns : Dict Int Nutrition
     }
 
 
@@ -112,12 +115,6 @@ type alias ParticipantStats =
 type alias Periods =
     { lastYear : Int
     , thisYear : Int
-    }
-
-
-type alias GoodNutrition =
-    { all : Periods
-    , good : Periods
     }
 
 
@@ -167,3 +164,18 @@ type NutritionStatus
     | Moderate
     | Neutral
     | Severe
+
+
+type ProgramType
+    = ProgramAchi
+    | ProgramFbf
+    | ProgramIndividual
+    | ProgramPmtct
+    | ProgramSorwathe
+    | ProgramUnknown
+
+
+type alias TotalEncountersData =
+    { global : Dict ProgramType Periods
+    , villages : Dict VillageId (Dict ProgramType Periods)
+    }

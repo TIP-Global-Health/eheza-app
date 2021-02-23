@@ -60,6 +60,5 @@ fetch clinicId =
     -- so we can know when to **forget** things as well.
     List.filterMap identity
         [ Just Backend.Model.FetchClinics
-        , Just Backend.Model.FetchSyncData
         , Maybe.map Backend.Model.FetchSessionsByClinic clinicId
         ]

@@ -2,10 +2,10 @@ module Pages.AcuteIllnessParticipant.View exposing (view)
 
 import App.Model
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter, emptyAcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter, emptyAcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
-import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
+import Backend.IndividualEncounterParticipant.Utils exposing (emptyIndividualEncounterParticipant, isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
@@ -14,15 +14,17 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Pages.AcuteIllnessEncounter.Utils exposing (compareAcuteIllnessEncounterDataDesc, getAcuteIllnessDiagnosisForParticipant)
 import Pages.AcuteIllnessParticipant.Model exposing (..)
+import Pages.AcuteIllnessParticipant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate selectedHealthCenter id db =
+view : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate selectedHealthCenter id db model =
     let
         sessions =
             Dict.get id db.individualParticipantsByPerson
@@ -30,31 +32,44 @@ view language currentDate selectedHealthCenter id db =
     in
     div
         [ class "wrap wrap-alt-2 page-participant acute-illness" ]
-        [ viewHeader language id
+        [ viewHeader language model
         , div
             [ class "ui full segment" ]
-            [ viewWebData language (viewActions language currentDate selectedHealthCenter id db) identity sessions
+            [ viewWebData language (viewContent language currentDate selectedHealthCenter id db model) identity sessions
             ]
         ]
 
 
-viewHeader : Language -> PersonId -> Html App.Model.Msg
-viewHeader language id =
+viewHeader : Language -> Model -> Html Msg
+viewHeader language model =
+    let
+        ( labelTransId, action ) =
+            case model.viewMode of
+                ManageIllnesses ->
+                    ( Translate.IndividualEncounterLabel Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                    , SetActivePage <|
+                        UserPage <|
+                            IndividualEncounterParticipantsPage Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                    )
+
+                ManageParticipants ->
+                    ( Translate.IndividualEncounterLabel Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                    , SetViewMode ManageIllnesses
+                    )
+
+                RecordOutcome ->
+                    ( Translate.RecordAcuteIllnessOutcome
+                    , SetViewMode ManageParticipants
+                    )
+    in
     div
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <|
-                translate language <|
-                    Translate.IndividualEncounterLabel
-                        Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
-            ]
+            [ text <| translate language labelTransId ]
         , a
             [ class "link-back"
-            , onClick <|
-                App.Model.SetActivePage <|
-                    UserPage <|
-                        IndividualEncounterParticipantsPage Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+            , onClick action
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -62,103 +77,380 @@ viewHeader language id =
         ]
 
 
-viewActions : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
-viewActions language currentDate selectedHealthCenter id db sessions =
+viewContent : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Model -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html Msg
+viewContent language currentDate selectedHealthCenter id db model sessions =
     let
-        maybeSessionId =
+        activeSessions =
             sessions
                 |> Dict.toList
                 |> List.filter
                     (\( sessionId, session ) ->
-                        session.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                        (session.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter)
+                            && isAcuteIllnessActive currentDate session
                     )
-                |> List.head
-                |> Maybe.map Tuple.first
+                |> List.sortWith (\( _, s1 ) ( _, s2 ) -> Gizra.NominalDate.compare s1.startDate s2.startDate)
+    in
+    case model.viewMode of
+        ManageIllnesses ->
+            viewManageIllnessesContent language currentDate selectedHealthCenter id db activeSessions
 
-        -- Resolve active encounter for person. There should not be more than one.
-        -- We also want to know if there's an encounter that was completed today,
-        -- (started and ended on the same day), as we do not want to allow creating new encounter
-        -- at same day, previous one has ended.
-        ( maybeActiveEncounterId, encounterWasCompletedToday ) =
-            maybeSessionId
+        ManageParticipants ->
+            viewManageParticipantsContent language currentDate selectedHealthCenter id db activeSessions
+
+        RecordOutcome ->
+            viewRecordOutcomeContent language currentDate selectedHealthCenter id db activeSessions
+
+
+viewManageIllnessesContent :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> PersonId
+    -> ModelIndexedDb
+    -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
+    -> Html Msg
+viewManageIllnessesContent language currentDate selectedHealthCenter id db activeSessions =
+    let
+        lastActiveSession =
+            List.reverse activeSessions
+                |> List.head
+
+        ( createIllnessNavigateToEncounterAction, createIllnessNavigateToEncounterButtonDisabled ) =
+            lastActiveSession
                 |> Maybe.map
-                    (\sessionId ->
-                        Dict.get sessionId db.acuteIllnessEncountersByParticipant
-                            |> Maybe.withDefault NotAsked
-                            |> RemoteData.map
-                                (\dict ->
-                                    ( Dict.toList dict
-                                        |> List.filter (Tuple.second >> isDailyEncounterActive currentDate)
+                    (\( sessionId, session ) ->
+                        if session.startDate /= currentDate then
+                            -- Session was not started today, therefore, we know
+                            -- it's first encounter was not started today, which indicates
+                            -- subsequent visit option is needed.
+                            -- This option will be provided at `active Illnesses` section.
+                            ( startIllnessAction, False )
+
+                        else
+                            let
+                                sessionEncounters =
+                                    Dict.get sessionId db.acuteIllnessEncountersByParticipant
+                                        |> Maybe.withDefault NotAsked
+                                        |> RemoteData.toMaybe
+                                        |> Maybe.map Dict.toList
+                                        |> Maybe.withDefault []
+
+                                maybeActiveEncounterId =
+                                    List.filter (Tuple.second >> isDailyEncounterActive currentDate) sessionEncounters
                                         |> List.head
                                         |> Maybe.map Tuple.first
-                                    , Dict.toList dict
+
+                                encounterWasCompletedToday =
+                                    sessionEncounters
                                         |> List.filter
                                             (\( _, encounter ) ->
                                                 encounter.startDate == currentDate && encounter.endDate == Just currentDate
                                             )
                                         |> List.isEmpty
                                         |> not
-                                    )
-                                )
-                            |> RemoteData.withDefault ( Nothing, False )
+                            in
+                            ( maybeActiveEncounterId
+                                |> Maybe.map navigateToEncounterAction
+                                |> Maybe.withDefault startIllnessAction
+                            , -- We do not allow to create multiple illnesses on the same day.
+                              -- Therefore, we disable the button.
+                              encounterWasCompletedToday
+                            )
                     )
-                |> Maybe.withDefault ( Nothing, False )
+                |> Maybe.withDefault ( startIllnessAction, False )
+
+        startIllnessAction =
+            emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter selectedHealthCenter
+                |> Backend.Model.PostIndividualSession
+                |> MsgBackend
+
+        createIllnessNavigateToEncounterSection =
+            [ viewLabel language "select-visit" <| Translate.IndividualEncounterSelectVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+            , viewButton language
+                createIllnessNavigateToEncounterAction
+                Translate.AcuteIllnessNew
+                createIllnessNavigateToEncounterButtonDisabled
+            ]
+
+        activeIllnessesExists =
+            List.map Tuple.first activeSessions
+                |> List.filterMap (getAcuteIllnessDiagnosisForParticipant db)
+                |> List.filter ((/=) NoAcuteIllnessDiagnosis)
+                |> List.isEmpty
+                |> not
+
+        activeIllnessesSection =
+            if activeIllnessesExists then
+                [ viewButton language (SetViewMode ManageParticipants) Translate.AcuteIllnessExisting False ]
+
+            else
+                []
+    in
+    createIllnessNavigateToEncounterSection
+        ++ activeIllnessesSection
+        |> div []
+
+
+viewManageParticipantsContent :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> PersonId
+    -> ModelIndexedDb
+    -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
+    -> Html Msg
+viewManageParticipantsContent language currentDate selectedHealthCenter id db activeSessions =
+    let
+        activeIllnesses =
+            List.map Tuple.first activeSessions
+                |> List.filterMap (viewActiveIllness language currentDate selectedHealthCenter db ManageParticipants)
+
+        lastActiveSession =
+            List.reverse activeSessions
+                |> List.head
+
+        ( createIllnessNavigateToEncounterAction, createIllnessNavigateToEncounterButtonDisabled ) =
+            lastActiveSession
+                |> Maybe.map
+                    (\( sessionId, session ) ->
+                        if session.startDate /= currentDate then
+                            -- Session was not started today, therefore, we know
+                            -- its first encounter was not started today, which indicates
+                            -- subsequent visit option is needed.
+                            -- This option will be provided at `active Illnesses` section.
+                            ( startIllnessAction, False )
+
+                        else
+                            let
+                                sessionEncounters =
+                                    Dict.get sessionId db.acuteIllnessEncountersByParticipant
+                                        |> Maybe.withDefault NotAsked
+                                        |> RemoteData.toMaybe
+                                        |> Maybe.map Dict.toList
+                                        |> Maybe.withDefault []
+
+                                maybeActiveEncounterId =
+                                    List.filter (Tuple.second >> isDailyEncounterActive currentDate) sessionEncounters
+                                        |> List.head
+                                        |> Maybe.map Tuple.first
+
+                                encounterWasCompletedToday =
+                                    sessionEncounters
+                                        |> List.filter
+                                            (\( _, encounter ) ->
+                                                encounter.startDate == currentDate && encounter.endDate == Just currentDate
+                                            )
+                                        |> List.isEmpty
+                                        |> not
+                            in
+                            ( maybeActiveEncounterId
+                                |> Maybe.map navigateToEncounterAction
+                                |> Maybe.withDefault startIllnessAction
+                            , -- We do not allow to create multiple encounters for same illness on the same day.
+                              -- Therefore, we disable the button.
+                              encounterWasCompletedToday
+                            )
+                    )
+                |> Maybe.withDefault ( startIllnessAction, False )
+
+        startIllnessAction =
+            emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter selectedHealthCenter
+                |> Backend.Model.PostIndividualSession
+                |> MsgBackend
+
+        createIllnessNavigateToEncounterButton =
+            viewButton language
+                createIllnessNavigateToEncounterAction
+                (Translate.IndividualEncounterFirstVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter)
+                createIllnessNavigateToEncounterButtonDisabled
+
+        recordIllnessOutcomeButton =
+            viewButton language (SetViewMode RecordOutcome) Translate.RecordAcuteIllnessOutcome False
+    in
+    if List.isEmpty activeIllnesses then
+        div []
+            [ viewLabel language "select-visit" <| Translate.IndividualEncounterSelectVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+            , createIllnessNavigateToEncounterButton
+            ]
+
+    else
+        div []
+            [ viewLabel language "select-illness" Translate.SelectExistingAcuteIllness
+            , div [ class "active-illnesses" ] activeIllnesses
+            , viewLabel language "start-new-encounter" Translate.StrartNewAcuteIllnessHelper
+            , createIllnessNavigateToEncounterButton
+            , div [ class "separator" ] []
+            , viewLabel language "" Translate.CloseAcuteIllnessLabel
+            , recordIllnessOutcomeButton
+            ]
+
+
+viewRecordOutcomeContent :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> PersonId
+    -> ModelIndexedDb
+    -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
+    -> Html Msg
+viewRecordOutcomeContent language currentDate selectedHealthCenter id db activeSessions =
+    let
+        activeIllnesses =
+            List.map Tuple.first activeSessions
+                |> List.filterMap (viewActiveIllness language currentDate selectedHealthCenter db RecordOutcome)
+    in
+    div []
+        [ viewLabel language "select-illness" Translate.SelectExistingAcuteIllnessToRecordOutcome
+        , div [ class "active-illnesses" ] activeIllnesses
+        ]
+
+
+viewActiveIllness :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> ModelIndexedDb
+    -> AcuteIllnessParticipantViewMode
+    -> IndividualEncounterParticipantId
+    -> Maybe (Html Msg)
+viewActiveIllness language currentDate selectedHealthCenter db viewMode sessionId =
+    let
+        sessionEncounters =
+            Dict.get sessionId db.acuteIllnessEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map Dict.toList
+
+        mDiagnosis =
+            sessionEncounters
+                |> Maybe.andThen
+                    (List.map Tuple.second
+                        >> List.sortWith compareAcuteIllnessEncounterDataDesc
+                        >> List.filter (\encounter -> encounter.diagnosis /= NoAcuteIllnessDiagnosis)
+                        >> List.head
+                        >> Maybe.map .diagnosis
+                    )
+    in
+    case mDiagnosis of
+        Nothing ->
+            Nothing
+
+        Just NoAcuteIllnessDiagnosis ->
+            Nothing
+
+        Just diagnosis ->
+            sessionEncounters
+                |> Maybe.andThen
+                    (\encounters ->
+                        case viewMode of
+                            -- No need to view illnesses for this view mode.
+                            ManageIllnesses ->
+                                Nothing
+
+                            ManageParticipants ->
+                                viewActiveIllnessForManagement language currentDate selectedHealthCenter sessionId encounters diagnosis
+
+                            RecordOutcome ->
+                                viewActiveIllnessForOutcome language currentDate sessionId encounters diagnosis
+                    )
+
+
+viewActiveIllnessForManagement :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> IndividualEncounterParticipantId
+    -> List ( AcuteIllnessEncounterId, AcuteIllnessEncounter )
+    -> AcuteIllnessDiagnosis
+    -> Maybe (Html Msg)
+viewActiveIllnessForManagement language currentDate selectedHealthCenter sessionId encounters diagnosis =
+    let
+        maybeActiveEncounterId =
+            List.filter (Tuple.second >> isDailyEncounterActive currentDate) encounters
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        encounterSequenceNumberForToday =
+            encounters
+                |> List.filter
+                    (\( _, encounter ) ->
+                        encounter.startDate == currentDate && encounter.endDate == Just currentDate
+                    )
+                |> List.sortBy (Tuple.second >> .sequenceNumber)
+                |> List.reverse
+                |> List.head
+                |> Maybe.map (Tuple.second >> .sequenceNumber >> (+) 1)
+                |> Maybe.withDefault 1
 
         action =
             maybeActiveEncounterId
                 |> Maybe.map navigateToEncounterAction
                 |> Maybe.withDefault
-                    (maybeSessionId
-                        |> Maybe.map
-                            -- If session exists, create new encounter for it.
-                            (\sessionId ->
-                                [ emptyAcuteIllnessEncounter sessionId currentDate (Just selectedHealthCenter)
-                                    |> Backend.Model.PostAcuteIllnessEncounter
-                                    |> App.Model.MsgIndexedDb
-                                    |> onClick
-                                ]
-                            )
-                        -- If session does not exist, create it.
-                        |> Maybe.withDefault
-                            [ IndividualEncounterParticipant id
-                                Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
-                                currentDate
-                                Nothing
-                                Nothing
-                                (Just selectedHealthCenter)
-                                |> Backend.Model.PostIndividualSession
-                                |> App.Model.MsgIndexedDb
-                                |> onClick
-                            ]
+                    (emptyAcuteIllnessEncounter sessionId currentDate encounterSequenceNumberForToday (Just selectedHealthCenter)
+                        |> Backend.Model.PostAcuteIllnessEncounter
+                        |> MsgBackend
                     )
 
-        navigateToEncounterAction id_ =
-            [ Pages.Page.AcuteIllnessEncounterPage id_
-                |> UserPage
-                |> App.Model.SetActivePage
-                |> onClick
-            ]
+        encounterLabel =
+            if List.length encounters == 1 && isJust maybeActiveEncounterId then
+                Translate.IndividualEncounterFirstVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+
+            else
+                Translate.IndividualEncounterSubsequentVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
     in
-    div []
-        [ p [ class "label-acute-illness-visit" ]
-            [ text <|
-                translate language <|
-                    Translate.IndividualEncounterSelectVisit
-                        Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+    Just <|
+        div
+            [ class "ui primary button active-illness"
+            , onClick action
             ]
-        , button
-            (classList
-                [ ( "ui primary button", True )
-                , ( "disabled", encounterWasCompletedToday )
+            [ div [ class "button-label" ]
+                [ div [ class "encounter-label" ]
+                    [ text <| translate language encounterLabel ]
+                , div [] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
                 ]
-                :: action
-            )
-            [ span [ class "text" ]
-                [ text <|
-                    translate language <|
-                        Translate.IndividualEncounterLabel
-                            Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
-                ]
-            , span [ class "icon-back" ] []
+            , div [ class "icon-back" ] []
             ]
+
+
+viewActiveIllnessForOutcome :
+    Language
+    -> NominalDate
+    -> IndividualEncounterParticipantId
+    -> List ( AcuteIllnessEncounterId, AcuteIllnessEncounter )
+    -> AcuteIllnessDiagnosis
+    -> Maybe (Html Msg)
+viewActiveIllnessForOutcome language currentDate sessionId encounters diagnosis =
+    Just <|
+        viewButton language (navigateToRecordOutcomePage sessionId) (Translate.AcuteIllnessDiagnosis diagnosis) False
+
+
+viewLabel : Language -> String -> TranslationId -> Html Msg
+viewLabel language cssClass transId =
+    p [ class cssClass ] [ text <| translate language transId ]
+
+
+viewButton : Language -> Msg -> TranslationId -> Bool -> Html Msg
+viewButton language action lablelTransId disabled =
+    div
+        [ class "ui primary button"
+        , classList [ ( "disabled", disabled ) ]
+        , onClick action
         ]
+        [ div [ class "button-label" ]
+            [ text <| translate language lablelTransId ]
+        , div [ class "icon-back" ] []
+        ]
+
+
+navigateToEncounterAction : AcuteIllnessEncounterId -> Msg
+navigateToEncounterAction id =
+    Pages.Page.AcuteIllnessEncounterPage id
+        |> UserPage
+        |> SetActivePage
+
+
+navigateToRecordOutcomePage : IndividualEncounterParticipantId -> Msg
+navigateToRecordOutcomePage id =
+    Pages.Page.AcuteIllnessOutcomePage id
+        |> UserPage
+        |> SetActivePage

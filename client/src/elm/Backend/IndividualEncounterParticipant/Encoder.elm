@@ -1,54 +1,59 @@
 module Backend.IndividualEncounterParticipant.Encoder exposing
-    ( encodeDeliveryLocation
+    ( acuteIllnessOutcomeToString
+    , encodeAcuteIllnessOutcome
+    , encodeDeliveryLocation
     , encodeIndividualEncounterParticipant
     , encodePregnancyOutcome
     , pregnancyOutcomeToString
     )
 
 import Backend.IndividualEncounterParticipant.Model exposing (..)
-import Backend.IndividualEncounterParticipant.Utils exposing (encoudeIndividualEncounterTypeAsString)
+import Backend.IndividualEncounterParticipant.Utils exposing (encodeIndividualEncounterTypeAsString)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
+import Utils.Json exposing (encodeIfExists)
 
 
-encodeIndividualEncounterParticipant : IndividualEncounterParticipant -> Value
+encodeIndividualEncounterParticipant : IndividualEncounterParticipant -> List ( String, Value )
 encodeIndividualEncounterParticipant data =
-    object
-        [ ( "person", encodeEntityUuid data.person )
-        , ( "encounter_type", encodeIndividualEncounterType data.encounterType )
-        , ( "expected"
-          , object
-                [ ( "value", encodeYYYYMMDD data.startDate )
-                , ( "value2", maybe encodeYYYYMMDD data.endDate )
-                ]
-          )
-        , ( "shard", maybe encodeEntityUuid data.shard )
-        ]
+    [ ( "person", encodeEntityUuid data.person )
+    , ( "encounter_type", encodeIndividualEncounterType data.encounterType )
+    , ( "expected"
+      , object
+            [ ( "value", encodeYYYYMMDD data.startDate )
+            , ( "value2", maybe encodeYYYYMMDD data.endDate )
+            ]
+      )
+    , ( "expected_date_concluded", maybe encodeYYYYMMDD data.eddDate )
+    , ( "date_concluded", maybe encodeYYYYMMDD data.dateConcluded )
+    , ( "outcome", maybe encodeIndividualEncounterParticipantOutcome data.outcome )
+    , ( "outcome_location", maybe encodeDeliveryLocation data.deliveryLocation )
+    , ( "deleted", bool data.deleted )
+    , ( "type", string "individual_participant" )
+    ]
+        ++ encodeIfExists "shard" data.shard encodeEntityUuid
 
 
 encodeIndividualEncounterType : IndividualEncounterType -> Value
 encodeIndividualEncounterType type_ =
-    encoudeIndividualEncounterTypeAsString type_ |> string
+    encodeIndividualEncounterTypeAsString type_ |> string
+
+
+encodeIndividualEncounterParticipantOutcome : IndividualEncounterParticipantOutcome -> Value
+encodeIndividualEncounterParticipantOutcome participantOutcome =
+    case participantOutcome of
+        Pregnancy outcome ->
+            encodePregnancyOutcome outcome
+
+        AcuteIllness outcome ->
+            encodeAcuteIllnessOutcome outcome
 
 
 encodePregnancyOutcome : PregnancyOutcome -> Value
 encodePregnancyOutcome outcome =
     pregnancyOutcomeToString outcome |> string
-
-
-encodeDeliveryLocation : Bool -> Value
-encodeDeliveryLocation isFacilityDelivery =
-    let
-        location =
-            if isFacilityDelivery then
-                "facility"
-
-            else
-                "home"
-    in
-    string location
 
 
 pregnancyOutcomeToString : PregnancyOutcome -> String
@@ -68,3 +73,45 @@ pregnancyOutcomeToString outcome =
 
         OutcomeAbortions ->
             "abortions"
+
+
+encodeDeliveryLocation : DeliveryLocation -> Value
+encodeDeliveryLocation location =
+    deliveryLocationToString location |> string
+
+
+deliveryLocationToString : DeliveryLocation -> String
+deliveryLocationToString location =
+    case location of
+        FacilityDelivery ->
+            "facility"
+
+        HomeDelivery ->
+            "home"
+
+
+acuteIllnessOutcomeToString : AcuteIllnessOutcome -> String
+acuteIllnessOutcomeToString outcome =
+    case outcome of
+        OutcomeIllnessResolved ->
+            "illness-resolved"
+
+        OutcomeLostToFollowUp ->
+            "lost-to-follow-up"
+
+        OutcomeMovedOutsideCA ->
+            "moved-out-of-ca"
+
+        OutcomePatientDied ->
+            "patient-died"
+
+        OutcomeReferredToHC ->
+            "referred-to-hc"
+
+        OutcomeOther ->
+            "other"
+
+
+encodeAcuteIllnessOutcome : AcuteIllnessOutcome -> Value
+encodeAcuteIllnessOutcome outcome =
+    acuteIllnessOutcomeToString outcome |> string

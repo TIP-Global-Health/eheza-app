@@ -14,7 +14,8 @@ type alias Clinic =
 
 
 type ClinicType
-    = Chw
+    = Achi
+    | Chw
     | Fbf
     | Pmtct
     | Sorwathe
@@ -25,4 +26,4 @@ not included in allowed list.
 -}
 allClinicTypes : List ClinicType
 allClinicTypes =
-    [ Pmtct, Fbf, Sorwathe ]
+    [ Pmtct, Fbf, Sorwathe, Achi ]

@@ -205,32 +205,13 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) deviceName sele
                     ]
                     [ text <| translate language Translate.Clinical ]
 
-            healthCenterGotFbfClinic =
-                healthCenterId
-                    |> Maybe.andThen
-                        (\id ->
-                            db.clinics
-                                |> RemoteData.toMaybe
-                                |> Maybe.map
-                                    (Dict.values
-                                        >> List.filter (\clinic -> clinic.healthCenterId == id && clinic.clinicType == Fbf)
-                                        >> List.isEmpty
-                                        >> not
-                                    )
-                        )
-                    |> Maybe.withDefault False
-
             dashboardButton =
-                if not (isCommunityHealthWorker nurse) && healthCenterGotFbfClinic then
-                    button
-                        [ class "ui primary button"
-                        , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
-                        ]
-                        [ text <| translate language Translate.DashboardLabel
-                        ]
-
-                else
-                    emptyNode
+                button
+                    [ class "ui primary button"
+                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
+                    ]
+                    [ text <| translate language Translate.DashboardLabel
+                    ]
 
             participantDirectoryButton =
                 button
@@ -296,7 +277,11 @@ selectHeathCenterOptions language nurse db =
     let
         filtered =
             db.healthCenters
-                |> RemoteData.map (Dict.filter (\uuid _ -> assignedToHealthCenter uuid nurse) >> Dict.toList)
+                |> RemoteData.map
+                    (Dict.filter (\uuid _ -> assignedToHealthCenter uuid nurse)
+                        >> Dict.toList
+                        >> List.sortBy (Tuple.second >> .name)
+                    )
                 |> RemoteData.withDefault []
 
         selectButton ( id, location ) =
@@ -315,7 +300,11 @@ selectVillageOptions language nurse db =
     let
         filtered =
             db.villages
-                |> RemoteData.map (Dict.filter (\uuid _ -> assignedToVillage uuid nurse) >> Dict.toList)
+                |> RemoteData.map
+                    (Dict.filter (\uuid _ -> assignedToVillage uuid nurse)
+                        >> Dict.toList
+                        >> List.sortBy (Tuple.second >> .name)
+                    )
                 |> RemoteData.withDefault []
 
         selectButton ( id, location ) =

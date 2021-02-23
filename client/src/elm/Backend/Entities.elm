@@ -583,6 +583,46 @@ type MedicationDistributionIdUuidType
     = MedicationDistributionIdUuidType
 
 
+type alias AcuteIllnessMuacId =
+    EntityUuid AcuteIllnessMuacUuidType
+
+
+type AcuteIllnessMuacUuidType
+    = AcuteIllnessMuacUuidType
+
+
+type alias TreatmentOngoingId =
+    EntityUuid TreatmentOngoingUuidType
+
+
+type TreatmentOngoingUuidType
+    = TreatmentOngoingUuidType
+
+
+type alias AcuteIllnessDangerSignsId =
+    EntityUuid AcuteIllnessDangerSignsUuidType
+
+
+type AcuteIllnessDangerSignsUuidType
+    = AcuteIllnessDangerSignsUuidType
+
+
+type alias AcuteIllnessNutritionId =
+    EntityUuid AcuteIllnessNutritionUuidType
+
+
+type AcuteIllnessNutritionUuidType
+    = AcuteIllnessNutritionUuidType
+
+
+type alias HealthEducationId =
+    EntityUuid HealthEducationUuidType
+
+
+type HealthEducationUuidType
+    = HealthEducationUuidType
+
+
 type alias BarcodePhotoId =
     EntityUuid BarcodePhotoUuidType
 

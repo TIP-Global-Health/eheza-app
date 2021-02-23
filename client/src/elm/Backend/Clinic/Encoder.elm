@@ -9,7 +9,14 @@ encodeClinic : Clinic -> List ( String, Value )
 encodeClinic clinic =
     [ ( "label", string clinic.name )
     , ( "health_center", encodeEntityUuid clinic.healthCenterId )
+    , ( "group_type", encodeClinicType clinic.clinicType )
+    , ( "deleted", bool False )
+    , ( "type", string "clinic" )
     ]
+        ++ (clinic.villageId
+                |> Maybe.map (\uuid -> [ ( "village", encodeEntityUuid uuid ) ])
+                |> Maybe.withDefault []
+           )
 
 
 encodeClinicType : ClinicType -> Value
@@ -17,6 +24,9 @@ encodeClinicType clinicType =
     let
         clinicTypeAsString =
             case clinicType of
+                Achi ->
+                    "achi"
+
                 Chw ->
                     "chw"
 

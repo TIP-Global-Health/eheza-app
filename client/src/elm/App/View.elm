@@ -8,7 +8,9 @@ import Backend.Person.Model exposing (Initiator(..), ParticipantDirectoryOperati
 import Browser
 import Config.View
 import Date
+import Error.View
 import EverySet
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
@@ -17,6 +19,9 @@ import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessActivity.View
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.View
+import Pages.AcuteIllnessOutcome.Model
+import Pages.AcuteIllnessOutcome.View
+import Pages.AcuteIllnessParticipant.Model
 import Pages.AcuteIllnessParticipant.View
 import Pages.AcuteIllnessProgressReport.Model
 import Pages.AcuteIllnessProgressReport.View
@@ -53,6 +58,7 @@ import Pages.Session.Model
 import Pages.Session.View
 import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
+import SyncManager.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (viewLoading)
@@ -81,12 +87,24 @@ view model =
 -}
 flexPageWrapper : Model -> Html Msg -> Html Msg
 flexPageWrapper model html =
-    div [ class "page container" ]
-        [ viewLanguageSwitcherAndVersion model
-        , div
-            [ class "page-content" ]
-            [ html ]
-        ]
+    let
+        syncManager =
+            if model.activePage == DevicePage then
+                [ Error.View.view model.language model.configuration model.errors
+                , Html.map MsgSyncManager (SyncManager.View.view model.language model.configuration model.indexedDb model.syncManager)
+                ]
+
+            else
+                []
+
+        content =
+            div
+                [ class "page-content" ]
+                [ html ]
+    in
+    div [ class "page container" ] <|
+        (viewLanguageSwitcherAndVersion model :: syncManager)
+            ++ [ content ]
 
 
 {-| Given some HTML, wrap it the old way.
@@ -177,6 +195,14 @@ viewConfiguredModel model configured =
                     |> flexPageWrapper model
 
     else
+        let
+            deviceName =
+                if String.isEmpty model.syncManager.syncInfoGeneral.deviceName then
+                    Nothing
+
+                else
+                    Just model.syncManager.syncInfoGeneral.deviceName
+        in
         case model.activePage of
             DevicePage ->
                 Pages.Device.View.view model.language configured.device model configured.devicePage
@@ -188,7 +214,7 @@ viewConfiguredModel model configured =
                     model.activePage
                     (RemoteData.map .nurse configured.loggedIn)
                     ( model.healthCenterId, model.villageId )
-                    model.deviceName
+                    deviceName
                     configured.pinCodePage
                     model.indexedDb
                     |> Html.map MsgPagePinCode
@@ -204,11 +230,11 @@ viewConfiguredModel model configured =
                     |> flexPageWrapper model
 
             UserPage userPage ->
-                viewUserPage userPage model configured
+                viewUserPage userPage deviceName model configured
 
 
-viewUserPage : UserPage -> Model -> ConfiguredModel -> Html Msg
-viewUserPage page model configured =
+viewUserPage : UserPage -> Maybe String -> Model -> ConfiguredModel -> Html Msg
+viewUserPage page deviceName model configured =
     case getLoggedInData model of
         Just ( healthCenterId, loggedInModel ) ->
             let
@@ -231,11 +257,18 @@ viewUserPage page model configured =
                             |> oldPageWrapper model
 
                     ClinicalPage ->
-                        Pages.Clinical.View.view model.language currentDate model.villageId isChw model.indexedDb
+                        Pages.Clinical.View.view model.language currentDate ( healthCenterId, model.villageId ) isChw model
                             |> flexPageWrapper model
 
                     ClinicsPage clinicId ->
-                        Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) healthCenterId clinicId loggedInModel.clinicsPage model.indexedDb
+                        Pages.Clinics.View.view model.language
+                            currentDate
+                            (Tuple.second loggedInModel.nurse)
+                            healthCenterId
+                            clinicId
+                            loggedInModel.clinicsPage
+                            model.indexedDb
+                            model.syncManager
                             |> Html.map (MsgLoggedIn << MsgPageClinics)
                             |> flexPageWrapper model
 
@@ -256,7 +289,7 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     DashboardPage subPage ->
-                        Pages.Dashboard.View.view model.language subPage currentDate healthCenterId loggedInModel.dashboardPage model.indexedDb
+                        Pages.Dashboard.View.view model.language subPage currentDate healthCenterId isChw (Tuple.second loggedInModel.nurse) loggedInModel.dashboardPage model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageDashboard subPage)
                             |> flexPageWrapper model
 
@@ -294,7 +327,13 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     AcuteIllnessParticipantPage id ->
-                        Pages.AcuteIllnessParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.acuteIllnessParticipantPages
+                                    |> Maybe.withDefault Pages.AcuteIllnessParticipant.Model.emptyModel
+                        in
+                        Pages.AcuteIllnessParticipant.View.view model.language currentDate healthCenterId id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessParticipant id)
                             |> flexPageWrapper model
 
                     IndividualEncounterParticipantsPage encounterType ->
@@ -366,7 +405,7 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     IndividualEncounterTypesPage ->
-                        Pages.IndividualEncounterTypes.View.view model.language currentDate isChw model.indexedDb
+                        Pages.IndividualEncounterTypes.View.view model.language currentDate healthCenterId isChw model
                             |> flexPageWrapper model
 
                     PregnancyOutcomePage id ->
@@ -433,12 +472,22 @@ viewUserPage page model configured =
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport encounterId)
                             |> oldPageWrapper model
 
+                    AcuteIllnessOutcomePage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.acuteIllnessOutcomePages
+                                    |> Maybe.withDefault Pages.AcuteIllnessOutcome.Model.emptyModel
+                        in
+                        Pages.AcuteIllnessOutcome.View.view model.language currentDate id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessOutcome id)
+                            |> flexPageWrapper model
+
             else
                 Pages.PinCode.View.view model.language
                     model.activePage
                     (Success loggedInModel.nurse)
                     ( model.healthCenterId, model.villageId )
-                    model.deviceName
+                    deviceName
                     configured.pinCodePage
                     model.indexedDb
                     |> Html.map MsgPagePinCode
@@ -449,7 +498,7 @@ viewUserPage page model configured =
                 model.activePage
                 (RemoteData.map .nurse configured.loggedIn)
                 ( model.healthCenterId, model.villageId )
-                model.deviceName
+                deviceName
                 configured.pinCodePage
                 model.indexedDb
                 |> Html.map MsgPagePinCode

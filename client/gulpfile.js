@@ -235,7 +235,7 @@ gulp.task("minify", ["styles", "zscore", "copy:images", "copy:favicon"],
       // Concatenate JavaScript files and preserve important comments.
       // DropZone had a problem if we mangle
       // ... see <https://github.com/rowanwins/vue-dropzone/issues/119>
-      .pipe($.if(["*.js", "!service-worker.js", "!workbox-*.js"], uglify({
+      .pipe($.if(["*.js", "!service-worker.js", "!workbox-*.js", "!app.js", "!nodes.js", "!photos.js", "!statistics.js"], uglify({
         mangle: false
       }))).on('error', function(err) {
         console.error(err);
@@ -305,7 +305,8 @@ gulp.task("serve:dev", ["build"], function() {
     // tunnel: "",
     server: {
       baseDir: "serve"
-    }
+    },
+    "open": false
   });
 });
 
@@ -317,6 +318,7 @@ gulp.task("serve:emulator", ["build", "ssl-cert"], function() {
     server: {
       baseDir: "serve"
     },
+    "open": false,
     https: {
       cert: "ssl/ssl.pem",
       key: "ssl/ssl.key"
@@ -368,6 +370,7 @@ gulp.task("watch", function() {
 // Serve the site after optimizations to see that everything looks fine
 gulp.task("serve:prod", function() {
   bs = browserSync({
+    "open": false,
     notify: false,
     // tunnel: true,
     server: {
@@ -426,7 +429,6 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function() {
       'nodes.js',
       'statistics.js',
       'photos.js',
-      'sync.js'
     ]
   });
 });
@@ -450,8 +452,8 @@ gulp.task('pwa:prod', function() {
       'config.js',
       'lifecycle.js',
       'nodes.js',
+      'statistics.js',
       'photos.js',
-      'sync.js'
     ]
   });
 });

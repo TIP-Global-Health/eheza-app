@@ -4,7 +4,7 @@ import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import App.Fetch
 import App.Model exposing (..)
 import App.Ports exposing (..)
-import App.Utils exposing (getLoggedInData)
+import App.Utils exposing (getLoggedInData, updateSubModel)
 import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
@@ -21,17 +21,21 @@ import Dict as LegacyDict
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
 import HttpBuilder
-import Json.Decode exposing (bool, decodeValue, oneOf)
+import Json.Decode
 import Json.Encode
-import Maybe.Extra exposing (isJust)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessActivity.Update
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.Update
+import Pages.AcuteIllnessOutcome.Model
+import Pages.AcuteIllnessOutcome.Update
+import Pages.AcuteIllnessParticipant.Model
+import Pages.AcuteIllnessParticipant.Update
 import Pages.AcuteIllnessProgressReport.Model
 import Pages.AcuteIllnessProgressReport.Update
 import Pages.Clinics.Update
+import Pages.Dashboard.Model
 import Pages.Dashboard.Update
 import Pages.Device.Model
 import Pages.Device.Update
@@ -62,6 +66,8 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
 import ServiceWorker.Model
 import ServiceWorker.Update
+import SyncManager.Model
+import SyncManager.Update
 import Task
 import Time
 import Translate.Model exposing (Language(..))
@@ -178,15 +184,14 @@ updateAndThenFetch msg model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
+        noChange =
+            ( model, Cmd.none )
+
         currentDate =
             fromLocalDateTime model.currentTime
 
         loggedInData =
             getLoggedInData model
-
-        nurseId =
-            loggedInData
-                |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
 
         isChw =
             loggedInData
@@ -196,6 +201,10 @@ update msg model =
     case msg of
         MsgIndexedDb subMsg ->
             let
+                nurseId =
+                    loggedInData
+                        |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
+
                 ( subModel, subCmd, extraMsgs ) =
                     Backend.Update.updateIndexedDb currentDate nurseId model.healthCenterId isChw subMsg model.indexedDb
 
@@ -298,6 +307,19 @@ update msg model =
                             in
                             ( { data | relationshipPages = Dict.insert ( id1, id2 ) subModel data.relationshipPages }
                             , Cmd.map (MsgLoggedIn << MsgPageRelationship id1 id2) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageAcuteIllnessParticipant id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.acuteIllnessParticipantPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.AcuteIllnessParticipant.Model.emptyModel
+                                        |> Pages.AcuteIllnessParticipant.Update.update currentDate id subMsg
+                            in
+                            ( { data | acuteIllnessParticipantPages = Dict.insert id subModel data.acuteIllnessParticipantPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessParticipant id) subCmd
                             , extraMsgs
                             )
 
@@ -417,6 +439,19 @@ update msg model =
                             , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport id) subCmd
                             , extraMsgs
                             )
+
+                        MsgPageAcuteIllnessOutcome id subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    data.acuteIllnessOutcomePages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.AcuteIllnessOutcome.Model.emptyModel
+                                        |> Pages.AcuteIllnessOutcome.Update.update currentDate id subMsg
+                            in
+                            ( { data | acuteIllnessOutcomePages = Dict.insert id subModel data.acuteIllnessOutcomePages }
+                            , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessOutcome id) subCmd
+                            , appMsgs
+                            )
                 )
                 model
 
@@ -474,6 +509,7 @@ update msg model =
                     )
                 )
                 model
+                |> sequence update [ MsgSyncManager SyncManager.Model.TrySyncing ]
 
         MsgPagePinCode subMsg ->
             updateConfigured
@@ -549,6 +585,10 @@ update msg model =
 
                 extraMsgs =
                     case page of
+                        -- When navigating to Device page (which is used for Sync management), trigger Sync.
+                        DevicePage ->
+                            [ MsgSyncManager SyncManager.Model.TrySyncing ]
+
                         -- When navigating to relationship page in group encounter context,
                         -- we automaticaly select the clinic, to which the session belongs.
                         UserPage (RelationshipPage id1 id2 (GroupEncounterOrigin sessionId)) ->
@@ -562,6 +602,13 @@ update msg model =
                                         >> List.singleton
                                     )
                                 |> Maybe.withDefault []
+
+                        -- When navigating to Acute Illness participant page, set initial view mode.
+                        UserPage (AcuteIllnessParticipantPage participantId) ->
+                            Pages.AcuteIllnessParticipant.Model.SetViewMode Pages.AcuteIllnessParticipant.Model.ManageIllnesses
+                                |> MsgPageAcuteIllnessParticipant participantId
+                                |> MsgLoggedIn
+                                |> List.singleton
 
                         _ ->
                             []
@@ -612,19 +659,27 @@ update msg model =
 
                 extraMsgs =
                     [ SetHealthCenter maybeHealthCenterId ]
+
+                cacheVillageCmd =
+                    maybeVillageId
+                        |> Maybe.map fromEntityUuid
+                        |> Maybe.withDefault ""
+                        |> cacheVillage
+
+                ( updatedModel, cmd ) =
+                    updateLoggedIn
+                        (\loggedId ->
+                            ( { loggedId | dashboardPage = Pages.Dashboard.Model.emptyModel maybeVillageId }
+                            , cacheVillageCmd
+                            , []
+                            )
+                        )
+                        { model | villageId = maybeVillageId }
             in
-            ( { model | villageId = maybeVillageId }
-            , maybeVillageId
-                |> Maybe.map fromEntityUuid
-                |> Maybe.withDefault ""
-                |> cacheVillage
+            ( updatedModel
+            , cmd
             )
                 |> sequence update extraMsgs
-
-        SetDeviceName name ->
-            ( { model | deviceName = name }
-            , Cmd.none
-            )
 
         Tick time ->
             let
@@ -653,9 +708,21 @@ update msg model =
             )
                 |> sequence update extraMsgs
 
-        TrySyncing ->
-            -- Normally handled automatically, but sometimes nice to trigger manually
-            ( model, trySyncing () )
+        MsgSyncManager subMsg ->
+            model.configuration
+                |> RemoteData.toMaybe
+                |> Maybe.andThen (\config -> RemoteData.toMaybe config.device)
+                |> Maybe.map
+                    (\device ->
+                        updateSubModel
+                            subMsg
+                            model.syncManager
+                            (\subMsg_ subModel -> SyncManager.Update.update currentDate model.currentTime model.activePage model.dbVersion device subMsg_ subModel)
+                            (\subModel model_ -> { model_ | syncManager = subModel })
+                            (\subCmds -> MsgSyncManager subCmds)
+                            model
+                    )
+                |> Maybe.withDefault noChange
 
         TryPinCode code ->
             updateConfigured
@@ -885,11 +952,12 @@ subscriptions model =
                 []
     in
     Sub.batch
-        ([ Time.every 60000 Tick
+        ([ Time.every 10000 Tick
          , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
          , persistentStorage SetPersistentStorage
          , storageQuota SetStorageQuota
          , memoryQuota SetMemoryQuota
+         , Sub.map App.Model.MsgSyncManager (SyncManager.Update.subscriptions model.syncManager)
          ]
             ++ checkDataWanted
         )

@@ -2,6 +2,7 @@ module Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessEncount
 
 import Backend.AcuteIllnessEncounter.Model exposing (..)
 import Backend.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisFromString)
+import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
@@ -14,8 +15,9 @@ decodeAcuteIllnessEncounter =
         |> required "individual_participant" decodeEntityUuid
         |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
         |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
+        |> optional "sequence_number" decodeInt 1
         |> required "acute_illness_diagnosis" decodeAcuteIllnessDiagnosis
-        |> required "shard" (nullable decodeEntityUuid)
+        |> optional "shard" (nullable decodeEntityUuid) Nothing
 
 
 decodeAcuteIllnessDiagnosis : Decoder AcuteIllnessDiagnosis

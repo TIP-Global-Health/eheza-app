@@ -11,6 +11,7 @@ src/generated
 /ssl/ssl.crt
 /ssl/ssl.key
 /ssl/ssl.pem
+package-lock.json
 
 # Ignore the local config file.
 wdio.local.conf.js

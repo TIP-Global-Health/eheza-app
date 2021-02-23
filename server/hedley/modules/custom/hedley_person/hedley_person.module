@@ -18,7 +18,11 @@ define('HEDLEY_PERSON_GENDER_MALE', 'male');
 define('HEDLEY_PERSON_GENDER_FEMALE', 'female');
 define('HEDLEY_PERSON_RELATED_BY_PARENT_OF', 'parent');
 define('HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR', 'caregiver');
+define('HEDLEY_PERSON_CLINIC_TYPE_FBF', 'fbf');
+define('HEDLEY_PERSON_CLINIC_TYPE_PMTCT', 'pmtct');
 define('HEDLEY_PERSON_CLINIC_TYPE_SORWATHE', 'sorwathe');
+define('HEDLEY_PERSON_CLINIC_TYPE_ACHI', 'achi');
+define('HEDLEY_PERSON_CLINIC_TYPE_CHW', 'chw');
 
 // Import CSV column mapping:
 define('HEDLEY_PERSON_COLUMN_UNIQUE_ID', 0);
@@ -139,7 +143,9 @@ function hedley_person_get_data(array $form, array $form_state) {
   $form['#suffix'] = '</div>';
   $form['#tree'] = TRUE;
 
-  $instructions = '<div>Before uploading new patients, make sure you followed <a href="https://github.com/Gizra/ihangane/wiki/Importing-bulk-data" target="_blank">these guidelines</a>.</div>';
+  $import_instructions_uri = variable_get('hedley_import_instructions_uri', 'https://gizra.github.io/eheza-guide/docs/importing-patient-data-in-bulk-backend');
+
+  $instructions = "<div>Before uploading new patients, make sure you followed <a href=\"$import_instructions_uri\" target=\"_blank\">these guidelines</a>.</div>";
   $instructions .= '<br>';
   $instructions .= '<div style="font-style: italic;">Note: You\'ll need to import the mother/caregiver data first, then the children data, in order to create relationships between the two.</div>';
 
@@ -465,6 +471,9 @@ function hedley_person_reset_form(array $form, array &$form_state) {
 /**
  * Convert a date string to a timestamp.
  *
+ * Format we expect is dd-[MON]-yyyy.
+ * [MON] is JAN, FEB, ..., DEC.
+ *
  * @param string $trimmed
  *   A string containing a date.
  *
@@ -475,6 +484,34 @@ function hedley_person_date_process($trimmed) {
   if (empty($trimmed)) {
     return FALSE;
   }
+
+  $parts = explode('-', $trimmed);
+  if (count($parts) != 3) {
+    return FALSE;
+  }
+
+  $months = [
+    'jan' => '01',
+    'feb' => '02',
+    'mar' => '03',
+    'apr' => '04',
+    'may' => '05',
+    'jun' => '06',
+    'jul' => '07',
+    'aug' => '08',
+    'sep' => '09',
+    'oct' => '10',
+    'nov' => '11',
+    'dec' => '12',
+  ];
+
+  $month_part = strtolower($parts[1]);
+  if (!in_array($month_part, array_keys($months))) {
+    return FALSE;
+  }
+
+  $parts[1] = $months[$month_part];
+  $trimmed = implode('-', $parts);
 
   // Regular expression for validating 'dd-mm-YYYY' dates.
   $regex = '/^([0]?[1-9]|[1|2][0-9]|[3][0|1])[-]([0]?[1-9]|[1][0-2])[-]([0-9]{4}|[0-9]{2})$/';
@@ -560,7 +597,8 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
     'positive',
     'unknown',
   ];
-  if (!in_array(strtolower($hiv_status), $valid_values)) {
+  // Optional field - allowing empty value.
+  if (!empty($hiv_status) && !in_array(strtolower($hiv_status), $valid_values)) {
     $errors[] = "HIV status: Invalid value - $hiv_status";
   }
 
@@ -579,7 +617,8 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
       'vaginal delivery with vacuum extraction',
       'cesarean delivery',
     ];
-    if (!in_array(strtolower($mode_of_delivery), $valid_values)) {
+    // Optional field - allowing empty value.
+    if (!empty($mode_of_delivery) && !in_array(strtolower($mode_of_delivery), $valid_values)) {
       $errors[] = "Mode of delivery: Invalid value - $mode_of_delivery";
     }
 
@@ -744,27 +783,29 @@ function hedley_person_import_patient($patient_type, array $values) {
   // Ubudehe.
   $wrapper->field_ubudehe->set((int) $ubudehe);
 
-  // HIV status.
-  switch (strtolower($hiv_status)) {
-    case 'hiv-exposed infant':
-      $wrapper->field_hiv_status->set('hiv-exposed-infant');
-      break;
+  // HIV status (optional field).
+  if (!empty($hiv_status)) {
+    switch (strtolower($hiv_status)) {
+      case 'hiv-exposed infant':
+        $wrapper->field_hiv_status->set('hiv-exposed-infant');
+        break;
 
-    case 'negative':
-      $wrapper->field_hiv_status->set('negative');
-      break;
+      case 'negative':
+        $wrapper->field_hiv_status->set('negative');
+        break;
 
-    case 'negative - discordant couple':
-      $wrapper->field_hiv_status->set('negative-dc');
-      break;
+      case 'negative - discordant couple':
+        $wrapper->field_hiv_status->set('negative-dc');
+        break;
 
-    case 'positive':
-      $wrapper->field_hiv_status->set('positive');
-      break;
+      case 'positive':
+        $wrapper->field_hiv_status->set('positive');
+        break;
 
-    case 'unknown':
-      $wrapper->field_hiv_status->set('unknown');
-      break;
+      case 'unknown':
+        $wrapper->field_hiv_status->set('unknown');
+        break;
+    }
   }
 
   // Location.
@@ -785,22 +826,25 @@ function hedley_person_import_patient($patient_type, array $values) {
   if ($patient_type == 'child') {
     $mode_of_delivery = trim($values[HEDLEY_PERSON_COLUMN_CHILD_MODE_OF_DELIVERY]);
 
-    switch (strtolower($mode_of_delivery)) {
-      case 'spontaneous vaginal delivery with episiotomy':
-        $wrapper->field_mode_of_delivery->set('svd-episiotomy');
-        break;
+    // Optional field.
+    if (!empty($mode_of_delivery)) {
+      switch (strtolower($mode_of_delivery)) {
+        case 'spontaneous vaginal delivery with episiotomy':
+          $wrapper->field_mode_of_delivery->set('svd-episiotomy');
+          break;
 
-      case 'spontaneous vaginal delivery without episiotomy':
-        $wrapper->field_mode_of_delivery->set('svd-no-episiotomy');
-        break;
+        case 'spontaneous vaginal delivery without episiotomy':
+          $wrapper->field_mode_of_delivery->set('svd-no-episiotomy');
+          break;
 
-      case 'vaginal delivery with vacuum extraction':
-        $wrapper->field_mode_of_delivery->set('vd-vacuum');
-        break;
+        case 'vaginal delivery with vacuum extraction':
+          $wrapper->field_mode_of_delivery->set('vd-vacuum');
+          break;
 
-      case 'cesarean delivery':
-        $wrapper->field_mode_of_delivery->set('cesarean-delivery');
-        break;
+        case 'cesarean delivery':
+          $wrapper->field_mode_of_delivery->set('cesarean-delivery');
+          break;
+      }
     }
 
     $wrapper->save();
@@ -822,7 +866,7 @@ function hedley_person_import_patient($patient_type, array $values) {
       $group_id = hedley_person_resolve_content_by_name('clinic', $group);
 
       if (!empty($group_id)) {
-        if (!hedley_person_create_pmtct_participant($wrapper->getIdentifier(), $adult_id, $relation, $group_id)) {
+        if (!hedley_person_create_pmtct_participant($adult_id, $wrapper->getIdentifier(), $relation, $group_id)) {
           return "Import was successful, but failed to add adult-child pair to $group group.";
         }
       }
@@ -918,23 +962,25 @@ function hedley_person_create_relationship($child_id, $adult_id, $relation) {
 }
 
 /**
- * Creates a pmtct_participant node for adult-child pair.
+ * Creates a participation for adult+chld pair at given group.
  *
- * @param int $child_id
- *   Child node ID.
  * @param int $adult_id
  *   Adult node ID.
+ * @param int $child_id
+ *   Child node ID.
  * @param string $relation
- *   Either 'parent' or 'caregiver'.
+ *   Either 'parent', 'mother', or 'caregiver'.
  * @param int $group_id
  *   Group node ID.
+ * @param int $author
+ *   User ID which will be considered the author of created participation.
  *
  * @return bool
  *   TRUE on success, FALSE otherwise.
  */
-function hedley_person_create_pmtct_participant($child_id, $adult_id, $relation, $group_id) {
+function hedley_person_create_pmtct_participant($adult_id, $child_id, $relation, $group_id, $author = FALSE) {
   try {
-    $pmtct_participant = hedley_person_create_basic_node('pmtct_participant');
+    $pmtct_participant = hedley_person_create_basic_node('pmtct_participant', $author);
   }
   catch (Exception $e) {
     return FALSE;
@@ -956,7 +1002,7 @@ function hedley_person_create_pmtct_participant($child_id, $adult_id, $relation,
   $clinic_type = $wrapper_clinic->field_group_type->value();
 
   $expected_start_date = date('Y-m-d', $birth_date);
-  $expected_end_date = ($clinic_type == HEDLEY_PERSON_CLINIC_TYPE_SORWATHE) ? NULL : date('Y-m-d', strtotime("+26 month", $birth_date));
+  $expected_end_date = (hedley_person_graduation_date_required($clinic_type)) ? date('Y-m-d', strtotime("+26 month", $birth_date)) : NULL;
 
   $wrapper->field_expected->set([
     'value' => $expected_start_date,
@@ -973,6 +1019,8 @@ function hedley_person_create_pmtct_participant($child_id, $adult_id, $relation,
  *
  * @param string $type
  *   Node bundle.
+ * @param int $author_id
+ *   Optional; The ID of node author. Defaults to global user ID.
  *
  * @return object
  *   Neely created node.
@@ -980,14 +1028,17 @@ function hedley_person_create_pmtct_participant($child_id, $adult_id, $relation,
  * @throws \Exception
  *   In case Save operation fails.
  */
-function hedley_person_create_basic_node($type) {
-  global $user;
+function hedley_person_create_basic_node($type, $author_id = FALSE) {
+  if (empty($author_id)) {
+    global $user;
+    $author_id = $user->uid;
+  }
 
   $node = new stdClass();
   $node->type = $type;
   node_object_prepare($node);
   $node->language = LANGUAGE_NONE;
-  $node->uid = $user->uid;
+  $node->uid = $author_id;
   $node->status = 1;
   // Mark node as imported, to be able to identify it at hook_insert().
   $node->imported = 1;
@@ -1111,34 +1162,57 @@ function hedley_person_import_form_callback(array $form, array $form_state) {
 /**
  * Get a relationships by a person.
  *
- * @param int $person_id
- *   The person node ID.
+ * @param int $child_id
+ *   The node ID of child.
  * @param string $relation_type
- *   Optional; the type of the relation, can be either "parent" or "child".
+ *   Optional; the type of the relation, can be either "parent" or "caregiver".
  *
  * @return array
  *   Node IDs if they exist or empty array if no nodes exist.
  */
-function hedley_person_get_relationships($person_id, $relation_type = HEDLEY_PERSON_RELATED_BY_PARENT_OF) {
+function hedley_person_get_child_relationships($child_id, $relation_type = 'parent') {
   $query = new EntityFieldQuery();
   $query
     ->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'relationship')
     ->propertyCondition('status', NODE_PUBLISHED)
-    ->range(0, 1);
-
-  if ($relation_type == HEDLEY_PERSON_RELATED_BY_PARENT_OF) {
-    $query
-      ->fieldCondition('field_person', 'target_id', $person_id);
-  }
-  else {
-    $query
-      ->fieldCondition('field_related_to', 'target_id', $person_id);
-  }
+    ->fieldCondition('field_related_to', 'target_id', $child_id)
+    ->fieldCondition('field_related_by', 'value', $relation_type);
 
   $result = $query->execute();
 
   return !empty($result['node']) ? array_keys($result['node']) : [];
+}
+
+/**
+ * Implements hook_node_presave().
+ *
+ * If person is marked as deleted, verifies it got no measurements.
+ */
+function hedley_person_node_presave($node) {
+  if ($node->type != 'person') {
+    return;
+  }
+
+  // We don't make the check for newly created nodes.
+  if (empty($node->nid)) {
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $deleted = $wrapper->field_deleted->value();
+
+  if (!isset($deleted) || $deleted === FALSE) {
+    return;
+  }
+
+  $measurements = hedley_general_get_person_measurements($node->nid);
+  if (count($measurements) == 0) {
+    return;
+  }
+
+  $wrapper->field_deleted->set(FALSE);
+  drupal_set_message(t('Person got measurements. Can not be marked as Deleted.'), 'error');
 }
 
 /**
@@ -1152,6 +1226,17 @@ function hedley_person_node_update($node) {
     return;
   }
 
+  hedley_person_process_birth_date_update($node);
+  hedley_person_process_deleted_update($node);
+}
+
+/**
+ * Invoked from hook_node_update().
+ *
+ * When child age is edited, updates graduation date for all
+ * it's pmtct_participants.
+ */
+function hedley_person_process_birth_date_update($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
   $wrapper_orig = entity_metadata_wrapper('node', $node->original);
 
@@ -1162,7 +1247,7 @@ function hedley_person_node_update($node) {
     return;
   }
 
-  $ids = hedley_person_pmtct_participants_for_child($node->nid);
+  $ids = hedley_person_pmtct_participants_for_person($node->nid);
   if (empty($ids)) {
     return;
   }
@@ -1177,7 +1262,7 @@ function hedley_person_node_update($node) {
 
     $clinic_type = $participant_wrapper->field_clinic->field_group_type->value();
     // We do not change graduation date for 'Sorwathe' group participants.
-    if (empty($clinic_type) || $clinic_type == HEDLEY_PERSON_CLINIC_TYPE_SORWATHE) {
+    if (empty($clinic_type) || !hedley_person_graduation_date_required($clinic_type)) {
       $expected_new_end_date = $expected['value2'];
     }
 
@@ -1190,7 +1275,62 @@ function hedley_person_node_update($node) {
 }
 
 /**
- * Resolves all pmtct_participant nodes IDs for child.
+ * Returns if clinic participation requires setting a graduation date, or not.
+ *
+ * ACHI and SORWATHE clinics do not require setting graduation date.
+ * All others do.
+ *
+ * @param string $clinic_type
+ *   The type of the clinic.
+ *
+ * @return bool
+ *   True, if clinic participation requires setting a graduation date.
+ */
+function hedley_person_graduation_date_required($clinic_type) {
+  if (in_array($clinic_type,
+    [
+      HEDLEY_PERSON_CLINIC_TYPE_SORWATHE,
+      HEDLEY_PERSON_CLINIC_TYPE_ACHI,
+    ]
+  )) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/**
+ * Invoked from hook_node_update().
+ *
+ * When child age is edited, updates graduation date for all
+ * it's pmtct_participants.
+ */
+function hedley_person_process_deleted_update($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $wrapper_orig = entity_metadata_wrapper('node', $node->original);
+
+  $deleted = $wrapper->field_deleted->value();
+  $deleted_orig = $wrapper_orig->field_deleted->value();
+
+  if (!isset($deleted) || $deleted === $deleted_orig) {
+    return;
+  }
+
+  $ids = hedley_person_content_affected_by_deletion($node->nid);
+  if (empty($ids)) {
+    return;
+  }
+
+  $items = node_load_multiple($ids);
+  foreach ($items as $item) {
+    $item_wrapper = entity_metadata_wrapper('node', $item);
+    $item_wrapper->field_deleted->set($deleted);
+    $item_wrapper->save();
+  }
+}
+
+/**
+ * Resolves all pmtct_participant nodes IDs for person.
  *
  * @param int $nid
  *   Child node ID.
@@ -1198,11 +1338,103 @@ function hedley_person_node_update($node) {
  * @return array
  *   List of pmtct_participant nodes IDs.
  */
-function hedley_person_pmtct_participants_for_child($nid) {
-  $query = db_select('field_data_field_person', 'person');
-  $query->addField('person', 'entity_id');
-  $query->condition('bundle', 'pmtct_participant');
-  $query->condition('field_person_target_id', $nid);
+function hedley_person_pmtct_participants_for_person($nid) {
+  $query = db_select('node', 'n');
+  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
+  $query->leftJoin('field_data_field_adult', 'a', 'a.entity_id = n.nid');
+
+  $query->condition('n.type', 'pmtct_participant');
+
+  $person_or = db_or();
+  $person_or->condition('p.field_person_target_id', $nid);
+  $person_or->condition('a.field_adult_target_id', $nid);
+  $query->condition($person_or);
+
+  $query->addField('n', 'nid');
+
+  return $query->execute()->fetchCol();
+}
+
+/**
+ * Resolves person individual_participant nodes IDs, for given encounter type.
+ *
+ * @param int $nid
+ *   Person node ID.
+ * @param string $type
+ *   Encounter type.
+ * @param string $order
+ *   Sorting order.
+ *
+ * @return array
+ *   List of individual_participant nodes IDs.
+ */
+function hedley_person_individual_participants_for_person($nid, $type, $order = 'ASC') {
+  $query = db_select('node', 'n');
+  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
+  $query->leftJoin('field_data_field_encounter_type', 'et', 'et.entity_id = p.entity_id');
+
+  $query->condition('n.type', 'individual_participant');
+
+  $query->condition('et.field_encounter_type_value', $type);
+  $query->condition('p.field_person_target_id', $nid);
+  $query->addField('n', 'nid');
+  $query->orderBy('n.nid', $order);
+
+  return $query->execute()->fetchCol();
+}
+
+/**
+ * Resolves all encounters of given type that belong to individual participant.
+ *
+ * @param int $nid
+ *   Individual encounter node ID.
+ *
+ * @return array
+ *   List of encounters nodes IDs.
+ */
+function hedley_person_encounters_for_individual_participant($nid) {
+  $query = db_select('node', 'n');
+  $query->join('field_data_field_individual_participant', 'p', 'p.entity_id = n.nid');
+  $query->condition('p.field_individual_participant_target_id', $nid);
+  $query->addField('n', 'nid');
+
+  return $query->execute()->fetchCol();
+}
+
+/**
+ * Resolves all content that needs to be marked as 'deleted' for deleted person.
+ *
+ * We mark following bundles:
+ *   - PMTCT Participants.
+ *   - Individual Participants.
+ *   - Relationships.
+ *
+ * @param int $nid
+ *   Child node ID.
+ *
+ * @return array
+ *   List of nodes IDs to be marked as deleted..
+ */
+function hedley_person_content_affected_by_deletion($nid) {
+  $query = db_select('node', 'n');
+  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
+  $query->leftJoin('field_data_field_adult', 'a', 'a.entity_id = n.nid');
+  $query->leftJoin('field_data_field_related_to', 'rt', 'rt.entity_id = n.nid');
+
+  $person_or = db_or();
+  $person_or->condition('p.field_person_target_id', $nid);
+  $person_or->condition('a.field_adult_target_id', $nid);
+  $person_or->condition('rt.field_related_to_target_id', $nid);
+  $query->condition($person_or);
+
+  $bundles = [
+    'pmtct_participant',
+    'relationship',
+    'individual_participant',
+  ];
+  $query->condition('n.type', $bundles, 'IN');
+
+  $query->addField('n', 'nid');
 
   return $query->execute()->fetchCol();
 }

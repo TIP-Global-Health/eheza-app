@@ -6,6 +6,7 @@ import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
+import Utils.Json exposing (encodeIfExists)
 
 
 {-| Encodes a `AcuteIllnessEncounter`.
@@ -18,10 +19,13 @@ encodeAcuteIllnessEncounter session =
             , ( "value2", maybe encodeYYYYMMDD session.endDate )
             ]
       )
+    , ( "sequence_number", int session.sequenceNumber )
     , ( "individual_participant", encodeEntityUuid session.participant )
     , ( "acute_illness_diagnosis", encodeAcuteIllnessDiagnosis session.diagnosis )
-    , ( "shard", maybe encodeEntityUuid session.shard )
+    , ( "deleted", bool False )
+    , ( "type", string "acute_illness_encounter" )
     ]
+        ++ encodeIfExists "shard" session.shard encodeEntityUuid
 
 
 encodeAcuteIllnessDiagnosis : AcuteIllnessDiagnosis -> Value

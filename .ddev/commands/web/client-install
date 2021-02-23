@@ -1,0 +1,9 @@
+#!/bin/bash
+
+## Description: Run robo commands inside the web container for the client app.
+## Usage: client-install
+## Example: "ddev client-install".
+
+cd ../../client
+npm install --no-audit --no-fund
+bower install

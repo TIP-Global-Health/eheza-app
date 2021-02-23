@@ -1,7 +1,7 @@
 module Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeHivStatus, decodeMaritalStatus, decodeModeOfDelivery, decodePerson, decodeUbudehe)
 
 import Backend.Person.Model exposing (..)
-import Gizra.Json exposing (decodeInt)
+import Gizra.Json exposing (decodeInt, decodeStringWithDefault)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
@@ -17,7 +17,7 @@ decodePerson =
         |> optional "second_name" string ""
         |> optional "national_id_number" (nullable string) Nothing
         |> optional "hmis_number" (nullable string) Nothing
-        |> optional "photo" (nullable string) Nothing
+        |> optional "photo" (nullable (decodeStringWithDefault "")) Nothing
         |> optional "birth_date" (nullable decodeYYYYMMDD) Nothing
         |> optional "birth_date_estimated" bool False
         |> optional "gender" decodeGender Female
@@ -34,7 +34,8 @@ decodePerson =
         |> optional "village" (nullable decodeGeoField) Nothing
         |> optional "phone_number" (nullable string) Nothing
         |> optional "health_center" (nullable decodeEntityUuid) Nothing
-        |> hardcoded Nothing
+        |> required "deleted" bool
+        |> optional "shard" (nullable decodeEntityUuid) Nothing
 
 
 decodeHivStatus : Decoder HIVStatus

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_device.features.inc
@@ -22,6 +23,14 @@ function hedley_device_node_info() {
       'name' => t('Device'),
       'base' => 'node_content',
       'description' => t('Represents a device which we are willing to sync data with.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'sync_incident' => array(
+      'name' => t('Sync incident'),
+      'base' => 'node_content',
+      'description' => '',
       'has_title' => '1',
       'title_label' => t('Title'),
       'help' => '',

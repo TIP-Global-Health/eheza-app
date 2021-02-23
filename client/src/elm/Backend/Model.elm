@@ -34,7 +34,6 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
-import Backend.SyncData.Model exposing (SyncData)
 import Backend.Village.Model exposing (Village)
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -53,11 +52,6 @@ type alias ModelIndexedDb =
     , healthCenters : WebData (Dict HealthCenterId HealthCenter)
     , villages : WebData (Dict VillageId Village)
     , participantForms : WebData (Dict ParticipantFormId ParticipantForm)
-
-    -- Data and requests relating to sync data
-    , syncData : WebData (Dict HealthCenterId SyncData)
-    , saveSyncDataRequests : Dict HealthCenterId (WebData ())
-    , deleteSyncDataRequests : Dict HealthCenterId (WebData ())
 
     -- For basic session data, we organize it in several ways in memory. One is
     -- by clinic, which we use when you navigate to a clinic page. The other
@@ -139,7 +133,6 @@ emptyModelIndexedDb =
     { childMeasurements = Dict.empty
     , clinics = NotAsked
     , computedDashboard = Dict.empty
-    , deleteSyncDataRequests = Dict.empty
     , editableSessions = Dict.empty
     , everyCounselingSchedule = NotAsked
     , expectedParticipants = Dict.empty
@@ -175,11 +168,9 @@ emptyModelIndexedDb =
     , prenatalEncountersByParticipant = Dict.empty
     , prenatalMeasurements = Dict.empty
     , relationshipsByPerson = Dict.empty
-    , saveSyncDataRequests = Dict.empty
     , sessionRequests = Dict.empty
     , sessions = Dict.empty
     , sessionsByClinic = Dict.empty
-    , syncData = NotAsked
     }
 
 
@@ -221,7 +212,6 @@ type MsgIndexedDb
     | FetchRelationshipsForPerson PersonId
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
-    | FetchSyncData
     | FetchVillages
       -- Messages which handle responses to data
     | HandleFetchedAcuteIllnessEncounter AcuteIllnessEncounterId (WebData AcuteIllnessEncounter)
@@ -253,7 +243,6 @@ type MsgIndexedDb
     | HandleFetchedRelationshipsForPerson PersonId (WebData (Dict RelationshipId MyRelationship))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
-    | HandleFetchedSyncData (WebData (Dict HealthCenterId SyncData))
     | HandleFetchedVillages (WebData (Dict VillageId Village))
       -- Messages which mutate data
     | PostPerson (Maybe PersonId) Initiator Person -- The first person is a person we ought to offer setting a relationship to.
@@ -279,23 +268,22 @@ type MsgIndexedDb
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.
     | HandleRevisions (List Revision)
-      -- Updating SyncData
-    | SaveSyncData HealthCenterId SyncData
-    | DeleteSyncData HealthCenterId
-    | HandleSavedSyncData HealthCenterId (WebData ())
-    | HandleDeletedSyncData HealthCenterId (WebData ())
       -- Handling edits to session data or encounter data
     | MsgSession SessionId Backend.Session.Model.Msg
     | MsgPrenatalEncounter PrenatalEncounterId Backend.PrenatalEncounter.Model.Msg
     | MsgNutritionEncounter NutritionEncounterId Backend.NutritionEncounter.Model.Msg
     | MsgAcuteIllnessEncounter AcuteIllnessEncounterId Backend.AcuteIllnessEncounter.Model.Msg
     | MsgIndividualSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
+    | ResetFailedToFetchAuthorities
 
 
 {-| Wrapper for all the revisions we can receive.
 -}
 type Revision
     = AcuteFindingsRevision AcuteFindingsId AcuteFindings
+    | AcuteIllnessDangerSignsRevision AcuteIllnessDangerSignsId AcuteIllnessDangerSigns
+    | AcuteIllnessMuacRevision AcuteIllnessMuacId AcuteIllnessMuac
+    | AcuteIllnessNutritionRevision AcuteIllnessNutritionId AcuteIllnessNutrition
     | AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
     | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
     | AttendanceRevision AttendanceId Attendance
@@ -316,6 +304,7 @@ type Revision
     | HCContactRevision HCContactId HCContact
     | Call114Revision Call114Id Call114
     | HealthCenterRevision HealthCenterId HealthCenter
+    | HealthEducationRevision HealthEducationId HealthEducation
     | HeightRevision HeightId Height
     | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant
     | IsolationRevision IsolationId Isolation
@@ -355,6 +344,7 @@ type Revision
     | SymptomsGIRevision SymptomsGIId SymptomsGI
     | SymptomsRespiratoryRevision SymptomsRespiratoryId SymptomsRespiratory
     | TravelHistoryRevision TravelHistoryId TravelHistory
+    | TreatmentOngoingRevision TreatmentOngoingId TreatmentOngoing
     | TreatmentReviewRevision TreatmentReviewId TreatmentReview
     | VillageRevision VillageId Village
     | VitalsRevision VitalsId Vitals

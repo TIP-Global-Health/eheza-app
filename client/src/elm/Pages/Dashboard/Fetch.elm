@@ -7,4 +7,4 @@ import Pages.Dashboard.Model exposing (..)
 
 fetch : HealthCenterId -> Model -> List MsgIndexedDb
 fetch healthCenterId model =
-    [ FetchComputedDashboard healthCenterId ]
+    [ FetchVillages, FetchComputedDashboard healthCenterId ]

@@ -1,25 +1,28 @@
 module Pages.Device.View exposing (view)
 
 import App.Model
+import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.SyncData.Model exposing (SyncData)
-import Backend.Utils exposing (nodesUuid)
-import Date
 import Device.Model exposing (..)
-import Gizra.Html exposing (emptyNode, showMaybe)
+import EverySet
+import Gizra.Html exposing (showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import List.Extra
+import List.Zipper as Zipper
 import Pages.Device.Model exposing (..)
 import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
+import SyncManager.Model exposing (DownloadPhotosMode(..), DownloadPhotosStatus(..), SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoStatus, SyncStatus(..))
+import SyncManager.Utils exposing (syncInfoStatusToString)
 import Time
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
-import Utils.WebData exposing (viewError)
 
 
 {-| We call this if we have an active service worker. If the device is authorized,
@@ -28,8 +31,7 @@ we show its status. Otherwise, we show a UI that allows for authorization.
 view : Language -> WebData Device -> App.Model.Model -> Model -> Html Msg
 view language device app model =
     div [ class "wrap wrap-alt-2" ]
-        [ div
-            [ class "ui basic head segment" ]
+        [ div [ class "ui basic head segment" ]
             [ h1
                 [ class "ui header" ]
                 [ text <| translate language Translate.DeviceStatus ]
@@ -37,12 +39,9 @@ view language device app model =
                 [ class "link-back"
                 , onClick <| SetActivePage PinCodePage
                 ]
-                [ span [ class "icon-back" ] []
-                , span [] []
-                ]
+                [ span [ class "icon-back" ] [] ]
             ]
-        , div
-            [ class "ui segment" ]
+        , div [ class "ui segment" ]
             [ viewDeviceStatus language device app model
             ]
         ]
@@ -54,13 +53,20 @@ viewDeviceStatus language device app model =
         Success _ ->
             div [ class "device-status" ]
                 [ button
-                    [ class "ui fluid primary button"
-                    , onClick TrySyncing
+                    [ classList
+                        [ ( "ui fluid primary button", True )
+                        , ( "disabled", app.syncManager.syncStatus /= SyncManager.Model.SyncIdle )
+                        ]
+                    , onClick <| MsgSyncManager SyncManager.Model.TrySyncing
                     ]
                     [ text <| translate language Translate.TrySyncing ]
                 , viewStorageStatus language app
-                , viewNodes language app.indexedDb
-                , viewHealthCenters language app.indexedDb
+                , div [ class "general-sync" ]
+                    [ h2 [] [ text <| translate language Translate.SyncGeneral ]
+                    , viewSyncInfo language app.syncManager.syncInfoGeneral
+                    , viewPhotosTransferInfo language app.syncManager.syncStatus app.syncManager.downloadPhotosStatus
+                    ]
+                , viewHealthCenters language app
                 ]
 
         _ ->
@@ -90,146 +96,179 @@ viewStorageStatus language app =
         |> ul [ class "storage-dashboard" ]
 
 
-viewNodes : Language -> ModelIndexedDb -> Html Msg
-viewNodes language db =
-    case db.syncData of
-        Success syncData ->
-            syncData
-                |> Dict.get nodesUuid
-                |> Maybe.map
-                    (\data ->
-                        div [ class "general-sync" ]
-                            [ h2 [] [ text <| translate language Translate.SyncGeneral ]
-                            , viewSyncData language data
-                            ]
-                    )
-                |> showMaybe
-
-        Failure err ->
-            viewError language err
-
-        Loading ->
-            spinner
-
-        NotAsked ->
-            spinner
-
-
-viewSyncData : Language -> SyncData -> Html Msg
-viewSyncData language data =
+viewSyncInfo : Language -> { a | lastFetchedRevisionId : Int, lastSuccesfulContact : Int, remainingToUpload : Int, remainingToDownload : Int, status : SyncInfoStatus } -> Html Msg
+viewSyncInfo language info =
     let
         viewDateTime time =
-            let
-                normalize number =
-                    if number < 10 then
-                        "0" ++ String.fromInt number
+            if Time.posixToMillis time == 0 then
+                translate language Translate.Never
 
-                    else
-                        String.fromInt number
+            else
+                let
+                    normalize number =
+                        if number < 10 then
+                            "0" ++ String.fromInt number
 
-                year =
-                    Time.toYear Time.utc time |> String.fromInt
+                        else
+                            String.fromInt number
 
-                month =
-                    translate language <| Translate.ResolveMonth False (Time.toMonth Time.utc time)
+                    year =
+                        Time.toYear Time.utc time |> String.fromInt
 
-                day =
-                    Time.toDay Time.utc time |> normalize
+                    month =
+                        Time.toMonth Time.utc time
+                            |> Translate.ResolveMonth True
+                            |> translate language
 
-                hour =
-                    Time.toHour Time.utc time |> normalize
+                    day =
+                        Time.toDay Time.utc time |> normalize
 
-                minute =
-                    Time.toMinute Time.utc time |> normalize
+                    hour =
+                        Time.toHour Time.utc time |> normalize
 
-                second =
-                    Time.toSecond Time.utc time |> normalize
-            in
-            day ++ " " ++ month ++ " " ++ year ++ " " ++ hour ++ ":" ++ minute ++ ":" ++ second ++ " UTC"
+                    minute =
+                        Time.toMinute Time.utc time |> normalize
 
-        viewAttempt attempt =
-            case attempt of
-                Backend.SyncData.Model.NotAsked ->
-                    "NotAsked"
+                    second =
+                        Time.toSecond Time.utc time |> normalize
+                in
+                day ++ " " ++ month ++ " " ++ year ++ " " ++ hour ++ ":" ++ minute ++ ":" ++ second ++ " UTC"
 
-                Backend.SyncData.Model.Downloading _ _ ->
-                    "Downloading"
-
-                Backend.SyncData.Model.Uploading _ ->
-                    "Uploading"
-
-                Backend.SyncData.Model.Failure time error ->
-                    "Failure " ++ viewDateTime time ++ " " ++ Debug.toString error
-
-                Backend.SyncData.Model.Success ->
-                    "Success"
-
-        ( lastSuccessfulContact, remainingForDownload ) =
-            data.downloadStatus
-                |> Maybe.map
-                    (\downloadStatus ->
-                        ( viewDateTime downloadStatus.lastSuccessfulContact, downloadStatus.remaining |> String.fromInt )
-                    )
-                |> Maybe.withDefault ( "NA", "NA" )
-
-        remainingForUpload =
-            data.uploadStatus
-                |> Maybe.map (.remaining >> String.fromInt)
-                |> Maybe.withDefault "NA"
+        lastSuccessfulContact =
+            viewDateTime (Time.millisToPosix info.lastSuccesfulContact)
     in
-    div [ class "general-status" ]
+    div [ class "sync-status" ]
         [ div [] [ text <| translate language Translate.LastSuccesfulContactLabel ++ ": " ++ lastSuccessfulContact ]
-        , div [] [ text <| translate language Translate.RemainingForUploadLabel ++ ": " ++ remainingForUpload ]
-        , div [] [ text <| translate language Translate.RemainingForDownloadLabel ++ ": " ++ remainingForDownload ]
-        , div [] [ text <| translate language Translate.StatusLabel ++ ": " ++ viewAttempt data.attempt ]
+        , div [] [ text <| translate language Translate.RemainingForUploadLabel ++ ": " ++ String.fromInt info.remainingToUpload ]
+        , div [] [ text <| translate language Translate.RemainingForDownloadLabel ++ ": " ++ String.fromInt info.remainingToDownload ]
+        , div [] [ text <| translate language Translate.StatusLabel ++ ": " ++ syncInfoStatusToString info.status ]
         ]
 
 
-viewHealthCenters : Language -> ModelIndexedDb -> Html Msg
-viewHealthCenters language db =
-    db.healthCenters
-        |> RemoteData.map
-            (\data ->
-                data
-                    |> Dict.toList
-                    |> List.sortBy (Tuple.second >> .name)
-                    |> List.map (viewHealthCenter language db)
-                    |> div [ class "health-centers" ]
-            )
-        |> RemoteData.withDefault spinner
-
-
-viewHealthCenter : Language -> ModelIndexedDb -> ( HealthCenterId, HealthCenter ) -> Html Msg
-viewHealthCenter language db ( uuid, model ) =
+viewPhotosTransferInfo : Language -> SyncStatus -> DownloadPhotosStatus -> Html Msg
+viewPhotosTransferInfo language syncStatus status =
     let
-        sync =
-            db.syncData
-                |> RemoteData.map
-                    (\syncData ->
-                        case Dict.get uuid syncData of
-                            Just data ->
-                                div [ class "health-center-info" ]
-                                    [ viewSyncData language data
-                                    , button
-                                        [ class "ui button"
-                                        , onClick (SetSyncing uuid False)
-                                        ]
-                                        [ text <| translate language Translate.StopSyncing ]
-                                    ]
+        statusHtml =
+            case syncStatus of
+                SyncUploadPhotoAuthority _ _ ->
+                    div [] [ text <| translate language Translate.Uploading ]
 
-                            Nothing ->
-                                button
-                                    [ class "ui button"
-                                    , onClick (SetSyncing uuid True)
-                                    ]
-                                    [ text <| translate language Translate.StartSyncing ]
+                _ ->
+                    case status of
+                        DownloadPhotosIdle ->
+                            div [] [ text <| translate language Translate.IdleWaitingForSync ]
+
+                        DownloadPhotosInProcess DownloadPhotosNone ->
+                            div [] [ text <| translate language Translate.Disabled ]
+
+                        DownloadPhotosInProcess (DownloadPhotosBatch rect) ->
+                            let
+                                remaining =
+                                    case rect.indexDbRemoteData of
+                                        RemoteData.Success (Just result) ->
+                                            String.fromInt result.remaining
+
+                                        _ ->
+                                            ""
+                            in
+                            div []
+                                [ text <|
+                                    String.fromInt (rect.batchCounter + 1)
+                                        ++ " / "
+                                        ++ String.fromInt rect.batchSize
+                                        ++ " , "
+                                , text <|
+                                    translate language Translate.RemainingForDownloadLabel
+                                        ++ ": "
+                                        ++ remaining
+                                ]
+
+                        DownloadPhotosInProcess (DownloadPhotosAll rect) ->
+                            let
+                                remaining =
+                                    case rect.indexDbRemoteData of
+                                        RemoteData.Success (Just result) ->
+                                            String.fromInt result.remaining
+
+                                        _ ->
+                                            ""
+                            in
+                            div []
+                                [ text <|
+                                    translate language Translate.RemainingForDownloadLabel
+                                        ++ ": "
+                                        ++ remaining
+                                ]
+    in
+    div
+        [ class "transfer-photos" ]
+        [ h2 [] [ text <| translate language Translate.PhotosTransferStatus ]
+        , statusHtml
+        ]
+
+
+viewHealthCenters : Language -> App.Model.Model -> Html Msg
+viewHealthCenters language app =
+    getLoggedInData app
+        |> Maybe.map
+            (\( _, loggedInModel ) ->
+                let
+                    allowedHealthCenters =
+                        Tuple.second loggedInModel.nurse
+                            |> .healthCenters
+                in
+                app.indexedDb.healthCenters
+                    |> RemoteData.map
+                        (Dict.toList
+                            >> List.filter (\( healthCenterId, _ ) -> EverySet.member healthCenterId allowedHealthCenters)
+                            >> List.sortBy (Tuple.second >> .name)
+                            >> List.map (viewHealthCenter language app.syncManager.syncInfoAuthorities)
+                            >> div [ class "health-centers" ]
+                        )
+                    |> RemoteData.withDefault spinner
+            )
+        |> Maybe.withDefault
+            (button
+                [ class "ui fluid primary button"
+                , onClick <| SetActivePage PinCodePage
+                ]
+                [ text <| translate language <| Translate.LoginPhrase Translate.LoginToSyncHealthCenters ]
+            )
+
+
+viewHealthCenter : Language -> SyncInfoAuthorityZipper -> ( HealthCenterId, HealthCenter ) -> Html Msg
+viewHealthCenter language zipper ( healthCenterId, healthCenter ) =
+    let
+        viewNotSyncedHealthCenter uuid =
+            button
+                [ class "ui button"
+                , onClick <| MsgSyncManager <| SyncManager.Model.RevisionIdAuthorityAdd uuid
+                ]
+                [ text <| translate language Translate.StartSyncing ]
+
+        viewSyncedAuthority authorityInfo =
+            div [ class "health-center-info" ]
+                [ viewSyncInfo language authorityInfo
+                , button
+                    [ class "ui button"
+                    , onClick <| MsgSyncManager <| SyncManager.Model.RevisionIdAuthorityRemove (toEntityUuid authorityInfo.uuid)
+                    ]
+                    [ text <| translate language Translate.StopSyncing ]
+                ]
+
+        content =
+            zipper
+                |> Maybe.map
+                    (Zipper.toList
+                        >> List.Extra.find (\authorityInfo -> authorityInfo.uuid == fromEntityUuid healthCenterId)
+                        >> Maybe.map viewSyncedAuthority
+                        >> Maybe.withDefault (viewNotSyncedHealthCenter healthCenterId)
                     )
-                |> RemoteData.toMaybe
-                |> showMaybe
+                |> Maybe.withDefault (viewNotSyncedHealthCenter healthCenterId)
     in
     div [ class "health-center" ]
-        [ h2 [] [ text <| model.name ]
-        , sync
+        [ h2 [] [ text <| healthCenter.name ]
+        , content
         ]
 
 
@@ -259,15 +298,6 @@ viewPairingForm language device model =
 
                 Success _ ->
                     "success"
-
-        error =
-            case device of
-                Failure err ->
-                    div [ class "ui message error" ]
-                        [ viewError language err ]
-
-                _ ->
-                    emptyNode
     in
     Html.form
         (action "javascript:void(0);" :: formAttr)
@@ -306,6 +336,5 @@ viewPairingForm language device model =
                     [ text <| translate language Translate.SubmitPairingCode ]
                 ]
             , p [] []
-            , error
             ]
         ]

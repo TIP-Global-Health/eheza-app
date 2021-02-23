@@ -5,7 +5,7 @@ import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
-import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
+import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict, decodeStringWithDefault)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
@@ -121,6 +121,11 @@ decodeAcuteIllnessMeasurements =
         |> optional "treatment_history" (decodeHead decodeTreatmentReview) Nothing
         |> optional "send_to_hc" (decodeHead decodeSendToHC) Nothing
         |> optional "medication_distribution" (decodeHead decodeMedicationDistribution) Nothing
+        |> optional "acute_illness_muac" (decodeHead decodeAcuteIllnessMuac) Nothing
+        |> optional "treatment_ongoing" (decodeHead decodeTreatmentOngoing) Nothing
+        |> optional "acute_illness_danger_signs" (decodeHead decodeAcuteIllnessDangerSigns) Nothing
+        |> optional "acute_illness_nutrition" (decodeHead decodeAcuteIllnessNutrition) Nothing
+        |> optional "health_education" (decodeHead decodeHealthEducation) Nothing
         |> optional "barcode_photo" (decodeHead decodeBarcodePhoto) Nothing
 
 
@@ -131,14 +136,14 @@ decodeHead =
 
 decodePhoto : Decoder Photo
 decodePhoto =
-    field "photo" string
+    field "photo" (decodeStringWithDefault "")
         |> map PhotoUrl
         |> decodeGroupMeasurement
 
 
 decodePrenatalPhoto : Decoder PrenatalPhoto
 decodePrenatalPhoto =
-    field "photo" string
+    field "photo" (decodeStringWithDefault "")
         |> map PhotoUrl
         |> decodePrenatalMeasurement
 
@@ -339,7 +344,7 @@ decodeLactationSign =
 decodeFbfValue : Decoder FbfValue
 decodeFbfValue =
     succeed FbfValue
-        |> required "distributed_amount" float
+        |> required "distributed_amount" decodeFloat
         |> required "distribution_notice" decodeDistributionNotice
 
 
@@ -1038,7 +1043,7 @@ decodeNutritionNutrition =
 
 decodeNutritionPhoto : Decoder NutritionPhoto
 decodeNutritionPhoto =
-    field "photo" string
+    field "photo" (decodeStringWithDefault "")
         |> map PhotoUrl
         |> decodeNutritionMeasurement
 
@@ -1310,8 +1315,9 @@ malariaRapidTestResultFromString result =
 
 decodeSendToHC : Decoder SendToHC
 decodeSendToHC =
-    decodeEverySet decodeSendToHCSign
-        |> field "send_to_hc"
+    succeed SendToHCValue
+        |> required "send_to_hc" (decodeEverySet decodeSendToHCSign)
+        |> optional "reason_not_sent_to_hc" decodeReasonForNotSendingToHC NoReasonForNotSendingToHC
         |> decodeAcuteIllnessMeasurement
 
 
@@ -1334,6 +1340,34 @@ decodeSendToHCSign =
                         fail <|
                             sign
                                 ++ " is not a recognized SendToHCSign"
+            )
+
+
+decodeReasonForNotSendingToHC : Decoder ReasonForNotSendingToHC
+decodeReasonForNotSendingToHC =
+    string
+        |> andThen
+            (\event ->
+                case event of
+                    "client-refused" ->
+                        succeed ClientRefused
+
+                    "no-ambulance" ->
+                        succeed NoAmbulance
+
+                    "unable-to-afford-fee" ->
+                        succeed ClientUnableToAffordFees
+
+                    "other" ->
+                        succeed ReasonForNotSendingToHCOther
+
+                    "none" ->
+                        succeed NoReasonForNotSendingToHC
+
+                    _ ->
+                        fail <|
+                            event
+                                ++ "is not a recognized ReasonForNotSendingToHC"
             )
 
 
@@ -1762,6 +1796,196 @@ decodeRecommendationSite =
                         fail <|
                             sign
                                 ++ " is not a recognized RecommendationSite"
+            )
+
+
+decodeAcuteIllnessMuac : Decoder AcuteIllnessMuac
+decodeAcuteIllnessMuac =
+    field "muac" decodeFloat
+        |> map MuacInCm
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeTreatmentOngoing : Decoder TreatmentOngoing
+decodeTreatmentOngoing =
+    succeed TreatmentOngoingValue
+        |> required "treatment_ongoing" (decodeEverySet decodeTreatmentOngoingSign)
+        |> required "reason_for_not_taking" decodeReasonForNotTaking
+        |> required "missed_doses" decodeInt
+        |> required "adverse_events" (decodeEverySet decodeAdverseEvent)
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeTreatmentOngoingSign : Decoder TreatmentOngoingSign
+decodeTreatmentOngoingSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "taken-as-prescribed" ->
+                        succeed TakenAsPrescribed
+
+                    "missed-doses" ->
+                        succeed MissedDoses
+
+                    "feel-better" ->
+                        succeed FeelingBetter
+
+                    "side-effects" ->
+                        succeed SideEffects
+
+                    "none" ->
+                        succeed NoTreatmentOngoingSign
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized TreatmentOngoingSign"
+            )
+
+
+decodeReasonForNotTaking : Decoder ReasonForNotTaking
+decodeReasonForNotTaking =
+    string
+        |> andThen
+            (\reason ->
+                case reason of
+                    "adverse-event" ->
+                        succeed NotTakingAdverseEvent
+
+                    "no-money" ->
+                        succeed NotTakingNoMoney
+
+                    "memory-problems" ->
+                        succeed NotTakingMemoryProblems
+
+                    "other" ->
+                        succeed NotTakingOther
+
+                    "none" ->
+                        succeed NoReasonForNotTakingSign
+
+                    _ ->
+                        fail <|
+                            reason
+                                ++ " is not a recognized ReasonForNotTaking"
+            )
+
+
+decodeAdverseEvent : Decoder AdverseEvent
+decodeAdverseEvent =
+    string
+        |> andThen
+            (\event ->
+                case event of
+                    "rash-itching" ->
+                        succeed AdverseEventRashOrItching
+
+                    "fever" ->
+                        succeed AdverseEventFever
+
+                    "diarrhea" ->
+                        succeed AdverseEventDiarrhea
+
+                    "vomiting" ->
+                        succeed AdverseEventVomiting
+
+                    "fatigue" ->
+                        succeed AdverseEventFatigue
+
+                    "other" ->
+                        succeed AdverseEventOther
+
+                    "none" ->
+                        succeed NoAdverseEvent
+
+                    _ ->
+                        fail <|
+                            event
+                                ++ " is not a recognized AdverseEvent"
+            )
+
+
+decodeAcuteIllnessDangerSigns : Decoder AcuteIllnessDangerSigns
+decodeAcuteIllnessDangerSigns =
+    decodeEverySet decodeAcuteIllnessDangerSign
+        |> field "acute_illness_danger_signs"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeAcuteIllnessDangerSign : Decoder AcuteIllnessDangerSign
+decodeAcuteIllnessDangerSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "condition-not-improving" ->
+                        succeed DangerSignConditionNotImproving
+
+                    "unable-drink-suck" ->
+                        succeed DangerSignUnableDrinkSuck
+
+                    "vomiting" ->
+                        succeed DangerSignVomiting
+
+                    "convulsions" ->
+                        succeed DangerSignConvulsions
+
+                    "lethargy-unconsciousness" ->
+                        succeed DangerSignLethargyUnconsciousness
+
+                    "respiratory-distress" ->
+                        succeed DangerSignRespiratoryDistress
+
+                    "spontaneous-bleeding" ->
+                        succeed DangerSignSpontaneousBleeding
+
+                    "bloody-diarrhea" ->
+                        succeed DangerSignBloodyDiarrhea
+
+                    "new-skip-rash" ->
+                        succeed DangerSignNewSkinRash
+
+                    "none" ->
+                        succeed NoAcuteIllnessDangerSign
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized AcuteIllnessDangerSign"
+            )
+
+
+decodeAcuteIllnessNutrition : Decoder AcuteIllnessNutrition
+decodeAcuteIllnessNutrition =
+    decodeEverySet decodeChildNutritionSign
+        |> field "nutrition_signs"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeHealthEducation : Decoder HealthEducation
+decodeHealthEducation =
+    decodeEverySet decodeHealthEducationSign
+        |> field "health_education_signs"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeHealthEducationSign : Decoder HealthEducationSign
+decodeHealthEducationSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "education-for-diagnosis" ->
+                        succeed MalariaPrevention
+
+                    "none" ->
+                        succeed NoHealthEducationSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized HealthEducationSign"
             )
 
 

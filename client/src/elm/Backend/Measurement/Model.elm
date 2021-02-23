@@ -705,6 +705,18 @@ type alias Isolation =
     AcuteIllnessMeasurement IsolationValue
 
 
+type alias HCContact =
+    AcuteIllnessMeasurement HCContactValue
+
+
+type alias HCContactValue =
+    { signs : EverySet HCContactSign
+    , recommendations : EverySet HCRecommendation
+    , responsePeriod : EverySet ResponsePeriod
+    , ambulanceArrivalPeriod : EverySet ResponsePeriod
+    }
+
+
 type HCContactSign
     = ContactedHealthCenter
     | NoHCContactSigns
@@ -724,18 +736,6 @@ type ResponsePeriod
     | Between1Hour2Hour
     | Between2Hour1Day
     | ResponsePeriodNotApplicable
-
-
-type alias HCContactValue =
-    { signs : EverySet HCContactSign
-    , recommendations : EverySet HCRecommendation
-    , responsePeriod : EverySet ResponsePeriod
-    , ambulanceArrivalPeriod : EverySet ResponsePeriod
-    }
-
-
-type alias HCContact =
-    AcuteIllnessMeasurement HCContactValue
 
 
 type Call114Sign
@@ -775,6 +775,12 @@ type alias Call114 =
     AcuteIllnessMeasurement Call114Value
 
 
+type alias SendToHCValue =
+    { signs : EverySet SendToHCSign
+    , reasonForNotSendingToHC : ReasonForNotSendingToHC
+    }
+
+
 type SendToHCSign
     = HandReferrerForm
     | ReferToHealthCenter
@@ -782,7 +788,7 @@ type SendToHCSign
 
 
 type alias SendToHC =
-    AcuteIllnessMeasurement (EverySet SendToHCSign)
+    AcuteIllnessMeasurement SendToHCValue
 
 
 type MedicationDistributionSign
@@ -798,6 +804,7 @@ type MedicationNonAdministrationReason
     = NonAdministrationLackOfStock
     | NonAdministrationKnownAllergy
     | NonAdministrationPatientDeclined
+    | NonAdministrationPatientUnableToAfford
     | NonAdministrationOther
 
 
@@ -817,6 +824,86 @@ type alias MedicationDistributionValue =
 
 type alias MedicationDistribution =
     AcuteIllnessMeasurement MedicationDistributionValue
+
+
+type alias AcuteIllnessMuac =
+    AcuteIllnessMeasurement MuacInCm
+
+
+type ReasonForNotSendingToHC
+    = ClientRefused
+    | NoAmbulance
+    | ClientUnableToAffordFees
+    | ReasonForNotSendingToHCOther
+    | NoReasonForNotSendingToHC
+
+
+type TreatmentOngoingSign
+    = TakenAsPrescribed
+    | MissedDoses
+    | FeelingBetter
+    | SideEffects
+    | NoTreatmentOngoingSign
+
+
+type ReasonForNotTaking
+    = NotTakingAdverseEvent
+    | NotTakingNoMoney
+    | NotTakingMemoryProblems
+    | NotTakingOther
+    | NoReasonForNotTakingSign
+
+
+type AdverseEvent
+    = AdverseEventRashOrItching
+    | AdverseEventFever
+    | AdverseEventDiarrhea
+    | AdverseEventVomiting
+    | AdverseEventFatigue
+    | AdverseEventOther
+    | NoAdverseEvent
+
+
+type alias TreatmentOngoingValue =
+    { signs : EverySet TreatmentOngoingSign
+    , reasonForNotTaking : ReasonForNotTaking
+    , missedDoses : Int
+    , adverseEvents : EverySet AdverseEvent
+    }
+
+
+type alias TreatmentOngoing =
+    AcuteIllnessMeasurement TreatmentOngoingValue
+
+
+type AcuteIllnessDangerSign
+    = DangerSignConditionNotImproving
+    | DangerSignUnableDrinkSuck
+    | DangerSignVomiting
+    | DangerSignConvulsions
+    | DangerSignLethargyUnconsciousness
+    | DangerSignRespiratoryDistress
+    | DangerSignSpontaneousBleeding
+    | DangerSignBloodyDiarrhea
+    | DangerSignNewSkinRash
+    | NoAcuteIllnessDangerSign
+
+
+type alias AcuteIllnessDangerSigns =
+    AcuteIllnessMeasurement (EverySet AcuteIllnessDangerSign)
+
+
+type alias AcuteIllnessNutrition =
+    AcuteIllnessMeasurement (EverySet ChildNutritionSign)
+
+
+type alias HealthEducation =
+    AcuteIllnessMeasurement (EverySet HealthEducationSign)
+
+
+type HealthEducationSign
+    = MalariaPrevention
+    | NoHealthEducationSigns
 
 
 type alias BarcodePhoto =
@@ -949,6 +1036,11 @@ type alias AcuteIllnessMeasurements =
     , treatmentReview : Maybe ( TreatmentReviewId, TreatmentReview )
     , sendToHC : Maybe ( SendToHCId, SendToHC )
     , medicationDistribution : Maybe ( MedicationDistributionId, MedicationDistribution )
+    , muac : Maybe ( AcuteIllnessMuacId, AcuteIllnessMuac )
+    , treatmentOngoing : Maybe ( TreatmentOngoingId, TreatmentOngoing )
+    , dangerSigns : Maybe ( AcuteIllnessDangerSignsId, AcuteIllnessDangerSigns )
+    , nutrition : Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )
+    , healthEducation : Maybe ( HealthEducationId, HealthEducation )
     , barcodePhoto : Maybe ( BarcodePhotoId, BarcodePhoto )
     }
 

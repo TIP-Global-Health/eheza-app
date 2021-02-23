@@ -371,24 +371,24 @@ viewFoundChild language currentDate zscores ( childId, child ) individualChildMe
             case child.gender of
                 Male ->
                     { heightForAge = ZScore.View.viewHeightForAgeBoys
-                    , heightForAge2To5 = ZScore.View.viewHeightForAgeBoys2To5
+                    , heightForAge0To5 = ZScore.View.viewHeightForAgeBoys0To5
                     , heightForAge5To19 = ZScore.View.viewHeightForAgeBoys5To19
                     , weightForAge = ZScore.View.viewWeightForAgeBoys
-                    , weightForAge2To5 = ZScore.View.viewWeightForAgeBoys2To5
+                    , weightForAge0To5 = ZScore.View.viewWeightForAgeBoys0To5
                     , weightForAge5To10 = ZScore.View.viewWeightForAgeBoys5To10
                     , weightForHeight = ZScore.View.viewWeightForHeightBoys
-                    , weightForHeight2To5 = ZScore.View.viewWeightForHeight2To5Boys
+                    , weightForHeight0To5 = ZScore.View.viewWeightForHeight0To5Boys
                     }
 
                 Female ->
                     { heightForAge = ZScore.View.viewHeightForAgeGirls
-                    , heightForAge2To5 = ZScore.View.viewHeightForAgeGirls2To5
+                    , heightForAge0To5 = ZScore.View.viewHeightForAgeGirls0To5
                     , heightForAge5To19 = ZScore.View.viewHeightForAgeGirls5To19
                     , weightForAge = ZScore.View.viewWeightForAgeGirls
-                    , weightForAge2To5 = ZScore.View.viewWeightForAgeGirls2To5
+                    , weightForAge0To5 = ZScore.View.viewWeightForAgeGirls0To5
                     , weightForAge5To10 = ZScore.View.viewWeightForAgeGirls5To10
                     , weightForHeight = ZScore.View.viewWeightForHeightGirls
-                    , weightForHeight2To5 = ZScore.View.viewWeightForHeight2To5Girls
+                    , weightForHeight0To5 = ZScore.View.viewWeightForHeight0To5Girls
                     }
 
         heightForAgeData =
@@ -449,9 +449,9 @@ viewFoundChild language currentDate zscores ( childId, child ) individualChildMe
                 div
                     [ class "image-report" ]
                     [ ZScore.View.viewMarkers
-                    , zScoreViewCharts.heightForAge2To5 language zscores heightForAgeDaysData
-                    , zScoreViewCharts.weightForAge2To5 language zscores weightForAgeDaysData
-                    , zScoreViewCharts.weightForHeight2To5 language zscores weightForHeightData
+                    , zScoreViewCharts.heightForAge0To5 language zscores heightForAgeDaysData
+                    , zScoreViewCharts.weightForAge0To5 language zscores weightForAgeDaysData
+                    , zScoreViewCharts.weightForHeight0To5 language zscores weightForHeightData
                     ]
 
             else
@@ -684,7 +684,7 @@ viewPhotos language child photos =
                     , ( "cache-upload", String.contains "cache-upload/images" url )
                     ]
                 ]
-                [ img [ src url, class "rotate-90" ] [] ]
+                [ img [ src url, class "orientation" ] [] ]
     in
     photos
         |> List.sortWith (\m1 m2 -> Gizra.NominalDate.compare m1.dateMeasured m2.dateMeasured)
