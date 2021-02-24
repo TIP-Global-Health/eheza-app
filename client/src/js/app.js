@@ -1047,15 +1047,22 @@ function attachTesseractDropzone() {
     });
 
     (async () => {
-      await worker.load();
-      await worker.loadLanguage('eng');
-      await worker.initialize('eng');
-      const { data: { text } } = await worker.recognize(cacheUrl);
-
-      var event = makeCustomEvent("dropzonecomplete", {
-        text: text
-      });
-      element.dispatchEvent(event);
+      try {
+        await worker.load();
+        await worker.loadLanguage('eng');
+        await worker.initialize('eng');
+        const { data: { text } } = await worker.recognize(cacheUrl);
+        var event = makeCustomEvent("dropzonecomplete", {
+          text: text
+        });
+        element.dispatchEvent(event);
+      }
+      catch (e) {
+        var event = makeCustomEvent("dropzonecomplete", {
+          text: ''
+        });
+        element.dispatchEvent(event);
+      }
 
       await worker.terminate();
     })();
