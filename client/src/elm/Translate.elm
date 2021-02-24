@@ -1771,17 +1771,17 @@ translationSet trans =
 
         BarcodeScanCorrectQuestion ->
             { english = "Is the barcode correct"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kodi yanditse neza"
             }
 
         BarcodeScanHelper ->
-            { english = "Take a photo of the barcode and LOT number located on the RDT package"
+            { english = "Take a picture of the barcode on the RDT package"
             , kinyarwanda = Just "Fata ifoto ya kodi iri ku gapaki k'igikoresho gipima malariya cya TDR"
             }
 
         BarcodeScanSetCorrectLabel ->
             { english = "Please set correct barcode"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just " Andika Kodi"
             }
 
         BeginNewEncounter ->
