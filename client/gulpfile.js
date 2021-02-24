@@ -401,7 +401,7 @@ gulp.task("serve:prod", function() {
 });
 
 var precacheFileGlob =
-  '*.{js,html,css,png,jpg,gif,svg,eot,ttf,woff,woff2,json,traineddata}';
+  '*.{js,html,css,png,jpg,gif,svg,eot,ttf,woff,woff2,json}';
 
 // We cache bower_components individually, since they often include things
 // we don't need.
