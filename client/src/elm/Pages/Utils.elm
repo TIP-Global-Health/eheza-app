@@ -214,6 +214,28 @@ viewNumberInput language maybeCurrentValue toStringFunc setMsg inputClass =
         ]
 
 
+viewTextInput :
+    Language
+    -> Maybe String
+    -> (String -> msg)
+    -> String
+    -> Html msg
+viewTextInput language maybeCurrentValue setMsg inputClass =
+    let
+        currentValue =
+            maybeCurrentValue
+                |> Maybe.withDefault ""
+    in
+    div [ class <| "form-input text " ++ inputClass ]
+        [ input
+            [ type_ "text"
+            , onInput setMsg
+            , value currentValue
+            ]
+            []
+        ]
+
+
 viewCheckBoxSelectInput : Language -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> TranslationId) -> Html msg
 viewCheckBoxSelectInput language leftOptions rightOptions currentValue setMsg translateFunc =
     let

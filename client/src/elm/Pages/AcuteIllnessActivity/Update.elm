@@ -818,7 +818,41 @@ update currentDate id db msg model =
                     model.laboratoryData.barcodeScanForm
 
                 updatedForm =
-                    { form | barcode = barcode }
+                    { form | barcode = barcode, scanCorrect = Nothing }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | barcodeScanForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetScanCorrect value ->
+            let
+                form =
+                    model.laboratoryData.barcodeScanForm
+
+                updatedForm =
+                    { form | scanCorrect = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | barcodeScanForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetBarcode value ->
+            let
+                form =
+                    model.laboratoryData.barcodeScanForm
+
+                updatedForm =
+                    { form | barcode = Just value }
 
                 updatedData =
                     model.laboratoryData

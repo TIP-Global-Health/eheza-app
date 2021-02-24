@@ -55,6 +55,7 @@ import Pages.Utils
         , viewPhotoThumbFromPhotoUrl
         , viewPreviousMeasurement
         , viewQuestionLabel
+        , viewTextInput
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
@@ -1117,12 +1118,35 @@ viewMalariaTestingForm language currentDate person form =
 
 viewBarcodeScanForm : Language -> NominalDate -> BarcodeScanForm -> Html Msg
 viewBarcodeScanForm language currentDate form =
+    let
+        barcodeCorrectSection =
+            if isJust form.barcode then
+                [ viewQuestionLabel language Translate.BarcodeScanCorrectQuestion
+                , viewBoolInput
+                    language
+                    form.scanCorrect
+                    SetScanCorrect
+                    "scan-correct"
+                    Nothing
+                ]
+
+            else
+                []
+
+        barcodeInputSection =
+            if form.scanCorrect == Just False then
+                [ viewLabel language Translate.BarcodeScanSetCorrectLabel
+                , viewTextInput language form.barcode SetBarcode "barcode-input"
+                ]
+
+            else
+                []
+    in
     div [ class "ui form laboratory barcode-photo" ]
-        [ p [] [ text <| Maybe.withDefault "no barcode" form.barcode ]
-        , divKeyed [ class "ui full segment photo" ]
+        [ divKeyed [ class "ui full segment photo" ]
             [ keyedDivKeyed "content"
                 [ class "content" ]
-                [ p [] [ text <| translate language Translate.BarcodeScanHelper ++ "." ]
+                [ p [ class "helper" ] [ text <| translate language Translate.BarcodeScanHelper ++ "." ]
                     |> keyed "help"
                 , keyedDivKeyed "grid"
                     [ class "ui grid" ]
@@ -1141,6 +1165,14 @@ viewBarcodeScanForm language currentDate form =
                         ]
                         |> keyed "dropzone"
                     ]
+                , p [ class "lot-number-label" ]
+                    [ text <| translate language Translate.LotNumber
+                    , text ": "
+                    , text <| Maybe.withDefault "-" form.barcode
+                    ]
+                    :: (barcodeCorrectSection ++ barcodeInputSection)
+                    |> div [ class "section-lot-number" ]
+                    |> keyed "lot-number-section"
                 ]
             ]
         ]
