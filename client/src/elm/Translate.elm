@@ -4054,7 +4054,7 @@ translationSet trans =
 
                 NoAmbulance ->
                     { english = "No ambulance available"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta mbangukiragutabara ihari"
                     }
 
                 ClientUnableToAffordFees ->
