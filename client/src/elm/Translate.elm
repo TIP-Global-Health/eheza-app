@@ -4844,22 +4844,22 @@ translationSet trans =
             case reason of
                 PatientNeedsEmergencyReferral ->
                     { english = "Patient needs an emergency referral"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umurwayi akeneye kwoherezwa ku ivuriro byihutirwa"
                     }
 
                 ReceivedEmergencyCase ->
                     { english = "Received an emergency case to treat"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nakiriye undi murwayi ukeneye kuvurwa byihutirwa"
                     }
 
                 LackOfAppropriateEducationUserGuide ->
                     { english = "Lack of appropriate education user guide"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta mfashanyigisho yabugenewe ihari"
                     }
 
                 PatientRefused ->
                     { english = "Patient refused"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umurwayi yabyanze"
                     }
 
                 NoReasonForNotProvidingHealthEducation ->
