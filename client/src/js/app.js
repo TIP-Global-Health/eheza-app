@@ -1005,7 +1005,6 @@ function attachDropzone() {
 }
 
 function attachTesseractDropzone() {
-  console.log('attachTesseractDropzone');
   // We could make this dynamic, if needed
   var selector = "#dropzone";
   var element = document.querySelector(selector);
@@ -1032,18 +1031,19 @@ function attachTesseractDropzone() {
     capture: 'camera'
   });
 
-  dropZone.on('complete', function(file) {
-    console.log('complete');
+  dropZone.on('sending', function() {
+    var event = makeCustomEvent("dropzonesending", {});
+    element.dispatchEvent(event);
+  });
 
+  dropZone.on('complete', function(file) {
     var cacheUrl = JSON.parse(file.xhr.responseText).url;
-    console.log(cacheUrl);
 
     const { createWorker } = Tesseract;
     const worker = createWorker({
       workerPath: 'bower_components/tesseract/dist/worker.min.js',
       langPath: 'assets/lang-data',
-      corePath: 'bower_components/tesseract/tesseract-core.wasm.js',
-      logger: m => console.log(m)
+      corePath: 'bower_components/tesseract/tesseract-core.wasm.js'
     });
 
     (async () => {
@@ -1052,18 +1052,13 @@ function attachTesseractDropzone() {
       await worker.initialize('eng');
       const { data: { text } } = await worker.recognize(cacheUrl);
 
-      console.log(text);
-
       var event = makeCustomEvent("dropzonecomplete", {
         text: text
       });
-
       element.dispatchEvent(event);
 
       await worker.terminate();
     })();
-
-
 
     dropZone.removeFile(file);
   });

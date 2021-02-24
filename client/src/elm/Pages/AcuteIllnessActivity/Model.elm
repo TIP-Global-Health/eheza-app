@@ -7,6 +7,7 @@ import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)
+import RemoteData exposing (RemoteData(..), WebData)
 
 
 type Msg
@@ -44,6 +45,7 @@ type Msg
     | SetIsPregnant Bool
     | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
     | DropZoneComplete String
+    | DropZoneSending ()
     | SetScanCorrect Bool
     | SetBarcode String
     | SaveBarcodeScan PersonId (Maybe ( BarcodeScanId, BarcodeScan ))
@@ -244,7 +246,7 @@ type alias LaboratoryData =
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { malariaTestingForm = MalariaTestingForm Nothing Nothing
-    , barcodeScanForm = BarcodeScanForm Nothing Nothing
+    , barcodeScanForm = BarcodeScanForm Nothing Nothing NotAsked
     , activeTask = LaboratoryMalariaTesting
     }
 
@@ -263,6 +265,7 @@ type alias MalariaTestingForm =
 type alias BarcodeScanForm =
     { barcode : Maybe String
     , scanCorrect : Maybe Bool
+    , scanState : WebData ()
     }
 
 

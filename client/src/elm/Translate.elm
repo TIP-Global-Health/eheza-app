@@ -1770,12 +1770,12 @@ translationSet trans =
             }
 
         BarcodeScanCorrectQuestion ->
-            { english = "Is scanned barcode correct"
+            { english = "Is the barcode correct"
             , kinyarwanda = Nothing
             }
 
         BarcodeScanHelper ->
-            { english = "Take a picture of the barcode on the RDT package"
+            { english = "Take a photo of the barcode and LOT number located on the RDT package"
             , kinyarwanda = Just "Fata ifoto ya kodi iri ku gapaki k'igikoresho gipima malariya cya TDR"
             }
 
@@ -3522,7 +3522,7 @@ translationSet trans =
             translateLoginPhrase phrase
 
         LotNumber ->
-            { english = "Lot Number"
+            { english = "Lot No"
             , kinyarwanda = Nothing
             }
 
@@ -4164,7 +4164,7 @@ translationSet trans =
             }
 
         NotAvailable ->
-            { english = "not available"
+            { english = "Not available"
             , kinyarwanda = Just "Ntibiboneste"
             }
 

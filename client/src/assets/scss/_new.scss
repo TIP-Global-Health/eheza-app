@@ -871,6 +871,10 @@ div.page-activity.acute-illness {
         text-align: center;
       }
 
+      .spinner {
+        text-align: center;
+      }
+
       .section-lot-number {
 
         .lot-number-label {
@@ -884,13 +888,12 @@ div.page-activity.acute-illness {
         .form-input.barcode-input {
           margin-bottom: 5px;
           margin-top: 20px;
-          text-align: center;
 
           input,
           input:focus {
             border: 2px solid $color-gray;
             text-align: center;
-            width: 280px;
+            width: 350px;
           }
         }
       }

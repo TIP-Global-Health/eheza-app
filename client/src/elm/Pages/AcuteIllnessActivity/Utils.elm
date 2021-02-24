@@ -917,6 +917,7 @@ barcodeScanFormWithDefault form saved =
             (\savedBarcode ->
                 { barcode = or form.barcode (Just savedBarcode)
                 , scanCorrect = form.scanCorrect
+                , scanState = form.scanState
                 }
             )
 

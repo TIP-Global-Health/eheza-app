@@ -813,12 +813,30 @@ update currentDate id db msg model =
                                     Nothing
                             )
                         |> List.head
+                        |> Maybe.withDefault "XXXX"
 
                 form =
                     model.laboratoryData.barcodeScanForm
 
                 updatedForm =
-                    { form | barcode = barcode, scanCorrect = Nothing }
+                    { form | barcode = Just barcode, scanCorrect = Nothing, scanState = Success () }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | barcodeScanForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , App.Ports.bindDropZoneForTesseract ()
+            , []
+            )
+
+        DropZoneSending _ ->
+            let
+                form =
+                    model.laboratoryData.barcodeScanForm
+
+                updatedForm =
+                    { form | barcode = Nothing, scanCorrect = Nothing, scanState = Loading }
 
                 updatedData =
                     model.laboratoryData
