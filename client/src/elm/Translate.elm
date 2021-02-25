@@ -4864,7 +4864,7 @@ translationSet trans =
 
                 NoReasonForNotProvidingHealthEducation ->
                     { english = "No reason"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta mpamvu"
                     }
 
         ReceivedIronFolicAcid ->
