@@ -4,6 +4,7 @@ module Pages.AcuteIllnessActivity.View exposing
     , viewActionTakenLabel
     , viewAdministeredMedicationLabel
     , viewHCRecommendation
+    , viewHealthEducationLabel
     , viewOralSolutionPrescription
     , viewTabletsPrescription
     )
@@ -2682,9 +2683,7 @@ viewHealthEducationForm language currentDate maybeDiagnosis form =
                 div [ class "ui form health-education" ]
                     [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
                     , div [ class "instructions" ]
-                        [ text <| translate language Translate.ProvideHealthEducation
-                        , text " "
-                        , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
+                        [ viewHealthEducationLabel language Translate.ProvideHealthEducation (Translate.AcuteIllnessDiagnosis diagnosis) "icon-open-book" Nothing
                         ]
                     , div [ class "label" ]
                         [ text <| translate language Translate.ProvidedPreventionEducationQuestion
@@ -2701,6 +2700,24 @@ viewHealthEducationForm language currentDate maybeDiagnosis form =
                     ]
             )
         |> Maybe.withDefault emptyNode
+
+
+viewHealthEducationLabel : Language -> TranslationId -> TranslationId -> String -> Maybe NominalDate -> Html any
+viewHealthEducationLabel language actionTranslationId diagnosisTranslationId iconClass maybeDate =
+    let
+        message =
+            div [] <|
+                [ text <| translate language actionTranslationId
+                , text " "
+                , span [] [ text <| translate language diagnosisTranslationId ]
+                ]
+                    ++ renderDatePart language maybeDate
+                    ++ [ text "." ]
+    in
+    div [ class "header icon-label" ] <|
+        [ i [ class iconClass ] []
+        , message
+        ]
 
 
 
