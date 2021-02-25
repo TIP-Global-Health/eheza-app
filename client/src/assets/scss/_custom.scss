@@ -1943,7 +1943,7 @@ input::placeholder {
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-health-education-white.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-health-education-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
