@@ -4049,22 +4049,22 @@ translationSet trans =
             case reason of
                 ClientRefused ->
                     { english = "Client refused"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umurwayi yabyanze"
                     }
 
                 NoAmbulance ->
                     { english = "No ambulance available"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta mbangukiragutabara ihari"
                     }
 
                 ClientUnableToAffordFees ->
                     { english = "Client unable to afford fees"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
                     }
 
                 ReasonForNotSendingToHCOther ->
                     { english = "Other"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibindi"
                     }
 
                 NoReasonForNotSendingToHC ->
