@@ -1830,7 +1830,7 @@ encodeHealthEducation =
 encodeHealthEducationValue : HealthEducationValue -> List ( String, Value )
 encodeHealthEducationValue value =
     [ ( "health_education_signs", encodeEverySet encodeHealthEducationSign value.signs )
-    , ( "reason_not_given_education", encodeReasonForNotProvidingHealthEducation value.reasonForNotProvidingEducation )
+    , ( "reason_not_given_education", encodeReasonForNotProvidingHealthEducation value.reasonForNotProvidingHealthEducation )
     , ( "deleted", bool False )
     , ( "type", string "health_education" )
     ]

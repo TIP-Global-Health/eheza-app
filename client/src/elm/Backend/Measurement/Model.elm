@@ -907,7 +907,7 @@ type alias AcuteIllnessNutrition =
 
 type alias HealthEducationValue =
     { signs : EverySet HealthEducationSign
-    , reasonForNotProvidingEducation : ReasonForNotProvidingHealthEducation
+    , reasonForNotProvidingHealthEducation : ReasonForNotProvidingHealthEducation
     }
 
 

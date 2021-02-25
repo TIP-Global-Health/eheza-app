@@ -1559,7 +1559,7 @@ toNutritionValue form =
 fromHealthEducationValue : Maybe HealthEducationValue -> HealthEducationForm
 fromHealthEducationValue saved =
     { educationForDiagnosis = Maybe.map (.signs >> EverySet.member MalariaPrevention) saved
-    , reasonForNotProvidingHealthEducation = Maybe.map .reasonForNotProvidingEducation saved
+    , reasonForNotProvidingHealthEducation = Maybe.map .reasonForNotProvidingHealthEducation saved
     }
 
 
@@ -1570,7 +1570,7 @@ healthEducationFormWithDefault form saved =
             form
             (\value ->
                 { educationForDiagnosis = or form.educationForDiagnosis (EverySet.member MalariaPrevention value.signs |> Just)
-                , reasonForNotProvidingHealthEducation = or form.reasonForNotProvidingHealthEducation (value.reasonForNotProvidingEducation |> Just)
+                , reasonForNotProvidingHealthEducation = or form.reasonForNotProvidingHealthEducation (value.reasonForNotProvidingHealthEducation |> Just)
                 }
             )
 
@@ -1589,13 +1589,13 @@ toHealthEducationValue form =
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHealthEducationSigns)
 
-        reasonForNotProvidingEducation =
+        reasonForNotProvidingHealthEducation =
             form.reasonForNotProvidingHealthEducation
                 |> Maybe.withDefault NoReasonForNotProvidingHealthEducation
                 |> Just
     in
     Maybe.map HealthEducationValue signs
-        |> andMap reasonForNotProvidingEducation
+        |> andMap reasonForNotProvidingHealthEducation
 
 
 expectPhysicalExamTask : NominalDate -> Person -> Bool -> PhysicalExamTask -> Bool

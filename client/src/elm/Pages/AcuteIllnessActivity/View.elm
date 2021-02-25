@@ -2683,7 +2683,7 @@ viewHealthEducationForm language currentDate maybeDiagnosis form =
                     form.educationForDiagnosis
                         |> Maybe.withDefault True
 
-                reasonForNotProvidingEducation =
+                reasonForNotProvidingHealthEducation =
                     if not providedHealthEducation then
                         [ viewQuestionLabel language Translate.WhyNot
                         , viewCheckBoxSelectInput language
@@ -2715,7 +2715,7 @@ viewHealthEducationForm language currentDate maybeDiagnosis form =
                             "education-for-diagnosis"
                             Nothing
                         ]
-                            ++ reasonForNotProvidingEducation
+                            ++ reasonForNotProvidingHealthEducation
                     )
                 |> Maybe.withDefault [ emptyNode ]
     in
