@@ -1147,6 +1147,7 @@ viewActionsTakenHealthEducation language date measurements =
             Maybe.map
                 (Tuple.second
                     >> .value
+                    >> .signs
                     >> EverySet.toList
                     >> (\signs ->
                             case signs of

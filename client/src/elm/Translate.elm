@@ -697,6 +697,7 @@ type TranslationId
     | ReasonForCSection
     | ReasonForNotIsolating ReasonForNotIsolating
     | ReasonForNotTaking ReasonForNotTaking
+    | ReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | ReceivedDewormingPill
     | ReceivedIronFolicAcid
     | ReceivedMosquitoNet
@@ -4850,6 +4851,33 @@ translationSet trans =
             { english = "Has the mother received deworming pill"
             , kinyarwanda = Nothing
             }
+
+        ReasonForNotProvidingHealthEducation reason ->
+            case reason of
+                PatientNeedsEmergencyReferral ->
+                    { english = "Patient needs an emergency referral"
+                    , kinyarwanda = Just "Umurwayi akeneye kwoherezwa ku ivuriro byihutirwa"
+                    }
+
+                ReceivedEmergencyCase ->
+                    { english = "Received an emergency case to treat"
+                    , kinyarwanda = Just "Nakiriye undi murwayi ukeneye kuvurwa byihutirwa"
+                    }
+
+                LackOfAppropriateEducationUserGuide ->
+                    { english = "Lack of appropriate education user guide"
+                    , kinyarwanda = Just "Nta mfashanyigisho yabugenewe ihari"
+                    }
+
+                PatientRefused ->
+                    { english = "Patient refused"
+                    , kinyarwanda = Just "Umurwayi yabyanze"
+                    }
+
+                NoReasonForNotProvidingHealthEducation ->
+                    { english = "No reason"
+                    , kinyarwanda = Just "Nta mpamvu"
+                    }
 
         ReceivedIronFolicAcid ->
             { english = "Has the mother received iron and folic acid supplement"

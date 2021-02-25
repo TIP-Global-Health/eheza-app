@@ -2676,26 +2676,53 @@ viewReviewDangerSignsForm language currentDate measurements form =
 
 viewHealthEducationForm : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> HealthEducationForm -> Html Msg
 viewHealthEducationForm language currentDate maybeDiagnosis form =
-    maybeDiagnosis
-        |> Maybe.map
-            (\diagnosis ->
-                div [ class "ui form health-education" ]
-                    [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-                    , div [ class "label" ]
-                        [ text <| translate language Translate.ProvidedPreventionEducationQuestion
+    let
+        healthEducationSection =
+            let
+                providedHealthEducation =
+                    form.educationForDiagnosis
+                        |> Maybe.withDefault True
+
+                reasonForNotProvidingHealthEducation =
+                    if not providedHealthEducation then
+                        [ viewQuestionLabel language Translate.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ PatientNeedsEmergencyReferral
+                            , ReceivedEmergencyCase
+                            , LackOfAppropriateEducationUserGuide
+                            , PatientRefused
+                            ]
+                            []
+                            form.reasonForNotProvidingHealthEducation
+                            SetReasonForNotProvidingHealthEducation
+                            Translate.ReasonForNotProvidingHealthEducation
+                        ]
+
+                    else
+                        []
+            in
+            maybeDiagnosis
+                |> Maybe.map
+                    (\diagnosis ->
+                        [ text <| translate language <| Translate.ProvidedPreventionEducationQuestion
                         , text " "
                         , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
                         , text "?"
+                        , viewBoolInput
+                            language
+                            form.educationForDiagnosis
+                            SetProvidedEducationForDiagnosis
+                            "education-for-diagnosis"
+                            Nothing
                         ]
-                    , viewBoolInput
-                        language
-                        form.educationForDiagnosis
-                        SetProvidedEducationForDiagnosis
-                        "education-for-diagnosis"
-                        Nothing
-                    ]
-            )
-        |> Maybe.withDefault emptyNode
+                            ++ reasonForNotProvidingHealthEducation
+                    )
+                |> Maybe.withDefault [ emptyNode ]
+    in
+    div [ class "ui form health-education" ] <|
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        ]
+            ++ healthEducationSection
 
 
 
