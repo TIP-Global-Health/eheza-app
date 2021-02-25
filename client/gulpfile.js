@@ -412,8 +412,12 @@ var precacheLocalDev = [
   'bower_components/dropzone/dist/min/dropzone.min.css',
   'bower_components/dropzone/dist/min/dropzone.min.js',
   'bower_components/dexie/dist/dexie.min.js',
+  'bower_components/exif-js/exif.js',
   'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
-  'bower_components/semantic/dist/semantic.min.css'
+  'bower_components/semantic/dist/semantic.min.css',
+  'bower_components/tesseract/tesseract-core.wasm.js',
+  'bower_components/tesseract/dist/tesseract.min.js',
+  'bower_components/tesseract/dist/worker.min.js'
 ];
 
 // There may be a better way to do this, but for the moment we have some
@@ -425,8 +429,12 @@ var precacheProd = [
   'bower_components/dropzone/dist/min/dropzone.min.*.css',
   'bower_components/dropzone/dist/min/dropzone.min.*.js',
   'bower_components/dexie/dist/dexie.min.*.js',
+  'bower_components/exif-js/exif.js',
   'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
-  'bower_components/semantic/dist/semantic.min.*.css'
+  'bower_components/semantic/dist/semantic.min.*.css',
+  'bower_components/tesseract/tesseract-core.wasm.js',
+  'bower_components/tesseract/dist/tesseract.min.js',
+  'bower_components/tesseract/dist/worker.min.js'
 ];
 
 // For offline use while developing
