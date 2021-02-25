@@ -1780,7 +1780,7 @@ translationSet trans =
             }
 
         BarcodeScanSetCorrectLabel ->
-            { english = "Please set correct barcode"
+            { english = "Enter barcode"
             , kinyarwanda = Just "Andika Kodi"
             }
 
