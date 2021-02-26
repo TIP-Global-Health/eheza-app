@@ -1,7 +1,8 @@
 module Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, Nutrition, NutritionStatus(..), NutritionValue, ParticipantStats, Periods, TotalBeneficiaries)
+import Backend.Dashboard.Model exposing (..)
+import Backend.Entities exposing (VillageId)
 import Backend.Measurement.Decoder exposing (decodeFamilyPlanningSign)
 import Backend.Person.Decoder exposing (decodeGender)
 import Dict as LegacyDict
@@ -9,20 +10,43 @@ import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
+import Restful.Endpoint exposing (decodeEntityUuid, toEntityUuid)
 
 
 decodeDashboardStats : Decoder DashboardStats
 decodeDashboardStats =
     succeed DashboardStats
-        |> required "case_management" (list decodeCaseManagement)
+        |> required "case_management" decodeCaseManagementData
         |> required "children_beneficiaries" (list decodePeopleStats)
         |> required "completed_program" (list decodeParticipantStats)
         |> required "family_planning" (list decodeFamilyPlanningStats)
-        |> optional "good_nutrition" (nullable decodeGoodNutrition) Nothing
         |> required "missed_sessions" (list decodeParticipantStats)
-        |> required "total_encounters" decodePeriods
+        |> required "total_encounters" decodeTotalEncountersData
+        |> required "villages_with_residents" decodeVillagesWithResidents
         |> required "timestamp" string
         |> required "stats_cache_hash" string
+
+
+decodeCaseManagementData : Decoder CaseManagementData
+decodeCaseManagementData =
+    succeed CaseManagementData
+        |> required "this_year" decodeCaseManagementDataForYear
+        |> required "last_year" decodeCaseManagementDataForYear
+
+
+decodeCaseManagementDataForYear : Decoder (Dict ProgramType (List CaseManagement))
+decodeCaseManagementDataForYear =
+    dict (list decodeCaseManagement)
+        |> andThen
+            (\dict ->
+                LegacyDict.toList dict
+                    |> List.map
+                        (\( k, v ) ->
+                            ( programTypeFromString k, v )
+                        )
+                    |> Dict.fromList
+                    |> succeed
+            )
 
 
 decodeCaseManagement : Decoder CaseManagement
@@ -42,6 +66,7 @@ decodeCaseNutrition =
         |> required "underweight" decodeNutritionValueDict
         |> required "wasting" decodeNutritionValueDict
         |> required "muac" decodeNutritionValueDict
+        |> required "nutrition_signs" decodeNutritionValueDict
 
 
 decodeNutritionValueDict : Decoder (Dict Int NutritionValue)
@@ -128,11 +153,41 @@ decodeFamilyPlanningStats =
         |> required "signs" (list decodeFamilyPlanningSign)
 
 
-decodeGoodNutrition : Decoder GoodNutrition
-decodeGoodNutrition =
-    succeed GoodNutrition
-        |> required "all" decodePeriods
-        |> required "good" decodePeriods
+decodeTotalEncountersData : Decoder TotalEncountersData
+decodeTotalEncountersData =
+    succeed TotalEncountersData
+        |> required "global" decodeTotalEncounters
+        |> required "villages" decodeTotalEncountersForVillages
+
+
+decodeTotalEncountersForVillages : Decoder (Dict VillageId (Dict ProgramType Periods))
+decodeTotalEncountersForVillages =
+    dict decodeTotalEncounters
+        |> andThen
+            (\dict ->
+                LegacyDict.toList dict
+                    |> List.map
+                        (\( k, v ) ->
+                            ( toEntityUuid k, v )
+                        )
+                    |> Dict.fromList
+                    |> succeed
+            )
+
+
+decodeTotalEncounters : Decoder (Dict ProgramType Periods)
+decodeTotalEncounters =
+    dict decodePeriods
+        |> andThen
+            (\dict ->
+                LegacyDict.toList dict
+                    |> List.map
+                        (\( k, v ) ->
+                            ( programTypeFromString k, v )
+                        )
+                    |> Dict.fromList
+                    |> succeed
+            )
 
 
 decodePeriods : Decoder Periods
@@ -140,3 +195,40 @@ decodePeriods =
     succeed Periods
         |> required "last_year" decodeInt
         |> required "this_year" decodeInt
+
+
+programTypeFromString : String -> ProgramType
+programTypeFromString string =
+    case string of
+        "achi" ->
+            ProgramAchi
+
+        "fbf" ->
+            ProgramFbf
+
+        "individual" ->
+            ProgramIndividual
+
+        "pmtct" ->
+            ProgramPmtct
+
+        "sorwathe" ->
+            ProgramSorwathe
+
+        _ ->
+            ProgramUnknown
+
+
+decodeVillagesWithResidents : Decoder (Dict VillageId (List Int))
+decodeVillagesWithResidents =
+    dict (list int)
+        |> andThen
+            (\dict ->
+                LegacyDict.toList dict
+                    |> List.map
+                        (\( k, v ) ->
+                            ( toEntityUuid k, v )
+                        )
+                    |> Dict.fromList
+                    |> succeed
+            )

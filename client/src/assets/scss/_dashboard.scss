@@ -11,7 +11,12 @@
 
     &.filters {
       background-color: $color-light-background;
+      min-height: 60px;
       padding: 15px 20px;
+
+      .label {
+        color: $color-white;
+      }
 
       .ui.button {
         font-size: 22px;
@@ -32,6 +37,21 @@
           background-color: transparent;
           color: $color-background;
         }
+
+        &.program-type-filter {
+          float: right;
+        }
+      }
+
+      .icon-settings {
+        background: url(#{$img-path}icon-settings.svg);
+        background-size: 24px 24px;
+        display: block;
+        float: right;
+        height: 24px;
+        margin-left: 8px;
+        margin-top: 4px;
+        width: 24px;
       }
     }
 
@@ -175,6 +195,50 @@
     }
   }
 
+  &.main {
+
+    .overlay .ui.modal {
+      margin-left: -350px;
+      width: 700px;
+
+      .header {
+        font-size: 30px;
+        font-weight: 500;
+        margin-bottom: 25px;
+        text-align: left;
+        text-transform: capitalize;
+      }
+
+      .content {
+        text-align: left;
+
+        .helper {
+          font-size: 18px;
+          font-weight: bold;
+          margin-bottom: 3px;
+        }
+
+        .select-input {
+          background: none;
+          border: 2px solid $color-gray;
+          font-size: 28px;
+          height: 50px;
+          margin-bottom: 20px;
+          padding: 0 7px;
+          width: 100%;
+        }
+      }
+
+      .actions {
+        margin-top: 40px;
+
+        button {
+          margin-left: 0;
+        }
+      }
+    }
+  }
+
   &.stats {
 
     .ui.grid {
@@ -184,10 +248,10 @@
     .overlay {
 
       .ui.modal {
-        margin-left: -365px !important;
-        width: 730px !important;
+        margin-left: -365px;
         height: 400px;
         overflow: scroll;
+        width: 730px;
 
         .header {
           padding: 0;

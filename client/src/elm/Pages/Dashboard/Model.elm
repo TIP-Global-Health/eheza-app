@@ -1,36 +1,14 @@
-module Pages.Dashboard.Model exposing
-    ( BeneficiariesTableLabels(..)
-    , Card
-    , CardValueSeverity(..)
-    , DashboardFilter(..)
-    , DashboardSubFilter(..)
-    , FamilyPlanningSignsCounter
-    , FilterGender(..)
-    , FilterPeriod(..)
-    , FilterType(..)
-    , MalnorishedNutritionData
-    , Model
-    , MonthlyChartType(..)
-    , Msg(..)
-    , StatsCard
-    , caseManagementFilters
-    , caseManagementSubFilters
-    , emptyModel
-    , filterGenders
-    , filterPeriodsForCaseManagementPage
-    , filterPeriodsForMainPage
-    , filterPeriodsForStatsPage
-    , monthlyChartFilters
-    )
-
-{-| Filtering by period
--}
+module Pages.Dashboard.Model exposing (..)
 
 import AssocList exposing (Dict)
 import Backend.Dashboard.Model exposing (ParticipantStats)
+import Backend.Entities exposing (HealthCenterId, VillageId)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
+import Maybe.Extra exposing (isJust)
 import Pages.Page exposing (DashboardPage(..), Page(..))
 
 
@@ -39,6 +17,15 @@ type FilterPeriod
     | LastMonth
     | ThreeMonthsAgo
     | OneYear
+
+
+type FilterProgramType
+    = FilterAllPrograms
+    | FilterProgramAchi
+    | FilterProgramFbf
+    | FilterProgramPmtct
+    | FilterProgramSorwathe
+    | FilterProgramCommunity
 
 
 type BeneficiariesTableLabels
@@ -129,31 +116,49 @@ caseManagementSubFilters mainFilter =
 
 type alias Model =
     { period : FilterPeriod
+    , programTypeFilter : FilterProgramType
+    , selectedVillageFilter : Maybe VillageId
     , beneficiariesGender : FilterGender
     , currentBeneficiariesChartsFilter : DashboardFilter
     , currentBeneficiariesIncidenceChartsFilter : DashboardFilter
     , currentCaseManagementFilter : DashboardFilter
     , currentCaseManagementSubFilter : DashboardSubFilter
     , latestPage : DashboardPage
-    , modalTable : List ParticipantStats
-    , modalTitle : String
-    , modalState : Bool
+    , modalState : Maybe ModalState
     }
 
 
-emptyModel : Model
-emptyModel =
+emptyModel : Maybe VillageId -> Model
+emptyModel maybeSelectedVillage =
+    let
+        ( programTypeFilter, selectedVillage ) =
+            if isJust maybeSelectedVillage then
+                -- This is CHW Nurse, as on CHW work with villages.
+                ( FilterProgramCommunity
+                , maybeSelectedVillage
+                )
+
+            else
+                ( FilterAllPrograms
+                , Nothing
+                )
+    in
     { period = OneYear
+    , programTypeFilter = programTypeFilter
+    , selectedVillageFilter = selectedVillage
     , beneficiariesGender = Boys
     , currentBeneficiariesChartsFilter = Stunting
     , currentBeneficiariesIncidenceChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
     , currentCaseManagementSubFilter = FilterTotal
     , latestPage = MainPage
-    , modalTable = []
-    , modalTitle = ""
-    , modalState = False
+    , modalState = Nothing
     }
+
+
+type ModalState
+    = StatisticsModal String (List ParticipantStats)
+    | FiltersModal
 
 
 {-| A record to hold the count of total signs used.
@@ -215,11 +220,13 @@ type MonthlyChartType
 
 
 type Msg
-    = ModalToggle Bool (List ParticipantStats) String
+    = SetModalState (Maybe ModalState)
     | NavigateToStuntingTable DashboardSubFilter
     | SetFilterGender FilterGender
     | SetFilterPeriod FilterPeriod
     | SetFilterBeneficiariesChart DashboardFilter FilterType
     | SetFilterCaseManagement DashboardFilter
     | SetSubFilterCaseManagement DashboardSubFilter
+    | SetFilterProgramType String
+    | SetSelectedVillage String
     | SetActivePage Page

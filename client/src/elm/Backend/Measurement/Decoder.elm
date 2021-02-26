@@ -1316,7 +1316,7 @@ decodeSendToHC : Decoder SendToHC
 decodeSendToHC =
     succeed SendToHCValue
         |> required "send_to_hc" (decodeEverySet decodeSendToHCSign)
-        |> required "reason_not_sent_to_hc" decodeReasonForNotSendingToHC
+        |> optional "reason_not_sent_to_hc" decodeReasonForNotSendingToHC NoReasonForNotSendingToHC
         |> decodeAcuteIllnessMeasurement
 
 
@@ -1964,8 +1964,9 @@ decodeAcuteIllnessNutrition =
 
 decodeHealthEducation : Decoder HealthEducation
 decodeHealthEducation =
-    decodeEverySet decodeHealthEducationSign
-        |> field "health_education_signs"
+    succeed HealthEducationValue
+        |> required "health_education_signs" (decodeEverySet decodeHealthEducationSign)
+        |> optional "reason_not_given_education" decodeReasonForNotProvidingHealthEducation NoReasonForNotProvidingHealthEducation
         |> decodeAcuteIllnessMeasurement
 
 
@@ -1985,4 +1986,32 @@ decodeHealthEducationSign =
                         fail <|
                             sign
                                 ++ " is not a recognized HealthEducationSign"
+            )
+
+
+decodeReasonForNotProvidingHealthEducation : Decoder ReasonForNotProvidingHealthEducation
+decodeReasonForNotProvidingHealthEducation =
+    string
+        |> andThen
+            (\reason ->
+                case reason of
+                    "needs-emergency-referral" ->
+                        succeed PatientNeedsEmergencyReferral
+
+                    "received-emergency-case" ->
+                        succeed ReceivedEmergencyCase
+
+                    "lack-of-appropriate-education-guide" ->
+                        succeed LackOfAppropriateEducationUserGuide
+
+                    "patient-refused" ->
+                        succeed PatientRefused
+
+                    "none" ->
+                        succeed NoReasonForNotProvidingHealthEducation
+
+                    _ ->
+                        fail <|
+                            reason
+                                ++ " is not a recognized ReasonForNotProvidingHealthEducation"
             )
