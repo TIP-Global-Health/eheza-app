@@ -4,6 +4,7 @@ module Pages.AcuteIllnessActivity.View exposing
     , viewActionTakenLabel
     , viewAdministeredMedicationLabel
     , viewHCRecommendation
+    , viewHealthEducationLabel
     , viewOralSolutionPrescription
     , viewTabletsPrescription
     )
@@ -2704,25 +2705,53 @@ viewHealthEducationForm language currentDate maybeDiagnosis form =
             maybeDiagnosis
                 |> Maybe.map
                     (\diagnosis ->
-                        [ text <| translate language <| Translate.ProvidedPreventionEducationQuestion
-                        , text " "
-                        , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
-                        , text "?"
-                        , viewBoolInput
-                            language
-                            form.educationForDiagnosis
-                            SetProvidedEducationForDiagnosis
-                            "education-for-diagnosis"
-                            Nothing
+                        [ div [ class "label" ]
+                            [ text <| translate language Translate.ProvidedPreventionEducationQuestion
+                            , text " "
+                            , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
+                            , text "?"
+                            , viewBoolInput
+                                language
+                                form.educationForDiagnosis
+                                SetProvidedEducationForDiagnosis
+                                "education-for-diagnosis"
+                                Nothing
+                            ]
                         ]
                             ++ reasonForNotProvidingHealthEducation
                     )
                 |> Maybe.withDefault [ emptyNode ]
     in
-    div [ class "ui form health-education" ] <|
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+    maybeDiagnosis
+        |> Maybe.map
+            (\diagnosis ->
+                div [ class "ui form health-education" ] <|
+                    [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                    , div [ class "instructions" ]
+                        [ viewHealthEducationLabel language Translate.ProvideHealthEducation (Translate.AcuteIllnessDiagnosis diagnosis) "icon-open-book" Nothing
+                        ]
+                    ]
+                        ++ healthEducationSection
+            )
+        |> Maybe.withDefault emptyNode
+
+
+viewHealthEducationLabel : Language -> TranslationId -> TranslationId -> String -> Maybe NominalDate -> Html any
+viewHealthEducationLabel language actionTranslationId diagnosisTranslationId iconClass maybeDate =
+    let
+        message =
+            div [] <|
+                [ text <| translate language actionTranslationId
+                , text " "
+                , span [] [ text <| translate language diagnosisTranslationId ]
+                ]
+                    ++ renderDatePart language maybeDate
+                    ++ [ text "." ]
+    in
+    div [ class "header icon-label" ] <|
+        [ i [ class iconClass ] []
+        , message
         ]
-            ++ healthEducationSection
 
 
 

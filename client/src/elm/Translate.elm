@@ -691,6 +691,7 @@ type TranslationId
     | PrenatalParticipant
     | PrenatalParticipants
     | PreTermPregnancy
+    | ProvideHealthEducation
     | ProvidedHealthEducationAction
     | ProvidedPreventionEducationQuestion
     | Province
@@ -4776,6 +4777,11 @@ translationSet trans =
         ProvidedHealthEducationAction ->
             { english = "Provided health education and anticipatory guidance"
             , kinyarwanda = Nothing
+            }
+
+        ProvideHealthEducation ->
+            { english = "Provide health education and anticipatory guidance for the prevention of"
+            , kinyarwanda = Just "Tanga inyigisho ku buzima n' umurongo ngenderwaho ku kwirinda"
             }
 
         ProvidedPreventionEducationQuestion ->
