@@ -162,6 +162,14 @@ decodeTotalEncountersData =
 
 decodeTotalEncountersForVillages : Decoder (Dict VillageId (Dict ProgramType Periods))
 decodeTotalEncountersForVillages =
+    oneOf
+        [ decodeTotalEncountersForVillages_
+        , succeed Dict.empty
+        ]
+
+
+decodeTotalEncountersForVillages_ : Decoder (Dict VillageId (Dict ProgramType Periods))
+decodeTotalEncountersForVillages_ =
     dict decodeTotalEncounters
         |> andThen
             (\dict ->
@@ -221,6 +229,14 @@ programTypeFromString string =
 
 decodeVillagesWithResidents : Decoder (Dict VillageId (List Int))
 decodeVillagesWithResidents =
+    oneOf
+        [ decodeVillagesWithResidents_
+        , succeed Dict.empty
+        ]
+
+
+decodeVillagesWithResidents_ : Decoder (Dict VillageId (List Int))
+decodeVillagesWithResidents_ =
     dict (list int)
         |> andThen
             (\dict ->
