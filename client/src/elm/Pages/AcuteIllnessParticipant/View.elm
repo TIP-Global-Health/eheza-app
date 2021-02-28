@@ -175,7 +175,10 @@ viewManageIllnessesContent language currentDate selectedHealthCenter id db activ
         activeIllnessesExists =
             List.map Tuple.first activeSessions
                 |> List.filterMap (getAcuteIllnessDiagnosisForParticipant db)
-                |> List.filter ((/=) NoAcuteIllnessDiagnosis)
+                |> List.filter
+                    (\diagnosis ->
+                        not <| List.member diagnosis [ DiagnosisFeverOfUnknownOrigin, NoAcuteIllnessDiagnosis ]
+                    )
                 |> List.isEmpty
                 |> not
 

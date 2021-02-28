@@ -2,7 +2,7 @@ module Pages.Dashboard.GraphUtils exposing (barChartHeight, barChartWidth, color
 
 import AssocList as Dict exposing (Dict)
 import Axis
-import Backend.Dashboard.Model exposing (DashboardStats, GoodNutrition, Nutrition, Periods)
+import Backend.Dashboard.Model exposing (DashboardStats, Nutrition, Periods)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Color exposing (Color)
 import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)

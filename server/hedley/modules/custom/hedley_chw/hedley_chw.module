@@ -275,19 +275,20 @@ function hedley_chw_participate_in_group($child_id, $adult_id, $group_id) {
 }
 
 /**
- * Resolve all people that reside at given village.
+ * Retrieves the IDs of all people that live in given village.
  *
- * @param int $village_id
+ * @param int $nid
  *   Village node ID.
+ * @param int $range
+ *   The queries' range.
  *
  * @return array
- *   IDs list of village residents.
+ *   List of IDs of all people that live in given village.
  *
  * @throws \EntityMetadataWrapperException
  */
-function hedley_chw_get_village_residents($village_id) {
-  $wrapper = entity_metadata_wrapper('node', $village_id);
-
+function hedley_chw_get_village_residents($nid, $range = 1000) {
+  $wrapper = entity_metadata_wrapper('node', $nid);
   $province = $wrapper->field_province->value();
   $district = $wrapper->field_district->value();
   $sector = $wrapper->field_sector->value();
@@ -295,7 +296,6 @@ function hedley_chw_get_village_residents($village_id) {
   $village = $wrapper->field_village->value();
 
   $query = new EntityFieldQuery();
-
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'person')
@@ -306,7 +306,7 @@ function hedley_chw_get_village_residents($village_id) {
     ->fieldCondition('field_cell', 'value', $cell)
     ->fieldCondition('field_village', 'value', $village)
     ->addTag('exclude_deleted')
-    ->range(0, 1000)
+    ->range(0, $range)
     ->execute();
 
   return empty($result['node']) ? [] : array_keys($result['node']);

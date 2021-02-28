@@ -60,7 +60,14 @@ import Pages.AcuteIllnessActivity.Model
         , SymptomsTask(..)
         )
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
-import Pages.Dashboard.Model as Dashboard exposing (BeneficiariesTableLabels(..), DashboardFilter(..), DashboardSubFilter(..), FilterPeriod(..))
+import Pages.Dashboard.Model as Dashboard
+    exposing
+        ( BeneficiariesTableLabels(..)
+        , DashboardFilter(..)
+        , DashboardSubFilter(..)
+        , FilterPeriod(..)
+        , FilterProgramType(..)
+        )
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
     exposing
@@ -197,6 +204,8 @@ type Dashboard
     | FamilyPlanningLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | Filter DashboardFilter
+    | FilterProgramType FilterProgramType
+    | Filters
     | GirlsFilterLabel
     | GoodNutritionLabel
     | IncidenceOf
@@ -211,6 +220,7 @@ type Dashboard
     | NoDataForPeriod
     | PercentageLabel FilterPeriod
     | PeriodFilter FilterPeriod
+    | ProgramType
     | Severe
     | SeverelyMalnourished
     | StatisticsFirstWordHelper
@@ -681,12 +691,14 @@ type TranslationId
     | PrenatalParticipant
     | PrenatalParticipants
     | PreTermPregnancy
+    | ProvideHealthEducation
     | ProvidedHealthEducationAction
     | ProvidedPreventionEducationQuestion
     | Province
     | ReasonForCSection
     | ReasonForNotIsolating ReasonForNotIsolating
     | ReasonForNotTaking ReasonForNotTaking
+    | ReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | ReceivedDewormingPill
     | ReceivedIronFolicAcid
     | ReceivedMosquitoNet
@@ -745,6 +757,8 @@ type TranslationId
     | SelectAntenatalVisit
     | SelectAllSigns
     | SelectDangerSigns
+    | SelectedProgram
+    | SelectedVillage
     | SelectEncounterType
     | SelectExistingAcuteIllness
     | SelectExistingAcuteIllnessToRecordOutcome
@@ -4037,22 +4051,22 @@ translationSet trans =
             case reason of
                 ClientRefused ->
                     { english = "Client refused"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umurwayi yabyanze"
                     }
 
                 NoAmbulance ->
                     { english = "No ambulance available"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta mbangukiragutabara ihari"
                     }
 
                 ClientUnableToAffordFees ->
                     { english = "Client unable to afford fees"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
                     }
 
                 ReasonForNotSendingToHCOther ->
                     { english = "Other"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibindi"
                     }
 
                 NoReasonForNotSendingToHC ->
@@ -4765,6 +4779,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ProvideHealthEducation ->
+            { english = "Provide health education and anticipatory guidance for the prevention of"
+            , kinyarwanda = Just "Tanga inyigisho ku buzima n' umurongo ngenderwaho ku kwirinda"
+            }
+
         ProvidedPreventionEducationQuestion ->
             { english = "Have you provided health education and anticipatory guidance for the prevention of"
             , kinyarwanda = Just "Mwatanze inyigisho ku buzima n' umurongo ngenderwaho ku kwirinda"
@@ -4838,6 +4857,33 @@ translationSet trans =
             { english = "Has the mother received deworming pill"
             , kinyarwanda = Nothing
             }
+
+        ReasonForNotProvidingHealthEducation reason ->
+            case reason of
+                PatientNeedsEmergencyReferral ->
+                    { english = "Patient needs an emergency referral"
+                    , kinyarwanda = Just "Umurwayi akeneye kwoherezwa ku ivuriro byihutirwa"
+                    }
+
+                ReceivedEmergencyCase ->
+                    { english = "Received an emergency case to treat"
+                    , kinyarwanda = Just "Nakiriye undi murwayi ukeneye kuvurwa byihutirwa"
+                    }
+
+                LackOfAppropriateEducationUserGuide ->
+                    { english = "Lack of appropriate education user guide"
+                    , kinyarwanda = Just "Nta mfashanyigisho yabugenewe ihari"
+                    }
+
+                PatientRefused ->
+                    { english = "Patient refused"
+                    , kinyarwanda = Just "Umurwayi yabyanze"
+                    }
+
+                NoReasonForNotProvidingHealthEducation ->
+                    { english = "No reason"
+                    , kinyarwanda = Just "Nta mpamvu"
+                    }
 
         ReceivedIronFolicAcid ->
             { english = "Has the mother received iron and folic acid supplement"
@@ -5360,6 +5406,16 @@ translationSet trans =
         SelectDangerSigns ->
             { english = "Please select one or more of the danger signs the patient is experiencing"
             , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umubyeyi yaba afite"
+            }
+
+        SelectedProgram ->
+            { english = "Selected Program"
+            , kinyarwanda = Just "Porogaramu Yatoranyijwe"
+            }
+
+        SelectedVillage ->
+            { english = "Selected Village"
+            , kinyarwanda = Just "Umudugudu Watoranyijwe"
             }
 
         SelectEncounterType ->
@@ -6682,6 +6738,43 @@ translateDashboard trans =
                     , kinyarwanda = Nothing
                     }
 
+        FilterProgramType filterProgramType ->
+            case filterProgramType of
+                FilterAllPrograms ->
+                    { english = "All"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterProgramAchi ->
+                    { english = "ACHI"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterProgramFbf ->
+                    { english = "FBF"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterProgramPmtct ->
+                    { english = "PMTCT"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterProgramSorwathe ->
+                    { english = "Sorwathe"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterProgramCommunity ->
+                    { english = "Community"
+                    , kinyarwanda = Nothing
+                    }
+
+        Filters ->
+            { english = "Filters"
+            , kinyarwanda = Nothing
+            }
+
         GirlsFilterLabel ->
             { english = "Girls"
             , kinyarwanda = Just "Umukobwa"
@@ -6785,6 +6878,11 @@ translateDashboard trans =
                     { english = "Three months"
                     , kinyarwanda = Nothing
                     }
+
+        ProgramType ->
+            { english = "Program Type"
+            , kinyarwanda = Nothing
+            }
 
         Severe ->
             { english = "Severe"

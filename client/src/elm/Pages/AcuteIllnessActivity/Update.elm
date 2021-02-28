@@ -1797,7 +1797,24 @@ update currentDate id db msg model =
                     model.nextStepsData.healthEducationForm
 
                 updatedForm =
-                    { form | educationForDiagnosis = Just value }
+                    { form | educationForDiagnosis = Just value, reasonForNotProvidingHealthEducation = Nothing }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | healthEducationForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotProvidingHealthEducation value ->
+            let
+                form =
+                    model.nextStepsData.healthEducationForm
+
+                updatedForm =
+                    { form | reasonForNotProvidingHealthEducation = Just value }
 
                 updatedData =
                     model.nextStepsData
