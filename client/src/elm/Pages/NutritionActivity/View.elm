@@ -544,11 +544,28 @@ viewSendToHCContent language currentDate zscores assembled data =
                 |> Maybe.map (Tuple.second >> .value)
                 |> sendToHCFormWithDefault data.form
 
-        tasksCompleted =
-            taskCompleted form.handReferralForm + taskCompleted form.referToHealthCenter
+        ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+            form.referToHealthCenter
+                |> Maybe.map
+                    (\sentToHC ->
+                        if not sentToHC then
+                            if isJust form.reasonForNotSendingToHC then
+                                ( 2, 2 )
 
+                            else
+                                ( 1, 2 )
+
+                        else
+                            ( 1, 0 )
+                    )
+                |> Maybe.withDefault ( 0, 1 )
+
+        tasksCompleted =
+            reasonForNotSentActive + taskCompleted form.handReferralForm
+
+        --taskCompleted form.handReferralForm + taskCompleted form.referToHealthCenter
         totalTasks =
-            2
+            reasonForNotSentCompleted + 1
 
         disabled =
             tasksCompleted /= totalTasks
@@ -588,10 +605,11 @@ viewSendToHCContent language currentDate zscores assembled data =
         [ div [ class "full content" ]
             [ div [ class "ui form send-to-hc" ]
                 [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-                , div [ class "instructions" ]
+                , div [ class "instructions" ] <|
                     [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
                     , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
                     ]
+                        ++ sendToHCSection
                 , viewQuestionLabel language Translate.HandedReferralFormQuestion
                 , viewBoolInput
                     language
