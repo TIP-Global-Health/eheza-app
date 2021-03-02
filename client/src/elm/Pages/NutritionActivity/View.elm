@@ -34,6 +34,7 @@ import Pages.Utils
         ( taskCompleted
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
@@ -551,6 +552,36 @@ viewSendToHCContent language currentDate zscores assembled data =
 
         disabled =
             tasksCompleted /= totalTasks
+
+        sendToHCSection =
+            let
+                sentToHealthCenter =
+                    form.referToHealthCenter
+                        |> Maybe.withDefault True
+
+                reasonForNotSendingToHCInput =
+                    if not sentToHealthCenter then
+                        [ viewQuestionLabel language Translate.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
+                            []
+                            form.reasonForNotSendingToHC
+                            SetReasonForNotSendingToHC
+                            Translate.ReasonForNotSendingToHC
+                        ]
+
+                    else
+                        []
+            in
+            [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
+            , viewBoolInput
+                language
+                form.referToHealthCenter
+                SetReferToHealthCenter
+                "refer-to-hc"
+                Nothing
+            ]
+                ++ reasonForNotSendingToHCInput
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -561,13 +592,6 @@ viewSendToHCContent language currentDate zscores assembled data =
                     [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
                     , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
                     ]
-                , viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
-                , viewBoolInput
-                    language
-                    form.referToHealthCenter
-                    SetReferToHealthCenter
-                    "refer-to-hc"
-                    Nothing
                 , viewQuestionLabel language Translate.HandedReferralFormQuestion
                 , viewBoolInput
                     language
