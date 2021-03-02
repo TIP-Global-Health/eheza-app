@@ -523,6 +523,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       watchdog('debug', $m1, [], WATCHDOG_ERROR);
       watchdog('debug', $m2, [], WATCHDOG_ERROR);
 
+      $details = $m1 . PHP_EOL . PHP_EOL . $m2;
+      hedley_restful_report_sync_incident('content-upload', $item['uuid'], $account->uid, $details);
+
       throw $e;
     }
 

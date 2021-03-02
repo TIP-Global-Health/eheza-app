@@ -725,18 +725,22 @@ function hedley_acute_illness_field_default_field_bases() {
         'amoxicillin-lack-of-stock' => 'Amoxicillin - Lack of stock',
         'amoxicillin-known-allergy' => 'Amoxicillin - Known allergy',
         'amoxicillin-patient-declined' => 'Amoxicillin - Patient declined',
+        'amoxicillin-patient-unable-to-afford' => 'Amoxicillin - Patient unable to afford',
         'amoxicillin-other' => 'Amoxicillin - Other',
         'coartem-lack-of-stock' => 'Coartem - Lack of stock',
         'coartem-known-allergy' => 'Coartem - Known allergy',
         'coartem-patient-declined' => 'Coartem - Patient declined',
+        'coartem-patient-unable-to-afford' => 'Coartem - Patient unable to afford',
         'coartem-other' => 'Coartem - Other',
         'ors-lack-of-stock' => 'ORS  - Lack of stock',
         'ors-known-allergy' => 'ORS - Known allergy',
         'ors-patient-declined' => 'ORS - Patient declined',
+        'ors-patient-unable-to-afford' => 'ORS - Patient unable to afford',
         'ors-other' => 'ORS - Other',
         'zinc-lack-of-stock' => 'Zinc - Lack of stock',
         'zinc-known-allergy' => 'Zinc - Known allergy',
         'zinc-patient-declined' => 'Zinc - Patient declined',
+        'zinc-patient-unable-to-afford' => 'Zinc - Patient unable to afford',
         'zinc-other' => 'Zinc - Other',
         'none' => 'None',
       ),
@@ -861,6 +865,62 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_reason_not_given_education'.
+  $field_bases['field_reason_not_given_education'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_reason_not_given_education',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'needs-emergency-referral' => 'Patient needs an emergency referral',
+        'received-emergency-case' => 'Received an emergency case to treat',
+        'lack-of-appropriate-education-guide' => 'Lack of appropriate education user guide',
+        'patient-refused' => 'Patient refused',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_reason_not_sent_to_hc'.
+  $field_bases['field_reason_not_sent_to_hc'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_reason_not_sent_to_hc',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'client-refused' => 'Client refused',
+        'no-ambulance' => 'No ambulance available',
+        'unable-to-afford-fee' => 'Client unable to afford fees',
+        'other' => 'Other',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_send_to_hc'.
   $field_bases['field_send_to_hc'] = array(
     'active' => 1,
@@ -885,6 +945,21 @@ function hedley_acute_illness_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_sequence_number'.
+  $field_bases['field_sequence_number'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_sequence_number',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
   );
 
   // Exported field_base: 'field_severe_weakness_period'.

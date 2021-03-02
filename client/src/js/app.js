@@ -256,6 +256,45 @@ dbSync.version(15).upgrade(function (tx) {
     })
 });
 
+dbSync.shards.hook('creating', function (primKey, obj, trans) {
+  if (obj.type === 'person') {
+    if (typeof obj.label == 'string') {
+      obj.name_search = gatherWords(obj.label);
+    }
+  }
+});
+
+dbSync.shards.hook('updating', function (mods, primKey, obj, trans) {
+  if (obj.type === 'person') {
+    if (mods.hasOwnProperty("label")) {
+      if (typeof mods.label == 'string') {
+        return {
+          name_search: gatherWords(mods.label)
+        };
+      } else {
+        return {
+          name_search: []
+        };
+      }
+    } else {
+      return {
+        name_search: gatherWords(obj.label)
+      };
+    }
+  }
+});
+
+function gatherWords (text) {
+  // Split on spaces, and remove blanks from result.
+  return (text || '').split(/\s+/).flatMap(function (word) {
+    if (word) {
+      return [word.toLowerCase()];
+    } else {
+      return [];
+    }
+  });
+}
+
 /**
  * The DB version on the backend.
  *
@@ -544,31 +583,34 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
               }
               catch (e) {
                   // Network error.
-                  return sendResultToElm(queryType,{tag: 'Error', error: 'FetchError', reason: e.toString()});
+                  return sendResultToElm(queryType, {tag: 'Error', error: 'NetworkError', reason: e.toString()});
               }
 
-              if (response.ok) {
-                try {
-                  var json = await response.json();
-                }
-                catch (e) {
-                  // Bad JSON.
-                  return sendResultToElm(queryType,{tag: 'Error', error: 'BadJson', reason: e.toString()});
-                }
-
-                const changes = {
-                  'fileId': parseInt(json.data[0].id),
-                  'remoteFileName': json.data[0].label,
-                  'isSynced': 1,
-                }
-
-                // Update IndexDb to hold the fileId. As there could have been multiple
-                // operations on the same entity, we replace all the photo occurrences.
-                // For example, lets say a person's photo was changed, and later also
-                // their name. So on the two records there were created on the
-                // photoUploadChanges table, the same photo local URL will appear.
-                await dbSync.authorityPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
+              if (!response.ok) {
+                return sendResultToElm(queryType, {tag: 'Error', error: 'UploadError', reason: row.photo});
               }
+
+              // Response indicated success.
+              try {
+                var json = await response.json();
+              }
+              catch (e) {
+                // Bad JSON.
+                return sendResultToElm(queryType, {tag: 'Error', error: 'BadJson', reason: row.photo});
+              }
+
+              const changes = {
+                'fileId': parseInt(json.data[0].id),
+                'remoteFileName': json.data[0].label,
+                'isSynced': 1,
+              }
+
+              // Update IndexDb to hold the fileId. As there could have been multiple
+              // operations on the same entity, we replace all the photo occurrences.
+              // For example, lets say a person's photo was changed, and later also
+              // their name. So on the two records there were created on the
+              // photoUploadChanges table, the same photo local URL will appear.
+              await dbSync.authorityPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
             }
             else {
               // Photo is registered in IndexDB, but doesn't appear in the cache.
@@ -874,49 +916,6 @@ function getRandom8Digits () {
 
   return timestamp.slice(timestamp.length - 8);
 }
-
-function gatherWords (text) {
-  // Split on spaces, and remove blanks from result.
-  return (text || '').split(/\s+/).flatMap(function (word) {
-    if (word) {
-      return [word.toLowerCase()];
-    } else {
-      return [];
-    }
-  });
-}
-
-// Hooks that index persons for searching name.
-dbSync.shards.hook("creating", function (primKey, obj, trans) {
-  if (obj.type === 'person') {
-    if (typeof obj.label == 'string') {
-      obj.name_search = gatherWords(obj.label);
-    }
-  }
-});
-
-dbSync.shards.hook("updating", function (mods, primKey, obj, trans) {
-  if (obj.type === 'person') {
-    if (mods.hasOwnProperty("label")) {
-      if (typeof mods.label == 'string') {
-        return {
-          name_search: gatherWords(mods.label)
-        };
-      } else {
-        return {
-          name_search: []
-        };
-      }
-    } else {
-      return {
-        name_search: gatherWords(obj.label)
-      };
-    }
-  }
-});
-
-
-
 
 ///////////////////////////////////////////////////
 

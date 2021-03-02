@@ -22,7 +22,7 @@ import Measurement.Utils exposing (..)
 import Measurement.View exposing (viewMeasurementFloatDiff, viewMuacIndication, zScoreForHeightOrLength)
 import Pages.AcuteIllnessActivity.Model exposing (SendToHCForm)
 import Pages.AcuteIllnessActivity.Utils exposing (sendToHCFormWithDefault)
-import Pages.AcuteIllnessActivity.View exposing (viewSendToHCActionLabel)
+import Pages.AcuteIllnessActivity.View exposing (viewActionTakenLabel)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
@@ -555,8 +555,8 @@ viewSendToHCContent language currentDate zscores assembled data =
             [ div [ class "ui form send-to-hc" ]
                 [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
                 , div [ class "instructions" ]
-                    [ viewSendToHCActionLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
-                    , viewSendToHCActionLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
+                    [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
+                    , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
                     ]
                 , viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
                 , viewBoolInput

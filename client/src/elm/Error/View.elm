@@ -1,17 +1,43 @@
 module Error.View exposing (view, viewError)
 
+import App.Model exposing (ConfiguredModel)
+import Backend.Nurse.Model exposing (Role(..))
 import Error.Model exposing (Error, ErrorType(..))
+import EverySet
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Json.Decode
 import Json.Encode
+import RemoteData exposing (RemoteData(..))
 import Translate as Trans exposing (Language, translate)
 import Utils.WebData
 
 
-view : Language -> List Error -> Html msg
-view language errors =
+view : Language -> RemoteData String ConfiguredModel -> List Error -> Html any
+view language configuredModel errors =
+    RemoteData.toMaybe configuredModel
+        |> Maybe.map
+            (\configured ->
+                let
+                    nurseIsAdmin =
+                        RemoteData.toMaybe configured.loggedIn
+                            |> Maybe.map (.nurse >> Tuple.second >> .roles >> EverySet.member RoleAdministrator)
+                            |> Maybe.withDefault False
+                in
+                if configured.config.debug || nurseIsAdmin then
+                    -- Show Errors log when at debug, or nurse got Admin role.
+                    viewErrors language errors
+
+                else
+                    emptyNode
+            )
+        -- When not logged in, do not show Errors log.
+        |> Maybe.withDefault (viewErrors language errors)
+
+
+viewErrors : Language -> List Error -> Html any
+viewErrors language errors =
     if List.isEmpty errors then
         emptyNode
 
@@ -25,7 +51,7 @@ view language errors =
             ]
 
 
-viewError : Language -> Error -> Html msg
+viewError : Language -> Error -> Html any
 viewError language error =
     let
         apply str =

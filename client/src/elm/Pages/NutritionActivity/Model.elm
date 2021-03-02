@@ -135,5 +135,5 @@ type alias SendToHCData =
 
 emptySendToHCData : SendToHCData
 emptySendToHCData =
-    { form = SendToHCForm Nothing Nothing
+    { form = SendToHCForm Nothing Nothing Nothing
     }

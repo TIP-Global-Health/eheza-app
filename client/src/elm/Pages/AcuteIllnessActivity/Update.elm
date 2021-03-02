@@ -713,7 +713,7 @@ update currentDate id db msg model =
                     model.laboratoryData.malariaTestingForm
 
                 updatedForm =
-                    { form | rapidTestResult = malariaRapidTestResultFromString value }
+                    { form | rapidTestResult = malariaRapidTestResultFromString value, isPregnant = Nothing }
 
                 updatedData =
                     model.laboratoryData
@@ -1384,7 +1384,7 @@ update currentDate id db msg model =
                     model.nextStepsData.sendToHCForm
 
                 updatedForm =
-                    { form | referToHealthCenter = Just value }
+                    { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
 
                 updatedData =
                     model.nextStepsData
@@ -1402,6 +1402,23 @@ update currentDate id db msg model =
 
                 updatedForm =
                     { form | handReferralForm = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotSendingToHC value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | reasonForNotSendingToHC = Just value }
 
                 updatedData =
                     model.nextStepsData
@@ -1780,7 +1797,24 @@ update currentDate id db msg model =
                     model.nextStepsData.healthEducationForm
 
                 updatedForm =
-                    { form | educationForDiagnosis = Just value }
+                    { form | educationForDiagnosis = Just value, reasonForNotProvidingHealthEducation = Nothing }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | healthEducationForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotProvidingHealthEducation value ->
+            let
+                form =
+                    model.nextStepsData.healthEducationForm
+
+                updatedForm =
+                    { form | reasonForNotProvidingHealthEducation = Just value }
 
                 updatedData =
                     model.nextStepsData

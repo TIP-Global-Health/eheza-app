@@ -14,7 +14,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Pages.AcuteIllnessEncounter.Utils exposing (getAcuteIllnessDiagnosisForParticipant)
+import Pages.AcuteIllnessEncounter.Utils exposing (compareAcuteIllnessEncounterDataDesc, getAcuteIllnessDiagnosisForParticipant)
 import Pages.AcuteIllnessParticipant.Model exposing (..)
 import Pages.AcuteIllnessParticipant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -152,7 +152,7 @@ viewManageIllnessesContent language currentDate selectedHealthCenter id db activ
                             ( maybeActiveEncounterId
                                 |> Maybe.map navigateToEncounterAction
                                 |> Maybe.withDefault startIllnessAction
-                            , -- We do not allow to create multiple encounters for same illness on the same day.
+                            , -- We do not allow to create multiple illnesses on the same day.
                               -- Therefore, we disable the button.
                               encounterWasCompletedToday
                             )
@@ -175,7 +175,10 @@ viewManageIllnessesContent language currentDate selectedHealthCenter id db activ
         activeIllnessesExists =
             List.map Tuple.first activeSessions
                 |> List.filterMap (getAcuteIllnessDiagnosisForParticipant db)
-                |> List.filter ((/=) NoAcuteIllnessDiagnosis)
+                |> List.filter
+                    (\diagnosis ->
+                        not <| List.member diagnosis [ DiagnosisFeverOfUnknownOrigin, NoAcuteIllnessDiagnosis ]
+                    )
                 |> List.isEmpty
                 |> not
 
@@ -325,7 +328,8 @@ viewActiveIllness language currentDate selectedHealthCenter db viewMode sessionI
             sessionEncounters
                 |> Maybe.andThen
                     (List.map Tuple.second
-                        >> List.sortWith (\e1 e2 -> Gizra.NominalDate.compare e1.startDate e2.startDate)
+                        >> List.sortWith compareAcuteIllnessEncounterDataDesc
+                        >> List.filter (\encounter -> encounter.diagnosis /= NoAcuteIllnessDiagnosis)
                         >> List.head
                         >> Maybe.map .diagnosis
                     )
@@ -369,20 +373,23 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter session
                 |> List.head
                 |> Maybe.map Tuple.first
 
-        encounterWasCompletedToday =
+        encounterSequenceNumberForToday =
             encounters
                 |> List.filter
                     (\( _, encounter ) ->
                         encounter.startDate == currentDate && encounter.endDate == Just currentDate
                     )
-                |> List.isEmpty
-                |> not
+                |> List.sortBy (Tuple.second >> .sequenceNumber)
+                |> List.reverse
+                |> List.head
+                |> Maybe.map (Tuple.second >> .sequenceNumber >> (+) 1)
+                |> Maybe.withDefault 1
 
         action =
             maybeActiveEncounterId
                 |> Maybe.map navigateToEncounterAction
                 |> Maybe.withDefault
-                    (emptyAcuteIllnessEncounter sessionId currentDate (Just selectedHealthCenter)
+                    (emptyAcuteIllnessEncounter sessionId currentDate encounterSequenceNumberForToday (Just selectedHealthCenter)
                         |> Backend.Model.PostAcuteIllnessEncounter
                         |> MsgBackend
                     )
@@ -396,10 +403,7 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter session
     in
     Just <|
         div
-            [ classList
-                [ ( "ui primary button active-illness", True )
-                , ( "disabled", encounterWasCompletedToday )
-                ]
+            [ class "ui primary button active-illness"
             , onClick action
             ]
             [ div [ class "button-label" ]

@@ -90,7 +90,7 @@ flexPageWrapper model html =
     let
         syncManager =
             if model.activePage == DevicePage then
-                [ Error.View.view model.language model.errors
+                [ Error.View.view model.language model.configuration model.errors
                 , Html.map MsgSyncManager (SyncManager.View.view model.language model.configuration model.indexedDb model.syncManager)
                 ]
 
@@ -289,7 +289,7 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     DashboardPage subPage ->
-                        Pages.Dashboard.View.view model.language subPage currentDate healthCenterId loggedInModel.dashboardPage model.indexedDb
+                        Pages.Dashboard.View.view model.language subPage currentDate healthCenterId isChw (Tuple.second loggedInModel.nurse) loggedInModel.dashboardPage model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageDashboard subPage)
                             |> flexPageWrapper model
 

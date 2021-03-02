@@ -13,54 +13,60 @@
 // start by implementing just the things we need -- over time, it may
 // become more comprehensive.
 
-(async () => {
-    // This defines our URL scheme. A URL will look like
-    //
-    // /sw/statistics
-
-    var statsUrlRegex = /\/sw\/statistics/;
+(() => {
 
     // As we defined Dexie's store in app.js, we'll need to redefine tables properties here.
     // Since we don't know exactly when the DB will be ready, we define DB placeholder here.
     var dbSync = null;
     var db = null;
 
-    self.addEventListener('fetch', async function (event) {
-      if (dbSync === null) {
-          // Check if IndexedDB exists.
-          var dbExists = await Dexie.exists('sync');
-          if (!dbExists) {
-            // Skip any further actions, if it's not.
-            return;
-          }
+    // This defines our URL scheme. A URL will look like
+    //
+    // /sw/statistics
+    var statsUrlRegex = /\/sw\/statistics/;
 
-          // Redefine tables properties.
-          dbSync = new Dexie('sync');
-          db = await dbSync.open();
-          db.tables.forEach(function(table) {
-              dbSync[table.name] = table;
-          });
-        }
-
+    // If placeholder still indicates tha DB was not initialized,
+    // initialize it.
+    self.addEventListener('fetch', event => {
         var url = new URL(event.request.url);
         var matches = statsUrlRegex.exec(url.pathname);
 
-        if (!matches) {
-          return;
+        if (matches) {
+          event.respondWith(handleEvent(event, url));
         }
+    });
 
-        if (event.request.method === 'GET') {
-            return event.respondWith(index(url));
-        }
-
-        // If we get here, respond with a 404
-        var response = new Response('', {
+    async function handleEvent(event, url) {
+        var notFoundResponse = new Response('', {
             status: 404,
             statusText: 'Not Found'
         });
 
-        return event.respondWith(response);
-    });
+        // If placeholder still indicates tha DB was not initialized,
+        // initialize it.
+        if (dbSync === null) {
+            // Check if IndexedDB exists.
+            var dbExists = await Dexie.exists('sync');
+            if (!dbExists) {
+              // Skip any further actions, if it's not.
+              return notFoundResponse;
+            }
+
+            // Redefine tables properties.
+            dbSync = new Dexie('sync');
+            db = await dbSync.open();
+            db.tables.forEach(function(table) {
+                dbSync[table.name] = table;
+            });
+          }
+
+          if (event.request.method === 'GET') {
+              return index(url);
+          }
+
+          // If we get here, respond with a 404
+          return notFoundResponse;
+    }
 
     function index (url) {
         var params = url.searchParams;
@@ -89,29 +95,6 @@
             });
 
         }).catch(sendErrorResponses);
-    }
-
-
-    // @todo: Remove duplication
-
-    // This is meant for the end of a promise chain. If we've rejected with a
-    // `Response` object, then we resolve instead, so that we'll send the
-    // response. (Otherwise, we'll send a network error).
-    function sendErrorResponses (err) {
-        if (err instanceof Response) {
-            return Promise.resolve(err);
-        } else {
-            return Promise.reject(err);
-        }
-    }
-
-    function databaseError (err) {
-        var response = new Response(JSON.stringify(err), {
-            status: 500,
-            statusText: 'Database Error'
-        });
-
-        return Promise.reject(response);
     }
 
 })();

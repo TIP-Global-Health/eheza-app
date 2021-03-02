@@ -216,7 +216,7 @@ type alias NutritionWeight =
 
 
 type alias NutritionSendToHC =
-    NutritionMeasurement (EverySet SendToHCSign)
+    NutritionMeasurement SendToHCValue
 
 
 
@@ -779,6 +779,12 @@ type alias Call114 =
     AcuteIllnessMeasurement Call114Value
 
 
+type alias SendToHCValue =
+    { signs : EverySet SendToHCSign
+    , reasonForNotSendingToHC : ReasonForNotSendingToHC
+    }
+
+
 type SendToHCSign
     = HandReferrerForm
     | ReferToHealthCenter
@@ -786,7 +792,7 @@ type SendToHCSign
 
 
 type alias SendToHC =
-    AcuteIllnessMeasurement (EverySet SendToHCSign)
+    AcuteIllnessMeasurement SendToHCValue
 
 
 type MedicationDistributionSign
@@ -802,6 +808,7 @@ type MedicationNonAdministrationReason
     = NonAdministrationLackOfStock
     | NonAdministrationKnownAllergy
     | NonAdministrationPatientDeclined
+    | NonAdministrationPatientUnableToAfford
     | NonAdministrationOther
 
 
@@ -827,6 +834,14 @@ type alias AcuteIllnessMuac =
     AcuteIllnessMeasurement MuacInCm
 
 
+type ReasonForNotSendingToHC
+    = ClientRefused
+    | NoAmbulance
+    | ClientUnableToAffordFees
+    | ReasonForNotSendingToHCOther
+    | NoReasonForNotSendingToHC
+
+
 type TreatmentOngoingSign
     = TakenAsPrescribed
     | MissedDoses
@@ -841,6 +856,14 @@ type ReasonForNotTaking
     | NotTakingMemoryProblems
     | NotTakingOther
     | NoReasonForNotTakingSign
+
+
+type ReasonForNotProvidingHealthEducation
+    = PatientNeedsEmergencyReferral
+    | ReceivedEmergencyCase
+    | LackOfAppropriateEducationUserGuide
+    | PatientRefused
+    | NoReasonForNotProvidingHealthEducation
 
 
 type AdverseEvent
@@ -886,8 +909,14 @@ type alias AcuteIllnessNutrition =
     AcuteIllnessMeasurement (EverySet ChildNutritionSign)
 
 
+type alias HealthEducationValue =
+    { signs : EverySet HealthEducationSign
+    , reasonForNotProvidingHealthEducation : ReasonForNotProvidingHealthEducation
+    }
+
+
 type alias HealthEducation =
-    AcuteIllnessMeasurement (EverySet HealthEducationSign)
+    AcuteIllnessMeasurement HealthEducationValue
 
 
 type HealthEducationSign

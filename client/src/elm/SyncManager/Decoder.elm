@@ -112,11 +112,14 @@ decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
                             |> andThen
                                 (\( error, maybeReason ) ->
                                     case error of
-                                        "FetchError" ->
-                                            succeed (RemoteData.Failure <| FetchError (Maybe.withDefault "" maybeReason))
-
                                         "BadJson" ->
                                             succeed (RemoteData.Failure <| BadJson (Maybe.withDefault "" maybeReason))
+
+                                        "NetworkError" ->
+                                            succeed (RemoteData.Failure <| NetworkError (Maybe.withDefault "" maybeReason))
+
+                                        "UploadError" ->
+                                            succeed (RemoteData.Failure <| UploadError (Maybe.withDefault "" maybeReason))
 
                                         _ ->
                                             fail <| error ++ " is not a recognized Error tag IndexDbQueryUploadGeneralResultRecord"
