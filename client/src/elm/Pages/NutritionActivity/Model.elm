@@ -21,6 +21,7 @@ type Msg
     | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
+    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
     | SaveSendToHC PersonId (Maybe ( NutritionSendToHCId, NutritionSendToHC ))
     | SetProvidedEducationForDiagnosis Bool
     | SaveHealthEducation PersonId (Maybe ( NutritionHealthEducationId, NutritionHealthEducation ))

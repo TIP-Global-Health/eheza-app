@@ -298,6 +298,23 @@ update currentDate id db msg model =
             , []
             )
 
+        SetReasonForNotSendingToHC value ->
+            let
+                form =
+                    model.sendToHCData.form
+
+                updatedForm =
+                    { form | reasonForNotSendingToHC = Just value }
+
+                updatedData =
+                    model.sendToHCData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | sendToHCData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveSendToHC personId saved ->
             let
                 measurementId =
