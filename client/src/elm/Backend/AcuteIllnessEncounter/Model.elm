@@ -12,15 +12,17 @@ type alias AcuteIllnessEncounter =
     { participant : IndividualEncounterParticipantId
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , sequenceNumber : Int
     , diagnosis : AcuteIllnessDiagnosis
     , shard : Maybe HealthCenterId
     }
 
 
-emptyAcuteIllnessEncounter : IndividualEncounterParticipantId -> NominalDate -> Maybe HealthCenterId -> AcuteIllnessEncounter
-emptyAcuteIllnessEncounter participant startDate shard =
+emptyAcuteIllnessEncounter : IndividualEncounterParticipantId -> NominalDate -> Int -> Maybe HealthCenterId -> AcuteIllnessEncounter
+emptyAcuteIllnessEncounter participant startDate sequenceNumber shard =
     { participant = participant
     , startDate = startDate
+    , sequenceNumber = sequenceNumber
     , endDate = Nothing
     , diagnosis = NoAcuteIllnessDiagnosis
     , shard = shard
@@ -110,7 +112,7 @@ type Msg
     | HandleSavedAcuteFindings (WebData ())
     | SaveMalariaTesting PersonId (Maybe MalariaTestingId) MalariaRapidTestResult
     | HandleSavedMalariaTesting (WebData ())
-    | SaveSendToHC PersonId (Maybe SendToHCId) (EverySet SendToHCSign)
+    | SaveSendToHC PersonId (Maybe SendToHCId) SendToHCValue
     | HandleSavedSendToHC (WebData ())
     | SaveMedicationDistribution PersonId (Maybe MedicationDistributionId) MedicationDistributionValue
     | HandleSavedMedicationDistribution (WebData ())
@@ -134,5 +136,5 @@ type Msg
     | HandleSavedAcuteIllnessDangerSigns (WebData ())
     | SaveNutrition PersonId (Maybe AcuteIllnessNutritionId) (EverySet ChildNutritionSign)
     | HandleSavedNutrition (WebData ())
-    | SaveHealthEducation PersonId (Maybe HealthEducationId) (EverySet HealthEducationSign)
+    | SaveHealthEducation PersonId (Maybe HealthEducationId) HealthEducationValue
     | HandleSavedHealthEducation (WebData ())

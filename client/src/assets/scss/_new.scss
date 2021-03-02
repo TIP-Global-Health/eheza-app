@@ -52,7 +52,7 @@
           background: url(#{$img-path}icon-oral-solution.svg) center center no-repeat;
           background-size: 26px 32px;
           height: 32px;
-          margin-right: 22px;
+          margin-right: 27px;
           width: 32px;
         }
 
@@ -60,13 +60,27 @@
           background: url(#{$img-path}icon-pills.svg) center center no-repeat;
           background-size: 36px 50px;
           height: 36px;
+          margin-right: 5px;
           width: 50px;
+        }
+
+        &.icon-open-book {
+          background: url(#{$img-path}icon-open-book.svg) center center no-repeat;
+          background-size: 36px 36px;
+          margin-right: 10px;
+          height: 36px;
+          width: 52px;
         }
       }
     }
 
     .prescription {
       margin-left: 54px;
+    }
+
+    .icon-label {
+      align-items: center;
+      display: flex;
     }
   }
 }
@@ -294,8 +308,8 @@ div.page-pincode {
     margin-bottom: 40px;
   }
 
-  .general-sync .total-to-upload {
-    margin-bottom: 20px;
+  .general-sync .sync-status {
+    margin-bottom: 40px;
   }
 
   .login-request {
@@ -842,6 +856,13 @@ div.page-activity.acute-illness {
         }
       }
 
+    }
+
+    .ui.form.physical-exam.vitals {
+
+      .label {
+        line-height: 40px;
+      }
     }
 
     .label {
@@ -2095,6 +2116,10 @@ div.page-report.acute-illness {
 
         p {
           margin-bottom: 5px;
+        }
+
+        .diagnosis-date {
+          color: $color-light-blue;
         }
       }
 

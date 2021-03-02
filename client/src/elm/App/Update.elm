@@ -34,6 +34,7 @@ import Pages.AcuteIllnessParticipant.Update
 import Pages.AcuteIllnessProgressReport.Model
 import Pages.AcuteIllnessProgressReport.Update
 import Pages.Clinics.Update
+import Pages.Dashboard.Model
 import Pages.Dashboard.Update
 import Pages.Device.Model
 import Pages.Device.Update
@@ -191,10 +192,6 @@ update msg model =
         loggedInData =
             getLoggedInData model
 
-        nurseId =
-            loggedInData
-                |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
-
         isChw =
             loggedInData
                 |> Maybe.map (Tuple.second >> .nurse >> Tuple.second >> isCommunityHealthWorker)
@@ -203,6 +200,10 @@ update msg model =
     case msg of
         MsgIndexedDb subMsg ->
             let
+                nurseId =
+                    loggedInData
+                        |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
+
                 ( subModel, subCmd, extraMsgs ) =
                     Backend.Update.updateIndexedDb currentDate model.zscores nurseId model.healthCenterId isChw subMsg model.indexedDb
 
@@ -601,6 +602,13 @@ update msg model =
                                     )
                                 |> Maybe.withDefault []
 
+                        -- When navigating to Acute Illness participant page, set initial view mode.
+                        UserPage (AcuteIllnessParticipantPage participantId) ->
+                            Pages.AcuteIllnessParticipant.Model.SetViewMode Pages.AcuteIllnessParticipant.Model.ManageIllnesses
+                                |> MsgPageAcuteIllnessParticipant participantId
+                                |> MsgLoggedIn
+                                |> List.singleton
+
                         _ ->
                             []
             in
@@ -650,12 +658,25 @@ update msg model =
 
                 extraMsgs =
                     [ SetHealthCenter maybeHealthCenterId ]
+
+                cacheVillageCmd =
+                    maybeVillageId
+                        |> Maybe.map fromEntityUuid
+                        |> Maybe.withDefault ""
+                        |> cacheVillage
+
+                ( updatedModel, cmd ) =
+                    updateLoggedIn
+                        (\loggedId ->
+                            ( { loggedId | dashboardPage = Pages.Dashboard.Model.emptyModel maybeVillageId }
+                            , cacheVillageCmd
+                            , []
+                            )
+                        )
+                        { model | villageId = maybeVillageId }
             in
-            ( { model | villageId = maybeVillageId }
-            , maybeVillageId
-                |> Maybe.map fromEntityUuid
-                |> Maybe.withDefault ""
-                |> cacheVillage
+            ( updatedModel
+            , cmd
             )
                 |> sequence update extraMsgs
 
@@ -695,7 +716,7 @@ update msg model =
                         updateSubModel
                             subMsg
                             model.syncManager
-                            (\subMsg_ subModel -> SyncManager.Update.update currentDate model.currentTime model.dbVersion device subMsg_ subModel)
+                            (\subMsg_ subModel -> SyncManager.Update.update currentDate model.currentTime model.activePage model.dbVersion device subMsg_ subModel)
                             (\subModel model_ -> { model_ | syncManager = subModel })
                             (\subCmds -> MsgSyncManager subCmds)
                             model
@@ -727,7 +748,7 @@ update msg model =
         SetLoggedIn nurse ->
             updateConfigured
                 (\configured ->
-                    ( { configured | loggedIn = RemoteData.map emptyLoggedInModel nurse }
+                    ( { configured | loggedIn = RemoteData.map (emptyLoggedInModel model.villageId) nurse }
                     , Cmd.none
                     , []
                     )

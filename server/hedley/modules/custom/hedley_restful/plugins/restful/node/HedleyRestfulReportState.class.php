@@ -49,6 +49,11 @@ class HedleyRestfulReportState extends \RestfulBase implements \RestfulDataProvi
       throw new RestfulBadRequestException('Must provide version parameter.');
     }
 
+    $phase = $request['phase'];
+    if (empty($phase)) {
+      throw new RestfulBadRequestException('Must provide phase parameter.');
+    }
+
     $total_to_upload = $request['total_to_upload'];
     // Note that 0 is fine, so we can't use `empty`.
     if (!isset($total_to_upload)) {
@@ -65,15 +70,18 @@ class HedleyRestfulReportState extends \RestfulBase implements \RestfulDataProvi
     }
     $wrapper = entity_metadata_wrapper('user', $account->uid);
     $current_version = $wrapper->field_version->value();
+    $current_phase = $wrapper->field_sync_phase->value();
     $current_total_to_upload = $wrapper->field_total_to_upload->value();
     $current_synced_authorities = $wrapper->field_health_centers->value();
     sort($current_synced_authorities);
 
     if ($current_version !== $version
+      || $current_phase !== $phase
       || $current_total_to_upload !== $total_to_upload
       || $current_synced_authorities !== $synced_authorities
     ) {
       $wrapper->field_version->set($version);
+      $wrapper->field_sync_phase->set($phase);
       $wrapper->field_total_to_upload->set($total_to_upload);
       $wrapper->field_health_centers->set($synced_authorities);
       $wrapper->save();

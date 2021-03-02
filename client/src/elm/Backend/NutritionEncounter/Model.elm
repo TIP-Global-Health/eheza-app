@@ -56,7 +56,7 @@ type Msg
     | HandleSavedPhoto (WebData ())
     | SaveWeight PersonId (Maybe NutritionWeightId) WeightInKg
     | HandleSavedWeight (WebData ())
-    | SaveSendToHC PersonId (Maybe NutritionSendToHCId) (EverySet SendToHCSign)
+    | SaveSendToHC PersonId (Maybe NutritionSendToHCId) SendToHCValue
     | HandleSavedSendToHC (WebData ())
-    | SaveHealthEducation PersonId (Maybe NutritionHealthEducationId) (EverySet HealthEducationSign)
+    | SaveHealthEducation PersonId (Maybe NutritionHealthEducationId) HealthEducationValue
     | HandleSavedHealthEducation (WebData ())

@@ -1296,9 +1296,10 @@ encodeNutritionSendToHC =
     encodeNutritionMeasurement (encodeSendToHCValueWithType "nutrition_send_to_hc")
 
 
-encodeSendToHCValueWithType : String -> EverySet SendToHCSign -> List ( String, Value )
+encodeSendToHCValueWithType : String -> SendToHCValue -> List ( String, Value )
 encodeSendToHCValueWithType type_ value =
-    [ ( "send_to_hc", encodeEverySet encondeSendToHCSign value )
+    [ ( "send_to_hc", encodeEverySet encondeSendToHCSign value.signs )
+    , ( "reason_not_sent_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
@@ -1315,6 +1316,26 @@ encondeSendToHCSign sign =
                 "refer-to-hc"
 
             NoSendToHCSigns ->
+                "none"
+
+
+encodeReasonForNotSendingToHC : ReasonForNotSendingToHC -> Value
+encodeReasonForNotSendingToHC event =
+    string <|
+        case event of
+            ClientRefused ->
+                "client-refused"
+
+            NoAmbulance ->
+                "no-ambulance"
+
+            ClientUnableToAffordFees ->
+                "unable-to-afford-fee"
+
+            ReasonForNotSendingToHCOther ->
+                "other"
+
+            NoReasonForNotSendingToHC ->
                 "none"
 
 
@@ -1816,9 +1837,10 @@ encodeNutritionHealthEducation =
     encodeNutritionMeasurement (encodeHealthEducationValueWithType "nutrition_health_education")
 
 
-encodeHealthEducationValueWithType : String -> EverySet HealthEducationSign -> List ( String, Value )
+encodeHealthEducationValueWithType : String -> HealthEducationValue -> List ( String, Value )
 encodeHealthEducationValueWithType type_ value =
-    [ ( "health_education_signs", encodeEverySet encodeHealthEducationSign value )
+    [ ( "health_education_signs", encodeEverySet encodeHealthEducationSign value.signs )
+    , ( "reason_not_given_education", encodeReasonForNotProvidingHealthEducation value.reasonForNotProvidingHealthEducation )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
@@ -1832,4 +1854,24 @@ encodeHealthEducationSign sign =
                 "education-for-diagnosis"
 
             NoHealthEducationSigns ->
+                "none"
+
+
+encodeReasonForNotProvidingHealthEducation : ReasonForNotProvidingHealthEducation -> Value
+encodeReasonForNotProvidingHealthEducation reason =
+    string <|
+        case reason of
+            PatientNeedsEmergencyReferral ->
+                "needs-emergency-referral"
+
+            ReceivedEmergencyCase ->
+                "received-emergency-case"
+
+            LackOfAppropriateEducationUserGuide ->
+                "lack-of-appropriate-education-guide"
+
+            PatientRefused ->
+                "patient-refused"
+
+            NoReasonForNotProvidingHealthEducation ->
                 "none"

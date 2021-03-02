@@ -139,7 +139,7 @@ type alias SendToHCData =
 
 emptySendToHCData : SendToHCData
 emptySendToHCData =
-    { form = SendToHCForm Nothing Nothing
+    { form = SendToHCForm Nothing Nothing Nothing
     }
 
 
@@ -150,5 +150,5 @@ type alias HealthEducationData =
 
 emptyHealthEducationData : HealthEducationData
 emptyHealthEducationData =
-    { form = HealthEducationForm Nothing
+    { form = HealthEducationForm Nothing Nothing
     }

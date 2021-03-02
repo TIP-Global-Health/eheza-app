@@ -20,6 +20,10 @@ class HedleyRestfulAcuteIllnessEncounter extends HedleyRestfulIndividualEncounte
       'property' => 'field_acute_illness_diagnosis',
     ];
 
+    $public_fields['sequence_number'] = [
+      'property' => 'field_sequence_number',
+    ];
+
     return $public_fields;
   }
 
@@ -31,6 +35,7 @@ class HedleyRestfulAcuteIllnessEncounter extends HedleyRestfulIndividualEncounte
 
     $field_names = [
       'field_acute_illness_diagnosis',
+      'field_sequence_number',
     ];
 
     foreach ($field_names as $field_name) {

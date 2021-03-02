@@ -1058,8 +1058,9 @@ decodeNutritionWeight =
 
 decodeNutritionSendToHC : Decoder NutritionSendToHC
 decodeNutritionSendToHC =
-    decodeEverySet decodeSendToHCSign
-        |> field "send_to_hc"
+    succeed SendToHCValue
+        |> required "send_to_hc" (decodeEverySet decodeSendToHCSign)
+        |> optional "reason_not_sent_to_hc" decodeReasonForNotSendingToHC NoReasonForNotSendingToHC
         |> decodeNutritionMeasurement
 
 
@@ -1323,8 +1324,9 @@ malariaRapidTestResultFromString result =
 
 decodeSendToHC : Decoder SendToHC
 decodeSendToHC =
-    decodeEverySet decodeSendToHCSign
-        |> field "send_to_hc"
+    succeed SendToHCValue
+        |> required "send_to_hc" (decodeEverySet decodeSendToHCSign)
+        |> optional "reason_not_sent_to_hc" decodeReasonForNotSendingToHC NoReasonForNotSendingToHC
         |> decodeAcuteIllnessMeasurement
 
 
@@ -1347,6 +1349,34 @@ decodeSendToHCSign =
                         fail <|
                             sign
                                 ++ " is not a recognized SendToHCSign"
+            )
+
+
+decodeReasonForNotSendingToHC : Decoder ReasonForNotSendingToHC
+decodeReasonForNotSendingToHC =
+    string
+        |> andThen
+            (\event ->
+                case event of
+                    "client-refused" ->
+                        succeed ClientRefused
+
+                    "no-ambulance" ->
+                        succeed NoAmbulance
+
+                    "unable-to-afford-fee" ->
+                        succeed ClientUnableToAffordFees
+
+                    "other" ->
+                        succeed ReasonForNotSendingToHCOther
+
+                    "none" ->
+                        succeed NoReasonForNotSendingToHC
+
+                    _ ->
+                        fail <|
+                            event
+                                ++ "is not a recognized ReasonForNotSendingToHC"
             )
 
 
@@ -1944,15 +1974,17 @@ decodeAcuteIllnessNutrition =
 
 decodeHealthEducation : Decoder HealthEducation
 decodeHealthEducation =
-    decodeEverySet decodeHealthEducationSign
-        |> field "health_education_signs"
+    succeed HealthEducationValue
+        |> required "health_education_signs" (decodeEverySet decodeHealthEducationSign)
+        |> optional "reason_not_given_education" decodeReasonForNotProvidingHealthEducation NoReasonForNotProvidingHealthEducation
         |> decodeAcuteIllnessMeasurement
 
 
 decodeNutritionHealthEducation : Decoder NutritionHealthEducation
 decodeNutritionHealthEducation =
-    decodeEverySet decodeHealthEducationSign
-        |> field "health_education_signs"
+    succeed HealthEducationValue
+        |> required "health_education_signs" (decodeEverySet decodeHealthEducationSign)
+        |> optional "reason_not_given_education" decodeReasonForNotProvidingHealthEducation NoReasonForNotProvidingHealthEducation
         |> decodeNutritionMeasurement
 
 
@@ -1972,4 +2004,32 @@ decodeHealthEducationSign =
                         fail <|
                             sign
                                 ++ " is not a recognized HealthEducationSign"
+            )
+
+
+decodeReasonForNotProvidingHealthEducation : Decoder ReasonForNotProvidingHealthEducation
+decodeReasonForNotProvidingHealthEducation =
+    string
+        |> andThen
+            (\reason ->
+                case reason of
+                    "needs-emergency-referral" ->
+                        succeed PatientNeedsEmergencyReferral
+
+                    "received-emergency-case" ->
+                        succeed ReceivedEmergencyCase
+
+                    "lack-of-appropriate-education-guide" ->
+                        succeed LackOfAppropriateEducationUserGuide
+
+                    "patient-refused" ->
+                        succeed PatientRefused
+
+                    "none" ->
+                        succeed NoReasonForNotProvidingHealthEducation
+
+                    _ ->
+                        fail <|
+                            reason
+                                ++ " is not a recognized ReasonForNotProvidingHealthEducation"
             )

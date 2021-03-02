@@ -13,7 +13,7 @@
 // start by implementing just the things we need -- over time, it may
 // become more comprehensive.
 
-(async () => {
+(() => {
 
     // As we defined Dexie's store in app.js, we'll need to redefine tables properties here.
     // Since we don't know exactly when the DB will be ready, we define DB placeholder here.
@@ -31,14 +31,32 @@
     // /sw/nodes/health_center/78cf21d1-b3f4-496a-b312-d8ae73041f09
     var nodesUrlRegex = /\/sw\/nodes\/([^/]+)\/?(.*)/;
 
-    self.addEventListener('fetch', async function (event) {
-        // If placeholder still indicates tha DB was not initialized.
+    self.addEventListener('fetch', event => {
+        var url = new URL(event.request.url);
+        var matches = nodesUrlRegex.exec(url.pathname);
+
+        if (matches) {
+            var type = matches[1];
+            var uuid = matches[2]; // May be null
+
+            event.respondWith(handleEvent(event, url, type, uuid));
+        }
+    });
+
+    async function handleEvent(event, url, type, uuid) {
+        var notFoundResponse = new Response('', {
+            status: 404,
+            statusText: 'Not Found'
+        });
+
+        // If placeholder still indicates tha DB was not initialized,
+        // initialize it.
         if (dbSync === null) {
             // Check if IndexedDB exists.
             var dbExists = await Dexie.exists('sync');
             if (!dbExists) {
               // Skip any further actions, if it's not.
-              return;
+              return notFoundResponse;
             }
 
             // Redefine tables properties.
@@ -48,6 +66,34 @@
                 dbSync[table.name] = table;
             });
 
+            dbSync.shards.hook('creating', function (primKey, obj, trans) {
+              if (obj.type === 'person') {
+                if (typeof obj.label == 'string') {
+                  obj.name_search = gatherWords(obj.label);
+                }
+              }
+            });
+
+            dbSync.shards.hook('updating', function (mods, primKey, obj, trans) {
+              if (obj.type === 'person') {
+                if (mods.hasOwnProperty("label")) {
+                  if (typeof mods.label == 'string') {
+                    return {
+                      name_search: gatherWords(mods.label)
+                    };
+                  } else {
+                    return {
+                      name_search: []
+                    };
+                  }
+                } else {
+                  return {
+                    name_search: gatherWords(obj.label)
+                  };
+                }
+              }
+            });
+
             // A hook to create matching row in `authorityPhotoUploadChanges`, if entity has a photo.
             dbSync.shardChanges.hook('creating', function (primKey, obj, transaction) {
                 const self = this;
@@ -55,67 +101,53 @@
             });
         }
 
-        var url = new URL(event.request.url);
-        var matches = nodesUrlRegex.exec(url.pathname);
-
-        if (matches) {
-            var type = matches[1];
-            var uuid = matches[2]; // May be null
-
-            if (event.request.method === 'GET') {
-                if (uuid) {
-                    if (type === 'child-measurements' || type === 'mother-measurements') {
-                        return event.respondWith(viewMeasurements('person', uuid));
-                    }
-                    else if (type === 'prenatal-measurements') {
-                        return event.respondWith(viewMeasurements('prenatal_encounter', uuid));
-                    }
-                    else if (type === 'nutrition-measurements') {
-                        return event.respondWith(viewMeasurements('nutrition_encounter', uuid));
-                    }
-                    else if (type === 'acute-illness-measurements') {
-                        return event.respondWith(viewMeasurements('acute_illness_encounter', uuid));
-                    }
-                    else {
-                        return event.respondWith(view(type, uuid));
-                    }
-                } else {
-                      return event.respondWith(index(url, type));
+        if (event.request.method === 'GET') {
+            if (uuid) {
+                if (type === 'child-measurements' || type === 'mother-measurements') {
+                    return viewMeasurements('person', uuid);
                 }
-            }
-
-            if (event.request.method === 'DELETE') {
-                if (uuid) {
-                    return event.respondWith(deleteNode(url, type, uuid));
+                else if (type === 'prenatal-measurements') {
+                    return viewMeasurements('prenatal_encounter', uuid);
                 }
-            }
-
-            if (event.request.method === 'PUT') {
-                if (uuid) {
-                    return event.respondWith(putNode(event.request, type, uuid));
+                else if (type === 'nutrition-measurements') {
+                    return viewMeasurements('nutrition_encounter', uuid);
                 }
-            }
-
-            if (event.request.method === 'POST') {
-                return event.respondWith(postNode(event.request, type));
-            }
-
-            if (event.request.method === 'PATCH') {
-                if (uuid) {
-                    return event.respondWith(patchNode(event.request, type, uuid));
+                else if (type === 'acute-illness-measurements') {
+                    return viewMeasurements('acute_illness_encounter', uuid);
                 }
+                else {
+                    return view(type, uuid);
+                }
+            } else {
+                  return index(url, type);
             }
-
-            // If we get here, respond with a 404
-            var response = new Response('', {
-                status: 404,
-                statusText: 'Not Found'
-            });
-
-            return event.respondWith(response);
-
         }
-    });
+
+        if (event.request.method === 'DELETE') {
+            if (uuid) {
+                return deleteNode(url, type, uuid);
+            }
+        }
+
+        if (event.request.method === 'PUT') {
+            if (uuid) {
+                return putNode(event.request, type, uuid);
+            }
+        }
+
+        if (event.request.method === 'POST') {
+            return postNode(event.request, type);
+        }
+
+        if (event.request.method === 'PATCH') {
+            if (uuid) {
+                return patchNode(event.request, type, uuid);
+            }
+        }
+
+        // If we get here, respond with a 404
+        return notFoundResponse;
+    }
 
     var Status = {
         published: 1,
@@ -148,7 +180,7 @@
         return dbSync.open().catch(databaseError).then(function () {
             if (type === 'syncmetadata') {
                 // For the syncmetadata type, we actually delete
-                return dbSync.syncMetadata.delete(uuid).catch(databaseError).then(sendSyncData).then(function () {
+                return dbSync.syncMetadata.delete(uuid).catch(databaseError).then(function () {
                     var response = new Response(null, {
                         status: 204,
                         statusText: 'Deleted'
@@ -275,7 +307,7 @@
         }).catch(sendErrorResponses);
     }
 
-    async function postNode (request, type) {
+    function postNode (request, type) {
         return dbSync.open().catch(databaseError).then(function () {
             return getTableForType(type).then(function (table) {
                 return request.json().catch(jsonError).then(function (json) {
@@ -479,7 +511,7 @@
 
                 return Promise.reject(response);
             }
-        });
+        }).catch(sendErrorResponses);
     }
 
     // Fields which we index along with type, so we can search for them.
@@ -747,26 +779,6 @@
                 return Promise.reject("UUID unexpectedly not found.");
             }
         });
-    }
-
-    // This is meant for the end of a promise chain. If we've rejected with a
-    // `Response` object, then we resolve instead, so that we'll send the
-    // response. (Otherwise, we'll send a network error).
-    function sendErrorResponses (err) {
-        if (err instanceof Response) {
-            return Promise.resolve(err);
-        } else {
-            return Promise.reject(err);
-        }
-    }
-
-    function databaseError (err) {
-        var response = new Response(JSON.stringify(err), {
-            status: 500,
-            statusText: 'Database Error'
-        });
-
-        return Promise.reject(response);
     }
 
     function jsonError (err) {

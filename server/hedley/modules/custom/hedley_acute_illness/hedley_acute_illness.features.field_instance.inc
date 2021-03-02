@@ -673,6 +673,53 @@ function hedley_acute_illness_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-acute_illness_encounter-field_sequence_number'.
+  $field_instances['node-acute_illness_encounter-field_sequence_number'] = array(
+    'bundle' => 'acute_illness_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_sequence_number',
+    'label' => 'Sequence Number',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-acute_illness_muac-field_acute_illness_encounter'.
   $field_instances['node-acute_illness_muac-field_acute_illness_encounter'] = array(
     'bundle' => 'acute_illness_muac',
@@ -3009,6 +3056,44 @@ function hedley_acute_illness_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-health_education-field_reason_not_given_education'.
+  $field_instances['node-health_education-field_reason_not_given_education'] = array(
+    'bundle' => 'health_education',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_reason_not_given_education',
+    'label' => 'Reason For Not Providing Education',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 9,
+    ),
+  );
+
   // Exported field_instance: 'node-health_education-field_shards'.
   $field_instances['node-health_education-field_shards'] = array(
     'bundle' => 'health_education',
@@ -4284,6 +4369,43 @@ function hedley_acute_illness_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance: 'node-send_to_hc-field_reason_not_sent_to_hc'.
+  $field_instances['node-send_to_hc-field_reason_not_sent_to_hc'] = array(
+    'bundle' => 'send_to_hc',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_reason_not_sent_to_hc',
+    'label' => 'Reason for Not Sending to HC',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 8,
     ),
   );
 
@@ -7663,10 +7785,13 @@ function hedley_acute_illness_field_default_field_instances() {
   t('Person');
   t('Poor Suck Period');
   t('Prescribed medication');
+  t('Reason For Not Providing Education');
+  t('Reason for Not Sending to HC');
   t('Reason for not isolating');
   t('Reason for not taking');
   t('Respiratory rate');
   t('Send to HC');
+  t('Sequence Number');
   t('Severe Weakness Period');
   t('Shards');
   t('Shortness of Breath Period');
