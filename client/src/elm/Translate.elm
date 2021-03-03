@@ -4937,6 +4937,11 @@ translationSet trans =
                     , kinyarwanda = Just "Umurwayi yabyanze"
                     }
 
+                PatientTooIll ->
+                    { english = "Patient too ill"
+                    , kinyarwanda = Just "Umurwayi ararembye"
+                    }
+
                 NoReasonForNotProvidingHealthEducation ->
                     { english = "No reason"
                     , kinyarwanda = Just "Nta mpamvu"

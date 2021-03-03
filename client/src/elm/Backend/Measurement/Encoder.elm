@@ -1873,5 +1873,8 @@ encodeReasonForNotProvidingHealthEducation reason =
             PatientRefused ->
                 "patient-refused"
 
+            PatientTooIll ->
+                "patient-too-ill"
+
             NoReasonForNotProvidingHealthEducation ->
                 "none"
