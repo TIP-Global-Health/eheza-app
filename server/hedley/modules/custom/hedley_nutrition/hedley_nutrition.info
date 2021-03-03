@@ -27,6 +27,7 @@ features[field_instance][] = node-nutrition_send_to_hc-field_date_measured
 features[field_instance][] = node-nutrition_send_to_hc-field_nurse
 features[field_instance][] = node-nutrition_send_to_hc-field_nutrition_encounter
 features[field_instance][] = node-nutrition_send_to_hc-field_person
+features[field_instance][] = node-nutrition_send_to_hc-field_reason_not_sent_to_hc
 features[field_instance][] = node-nutrition_send_to_hc-field_send_to_hc
 features[field_instance][] = node-nutrition_send_to_hc-field_shards
 features[field_instance][] = node-nutrition_send_to_hc-field_uuid
