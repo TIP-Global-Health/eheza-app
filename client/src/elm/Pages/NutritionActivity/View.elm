@@ -556,14 +556,13 @@ viewSendToHCContent language currentDate zscores assembled data =
                                 ( 1, 2 )
 
                         else
-                            ( 1, 0 )
+                            ( 1, 1 )
                     )
                 |> Maybe.withDefault ( 0, 1 )
 
         tasksCompleted =
             reasonForNotSentActive + taskCompleted form.handReferralForm
 
-        --taskCompleted form.handReferralForm + taskCompleted form.referToHealthCenter
         totalTasks =
             reasonForNotSentCompleted + 1
 
