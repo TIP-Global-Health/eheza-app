@@ -21,6 +21,7 @@ features[field_instance][] = node-nutrition_health_education-field_health_educat
 features[field_instance][] = node-nutrition_health_education-field_nurse
 features[field_instance][] = node-nutrition_health_education-field_nutrition_encounter
 features[field_instance][] = node-nutrition_health_education-field_person
+features[field_instance][] = node-nutrition_health_education-field_reason_not_given_education
 features[field_instance][] = node-nutrition_health_education-field_shards
 features[field_instance][] = node-nutrition_health_education-field_uuid
 features[field_instance][] = node-nutrition_send_to_hc-field_date_measured

@@ -239,6 +239,44 @@ function hedley_nutrition_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-nutrition_health_education-field_reason_not_given_education'.
+  $field_instances['node-nutrition_health_education-field_reason_not_given_education'] = array(
+    'bundle' => 'nutrition_health_education',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_reason_not_given_education',
+    'label' => 'Reason For Not Providing Education',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 11,
+    ),
+  );
+
   // Exported field_instance: 'node-nutrition_health_education-field_shards'.
   $field_instances['node-nutrition_health_education-field_shards'] = array(
     'bundle' => 'nutrition_health_education',
@@ -678,6 +716,7 @@ function hedley_nutrition_field_default_field_instances() {
   t('Nurse');
   t('Nutrition Encounter');
   t('Person');
+  t('Reason For Not Providing Education');
   t('Reason for Not Sending to HC');
   t('Send to HC');
   t('Shards');
