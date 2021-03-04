@@ -645,25 +645,54 @@ viewHealthEducationContent language currentDate zscores assembled data =
 
         disabled =
             tasksCompleted /= totalTasks
+
+        healthEducationSection =
+            let
+                providedHealthEducation =
+                    form.educationForDiagnosis
+                        |> Maybe.withDefault True
+
+                reasonForNotProvidingHealthEducation =
+                    if not providedHealthEducation then
+                        [ viewQuestionLabel language Translate.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ PatientNeedsEmergencyReferral
+                            , ReceivedEmergencyCase
+                            , LackOfAppropriateEducationUserGuide
+                            , PatientRefused
+                            , PatientTooIll
+                            ]
+                            []
+                            form.reasonForNotProvidingHealthEducation
+                            SetReasonForNotProvidingHealthEducation
+                            Translate.ReasonForNotProvidingHealthEducation
+                        ]
+
+                    else
+                        []
+            in
+            [ div [ class "label" ]
+                [ text <| translate language Translate.ProvidedPreventionEducationQuestion
+                , text " "
+                , text <| translate language Translate.ModeratelyUnderweight
+                , text "?"
+                ]
+            , viewBoolInput
+                language
+                form.educationForDiagnosis
+                SetProvidedEducationForDiagnosis
+                "education-for-diagnosis"
+                Nothing
+            ]
+                ++ reasonForNotProvidingHealthEducation
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form health-education" ]
+            [ div [ class "ui form health-education" ] <|
                 [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-                , div [ class "label" ]
-                    [ text <| translate language Translate.ProvidedPreventionEducationQuestion
-                    , text " "
-                    , text <| translate language Translate.ModeratelyUnderweight
-                    , text "?"
-                    ]
-                , viewBoolInput
-                    language
-                    form.educationForDiagnosis
-                    SetProvidedEducationForDiagnosis
-                    "education-for-diagnosis"
-                    Nothing
                 ]
+                    ++ healthEducationSection
             , div [ class "actions" ]
                 [ button
                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
