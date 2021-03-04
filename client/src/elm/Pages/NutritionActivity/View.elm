@@ -637,11 +637,27 @@ viewHealthEducationContent language currentDate zscores assembled data =
                 |> Maybe.map (Tuple.second >> .value)
                 |> healthEducationFormWithDefault data.form
 
+        ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
+            form.educationForDiagnosis
+                |> Maybe.map
+                    (\providedHealthEducation ->
+                        if not providedHealthEducation then
+                            if isJust form.reasonForNotProvidingHealthEducation then
+                                ( 1, 1 )
+
+                            else
+                                ( 0, 1 )
+
+                        else
+                            ( 0, 0 )
+                    )
+                |> Maybe.withDefault ( 0, 0 )
+
         tasksCompleted =
-            taskCompleted form.educationForDiagnosis
+            reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
 
         totalTasks =
-            1
+            reasonForProvidingEducationCompleted + 1
 
         disabled =
             tasksCompleted /= totalTasks
