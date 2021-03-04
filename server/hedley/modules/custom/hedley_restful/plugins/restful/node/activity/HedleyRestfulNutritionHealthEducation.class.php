@@ -23,5 +23,5 @@ class HedleyRestfulNutritionHealthEducation extends HedleyRestfulNutritionActivi
    */
   protected $fields = [
     'field_reason_not_given_education',
-    ];
+  ];
 }
