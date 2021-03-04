@@ -25,6 +25,7 @@ type Msg
     | SaveSendToHC PersonId (Maybe ( NutritionSendToHCId, NutritionSendToHC ))
     | SetProvidedEducationForDiagnosis Bool
     | SaveHealthEducation PersonId (Maybe ( NutritionHealthEducationId, NutritionHealthEducation ))
+    | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
 
 
 type alias Model =

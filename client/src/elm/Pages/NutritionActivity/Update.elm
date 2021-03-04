@@ -358,6 +358,23 @@ update currentDate id db msg model =
             , []
             )
 
+        SetReasonForNotProvidingHealthEducation value ->
+            let
+                form =
+                    model.healthEducationData.form
+
+                updatedForm =
+                    { form | reasonForNotProvidingHealthEducation = Just value }
+
+                updatedData =
+                    model.healthEducationData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | healthEducationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveHealthEducation personId saved ->
             let
                 measurementId =
