@@ -14,8 +14,9 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInMonths)
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffMonths)
+import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, or, unwrap)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
@@ -34,9 +35,8 @@ expectActivity currentDate zscores child isChw measurements activity =
 
         -- Show for children that are at least 6 month old.
         Muac ->
-            child.birthDate
-                |> Maybe.map
-                    (\birthDate -> diffMonths birthDate currentDate > 5)
+            ageInMonths currentDate child
+                |> Maybe.map (\ageMonths -> ageMonths > 5)
                 |> Maybe.withDefault False
 
         SendToHC ->
@@ -67,7 +67,7 @@ expectActivity currentDate zscores child isChw measurements activity =
                                     >> .value
                                     >> (\(WeightInKg weight) -> calculateZScoreWeightForAge currentDate zscores child (Just weight))
                                 )
-                            |> Maybe.map zScoreWeightForAgeAbnormal
+                            |> Maybe.map (zScoreWeightForAgeAbnormal currentDate child)
                             |> Maybe.withDefault False
                 in
                 abnormalMuac || abnormalWeightForAgeZScore || malnutritionSignEdemaRecorded measurements
@@ -279,9 +279,18 @@ calculateZScoreWeightForAge currentDate zscores person maybeWeight =
             )
 
 
-zScoreWeightForAgeAbnormal : Float -> Bool
-zScoreWeightForAgeAbnormal zScore =
-    zScoreWeightForAgeSevere zScore || zScoreWeightForAgeModerate zScore
+zScoreWeightForAgeAbnormal : NominalDate -> Person -> Float -> Bool
+zScoreWeightForAgeAbnormal currentDate child zScore =
+    -- Abnormal when we have severe value for any age.
+    zScoreWeightForAgeSevere zScore
+        || (ageInMonths currentDate child
+                |> Maybe.map
+                    (\ageMonths ->
+                        -- Abnormal when we have moderate value and child is 0-6 month old.
+                        ageMonths < 6 && zScoreWeightForAgeModerate zScore
+                    )
+                |> Maybe.withDefault False
+           )
 
 
 zScoreWeightForAgeSevere : Float -> Bool
