@@ -867,6 +867,7 @@ type ReasonForNotProvidingHealthEducation
     | ReceivedEmergencyCase
     | LackOfAppropriateEducationUserGuide
     | PatientRefused
+    | PatientTooIll
     | NoReasonForNotProvidingHealthEducation
 
 

@@ -34,6 +34,7 @@ import Pages.Utils
         ( taskCompleted
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
@@ -543,31 +544,71 @@ viewSendToHCContent language currentDate zscores assembled data =
                 |> Maybe.map (Tuple.second >> .value)
                 |> sendToHCFormWithDefault data.form
 
+        ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+            form.referToHealthCenter
+                |> Maybe.map
+                    (\sentToHC ->
+                        if not sentToHC then
+                            if isJust form.reasonForNotSendingToHC then
+                                ( 2, 2 )
+
+                            else
+                                ( 1, 2 )
+
+                        else
+                            ( 1, 1 )
+                    )
+                |> Maybe.withDefault ( 0, 1 )
+
         tasksCompleted =
-            taskCompleted form.handReferralForm + taskCompleted form.referToHealthCenter
+            reasonForNotSentActive + taskCompleted form.handReferralForm
 
         totalTasks =
-            2
+            reasonForNotSentCompleted + 1
 
         disabled =
             tasksCompleted /= totalTasks
+
+        sendToHCSection =
+            let
+                sentToHealthCenter =
+                    form.referToHealthCenter
+                        |> Maybe.withDefault True
+
+                reasonForNotSendingToHCInput =
+                    if not sentToHealthCenter then
+                        [ viewQuestionLabel language Translate.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
+                            []
+                            form.reasonForNotSendingToHC
+                            SetReasonForNotSendingToHC
+                            Translate.ReasonForNotSendingToHC
+                        ]
+
+                    else
+                        []
+            in
+            [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
+            , viewBoolInput
+                language
+                form.referToHealthCenter
+                SetReferToHealthCenter
+                "refer-to-hc"
+                Nothing
+            ]
+                ++ reasonForNotSendingToHCInput
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form send-to-hc" ]
                 [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-                , div [ class "instructions" ]
+                , div [ class "instructions" ] <|
                     [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
                     , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
                     ]
-                , viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
-                , viewBoolInput
-                    language
-                    form.referToHealthCenter
-                    SetReferToHealthCenter
-                    "refer-to-hc"
-                    Nothing
+                        ++ sendToHCSection
                 , viewQuestionLabel language Translate.HandedReferralFormQuestion
                 , viewBoolInput
                     language
@@ -596,33 +637,78 @@ viewHealthEducationContent language currentDate zscores assembled data =
                 |> Maybe.map (Tuple.second >> .value)
                 |> healthEducationFormWithDefault data.form
 
+        ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
+            form.educationForDiagnosis
+                |> Maybe.map
+                    (\providedHealthEducation ->
+                        if not providedHealthEducation then
+                            if isJust form.reasonForNotProvidingHealthEducation then
+                                ( 1, 1 )
+
+                            else
+                                ( 0, 1 )
+
+                        else
+                            ( 0, 0 )
+                    )
+                |> Maybe.withDefault ( 0, 0 )
+
         tasksCompleted =
-            taskCompleted form.educationForDiagnosis
+            reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
 
         totalTasks =
-            1
+            reasonForProvidingEducationCompleted + 1
 
         disabled =
             tasksCompleted /= totalTasks
+
+        healthEducationSection =
+            let
+                providedHealthEducation =
+                    form.educationForDiagnosis
+                        |> Maybe.withDefault True
+
+                reasonForNotProvidingHealthEducation =
+                    if not providedHealthEducation then
+                        [ viewQuestionLabel language Translate.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ PatientNeedsEmergencyReferral
+                            , ReceivedEmergencyCase
+                            , LackOfAppropriateEducationUserGuide
+                            , PatientRefused
+                            , PatientTooIll
+                            ]
+                            []
+                            form.reasonForNotProvidingHealthEducation
+                            SetReasonForNotProvidingHealthEducation
+                            Translate.ReasonForNotProvidingHealthEducation
+                        ]
+
+                    else
+                        []
+            in
+            [ div [ class "label" ]
+                [ text <| translate language Translate.ProvidedPreventionEducationQuestion
+                , text " "
+                , text <| translate language Translate.ModeratelyUnderweight
+                , text "?"
+                ]
+            , viewBoolInput
+                language
+                form.educationForDiagnosis
+                SetProvidedEducationForDiagnosis
+                "education-for-diagnosis"
+                Nothing
+            ]
+                ++ reasonForNotProvidingHealthEducation
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form health-education" ]
+            [ div [ class "ui form health-education" ] <|
                 [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-                , div [ class "label" ]
-                    [ text <| translate language Translate.ProvidedPreventionEducationQuestion
-                    , text " "
-                    , text <| translate language Translate.ModeratelyUnderweight
-                    , text "?"
-                    ]
-                , viewBoolInput
-                    language
-                    form.educationForDiagnosis
-                    SetProvidedEducationForDiagnosis
-                    "education-for-diagnosis"
-                    Nothing
                 ]
+                    ++ healthEducationSection
             , div [ class "actions" ]
                 [ button
                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]

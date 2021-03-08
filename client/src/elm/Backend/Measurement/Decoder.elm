@@ -2025,6 +2025,9 @@ decodeReasonForNotProvidingHealthEducation =
                     "patient-refused" ->
                         succeed PatientRefused
 
+                    "patient-too-ill" ->
+                        succeed PatientTooIll
+
                     "none" ->
                         succeed NoReasonForNotProvidingHealthEducation
 

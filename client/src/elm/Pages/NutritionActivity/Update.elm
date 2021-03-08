@@ -270,7 +270,7 @@ update currentDate id db msg model =
                     model.sendToHCData.form
 
                 updatedForm =
-                    { form | referToHealthCenter = Just value }
+                    { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
 
                 updatedData =
                     model.sendToHCData
@@ -288,6 +288,23 @@ update currentDate id db msg model =
 
                 updatedForm =
                     { form | handReferralForm = Just value }
+
+                updatedData =
+                    model.sendToHCData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | sendToHCData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotSendingToHC value ->
+            let
+                form =
+                    model.sendToHCData.form
+
+                updatedForm =
+                    { form | reasonForNotSendingToHC = Just value }
 
                 updatedData =
                     model.sendToHCData
@@ -330,7 +347,24 @@ update currentDate id db msg model =
                     model.healthEducationData.form
 
                 updatedForm =
-                    { form | educationForDiagnosis = Just value }
+                    { form | educationForDiagnosis = Just value, reasonForNotProvidingHealthEducation = Nothing }
+
+                updatedData =
+                    model.healthEducationData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | healthEducationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotProvidingHealthEducation value ->
+            let
+                form =
+                    model.healthEducationData.form
+
+                updatedForm =
+                    { form | reasonForNotProvidingHealthEducation = Just value }
 
                 updatedData =
                     model.healthEducationData
