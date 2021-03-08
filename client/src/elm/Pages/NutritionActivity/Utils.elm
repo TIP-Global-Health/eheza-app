@@ -51,12 +51,30 @@ expectActivity currentDate zscores child isChw measurements activity =
                                 )
                             |> Maybe.withDefault False
 
-                    edemaPresent =
+                    nutritionSigns =
                         measurements.nutrition
+                            |> Maybe.map (Tuple.second >> .value >> EverySet.toList)
+                            |> Maybe.withDefault []
+
+                    abnormalNutrition =
+                        ageInMonths currentDate child
                             |> Maybe.map
-                                (Tuple.second
-                                    >> .value
-                                    >> EverySet.member Edema
+                                (\ageMonths ->
+                                    if ageMonths > 5 then
+                                        -- When over 6 month, abnormal only when Edema present.
+                                        List.member Edema nutritionSigns
+
+                                    else
+                                        -- When under 6 month, abnormal when any nutrition sign present.
+                                        case nutritionSigns of
+                                            [] ->
+                                                False
+
+                                            [ NormalChildNutrition ] ->
+                                                False
+
+                                            _ ->
+                                                True
                                 )
                             |> Maybe.withDefault False
 
@@ -70,7 +88,7 @@ expectActivity currentDate zscores child isChw measurements activity =
                             |> Maybe.map (zScoreWeightForAgeAbnormal currentDate child)
                             |> Maybe.withDefault False
                 in
-                abnormalMuac || abnormalWeightForAgeZScore || malnutritionSignEdemaRecorded measurements
+                abnormalMuac || abnormalNutrition || abnormalWeightForAgeZScore
 
             else
                 False
