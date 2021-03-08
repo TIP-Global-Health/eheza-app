@@ -76,18 +76,7 @@ expectActivity currentDate zscores child isChw measurements activity =
                 False
 
         HealthEducation ->
-            if isChw && mandatoryActivitiesCompleted currentDate zscores child isChw measurements then
-                measurements.weight
-                    |> Maybe.andThen
-                        (Tuple.second
-                            >> .value
-                            >> (\(WeightInKg weight) -> calculateZScoreWeightForAge currentDate zscores child (Just weight))
-                        )
-                    |> Maybe.map zScoreWeightForAgeModerate
-                    |> Maybe.withDefault False
-
-            else
-                False
+            expectActivity currentDate zscores child isChw measurements SendToHC
 
         _ ->
             True
@@ -283,14 +272,8 @@ zScoreWeightForAgeAbnormal : NominalDate -> Person -> Float -> Bool
 zScoreWeightForAgeAbnormal currentDate child zScore =
     -- Abnormal when we have severe value for any age.
     zScoreWeightForAgeSevere zScore
-        || (ageInMonths currentDate child
-                |> Maybe.map
-                    (\ageMonths ->
-                        -- Abnormal when we have moderate value and child is 0-6 month old.
-                        ageMonths < 6 && zScoreWeightForAgeModerate zScore
-                    )
-                |> Maybe.withDefault False
-           )
+        || -- Abnormal when we have moderate value and child is 0-6 month old.
+           zScoreWeightForAgeModerate currentDate child zScore
 
 
 zScoreWeightForAgeSevere : Float -> Bool
@@ -298,9 +281,15 @@ zScoreWeightForAgeSevere zScore =
     zScore <= -3
 
 
-zScoreWeightForAgeModerate : Float -> Bool
-zScoreWeightForAgeModerate zScore =
-    zScore > -3 && zScore <= -2
+zScoreWeightForAgeModerate : NominalDate -> Person -> Float -> Bool
+zScoreWeightForAgeModerate currentDate child zScore =
+    ageInMonths currentDate child
+        |> Maybe.map
+            (\ageMonths ->
+                -- Abnormal when we have moderate value and child is 0-6 month old.
+                ageMonths < 6 && (zScore > -3 && zScore <= -2)
+            )
+        |> Maybe.withDefault False
 
 
 muacAbnormal : MuacInCm -> Bool

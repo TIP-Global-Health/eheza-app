@@ -141,7 +141,7 @@ generateNutritionAssesment currentDate zscores assembled =
                         if zScoreWeightForAgeSevere zScore then
                             Just AssesmentUnderweightSevere
 
-                        else if zScoreWeightForAgeModerate zScore then
+                        else if zScoreWeightForAgeModerate currentDate child zScore then
                             Just AssesmentUnderweightModerate
 
                         else
