@@ -270,7 +270,7 @@ update currentDate id db msg model =
                     model.sendToHCData.form
 
                 updatedForm =
-                    { form | referToHealthCenter = Just value }
+                    { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
 
                 updatedData =
                     model.sendToHCData
@@ -347,7 +347,7 @@ update currentDate id db msg model =
                     model.healthEducationData.form
 
                 updatedForm =
-                    { form | educationForDiagnosis = Just value }
+                    { form | educationForDiagnosis = Just value, reasonForNotProvidingHealthEducation = Nothing }
 
                 updatedData =
                     model.healthEducationData
