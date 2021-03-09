@@ -109,15 +109,31 @@ generateNutritionAssesment currentDate zscores assembled =
             measurements.muac
                 |> Maybe.map (Tuple.second >> .value)
 
+        nutritionSigns =
+            measurements.nutrition
+                |> Maybe.map (Tuple.second >> .value >> EverySet.toList)
+                |> Maybe.withDefault []
+
+        dangerSignsPresent =
+            case nutritionSigns of
+                [] ->
+                    False
+
+                [ NormalChildNutrition ] ->
+                    False
+
+                _ ->
+                    True
+
         assesmentByMuac =
             muacValue
                 |> Maybe.andThen
                     (\muac ->
                         if muacSevere muac then
-                            Just AssesmentMuacSevere
+                            Just (AssesmentAcuteMalnutritionSevere dangerSignsPresent)
 
                         else if muacModerate muac then
-                            Just AssesmentMuacModerate
+                            Just (AssesmentAcuteMalnutritionModerate dangerSignsPresent)
 
                         else
                             Nothing
@@ -139,10 +155,10 @@ generateNutritionAssesment currentDate zscores assembled =
                 |> Maybe.andThen
                     (\zScore ->
                         if zScoreWeightForAgeSevere zScore then
-                            Just AssesmentUnderweightSevere
+                            Just (AssesmentUnderweightSevere dangerSignsPresent)
 
                         else if zScoreWeightForAgeModerate currentDate child zScore then
-                            Just AssesmentUnderweightModerate
+                            Just (AssesmentUnderweightModerate dangerSignsPresent)
 
                         else
                             Nothing

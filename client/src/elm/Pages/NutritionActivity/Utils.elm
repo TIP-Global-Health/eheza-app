@@ -61,11 +61,11 @@ expectActivity currentDate zscores child isChw measurements activity =
                             |> Maybe.map
                                 (\ageMonths ->
                                     if ageMonths > 5 then
-                                        -- When over 6 month, abnormal only when Edema present.
+                                        -- When over 6 months, abnormal only when Edema present.
                                         List.member Edema nutritionSigns
 
                                     else
-                                        -- When under 6 month, abnormal when any nutrition sign present.
+                                        -- When under 6 months, abnormal when any nutrition sign present.
                                         case nutritionSigns of
                                             [] ->
                                                 False

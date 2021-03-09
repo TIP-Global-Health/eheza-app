@@ -47,7 +47,7 @@ type alias AssembledData =
 
 type NutritionAssesment
     = AssesmentEdema
-    | AssesmentMuacModerate
-    | AssesmentMuacSevere
-    | AssesmentUnderweightModerate
-    | AssesmentUnderweightSevere
+    | AssesmentAcuteMalnutritionModerate Bool
+    | AssesmentAcuteMalnutritionSevere Bool
+    | AssesmentUnderweightModerate Bool
+    | AssesmentUnderweightSevere Bool
