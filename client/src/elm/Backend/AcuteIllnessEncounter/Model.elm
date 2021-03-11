@@ -138,7 +138,7 @@ type Msg
     | HandleSavedAcuteIllnessDangerSigns (WebData ())
     | SaveNutrition PersonId (Maybe AcuteIllnessNutritionId) (EverySet ChildNutritionSign)
     | HandleSavedNutrition (WebData ())
-    | SaveHealthEducation PersonId (Maybe HealthEducationId) (EverySet HealthEducationSign)
+    | SaveHealthEducation PersonId (Maybe HealthEducationId) HealthEducationValue
     | HandleSavedHealthEducation (WebData ())
     | SaveBarcodeScan PersonId (Maybe BarcodeScanId) String
     | HandleSavedBarcodeScan (WebData ())

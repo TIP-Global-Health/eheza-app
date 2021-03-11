@@ -570,9 +570,25 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                     measurements.healthEducation
                         |> Maybe.map (Tuple.second >> .value)
                         |> healthEducationFormWithDefault data.healthEducationForm
+
+                ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
+                    form.educationForDiagnosis
+                        |> Maybe.map
+                            (\providedHealthEducation ->
+                                if not providedHealthEducation then
+                                    if isJust form.reasonForNotProvidingHealthEducation then
+                                        ( 1, 1 )
+
+                                    else
+                                        ( 0, 1 )
+
+                                else
+                                    ( 0, 0 )
+                            )
+                        |> Maybe.withDefault ( 0, 0 )
             in
-            ( taskCompleted form.educationForDiagnosis
-            , 1
+            ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
+            , reasonForProvidingEducationCompleted + 1
             )
 
 
@@ -1626,35 +1642,46 @@ toNutritionValue form =
     Maybe.map (EverySet.fromList >> ifEverySetEmpty NormalChildNutrition) form.signs
 
 
-fromHealthEducationValue : Maybe (EverySet HealthEducationSign) -> HealthEducationForm
+fromHealthEducationValue : Maybe HealthEducationValue -> HealthEducationForm
 fromHealthEducationValue saved =
-    { educationForDiagnosis = Maybe.map (EverySet.member MalariaPrevention) saved
+    { educationForDiagnosis = Maybe.map (.signs >> EverySet.member MalariaPrevention) saved
+    , reasonForNotProvidingHealthEducation = Maybe.map .reasonForNotProvidingHealthEducation saved
     }
 
 
-healthEducationFormWithDefault : HealthEducationForm -> Maybe (EverySet HealthEducationSign) -> HealthEducationForm
+healthEducationFormWithDefault : HealthEducationForm -> Maybe HealthEducationValue -> HealthEducationForm
 healthEducationFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { educationForDiagnosis = or form.educationForDiagnosis (EverySet.member MalariaPrevention value |> Just)
+                { educationForDiagnosis = or form.educationForDiagnosis (EverySet.member MalariaPrevention value.signs |> Just)
+                , reasonForNotProvidingHealthEducation = or form.reasonForNotProvidingHealthEducation (value.reasonForNotProvidingHealthEducation |> Just)
                 }
             )
 
 
-toHealthEducationValueWithDefault : Maybe (EverySet HealthEducationSign) -> HealthEducationForm -> Maybe (EverySet HealthEducationSign)
+toHealthEducationValueWithDefault : Maybe HealthEducationValue -> HealthEducationForm -> Maybe HealthEducationValue
 toHealthEducationValueWithDefault saved form =
     healthEducationFormWithDefault form saved
         |> toHealthEducationValue
 
 
-toHealthEducationValue : HealthEducationForm -> Maybe (EverySet HealthEducationSign)
+toHealthEducationValue : HealthEducationForm -> Maybe HealthEducationValue
 toHealthEducationValue form =
-    [ Maybe.map (ifTrue MalariaPrevention) form.educationForDiagnosis
-    ]
-        |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHealthEducationSigns)
+    let
+        signs =
+            [ Maybe.map (ifTrue MalariaPrevention) form.educationForDiagnosis ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHealthEducationSigns)
+
+        reasonForNotProvidingHealthEducation =
+            form.reasonForNotProvidingHealthEducation
+                |> Maybe.withDefault NoReasonForNotProvidingHealthEducation
+                |> Just
+    in
+    Maybe.map HealthEducationValue signs
+        |> andMap reasonForNotProvidingHealthEducation
 
 
 expectPhysicalExamTask : NominalDate -> Person -> Bool -> PhysicalExamTask -> Bool

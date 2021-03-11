@@ -854,6 +854,14 @@ type ReasonForNotTaking
     | NoReasonForNotTakingSign
 
 
+type ReasonForNotProvidingHealthEducation
+    = PatientNeedsEmergencyReferral
+    | ReceivedEmergencyCase
+    | LackOfAppropriateEducationUserGuide
+    | PatientRefused
+    | NoReasonForNotProvidingHealthEducation
+
+
 type AdverseEvent
     = AdverseEventRashOrItching
     | AdverseEventFever
@@ -897,8 +905,14 @@ type alias AcuteIllnessNutrition =
     AcuteIllnessMeasurement (EverySet ChildNutritionSign)
 
 
+type alias HealthEducationValue =
+    { signs : EverySet HealthEducationSign
+    , reasonForNotProvidingHealthEducation : ReasonForNotProvidingHealthEducation
+    }
+
+
 type alias HealthEducation =
-    AcuteIllnessMeasurement (EverySet HealthEducationSign)
+    AcuteIllnessMeasurement HealthEducationValue
 
 
 type HealthEducationSign
