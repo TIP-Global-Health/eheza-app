@@ -2017,6 +2017,7 @@ decodeReasonForNotProvidingHealthEducation =
                                 ++ " is not a recognized ReasonForNotProvidingHealthEducation"
             )
 
+
 decodeBarcodeScan : Decoder BarcodeScan
 decodeBarcodeScan =
     field "barcode" string

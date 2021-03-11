@@ -1845,7 +1845,8 @@ encodeHealthEducationSign sign =
 
             NoHealthEducationSigns ->
                 "none"
-                
+
+
 encodeReasonForNotProvidingHealthEducation : ReasonForNotProvidingHealthEducation -> Value
 encodeReasonForNotProvidingHealthEducation reason =
     string <|
@@ -1863,7 +1864,7 @@ encodeReasonForNotProvidingHealthEducation reason =
                 "patient-refused"
 
             NoReasonForNotProvidingHealthEducation ->
-                "none"                
+                "none"
 
 
 encodeBarcodeScan : BarcodeScan -> List ( String, Value )
