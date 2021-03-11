@@ -20,6 +20,7 @@ import Backend.Measurement.Model
         , HCContactValue
         , HCRecommendation(..)
         , HealthEducationSign(..)
+        , HealthEducationValue
         , IsolationSign(..)
         , IsolationValue
         , MalariaRapidTestResult(..)
@@ -30,6 +31,7 @@ import Backend.Measurement.Model
         , MuacInCm(..)
         , PhotoUrl(..)
         , ReasonForNotIsolating(..)
+        , ReasonForNotProvidingHealthEducation(..)
         , ReasonForNotSendingToHC(..)
         , ReasonForNotTaking(..)
         , Recommendation114(..)
