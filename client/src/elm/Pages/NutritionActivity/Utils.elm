@@ -84,12 +84,6 @@ generateNutritionAssesment currentDate zscores db assembled =
         previousIndividualWeightMeasurements =
             resolvePreviousIndividualValues assembled .weight weightValueFunc
 
-        _ =
-            Debug.log "individualWeightMeasurements" individualWeightMeasurements
-
-        _ =
-            List.Extra.getAt 1 allWeigthMeasuements |> Debug.log ""
-
         individualWeightMeasurements =
             weightValue
                 |> Maybe.map (\value -> ( currentDate, value ) :: previousIndividualWeightMeasurements)
@@ -152,7 +146,7 @@ generateNutritionAssesment currentDate zscores db assembled =
                                 |> (\diffs ->
                                         -- Each diff needs to be 0.5 or more
                                         if List.all (\diff -> diff >= 0.5) diffs then
-                                            Just AssesmentUnderweightModerate
+                                            Just AssesmentConsecutiveWeightLoss
 
                                         else
                                             Nothing
