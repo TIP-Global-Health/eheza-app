@@ -217,7 +217,20 @@ warningPopup language currentDate state data =
                 [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
 
             assessments =
-                List.map (\assessment -> p [] [ text <| translate language <| Translate.NutritionAssesment assessment ]) state
+                List.map (\assessment -> p [] [ translateAssement assessment ]) state
+
+            translateAssement assessment =
+                case assessment of
+                    AssesmentMalnutritionSigns signs ->
+                        let
+                            translatedSigns =
+                                List.map (Translate.ChildNutritionSignLabel >> translate language) signs
+                                    |> String.join ", "
+                        in
+                        text <| translate language (Translate.NutritionAssesment assessment) ++ ": " ++ translatedSigns
+
+                    _ ->
+                        text <| translate language <| Translate.NutritionAssesment assessment
         in
         Just <|
             div [ class "ui active modal diagnosis-popup" ]

@@ -323,14 +323,3 @@ muacSevere muac =
 muacModerate : MuacInCm -> Bool
 muacModerate muac =
     muacIndication muac == MuacYellow
-
-
-malnutritionSignEdemaRecorded : NutritionMeasurements -> Bool
-malnutritionSignEdemaRecorded measurements =
-    measurements.nutrition
-        |> Maybe.map
-            (Tuple.second
-                >> .value
-                >> EverySet.member Edema
-            )
-        |> Maybe.withDefault False

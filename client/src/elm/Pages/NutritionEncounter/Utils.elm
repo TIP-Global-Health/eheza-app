@@ -5,14 +5,14 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (..)
+import Backend.Person.Utils exposing (ageInMonths)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime)
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.NutritionActivity.Utils
     exposing
         ( calculateZScoreWeightForAge
-        , malnutritionSignEdemaRecorded
         , muacModerate
         , muacSevere
         , zScoreWeightForAgeModerate
@@ -109,31 +109,15 @@ generateNutritionAssesment currentDate zscores assembled =
             measurements.muac
                 |> Maybe.map (Tuple.second >> .value)
 
-        nutritionSigns =
-            measurements.nutrition
-                |> Maybe.map (Tuple.second >> .value >> EverySet.toList)
-                |> Maybe.withDefault []
-
-        dangerSignsPresent =
-            case nutritionSigns of
-                [] ->
-                    False
-
-                [ NormalChildNutrition ] ->
-                    False
-
-                _ ->
-                    True
-
         assesmentByMuac =
             muacValue
                 |> Maybe.andThen
                     (\muac ->
                         if muacSevere muac then
-                            Just (AssesmentAcuteMalnutritionSevere dangerSignsPresent)
+                            Just AssesmentAcuteMalnutritionSevere
 
                         else if muacModerate muac then
-                            Just (AssesmentAcuteMalnutritionModerate dangerSignsPresent)
+                            Just AssesmentAcuteMalnutritionModerate
 
                         else
                             Nothing
@@ -155,21 +139,54 @@ generateNutritionAssesment currentDate zscores assembled =
                 |> Maybe.andThen
                     (\zScore ->
                         if zScoreWeightForAgeSevere zScore then
-                            Just (AssesmentUnderweightSevere dangerSignsPresent)
+                            Just AssesmentUnderweightSevere
 
                         else if zScoreWeightForAgeModerate currentDate child zScore then
-                            Just (AssesmentUnderweightModerate dangerSignsPresent)
+                            Just AssesmentUnderweightModerate
 
                         else
                             Nothing
                     )
 
         assementByNutritionSigns =
-            if malnutritionSignEdemaRecorded assembled.measurements then
-                Just AssesmentEdema
+            -- When no Underweight /  Acute Malnutrition, we determine assesment by malnutrition signs.
+            if isNothing assesmentByMuac && isNothing assesmentByWeightForAgeZScore then
+                ageInMonths currentDate child
+                    |> Maybe.andThen
+                        (\ageMonths ->
+                            if ageMonths < 6 then
+                                -- For children under 6 months, we list all danger signs.
+                                if dangerSignsPresent then
+                                    Just (AssesmentMalnutritionSigns dangerSigns)
+
+                                else
+                                    Nothing
+
+                            else if List.member Edema dangerSigns then
+                                -- For children above 6 months, we list only Edema.
+                                Just (AssesmentMalnutritionSigns [ Edema ])
+
+                            else
+                                Nothing
+                        )
 
             else
-                Nothing
+            -- When Underweight or Acute Malnutrition, we only state with/without danger signs.
+            if
+                List.isEmpty dangerSigns
+            then
+                Just AssesmentDangerSignsNotPresent
+
+            else
+                Just AssesmentDangerSignsPresent
+
+        dangerSigns =
+            measurements.nutrition
+                |> Maybe.map (Tuple.second >> .value >> EverySet.toList >> List.filter ((/=) NormalChildNutrition))
+                |> Maybe.withDefault []
+
+        dangerSignsPresent =
+            not <| List.isEmpty dangerSigns
     in
     [ assesmentByMuac, assesmentByWeightForAgeZScore, assementByNutritionSigns ]
         |> List.filterMap identity

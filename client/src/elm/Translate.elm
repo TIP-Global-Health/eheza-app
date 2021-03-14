@@ -4268,54 +4268,40 @@ translationSet trans =
 
         NutritionAssesment assessment ->
             case assessment of
-                AssesmentEdema ->
-                    { english = "Malnutrition Sign: Edema"
+                AssesmentAcuteMalnutritionModerate ->
+                    { english = "Moderate Acute Malnutrition"
                     , kinyarwanda = Nothing
                     }
 
-                AssesmentAcuteMalnutritionModerate dangerSigns ->
-                    if dangerSigns then
-                        { english = "Moderate Acute Malnutrition with Danger Signs"
-                        , kinyarwanda = Nothing
-                        }
+                AssesmentAcuteMalnutritionSevere ->
+                    { english = "Severe Acute Malnutrition"
+                    , kinyarwanda = Nothing
+                    }
 
-                    else
-                        { english = "Moderate Acute Malnutrition without Danger Signs"
-                        , kinyarwanda = Nothing
-                        }
+                AssesmentUnderweightModerate ->
+                    { english = "Moderately Underweight"
+                    , kinyarwanda = Nothing
+                    }
 
-                AssesmentAcuteMalnutritionSevere dangerSigns ->
-                    if dangerSigns then
-                        { english = "Severe Acute Malnutrition with Danger Signs"
-                        , kinyarwanda = Nothing
-                        }
+                AssesmentUnderweightSevere ->
+                    { english = "Severely Underweight"
+                    , kinyarwanda = Nothing
+                    }
 
-                    else
-                        { english = "Severe Acute Malnutrition without Danger Signs"
-                        , kinyarwanda = Nothing
-                        }
+                AssesmentDangerSignsNotPresent ->
+                    { english = "Without Danger Signs"
+                    , kinyarwanda = Nothing
+                    }
 
-                AssesmentUnderweightModerate dangerSigns ->
-                    if dangerSigns then
-                        { english = "Moderately Underweight with Danger Signs"
-                        , kinyarwanda = Nothing
-                        }
+                AssesmentDangerSignsPresent ->
+                    { english = "With Danger Signs"
+                    , kinyarwanda = Nothing
+                    }
 
-                    else
-                        { english = "Moderately Underweight without Danger Signs"
-                        , kinyarwanda = Nothing
-                        }
-
-                AssesmentUnderweightSevere dangerSigns ->
-                    if dangerSigns then
-                        { english = "Severely Underweight with Danger Signs"
-                        , kinyarwanda = Nothing
-                        }
-
-                    else
-                        { english = "Severely Underweight without Danger Signs"
-                        , kinyarwanda = Nothing
-                        }
+                AssesmentMalnutritionSigns signs ->
+                    { english = "Malnutrition Signs"
+                    , kinyarwanda = Nothing
+                    }
 
         NutritionHelper ->
             { english = "Explain to the mother how to check the malnutrition signs for their own child."
