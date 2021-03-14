@@ -492,6 +492,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.NutritionEncounter.Decoder.decodeNutritionEncounter
                             BackendAuthorityNutritionEncounter
 
+                    "nutrition_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionHealthEducation
+                            BackendAuthorityNutritionHealthEducation
+
                     "nutrition_height" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeNutritionHeight

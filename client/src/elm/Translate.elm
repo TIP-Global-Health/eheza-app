@@ -68,6 +68,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterPeriod(..)
         , FilterProgramType(..)
         )
+import Pages.NutritionEncounter.Model exposing (NutritionAssesment(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
     exposing
@@ -567,6 +568,7 @@ type TranslationId
     | MissedDosesOfMedicatgion Int
     | ModeOfDelivery ModeOfDelivery
     | ModeOfDeliveryLabel
+    | ModeratelyUnderweight
     | Month
     | MonthAbbrev
     | MonthsOld
@@ -617,6 +619,7 @@ type TranslationId
     | NumberOfStillbirthsPreTerm
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
+    | NutritionAssesment NutritionAssesment
     | NutritionHelper
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
@@ -694,6 +697,7 @@ type TranslationId
     | ProvideHealthEducation
     | ProvidedHealthEducationAction
     | ProvidedPreventionEducationQuestion
+    | ProvidedPreventionEducationQuestionShort
     | Province
     | ReasonForCSection
     | ReasonForNotIsolating ReasonForNotIsolating
@@ -3852,6 +3856,11 @@ translationSet trans =
             , kinyarwanda = Just "Uburyo yabyayemo"
             }
 
+        ModeratelyUnderweight ->
+            { english = "Moderately Underweight"
+            , kinyarwanda = Nothing
+            }
+
         Month ->
             { english = "Month"
             , kinyarwanda = Just "Ukwezi"
@@ -4208,8 +4217,15 @@ translationSet trans =
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
                     }
 
+                -- No helper for activity.
                 Backend.NutritionActivity.Model.SendToHC ->
-                    { english = "@todo"
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                -- No helper for activity.
+                Backend.NutritionActivity.Model.HealthEducation ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -4243,6 +4259,53 @@ translationSet trans =
                 Backend.NutritionActivity.Model.SendToHC ->
                     { english = "Send to Health Center"
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+                    }
+
+                Backend.NutritionActivity.Model.HealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
+                    }
+
+        NutritionAssesment assessment ->
+            case assessment of
+                AssesmentAcuteMalnutritionModerate ->
+                    { english = "Moderate Acute Malnutrition"
+                    , kinyarwanda = Nothing
+                    }
+
+                AssesmentAcuteMalnutritionSevere ->
+                    { english = "Severe Acute Malnutrition"
+                    , kinyarwanda = Nothing
+                    }
+
+                AssesmentUnderweightModerate ->
+                    { english = "Moderately Underweight"
+                    , kinyarwanda = Nothing
+                    }
+
+                AssesmentUnderweightSevere ->
+                    { english = "Severely Underweight"
+                    , kinyarwanda = Nothing
+                    }
+
+                AssesmentDangerSignsNotPresent ->
+                    { english = "Without Danger Signs"
+                    , kinyarwanda = Nothing
+                    }
+
+                AssesmentDangerSignsPresent ->
+                    { english = "With Danger Signs"
+                    , kinyarwanda = Nothing
+                    }
+
+                AssesmentMalnutritionSigns _ ->
+                    { english = "Malnutrition Signs"
+                    , kinyarwanda = Nothing
+                    }
+
+                AssesmentConsecutiveWeightLoss ->
+                    { english = "Consecutive Weight Loss"
+                    , kinyarwanda = Nothing
                     }
 
         NutritionHelper ->
@@ -4799,6 +4862,11 @@ translationSet trans =
             , kinyarwanda = Just "Mwatanze inyigisho ku buzima n' umurongo ngenderwaho ku kwirinda"
             }
 
+        ProvidedPreventionEducationQuestionShort ->
+            { english = "Have you provided health education and anticipatory guidance"
+            , kinyarwanda = Nothing
+            }
+
         Province ->
             { english = "Province"
             , kinyarwanda = Just "Intara"
@@ -4888,6 +4956,11 @@ translationSet trans =
                 PatientRefused ->
                     { english = "Patient refused"
                     , kinyarwanda = Just "Umurwayi yabyanze"
+                    }
+
+                PatientTooIll ->
+                    { english = "Patient too ill"
+                    , kinyarwanda = Just "Umurwayi ararembye"
                     }
 
                 NoReasonForNotProvidingHealthEducation ->

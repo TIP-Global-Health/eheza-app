@@ -463,6 +463,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityNutritionEncounter identifier ->
             getIdentifier identifier "nutrition_encounter"
 
+        BackendAuthorityNutritionHealthEducation identifier ->
+            getIdentifier identifier "nutrition_health_education"
+
         BackendAuthorityNutritionHeight identifier ->
             getIdentifier identifier "nutrition_height"
 
@@ -841,6 +844,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityNutritionEncounter identifier ->
             encode Backend.NutritionEncounter.Encoder.encodeNutritionEncounter identifier
 
+        BackendAuthorityNutritionHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodeNutritionHealthEducation identifier
+
         BackendAuthorityNutritionHeight identifier ->
             encode Backend.Measurement.Encoder.encodeNutritionHeight identifier
 
@@ -1181,6 +1187,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityNutritionEncounter identifier ->
             NutritionEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutritionHealthEducation identifier ->
+            NutritionHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityNutritionHeight identifier ->
             NutritionHeightRevision (toEntityUuid identifier.uuid) identifier.entity

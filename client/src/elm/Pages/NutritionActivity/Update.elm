@@ -9,7 +9,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Pages.AcuteIllnessActivity.Utils exposing (toSendToHCValueWithDefault)
+import Pages.AcuteIllnessActivity.Utils exposing (toHealthEducationValueWithDefault, toSendToHCValueWithDefault)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -270,7 +270,7 @@ update currentDate id db msg model =
                     model.sendToHCData.form
 
                 updatedForm =
-                    { form | referToHealthCenter = Just value }
+                    { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
 
                 updatedData =
                     model.sendToHCData
@@ -298,6 +298,23 @@ update currentDate id db msg model =
             , []
             )
 
+        SetReasonForNotSendingToHC value ->
+            let
+                form =
+                    model.sendToHCData.form
+
+                updatedForm =
+                    { form | reasonForNotSendingToHC = Just value }
+
+                updatedData =
+                    model.sendToHCData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | sendToHCData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveSendToHC personId saved ->
             let
                 measurementId =
@@ -313,6 +330,66 @@ update currentDate id db msg model =
                             []
                             (\value ->
                                 [ Backend.NutritionEncounter.Model.SaveSendToHC personId measurementId value
+                                    |> Backend.Model.MsgNutritionEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetProvidedEducationForDiagnosis value ->
+            let
+                form =
+                    model.healthEducationData.form
+
+                updatedForm =
+                    { form | educationForDiagnosis = Just value, reasonForNotProvidingHealthEducation = Nothing }
+
+                updatedData =
+                    model.healthEducationData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | healthEducationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotProvidingHealthEducation value ->
+            let
+                form =
+                    model.healthEducationData.form
+
+                updatedForm =
+                    { form | reasonForNotProvidingHealthEducation = Just value }
+
+                updatedData =
+                    model.healthEducationData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | healthEducationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHealthEducation personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.healthEducationData.form
+                        |> toHealthEducationValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.NutritionEncounter.Model.SaveHealthEducation personId measurementId value
                                     |> Backend.Model.MsgNutritionEncounter id
                                     |> App.Model.MsgIndexedDb
                                 , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id

@@ -457,6 +457,11 @@ h3.ui.header {
   background-size: 78px 78px;
 }
 
+.icon-task-health-education {
+  background-image: url(#{$img-path}icon-health-education-white.svg);
+  background-size: 122px 122px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {

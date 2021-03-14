@@ -598,3 +598,9 @@ nutritionSendToHCEndpoint : ReadWriteEndPoint Error NutritionSendToHCId Nutritio
 nutritionSendToHCEndpoint =
     swEndpoint "nodes/nutrition_send_to_hc" decodeNutritionSendToHC
         |> withValueEncoder (object << encodeNutritionSendToHC)
+
+
+nutritionHealthEducationEndpoint : ReadWriteEndPoint Error NutritionHealthEducationId NutritionHealthEducation NutritionHealthEducation ()
+nutritionHealthEducationEndpoint =
+    swEndpoint "nodes/nutrition_health_education" decodeNutritionHealthEducation
+        |> withValueEncoder (object << encodeNutritionHealthEducation)

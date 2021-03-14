@@ -219,6 +219,10 @@ type alias NutritionSendToHC =
     NutritionMeasurement SendToHCValue
 
 
+type alias NutritionHealthEducation =
+    NutritionMeasurement HealthEducationValue
+
+
 
 -- PRENATAL MEASUREMENTS
 
@@ -863,6 +867,7 @@ type ReasonForNotProvidingHealthEducation
     | ReceivedEmergencyCase
     | LackOfAppropriateEducationUserGuide
     | PatientRefused
+    | PatientTooIll
     | NoReasonForNotProvidingHealthEducation
 
 
@@ -1030,6 +1035,7 @@ type alias NutritionMeasurements =
     , photo : Maybe ( NutritionPhotoId, NutritionPhoto )
     , weight : Maybe ( NutritionWeightId, NutritionWeight )
     , sendToHC : Maybe ( NutritionSendToHCId, NutritionSendToHC )
+    , healthEducation : Maybe ( NutritionHealthEducationId, NutritionHealthEducation )
     }
 
 

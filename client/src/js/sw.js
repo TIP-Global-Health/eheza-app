@@ -62,6 +62,7 @@ var tableForType = {
     nurse: 'nodes',
     nutrition: 'shards',
     nutrition_encounter: 'shards',
+    nutrition_health_education: 'shards',
     nutrition_height: 'shards',
     nutrition_muac: 'shards',
     nutrition_nutrition: 'shards',

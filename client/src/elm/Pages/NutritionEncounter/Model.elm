@@ -1,8 +1,8 @@
-module Pages.NutritionEncounter.Model exposing (AssembledData, Model, Msg(..), Tab(..), emptyModel)
+module Pages.NutritionEncounter.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (NutritionMeasurements, ObstetricHistoryValue)
+import Backend.Measurement.Model exposing (ChildNutritionSign, NutritionMeasurements, ObstetricHistoryValue)
 import Backend.NutritionEncounter.Model exposing (..)
 import Backend.Person.Model exposing (Person)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
@@ -10,13 +10,16 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { selectedTab : Tab }
+    { selectedTab : Tab
+    , warningPopupState : List NutritionAssesment
+    }
 
 
 type Msg
     = CloseEncounter NutritionEncounterId
     | SetActivePage Page
     | SetSelectedTab Tab
+    | SetWarningPopupState (List NutritionAssesment)
 
 
 type Tab
@@ -28,6 +31,7 @@ type Tab
 emptyModel : Model
 emptyModel =
     { selectedTab = Pending
+    , warningPopupState = []
     }
 
 
@@ -39,3 +43,14 @@ type alias AssembledData =
     , measurements : NutritionMeasurements
     , previousMeasurementsWithDates : List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     }
+
+
+type NutritionAssesment
+    = AssesmentAcuteMalnutritionModerate
+    | AssesmentAcuteMalnutritionSevere
+    | AssesmentUnderweightModerate
+    | AssesmentUnderweightSevere
+    | AssesmentDangerSignsNotPresent
+    | AssesmentDangerSignsPresent
+    | AssesmentMalnutritionSigns (List ChildNutritionSign)
+    | AssesmentConsecutiveWeightLoss

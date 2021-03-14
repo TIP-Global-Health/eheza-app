@@ -12,21 +12,197 @@ import Backend.Measurement.Model
         , WeightInKg(..)
         )
 import Backend.Measurement.Utils exposing (muacIndication)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInMonths)
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffMonths)
-import Maybe.Extra exposing (isJust, or, unwrap)
+import Gizra.NominalDate exposing (NominalDate)
+import List.Extra
+import Maybe.Extra exposing (isJust, isNothing, or, unwrap)
 import Pages.NutritionActivity.Model exposing (..)
-import Pages.NutritionEncounter.Model exposing (AssembledData)
+import Pages.NutritionEncounter.Model exposing (AssembledData, NutritionAssesment(..))
 import Pages.Utils exposing (ifEverySetEmpty, valueConsideringIsDirtyField)
+import RemoteData exposing (RemoteData(..))
 import Utils.NominalDate exposing (diffDays)
 import ZScore.Model exposing (Kilograms(..))
 import ZScore.Utils exposing (zScoreWeightForAge)
 
 
-expectActivity : NominalDate -> ZScore.Model.Model -> Person -> Bool -> NutritionMeasurements -> NutritionActivity -> Bool
-expectActivity currentDate zscores child isChw measurements activity =
+generateNutritionAssesment : NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> List NutritionAssesment
+generateNutritionAssesment currentDate zscores db assembled =
+    let
+        measurements =
+            assembled.measurements
+
+        child =
+            assembled.person
+
+        muacValue =
+            measurements.muac
+                |> Maybe.map (Tuple.second >> .value)
+
+        assesmentByMuac =
+            muacValue
+                |> Maybe.andThen
+                    (\muac ->
+                        if muacSevere muac then
+                            Just AssesmentAcuteMalnutritionSevere
+
+                        else if muacModerate muac then
+                            Just AssesmentAcuteMalnutritionModerate
+
+                        else
+                            Nothing
+                    )
+
+        weightValue =
+            measurements.weight
+                |> Maybe.map
+                    (Tuple.second
+                        >> .value
+                        >> weightValueFunc
+                    )
+
+        weightForAgeZScore =
+            calculateZScoreWeightForAge currentDate zscores child weightValue
+
+        weightValueFunc =
+            \(WeightInKg kg) -> kg
+
+        groupWeightMeasurements =
+            Dict.get assembled.participant.person db.childMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (.weights
+                        >> Dict.values
+                        >> List.map (\measurement -> ( measurement.dateMeasured, weightValueFunc measurement.value ))
+                    )
+                |> Maybe.withDefault []
+
+        previousIndividualWeightMeasurements =
+            resolvePreviousIndividualValues assembled .weight weightValueFunc
+
+        individualWeightMeasurements =
+            weightValue
+                |> Maybe.map (\value -> ( currentDate, value ) :: previousIndividualWeightMeasurements)
+                |> Maybe.withDefault previousIndividualWeightMeasurements
+
+        allWeigthMeasuements =
+            groupWeightMeasurements
+                ++ individualWeightMeasurements
+                -- Most recent date to least recent date.
+                |> List.sortWith (\m1 m2 -> Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1))
+
+        assesmentByWeightForAgeZScore =
+            weightForAgeZScore
+                |> Maybe.andThen
+                    (\zScore ->
+                        let
+                            previousZScore =
+                                List.Extra.getAt 1 allWeigthMeasuements
+                                    |> Maybe.andThen
+                                        (\( date, previousWeightValue ) ->
+                                            calculateZScoreWeightForAge date zscores child (Just previousWeightValue)
+                                        )
+                        in
+                        if zScoreWeightForAgeSevere zScore then
+                            Just AssesmentUnderweightSevere
+
+                        else if zScoreWeightForAgeModerate currentDate child zScore previousZScore then
+                            Just AssesmentUnderweightModerate
+
+                        else
+                            Nothing
+                    )
+
+        -- 3 consecutive weight losses of minimum 0.5kg per visit
+        assesmentByConsecutiveWeight =
+            Maybe.andThen
+                (\age ->
+                    if age < 6 then
+                        Nothing
+
+                    else
+                        let
+                            fourLatest =
+                                List.take 4 allWeigthMeasuements
+                                    |> List.map Tuple.second
+                        in
+                        if List.length fourLatest < 4 then
+                            -- There're less than 4 measuremnts, so we can't determine.
+                            Nothing
+
+                        else
+                            fourLatest
+                                -- Create a list of diffs between 2 nearstanding values.
+                                |> List.indexedMap
+                                    (\index weight ->
+                                        List.Extra.getAt (index + 1) fourLatest
+                                            |> Maybe.map (\previousWeight -> previousWeight - weight)
+                                    )
+                                |> List.filterMap identity
+                                |> (\diffs ->
+                                        -- Each diff needs to be 0.5 or more
+                                        if List.all (\diff -> diff >= 0.5) diffs then
+                                            Just AssesmentConsecutiveWeightLoss
+
+                                        else
+                                            Nothing
+                                   )
+                )
+                ageMonths
+
+        assementByNutritionSigns =
+            -- When no oter assement made, we determine it by malnutrition signs.
+            if List.all isNothing [ assesmentByMuac, assesmentByWeightForAgeZScore, assesmentByConsecutiveWeight ] then
+                Maybe.andThen
+                    (\age ->
+                        if age < 6 then
+                            -- For children under 6 months, we list all danger signs.
+                            if dangerSignsPresent then
+                                Just (AssesmentMalnutritionSigns dangerSigns)
+
+                            else
+                                Nothing
+
+                        else if List.member Edema dangerSigns then
+                            -- For children above 6 months, we list only Edema.
+                            Just (AssesmentMalnutritionSigns [ Edema ])
+
+                        else
+                            Nothing
+                    )
+                    ageMonths
+
+            else
+            -- When Underweight or Acute Malnutrition, we only state with/without danger signs.
+            if
+                List.isEmpty dangerSigns
+            then
+                Just AssesmentDangerSignsNotPresent
+
+            else
+                Just AssesmentDangerSignsPresent
+
+        ageMonths =
+            ageInMonths currentDate child
+
+        dangerSigns =
+            measurements.nutrition
+                |> Maybe.map (Tuple.second >> .value >> EverySet.toList >> List.filter ((/=) NormalChildNutrition))
+                |> Maybe.withDefault []
+
+        dangerSignsPresent =
+            not <| List.isEmpty dangerSigns
+    in
+    [ assesmentByMuac, assesmentByWeightForAgeZScore, assementByNutritionSigns, assesmentByConsecutiveWeight ]
+        |> List.filterMap identity
+
+
+expectActivity : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
+expectActivity currentDate zscores child isChw data db activity =
     case activity of
         -- Do not show for community health workers.
         Height ->
@@ -34,51 +210,40 @@ expectActivity currentDate zscores child isChw measurements activity =
 
         -- Show for children that are at least 6 month old.
         Muac ->
-            child.birthDate
-                |> Maybe.map
-                    (\birthDate -> diffMonths birthDate currentDate > 5)
+            ageInMonths currentDate child
+                |> Maybe.map (\ageMonths -> ageMonths > 5)
                 |> Maybe.withDefault False
 
         SendToHC ->
-            if mandatoryActivitiesCompleted currentDate zscores child isChw measurements then
-                let
-                    abnormalMuac =
-                        measurements.muac
-                            |> Maybe.map
-                                (Tuple.second
-                                    >> .value
-                                    >> muacAbnormal
-                                )
-                            |> Maybe.withDefault False
-
-                    abnormalWeightForAgeZScore =
-                        measurements.weight
-                            |> Maybe.andThen
-                                (Tuple.second
-                                    >> .value
-                                    >> (\(WeightInKg weight) -> calculateZScoreWeightForAge currentDate zscores child (Just weight))
-                                )
-                            |> Maybe.map zScoreWeightForAgeAbnormal
-                            |> Maybe.withDefault False
-                in
-                abnormalMuac || abnormalWeightForAgeZScore
+            if isChw && mandatoryActivitiesCompleted currentDate zscores child isChw data db then
+                -- Any assesment require sending to HC.
+                generateNutritionAssesment currentDate zscores db data
+                    |> List.isEmpty
+                    |> not
 
             else
                 False
+
+        HealthEducation ->
+            expectActivity currentDate zscores child isChw data db SendToHC
 
         _ ->
             True
 
 
-activityCompleted : NominalDate -> ZScore.Model.Model -> Person -> Bool -> NutritionMeasurements -> NutritionActivity -> Bool
-activityCompleted currentDate zscores child isChw measurements activity =
+activityCompleted : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
+activityCompleted currentDate zscores child isChw data db activity =
+    let
+        measurements =
+            data.measurements
+    in
     case activity of
         Height ->
-            (not <| expectActivity currentDate zscores child isChw measurements Height)
+            (not <| expectActivity currentDate zscores child isChw data db Height)
                 || isJust measurements.height
 
         Muac ->
-            (not <| expectActivity currentDate zscores child isChw measurements Height)
+            (not <| expectActivity currentDate zscores child isChw data db Muac)
                 || isJust measurements.muac
 
         Nutrition ->
@@ -91,19 +256,23 @@ activityCompleted currentDate zscores child isChw measurements activity =
             isJust measurements.weight
 
         SendToHC ->
-            (not <| expectActivity currentDate zscores child isChw measurements SendToHC)
+            (not <| expectActivity currentDate zscores child isChw data db SendToHC)
                 || isJust measurements.sendToHC
 
+        HealthEducation ->
+            (not <| expectActivity currentDate zscores child isChw data db HealthEducation)
+                || isJust measurements.healthEducation
 
-mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> Person -> Bool -> NutritionMeasurements -> Bool
-mandatoryActivitiesCompleted currentDate zscores child isChw measurements =
+
+mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> Bool
+mandatoryActivitiesCompleted currentDate zscores child isChw data db =
     [ Height, Muac, Nutrition, Weight ]
-        |> List.filter (not << activityCompleted currentDate zscores child isChw measurements)
+        |> List.filter (not << activityCompleted currentDate zscores child isChw data db)
         |> List.isEmpty
 
 
-resolvePreviousIndividualValue : AssembledData -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a )) -> (a -> b) -> Maybe ( NominalDate, b )
-resolvePreviousIndividualValue assembled measurementFunc valueFunc =
+resolvePreviousIndividualValues : AssembledData -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a )) -> (a -> b) -> List ( NominalDate, b )
+resolvePreviousIndividualValues assembled measurementFunc valueFunc =
     assembled.previousMeasurementsWithDates
         |> List.filterMap
             (\( date, ( _, measurements ) ) ->
@@ -114,6 +283,11 @@ resolvePreviousIndividualValue assembled measurementFunc valueFunc =
                         )
             )
         |> List.reverse
+
+
+resolvePreviousIndividualValue : AssembledData -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a )) -> (a -> b) -> Maybe ( NominalDate, b )
+resolvePreviousIndividualValue assembled measurementFunc valueFunc =
+    resolvePreviousIndividualValues assembled measurementFunc valueFunc
         |> List.head
 
 
@@ -252,24 +426,34 @@ calculateZScoreWeightForAge currentDate zscores person maybeWeight =
             )
 
 
-zScoreWeightForAgeAbnormal : Float -> Bool
-zScoreWeightForAgeAbnormal zScore =
-    zScoreWeightForAgeSevere zScore || zScoreWeightForAgeModerate zScore
-
-
 zScoreWeightForAgeSevere : Float -> Bool
 zScoreWeightForAgeSevere zScore =
     zScore <= -3
 
 
-zScoreWeightForAgeModerate : Float -> Bool
-zScoreWeightForAgeModerate zScore =
-    zScore > -3 && zScore <= -2
+zScoreWeightForAgeModerate : NominalDate -> Person -> Float -> Maybe Float -> Bool
+zScoreWeightForAgeModerate currentDate child zScore previousZScore =
+    ageInMonths currentDate child
+        |> Maybe.map
+            (\ageMonths ->
+                let
+                    isModerate score =
+                        score > -3 && score <= -2
 
+                    isModerateOrSevere score =
+                        score <= -2
+                in
+                if ageMonths < 6 then
+                    -- When child is 0-6 months we examine zScore of curremt encounter.
+                    isModerate zScore
 
-muacAbnormal : MuacInCm -> Bool
-muacAbnormal muac =
-    muacSevere muac || muacModerate muac
+                else
+                    -- Otherwise, we examine zScore of current and previous encounters.
+                    previousZScore
+                        |> Maybe.map (\zScorePrevious -> isModerate zScore && isModerateOrSevere zScorePrevious)
+                        |> Maybe.withDefault False
+            )
+        |> Maybe.withDefault False
 
 
 muacSevere : MuacInCm -> Bool

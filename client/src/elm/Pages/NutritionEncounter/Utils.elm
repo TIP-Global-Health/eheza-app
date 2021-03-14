@@ -1,17 +1,28 @@
-module Pages.NutritionEncounter.Utils exposing (generateAssembledData, generatePreviousMeasurements)
+module Pages.NutritionEncounter.Utils exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (..)
+import Backend.Person.Utils exposing (ageInMonths)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime)
-import Maybe.Extra exposing (isJust, unwrap)
-import Pages.NutritionEncounter.Model exposing (AssembledData)
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Pages.NutritionActivity.Utils
+    exposing
+        ( calculateZScoreWeightForAge
+        , muacModerate
+        , muacSevere
+        , resolvePreviousIndividualValues
+        , zScoreWeightForAgeModerate
+        , zScoreWeightForAgeSevere
+        )
+import Pages.NutritionEncounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
+import ZScore.Model
 
 
 generatePreviousMeasurements : NutritionEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) ))

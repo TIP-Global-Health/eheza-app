@@ -205,7 +205,7 @@ update msg model =
                         |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
 
                 ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateIndexedDb currentDate nurseId model.healthCenterId isChw subMsg model.indexedDb
+                    Backend.Update.updateIndexedDb currentDate model.zscores nurseId model.healthCenterId isChw subMsg model.indexedDb
 
                 -- Most revisions are handled at the IndexedDB level, but there
                 -- is at least one we need to catch here.

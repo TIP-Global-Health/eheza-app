@@ -103,6 +103,7 @@ decodeNutritionMeasurements =
         |> optional "nutrition_photo" (decodeHead decodeNutritionPhoto) Nothing
         |> optional "nutrition_weight" (decodeHead decodeNutritionWeight) Nothing
         |> optional "nutrition_send_to_hc" (decodeHead decodeNutritionSendToHC) Nothing
+        |> optional "nutrition_health_education" (decodeHead decodeNutritionHealthEducation) Nothing
 
 
 decodeAcuteIllnessMeasurements : Decoder AcuteIllnessMeasurements
@@ -1979,6 +1980,14 @@ decodeHealthEducation =
         |> decodeAcuteIllnessMeasurement
 
 
+decodeNutritionHealthEducation : Decoder NutritionHealthEducation
+decodeNutritionHealthEducation =
+    succeed HealthEducationValue
+        |> required "health_education_signs" (decodeEverySet decodeHealthEducationSign)
+        |> optional "reason_not_given_education" decodeReasonForNotProvidingHealthEducation NoReasonForNotProvidingHealthEducation
+        |> decodeNutritionMeasurement
+
+
 decodeHealthEducationSign : Decoder HealthEducationSign
 decodeHealthEducationSign =
     string
@@ -2015,6 +2024,9 @@ decodeReasonForNotProvidingHealthEducation =
 
                     "patient-refused" ->
                         succeed PatientRefused
+
+                    "patient-too-ill" ->
+                        succeed PatientTooIll
 
                     "none" ->
                         succeed NoReasonForNotProvidingHealthEducation
