@@ -697,6 +697,7 @@ type TranslationId
     | ProvideHealthEducation
     | ProvidedHealthEducationAction
     | ProvidedPreventionEducationQuestion
+    | ProvidedPreventionEducationQuestionShort
     | Province
     | ReasonForCSection
     | ReasonForNotIsolating ReasonForNotIsolating
@@ -4868,6 +4869,11 @@ translationSet trans =
         ProvidedPreventionEducationQuestion ->
             { english = "Have you provided health education and anticipatory guidance for the prevention of"
             , kinyarwanda = Just "Mwatanze inyigisho ku buzima n' umurongo ngenderwaho ku kwirinda"
+            }
+
+        ProvidedPreventionEducationQuestionShort ->
+            { english = "Have you provided health education and anticipatory guidance"
+            , kinyarwanda = Nothing
             }
 
         Province ->

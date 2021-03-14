@@ -688,12 +688,7 @@ viewHealthEducationContent language currentDate zscores assembled data =
                         []
             in
             [ div [ class "label" ]
-                [ text <| translate language Translate.ProvidedPreventionEducationQuestion
-                , text " "
-
-                -- @todo
-                -- , text <| translate language Translate.ModeratelyUnderweight
-                , text "??? "
+                [ text <| translate language Translate.ProvidedPreventionEducationQuestionShort
                 , text "?"
                 ]
             , viewBoolInput
