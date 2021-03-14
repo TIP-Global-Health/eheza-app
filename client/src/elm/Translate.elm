@@ -697,6 +697,7 @@ type TranslationId
     | ProvideHealthEducation
     | ProvidedHealthEducationAction
     | ProvidedPreventionEducationQuestion
+    | ProvidedPreventionEducationQuestionShort
     | Province
     | ReasonForCSection
     | ReasonForNotIsolating ReasonForNotIsolating
@@ -4267,28 +4268,43 @@ translationSet trans =
 
         NutritionAssesment assessment ->
             case assessment of
-                AssesmentEdema ->
-                    { english = "Malnutrition Sign: Edema"
+                AssesmentAcuteMalnutritionModerate ->
+                    { english = "Moderate Acute Malnutrition"
                     , kinyarwanda = Nothing
                     }
 
-                AssesmentMuacModerate ->
-                    { english = "Moderate value for MUAC"
-                    , kinyarwanda = Nothing
-                    }
-
-                AssesmentMuacSevere ->
-                    { english = "Severe value for MUAC"
+                AssesmentAcuteMalnutritionSevere ->
+                    { english = "Severe Acute Malnutrition"
                     , kinyarwanda = Nothing
                     }
 
                 AssesmentUnderweightModerate ->
-                    { english = "Moderately underweight"
+                    { english = "Moderately Underweight"
                     , kinyarwanda = Nothing
                     }
 
                 AssesmentUnderweightSevere ->
-                    { english = "Severely underweight"
+                    { english = "Severely Underweight"
+                    , kinyarwanda = Nothing
+                    }
+
+                AssesmentDangerSignsNotPresent ->
+                    { english = "Without Danger Signs"
+                    , kinyarwanda = Nothing
+                    }
+
+                AssesmentDangerSignsPresent ->
+                    { english = "With Danger Signs"
+                    , kinyarwanda = Nothing
+                    }
+
+                AssesmentMalnutritionSigns _ ->
+                    { english = "Malnutrition Signs"
+                    , kinyarwanda = Nothing
+                    }
+
+                AssesmentConsecutiveWeightLoss ->
+                    { english = "Consecutive Weight Loss"
                     , kinyarwanda = Nothing
                     }
 
@@ -4844,6 +4860,11 @@ translationSet trans =
         ProvidedPreventionEducationQuestion ->
             { english = "Have you provided health education and anticipatory guidance for the prevention of"
             , kinyarwanda = Just "Mwatanze inyigisho ku buzima n' umurongo ngenderwaho ku kwirinda"
+            }
+
+        ProvidedPreventionEducationQuestionShort ->
+            { english = "Have you provided health education and anticipatory guidance"
+            , kinyarwanda = Nothing
             }
 
         Province ->

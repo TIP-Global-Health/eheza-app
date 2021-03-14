@@ -44,7 +44,7 @@ viewHeaderAndContent language currentDate zscores id isChw db model data =
             viewHeader language data
 
         content =
-            viewContent language currentDate zscores id isChw model data
+            viewContent language currentDate zscores id isChw db model data
     in
     div [ class "page-encounter nutrition" ]
         [ header
@@ -78,24 +78,21 @@ viewHeader language data =
         ]
 
 
-viewContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> Bool -> Model -> AssembledData -> Html Msg
-viewContent language currentDate zscores id isChw model data =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate zscores id isChw db model data =
     ((viewPersonDetails language currentDate data.person Nothing |> div [ class "item" ])
-        :: viewMainPageContent language currentDate zscores id isChw data model
+        :: viewMainPageContent language currentDate zscores id isChw db data model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewMainPageContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> Bool -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate zscores id isChw data model =
+viewMainPageContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> Bool -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate zscores id isChw db data model =
     let
-        measurements =
-            data.measurements
-
         ( completedActivities, pendingActivities ) =
             getAllActivities
-                |> List.filter (expectActivity currentDate zscores data.person isChw measurements)
-                |> List.partition (activityCompleted currentDate zscores data.person isChw measurements)
+                |> List.filter (expectActivity currentDate zscores data.person isChw data db)
+                |> List.partition (activityCompleted currentDate zscores data.person isChw data db)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -217,7 +214,20 @@ warningPopup language currentDate state data =
                 [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
 
             assessments =
-                List.map (\assessment -> p [] [ text <| translate language <| Translate.NutritionAssesment assessment ]) state
+                List.map (\assessment -> p [] [ translateAssement assessment ]) state
+
+            translateAssement assessment =
+                case assessment of
+                    AssesmentMalnutritionSigns signs ->
+                        let
+                            translatedSigns =
+                                List.map (Translate.ChildNutritionSignLabel >> translate language) signs
+                                    |> String.join ", "
+                        in
+                        text <| translate language (Translate.NutritionAssesment assessment) ++ ": " ++ translatedSigns
+
+                    _ ->
+                        text <| translate language <| Translate.NutritionAssesment assessment
         in
         Just <|
             div [ class "ui active modal diagnosis-popup" ]

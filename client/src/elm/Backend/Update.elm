@@ -2238,7 +2238,8 @@ generateNutritionAssessmentMsgs currentDate zscores isChw after id person =
                             zscores
                             assembledAfter.person
                             isChw
-                            assembledAfter.measurements
+                            assembledAfter
+                            after
                 in
                 if not mandatoryActivitiesCompleted then
                     -- Assement is done only when all mandatory measurements were recorded.
@@ -2247,7 +2248,7 @@ generateNutritionAssessmentMsgs currentDate zscores isChw after id person =
                 else
                     let
                         assesmentAfter =
-                            Pages.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembledAfter
+                            Pages.NutritionActivity.Utils.generateNutritionAssesment currentDate zscores after assembledAfter
                     in
                     if List.isEmpty assesmentAfter then
                         -- View assement when we have items at assement list.

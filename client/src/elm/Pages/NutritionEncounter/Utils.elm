@@ -5,16 +5,17 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (..)
+import Backend.Person.Utils exposing (ageInMonths)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime)
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.NutritionActivity.Utils
     exposing
         ( calculateZScoreWeightForAge
-        , malnutritionSignEdemaRecorded
         , muacModerate
         , muacSevere
+        , resolvePreviousIndividualValues
         , zScoreWeightForAgeModerate
         , zScoreWeightForAgeSevere
         )
@@ -94,66 +95,3 @@ generateAssembledData id db =
         |> RemoteData.andMap person
         |> RemoteData.andMap measurements
         |> RemoteData.andMap (Success previousMeasurementsWithDates)
-
-
-generateNutritionAssesment : NominalDate -> ZScore.Model.Model -> AssembledData -> List NutritionAssesment
-generateNutritionAssesment currentDate zscores assembled =
-    let
-        measurements =
-            assembled.measurements
-
-        child =
-            assembled.person
-
-        muacValue =
-            measurements.muac
-                |> Maybe.map (Tuple.second >> .value)
-
-        assesmentByMuac =
-            muacValue
-                |> Maybe.andThen
-                    (\muac ->
-                        if muacSevere muac then
-                            Just AssesmentMuacSevere
-
-                        else if muacModerate muac then
-                            Just AssesmentMuacModerate
-
-                        else
-                            Nothing
-                    )
-
-        weightValue =
-            measurements.weight
-                |> Maybe.map
-                    (Tuple.second
-                        >> .value
-                        >> (\(WeightInKg weight) -> weight)
-                    )
-
-        weightForAgeZScore =
-            calculateZScoreWeightForAge currentDate zscores child weightValue
-
-        assesmentByWeightForAgeZScore =
-            weightForAgeZScore
-                |> Maybe.andThen
-                    (\zScore ->
-                        if zScoreWeightForAgeSevere zScore then
-                            Just AssesmentUnderweightSevere
-
-                        else if zScoreWeightForAgeModerate zScore then
-                            Just AssesmentUnderweightModerate
-
-                        else
-                            Nothing
-                    )
-
-        assementByNutritionSigns =
-            if malnutritionSignEdemaRecorded assembled.measurements then
-                Just AssesmentEdema
-
-            else
-                Nothing
-    in
-    [ assesmentByMuac, assesmentByWeightForAgeZScore, assementByNutritionSigns ]
-        |> List.filterMap identity
