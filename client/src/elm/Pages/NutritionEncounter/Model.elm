@@ -53,3 +53,4 @@ type NutritionAssesment
     | AssesmentDangerSignsNotPresent
     | AssesmentDangerSignsPresent
     | AssesmentMalnutritionSigns (List ChildNutritionSign)
+    | AssesmentConsecutiveWeightLoss

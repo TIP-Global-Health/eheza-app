@@ -123,27 +123,64 @@ generateNutritionAssesment currentDate zscores db assembled =
                             Nothing
                     )
 
+        -- 3 consecutive weight losses of minimum 0.5kg per visit
+        assesmentByConsecutiveWeight =
+            Maybe.andThen
+                (\age ->
+                    if age < 6 then
+                        Nothing
+
+                    else
+                        let
+                            fourLatest =
+                                List.take 4 allWeigthMeasuements
+                                    |> List.map Tuple.second
+                        in
+                        if List.length fourLatest < 4 then
+                            -- There're less than 4 measuremnts, so we can't determine.
+                            Nothing
+
+                        else
+                            fourLatest
+                                -- Create a list of diffs between 2 nearstanding values.
+                                |> List.indexedMap
+                                    (\index weight ->
+                                        List.Extra.getAt (index + 1) fourLatest
+                                            |> Maybe.map (\previousWeight -> previousWeight - weight)
+                                    )
+                                |> List.filterMap identity
+                                |> (\diffs ->
+                                        -- Each diff needs to be 0.5 or more
+                                        if List.all (\diff -> diff >= 0.5) diffs then
+                                            Just AssesmentUnderweightModerate
+
+                                        else
+                                            Nothing
+                                   )
+                )
+                ageMonths
+
         assementByNutritionSigns =
-            -- When no Underweight /  Acute Malnutrition, we determine assesment by malnutrition signs.
-            if isNothing assesmentByMuac && isNothing assesmentByWeightForAgeZScore then
-                ageInMonths currentDate child
-                    |> Maybe.andThen
-                        (\ageMonths ->
-                            if ageMonths < 6 then
-                                -- For children under 6 months, we list all danger signs.
-                                if dangerSignsPresent then
-                                    Just (AssesmentMalnutritionSigns dangerSigns)
-
-                                else
-                                    Nothing
-
-                            else if List.member Edema dangerSigns then
-                                -- For children above 6 months, we list only Edema.
-                                Just (AssesmentMalnutritionSigns [ Edema ])
+            -- When no oter assement made, we determine it by malnutrition signs.
+            if List.all isNothing [ assesmentByMuac, assesmentByWeightForAgeZScore, assesmentByConsecutiveWeight ] then
+                Maybe.andThen
+                    (\age ->
+                        if age < 6 then
+                            -- For children under 6 months, we list all danger signs.
+                            if dangerSignsPresent then
+                                Just (AssesmentMalnutritionSigns dangerSigns)
 
                             else
                                 Nothing
-                        )
+
+                        else if List.member Edema dangerSigns then
+                            -- For children above 6 months, we list only Edema.
+                            Just (AssesmentMalnutritionSigns [ Edema ])
+
+                        else
+                            Nothing
+                    )
+                    ageMonths
 
             else
             -- When Underweight or Acute Malnutrition, we only state with/without danger signs.
@@ -155,6 +192,9 @@ generateNutritionAssesment currentDate zscores db assembled =
             else
                 Just AssesmentDangerSignsPresent
 
+        ageMonths =
+            ageInMonths currentDate child
+
         dangerSigns =
             measurements.nutrition
                 |> Maybe.map (Tuple.second >> .value >> EverySet.toList >> List.filter ((/=) NormalChildNutrition))
@@ -163,7 +203,7 @@ generateNutritionAssesment currentDate zscores db assembled =
         dangerSignsPresent =
             not <| List.isEmpty dangerSigns
     in
-    [ assesmentByMuac, assesmentByWeightForAgeZScore, assementByNutritionSigns ]
+    [ assesmentByMuac, assesmentByWeightForAgeZScore, assementByNutritionSigns, assesmentByConsecutiveWeight ]
         |> List.filterMap identity
 
 

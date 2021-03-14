@@ -4298,8 +4298,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                AssesmentMalnutritionSigns signs ->
+                AssesmentMalnutritionSigns _ ->
                     { english = "Malnutrition Signs"
+                    , kinyarwanda = Nothing
+                    }
+
+                AssesmentConsecutiveWeightLoss ->
+                    { english = "Consecutive Weight Loss"
                     , kinyarwanda = Nothing
                     }
 
