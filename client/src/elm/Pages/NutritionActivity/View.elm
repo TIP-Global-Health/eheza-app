@@ -134,6 +134,10 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
         Weight ->
             viewWeightContent language currentDate zscores isChw assembled model.weightData previousGroupWeight
 
+        NextSteps ->
+            -- @todo
+            []
+
         SendToHC ->
             viewSendToHCContent language currentDate zscores assembled model.sendToHCData
 

@@ -214,7 +214,7 @@ expectActivity currentDate zscores child isChw data db activity =
                 |> Maybe.map (\ageMonths -> ageMonths > 5)
                 |> Maybe.withDefault False
 
-        SendToHC ->
+        NextSteps ->
             if isChw && mandatoryActivitiesCompleted currentDate zscores child isChw data db then
                 -- Any assesment require sending to HC.
                 generateNutritionAssesment currentDate zscores db data
@@ -223,9 +223,6 @@ expectActivity currentDate zscores child isChw data db activity =
 
             else
                 False
-
-        HealthEducation ->
-            expectActivity currentDate zscores child isChw data db SendToHC
 
         _ ->
             True
@@ -254,6 +251,10 @@ activityCompleted currentDate zscores child isChw data db activity =
 
         Weight ->
             isJust measurements.weight
+
+        NextSteps ->
+            (not <| expectActivity currentDate zscores child isChw data db NextSteps)
+                || (isJust measurements.sendToHC && isJust measurements.healthEducation)
 
         SendToHC ->
             (not <| expectActivity currentDate zscores child isChw data db SendToHC)

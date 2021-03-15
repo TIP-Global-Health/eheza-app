@@ -4217,6 +4217,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
                     }
 
+                Backend.NutritionActivity.Model.NextSteps ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
                 -- No helper for activity.
                 Backend.NutritionActivity.Model.SendToHC ->
                     { english = ""
@@ -4254,6 +4259,11 @@ translationSet trans =
                 Backend.NutritionActivity.Model.Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
+                    }
+
+                Backend.NutritionActivity.Model.NextSteps ->
+                    { english = "Next Steps"
+                    , kinyarwanda = Just "Ibikurikiyeho"
                     }
 
                 Backend.NutritionActivity.Model.SendToHC ->

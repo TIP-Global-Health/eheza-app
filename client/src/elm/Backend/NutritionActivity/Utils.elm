@@ -34,6 +34,9 @@ encodeActivityAsString activity =
         Weight ->
             "nutrition-weight"
 
+        NextSteps ->
+            "nutrition-next-steps"
+
         SendToHC ->
             "nutrition-send-to-hc"
 
@@ -60,6 +63,9 @@ decodeActivityFromString s =
 
         "nutrition-weight" ->
             Just Weight
+
+        "nutrition-next-steps" ->
+            Just NextSteps
 
         "nutrition-send-to-hc" ->
             Just SendToHC
@@ -98,6 +104,9 @@ getActivityIcon activity =
 
         Weight ->
             "weight"
+
+        NextSteps ->
+            "next-steps"
 
         SendToHC ->
             "send-to-hc"
