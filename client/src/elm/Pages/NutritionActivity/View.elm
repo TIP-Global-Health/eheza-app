@@ -137,8 +137,7 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
             viewWeightContent language currentDate zscores isChw assembled model.weightData previousGroupWeight
 
         NextSteps ->
-            -- @todo
-            []
+            viewNextStepsContent language currentDate id assembled model.nextStepsData
 
         SendToHC ->
             viewSendToHCContent language currentDate zscores assembled model.sendToHCData
@@ -542,8 +541,8 @@ viewWeightContent language currentDate zscores isChw assembled data previousGrou
     ]
 
 
-viewAcuteIllnessNextSteps : Language -> NominalDate -> NutritionEncounterId -> AssembledData -> NextStepsData -> List (Html Msg)
-viewAcuteIllnessNextSteps language currentDate id assembled data =
+viewNextStepsContent : Language -> NominalDate -> NutritionEncounterId -> AssembledData -> NextStepsData -> List (Html Msg)
+viewNextStepsContent language currentDate id assembled data =
     let
         personId =
             assembled.participant.person
