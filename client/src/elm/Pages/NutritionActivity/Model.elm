@@ -134,6 +134,26 @@ type alias WeightForm =
     }
 
 
+type alias NextStepsData =
+    { sendToHCForm : SendToHCForm
+    , healthEducationForm : HealthEducationForm
+    , activeTask : Maybe NextStepsTask
+    }
+
+
+emptyNextStepsData : NextStepsData
+emptyNextStepsData =
+    { sendToHCForm = SendToHCForm Nothing Nothing Nothing
+    , healthEducationForm = HealthEducationForm Nothing Nothing
+    , activeTask = Nothing
+    }
+
+
+type NextStepsTask
+    = NextStepsSendToHC
+    | NextStepsHealthEducation
+
+
 type alias SendToHCData =
     { form : SendToHCForm
     }
