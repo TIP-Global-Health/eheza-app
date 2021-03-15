@@ -197,7 +197,7 @@ generateNutritionAssesment currentDate zscores db assembled =
         dangerSignsPresent =
             not <| List.isEmpty dangerSigns
     in
-    [ assesmentByMuac, assesmentByWeightForAgeZScore, assementByNutritionSigns, assesmentByConsecutiveWeight ]
+    [ assesmentByMuac, assesmentByWeightForAgeZScore, assesmentByConsecutiveWeight, assementByNutritionSigns ]
         |> List.filterMap identity
 
 
@@ -439,9 +439,6 @@ zScoreWeightForAgeModerate currentDate child zScore previousZScore =
                 let
                     isModerate score =
                         score > -3 && score <= -2
-
-                    isModerateOrSevere score =
-                        score <= -2
                 in
                 if ageMonths < 6 then
                     -- When child is 0-6 months we examine zScore of curremt encounter.
@@ -450,7 +447,7 @@ zScoreWeightForAgeModerate currentDate child zScore previousZScore =
                 else
                     -- Otherwise, we examine zScore of current and previous encounters.
                     previousZScore
-                        |> Maybe.map (\zScorePrevious -> isModerate zScore && isModerateOrSevere zScorePrevious)
+                        |> Maybe.map (\zScorePrevious -> isModerate zScore && isModerate zScorePrevious)
                         |> Maybe.withDefault False
             )
         |> Maybe.withDefault False
