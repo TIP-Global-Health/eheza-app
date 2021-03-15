@@ -20,9 +20,9 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Utils exposing (..)
 import Measurement.View exposing (viewMeasurementFloatDiff, viewMuacIndication, zScoreForHeightOrLength)
-import Pages.AcuteIllnessActivity.Model exposing (SendToHCForm)
+import Pages.AcuteIllnessActivity.Model exposing (HealthEducationForm, SendToHCForm)
 import Pages.AcuteIllnessActivity.Utils exposing (healthEducationFormWithDefault, sendToHCFormWithDefault)
-import Pages.AcuteIllnessActivity.View exposing (viewActionTakenLabel)
+import Pages.AcuteIllnessActivity.View exposing (renderDatePart, viewActionTakenLabel)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
@@ -31,7 +31,9 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
 import Pages.Utils
     exposing
-        ( taskCompleted
+        ( isTaskCompleted
+        , taskCompleted
+        , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
@@ -540,6 +542,245 @@ viewWeightContent language currentDate zscores isChw assembled data previousGrou
     ]
 
 
+viewAcuteIllnessNextSteps : Language -> NominalDate -> NutritionEncounterId -> AssembledData -> NextStepsData -> List (Html Msg)
+viewAcuteIllnessNextSteps language currentDate id assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            [ NextStepsSendToHC, NextStepsHealthEducation ]
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        NextStepsSendToHC ->
+                            ( "next-steps-send-to-hc"
+                            , isJust measurements.sendToHC
+                            )
+
+                        NextStepsHealthEducation ->
+                            ( "next-steps-health-education"
+                            , isJust measurements.healthEducation
+                            )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveNextStepsTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ a attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.NutritionNextStepsTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map (\task -> ( task, nextStepsTasksCompletedFromTotal measurements data task ))
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just NextStepsSendToHC ->
+                    measurements.sendToHC
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> sendToHCFormWithDefault data.sendToHCForm
+                        |> viewSendToHCForm language currentDate
+
+                Just NextStepsHealthEducation ->
+                    measurements.healthEducation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> healthEducationFormWithDefault data.healthEducationForm
+                        |> viewHealthEducationForm language currentDate
+
+                Nothing ->
+                    emptyNode
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                case task of
+                                    NextStepsSendToHC ->
+                                        SaveSendToHC personId measurements.sendToHC nextTask
+
+                                    NextStepsHealthEducation ->
+                                        SaveHealthEducation personId measurements.healthEducation nextTask
+                        in
+                        div [ class "actions next-steps" ]
+                            [ button
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                , onClick saveMsg
+                                ]
+                                [ text <| translate language Translate.Save ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui three column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]
+
+
+viewSendToHCForm : Language -> NominalDate -> SendToHCForm -> Html Msg
+viewSendToHCForm language currentDate form =
+    let
+        sendToHCSection =
+            let
+                sentToHealthCenter =
+                    form.referToHealthCenter
+                        |> Maybe.withDefault True
+
+                reasonForNotSendingToHCInput =
+                    if not sentToHealthCenter then
+                        [ viewQuestionLabel language Translate.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
+                            []
+                            form.reasonForNotSendingToHC
+                            SetReasonForNotSendingToHC
+                            Translate.ReasonForNotSendingToHC
+                        ]
+
+                    else
+                        []
+            in
+            [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
+            , viewBoolInput
+                language
+                form.referToHealthCenter
+                SetReferToHealthCenter
+                "refer-to-hc"
+                Nothing
+            ]
+                ++ reasonForNotSendingToHCInput
+    in
+    div [ class "ui form send-to-hc" ]
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ] <|
+            [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
+            , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
+            ]
+                ++ sendToHCSection
+        , viewQuestionLabel language Translate.HandedReferralFormQuestion
+        , viewBoolInput
+            language
+            form.handReferralForm
+            SetHandReferralForm
+            "hand-referral-form"
+            Nothing
+        ]
+
+
+viewHealthEducationForm : Language -> NominalDate -> HealthEducationForm -> Html Msg
+viewHealthEducationForm language currentDate form =
+    let
+        healthEducationSection =
+            let
+                providedHealthEducation =
+                    form.educationForDiagnosis
+                        |> Maybe.withDefault True
+
+                reasonForNotProvidingHealthEducation =
+                    if not providedHealthEducation then
+                        [ viewQuestionLabel language Translate.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ PatientNeedsEmergencyReferral
+                            , ReceivedEmergencyCase
+                            , LackOfAppropriateEducationUserGuide
+                            , PatientRefused
+                            , PatientTooIll
+                            ]
+                            []
+                            form.reasonForNotProvidingHealthEducation
+                            SetReasonForNotProvidingHealthEducation
+                            Translate.ReasonForNotProvidingHealthEducation
+                        ]
+
+                    else
+                        []
+            in
+            [ div [ class "label" ]
+                [ text <| translate language Translate.ProvidedPreventionEducationQuestionShort
+                , text "?"
+                ]
+            , viewBoolInput
+                language
+                form.educationForDiagnosis
+                SetProvidedEducationForDiagnosis
+                "education-for-diagnosis"
+                Nothing
+            ]
+                ++ reasonForNotProvidingHealthEducation
+    in
+    div [ class "ui form health-education" ] <|
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ]
+            [ viewHealthEducationLabel language Translate.ProvideHealthEducation "icon-open-book" Nothing
+            ]
+        ]
+            ++ healthEducationSection
+
+
+viewHealthEducationLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
+viewHealthEducationLabel language actionTranslationId iconClass maybeDate =
+    let
+        message =
+            div [] <|
+                [ text <| translate language actionTranslationId ]
+                    ++ renderDatePart language maybeDate
+                    ++ [ text "." ]
+    in
+    div [ class "header icon-label" ] <|
+        [ i [ class iconClass ] []
+        , message
+        ]
+
+
 viewSendToHCContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> SendToHCData -> List (Html Msg)
 viewSendToHCContent language currentDate zscores assembled data =
     let
@@ -624,7 +865,8 @@ viewSendToHCContent language currentDate zscores assembled data =
             , div [ class "actions" ]
                 [ button
                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-                    , onClick <| SaveSendToHC assembled.participant.person assembled.measurements.sendToHC
+
+                    -- , onClick <| SaveSendToHC assembled.participant.person assembled.measurements.sendToHC
                     ]
                     [ text <| translate language Translate.Save ]
                 ]
@@ -714,7 +956,8 @@ viewHealthEducationContent language currentDate zscores assembled data =
             , div [ class "actions" ]
                 [ button
                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-                    , onClick <| SaveHealthEducation assembled.participant.person assembled.measurements.healthEducation
+
+                    -- , onClick <| SaveHealthEducation assembled.participant.person assembled.measurements.healthEducation
                     ]
                     [ text <| translate language Translate.Save ]
                 ]

@@ -19,12 +19,13 @@ type Msg
     | SavePhoto PersonId (Maybe NutritionPhotoId) PhotoUrl
     | SetWeight String
     | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
+    | SetActiveNextStepsTask NextStepsTask
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SetReasonForNotSendingToHC ReasonForNotSendingToHC
-    | SaveSendToHC PersonId (Maybe ( NutritionSendToHCId, NutritionSendToHC ))
+    | SaveSendToHC PersonId (Maybe ( NutritionSendToHCId, NutritionSendToHC )) (Maybe NextStepsTask)
     | SetProvidedEducationForDiagnosis Bool
-    | SaveHealthEducation PersonId (Maybe ( NutritionHealthEducationId, NutritionHealthEducation ))
+    | SaveHealthEducation PersonId (Maybe ( NutritionHealthEducationId, NutritionHealthEducation )) (Maybe NextStepsTask)
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
 
 
@@ -34,6 +35,7 @@ type alias Model =
     , nutritionData : NutritionData
     , photoData : PhotoData
     , weightData : WeightData
+    , nextStepsData : NextStepsData
     , sendToHCData : SendToHCData
     , healthEducationData : HealthEducationData
     }
@@ -46,6 +48,7 @@ emptyModel =
     , nutritionData = emptyNutritionData
     , photoData = emptyPhotoData
     , weightData = emptyWeightData
+    , nextStepsData = emptyNextStepsData
     , sendToHCData = emptySendToHCData
     , healthEducationData = emptyHealthEducationData
     }

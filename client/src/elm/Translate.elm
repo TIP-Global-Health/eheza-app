@@ -68,6 +68,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterPeriod(..)
         , FilterProgramType(..)
         )
+import Pages.NutritionActivity.Model
 import Pages.NutritionEncounter.Model exposing (NutritionAssesment(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -621,6 +622,7 @@ type TranslationId
     | NutritionActivityTitle NutritionActivity
     | NutritionAssesment NutritionAssesment
     | NutritionHelper
+    | NutritionNextStepsTask Pages.NutritionActivity.Model.NextStepsTask
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
@@ -4322,6 +4324,18 @@ translationSet trans =
             { english = "Explain to the mother how to check the malnutrition signs for their own child."
             , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye."
             }
+
+        NutritionNextStepsTask task ->
+            case task of
+                Pages.NutritionActivity.Model.NextStepsSendToHC ->
+                    { english = "Send to Health Center"
+                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+                    }
+
+                Pages.NutritionActivity.Model.NextStepsHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
+                    }
 
         ObstetricalDiagnosis ->
             { english = "Obstetrical Diagnosis"
