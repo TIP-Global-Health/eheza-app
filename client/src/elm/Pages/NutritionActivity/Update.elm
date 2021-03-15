@@ -284,10 +284,10 @@ update currentDate id db msg model =
                     { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
 
                 updatedData =
-                    model.sendToHCData
-                        |> (\data -> { data | form = updatedForm })
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
             in
-            ( { model | sendToHCData = updatedData }
+            ( { model | nextStepsData = updatedData }
             , Cmd.none
             , []
             )
@@ -295,16 +295,16 @@ update currentDate id db msg model =
         SetHandReferralForm value ->
             let
                 form =
-                    model.sendToHCData.form
+                    model.nextStepsData.sendToHCForm
 
                 updatedForm =
                     { form | handReferralForm = Just value }
 
                 updatedData =
-                    model.sendToHCData
-                        |> (\data -> { data | form = updatedForm })
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
             in
-            ( { model | sendToHCData = updatedData }
+            ( { model | nextStepsData = updatedData }
             , Cmd.none
             , []
             )
@@ -367,16 +367,16 @@ update currentDate id db msg model =
         SetProvidedEducationForDiagnosis value ->
             let
                 form =
-                    model.healthEducationData.form
+                    model.nextStepsData.healthEducationForm
 
                 updatedForm =
                     { form | educationForDiagnosis = Just value, reasonForNotProvidingHealthEducation = Nothing }
 
                 updatedData =
-                    model.healthEducationData
-                        |> (\data -> { data | form = updatedForm })
+                    model.nextStepsData
+                        |> (\data -> { data | healthEducationForm = updatedForm })
             in
-            ( { model | healthEducationData = updatedData }
+            ( { model | nextStepsData = updatedData }
             , Cmd.none
             , []
             )
@@ -384,16 +384,16 @@ update currentDate id db msg model =
         SetReasonForNotProvidingHealthEducation value ->
             let
                 form =
-                    model.healthEducationData.form
+                    model.nextStepsData.healthEducationForm
 
                 updatedForm =
                     { form | reasonForNotProvidingHealthEducation = Just value }
 
                 updatedData =
-                    model.healthEducationData
-                        |> (\data -> { data | form = updatedForm })
+                    model.nextStepsData
+                        |> (\data -> { data | healthEducationForm = updatedForm })
             in
-            ( { model | healthEducationData = updatedData }
+            ( { model | nextStepsData = updatedData }
             , Cmd.none
             , []
             )
