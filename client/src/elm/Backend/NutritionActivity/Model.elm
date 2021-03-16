@@ -12,6 +12,3 @@ type NutritionActivity
     | Photo
     | Weight
     | NextSteps
-      -- @todo: remove these 2
-    | SendToHC
-    | HealthEducation

@@ -4224,18 +4224,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                -- No helper for activity.
-                Backend.NutritionActivity.Model.SendToHC ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
-                -- No helper for activity.
-                Backend.NutritionActivity.Model.HealthEducation ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
         NutritionActivityTitle activity ->
             case activity of
                 Backend.NutritionActivity.Model.Muac ->
@@ -4266,16 +4254,6 @@ translationSet trans =
                 Backend.NutritionActivity.Model.NextSteps ->
                     { english = "Next Steps"
                     , kinyarwanda = Just "Ibikurikiyeho"
-                    }
-
-                Backend.NutritionActivity.Model.SendToHC ->
-                    { english = "Send to Health Center"
-                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
-                    }
-
-                Backend.NutritionActivity.Model.HealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
         NutritionAssesment assessment ->

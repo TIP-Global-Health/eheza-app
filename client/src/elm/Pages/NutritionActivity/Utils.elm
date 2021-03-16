@@ -257,14 +257,6 @@ activityCompleted currentDate zscores child isChw data db activity =
             (not <| expectActivity currentDate zscores child isChw data db NextSteps)
                 || (isJust measurements.sendToHC && isJust measurements.healthEducation)
 
-        SendToHC ->
-            (not <| expectActivity currentDate zscores child isChw data db SendToHC)
-                || isJust measurements.sendToHC
-
-        HealthEducation ->
-            (not <| expectActivity currentDate zscores child isChw data db HealthEducation)
-                || isJust measurements.healthEducation
-
 
 mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> Bool
 mandatoryActivitiesCompleted currentDate zscores child isChw data db =
