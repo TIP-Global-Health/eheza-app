@@ -281,7 +281,7 @@ update currentDate id db msg model =
         SetReferToHealthCenter value ->
             let
                 form =
-                    model.sendToHCData.form
+                    model.nextStepsData.sendToHCForm
 
                 updatedForm =
                     { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
@@ -315,16 +315,16 @@ update currentDate id db msg model =
         SetReasonForNotSendingToHC value ->
             let
                 form =
-                    model.sendToHCData.form
+                    model.nextStepsData.sendToHCForm
 
                 updatedForm =
                     { form | reasonForNotSendingToHC = Just value }
 
                 updatedData =
-                    model.sendToHCData
-                        |> (\data -> { data | form = updatedForm })
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
             in
-            ( { model | sendToHCData = updatedData }
+            ( { model | nextStepsData = updatedData }
             , Cmd.none
             , []
             )

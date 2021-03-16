@@ -38,8 +38,6 @@ type alias Model =
     , photoData : PhotoData
     , weightData : WeightData
     , nextStepsData : NextStepsData
-    , sendToHCData : SendToHCData
-    , healthEducationData : HealthEducationData
     , warningPopupState : List NutritionAssesment
     }
 
@@ -52,8 +50,6 @@ emptyModel =
     , photoData = emptyPhotoData
     , weightData = emptyWeightData
     , nextStepsData = emptyNextStepsData
-    , sendToHCData = emptySendToHCData
-    , healthEducationData = emptyHealthEducationData
     , warningPopupState = []
     }
 
@@ -159,25 +155,3 @@ emptyNextStepsData =
 type NextStepsTask
     = NextStepsSendToHC
     | NextStepsHealthEducation
-
-
-type alias SendToHCData =
-    { form : SendToHCForm
-    }
-
-
-emptySendToHCData : SendToHCData
-emptySendToHCData =
-    { form = SendToHCForm Nothing Nothing Nothing
-    }
-
-
-type alias HealthEducationData =
-    { form : HealthEducationForm
-    }
-
-
-emptyHealthEducationData : HealthEducationData
-emptyHealthEducationData =
-    { form = HealthEducationForm Nothing Nothing
-    }
