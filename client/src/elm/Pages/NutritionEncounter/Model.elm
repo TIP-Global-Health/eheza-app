@@ -11,7 +11,6 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { selectedTab : Tab
-    , warningPopupState : List NutritionAssesment
     }
 
 
@@ -19,7 +18,6 @@ type Msg
     = CloseEncounter NutritionEncounterId
     | SetActivePage Page
     | SetSelectedTab Tab
-    | SetWarningPopupState (List NutritionAssesment)
 
 
 type Tab
@@ -31,7 +29,6 @@ type Tab
 emptyModel : Model
 emptyModel =
     { selectedTab = Pending
-    , warningPopupState = []
     }
 
 

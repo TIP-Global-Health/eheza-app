@@ -17,6 +17,7 @@ import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model exposing (HistoricalMeasurements, Measurements)
 import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
+import Backend.NutritionActivity.Model
 import Backend.NutritionEncounter.Model
 import Backend.NutritionEncounter.Update
 import Backend.Person.Model exposing (Initiator(..), Person)
@@ -49,6 +50,7 @@ import Pages.AcuteIllnessEncounter.Utils
         , resolveNextStepFirstEncounter
         , resolveNextStepSubsequentEncounter
         )
+import Pages.NutritionActivity.Model
 import Pages.NutritionActivity.Utils
 import Pages.NutritionEncounter.Model
 import Pages.NutritionEncounter.Utils
@@ -2256,11 +2258,11 @@ generateNutritionAssessmentMsgs currentDate zscores isChw after id person =
 
                     else
                         [ -- Navigate to Nutrition encounter page.
-                          App.Model.SetActivePage (UserPage (NutritionEncounterPage id))
+                          App.Model.SetActivePage (UserPage (NutritionActivityPage id Backend.NutritionActivity.Model.NextSteps))
 
                         -- Show warning popup with new assesment.
-                        , Pages.NutritionEncounter.Model.SetWarningPopupState assesmentAfter
-                            |> App.Model.MsgPageNutritionEncounter id
+                        , Pages.NutritionActivity.Model.SetWarningPopupState assesmentAfter
+                            |> App.Model.MsgPageNutritionActivity id Backend.NutritionActivity.Model.NextSteps
                             |> App.Model.MsgLoggedIn
                         ]
             )

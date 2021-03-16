@@ -4,11 +4,13 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Measurement.Model exposing (DropZoneFile)
 import Pages.AcuteIllnessActivity.Model exposing (HealthEducationForm, SendToHCForm)
+import Pages.NutritionEncounter.Model exposing (NutritionAssesment)
 import Pages.Page exposing (Page)
 
 
 type Msg
     = SetActivePage Page
+    | SetWarningPopupState (List NutritionAssesment)
     | SetHeight String
     | SaveHeight PersonId (Maybe ( NutritionHeightId, NutritionHeight ))
     | SetMuac String
@@ -38,6 +40,7 @@ type alias Model =
     , nextStepsData : NextStepsData
     , sendToHCData : SendToHCData
     , healthEducationData : HealthEducationData
+    , warningPopupState : List NutritionAssesment
     }
 
 
@@ -51,6 +54,7 @@ emptyModel =
     , nextStepsData = emptyNextStepsData
     , sendToHCData = emptySendToHCData
     , healthEducationData = emptyHealthEducationData
+    , warningPopupState = []
     }
 
 
