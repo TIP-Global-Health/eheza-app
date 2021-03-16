@@ -49,11 +49,6 @@ viewHeaderAndContent language currentDate zscores id isChw db model data =
     div [ class "page-encounter nutrition" ]
         [ header
         , content
-        , viewModal <|
-            warningPopup language
-                currentDate
-                model.warningPopupState
-                data
         ]
 
 
@@ -201,46 +196,3 @@ viewMainPageContent language currentDate zscores id isChw db data model =
     [ tabs
     , content
     ]
-
-
-warningPopup : Language -> NominalDate -> List NutritionAssesment -> AssembledData -> Maybe (Html Msg)
-warningPopup language currentDate state data =
-    if List.isEmpty state then
-        Nothing
-
-    else
-        let
-            infoHeading =
-                [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
-
-            assessments =
-                List.map (\assessment -> p [] [ translateAssement assessment ]) state
-
-            translateAssement assessment =
-                case assessment of
-                    AssesmentMalnutritionSigns signs ->
-                        let
-                            translatedSigns =
-                                List.map (Translate.ChildNutritionSignLabel >> translate language) signs
-                                    |> String.join ", "
-                        in
-                        text <| translate language (Translate.NutritionAssesment assessment) ++ ": " ++ translatedSigns
-
-                    _ ->
-                        text <| translate language <| Translate.NutritionAssesment assessment
-        in
-        Just <|
-            div [ class "ui active modal diagnosis-popup" ]
-                [ div [ class "content" ] <|
-                    [ div [ class "popup-heading-wrapper" ] infoHeading
-                    , div [ class "popup-title" ] assessments
-                    ]
-                , div
-                    [ class "actions" ]
-                    [ button
-                        [ class "ui primary fluid button"
-                        , onClick <| SetWarningPopupState []
-                        ]
-                        [ text <| translate language Translate.Continue ]
-                    ]
-                ]

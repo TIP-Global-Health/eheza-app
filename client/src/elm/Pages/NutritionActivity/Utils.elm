@@ -20,9 +20,10 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, or, unwrap)
+import Pages.AcuteIllnessActivity.Utils exposing (healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData, NutritionAssesment(..))
-import Pages.Utils exposing (ifEverySetEmpty, valueConsideringIsDirtyField)
+import Pages.Utils exposing (ifEverySetEmpty, taskCompleted, valueConsideringIsDirtyField)
 import RemoteData exposing (RemoteData(..))
 import Utils.NominalDate exposing (diffDays)
 import ZScore.Model exposing (Kilograms(..))
@@ -214,7 +215,7 @@ expectActivity currentDate zscores child isChw data db activity =
                 |> Maybe.map (\ageMonths -> ageMonths > 5)
                 |> Maybe.withDefault False
 
-        SendToHC ->
+        NextSteps ->
             if isChw && mandatoryActivitiesCompleted currentDate zscores child isChw data db then
                 -- Any assesment require sending to HC.
                 generateNutritionAssesment currentDate zscores db data
@@ -223,9 +224,6 @@ expectActivity currentDate zscores child isChw data db activity =
 
             else
                 False
-
-        HealthEducation ->
-            expectActivity currentDate zscores child isChw data db SendToHC
 
         _ ->
             True
@@ -255,13 +253,9 @@ activityCompleted currentDate zscores child isChw data db activity =
         Weight ->
             isJust measurements.weight
 
-        SendToHC ->
-            (not <| expectActivity currentDate zscores child isChw data db SendToHC)
-                || isJust measurements.sendToHC
-
-        HealthEducation ->
-            (not <| expectActivity currentDate zscores child isChw data db HealthEducation)
-                || isJust measurements.healthEducation
+        NextSteps ->
+            (not <| expectActivity currentDate zscores child isChw data db NextSteps)
+                || (isJust measurements.sendToHC && isJust measurements.healthEducation)
 
 
 mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> Bool
@@ -269,6 +263,64 @@ mandatoryActivitiesCompleted currentDate zscores child isChw data db =
     [ Height, Muac, Nutrition, Weight ]
         |> List.filter (not << activityCompleted currentDate zscores child isChw data db)
         |> List.isEmpty
+
+
+nextStepsTasksCompletedFromTotal : NutritionMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal measurements data task =
+    case task of
+        NextStepsSendToHC ->
+            let
+                form =
+                    measurements.sendToHC
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> sendToHCFormWithDefault data.sendToHCForm
+
+                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+                    form.referToHealthCenter
+                        |> Maybe.map
+                            (\sentToHC ->
+                                if not sentToHC then
+                                    if isJust form.reasonForNotSendingToHC then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+            in
+            ( reasonForNotSentActive + taskCompleted form.handReferralForm
+            , reasonForNotSentCompleted + 1
+            )
+
+        NextStepsHealthEducation ->
+            let
+                form =
+                    measurements.healthEducation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> healthEducationFormWithDefault data.healthEducationForm
+
+                ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
+                    form.educationForDiagnosis
+                        |> Maybe.map
+                            (\providedHealthEducation ->
+                                if not providedHealthEducation then
+                                    if isJust form.reasonForNotProvidingHealthEducation then
+                                        ( 1, 1 )
+
+                                    else
+                                        ( 0, 1 )
+
+                                else
+                                    ( 0, 0 )
+                            )
+                        |> Maybe.withDefault ( 0, 0 )
+            in
+            ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
+            , reasonForProvidingEducationCompleted + 1
+            )
 
 
 resolvePreviousIndividualValues : AssembledData -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a )) -> (a -> b) -> List ( NominalDate, b )

@@ -68,6 +68,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterPeriod(..)
         , FilterProgramType(..)
         )
+import Pages.NutritionActivity.Model
 import Pages.NutritionEncounter.Model exposing (NutritionAssesment(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -621,6 +622,7 @@ type TranslationId
     | NutritionActivityTitle NutritionActivity
     | NutritionAssesment NutritionAssesment
     | NutritionHelper
+    | NutritionNextStepsTask Pages.NutritionActivity.Model.NextStepsTask
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
@@ -4217,14 +4219,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
                     }
 
-                -- No helper for activity.
-                Backend.NutritionActivity.Model.SendToHC ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
-                -- No helper for activity.
-                Backend.NutritionActivity.Model.HealthEducation ->
+                Backend.NutritionActivity.Model.NextSteps ->
                     { english = ""
                     , kinyarwanda = Nothing
                     }
@@ -4256,14 +4251,9 @@ translationSet trans =
                     , kinyarwanda = Just "Ibiro"
                     }
 
-                Backend.NutritionActivity.Model.SendToHC ->
-                    { english = "Send to Health Center"
-                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
-                    }
-
-                Backend.NutritionActivity.Model.HealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Just "Inyigisho ku buzima"
+                Backend.NutritionActivity.Model.NextSteps ->
+                    { english = "Next Steps"
+                    , kinyarwanda = Just "Ibikurikiyeho"
                     }
 
         NutritionAssesment assessment ->
@@ -4312,6 +4302,18 @@ translationSet trans =
             { english = "Explain to the mother how to check the malnutrition signs for their own child."
             , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye."
             }
+
+        NutritionNextStepsTask task ->
+            case task of
+                Pages.NutritionActivity.Model.NextStepsSendToHC ->
+                    { english = "Send to Health Center"
+                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+                    }
+
+                Pages.NutritionActivity.Model.NextStepsHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
+                    }
 
         ObstetricalDiagnosis ->
             { english = "Obstetrical Diagnosis"

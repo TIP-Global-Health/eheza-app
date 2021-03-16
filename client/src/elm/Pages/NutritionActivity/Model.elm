@@ -4,11 +4,13 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Measurement.Model exposing (DropZoneFile)
 import Pages.AcuteIllnessActivity.Model exposing (HealthEducationForm, SendToHCForm)
+import Pages.NutritionEncounter.Model exposing (NutritionAssesment)
 import Pages.Page exposing (Page)
 
 
 type Msg
     = SetActivePage Page
+    | SetWarningPopupState (List NutritionAssesment)
     | SetHeight String
     | SaveHeight PersonId (Maybe ( NutritionHeightId, NutritionHeight ))
     | SetMuac String
@@ -19,12 +21,13 @@ type Msg
     | SavePhoto PersonId (Maybe NutritionPhotoId) PhotoUrl
     | SetWeight String
     | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
+    | SetActiveNextStepsTask NextStepsTask
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SetReasonForNotSendingToHC ReasonForNotSendingToHC
-    | SaveSendToHC PersonId (Maybe ( NutritionSendToHCId, NutritionSendToHC ))
+    | SaveSendToHC PersonId (Maybe ( NutritionSendToHCId, NutritionSendToHC )) (Maybe NextStepsTask)
     | SetProvidedEducationForDiagnosis Bool
-    | SaveHealthEducation PersonId (Maybe ( NutritionHealthEducationId, NutritionHealthEducation ))
+    | SaveHealthEducation PersonId (Maybe ( NutritionHealthEducationId, NutritionHealthEducation )) (Maybe NextStepsTask)
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
 
 
@@ -34,8 +37,8 @@ type alias Model =
     , nutritionData : NutritionData
     , photoData : PhotoData
     , weightData : WeightData
-    , sendToHCData : SendToHCData
-    , healthEducationData : HealthEducationData
+    , nextStepsData : NextStepsData
+    , warningPopupState : List NutritionAssesment
     }
 
 
@@ -46,8 +49,8 @@ emptyModel =
     , nutritionData = emptyNutritionData
     , photoData = emptyPhotoData
     , weightData = emptyWeightData
-    , sendToHCData = emptySendToHCData
-    , healthEducationData = emptyHealthEducationData
+    , nextStepsData = emptyNextStepsData
+    , warningPopupState = []
     }
 
 
@@ -134,23 +137,21 @@ type alias WeightForm =
     }
 
 
-type alias SendToHCData =
-    { form : SendToHCForm
+type alias NextStepsData =
+    { sendToHCForm : SendToHCForm
+    , healthEducationForm : HealthEducationForm
+    , activeTask : Maybe NextStepsTask
     }
 
 
-emptySendToHCData : SendToHCData
-emptySendToHCData =
-    { form = SendToHCForm Nothing Nothing Nothing
+emptyNextStepsData : NextStepsData
+emptyNextStepsData =
+    { sendToHCForm = SendToHCForm Nothing Nothing Nothing
+    , healthEducationForm = HealthEducationForm Nothing Nothing
+    , activeTask = Nothing
     }
 
 
-type alias HealthEducationData =
-    { form : HealthEducationForm
-    }
-
-
-emptyHealthEducationData : HealthEducationData
-emptyHealthEducationData =
-    { form = HealthEducationForm Nothing Nothing
-    }
+type NextStepsTask
+    = NextStepsSendToHC
+    | NextStepsHealthEducation

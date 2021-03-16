@@ -34,11 +34,8 @@ encodeActivityAsString activity =
         Weight ->
             "nutrition-weight"
 
-        SendToHC ->
-            "nutrition-send-to-hc"
-
-        HealthEducation ->
-            "nutrition-health-education"
+        NextSteps ->
+            "nutrition-next-steps"
 
 
 {-| The inverse of encodeActivityTypeAsString
@@ -61,11 +58,8 @@ decodeActivityFromString s =
         "nutrition-weight" ->
             Just Weight
 
-        "nutrition-send-to-hc" ->
-            Just SendToHC
-
-        "nutrition-health-education" ->
-            Just HealthEducation
+        "nutrition-next-steps" ->
+            Just NextSteps
 
         _ ->
             Nothing
@@ -99,13 +93,10 @@ getActivityIcon activity =
         Weight ->
             "weight"
 
-        SendToHC ->
-            "send-to-hc"
-
-        HealthEducation ->
-            "health-education"
+        NextSteps ->
+            "next-steps"
 
 
 getAllActivities : List NutritionActivity
 getAllActivities =
-    [ Height, Muac, Nutrition, Weight, Photo, SendToHC, HealthEducation ]
+    [ Height, Muac, Nutrition, Weight, Photo, NextSteps ]
