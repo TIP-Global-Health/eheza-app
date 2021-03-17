@@ -324,8 +324,15 @@ nextStepsTasksCompletedFromTotal measurements data task =
             )
 
         NextStepContributingFactors ->
-            -- @todo
-            ( 0, 0 )
+            let
+                form =
+                    measurements.contributingFactors
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> contributingFactorsFormWithDefault data.contributingFactorsForm
+            in
+            ( taskCompleted form.signs
+            , 1
+            )
 
 
 resolvePreviousIndividualValues : AssembledData -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a )) -> (a -> b) -> List ( NominalDate, b )

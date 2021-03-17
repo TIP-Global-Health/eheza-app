@@ -1068,7 +1068,7 @@ decodeNutritionSendToHC =
 decodeNutritionContributingFactors : Decoder NutritionContributingFactors
 decodeNutritionContributingFactors =
     decodeEverySet decodeContributingFactorsSign
-        |> field "contributing_factors"
+        |> field "contributing_factors_signs"
         |> decodeNutritionMeasurement
 
 

@@ -1346,7 +1346,7 @@ encodeNutritionContributingFactors =
 
 encodeContributingFactorsValueWithType : String -> EverySet ContributingFactorsSign -> List ( String, Value )
 encodeContributingFactorsValueWithType type_ value =
-    [ ( "contributing_factors", encodeEverySet encodeContributingFactorsSign value )
+    [ ( "contributing_factors_signs", encodeEverySet encodeContributingFactorsSign value )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]

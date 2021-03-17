@@ -357,6 +357,8 @@ type TranslationId
     | ContactedRecommendedSiteQuestion
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
+    | ContributingFactor ContributingFactorsSign
+    | ContributingFactorsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
     | CurrentIllnessBegan
@@ -2130,6 +2132,38 @@ translationSet trans =
         ContactWithCOVID19SymptomsQuestion ->
             { english = "Have you had contacts with others who exhibit symptoms or have been exposed to COVID-19"
             , kinyarwanda = Just "Waba warigeze uhura n'abantu bagaragaje ibimenyetso bya covid-19 cyangwa n'abari bafite ibyago byo kuyandura"
+            }
+
+        ContributingFactor factor ->
+            case factor of
+                FactorLackOfBreastMilk ->
+                    { english = "Lack of breast milk"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorMaternalMastitis ->
+                    { english = "Maternal mastitis"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorPoorSuck ->
+                    { english = "Poor suck"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorDiarrheaOrVomiting ->
+                    { english = "Diarrhea or vomiting"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoContributingFactorsSign ->
+                    { english = "None of these"
+                    , kinyarwanda = Nothing
+                    }
+
+        ContributingFactorsQuestion ->
+            { english = "Has patient experienced any of the following"
+            , kinyarwanda = Nothing
             }
 
         ConvulsionsAndUnconsciousPreviousDelivery ->
@@ -4316,7 +4350,7 @@ translationSet trans =
                     }
 
                 Pages.NutritionActivity.Model.NextStepContributingFactors ->
-                    { english = "ContributingFactors"
+                    { english = "Contributing Factors"
                     , kinyarwanda = Nothing
                     }
 
