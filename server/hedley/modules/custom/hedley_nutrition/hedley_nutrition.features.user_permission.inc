@@ -11,6 +11,16 @@
 function hedley_nutrition_user_default_permissions() {
   $permissions = array();
 
+  // Exported permission: 'create contributing_factors content'.
+  $permissions['create contributing_factors content'] = array(
+    'name' => 'create contributing_factors content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create nutrition_health_education content'.
   $permissions['create nutrition_health_education content'] = array(
     'name' => 'create nutrition_health_education content',
@@ -31,6 +41,15 @@ function hedley_nutrition_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any contributing_factors content'.
+  $permissions['delete any contributing_factors content'] = array(
+    'name' => 'delete any contributing_factors content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any nutrition_health_education content'.
   $permissions['delete any nutrition_health_education content'] = array(
     'name' => 'delete any nutrition_health_education content',
@@ -43,6 +62,15 @@ function hedley_nutrition_user_default_permissions() {
   // Exported permission: 'delete any nutrition_send_to_hc content'.
   $permissions['delete any nutrition_send_to_hc content'] = array(
     'name' => 'delete any nutrition_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own contributing_factors content'.
+  $permissions['delete own contributing_factors content'] = array(
+    'name' => 'delete own contributing_factors content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -67,6 +95,16 @@ function hedley_nutrition_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any contributing_factors content'.
+  $permissions['edit any contributing_factors content'] = array(
+    'name' => 'edit any contributing_factors content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any nutrition_health_education content'.
   $permissions['edit any nutrition_health_education content'] = array(
     'name' => 'edit any nutrition_health_education content',
@@ -80,6 +118,16 @@ function hedley_nutrition_user_default_permissions() {
   // Exported permission: 'edit any nutrition_send_to_hc content'.
   $permissions['edit any nutrition_send_to_hc content'] = array(
     'name' => 'edit any nutrition_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own contributing_factors content'.
+  $permissions['edit own contributing_factors content'] = array(
+    'name' => 'edit own contributing_factors content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
