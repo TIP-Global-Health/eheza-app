@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model
     exposing
         ( ChildNutritionSign(..)
+        , ContributingFactorsSign(..)
         , HeightInCm(..)
         , MuacInCm(..)
         , MuacIndication(..)
@@ -461,6 +462,32 @@ toWeightValueWithDefault saved form =
 toWeightValue : WeightForm -> Maybe WeightInKg
 toWeightValue form =
     Maybe.map WeightInKg form.weight
+
+
+fromContributingFactorsValue : Maybe (EverySet ContributingFactorsSign) -> ContributingFactorsForm
+fromContributingFactorsValue saved =
+    { signs = Maybe.map EverySet.toList saved }
+
+
+contributingFactorsFormWithDefault : ContributingFactorsForm -> Maybe (EverySet ContributingFactorsSign) -> ContributingFactorsForm
+contributingFactorsFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { signs = or form.signs (EverySet.toList value |> Just) }
+            )
+
+
+toContributingFactorsValueWithDefault : Maybe (EverySet ContributingFactorsSign) -> ContributingFactorsForm -> Maybe (EverySet ContributingFactorsSign)
+toContributingFactorsValueWithDefault saved form =
+    contributingFactorsFormWithDefault form saved
+        |> toContributingFactorsValue
+
+
+toContributingFactorsValue : ContributingFactorsForm -> Maybe (EverySet ContributingFactorsSign)
+toContributingFactorsValue form =
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoContributingFactorsSign) form.signs
 
 
 calculateZScoreWeightForAge : NominalDate -> ZScore.Model.Model -> Person -> Maybe Float -> Maybe Float

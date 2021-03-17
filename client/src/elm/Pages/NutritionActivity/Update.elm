@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), PhotoUrl(..))
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), ContributingFactorsSign(..), PhotoUrl(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model
 import Gizra.NominalDate exposing (NominalDate)
@@ -512,7 +512,7 @@ update currentDate id db msg model =
                             )
 
                 appMsgs =
-                    model.nextStepsData.healthEducationForm
+                    model.nextStepsData.contributingFactorsForm
                         |> toContributingFactorsValueWithDefault measurement
                         |> unwrap
                             []
