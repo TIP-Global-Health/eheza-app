@@ -50,6 +50,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'breast_exam' => 'breast-exams',
   'call_114' => 'call-114s',
   'child_fbf' => 'child-fbfs',
+  'contributing_factors' => 'contributing_factors',
   'counseling_session' => 'counseling-sessions',
   'core_physical_exam' => 'core-physical-exams',
   'danger_signs' => 'danger-signs',
