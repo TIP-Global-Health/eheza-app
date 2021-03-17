@@ -73,6 +73,26 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create group_health_education content'.
+  $permissions['create group_health_education content'] = array(
+    'name' => 'create group_health_education content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create group_send_to_hc content'.
+  $permissions['create group_send_to_hc content'] = array(
+    'name' => 'create group_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create height content'.
   $permissions['create height content'] = array(
     'name' => 'create height content',
@@ -372,6 +392,24 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any group_health_education content'.
+  $permissions['delete any group_health_education content'] = array(
+    'name' => 'delete any group_health_education content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any group_send_to_hc content'.
+  $permissions['delete any group_send_to_hc content'] = array(
+    'name' => 'delete any group_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any height content'.
   $permissions['delete any height content'] = array(
     'name' => 'delete any height content',
@@ -636,6 +674,24 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own family_planning content'.
   $permissions['delete own family_planning content'] = array(
     'name' => 'delete own family_planning content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own group_health_education content'.
+  $permissions['delete own group_health_education content'] = array(
+    'name' => 'delete own group_health_education content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own group_send_to_hc content'.
+  $permissions['delete own group_send_to_hc content'] = array(
+    'name' => 'delete own group_send_to_hc content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -915,6 +971,26 @@ function hedley_activity_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any group_health_education content'.
+  $permissions['edit any group_health_education content'] = array(
+    'name' => 'edit any group_health_education content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any group_send_to_hc content'.
+  $permissions['edit any group_send_to_hc content'] = array(
+    'name' => 'edit any group_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1222,6 +1298,26 @@ function hedley_activity_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own group_health_education content'.
+  $permissions['edit own group_health_education content'] = array(
+    'name' => 'edit own group_health_education content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own group_send_to_hc content'.
+  $permissions['edit own group_send_to_hc content'] = array(
+    'name' => 'edit own group_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',

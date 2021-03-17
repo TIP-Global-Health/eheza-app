@@ -64,7 +64,7 @@ function hedley_nutrition_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 1,
+      'weight' => 4,
     ),
   );
 
@@ -102,7 +102,7 @@ function hedley_nutrition_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -146,7 +146,7 @@ function hedley_nutrition_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 5,
     ),
   );
 
@@ -191,7 +191,7 @@ function hedley_nutrition_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 5,
+      'weight' => 6,
     ),
   );
 
@@ -235,7 +235,7 @@ function hedley_nutrition_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -1,
+      'weight' => 3,
     ),
   );
 
@@ -273,7 +273,7 @@ function hedley_nutrition_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 11,
+      'weight' => 2,
     ),
   );
 
@@ -317,7 +317,7 @@ function hedley_nutrition_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 9,
+      'weight' => 8,
     ),
   );
 
@@ -413,7 +413,7 @@ function hedley_nutrition_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 1,
+      'weight' => 4,
     ),
   );
 
@@ -457,7 +457,7 @@ function hedley_nutrition_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 5,
     ),
   );
 
@@ -502,7 +502,7 @@ function hedley_nutrition_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 5,
+      'weight' => 6,
     ),
   );
 
@@ -546,7 +546,7 @@ function hedley_nutrition_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 3,
     ),
   );
 
@@ -584,7 +584,7 @@ function hedley_nutrition_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 11,
+      'weight' => 2,
     ),
   );
 
@@ -621,7 +621,7 @@ function hedley_nutrition_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => -1,
+      'weight' => 1,
     ),
   );
 
@@ -665,7 +665,7 @@ function hedley_nutrition_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 9,
+      'weight' => 8,
     ),
   );
 

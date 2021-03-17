@@ -67,6 +67,22 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'group_health_education' => array(
+      'name' => t('Group Health Education'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'group_send_to_hc' => array(
+      'name' => t('Group Send to HC'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'height' => array(
       'name' => t('Height'),
       'base' => 'node_content',
