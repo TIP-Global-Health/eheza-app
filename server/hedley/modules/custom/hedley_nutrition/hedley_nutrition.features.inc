@@ -19,8 +19,8 @@ function hedley_nutrition_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function hedley_nutrition_node_info() {
   $items = array(
-    'contributing_factors' => array(
-      'name' => t('Contributing Factors'),
+    'nutrition_contributing_factors' => array(
+      'name' => t('Nutrition Contributing Factors'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

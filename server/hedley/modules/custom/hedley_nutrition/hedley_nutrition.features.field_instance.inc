@@ -12,9 +12,9 @@ function hedley_nutrition_field_default_field_instances() {
   $field_instances = array();
 
   // Exported field_instance:
-  // 'node-contributing_factors-field_contributing_factors_signs'.
-  $field_instances['node-contributing_factors-field_contributing_factors_signs'] = array(
-    'bundle' => 'contributing_factors',
+  // 'node-nutrition_contributing_factors-field_contributing_factors_signs'.
+  $field_instances['node-nutrition_contributing_factors-field_contributing_factors_signs'] = array(
+    'bundle' => 'nutrition_contributing_factors',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -45,13 +45,14 @@ function hedley_nutrition_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 8,
+      'weight' => 1,
     ),
   );
 
-  // Exported field_instance: 'node-contributing_factors-field_date_measured'.
-  $field_instances['node-contributing_factors-field_date_measured'] = array(
-    'bundle' => 'contributing_factors',
+  // Exported field_instance:
+  // 'node-nutrition_contributing_factors-field_date_measured'.
+  $field_instances['node-nutrition_contributing_factors-field_date_measured'] = array(
+    'bundle' => 'nutrition_contributing_factors',
     'deleted' => 0,
     'description' => '',
     'display' => array(
@@ -101,13 +102,13 @@ function hedley_nutrition_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 3,
     ),
   );
 
-  // Exported field_instance: 'node-contributing_factors-field_nurse'.
-  $field_instances['node-contributing_factors-field_nurse'] = array(
-    'bundle' => 'contributing_factors',
+  // Exported field_instance: 'node-nutrition_contributing_factors-field_nurse'.
+  $field_instances['node-nutrition_contributing_factors-field_nurse'] = array(
+    'bundle' => 'nutrition_contributing_factors',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -145,14 +146,14 @@ function hedley_nutrition_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 4,
     ),
   );
 
   // Exported field_instance:
-  // 'node-contributing_factors-field_nutrition_encounter'.
-  $field_instances['node-contributing_factors-field_nutrition_encounter'] = array(
-    'bundle' => 'contributing_factors',
+  // 'node-nutrition_contributing_factors-field_nutrition_encounter'.
+  $field_instances['node-nutrition_contributing_factors-field_nutrition_encounter'] = array(
+    'bundle' => 'nutrition_contributing_factors',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -190,13 +191,14 @@ function hedley_nutrition_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 5,
     ),
   );
 
-  // Exported field_instance: 'node-contributing_factors-field_person'.
-  $field_instances['node-contributing_factors-field_person'] = array(
-    'bundle' => 'contributing_factors',
+  // Exported field_instance:
+  // 'node-nutrition_contributing_factors-field_person'.
+  $field_instances['node-nutrition_contributing_factors-field_person'] = array(
+    'bundle' => 'nutrition_contributing_factors',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -234,13 +236,14 @@ function hedley_nutrition_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 2,
     ),
   );
 
-  // Exported field_instance: 'node-contributing_factors-field_shards'.
-  $field_instances['node-contributing_factors-field_shards'] = array(
-    'bundle' => 'contributing_factors',
+  // Exported field_instance:
+  // 'node-nutrition_contributing_factors-field_shards'.
+  $field_instances['node-nutrition_contributing_factors-field_shards'] = array(
+    'bundle' => 'nutrition_contributing_factors',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -282,9 +285,9 @@ function hedley_nutrition_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-contributing_factors-field_uuid'.
-  $field_instances['node-contributing_factors-field_uuid'] = array(
-    'bundle' => 'contributing_factors',
+  // Exported field_instance: 'node-nutrition_contributing_factors-field_uuid'.
+  $field_instances['node-nutrition_contributing_factors-field_uuid'] = array(
+    'bundle' => 'nutrition_contributing_factors',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -318,7 +321,7 @@ function hedley_nutrition_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 5,
+      'weight' => 6,
     ),
   );
 
