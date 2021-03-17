@@ -438,3 +438,97 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetContributingFactorsSign sign ->
+            let
+                form =
+                    Dict.get id db.nutritionMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.contributingFactors
+                                >> Maybe.map (Tuple.second >> .value)
+                                >> contributingFactorsFormWithDefault model.nextStepsData.contributingFactorsForm
+                            )
+                        |> Maybe.withDefault model.nextStepsData.contributingFactorsForm
+
+                updatedForm =
+                    case form.signs of
+                        Just signs ->
+                            if List.member sign signs then
+                                let
+                                    updatedSigns =
+                                        if List.length signs == 1 then
+                                            Nothing
+
+                                        else
+                                            signs |> List.filter ((/=) sign) |> Just
+                                in
+                                { form | signs = updatedSigns }
+
+                            else
+                                case sign of
+                                    NoContributingFactorsSign ->
+                                        { form | signs = Just [ sign ] }
+
+                                    _ ->
+                                        let
+                                            updatedSigns =
+                                                case signs of
+                                                    [ NoContributingFactorsSign ] ->
+                                                        Just [ sign ]
+
+                                                    _ ->
+                                                        Just (sign :: signs)
+                                        in
+                                        { form | signs = updatedSigns }
+
+                        Nothing ->
+                            { form | signs = Just [ sign ] }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | contributingFactorsForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveContributingFactors personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], Just task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id ]
+                            , Nothing
+                            )
+
+                appMsgs =
+                    model.nextStepsData.healthEducationForm
+                        |> toContributingFactorsValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.NutritionEncounter.Model.SaveContributingFactors personId measurementId value
+                                    |> Backend.Model.MsgNutritionEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
