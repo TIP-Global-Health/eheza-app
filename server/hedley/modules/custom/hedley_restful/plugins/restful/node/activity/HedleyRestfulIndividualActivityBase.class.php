@@ -25,13 +25,6 @@ abstract class HedleyRestfulIndividualActivityBase extends HedleyRestfulActivity
   protected $multiFields = [];
 
   /**
-   * A list of fields that are dates. This is a sub list of $fields.
-   *
-   * @var array
-   */
-  protected $dateFields = [];
-
-  /**
    * {@inheritdoc}
    */
   public function publicFieldsInfo() {

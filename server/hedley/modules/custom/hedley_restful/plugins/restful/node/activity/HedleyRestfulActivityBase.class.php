@@ -19,7 +19,7 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
     $public_fields['date_measured'] = [
       'property' => 'field_date_measured',
       'process_callbacks' => [
-        [$this, 'renderDate'],
+        [$this, 'renderDate2'],
       ],
     ];
 
@@ -37,13 +37,6 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
     unset($public_fields['label']);
 
     return $public_fields;
-  }
-
-  /**
-   * Show the date with date only.
-   */
-  public function renderDate($date) {
-    return date("Y-m-d", $date);
   }
 
   /**

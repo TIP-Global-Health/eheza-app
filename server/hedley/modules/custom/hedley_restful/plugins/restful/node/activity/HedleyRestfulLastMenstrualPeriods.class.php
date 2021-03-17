@@ -21,13 +21,6 @@ class HedleyRestfulLastMenstrualPeriods extends HedleyRestfulPrenatalActivityBas
   /**
    * {@inheritdoc}
    */
-  protected $dateFields = [
-    'field_last_menstrual_period',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
@@ -36,20 +29,11 @@ class HedleyRestfulLastMenstrualPeriods extends HedleyRestfulPrenatalActivityBas
     $public_fields['last_menstrual_period'] = [
       'property' => 'field_last_menstrual_period',
       'process_callbacks' => [
-        [$this, 'renderDate'],
+        [$this, 'renderDate2'],
       ],
     ];
 
     return $public_fields;
-  }
-
-  /**
-   * Show the date with date only.
-   */
-  public function renderDate($date) {
-    $date = explode(' ', date("Y-m-d", $date));
-
-    return !empty($date[0]) ? $date[0] : NULL;
   }
 
   /**
