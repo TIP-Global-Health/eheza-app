@@ -104,6 +104,7 @@ decodeNutritionMeasurements =
         |> optional "nutrition_weight" (decodeHead decodeNutritionWeight) Nothing
         |> optional "nutrition_send_to_hc" (decodeHead decodeNutritionSendToHC) Nothing
         |> optional "nutrition_health_education" (decodeHead decodeNutritionHealthEducation) Nothing
+        |> optional "nutrition_contributing_factors" (decodeHead decodeNutritionContributingFactors) Nothing
 
 
 decodeAcuteIllnessMeasurements : Decoder AcuteIllnessMeasurements
@@ -1064,6 +1065,13 @@ decodeNutritionSendToHC =
         |> decodeNutritionMeasurement
 
 
+decodeNutritionContributingFactors : Decoder NutritionContributingFactors
+decodeNutritionContributingFactors =
+    decodeEverySet decodeContributingFactorsSign
+        |> field "contributing_factors"
+        |> decodeNutritionMeasurement
+
+
 decodeSymptomsGeneral : Decoder SymptomsGeneral
 decodeSymptomsGeneral =
     succeed SymptomsGeneralValue
@@ -1377,6 +1385,34 @@ decodeReasonForNotSendingToHC =
                         fail <|
                             event
                                 ++ "is not a recognized ReasonForNotSendingToHC"
+            )
+
+
+decodeContributingFactorsSign : Decoder ContributingFactorsSign
+decodeContributingFactorsSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "lack-of-breast-milk" ->
+                        succeed FactorLackOfBreastMilk
+
+                    "maternal-mastitis" ->
+                        succeed FactorMaternalMastitis
+
+                    "poor-suck" ->
+                        succeed FactorPoorSuck
+
+                    "diarrhea-or-vomiting" ->
+                        succeed FactorDiarrheaOrVomiting
+
+                    "none" ->
+                        succeed NoContributingFactorsSign
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized ContributingFactorsSign"
             )
 
 
