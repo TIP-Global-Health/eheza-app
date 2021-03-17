@@ -4315,6 +4315,11 @@ translationSet trans =
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
+                Pages.NutritionActivity.Model.NextStepContributingFactors ->
+                    { english = "ContributingFactors"
+                    , kinyarwanda = Nothing
+                    }
+
         ObstetricalDiagnosis ->
             { english = "Obstetrical Diagnosis"
             , kinyarwanda = Just "Uburwayi bwemejwe n'inzobere mu gusuzuma abagore batwite"

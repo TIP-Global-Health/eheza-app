@@ -155,3 +155,4 @@ emptyNextStepsData =
 type NextStepsTask
     = NextStepsSendToHC
     | NextStepsHealthEducation
+    | NextStepContributingFactors

@@ -322,6 +322,10 @@ nextStepsTasksCompletedFromTotal measurements data task =
             , reasonForProvidingEducationCompleted + 1
             )
 
+        NextStepContributingFactors ->
+            -- @todo
+            ( 0, 0 )
+
 
 resolvePreviousIndividualValues : AssembledData -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a )) -> (a -> b) -> List ( NominalDate, b )
 resolvePreviousIndividualValues assembled measurementFunc valueFunc =

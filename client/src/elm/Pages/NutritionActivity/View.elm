@@ -628,6 +628,10 @@ viewNextStepsContent language currentDate id assembled data =
                             , isJust measurements.healthEducation
                             )
 
+                        NextStepContributingFactors ->
+                            -- @todo
+                            ( "", False )
+
                 isActive =
                     activeTask == Just task
 
@@ -671,6 +675,10 @@ viewNextStepsContent language currentDate id assembled data =
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate
 
+                Just NextStepContributingFactors ->
+                    --@todo
+                    emptyNode
+
                 Nothing ->
                     emptyNode
 
@@ -694,6 +702,10 @@ viewNextStepsContent language currentDate id assembled data =
                                         SaveSendToHC personId measurements.sendToHC nextTask
 
                                     NextStepsHealthEducation ->
+                                        SaveHealthEducation personId measurements.healthEducation nextTask
+
+                                    NextStepContributingFactors ->
+                                        -- @todo
                                         SaveHealthEducation personId measurements.healthEducation nextTask
                         in
                         div [ class "actions next-steps" ]
