@@ -104,3 +104,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveHealthEducation = data }
             , Cmd.none
             )
+
+        SaveContributingFactors personId valueId value ->
+            ( { model | saveContributingFactors = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value nutritionContributingFactorsEndpoint HandleSavedContributingFactors
+            )
+
+        HandleSavedContributingFactors data ->
+            ( { model | saveContributingFactors = data }
+            , Cmd.none
+            )
