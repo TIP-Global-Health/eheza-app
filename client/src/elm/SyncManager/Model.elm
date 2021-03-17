@@ -77,6 +77,7 @@ type BackendAuthorityEntity
     | BackendAuthorityMotherFbf (BackendEntity Fbf)
     | BackendAuthorityMuac (BackendEntity Muac)
     | BackendAuthorityNutrition (BackendEntity ChildNutrition)
+    | BackendAuthorityNutritionContributingFactors (BackendEntity NutritionContributingFactors)
     | BackendAuthorityNutritionEncounter (BackendEntity NutritionEncounter)
     | BackendAuthorityNutritionHealthEducation (BackendEntity NutritionHealthEducation)
     | BackendAuthorityNutritionHeight (BackendEntity NutritionHeight)
