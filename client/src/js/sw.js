@@ -38,6 +38,7 @@ var tableForType = {
     catchment_area: 'nodes',
     child_fbf: 'shards',
     clinic: 'shards',
+    contributing_factors: 'shards',
     counseling_schedule: 'nodes',
     counseling_session: 'shards',
     counseling_topic: 'nodes',
