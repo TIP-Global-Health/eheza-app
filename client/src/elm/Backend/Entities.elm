@@ -639,9 +639,9 @@ type NutritionHealthEducationUuidType
     = NutritionHealthEducationUuidType
 
 
-type alias ContributingFactorsId =
-    EntityUuid ContributingFactorsIdUuidType
+type alias NutritionContributingFactorsId =
+    EntityUuid NutritionContributingFactorsIdUuidType
 
 
-type ContributingFactorsIdUuidType
-    = ContributingFactorsIdUuidType
+type NutritionContributingFactorsIdUuidType
+    = NutritionContributingFactorsIdUuidType
