@@ -199,6 +199,13 @@ type ContributingFactorsSign
     | NoContributingFactorsSign
 
 
+type FollowUpOption
+    = OneDay
+    | ThreeDays
+    | OneWeek
+    | TwoWeeks
+
+
 
 -- NUTRITION MEASUREMENTS
 
@@ -233,6 +240,10 @@ type alias NutritionHealthEducation =
 
 type alias NutritionContributingFactors =
     NutritionMeasurement (EverySet ContributingFactorsSign)
+
+
+type alias NutritionFollowUp =
+    NutritionMeasurement (EverySet FollowUpOption)
 
 
 
@@ -1049,6 +1060,7 @@ type alias NutritionMeasurements =
     , sendToHC : Maybe ( NutritionSendToHCId, NutritionSendToHC )
     , healthEducation : Maybe ( NutritionHealthEducationId, NutritionHealthEducation )
     , contributingFactors : Maybe ( NutritionContributingFactorsId, NutritionContributingFactors )
+    , followUp : Maybe ( NutritionFollowUpId, NutritionFollowUp )
     }
 
 
