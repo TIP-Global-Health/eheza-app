@@ -609,7 +609,7 @@ viewNextStepsContent language currentDate id assembled data =
             assembled.measurements
 
         tasks =
-            [ NextStepsSendToHC, NextStepsHealthEducation ]
+            [ NextStepContributingFactors, NextStepsHealthEducation, NextStepsSendToHC ]
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -626,6 +626,11 @@ viewNextStepsContent language currentDate id assembled data =
                         NextStepsHealthEducation ->
                             ( "next-steps-health-education"
                             , isJust measurements.healthEducation
+                            )
+
+                        NextStepContributingFactors ->
+                            ( "next-steps-contributing-factors"
+                            , isJust measurements.contributingFactors
                             )
 
                 isActive =
@@ -671,6 +676,12 @@ viewNextStepsContent language currentDate id assembled data =
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate
 
+                Just NextStepContributingFactors ->
+                    measurements.contributingFactors
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> contributingFactorsFormWithDefault data.contributingFactorsForm
+                        |> viewContributingFactorsForm language currentDate
+
                 Nothing ->
                     emptyNode
 
@@ -695,6 +706,9 @@ viewNextStepsContent language currentDate id assembled data =
 
                                     NextStepsHealthEducation ->
                                         SaveHealthEducation personId measurements.healthEducation nextTask
+
+                                    NextStepContributingFactors ->
+                                        SaveContributingFactors personId measurements.contributingFactors nextTask
                         in
                         div [ class "actions next-steps" ]
                             [ button
@@ -832,4 +846,18 @@ viewHealthEducationLabel language actionTranslationId iconClass maybeDate =
     div [ class "header icon-label" ] <|
         [ i [ class iconClass ] []
         , message
+        ]
+
+
+viewContributingFactorsForm : Language -> NominalDate -> ContributingFactorsForm -> Html Msg
+viewContributingFactorsForm language currentDate form =
+    div [ class "ui form contributing-factors" ]
+        [ viewQuestionLabel language Translate.ContributingFactorsQuestion
+        , viewCheckBoxMultipleSelectInput language
+            [ FactorLackOfBreastMilk, FactorMaternalMastitis, FactorPoorSuck, FactorDiarrheaOrVomiting ]
+            []
+            (form.signs |> Maybe.withDefault [])
+            (Just NoContributingFactorsSign)
+            SetContributingFactorsSign
+            Translate.ContributingFactor
         ]

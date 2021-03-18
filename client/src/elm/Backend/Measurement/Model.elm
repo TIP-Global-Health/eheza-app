@@ -191,6 +191,14 @@ type alias CounselingSession =
     GroupMeasurement ( CounselingTiming, EverySet CounselingTopicId )
 
 
+type ContributingFactorsSign
+    = FactorLackOfBreastMilk
+    | FactorMaternalMastitis
+    | FactorPoorSuck
+    | FactorDiarrheaOrVomiting
+    | NoContributingFactorsSign
+
+
 
 -- NUTRITION MEASUREMENTS
 
@@ -221,6 +229,10 @@ type alias NutritionSendToHC =
 
 type alias NutritionHealthEducation =
     NutritionMeasurement HealthEducationValue
+
+
+type alias NutritionContributingFactors =
+    NutritionMeasurement (EverySet ContributingFactorsSign)
 
 
 
@@ -1036,6 +1048,7 @@ type alias NutritionMeasurements =
     , weight : Maybe ( NutritionWeightId, NutritionWeight )
     , sendToHC : Maybe ( NutritionSendToHCId, NutritionSendToHC )
     , healthEducation : Maybe ( NutritionHealthEducationId, NutritionHealthEducation )
+    , contributingFactors : Maybe ( NutritionContributingFactorsId, NutritionContributingFactors )
     }
 
 

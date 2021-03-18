@@ -1919,6 +1919,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             -- Nothing to do in ModelIndexedDb yet. App.Update does do something with this one.
             noChange
 
+        NutritionContributingFactorsRevision uuid data ->
+            ( mapNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | contributingFactors = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         NutritionEncounterRevision uuid data ->
             let
                 nutritionEncounters =

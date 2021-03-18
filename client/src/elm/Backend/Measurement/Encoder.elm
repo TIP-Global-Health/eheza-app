@@ -1339,6 +1339,39 @@ encodeReasonForNotSendingToHC event =
                 "none"
 
 
+encodeNutritionContributingFactors : NutritionContributingFactors -> List ( String, Value )
+encodeNutritionContributingFactors =
+    encodeNutritionMeasurement (encodeContributingFactorsValueWithType "nutrition_contributing_factors")
+
+
+encodeContributingFactorsValueWithType : String -> EverySet ContributingFactorsSign -> List ( String, Value )
+encodeContributingFactorsValueWithType type_ value =
+    [ ( "contributing_factors_signs", encodeEverySet encodeContributingFactorsSign value )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+
+
+encodeContributingFactorsSign : ContributingFactorsSign -> Value
+encodeContributingFactorsSign sign =
+    string <|
+        case sign of
+            FactorLackOfBreastMilk ->
+                "lack-of-breast-milk"
+
+            FactorMaternalMastitis ->
+                "maternal-mastitis"
+
+            FactorPoorSuck ->
+                "poor-suck"
+
+            FactorDiarrheaOrVomiting ->
+                "diarrhea-or-vomiting"
+
+            NoContributingFactorsSign ->
+                "none"
+
+
 encodeMedicationDistribution : MedicationDistribution -> List ( String, Value )
 encodeMedicationDistribution =
     encodeAcuteIllnessMeasurement encodeMedicationDistributionValue

@@ -604,3 +604,9 @@ nutritionHealthEducationEndpoint : ReadWriteEndPoint Error NutritionHealthEducat
 nutritionHealthEducationEndpoint =
     swEndpoint "nodes/nutrition_health_education" decodeNutritionHealthEducation
         |> withValueEncoder (object << encodeNutritionHealthEducation)
+
+
+nutritionContributingFactorsEndpoint : ReadWriteEndPoint Error NutritionContributingFactorsId NutritionContributingFactors NutritionContributingFactors ()
+nutritionContributingFactorsEndpoint =
+    swEndpoint "nodes/nutrition_contributing_factors" decodeNutritionContributingFactors
+        |> withValueEncoder (object << encodeNutritionContributingFactors)
