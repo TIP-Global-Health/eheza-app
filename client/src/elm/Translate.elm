@@ -2137,12 +2137,12 @@ translationSet trans =
         ContributingFactor factor ->
             case factor of
                 FactorLackOfBreastMilk ->
-                    { english = "Lack of breast milk"
+                    { english = "Lack of breast milk (for children < 6 months)"
                     , kinyarwanda = Nothing
                     }
 
                 FactorMaternalMastitis ->
-                    { english = "Maternal mastitis"
+                    { english = "Maternal mastitis (for children < 6 months)"
                     , kinyarwanda = Nothing
                     }
 
