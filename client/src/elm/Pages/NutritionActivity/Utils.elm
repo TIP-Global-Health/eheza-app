@@ -5,6 +5,7 @@ import Backend.Measurement.Model
     exposing
         ( ChildNutritionSign(..)
         , ContributingFactorsSign(..)
+        , FollowUpOption(..)
         , HeightInCm(..)
         , MuacInCm(..)
         , MuacIndication(..)
@@ -499,6 +500,30 @@ toContributingFactorsValueWithDefault saved form =
 toContributingFactorsValue : ContributingFactorsForm -> Maybe (EverySet ContributingFactorsSign)
 toContributingFactorsValue form =
     Maybe.map (EverySet.fromList >> ifEverySetEmpty NoContributingFactorsSign) form.signs
+
+
+fromFollowUpValue : Maybe (EverySet FollowUpOption) -> FollowUpForm
+fromFollowUpValue saved =
+    { option = Maybe.andThen (EverySet.toList >> List.head) saved }
+
+
+followUpFormWithDefault : FollowUpForm -> Maybe (EverySet FollowUpOption) -> FollowUpForm
+followUpFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value -> { option = or form.option (EverySet.toList value |> List.head) })
+
+
+toFollowUpValueWithDefault : Maybe (EverySet FollowUpOption) -> FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValueWithDefault saved form =
+    followUpFormWithDefault form saved
+        |> toFollowUpValue
+
+
+toFollowUpValue : FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValue form =
+    Maybe.map (List.singleton >> EverySet.fromList) form.option
 
 
 calculateZScoreWeightForAge : NominalDate -> ZScore.Model.Model -> Person -> Maybe Float -> Maybe Float
