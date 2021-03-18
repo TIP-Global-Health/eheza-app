@@ -39,5 +39,32 @@ function hedley_nutrition_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_follow_up_options'.
+  $field_bases['field_follow_up_options'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_follow_up_options',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        '1-d' => '1 Day',
+        '3-d' => '3 Days',
+        '1-w' => '1 Week',
+        '2-w' => '2 Weeks',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   return $field_bases;
 }
