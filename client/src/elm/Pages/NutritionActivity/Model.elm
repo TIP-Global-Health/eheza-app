@@ -174,3 +174,4 @@ type NextStepsTask
     = NextStepsSendToHC
     | NextStepsHealthEducation
     | NextStepContributingFactors
+    | NextStepFollowUp

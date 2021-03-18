@@ -339,6 +339,17 @@ nextStepsTasksCompletedFromTotal measurements data task =
             , 1
             )
 
+        NextStepFollowUp ->
+            let
+                form =
+                    measurements.followUp
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> followUpFormWithDefault data.followUpForm
+            in
+            ( taskCompleted form.option
+            , 1
+            )
+
 
 resolvePreviousIndividualValues : AssembledData -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a )) -> (a -> b) -> List ( NominalDate, b )
 resolvePreviousIndividualValues assembled measurementFunc valueFunc =
