@@ -42,8 +42,17 @@ encodeActivityAsString activity =
                 ChildPicture ->
                     "picture"
 
+                ContributingFactors ->
+                    "contributing_factors"
+
                 -- Counseling ->
                 --   "counseling"
+                FollowUp ->
+                    "follow_up"
+
+                Activity.Model.HealthEducation ->
+                    "group_health_education"
+
                 Height ->
                     "height"
 
@@ -52,6 +61,9 @@ encodeActivityAsString activity =
 
                 NutritionSigns ->
                     "nutrition"
+
+                Activity.Model.SendToHC ->
+                    "group_send_to_hc"
 
                 Weight ->
                     "weight"
@@ -82,6 +94,15 @@ decodeActivityFromString s =
         "picture" ->
             Just <| ChildActivity ChildPicture
 
+        "contributing_factors" ->
+            Just <| ChildActivity ContributingFactors
+
+        "follow_up" ->
+            Just <| ChildActivity FollowUp
+
+        "group_health_education" ->
+            Just <| ChildActivity Activity.Model.HealthEducation
+
         -- "counseling" ->
         --  Just <| ChildActivity Counseling
         "height" ->
@@ -92,6 +113,9 @@ decodeActivityFromString s =
 
         "nutrition" ->
             Just <| ChildActivity NutritionSigns
+
+        "group_send_to_hc" ->
+            Just <| ChildActivity Activity.Model.SendToHC
 
         "weight" ->
             Just <| ChildActivity Weight
@@ -133,16 +157,28 @@ getActivityIcon activity =
                 ChildPicture ->
                     "photo"
 
+                ContributingFactors ->
+                    "contributing-factors"
+
+                FollowUp ->
+                    "follow-up"
+
+                Activity.Model.HealthEducation ->
+                    "health-education"
+
                 -- Counseling ->
                 --    "counseling"
                 Height ->
                     "height"
 
-                Weight ->
-                    "weight"
-
                 Muac ->
                     "muac"
+
+                Activity.Model.SendToHC ->
+                    "send-to-hc"
+
+                Weight ->
+                    "weight"
 
                 NutritionSigns ->
                     "nutrition"
@@ -174,7 +210,16 @@ getAllChildActivities : OfflineSession -> List ChildActivity
 getAllChildActivities offlineSession =
     let
         forAllGroupTypes =
-            [ {- Counseling, -} Height, Muac, NutritionSigns, Weight, ChildPicture ]
+            [ {- Counseling, -} Height
+            , Muac
+            , NutritionSigns
+            , Weight
+            , ChildPicture
+            , ContributingFactors
+            , Activity.Model.HealthEducation
+            , Activity.Model.SendToHC
+            , FollowUp
+            ]
 
         forFbf =
             case offlineSession.session.clinicType of
