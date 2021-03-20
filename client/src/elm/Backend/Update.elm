@@ -1942,6 +1942,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        NutritionFollowUpRevision uuid data ->
+            ( mapNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         NutritionHealthEducationRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId

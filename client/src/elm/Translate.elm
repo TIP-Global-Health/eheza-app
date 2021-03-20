@@ -461,6 +461,8 @@ type TranslationId
     | FirstName
     | FiveVisits
     | ForIllustrativePurposesOnly
+    | FollowUpLabel
+    | FollowUpOption FollowUpOption
     | FormError (ErrorValue ValidationError)
     | FormField String
     | FundalHeight
@@ -2927,6 +2929,33 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        FollowUpLabel ->
+            { english = "Follow up with the patient in"
+            , kinyarwanda = Nothing
+            }
+
+        FollowUpOption option ->
+            case option of
+                OneDay ->
+                    { english = "1 Day"
+                    , kinyarwanda = Nothing
+                    }
+
+                ThreeDays ->
+                    { english = "3 Days"
+                    , kinyarwanda = Nothing
+                    }
+
+                OneWeek ->
+                    { english = "1 Week"
+                    , kinyarwanda = Nothing
+                    }
+
+                TwoWeeks ->
+                    { english = "2 Weeks"
+                    , kinyarwanda = Nothing
+                    }
+
         FormError errorValue ->
             translateFormError errorValue
 
@@ -4351,6 +4380,11 @@ translationSet trans =
 
                 Pages.NutritionActivity.Model.NextStepContributingFactors ->
                     { english = "Contributing Factors"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.NutritionActivity.Model.NextStepFollowUp ->
+                    { english = "Follow Up"
                     , kinyarwanda = Nothing
                     }
 

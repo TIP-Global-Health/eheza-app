@@ -105,6 +105,7 @@ decodeNutritionMeasurements =
         |> optional "nutrition_send_to_hc" (decodeHead decodeNutritionSendToHC) Nothing
         |> optional "nutrition_health_education" (decodeHead decodeNutritionHealthEducation) Nothing
         |> optional "nutrition_contributing_factors" (decodeHead decodeNutritionContributingFactors) Nothing
+        |> optional "nutrition_follow_up" (decodeHead decodeNutritionFollowUp) Nothing
 
 
 decodeAcuteIllnessMeasurements : Decoder AcuteIllnessMeasurements
@@ -1072,6 +1073,13 @@ decodeNutritionContributingFactors =
         |> decodeNutritionMeasurement
 
 
+decodeNutritionFollowUp : Decoder NutritionFollowUp
+decodeNutritionFollowUp =
+    decodeEverySet decodeFollowUpOption
+        |> field "follow_up_options"
+        |> decodeNutritionMeasurement
+
+
 decodeSymptomsGeneral : Decoder SymptomsGeneral
 decodeSymptomsGeneral =
     succeed SymptomsGeneralValue
@@ -1413,6 +1421,31 @@ decodeContributingFactorsSign =
                         fail <|
                             sign
                                 ++ " is not a recognized ContributingFactorsSign"
+            )
+
+
+decodeFollowUpOption : Decoder FollowUpOption
+decodeFollowUpOption =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "1-d" ->
+                        succeed OneDay
+
+                    "3-d" ->
+                        succeed ThreeDays
+
+                    "1-w" ->
+                        succeed OneWeek
+
+                    "2-w" ->
+                        succeed TwoWeeks
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized FollowUpOption"
             )
 
 

@@ -609,7 +609,7 @@ viewNextStepsContent language currentDate id assembled data =
             assembled.measurements
 
         tasks =
-            [ NextStepContributingFactors, NextStepsHealthEducation, NextStepsSendToHC ]
+            [ NextStepContributingFactors, NextStepsHealthEducation, NextStepsSendToHC, NextStepFollowUp ]
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -631,6 +631,11 @@ viewNextStepsContent language currentDate id assembled data =
                         NextStepContributingFactors ->
                             ( "next-steps-contributing-factors"
                             , isJust measurements.contributingFactors
+                            )
+
+                        NextStepFollowUp ->
+                            ( "next-steps-follow-up"
+                            , isJust measurements.followUp
                             )
 
                 isActive =
@@ -682,6 +687,12 @@ viewNextStepsContent language currentDate id assembled data =
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
                         |> viewContributingFactorsForm language currentDate
 
+                Just NextStepFollowUp ->
+                    measurements.followUp
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> followUpFormWithDefault data.followUpForm
+                        |> viewFollowUpForm language currentDate
+
                 Nothing ->
                     emptyNode
 
@@ -709,6 +720,9 @@ viewNextStepsContent language currentDate id assembled data =
 
                                     NextStepContributingFactors ->
                                         SaveContributingFactors personId measurements.contributingFactors nextTask
+
+                                    NextStepFollowUp ->
+                                        SaveFollowUp personId measurements.followUp nextTask
                         in
                         div [ class "actions next-steps" ]
                             [ button
@@ -860,4 +874,17 @@ viewContributingFactorsForm language currentDate form =
             (Just NoContributingFactorsSign)
             SetContributingFactorsSign
             Translate.ContributingFactor
+        ]
+
+
+viewFollowUpForm : Language -> NominalDate -> FollowUpForm -> Html Msg
+viewFollowUpForm language currentDate form =
+    div [ class "ui form follow-up" ]
+        [ viewLabel language Translate.FollowUpLabel
+        , viewCheckBoxSelectInput language
+            [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
+            []
+            form.option
+            SetFollowUpOption
+            Translate.FollowUpOption
         ]

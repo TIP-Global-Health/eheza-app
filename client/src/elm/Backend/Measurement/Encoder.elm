@@ -1372,6 +1372,36 @@ encodeContributingFactorsSign sign =
                 "none"
 
 
+encodeNutritionFollowUp : NutritionFollowUp -> List ( String, Value )
+encodeNutritionFollowUp =
+    encodeNutritionMeasurement (encodeFollowUpValueWithType "nutrition_follow_up")
+
+
+encodeFollowUpValueWithType : String -> EverySet FollowUpOption -> List ( String, Value )
+encodeFollowUpValueWithType type_ value =
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+
+
+encodeFollowUpOption : FollowUpOption -> Value
+encodeFollowUpOption option =
+    string <|
+        case option of
+            OneDay ->
+                "1-d"
+
+            ThreeDays ->
+                "3-d"
+
+            OneWeek ->
+                "1-w"
+
+            TwoWeeks ->
+                "2-w"
+
+
 encodeMedicationDistribution : MedicationDistribution -> List ( String, Value )
 encodeMedicationDistribution =
     encodeAcuteIllnessMeasurement encodeMedicationDistributionValue

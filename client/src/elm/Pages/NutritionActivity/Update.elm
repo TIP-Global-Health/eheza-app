@@ -532,3 +532,58 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetFollowUpOption option ->
+            let
+                form =
+                    model.nextStepsData.followUpForm
+
+                updatedForm =
+                    { form | option = Just option }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | followUpForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveFollowUp personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], Just task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id ]
+                            , Nothing
+                            )
+
+                appMsgs =
+                    model.nextStepsData.followUpForm
+                        |> toFollowUpValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.NutritionEncounter.Model.SaveFollowUp personId measurementId value
+                                    |> Backend.Model.MsgNutritionEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
