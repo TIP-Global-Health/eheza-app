@@ -215,10 +215,6 @@ getAllChildActivities offlineSession =
             , NutritionSigns
             , Weight
             , ChildPicture
-            , ContributingFactors
-            , Activity.Model.HealthEducation
-            , Activity.Model.SendToHC
-            , FollowUp
             ]
 
         forFbf =
@@ -231,8 +227,15 @@ getAllChildActivities offlineSession =
 
                 _ ->
                     []
+
+        nextSteps =
+            [ ContributingFactors
+            , Activity.Model.HealthEducation
+            , Activity.Model.SendToHC
+            , FollowUp
+            ]
     in
-    forAllGroupTypes ++ forFbf
+    forAllGroupTypes ++ forFbf ++ nextSteps
 
 
 getAllMotherActivities : OfflineSession -> List MotherActivity
@@ -263,9 +266,13 @@ whether we would expect to perform this action if checked in.
 -}
 expectChildActivity : NominalDate -> OfflineSession -> PersonId -> Bool -> ChildActivity -> Bool
 expectChildActivity currentDate offlineSession childId isChw activity =
+    let
+        showNextSteps =
+            isChw && mandatoryActivitiesCompleted currentDate offlineSession childId
+    in
     case activity of
         Height ->
-            isChw |> not
+            not isChw
 
         Muac ->
             Dict.get childId offlineSession.children
@@ -287,9 +294,27 @@ expectChildActivity currentDate offlineSession childId isChw activity =
         ChildFbf ->
             List.member offlineSession.session.clinicType [ Achi, Fbf ]
 
+        ContributingFactors ->
+            showNextSteps
+
+        FollowUp ->
+            showNextSteps
+
+        Activity.Model.HealthEducation ->
+            showNextSteps
+
+        Activity.Model.SendToHC ->
+            showNextSteps
+
         _ ->
             -- In all other cases, we expect each ativity each time.
             True
+
+
+mandatoryActivitiesCompleted : NominalDate -> OfflineSession -> PersonId -> Bool
+mandatoryActivitiesCompleted currentDate offlineSession childId =
+    -- @todo
+    True
 
 
 {-| Whether to expect a counseling activity is not just a yes/no question,
