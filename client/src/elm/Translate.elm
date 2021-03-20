@@ -1422,6 +1422,27 @@ translationSet trans =
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
                     }
 
+                -- @todo
+                ChildActivity Activity.Model.ContributingFactors ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.FollowUp ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.HealthEducation ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.SendToHC ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         ActivitiesLabel activity ->
             case activity of
                 MotherActivity Activity.Model.FamilyPlanning ->
@@ -1479,6 +1500,26 @@ translationSet trans =
                     , kinyarwanda = Just "Ibiro:"
                     }
 
+                ChildActivity Activity.Model.ContributingFactors ->
+                    { english = "Contributing Factors:"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.FollowUp ->
+                    { english = "Follow Up:"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.HealthEducation ->
+                    { english = "Health Education:"
+                    , kinyarwanda = Just "Inyigisho ku buzima:"
+                    }
+
+                ChildActivity Activity.Model.SendToHC ->
+                    { english = "Send to Health Center:"
+                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima:"
+                    }
+
         ActivitiesTitle activity ->
             case activity of
                 MotherActivity Activity.Model.FamilyPlanning ->
@@ -1534,6 +1575,26 @@ translationSet trans =
                 ChildActivity Activity.Model.Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
+                    }
+
+                ChildActivity Activity.Model.ContributingFactors ->
+                    { english = "Contributing Factors"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.FollowUp ->
+                    { english = "Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.HealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
+                    }
+
+                ChildActivity Activity.Model.SendToHC ->
+                    { english = "Send to Health Center"
+                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
         ActivitityTitleAchi ->
@@ -1596,6 +1657,26 @@ translationSet trans =
                 ChildActivity Activity.Model.Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
+                    }
+
+                ChildActivity Activity.Model.ContributingFactors ->
+                    { english = "Contributing Factors"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.FollowUp ->
+                    { english = "Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.HealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
+                    }
+
+                ChildActivity Activity.Model.SendToHC ->
+                    { english = "Send to Health Center"
+                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
         ActivitiesToComplete count ->
