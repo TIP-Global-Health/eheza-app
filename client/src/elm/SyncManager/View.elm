@@ -456,8 +456,14 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityNutrition identifier ->
                 viewMeasurement identifier "Nutrition"
 
+            BackendAuthorityNutritionContributingFactors identifier ->
+                viewMeasurement identifier "Nutrition Contributing Factors"
+
             BackendAuthorityNutritionEncounter identifier ->
                 text ("NutritionEncounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
+            BackendAuthorityNutritionFollowUp identifier ->
+                viewMeasurement identifier "Nutrition Follow Up"
 
             BackendAuthorityNutritionHealthEducation identifier ->
                 viewMeasurement identifier "Nutrition Health Education"

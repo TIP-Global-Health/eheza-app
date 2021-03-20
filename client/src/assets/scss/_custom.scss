@@ -1957,6 +1957,34 @@ input::placeholder {
   }
 }
 
+.icon-next-steps-contributing-factors {
+  .active &:after {
+    background-image: url(#{$img-path}icon-contributing-factors-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-contributing-factors-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-contributing-factors-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-next-steps-follow-up {
+  .active &:after {
+    background-image: url(#{$img-path}icon-follow-up-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-follow-up-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-follow-up-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
 // Lists
 
 .ui.list {

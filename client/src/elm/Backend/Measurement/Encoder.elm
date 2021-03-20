@@ -1339,6 +1339,69 @@ encodeReasonForNotSendingToHC event =
                 "none"
 
 
+encodeNutritionContributingFactors : NutritionContributingFactors -> List ( String, Value )
+encodeNutritionContributingFactors =
+    encodeNutritionMeasurement (encodeContributingFactorsValueWithType "nutrition_contributing_factors")
+
+
+encodeContributingFactorsValueWithType : String -> EverySet ContributingFactorsSign -> List ( String, Value )
+encodeContributingFactorsValueWithType type_ value =
+    [ ( "contributing_factors_signs", encodeEverySet encodeContributingFactorsSign value )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+
+
+encodeContributingFactorsSign : ContributingFactorsSign -> Value
+encodeContributingFactorsSign sign =
+    string <|
+        case sign of
+            FactorLackOfBreastMilk ->
+                "lack-of-breast-milk"
+
+            FactorMaternalMastitis ->
+                "maternal-mastitis"
+
+            FactorPoorSuck ->
+                "poor-suck"
+
+            FactorDiarrheaOrVomiting ->
+                "diarrhea-or-vomiting"
+
+            NoContributingFactorsSign ->
+                "none"
+
+
+encodeNutritionFollowUp : NutritionFollowUp -> List ( String, Value )
+encodeNutritionFollowUp =
+    encodeNutritionMeasurement (encodeFollowUpValueWithType "nutrition_follow_up")
+
+
+encodeFollowUpValueWithType : String -> EverySet FollowUpOption -> List ( String, Value )
+encodeFollowUpValueWithType type_ value =
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+
+
+encodeFollowUpOption : FollowUpOption -> Value
+encodeFollowUpOption option =
+    string <|
+        case option of
+            OneDay ->
+                "1-d"
+
+            ThreeDays ->
+                "3-d"
+
+            OneWeek ->
+                "1-w"
+
+            TwoWeeks ->
+                "2-w"
+
+
 encodeMedicationDistribution : MedicationDistribution -> List ( String, Value )
 encodeMedicationDistribution =
     encodeAcuteIllnessMeasurement encodeMedicationDistributionValue

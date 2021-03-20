@@ -637,3 +637,19 @@ type alias NutritionHealthEducationId =
 
 type NutritionHealthEducationUuidType
     = NutritionHealthEducationUuidType
+
+
+type alias NutritionContributingFactorsId =
+    EntityUuid NutritionContributingFactorsIdUuidType
+
+
+type NutritionContributingFactorsIdUuidType
+    = NutritionContributingFactorsIdUuidType
+
+
+type alias NutritionFollowUpId =
+    EntityUuid NutritionFollowUpIdUuidType
+
+
+type NutritionFollowUpIdUuidType
+    = NutritionFollowUpIdUuidType

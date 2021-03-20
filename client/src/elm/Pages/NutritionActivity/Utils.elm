@@ -4,6 +4,8 @@ import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model
     exposing
         ( ChildNutritionSign(..)
+        , ContributingFactorsSign(..)
+        , FollowUpOption(..)
         , HeightInCm(..)
         , MuacInCm(..)
         , MuacIndication(..)
@@ -255,7 +257,11 @@ activityCompleted currentDate zscores child isChw data db activity =
 
         NextSteps ->
             (not <| expectActivity currentDate zscores child isChw data db NextSteps)
-                || (isJust measurements.sendToHC && isJust measurements.healthEducation)
+                || (isJust measurements.sendToHC
+                        && isJust measurements.healthEducation
+                        && isJust measurements.contributingFactors
+                        && isJust measurements.followUp
+                   )
 
 
 mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> Bool
@@ -320,6 +326,28 @@ nextStepsTasksCompletedFromTotal measurements data task =
             in
             ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
             , reasonForProvidingEducationCompleted + 1
+            )
+
+        NextStepContributingFactors ->
+            let
+                form =
+                    measurements.contributingFactors
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> contributingFactorsFormWithDefault data.contributingFactorsForm
+            in
+            ( taskCompleted form.signs
+            , 1
+            )
+
+        NextStepFollowUp ->
+            let
+                form =
+                    measurements.followUp
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> followUpFormWithDefault data.followUpForm
+            in
+            ( taskCompleted form.option
+            , 1
             )
 
 
@@ -457,6 +485,56 @@ toWeightValueWithDefault saved form =
 toWeightValue : WeightForm -> Maybe WeightInKg
 toWeightValue form =
     Maybe.map WeightInKg form.weight
+
+
+fromContributingFactorsValue : Maybe (EverySet ContributingFactorsSign) -> ContributingFactorsForm
+fromContributingFactorsValue saved =
+    { signs = Maybe.map EverySet.toList saved }
+
+
+contributingFactorsFormWithDefault : ContributingFactorsForm -> Maybe (EverySet ContributingFactorsSign) -> ContributingFactorsForm
+contributingFactorsFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { signs = or form.signs (EverySet.toList value |> Just) }
+            )
+
+
+toContributingFactorsValueWithDefault : Maybe (EverySet ContributingFactorsSign) -> ContributingFactorsForm -> Maybe (EverySet ContributingFactorsSign)
+toContributingFactorsValueWithDefault saved form =
+    contributingFactorsFormWithDefault form saved
+        |> toContributingFactorsValue
+
+
+toContributingFactorsValue : ContributingFactorsForm -> Maybe (EverySet ContributingFactorsSign)
+toContributingFactorsValue form =
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoContributingFactorsSign) form.signs
+
+
+fromFollowUpValue : Maybe (EverySet FollowUpOption) -> FollowUpForm
+fromFollowUpValue saved =
+    { option = Maybe.andThen (EverySet.toList >> List.head) saved }
+
+
+followUpFormWithDefault : FollowUpForm -> Maybe (EverySet FollowUpOption) -> FollowUpForm
+followUpFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value -> { option = or form.option (EverySet.toList value |> List.head) })
+
+
+toFollowUpValueWithDefault : Maybe (EverySet FollowUpOption) -> FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValueWithDefault saved form =
+    followUpFormWithDefault form saved
+        |> toFollowUpValue
+
+
+toFollowUpValue : FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValue form =
+    Maybe.map (List.singleton >> EverySet.fromList) form.option
 
 
 calculateZScoreWeightForAge : NominalDate -> ZScore.Model.Model -> Person -> Maybe Float -> Maybe Float

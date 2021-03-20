@@ -27,8 +27,12 @@ type Msg
     | SetReasonForNotSendingToHC ReasonForNotSendingToHC
     | SaveSendToHC PersonId (Maybe ( NutritionSendToHCId, NutritionSendToHC )) (Maybe NextStepsTask)
     | SetProvidedEducationForDiagnosis Bool
-    | SaveHealthEducation PersonId (Maybe ( NutritionHealthEducationId, NutritionHealthEducation )) (Maybe NextStepsTask)
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
+    | SaveHealthEducation PersonId (Maybe ( NutritionHealthEducationId, NutritionHealthEducation )) (Maybe NextStepsTask)
+    | SetContributingFactorsSign ContributingFactorsSign
+    | SaveContributingFactors PersonId (Maybe ( NutritionContributingFactorsId, NutritionContributingFactors )) (Maybe NextStepsTask)
+    | SetFollowUpOption FollowUpOption
+    | SaveFollowUp PersonId (Maybe ( NutritionFollowUpId, NutritionFollowUp )) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -140,6 +144,8 @@ type alias WeightForm =
 type alias NextStepsData =
     { sendToHCForm : SendToHCForm
     , healthEducationForm : HealthEducationForm
+    , contributingFactorsForm : ContributingFactorsForm
+    , followUpForm : FollowUpForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -148,10 +154,24 @@ emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { sendToHCForm = SendToHCForm Nothing Nothing Nothing
     , healthEducationForm = HealthEducationForm Nothing Nothing
+    , contributingFactorsForm = ContributingFactorsForm Nothing
+    , followUpForm = FollowUpForm Nothing
     , activeTask = Nothing
+    }
+
+
+type alias ContributingFactorsForm =
+    { signs : Maybe (List ContributingFactorsSign)
+    }
+
+
+type alias FollowUpForm =
+    { option : Maybe FollowUpOption
     }
 
 
 type NextStepsTask
     = NextStepsSendToHC
     | NextStepsHealthEducation
+    | NextStepContributingFactors
+    | NextStepFollowUp

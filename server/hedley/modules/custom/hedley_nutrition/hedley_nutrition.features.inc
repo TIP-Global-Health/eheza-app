@@ -19,6 +19,22 @@ function hedley_nutrition_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function hedley_nutrition_node_info() {
   $items = array(
+    'nutrition_contributing_factors' => array(
+      'name' => t('Nutrition Contributing Factors'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'nutrition_follow_up' => array(
+      'name' => t('Nutrition Follow Up'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'nutrition_health_education' => array(
       'name' => t('Nutrition Health Education'),
       'base' => 'node_content',

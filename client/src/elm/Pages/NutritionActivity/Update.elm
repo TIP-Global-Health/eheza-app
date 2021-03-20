@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), PhotoUrl(..))
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), ContributingFactorsSign(..), PhotoUrl(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model
 import Gizra.NominalDate exposing (NominalDate)
@@ -424,6 +424,155 @@ update currentDate id db msg model =
                             []
                             (\value ->
                                 (Backend.NutritionEncounter.Model.SaveHealthEducation personId measurementId value
+                                    |> Backend.Model.MsgNutritionEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetContributingFactorsSign sign ->
+            let
+                form =
+                    Dict.get id db.nutritionMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.contributingFactors
+                                >> Maybe.map (Tuple.second >> .value)
+                                >> contributingFactorsFormWithDefault model.nextStepsData.contributingFactorsForm
+                            )
+                        |> Maybe.withDefault model.nextStepsData.contributingFactorsForm
+
+                updatedForm =
+                    case form.signs of
+                        Just signs ->
+                            if List.member sign signs then
+                                let
+                                    updatedSigns =
+                                        if List.length signs == 1 then
+                                            Nothing
+
+                                        else
+                                            signs |> List.filter ((/=) sign) |> Just
+                                in
+                                { form | signs = updatedSigns }
+
+                            else
+                                case sign of
+                                    NoContributingFactorsSign ->
+                                        { form | signs = Just [ sign ] }
+
+                                    _ ->
+                                        let
+                                            updatedSigns =
+                                                case signs of
+                                                    [ NoContributingFactorsSign ] ->
+                                                        Just [ sign ]
+
+                                                    _ ->
+                                                        Just (sign :: signs)
+                                        in
+                                        { form | signs = updatedSigns }
+
+                        Nothing ->
+                            { form | signs = Just [ sign ] }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | contributingFactorsForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveContributingFactors personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], Just task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id ]
+                            , Nothing
+                            )
+
+                appMsgs =
+                    model.nextStepsData.contributingFactorsForm
+                        |> toContributingFactorsValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.NutritionEncounter.Model.SaveContributingFactors personId measurementId value
+                                    |> Backend.Model.MsgNutritionEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetFollowUpOption option ->
+            let
+                form =
+                    model.nextStepsData.followUpForm
+
+                updatedForm =
+                    { form | option = Just option }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | followUpForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveFollowUp personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], Just task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id ]
+                            , Nothing
+                            )
+
+                appMsgs =
+                    model.nextStepsData.followUpForm
+                        |> toFollowUpValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.NutritionEncounter.Model.SaveFollowUp personId measurementId value
                                     |> Backend.Model.MsgNutritionEncounter id
                                     |> App.Model.MsgIndexedDb
                                 )

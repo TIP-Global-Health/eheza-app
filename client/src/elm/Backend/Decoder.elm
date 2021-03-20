@@ -134,8 +134,14 @@ decodeRevision =
                     "nutrition" ->
                         decodeWithUuid ChildNutritionRevision decodeNutrition
 
+                    "nutrition_contributing_factors" ->
+                        decodeWithUuid NutritionContributingFactorsRevision decodeNutritionContributingFactors
+
                     "nutrition_encounter" ->
                         decodeWithUuid NutritionEncounterRevision decodeNutritionEncounter
+
+                    "nutrition_follow_up" ->
+                        decodeWithUuid NutritionFollowUpRevision decodeNutritionFollowUp
 
                     "nutrition_health_education" ->
                         decodeWithUuid NutritionHealthEducationRevision decodeNutritionHealthEducation

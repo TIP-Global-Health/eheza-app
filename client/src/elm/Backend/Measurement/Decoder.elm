@@ -104,6 +104,8 @@ decodeNutritionMeasurements =
         |> optional "nutrition_weight" (decodeHead decodeNutritionWeight) Nothing
         |> optional "nutrition_send_to_hc" (decodeHead decodeNutritionSendToHC) Nothing
         |> optional "nutrition_health_education" (decodeHead decodeNutritionHealthEducation) Nothing
+        |> optional "nutrition_contributing_factors" (decodeHead decodeNutritionContributingFactors) Nothing
+        |> optional "nutrition_follow_up" (decodeHead decodeNutritionFollowUp) Nothing
 
 
 decodeAcuteIllnessMeasurements : Decoder AcuteIllnessMeasurements
@@ -1064,6 +1066,20 @@ decodeNutritionSendToHC =
         |> decodeNutritionMeasurement
 
 
+decodeNutritionContributingFactors : Decoder NutritionContributingFactors
+decodeNutritionContributingFactors =
+    decodeEverySet decodeContributingFactorsSign
+        |> field "contributing_factors_signs"
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionFollowUp : Decoder NutritionFollowUp
+decodeNutritionFollowUp =
+    decodeEverySet decodeFollowUpOption
+        |> field "follow_up_options"
+        |> decodeNutritionMeasurement
+
+
 decodeSymptomsGeneral : Decoder SymptomsGeneral
 decodeSymptomsGeneral =
     succeed SymptomsGeneralValue
@@ -1377,6 +1393,59 @@ decodeReasonForNotSendingToHC =
                         fail <|
                             event
                                 ++ "is not a recognized ReasonForNotSendingToHC"
+            )
+
+
+decodeContributingFactorsSign : Decoder ContributingFactorsSign
+decodeContributingFactorsSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "lack-of-breast-milk" ->
+                        succeed FactorLackOfBreastMilk
+
+                    "maternal-mastitis" ->
+                        succeed FactorMaternalMastitis
+
+                    "poor-suck" ->
+                        succeed FactorPoorSuck
+
+                    "diarrhea-or-vomiting" ->
+                        succeed FactorDiarrheaOrVomiting
+
+                    "none" ->
+                        succeed NoContributingFactorsSign
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized ContributingFactorsSign"
+            )
+
+
+decodeFollowUpOption : Decoder FollowUpOption
+decodeFollowUpOption =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "1-d" ->
+                        succeed OneDay
+
+                    "3-d" ->
+                        succeed ThreeDays
+
+                    "1-w" ->
+                        succeed OneWeek
+
+                    "2-w" ->
+                        succeed TwoWeeks
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized FollowUpOption"
             )
 
 

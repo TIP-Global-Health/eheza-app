@@ -316,7 +316,9 @@ type Revision
     | MotherFbfRevision MotherFbfId Fbf
     | MuacRevision MuacId Muac
     | NurseRevision NurseId Nurse
+    | NutritionContributingFactorsRevision NutritionContributingFactorsId NutritionContributingFactors
     | NutritionEncounterRevision NutritionEncounterId NutritionEncounter
+    | NutritionFollowUpRevision NutritionFollowUpId NutritionFollowUp
     | NutritionHealthEducationRevision NutritionHealthEducationId NutritionHealthEducation
     | NutritionHeightRevision NutritionHeightId NutritionHeight
     | NutritionMuacRevision NutritionMuacId NutritionMuac
