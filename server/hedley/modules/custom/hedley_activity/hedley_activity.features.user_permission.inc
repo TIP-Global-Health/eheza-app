@@ -42,6 +42,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create contributing_factors content'.
+  $permissions['create contributing_factors content'] = array(
+    'name' => 'create contributing_factors content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create core_physical_exam content'.
   $permissions['create core_physical_exam content'] = array(
     'name' => 'create core_physical_exam content',
@@ -68,6 +78,16 @@ function hedley_activity_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create follow_up content'.
+  $permissions['create follow_up content'] = array(
+    'name' => 'create follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -365,6 +385,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any contributing_factors content'.
+  $permissions['delete any contributing_factors content'] = array(
+    'name' => 'delete any contributing_factors content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any core_physical_exam content'.
   $permissions['delete any core_physical_exam content'] = array(
     'name' => 'delete any core_physical_exam content',
@@ -386,6 +415,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete any family_planning content'.
   $permissions['delete any family_planning content'] = array(
     'name' => 'delete any family_planning content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any follow_up content'.
+  $permissions['delete any follow_up content'] = array(
+    'name' => 'delete any follow_up content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -653,6 +691,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own contributing_factors content'.
+  $permissions['delete own contributing_factors content'] = array(
+    'name' => 'delete own contributing_factors content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own core_physical_exam content'.
   $permissions['delete own core_physical_exam content'] = array(
     'name' => 'delete own core_physical_exam content',
@@ -674,6 +721,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own family_planning content'.
   $permissions['delete own family_planning content'] = array(
     'name' => 'delete own family_planning content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own follow_up content'.
+  $permissions['delete own follow_up content'] = array(
+    'name' => 'delete own follow_up content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -945,6 +1001,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any contributing_factors content'.
+  $permissions['edit any contributing_factors content'] = array(
+    'name' => 'edit any contributing_factors content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any core_physical_exam content'.
   $permissions['edit any core_physical_exam content'] = array(
     'name' => 'edit any core_physical_exam content',
@@ -971,6 +1037,16 @@ function hedley_activity_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any follow_up content'.
+  $permissions['edit any follow_up content'] = array(
+    'name' => 'edit any follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1272,6 +1348,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit own contributing_factors content'.
+  $permissions['edit own contributing_factors content'] = array(
+    'name' => 'edit own contributing_factors content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own core_physical_exam content'.
   $permissions['edit own core_physical_exam content'] = array(
     'name' => 'edit own core_physical_exam content',
@@ -1298,6 +1384,16 @@ function hedley_activity_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own follow_up content'.
+  $permissions['edit own follow_up content'] = array(
+    'name' => 'edit own follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',

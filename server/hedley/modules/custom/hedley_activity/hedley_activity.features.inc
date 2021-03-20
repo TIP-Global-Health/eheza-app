@@ -43,6 +43,14 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'contributing_factors' => array(
+      'name' => t('Contributing Factors'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'core_physical_exam' => array(
       'name' => t('Core Physical Exam'),
       'base' => 'node_content',
@@ -61,6 +69,14 @@ function hedley_activity_node_info() {
     ),
     'family_planning' => array(
       'name' => t('Family Planning'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'follow_up' => array(
+      'name' => t('Follow Up'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',
