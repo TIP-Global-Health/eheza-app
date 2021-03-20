@@ -1105,6 +1105,10 @@ type alias ChildMeasurements =
     , weight : Maybe ( WeightId, Weight )
     , counselingSession : Maybe ( CounselingSessionId, CounselingSession )
     , fbf : Maybe ( ChildFbfId, Fbf )
+    , contributingFactors : Maybe ( ContributingFactorsId, ContributingFactors )
+    , followUp : Maybe ( FollowUpId, FollowUp )
+    , healthEducation : Maybe ( HealthEducationId, HealthEducation )
+    , sendToHC : Maybe ( SendToHCId, SendToHC )
     }
 
 
@@ -1117,6 +1121,10 @@ emptyChildMeasurements =
     , weight = Nothing
     , counselingSession = Nothing
     , fbf = Nothing
+    , contributingFactors = Nothing
+    , followUp = Nothing
+    , healthEducation = Nothing
+    , sendToHC = Nothing
     }
 
 
