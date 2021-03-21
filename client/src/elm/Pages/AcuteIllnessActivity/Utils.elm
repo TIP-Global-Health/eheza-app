@@ -8,6 +8,7 @@ import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import Measurement.Model exposing (..)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.PrenatalActivity.Utils exposing (ifFalse, ifNullableTrue, ifTrue)
@@ -1169,14 +1170,6 @@ toTreatmentReviewValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTreatmentReviewSigns)
 
 
-fromSendToHCValue : Maybe SendToHCValue -> SendToHCForm
-fromSendToHCValue saved =
-    { handReferralForm = Maybe.map (.signs >> EverySet.member HandReferrerForm) saved
-    , referToHealthCenter = Maybe.map (.signs >> EverySet.member ReferToHealthCenter) saved
-    , reasonForNotSendingToHC = Maybe.map .reasonForNotSendingToHC saved
-    }
-
-
 sendToHCFormWithDefault : SendToHCForm -> Maybe SendToHCValue -> SendToHCForm
 sendToHCFormWithDefault form saved =
     saved
@@ -1554,13 +1547,6 @@ toNutritionValueWithDefault saved form =
 toNutritionValue : NutritionForm -> Maybe (EverySet ChildNutritionSign)
 toNutritionValue form =
     Maybe.map (EverySet.fromList >> ifEverySetEmpty NormalChildNutrition) form.signs
-
-
-fromHealthEducationValue : Maybe HealthEducationValue -> HealthEducationForm
-fromHealthEducationValue saved =
-    { educationForDiagnosis = Maybe.map (.signs >> EverySet.member MalariaPrevention) saved
-    , reasonForNotProvidingHealthEducation = Maybe.map .reasonForNotProvidingHealthEducation saved
-    }
 
 
 healthEducationFormWithDefault : HealthEducationForm -> Maybe HealthEducationValue -> HealthEducationForm

@@ -4,10 +4,10 @@ import Activity.Utils exposing (expectCounselingActivity, expectParticipantConse
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValue, currentValues, fbfValueToForm, lactationSignsToForm, mapMeasurementData)
+import Backend.Measurement.Utils exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import LocalData
 import Measurement.Model exposing (..)
@@ -39,48 +39,43 @@ getInputConstraintsWeight =
 -}
 fromChildMeasurementData : MeasurementData ChildMeasurements -> ModelChild
 fromChildMeasurementData data =
-    -- TODO: Clearly there is some kind of pattern below, but we won't try to abstract that
-    -- just yet. Ultimately, this is the kind of thing which `RestfulData` would organize.
+    let
+        fromData measuremntFunc mappingFunc =
+            mapMeasurementData measuremntFunc data
+                |> currentValue
+                |> Maybe.map mappingFunc
+    in
     { height =
-        data
-            |> mapMeasurementData .height
-            |> currentValue
-            |> Maybe.map (.value >> (\(HeightInCm cm) -> String.fromFloat cm))
+        fromData .height (.value >> (\(HeightInCm cm) -> String.fromFloat cm))
             |> Maybe.withDefault ""
     , muac =
-        data
-            |> mapMeasurementData .muac
-            |> currentValue
-            |> Maybe.map (.value >> (\(MuacInCm cm) -> String.fromFloat cm))
+        fromData .muac (.value >> (\(MuacInCm cm) -> String.fromFloat cm))
             |> Maybe.withDefault ""
     , nutritionSigns =
-        data
-            |> mapMeasurementData .nutrition
-            |> currentValue
-            |> Maybe.map .value
+        fromData .nutrition .value
             |> Maybe.withDefault EverySet.empty
     , counseling =
-        data
-            |> mapMeasurementData .counselingSession
-            |> currentValue
-            |> Maybe.map .value
+        fromData .counselingSession .value
     , photo =
-        data
-            |> mapMeasurementData .photo
-            |> currentValue
-            |> Maybe.map .value
+        fromData .photo .value
     , weight =
-        data
-            |> mapMeasurementData .weight
-            |> currentValue
-            |> Maybe.map (.value >> (\(WeightInKg kg) -> String.fromFloat kg))
+        fromData .weight (.value >> (\(WeightInKg kg) -> String.fromFloat kg))
             |> Maybe.withDefault ""
     , fbfForm =
-        data
-            |> mapMeasurementData .fbf
-            |> currentValue
-            |> Maybe.map (.value >> fbfValueToForm)
-            |> Maybe.withDefault (FbfForm Nothing Nothing)
+        fromData .fbf (.value >> fbfValueToForm)
+            |> Maybe.withDefault emptyFbfForm
+    , contributingFactorsForm =
+        fromData .contributingFactors (.value >> Just >> fromContributingFactorsValue)
+            |> Maybe.withDefault emptyContributingFactorsForm
+    , followUpForm =
+        fromData .followUp (.value >> Just >> fromFollowUpValue)
+            |> Maybe.withDefault emptyFollowUpForm
+    , healthEducationForm =
+        fromData .healthEducation (.value >> Just >> fromHealthEducationValue)
+            |> Maybe.withDefault emptyHealthEducationForm
+    , sendToHCForm =
+        fromData .sendToHC (.value >> Just >> fromSendToHCValue)
+            |> Maybe.withDefault emptySendToHCForm
     }
 
 

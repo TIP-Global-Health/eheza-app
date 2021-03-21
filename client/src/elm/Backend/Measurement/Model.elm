@@ -153,12 +153,6 @@ type alias FbfValue =
     }
 
 
-type alias FbfForm =
-    { distributedAmount : Maybe Float
-    , distributionNotice : Maybe DistributionNotice
-    }
-
-
 type alias ParticipantConsent =
     GroupMeasurement ParticipantConsentValue
 

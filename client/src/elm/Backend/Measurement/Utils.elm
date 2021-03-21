@@ -7,6 +7,7 @@ import Backend.Person.Model exposing (Person, Ubudehe(..))
 import Backend.Person.Utils exposing (isAdult)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, compare, diffMonths)
+import Measurement.Model exposing (..)
 import Restful.Endpoint exposing (EntityUuid)
 
 
@@ -290,23 +291,29 @@ fbfFormToValue form =
         |> Maybe.withDefault (FbfValue 0 DistributedFully)
 
 
-socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
-socialHistoryHivTestingResultFromString result =
-    case result of
-        "positive" ->
-            Just ResultHivPositive
+fromContributingFactorsValue : Maybe (EverySet ContributingFactorsSign) -> ContributingFactorsForm
+fromContributingFactorsValue saved =
+    { signs = Maybe.map EverySet.toList saved }
 
-        "negative" ->
-            Just ResultHivNegative
 
-        "indeterminate" ->
-            Just ResultHivIndeterminate
+fromFollowUpValue : Maybe (EverySet FollowUpOption) -> FollowUpForm
+fromFollowUpValue saved =
+    { option = Maybe.andThen (EverySet.toList >> List.head) saved }
 
-        "none" ->
-            Just NoHivTesting
 
-        _ ->
-            Nothing
+fromHealthEducationValue : Maybe HealthEducationValue -> HealthEducationForm
+fromHealthEducationValue saved =
+    { educationForDiagnosis = Maybe.map (.signs >> EverySet.member MalariaPrevention) saved
+    , reasonForNotProvidingHealthEducation = Maybe.map .reasonForNotProvidingHealthEducation saved
+    }
+
+
+fromSendToHCValue : Maybe SendToHCValue -> SendToHCForm
+fromSendToHCValue saved =
+    { handReferralForm = Maybe.map (.signs >> EverySet.member HandReferrerForm) saved
+    , referToHealthCenter = Maybe.map (.signs >> EverySet.member ReferToHealthCenter) saved
+    , reasonForNotSendingToHC = Maybe.map .reasonForNotSendingToHC saved
+    }
 
 
 medicationNonAdministrationReasonFromString : String -> Maybe MedicationNonAdministrationReason

@@ -1,4 +1,4 @@
-module Measurement.Model exposing (DropZoneFile, FileId, FloatInputConstraints, ModelChild, ModelMother, MsgChild(..), MsgMother(..), OutMsgChild(..), OutMsgMother(..), ParticipantFormProgress, ParticipantFormUI, completedParticipantFormProgress, emptyModelChild, emptyModelMother, emptyParticipantFormProgress, emptyParticipantFormUI)
+module Measurement.Model exposing (..)
 
 {-| These modules manage the UI for the various measurements relating to a
 participant.
@@ -43,6 +43,10 @@ type alias ModelChild =
     , weight : String
     , counseling : Maybe ( CounselingTiming, EverySet CounselingTopicId )
     , fbfForm : FbfForm
+    , contributingFactorsForm : ContributingFactorsForm
+    , followUpForm : FollowUpForm
+    , healthEducationForm : HealthEducationForm
+    , sendToHCForm : SendToHCForm
     }
 
 
@@ -52,6 +56,85 @@ type alias ModelMother =
     , lactationForm : LactationForm
     , fbfForm : FbfForm
     }
+
+
+emptyModelChild : ModelChild
+emptyModelChild =
+    { height = ""
+    , muac = ""
+    , nutritionSigns = EverySet.empty
+    , photo = Nothing
+    , weight = ""
+    , counseling = Nothing
+    , fbfForm = FbfForm Nothing Nothing
+    , contributingFactorsForm = emptyContributingFactorsForm
+    , followUpForm = emptyFollowUpForm
+    , healthEducationForm = emptyHealthEducationForm
+    , sendToHCForm = emptySendToHCForm
+    }
+
+
+emptyModelMother : ModelMother
+emptyModelMother =
+    { familyPlanningSigns = EverySet.empty
+    , participantConsent = emptyParticipantFormUI
+    , lactationForm = LactationForm Nothing
+    , fbfForm = FbfForm Nothing Nothing
+    }
+
+
+type alias FbfForm =
+    { distributedAmount : Maybe Float
+    , distributionNotice : Maybe DistributionNotice
+    }
+
+
+emptyFbfForm : FbfForm
+emptyFbfForm =
+    FbfForm Nothing Nothing
+
+
+type alias ContributingFactorsForm =
+    { signs : Maybe (List ContributingFactorsSign)
+    }
+
+
+emptyContributingFactorsForm : ContributingFactorsForm
+emptyContributingFactorsForm =
+    ContributingFactorsForm Nothing
+
+
+type alias FollowUpForm =
+    { option : Maybe FollowUpOption
+    }
+
+
+emptyFollowUpForm : FollowUpForm
+emptyFollowUpForm =
+    FollowUpForm Nothing
+
+
+type alias HealthEducationForm =
+    { educationForDiagnosis : Maybe Bool
+    , reasonForNotProvidingHealthEducation : Maybe ReasonForNotProvidingHealthEducation
+    }
+
+
+emptyHealthEducationForm : HealthEducationForm
+emptyHealthEducationForm =
+    HealthEducationForm Nothing Nothing
+
+
+type alias SendToHCForm =
+    { handReferralForm : Maybe Bool
+    , referToHealthCenter : Maybe Bool
+    , reasonForNotSendingToHC : Maybe ReasonForNotSendingToHC
+    }
+
+
+emptySendToHCForm : SendToHCForm
+emptySendToHCForm =
+    SendToHCForm Nothing Nothing Nothing
 
 
 {-| The UI for participant consent forms for a particular mother.
@@ -172,24 +255,3 @@ type OutMsgMother
     | SaveCompletedForm (Maybe ParticipantConsentId) ParticipantFormId Language
     | SaveLactation (Maybe LactationId) (EverySet LactationSign)
     | SaveMotherFbf (Maybe MotherFbfId) FbfValue
-
-
-emptyModelChild : ModelChild
-emptyModelChild =
-    { height = ""
-    , muac = ""
-    , nutritionSigns = EverySet.empty
-    , photo = Nothing
-    , weight = ""
-    , counseling = Nothing
-    , fbfForm = FbfForm Nothing Nothing
-    }
-
-
-emptyModelMother : ModelMother
-emptyModelMother =
-    { familyPlanningSigns = EverySet.empty
-    , participantConsent = emptyParticipantFormUI
-    , lactationForm = LactationForm Nothing
-    , fbfForm = FbfForm Nothing Nothing
-    }

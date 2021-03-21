@@ -89,6 +89,18 @@ viewChild language currentDate isChw child activity measurements zscores session
             in
             viewWeight language currentDate isChw child (mapMeasurementData .weight measurements) previousIndividualWeight zscores model
 
+        ContributingFactors ->
+            viewContributingFactors language (mapMeasurementData .contributingFactors measurements) model.contributingFactorsForm
+
+        FollowUp ->
+            viewFollowUp language (mapMeasurementData .followUp measurements) model.followUpForm
+
+        Activity.Model.HealthEducation ->
+            viewHealthEducation language (mapMeasurementData .healthEducation measurements) model.healthEducationForm
+
+        Activity.Model.SendToHC ->
+            viewSendToHC language (mapMeasurementData .sendToHC measurements) model.sendToHCForm
+
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
 different types of `Float` inputs.
@@ -802,6 +814,26 @@ viewCounselingTopics language completed expectedTopics selectedTopics =
                     ]
             )
         |> Dict.values
+
+
+viewContributingFactors : Language -> MeasurementData (Maybe ( ContributingFactorsId, ContributingFactors )) -> ContributingFactorsForm -> Html MsgChild
+viewContributingFactors language measurement form =
+    emptyNode
+
+
+viewFollowUp : Language -> MeasurementData (Maybe ( FollowUpId, FollowUp )) -> FollowUpForm -> Html MsgChild
+viewFollowUp language measurement form =
+    emptyNode
+
+
+viewHealthEducation : Language -> MeasurementData (Maybe ( GroupHealthEducationId, GroupHealthEducation )) -> HealthEducationForm -> Html MsgChild
+viewHealthEducation language measurement form =
+    emptyNode
+
+
+viewSendToHC : Language -> MeasurementData (Maybe ( GroupSendToHCId, GroupSendToHC )) -> SendToHCForm -> Html MsgChild
+viewSendToHC language measurement form =
+    emptyNode
 
 
 type alias MotherMeasurementData =

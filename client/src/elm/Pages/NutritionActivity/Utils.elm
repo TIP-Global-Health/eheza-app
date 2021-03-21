@@ -22,6 +22,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, or, unwrap)
+import Measurement.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData, NutritionAssesment(..))
@@ -487,11 +488,6 @@ toWeightValue form =
     Maybe.map WeightInKg form.weight
 
 
-fromContributingFactorsValue : Maybe (EverySet ContributingFactorsSign) -> ContributingFactorsForm
-fromContributingFactorsValue saved =
-    { signs = Maybe.map EverySet.toList saved }
-
-
 contributingFactorsFormWithDefault : ContributingFactorsForm -> Maybe (EverySet ContributingFactorsSign) -> ContributingFactorsForm
 contributingFactorsFormWithDefault form saved =
     saved
@@ -511,11 +507,6 @@ toContributingFactorsValueWithDefault saved form =
 toContributingFactorsValue : ContributingFactorsForm -> Maybe (EverySet ContributingFactorsSign)
 toContributingFactorsValue form =
     Maybe.map (EverySet.fromList >> ifEverySetEmpty NoContributingFactorsSign) form.signs
-
-
-fromFollowUpValue : Maybe (EverySet FollowUpOption) -> FollowUpForm
-fromFollowUpValue saved =
-    { option = Maybe.andThen (EverySet.toList >> List.head) saved }
 
 
 followUpFormWithDefault : FollowUpForm -> Maybe (EverySet FollowUpOption) -> FollowUpForm

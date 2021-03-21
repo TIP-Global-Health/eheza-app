@@ -970,3 +970,22 @@ patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestio
             ( taskCompleted form.receivedMosquitoNet
             , 1
             )
+
+
+socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
+socialHistoryHivTestingResultFromString result =
+    case result of
+        "positive" ->
+            Just ResultHivPositive
+
+        "negative" ->
+            Just ResultHivNegative
+
+        "indeterminate" ->
+            Just ResultHivIndeterminate
+
+        "none" ->
+            Just NoHivTesting
+
+        _ ->
+            Nothing
