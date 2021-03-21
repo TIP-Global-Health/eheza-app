@@ -84,8 +84,32 @@ update nurseId sessionId maybeSession currentDate db msg model =
                     )
 
                 SaveChildFbf valueId value ->
-                    ( { model | saveFbfRequest = Dict.insert personId Loading model.saveLactationRequest }
+                    ( { model | saveFbfRequest = Dict.insert personId Loading model.saveFbfRequest }
                     , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value childFbfEndpoint (HandleSaveFbf personId)
+                    , []
+                    )
+
+                SaveContributingFactors valueId value ->
+                    ( { model | saveContributingFactorsRequest = Dict.insert personId Loading model.saveContributingFactorsRequest }
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value contributingFactorsEndpoint (HandleSaveContributingFactors personId)
+                    , []
+                    )
+
+                SaveFollowUp valueId value ->
+                    ( { model | saveFollowUpRequest = Dict.insert personId Loading model.saveFollowUpRequest }
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value followUpEndpoint (HandleSaveFollowUp personId)
+                    , []
+                    )
+
+                SaveHealthEducation valueId value ->
+                    ( { model | saveHealthEducationRequest = Dict.insert personId Loading model.saveHealthEducationRequest }
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value groupHealthEducationEndpoint (HandleSaveHealthEducation personId)
+                    , []
+                    )
+
+                SaveSendToHC valueId value ->
+                    ( { model | saveSendToHCRequest = Dict.insert personId Loading model.saveSendToHCRequest }
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value groupSendToHCEndpoint (HandleSaveSendToHC personId)
                     , []
                     )
 
@@ -193,6 +217,30 @@ update nurseId sessionId maybeSession currentDate db msg model =
 
         HandleSaveNutrition personId data ->
             ( { model | saveNutritionRequest = Dict.insert personId data model.saveNutritionRequest }
+            , bindDropZone ()
+            , []
+            )
+
+        HandleSaveContributingFactors personId data ->
+            ( { model | saveContributingFactorsRequest = Dict.insert personId data model.saveContributingFactorsRequest }
+            , bindDropZone ()
+            , []
+            )
+
+        HandleSaveFollowUp personId data ->
+            ( { model | saveFollowUpRequest = Dict.insert personId data model.saveFollowUpRequest }
+            , bindDropZone ()
+            , []
+            )
+
+        HandleSaveHealthEducation personId data ->
+            ( { model | saveHealthEducationRequest = Dict.insert personId data model.saveHealthEducationRequest }
+            , bindDropZone ()
+            , []
+            )
+
+        HandleSaveSendToHC personId data ->
+            ( { model | saveSendToHCRequest = Dict.insert personId data model.saveSendToHCRequest }
             , bindDropZone ()
             , []
             )

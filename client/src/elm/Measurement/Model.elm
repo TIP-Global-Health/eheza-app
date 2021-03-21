@@ -247,6 +247,10 @@ type OutMsgChild
     | SaveChildNutritionSigns (Maybe ChildNutritionId) (EverySet ChildNutritionSign)
     | SavePhoto (Maybe PhotoId) PhotoUrl
     | SaveChildFbf (Maybe ChildFbfId) FbfValue
+    | SaveContributingFactors (Maybe ContributingFactorsId) (EverySet ContributingFactorsSign)
+    | SaveFollowUp (Maybe FollowUpId) (EverySet FollowUpOption)
+    | SaveHealthEducation (Maybe GroupHealthEducationId) HealthEducationValue
+    | SaveSendToHC (Maybe GroupSendToHCId) SendToHCValue
 
 
 type OutMsgMother

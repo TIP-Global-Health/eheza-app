@@ -618,15 +618,15 @@ nutritionFollowUpEndpoint =
         |> withValueEncoder (object << encodeNutritionFollowUp)
 
 
-gropupSendToHCEndpoint : ReadWriteEndPoint Error GroupSendToHCId GroupSendToHC GroupSendToHC ()
-gropupSendToHCEndpoint =
-    swEndpoint "nodes/gropup_send_to_hc" decodeGroupSendToHC
+groupSendToHCEndpoint : ReadWriteEndPoint Error GroupSendToHCId GroupSendToHC GroupSendToHC ()
+groupSendToHCEndpoint =
+    swEndpoint "nodes/group_send_to_hc" decodeGroupSendToHC
         |> withValueEncoder (object << encodeGroupSendToHC)
 
 
-gropupHealthEducationEndpoint : ReadWriteEndPoint Error GroupHealthEducationId GroupHealthEducation GroupHealthEducation ()
-gropupHealthEducationEndpoint =
-    swEndpoint "nodes/gropup_health_education" decodeGroupHealthEducation
+groupHealthEducationEndpoint : ReadWriteEndPoint Error GroupHealthEducationId GroupHealthEducation GroupHealthEducation ()
+groupHealthEducationEndpoint =
+    swEndpoint "nodes/group_health_education" decodeGroupHealthEducation
         |> withValueEncoder (object << encodeGroupHealthEducation)
 
 
