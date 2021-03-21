@@ -217,6 +217,13 @@ type MsgChild
     | UpdateMuac String
     | UpdateWeight String
     | DropZoneComplete DropZoneFile
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SetProvidedEducationForDiagnosis Bool
+    | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
+    | SetContributingFactorsSign ContributingFactorsSign
+    | SetFollowUpOption FollowUpOption
 
 
 type MsgMother

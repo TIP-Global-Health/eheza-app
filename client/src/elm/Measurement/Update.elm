@@ -2,7 +2,16 @@ module Measurement.Update exposing (updateChild, updateMother)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), LactationSign(..), MeasurementData, MotherMeasurements, PhotoUrl(..))
+import Backend.Measurement.Model
+    exposing
+        ( ChildNutritionSign(..)
+        , ContributingFactorsSign(..)
+        , FamilyPlanningSign(..)
+        , LactationSign(..)
+        , MeasurementData
+        , MotherMeasurements
+        , PhotoUrl(..)
+        )
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
@@ -142,6 +151,128 @@ updateChild msg model =
 
         DropZoneComplete result ->
             ( { model | photo = Just (PhotoUrl result.url) }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetReferToHealthCenter value ->
+            let
+                form =
+                    model.sendToHCForm
+
+                updatedForm =
+                    { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
+            in
+            ( { model | sendToHCForm = updatedForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetHandReferralForm value ->
+            let
+                form =
+                    model.sendToHCForm
+
+                updatedForm =
+                    { form | handReferralForm = Just value }
+            in
+            ( { model | sendToHCForm = updatedForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetReasonForNotSendingToHC value ->
+            let
+                form =
+                    model.sendToHCForm
+
+                updatedForm =
+                    { form | reasonForNotSendingToHC = Just value }
+            in
+            ( { model | sendToHCForm = updatedForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetProvidedEducationForDiagnosis value ->
+            let
+                form =
+                    model.healthEducationForm
+
+                updatedForm =
+                    { form | educationForDiagnosis = Just value, reasonForNotProvidingHealthEducation = Nothing }
+            in
+            ( { model | healthEducationForm = updatedForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetReasonForNotProvidingHealthEducation value ->
+            let
+                form =
+                    model.healthEducationForm
+
+                updatedForm =
+                    { form | reasonForNotProvidingHealthEducation = Just value }
+            in
+            ( { model | healthEducationForm = updatedForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetContributingFactorsSign sign ->
+            let
+                form =
+                    model.contributingFactorsForm
+
+                updatedForm =
+                    case form.signs of
+                        Just signs ->
+                            if List.member sign signs then
+                                let
+                                    updatedSigns =
+                                        if List.length signs == 1 then
+                                            Nothing
+
+                                        else
+                                            signs |> List.filter ((/=) sign) |> Just
+                                in
+                                { form | signs = updatedSigns }
+
+                            else
+                                case sign of
+                                    NoContributingFactorsSign ->
+                                        { form | signs = Just [ sign ] }
+
+                                    _ ->
+                                        let
+                                            updatedSigns =
+                                                case signs of
+                                                    [ NoContributingFactorsSign ] ->
+                                                        Just [ sign ]
+
+                                                    _ ->
+                                                        Just (sign :: signs)
+                                        in
+                                        { form | signs = updatedSigns }
+
+                        Nothing ->
+                            { form | signs = Just [ sign ] }
+            in
+            ( { model | contributingFactorsForm = updatedForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetFollowUpOption option ->
+            let
+                form =
+                    model.followUpForm
+
+                updatedForm =
+                    { form | option = Just option }
+            in
+            ( { model | followUpForm = updatedForm }
             , Cmd.none
             , Nothing
             )
