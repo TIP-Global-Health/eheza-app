@@ -191,6 +191,22 @@ type alias CounselingSession =
     GroupMeasurement ( CounselingTiming, EverySet CounselingTopicId )
 
 
+type alias GroupSendToHC =
+    GroupMeasurement SendToHCValue
+
+
+type alias GroupHealthEducation =
+    GroupMeasurement HealthEducationValue
+
+
+type alias ContributingFactors =
+    GroupMeasurement (EverySet ContributingFactorsSign)
+
+
+type alias FollowUp =
+    GroupMeasurement (EverySet FollowUpOption)
+
+
 type ContributingFactorsSign
     = FactorLackOfBreastMilk
     | FactorMaternalMastitis
@@ -1107,8 +1123,8 @@ type alias ChildMeasurements =
     , fbf : Maybe ( ChildFbfId, Fbf )
     , contributingFactors : Maybe ( ContributingFactorsId, ContributingFactors )
     , followUp : Maybe ( FollowUpId, FollowUp )
-    , healthEducation : Maybe ( HealthEducationId, HealthEducation )
-    , sendToHC : Maybe ( SendToHCId, SendToHC )
+    , healthEducation : Maybe ( GroupHealthEducationId, GroupHealthEducation )
+    , sendToHC : Maybe ( GroupSendToHCId, GroupSendToHC )
     }
 
 
