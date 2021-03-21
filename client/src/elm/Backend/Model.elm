@@ -292,6 +292,7 @@ type Revision
     | ChildFbfRevision ChildFbfId Fbf
     | ChildNutritionRevision ChildNutritionId ChildNutrition
     | ClinicRevision ClinicId Clinic
+    | ContributingFactorsRevision ContributingFactorsId ContributingFactors
     | CorePhysicalExamRevision CorePhysicalExamId CorePhysicalExam
     | CounselingScheduleRevision CounselingScheduleId CounselingSchedule
     | CounselingSessionRevision CounselingSessionId CounselingSession
@@ -300,6 +301,9 @@ type Revision
     | DashboardStatsRevision HealthCenterId DashboardStats
     | ExposureRevision ExposureId Exposure
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
+    | FollowUpRevision FollowUpId FollowUp
+    | GroupHealthEducationRevision GroupHealthEducationId GroupHealthEducation
+    | GroupSendToHCRevision GroupSendToHCId GroupSendToHC
     | HCContactRevision HCContactId HCContact
     | Call114Revision Call114Id Call114
     | HealthCenterRevision HealthCenterId HealthCenter

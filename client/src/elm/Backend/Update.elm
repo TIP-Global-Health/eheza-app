@@ -1741,6 +1741,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        ContributingFactorsRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | contributingFactors = Dict.insert uuid data measurements.contributingFactors })
+                model
+            , recalc
+            )
+
         CorePhysicalExamRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
@@ -1793,6 +1801,30 @@ handleRevision revision (( model, recalc ) as noChange) =
                 (\measurements -> { measurements | familyPlannings = Dict.insert uuid data measurements.familyPlannings })
                 model
             , True
+            )
+
+        FollowUpRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | followUp = Dict.insert uuid data measurements.followUp })
+                model
+            , recalc
+            )
+
+        GroupHealthEducationRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | healthEducation = Dict.insert uuid data measurements.healthEducation })
+                model
+            , recalc
+            )
+
+        GroupSendToHCRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | sendToHC = Dict.insert uuid data measurements.sendToHC })
+                model
+            , recalc
             )
 
         HCContactRevision uuid data ->
