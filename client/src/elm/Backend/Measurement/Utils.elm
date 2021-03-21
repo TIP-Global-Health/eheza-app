@@ -137,6 +137,18 @@ splitChildMeasurements sessionId =
 
                 fbf =
                     getCurrentAndPrevious sessionId list.fbfs
+
+                contributingFactors =
+                    getCurrentAndPrevious sessionId list.contributingFactors
+
+                followUp =
+                    getCurrentAndPrevious sessionId list.followUp
+
+                healthEducation =
+                    getCurrentAndPrevious sessionId list.healthEducation
+
+                sendToHC =
+                    getCurrentAndPrevious sessionId list.sendToHC
             in
             { current =
                 -- We can only have one per session ... we enforce that here.
@@ -168,6 +180,22 @@ splitChildMeasurements sessionId =
                     fbf.current
                         |> Dict.toList
                         |> List.head
+                , contributingFactors =
+                    contributingFactors.current
+                        |> Dict.toList
+                        |> List.head
+                , followUp =
+                    followUp.current
+                        |> Dict.toList
+                        |> List.head
+                , healthEducation =
+                    healthEducation.current
+                        |> Dict.toList
+                        |> List.head
+                , sendToHC =
+                    sendToHC.current
+                        |> Dict.toList
+                        |> List.head
                 }
             , previous =
                 { height = height.previous
@@ -177,6 +205,10 @@ splitChildMeasurements sessionId =
                 , photo = photo.previous
                 , counselingSession = counselingSession.previous
                 , fbf = fbf.previous
+                , contributingFactors = contributingFactors.previous
+                , followUp = followUp.previous
+                , healthEducation = healthEducation.previous
+                , sendToHC = sendToHC.previous
                 }
             }
         )

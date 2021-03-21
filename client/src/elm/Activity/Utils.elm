@@ -782,6 +782,18 @@ hasCompletedChildActivity activityType measurements =
         NutritionSigns ->
             isCompleted (Maybe.map Tuple.second measurements.current.nutrition)
 
+        ContributingFactors ->
+            isCompleted (Maybe.map Tuple.second measurements.current.contributingFactors)
+
+        FollowUp ->
+            isCompleted (Maybe.map Tuple.second measurements.current.followUp)
+
+        Activity.Model.HealthEducation ->
+            isCompleted (Maybe.map Tuple.second measurements.current.healthEducation)
+
+        Activity.Model.SendToHC ->
+            isCompleted (Maybe.map Tuple.second measurements.current.sendToHC)
+
 
 childHasCompletedActivity : PersonId -> ChildActivity -> OfflineSession -> Bool
 childHasCompletedActivity childId activityType session =

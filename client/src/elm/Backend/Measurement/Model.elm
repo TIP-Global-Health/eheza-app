@@ -1007,6 +1007,10 @@ type alias ChildMeasurementList =
     , weights : Dict WeightId Weight
     , counselingSessions : Dict CounselingSessionId CounselingSession
     , fbfs : Dict ChildFbfId Fbf
+    , contributingFactors : Dict ContributingFactorsId ContributingFactors
+    , followUp : Dict FollowUpId FollowUp
+    , healthEducation : Dict GroupHealthEducationId GroupHealthEducation
+    , sendToHC : Dict GroupSendToHCId GroupSendToHC
     }
 
 
@@ -1019,6 +1023,10 @@ emptyChildMeasurementList =
     , weights = Dict.empty
     , counselingSessions = Dict.empty
     , fbfs = Dict.empty
+    , contributingFactors = Dict.empty
+    , followUp = Dict.empty
+    , healthEducation = Dict.empty
+    , sendToHC = Dict.empty
     }
 
 
