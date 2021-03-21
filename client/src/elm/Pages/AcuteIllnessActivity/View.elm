@@ -1,7 +1,5 @@
 module Pages.AcuteIllnessActivity.View exposing
-    ( renderDatePart
-    , view
-    , viewActionTakenLabel
+    ( view
     , viewAdministeredMedicationLabel
     , viewHCRecommendation
     , viewHealthEducationLabel
@@ -31,7 +29,7 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (HealthEducationForm, SendToHCForm)
 import Measurement.Utils exposing (getInputConstraintsMuac)
-import Measurement.View exposing (viewMuacIndication)
+import Measurement.View exposing (renderDatePart, viewActionTakenLabel, viewMuacIndication)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
@@ -2052,21 +2050,6 @@ viewSendToHCForm language currentDate form =
         ]
 
 
-viewActionTakenLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
-viewActionTakenLabel language actionTranslationId iconClass maybeDate =
-    let
-        message =
-            div [] <|
-                (text <| translate language actionTranslationId)
-                    :: renderDatePart language maybeDate
-                    ++ [ text "." ]
-    in
-    div [ class "header icon-label" ] <|
-        [ i [ class iconClass ] []
-        , message
-        ]
-
-
 viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> MedicationDistributionForm -> Html Msg
 viewMedicationDistributionForm language currentDate person diagnosis form =
     let
@@ -2754,14 +2737,3 @@ viewHealthEducationLabel language actionTranslationId diagnosisTranslationId ico
         [ i [ class iconClass ] []
         , message
         ]
-
-
-
--- HELPER FUNCTIONS
-
-
-renderDatePart : Language -> Maybe NominalDate -> List (Html any)
-renderDatePart language maybeDate =
-    maybeDate
-        |> Maybe.map (\date -> [ span [ class "date" ] [ text <| " (" ++ renderDate language date ++ ")" ] ])
-        |> Maybe.withDefault []

@@ -1,4 +1,4 @@
-module Measurement.View exposing (viewChild, viewMeasurementFloatDiff, viewMother, viewMuacIndication, zScoreForHeightOrLength)
+module Measurement.View exposing (renderDatePart, viewActionTakenLabel, viewChild, viewMeasurementFloatDiff, viewMother, viewMuacIndication, zScoreForHeightOrLength)
 
 {-| This module provides a form for entering measurements.
 -}
@@ -32,7 +32,7 @@ import Round
 import Translate as Trans exposing (Language, TranslationId, translate)
 import Translate.Utils exposing (selectLanguage)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (Days(..), diffDays)
+import Utils.NominalDate exposing (Days(..), diffDays, renderDate)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
@@ -99,7 +99,7 @@ viewChild language currentDate isChw child activity measurements zscores session
             viewHealthEducation language (mapMeasurementData .healthEducation measurements) model.healthEducationForm
 
         Activity.Model.SendToHC ->
-            viewSendToHC language (mapMeasurementData .sendToHC measurements) model.sendToHCForm
+            viewSendToHC language currentDate (mapMeasurementData .sendToHC measurements) model.sendToHCForm
 
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
@@ -831,9 +831,110 @@ viewHealthEducation language measurement form =
     emptyNode
 
 
-viewSendToHC : Language -> MeasurementData (Maybe ( GroupSendToHCId, GroupSendToHC )) -> SendToHCForm -> Html MsgChild
-viewSendToHC language measurement form =
-    emptyNode
+viewSendToHC : Language -> NominalDate -> MeasurementData (Maybe ( GroupSendToHCId, GroupSendToHC )) -> SendToHCForm -> Html MsgChild
+viewSendToHC language currentDate measurement form =
+    let
+        activity =
+            ChildActivity SendToHC
+
+        existingId =
+            Maybe.map Tuple.first measurement.current
+
+        -- saveMsg =
+        --     if EverySet.isEmpty signs then
+        --         Nothing
+        --
+        --     else
+        --         Just <| SendOutMsgChild <| SaveSendToHC existingId signs
+    in
+    div [ class "ui full segment fbf" ]
+        [ div [ class "content" ]
+            [ h3 [ class "ui header" ]
+                [ text <| translate language (Trans.ActivitiesTitle activity) ]
+
+            -- , p [] [ text <| translate language activityLabel ]
+            , viewSendToHCForm language currentDate form
+            ]
+
+        -- , div [ class "actions" ] <|
+        --     saveButton
+        --         language
+        --         saveMsg
+        --         measurement
+        --         Nothing
+        ]
+
+
+viewSendToHCForm : Language -> NominalDate -> SendToHCForm -> Html MsgChild
+viewSendToHCForm language currentDate form =
+    let
+        sendToHCSection =
+            let
+                sentToHealthCenter =
+                    form.referToHealthCenter
+                        |> Maybe.withDefault True
+
+                reasonForNotSendingToHCInput =
+                    if not sentToHealthCenter then
+                        [ viewQuestionLabel language Trans.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
+                            []
+                            form.reasonForNotSendingToHC
+                            SetReasonForNotSendingToHC
+                            Trans.ReasonForNotSendingToHC
+                        ]
+
+                    else
+                        []
+            in
+            [ viewQuestionLabel language Trans.ReferredPatientToHealthCenterQuestion
+            , viewBoolInput
+                language
+                form.referToHealthCenter
+                SetReferToHealthCenter
+                "refer-to-hc"
+                Nothing
+            ]
+                ++ reasonForNotSendingToHCInput
+    in
+    div [ class "ui form send-to-hc" ]
+        [ h2 [] [ text <| translate language Trans.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ] <|
+            [ viewActionTakenLabel language Trans.CompleteHCReferralForm "icon-forms" Nothing
+            , viewActionTakenLabel language Trans.SendPatientToHC "icon-shuttle" Nothing
+            ]
+                ++ sendToHCSection
+        , viewQuestionLabel language Trans.HandedReferralFormQuestion
+        , viewBoolInput
+            language
+            form.handReferralForm
+            SetHandReferralForm
+            "hand-referral-form"
+            Nothing
+        ]
+
+
+viewActionTakenLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
+viewActionTakenLabel language actionTranslationId iconClass maybeDate =
+    let
+        message =
+            div [] <|
+                (text <| translate language actionTranslationId)
+                    :: renderDatePart language maybeDate
+                    ++ [ text "." ]
+    in
+    div [ class "header icon-label" ] <|
+        [ i [ class iconClass ] []
+        , message
+        ]
+
+
+renderDatePart : Language -> Maybe NominalDate -> List (Html any)
+renderDatePart language maybeDate =
+    maybeDate
+        |> Maybe.map (\date -> [ span [ class "date" ] [ text <| " (" ++ renderDate language date ++ ")" ] ])
+        |> Maybe.withDefault []
 
 
 type alias MotherMeasurementData =
