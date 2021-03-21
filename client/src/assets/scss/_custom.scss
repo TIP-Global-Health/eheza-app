@@ -1559,6 +1559,47 @@ input::placeholder {
   }
 }
 
+.icon-contributing-factors {
+  .active &:after {
+    background-image: url(#{$img-path}icon-contributing-factors-white.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-contributing-factors-gray.svg);
+  }
+}
+
+.icon-health-education {
+  .active &:after {
+    background-image: url(#{$img-path}icon-health-education-white.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-health-education-gray.svg);
+  }
+}
+
+.icon-send-to-hc {
+  .active &:after {
+    background-image: url(#{$img-path}icon-health-center-white.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-health-center-gray.svg);
+  }
+}
+
+.icon-follow-up {
+  .active &:after {
+    background-image: url(#{$img-path}icon-follow-up-white.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-follow-up-gray.svg);
+  }
+}
+
+
 .icon-activity-task {
   display: block;
   height: 90px;
