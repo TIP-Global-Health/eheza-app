@@ -1969,6 +1969,22 @@ div.page-participants {
   }
 }
 
+div.page-participant.group {
+
+  .ui.full.segment {
+
+    .ui.form.send-to-hc,
+    .ui.form.health-education {
+
+      h2 {
+        text-transform: uppercase;
+      }
+
+      @include next-steps;
+    }
+  }
+}
+
 div.page-participant.acute-illness,
 div.page-participant.nutrition,
 div.page-participant.prenatal {

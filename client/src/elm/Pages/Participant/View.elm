@@ -183,7 +183,7 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                     Nothing ->
                         []
     in
-    divKeyed [ class "wrap page-participant" ] <|
+    divKeyed [ class "wrap page-participant group" ] <|
         List.concat
             [ [ viewHeader language sessionId |> keyed "header"
               , div [ class "ui unstackable items participant-page child" ]
@@ -299,7 +299,7 @@ viewFoundMother language currentDate isChw ( motherId, mother ) ( sessionId, ses
                 Nothing ->
                     []
     in
-    divKeyed [ class "wrap page-participant" ] <|
+    divKeyed [ class "wrap page-participant group" ] <|
         List.concat
             [ [ viewHeader language sessionId |> keyed "header"
               , div

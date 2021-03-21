@@ -847,14 +847,9 @@ viewSendToHC language currentDate measurement form =
         --     else
         --         Just <| SendOutMsgChild <| SaveSendToHC existingId signs
     in
-    div [ class "ui full segment fbf" ]
+    div [ class "ui full segment send-to-hc" ]
         [ div [ class "content" ]
-            [ h3 [ class "ui header" ]
-                [ text <| translate language (Trans.ActivitiesTitle activity) ]
-
-            -- , p [] [ text <| translate language activityLabel ]
-            , viewSendToHCForm language currentDate form
-            ]
+            [ viewSendToHCForm language currentDate form ]
 
         -- , div [ class "actions" ] <|
         --     saveButton
@@ -898,21 +893,22 @@ viewSendToHCForm language currentDate form =
             ]
                 ++ reasonForNotSendingToHCInput
     in
-    div [ class "ui form send-to-hc" ]
+    div [ class "ui form send-to-hc" ] <|
         [ h2 [] [ text <| translate language Trans.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ] <|
+        , div [ class "instructions" ]
             [ viewActionTakenLabel language Trans.CompleteHCReferralForm "icon-forms" Nothing
             , viewActionTakenLabel language Trans.SendPatientToHC "icon-shuttle" Nothing
             ]
-                ++ sendToHCSection
-        , viewQuestionLabel language Trans.HandedReferralFormQuestion
-        , viewBoolInput
-            language
-            form.handReferralForm
-            SetHandReferralForm
-            "hand-referral-form"
-            Nothing
         ]
+            ++ sendToHCSection
+            ++ [ viewQuestionLabel language Trans.HandedReferralFormQuestion
+               , viewBoolInput
+                    language
+                    form.handReferralForm
+                    SetHandReferralForm
+                    "hand-referral-form"
+                    Nothing
+               ]
 
 
 viewActionTakenLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any

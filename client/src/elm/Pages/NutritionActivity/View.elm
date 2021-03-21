@@ -780,21 +780,22 @@ viewSendToHCForm language currentDate form =
             ]
                 ++ reasonForNotSendingToHCInput
     in
-    div [ class "ui form send-to-hc" ]
+    div [ class "ui form send-to-hc" ] <|
         [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ] <|
+        , div [ class "instructions" ]
             [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
             , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
             ]
-                ++ sendToHCSection
-        , viewQuestionLabel language Translate.HandedReferralFormQuestion
-        , viewBoolInput
-            language
-            form.handReferralForm
-            SetHandReferralForm
-            "hand-referral-form"
-            Nothing
         ]
+            ++ sendToHCSection
+            ++ [ viewQuestionLabel language Translate.HandedReferralFormQuestion
+               , viewBoolInput
+                    language
+                    form.handReferralForm
+                    SetHandReferralForm
+                    "hand-referral-form"
+                    Nothing
+               ]
 
 
 viewHealthEducationForm : Language -> NominalDate -> HealthEducationForm -> Html Msg
