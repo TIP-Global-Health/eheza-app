@@ -20,7 +20,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (ContributingFactorsForm, FollowUpForm, HealthEducationForm, SendToHCForm)
 import Measurement.Utils exposing (..)
-import Measurement.View exposing (renderDatePart, viewActionTakenLabel, viewMeasurementFloatDiff, viewMuacIndication, zScoreForHeightOrLength)
+import Measurement.View exposing (renderDatePart, viewHealthEducationForm, viewMeasurementFloatDiff, viewMuacIndication, viewSendToHCForm, zScoreForHeightOrLength)
 import Pages.AcuteIllnessActivity.Utils exposing (healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
@@ -672,13 +672,20 @@ viewNextStepsContent language currentDate id assembled data =
                     measurements.sendToHC
                         |> Maybe.map (Tuple.second >> .value)
                         |> sendToHCFormWithDefault data.sendToHCForm
-                        |> viewSendToHCForm language currentDate
+                        |> viewSendToHCForm language
+                            currentDate
+                            SetReferToHealthCenter
+                            SetReasonForNotSendingToHC
+                            SetHandReferralForm
 
                 Just NextStepsHealthEducation ->
                     measurements.healthEducation
                         |> Maybe.map (Tuple.second >> .value)
                         |> healthEducationFormWithDefault data.healthEducationForm
-                        |> viewHealthEducationForm language currentDate
+                        |> viewHealthEducationForm language
+                            currentDate
+                            SetProvidedEducationForDiagnosis
+                            SetReasonForNotProvidingHealthEducation
 
                 Just NextStepContributingFactors ->
                     measurements.contributingFactors
@@ -745,122 +752,6 @@ viewNextStepsContent language currentDate id assembled data =
             ]
         ]
     ]
-
-
-viewSendToHCForm : Language -> NominalDate -> SendToHCForm -> Html Msg
-viewSendToHCForm language currentDate form =
-    let
-        sendToHCSection =
-            let
-                sentToHealthCenter =
-                    form.referToHealthCenter
-                        |> Maybe.withDefault True
-
-                reasonForNotSendingToHCInput =
-                    if not sentToHealthCenter then
-                        [ viewQuestionLabel language Translate.WhyNot
-                        , viewCheckBoxSelectInput language
-                            [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
-                            []
-                            form.reasonForNotSendingToHC
-                            SetReasonForNotSendingToHC
-                            Translate.ReasonForNotSendingToHC
-                        ]
-
-                    else
-                        []
-            in
-            [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
-            , viewBoolInput
-                language
-                form.referToHealthCenter
-                SetReferToHealthCenter
-                "refer-to-hc"
-                Nothing
-            ]
-                ++ reasonForNotSendingToHCInput
-    in
-    div [ class "ui form send-to-hc" ] <|
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
-            , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
-            ]
-        ]
-            ++ sendToHCSection
-            ++ [ viewQuestionLabel language Translate.HandedReferralFormQuestion
-               , viewBoolInput
-                    language
-                    form.handReferralForm
-                    SetHandReferralForm
-                    "hand-referral-form"
-                    Nothing
-               ]
-
-
-viewHealthEducationForm : Language -> NominalDate -> HealthEducationForm -> Html Msg
-viewHealthEducationForm language currentDate form =
-    let
-        healthEducationSection =
-            let
-                providedHealthEducation =
-                    form.educationForDiagnosis
-                        |> Maybe.withDefault True
-
-                reasonForNotProvidingHealthEducation =
-                    if not providedHealthEducation then
-                        [ viewQuestionLabel language Translate.WhyNot
-                        , viewCheckBoxSelectInput language
-                            [ PatientNeedsEmergencyReferral
-                            , ReceivedEmergencyCase
-                            , LackOfAppropriateEducationUserGuide
-                            , PatientRefused
-                            , PatientTooIll
-                            ]
-                            []
-                            form.reasonForNotProvidingHealthEducation
-                            SetReasonForNotProvidingHealthEducation
-                            Translate.ReasonForNotProvidingHealthEducation
-                        ]
-
-                    else
-                        []
-            in
-            [ div [ class "label" ]
-                [ text <| translate language Translate.ProvidedPreventionEducationQuestionShort
-                , text "?"
-                ]
-            , viewBoolInput
-                language
-                form.educationForDiagnosis
-                SetProvidedEducationForDiagnosis
-                "education-for-diagnosis"
-                Nothing
-            ]
-                ++ reasonForNotProvidingHealthEducation
-    in
-    div [ class "ui form health-education" ] <|
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            [ viewHealthEducationLabel language Translate.ProvideHealthEducation "icon-open-book" Nothing
-            ]
-        ]
-            ++ healthEducationSection
-
-
-viewHealthEducationLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
-viewHealthEducationLabel language actionTranslationId iconClass maybeDate =
-    let
-        message =
-            div [] <|
-                [ text <| translate language actionTranslationId ]
-                    ++ renderDatePart language maybeDate
-                    ++ [ text "." ]
-    in
-    div [ class "header icon-label" ] <|
-        [ i [ class iconClass ] []
-        , message
-        ]
 
 
 viewContributingFactorsForm : Language -> NominalDate -> ContributingFactorsForm -> Html Msg

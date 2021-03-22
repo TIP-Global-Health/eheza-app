@@ -4,7 +4,6 @@ module Pages.AcuteIllnessActivity.View exposing
     , viewHCRecommendation
     , viewHealthEducationLabel
     , viewOralSolutionPrescription
-    , viewSendToHCForm
     , viewTabletsPrescription
     )
 
@@ -29,7 +28,7 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (HealthEducationForm, SendToHCForm)
 import Measurement.Utils exposing (getInputConstraintsMuac)
-import Measurement.View exposing (renderDatePart, viewActionTakenLabel, viewMuacIndication)
+import Measurement.View exposing (renderDatePart, viewMuacIndication, viewSendToHCForm)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
@@ -1604,7 +1603,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                     measurements.sendToHC
                         |> Maybe.map (Tuple.second >> .value)
                         |> sendToHCFormWithDefault data.sendToHCForm
-                        |> viewSendToHCForm language currentDate
+                        |> viewSendToHCForm language currentDate SetReferToHealthCenter SetReasonForNotSendingToHC SetHandReferralForm
 
                 Just NextStepsHealthEducation ->
                     measurements.healthEducation
@@ -1998,57 +1997,6 @@ viewCall114Form language currentDate measurements form =
         ++ called114Input
         ++ derrivedInputs
         |> div [ class "ui form next-steps call-114" ]
-
-
-viewSendToHCForm : Language -> NominalDate -> SendToHCForm -> Html Msg
-viewSendToHCForm language currentDate form =
-    let
-        sendToHCSection =
-            let
-                sentToHealthCenter =
-                    form.referToHealthCenter
-                        |> Maybe.withDefault True
-
-                reasonForNotSendingToHCInput =
-                    if not sentToHealthCenter then
-                        [ viewQuestionLabel language Translate.WhyNot
-                        , viewCheckBoxSelectInput language
-                            [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
-                            []
-                            form.reasonForNotSendingToHC
-                            SetReasonForNotSendingToHC
-                            Translate.ReasonForNotSendingToHC
-                        ]
-
-                    else
-                        []
-            in
-            [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
-            , viewBoolInput
-                language
-                form.referToHealthCenter
-                SetReferToHealthCenter
-                "refer-to-hc"
-                Nothing
-            ]
-                ++ reasonForNotSendingToHCInput
-    in
-    div [ class "ui form send-to-hc" ] <|
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
-            , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
-            ]
-        ]
-            ++ sendToHCSection
-            ++ [ viewQuestionLabel language Translate.HandedReferralFormQuestion
-               , viewBoolInput
-                    language
-                    form.handReferralForm
-                    SetHandReferralForm
-                    "hand-referral-form"
-                    Nothing
-               ]
 
 
 viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> MedicationDistributionForm -> Html Msg
@@ -2670,15 +2618,18 @@ viewHealthEducationForm language currentDate maybeDiagnosis form =
                     form.educationForDiagnosis
                         |> Maybe.withDefault True
 
+                reasonForNotProvidingHealthEducationOptions =
+                    [ PatientNeedsEmergencyReferral
+                    , ReceivedEmergencyCase
+                    , LackOfAppropriateEducationUserGuide
+                    , PatientRefused
+                    ]
+
                 reasonForNotProvidingHealthEducation =
                     if not providedHealthEducation then
                         [ viewQuestionLabel language Translate.WhyNot
                         , viewCheckBoxSelectInput language
-                            [ PatientNeedsEmergencyReferral
-                            , ReceivedEmergencyCase
-                            , LackOfAppropriateEducationUserGuide
-                            , PatientRefused
-                            ]
+                            reasonForNotProvidingHealthEducationOptions
                             []
                             form.reasonForNotProvidingHealthEducation
                             SetReasonForNotProvidingHealthEducation
