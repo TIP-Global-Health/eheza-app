@@ -2,6 +2,8 @@ module Measurement.View exposing
     ( renderDatePart
     , viewActionTakenLabel
     , viewChild
+    , viewContributingFactorsForm
+    , viewFollowUpForm
     , viewHealthEducationForm
     , viewMeasurementFloatDiff
     , viewMother
@@ -35,7 +37,16 @@ import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
-import Pages.Utils exposing (viewBoolInput, viewCheckBoxSelectInput, viewLabel, viewMeasurementInput, viewPhotoThumbFromPhotoUrl, viewQuestionLabel)
+import Pages.Utils
+    exposing
+        ( viewBoolInput
+        , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectInput
+        , viewLabel
+        , viewMeasurementInput
+        , viewPhotoThumbFromPhotoUrl
+        , viewQuestionLabel
+        )
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
@@ -828,12 +839,100 @@ viewCounselingTopics language completed expectedTopics selectedTopics =
 
 viewContributingFactors : Language -> NominalDate -> MeasurementData (Maybe ( ContributingFactorsId, ContributingFactors )) -> ContributingFactorsForm -> Html MsgChild
 viewContributingFactors language currentDate measurement form =
-    emptyNode
+    let
+        activity =
+            ChildActivity ContributingFactors
+
+        existingId =
+            Maybe.map Tuple.first measurement.current
+
+        -- saveMsg =
+        --     if EverySet.isEmpty signs then
+        --         Nothing
+        --
+        --     else
+        --         Just <| SendOutMsgChild <| SaveSendToHC existingId signs
+    in
+    div [ class "ui full segment contributing-factors" ]
+        [ div [ class "content" ]
+            [ viewContributingFactorsForm language
+                currentDate
+                SetContributingFactorsSign
+                form
+            ]
+
+        -- , div [ class "actions" ] <|
+        --     saveButton
+        --         language
+        --         saveMsg
+        --         measurement
+        --         Nothing
+        ]
+
+
+viewContributingFactorsForm :
+    Language
+    -> NominalDate
+    -> (ContributingFactorsSign -> msg)
+    -> ContributingFactorsForm
+    -> Html msg
+viewContributingFactorsForm language currentDate setContributingFactorsSignMsg form =
+    div [ class "ui form contributing-factors" ]
+        [ viewQuestionLabel language Translate.ContributingFactorsQuestion
+        , viewCheckBoxMultipleSelectInput language
+            [ FactorLackOfBreastMilk, FactorMaternalMastitis, FactorPoorSuck, FactorDiarrheaOrVomiting ]
+            []
+            (form.signs |> Maybe.withDefault [])
+            (Just NoContributingFactorsSign)
+            setContributingFactorsSignMsg
+            Translate.ContributingFactor
+        ]
 
 
 viewFollowUp : Language -> NominalDate -> MeasurementData (Maybe ( FollowUpId, FollowUp )) -> FollowUpForm -> Html MsgChild
 viewFollowUp language currentDate measurement form =
-    emptyNode
+    let
+        activity =
+            ChildActivity FollowUp
+
+        existingId =
+            Maybe.map Tuple.first measurement.current
+
+        -- saveMsg =
+        --     if EverySet.isEmpty signs then
+        --         Nothing
+        --
+        --     else
+        --         Just <| SendOutMsgChild <| SaveSendToHC existingId signs
+    in
+    div [ class "ui full segment follow-up" ]
+        [ div [ class "content" ]
+            [ viewFollowUpForm language
+                currentDate
+                SetFollowUpOption
+                form
+            ]
+
+        -- , div [ class "actions" ] <|
+        --     saveButton
+        --         language
+        --         saveMsg
+        --         measurement
+        --         Nothing
+        ]
+
+
+viewFollowUpForm : Language -> NominalDate -> (FollowUpOption -> msg) -> FollowUpForm -> Html msg
+viewFollowUpForm language currentDate setFollowUpOptionMsg form =
+    div [ class "ui form follow-up" ]
+        [ viewLabel language Translate.FollowUpLabel
+        , viewCheckBoxSelectInput language
+            [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
+            []
+            form.option
+            setFollowUpOptionMsg
+            Translate.FollowUpOption
+        ]
 
 
 viewHealthEducation : Language -> NominalDate -> MeasurementData (Maybe ( GroupHealthEducationId, GroupHealthEducation )) -> HealthEducationForm -> Html MsgChild

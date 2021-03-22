@@ -20,7 +20,17 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (ContributingFactorsForm, FollowUpForm, HealthEducationForm, SendToHCForm)
 import Measurement.Utils exposing (..)
-import Measurement.View exposing (renderDatePart, viewHealthEducationForm, viewMeasurementFloatDiff, viewMuacIndication, viewSendToHCForm, zScoreForHeightOrLength)
+import Measurement.View
+    exposing
+        ( renderDatePart
+        , viewContributingFactorsForm
+        , viewFollowUpForm
+        , viewHealthEducationForm
+        , viewMeasurementFloatDiff
+        , viewMuacIndication
+        , viewSendToHCForm
+        , zScoreForHeightOrLength
+        )
 import Pages.AcuteIllnessActivity.Utils exposing (healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
@@ -691,13 +701,13 @@ viewNextStepsContent language currentDate id assembled data =
                     measurements.contributingFactors
                         |> Maybe.map (Tuple.second >> .value)
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
-                        |> viewContributingFactorsForm language currentDate
+                        |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
 
                 Just NextStepFollowUp ->
                     measurements.followUp
                         |> Maybe.map (Tuple.second >> .value)
                         |> followUpFormWithDefault data.followUpForm
-                        |> viewFollowUpForm language currentDate
+                        |> viewFollowUpForm language currentDate SetFollowUpOption
 
                 Nothing ->
                     emptyNode
@@ -752,30 +762,3 @@ viewNextStepsContent language currentDate id assembled data =
             ]
         ]
     ]
-
-
-viewContributingFactorsForm : Language -> NominalDate -> ContributingFactorsForm -> Html Msg
-viewContributingFactorsForm language currentDate form =
-    div [ class "ui form contributing-factors" ]
-        [ viewQuestionLabel language Translate.ContributingFactorsQuestion
-        , viewCheckBoxMultipleSelectInput language
-            [ FactorLackOfBreastMilk, FactorMaternalMastitis, FactorPoorSuck, FactorDiarrheaOrVomiting ]
-            []
-            (form.signs |> Maybe.withDefault [])
-            (Just NoContributingFactorsSign)
-            SetContributingFactorsSign
-            Translate.ContributingFactor
-        ]
-
-
-viewFollowUpForm : Language -> NominalDate -> FollowUpForm -> Html Msg
-viewFollowUpForm language currentDate form =
-    div [ class "ui form follow-up" ]
-        [ viewLabel language Translate.FollowUpLabel
-        , viewCheckBoxSelectInput language
-            [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
-            []
-            form.option
-            SetFollowUpOption
-            Translate.FollowUpOption
-        ]
