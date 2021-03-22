@@ -392,6 +392,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Clinic.Decoder.decodeClinic
                             BackendAuthorityClinic
 
+                    "contributing_factors" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeContributingFactors
+                            BackendAuthorityContributingFactors
+
                     "counseling_session" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeCounselingSession
@@ -416,6 +421,21 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeFamilyPlanning
                             BackendAuthorityFamilyPlanning
+
+                    "follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeFollowUp
+                            BackendAuthorityFollowUp
+
+                    "group_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeGroupHealthEducation
+                            BackendAuthorityGroupHealthEducation
+
+                    "group_send_to_hc" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeGroupSendToHC
+                            BackendAuthorityGroupSendToHC
 
                     "health_education" ->
                         doDecode

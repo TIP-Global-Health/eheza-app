@@ -400,6 +400,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityChildFbf identifier ->
             getIdentifier identifier "child_fbf"
 
+        BackendAuthorityContributingFactors identifier ->
+            getIdentifier identifier "contributing_factors"
+
         BackendAuthorityCounselingSession identifier ->
             getIdentifier identifier "counseling_session"
 
@@ -417,6 +420,15 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityFamilyPlanning identifier ->
             getIdentifier identifier "family_planning"
+
+        BackendAuthorityFollowUp identifier ->
+            getIdentifier identifier "follow_up"
+
+        BackendAuthorityGroupHealthEducation identifier ->
+            getIdentifier identifier "group_health_education"
+
+        BackendAuthorityGroupSendToHC identifier ->
+            getIdentifier identifier "group_send_to_hc"
 
         BackendAuthorityHealthEducation identifier ->
             getIdentifier identifier "health_education"
@@ -787,6 +799,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityChildFbf identifier ->
             encode Backend.Measurement.Encoder.encodeChildFbf identifier
 
+        BackendAuthorityContributingFactors identifier ->
+            encode Backend.Measurement.Encoder.encodeContributingFactors identifier
+
         BackendAuthorityCounselingSession identifier ->
             encode Backend.Measurement.Encoder.encodeCounselingSession identifier
 
@@ -804,6 +819,15 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityFamilyPlanning identifier ->
             encode Backend.Measurement.Encoder.encodeFamilyPlanning identifier
+
+        BackendAuthorityFollowUp identifier ->
+            encode Backend.Measurement.Encoder.encodeFollowUp identifier
+
+        BackendAuthorityGroupHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodeGroupHealthEducation identifier
+
+        BackendAuthorityGroupSendToHC identifier ->
+            encode Backend.Measurement.Encoder.encodeGroupSendToHC identifier
 
         BackendAuthorityHealthEducation identifier ->
             encode Backend.Measurement.Encoder.encodeHealthEducation identifier
@@ -1137,6 +1161,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityChildFbf identifier ->
             ChildFbfRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityContributingFactors identifier ->
+            ContributingFactorsRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityCounselingSession identifier ->
             CounselingSessionRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1154,6 +1181,15 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityFamilyPlanning identifier ->
             FamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityFollowUp identifier ->
+            FollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityGroupHealthEducation identifier ->
+            GroupHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityGroupSendToHC identifier ->
+            GroupSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityHealthEducation identifier ->
             HealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity

@@ -396,6 +396,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityClinic identifier ->
                 text <| "Clinic " ++ identifier.entity.name
 
+            BackendAuthorityContributingFactors identifier ->
+                viewMeasurement identifier "Contributing Factors"
+
             BackendAuthorityCounselingSession identifier ->
                 viewMeasurement identifier "Counseling Session"
 
@@ -413,6 +416,15 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityFamilyPlanning identifier ->
                 viewMeasurement identifier "Family Planning"
+
+            BackendAuthorityFollowUp identifier ->
+                viewMeasurement identifier "Follow Up"
+
+            BackendAuthorityGroupHealthEducation identifier ->
+                viewMeasurement identifier "Group Health Education"
+
+            BackendAuthorityGroupSendToHC identifier ->
+                viewMeasurement identifier "Group Send to HC"
 
             BackendAuthorityHealthEducation identifier ->
                 viewMeasurement identifier "Health Education"
