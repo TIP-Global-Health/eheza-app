@@ -1746,7 +1746,7 @@ handleRevision revision (( model, recalc ) as noChange) =
                 data.participantId
                 (\measurements -> { measurements | contributingFactors = Dict.insert uuid data measurements.contributingFactors })
                 model
-            , recalc
+            , True
             )
 
         CorePhysicalExamRevision uuid data ->
@@ -1808,7 +1808,7 @@ handleRevision revision (( model, recalc ) as noChange) =
                 data.participantId
                 (\measurements -> { measurements | followUp = Dict.insert uuid data measurements.followUp })
                 model
-            , recalc
+            , True
             )
 
         GroupHealthEducationRevision uuid data ->
@@ -1816,7 +1816,7 @@ handleRevision revision (( model, recalc ) as noChange) =
                 data.participantId
                 (\measurements -> { measurements | healthEducation = Dict.insert uuid data measurements.healthEducation })
                 model
-            , recalc
+            , True
             )
 
         GroupSendToHCRevision uuid data ->
@@ -1824,7 +1824,7 @@ handleRevision revision (( model, recalc ) as noChange) =
                 data.participantId
                 (\measurements -> { measurements | sendToHC = Dict.insert uuid data measurements.sendToHC })
                 model
-            , recalc
+            , True
             )
 
         HCContactRevision uuid data ->
