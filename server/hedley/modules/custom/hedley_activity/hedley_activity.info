@@ -143,6 +143,7 @@ features[field_instance][] = node-follow_up-field_date_measured
 features[field_instance][] = node-follow_up-field_follow_up_options
 features[field_instance][] = node-follow_up-field_nurse
 features[field_instance][] = node-follow_up-field_person
+features[field_instance][] = node-follow_up-field_session
 features[field_instance][] = node-follow_up-field_shards
 features[field_instance][] = node-follow_up-field_uuid
 features[field_instance][] = node-group_health_education-field_date_measured
