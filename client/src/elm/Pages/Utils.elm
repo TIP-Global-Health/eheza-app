@@ -487,6 +487,26 @@ ifEverySetEmpty value set =
         set
 
 
+ifTrue : a -> Bool -> EverySet a
+ifTrue value condition =
+    if condition then
+        EverySet.singleton value
+
+    else
+        EverySet.empty
+
+
+ifFalse : a -> Bool -> EverySet a
+ifFalse value condition =
+    ifTrue value (not condition)
+
+
+ifNullableTrue : a -> Maybe Bool -> Maybe (EverySet a)
+ifNullableTrue value maybeCondition =
+    Maybe.map (ifTrue value >> Just) maybeCondition
+        |> Maybe.withDefault (Just EverySet.empty)
+
+
 valueConsideringIsDirtyField : Bool -> Maybe a -> a -> Maybe a
 valueConsideringIsDirtyField isDirty formVariant valueVariant =
     maybeValueConsideringIsDirtyField isDirty formVariant (Just valueVariant)

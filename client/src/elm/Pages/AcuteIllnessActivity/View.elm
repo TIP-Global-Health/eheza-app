@@ -27,7 +27,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (HealthEducationForm, SendToHCForm)
-import Measurement.Utils exposing (getInputConstraintsMuac)
+import Measurement.Utils exposing (getInputConstraintsMuac, healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Measurement.View exposing (renderDatePart, viewMuacIndication, viewSendToHCForm)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)

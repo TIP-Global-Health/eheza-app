@@ -23,7 +23,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (..)
-import Pages.AcuteIllnessActivity.Utils exposing (healthEducationFormWithDefault, sendToHCFormWithDefault)
+import Measurement.Utils exposing (contributingFactorsFormWithDefault, followUpFormWithDefault, healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData, NutritionAssesment(..))
 import Pages.Utils exposing (ifEverySetEmpty, taskCompleted, valueConsideringIsDirtyField)
@@ -486,46 +486,6 @@ toWeightValueWithDefault saved form =
 toWeightValue : WeightForm -> Maybe WeightInKg
 toWeightValue form =
     Maybe.map WeightInKg form.weight
-
-
-contributingFactorsFormWithDefault : ContributingFactorsForm -> Maybe (EverySet ContributingFactorsSign) -> ContributingFactorsForm
-contributingFactorsFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { signs = or form.signs (EverySet.toList value |> Just) }
-            )
-
-
-toContributingFactorsValueWithDefault : Maybe (EverySet ContributingFactorsSign) -> ContributingFactorsForm -> Maybe (EverySet ContributingFactorsSign)
-toContributingFactorsValueWithDefault saved form =
-    contributingFactorsFormWithDefault form saved
-        |> toContributingFactorsValue
-
-
-toContributingFactorsValue : ContributingFactorsForm -> Maybe (EverySet ContributingFactorsSign)
-toContributingFactorsValue form =
-    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoContributingFactorsSign) form.signs
-
-
-followUpFormWithDefault : FollowUpForm -> Maybe (EverySet FollowUpOption) -> FollowUpForm
-followUpFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value -> { option = or form.option (EverySet.toList value |> List.head) })
-
-
-toFollowUpValueWithDefault : Maybe (EverySet FollowUpOption) -> FollowUpForm -> Maybe (EverySet FollowUpOption)
-toFollowUpValueWithDefault saved form =
-    followUpFormWithDefault form saved
-        |> toFollowUpValue
-
-
-toFollowUpValue : FollowUpForm -> Maybe (EverySet FollowUpOption)
-toFollowUpValue form =
-    Maybe.map (List.singleton >> EverySet.fromList) form.option
 
 
 calculateZScoreWeightForAge : NominalDate -> ZScore.Model.Model -> Person -> Maybe Float -> Maybe Float

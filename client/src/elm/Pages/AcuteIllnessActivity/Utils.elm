@@ -9,10 +9,10 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (..)
+import Measurement.Utils exposing (healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
-import Pages.PrenatalActivity.Utils exposing (ifFalse, ifNullableTrue, ifTrue)
-import Pages.Utils exposing (ifEverySetEmpty, maybeValueConsideringIsDirtyField, taskCompleted, valueConsideringIsDirtyField)
+import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, maybeValueConsideringIsDirtyField, taskCompleted, valueConsideringIsDirtyField)
 
 
 symptomsGeneralDangerSigns : List SymptomsGeneralSign
@@ -1170,44 +1170,6 @@ toTreatmentReviewValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTreatmentReviewSigns)
 
 
-sendToHCFormWithDefault : SendToHCForm -> Maybe SendToHCValue -> SendToHCForm
-sendToHCFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
-                , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
-                , reasonForNotSendingToHC = or form.reasonForNotSendingToHC (value.reasonForNotSendingToHC |> Just)
-                }
-            )
-
-
-toSendToHCValueWithDefault : Maybe SendToHCValue -> SendToHCForm -> Maybe SendToHCValue
-toSendToHCValueWithDefault saved form =
-    sendToHCFormWithDefault form saved
-        |> toSendToHCValue
-
-
-toSendToHCValue : SendToHCForm -> Maybe SendToHCValue
-toSendToHCValue form =
-    let
-        signs =
-            [ Maybe.map (ifTrue HandReferrerForm) form.handReferralForm
-            , Maybe.map (ifTrue ReferToHealthCenter) form.referToHealthCenter
-            ]
-                |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
-
-        reasonForNotSendingToHC =
-            form.reasonForNotSendingToHC
-                |> Maybe.withDefault NoReasonForNotSendingToHC
-                |> Just
-    in
-    Maybe.map SendToHCValue signs
-        |> andMap reasonForNotSendingToHC
-
-
 fromMedicationDistributionValue : Maybe MedicationDistributionValue -> MedicationDistributionForm
 fromMedicationDistributionValue saved =
     { amoxicillin = Maybe.map (.distributionSigns >> EverySet.member Amoxicillin) saved
@@ -1547,41 +1509,6 @@ toNutritionValueWithDefault saved form =
 toNutritionValue : NutritionForm -> Maybe (EverySet ChildNutritionSign)
 toNutritionValue form =
     Maybe.map (EverySet.fromList >> ifEverySetEmpty NormalChildNutrition) form.signs
-
-
-healthEducationFormWithDefault : HealthEducationForm -> Maybe HealthEducationValue -> HealthEducationForm
-healthEducationFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { educationForDiagnosis = or form.educationForDiagnosis (EverySet.member MalariaPrevention value.signs |> Just)
-                , reasonForNotProvidingHealthEducation = or form.reasonForNotProvidingHealthEducation (value.reasonForNotProvidingHealthEducation |> Just)
-                }
-            )
-
-
-toHealthEducationValueWithDefault : Maybe HealthEducationValue -> HealthEducationForm -> Maybe HealthEducationValue
-toHealthEducationValueWithDefault saved form =
-    healthEducationFormWithDefault form saved
-        |> toHealthEducationValue
-
-
-toHealthEducationValue : HealthEducationForm -> Maybe HealthEducationValue
-toHealthEducationValue form =
-    let
-        signs =
-            [ Maybe.map (ifTrue MalariaPrevention) form.educationForDiagnosis ]
-                |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHealthEducationSigns)
-
-        reasonForNotProvidingHealthEducation =
-            form.reasonForNotProvidingHealthEducation
-                |> Maybe.withDefault NoReasonForNotProvidingHealthEducation
-                |> Just
-    in
-    Maybe.map HealthEducationValue signs
-        |> andMap reasonForNotProvidingHealthEducation
 
 
 expectPhysicalExamTask : NominalDate -> Person -> Bool -> PhysicalExamTask -> Bool

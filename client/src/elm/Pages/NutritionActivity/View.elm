@@ -31,7 +31,6 @@ import Measurement.View
         , viewSendToHCForm
         , zScoreForHeightOrLength
         )
-import Pages.AcuteIllnessActivity.Utils exposing (healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData, NutritionAssesment(..))

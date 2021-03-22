@@ -1,4 +1,4 @@
-module Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getMotherForm, resolvePreviousValueInCommonContext, withinConstraints)
+module Measurement.Utils exposing (..)
 
 import Activity.Utils exposing (expectCounselingActivity, expectParticipantConsent)
 import AssocList as Dict exposing (Dict)
@@ -10,8 +10,10 @@ import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasure
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import LocalData
+import Maybe.Extra exposing (andMap, or, unwrap)
 import Measurement.Model exposing (..)
 import Pages.Session.Model
+import Pages.Utils exposing (ifEverySetEmpty, ifTrue)
 
 
 getInputConstraintsHeight : FloatInputConstraints
@@ -205,3 +207,180 @@ resolvePreviousValueInCommonContext previousGroupMeasurement previousIndividualM
 withinConstraints : FloatInputConstraints -> Float -> Bool
 withinConstraints constraints value =
     value >= constraints.minVal && value <= constraints.maxVal
+
+
+lactationSignsToForm : EverySet LactationSign -> LactationForm
+lactationSignsToForm signs =
+    EverySet.member Breastfeeding signs
+        |> Just
+        |> LactationForm
+
+
+lactationFormToSigns : LactationForm -> EverySet LactationSign
+lactationFormToSigns form =
+    form.breastfeeding
+        |> Maybe.map
+            (\breastfeeding ->
+                if breastfeeding then
+                    EverySet.singleton Breastfeeding
+
+                else
+                    EverySet.singleton NoLactationSigns
+            )
+        |> Maybe.withDefault (EverySet.singleton NoLactationSigns)
+
+
+fbfValueToForm : FbfValue -> FbfForm
+fbfValueToForm value =
+    FbfForm (Just value.distributedAmount) (Just value.distributionNotice)
+
+
+fbfFormToValue : FbfForm -> FbfValue
+fbfFormToValue form =
+    Maybe.map2
+        (\distributedAmount distributionNotice ->
+            FbfValue distributedAmount distributionNotice
+        )
+        form.distributedAmount
+        form.distributionNotice
+        -- We should never get here, as we always expect to have
+        -- these fields filled.
+        |> Maybe.withDefault (FbfValue 0 DistributedFully)
+
+
+fromContributingFactorsValue : Maybe (EverySet ContributingFactorsSign) -> ContributingFactorsForm
+fromContributingFactorsValue saved =
+    { signs = Maybe.map EverySet.toList saved }
+
+
+contributingFactorsFormWithDefault : ContributingFactorsForm -> Maybe (EverySet ContributingFactorsSign) -> ContributingFactorsForm
+contributingFactorsFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { signs = or form.signs (EverySet.toList value |> Just) }
+            )
+
+
+toContributingFactorsValueWithDefault : Maybe (EverySet ContributingFactorsSign) -> ContributingFactorsForm -> Maybe (EverySet ContributingFactorsSign)
+toContributingFactorsValueWithDefault saved form =
+    contributingFactorsFormWithDefault form saved
+        |> toContributingFactorsValue
+
+
+toContributingFactorsValue : ContributingFactorsForm -> Maybe (EverySet ContributingFactorsSign)
+toContributingFactorsValue form =
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoContributingFactorsSign) form.signs
+
+
+fromFollowUpValue : Maybe (EverySet FollowUpOption) -> FollowUpForm
+fromFollowUpValue saved =
+    { option = Maybe.andThen (EverySet.toList >> List.head) saved }
+
+
+followUpFormWithDefault : FollowUpForm -> Maybe (EverySet FollowUpOption) -> FollowUpForm
+followUpFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value -> { option = or form.option (EverySet.toList value |> List.head) })
+
+
+toFollowUpValueWithDefault : Maybe (EverySet FollowUpOption) -> FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValueWithDefault saved form =
+    followUpFormWithDefault form saved
+        |> toFollowUpValue
+
+
+toFollowUpValue : FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValue form =
+    Maybe.map (List.singleton >> EverySet.fromList) form.option
+
+
+fromHealthEducationValue : Maybe HealthEducationValue -> HealthEducationForm
+fromHealthEducationValue saved =
+    { educationForDiagnosis = Maybe.map (.signs >> EverySet.member MalariaPrevention) saved
+    , reasonForNotProvidingHealthEducation = Maybe.map .reasonForNotProvidingHealthEducation saved
+    }
+
+
+healthEducationFormWithDefault : HealthEducationForm -> Maybe HealthEducationValue -> HealthEducationForm
+healthEducationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { educationForDiagnosis = or form.educationForDiagnosis (EverySet.member MalariaPrevention value.signs |> Just)
+                , reasonForNotProvidingHealthEducation = or form.reasonForNotProvidingHealthEducation (value.reasonForNotProvidingHealthEducation |> Just)
+                }
+            )
+
+
+toHealthEducationValueWithDefault : Maybe HealthEducationValue -> HealthEducationForm -> Maybe HealthEducationValue
+toHealthEducationValueWithDefault saved form =
+    healthEducationFormWithDefault form saved
+        |> toHealthEducationValue
+
+
+toHealthEducationValue : HealthEducationForm -> Maybe HealthEducationValue
+toHealthEducationValue form =
+    let
+        signs =
+            [ Maybe.map (ifTrue MalariaPrevention) form.educationForDiagnosis ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHealthEducationSigns)
+
+        reasonForNotProvidingHealthEducation =
+            form.reasonForNotProvidingHealthEducation
+                |> Maybe.withDefault NoReasonForNotProvidingHealthEducation
+                |> Just
+    in
+    Maybe.map HealthEducationValue signs
+        |> andMap reasonForNotProvidingHealthEducation
+
+
+fromSendToHCValue : Maybe SendToHCValue -> SendToHCForm
+fromSendToHCValue saved =
+    { handReferralForm = Maybe.map (.signs >> EverySet.member HandReferrerForm) saved
+    , referToHealthCenter = Maybe.map (.signs >> EverySet.member ReferToHealthCenter) saved
+    , reasonForNotSendingToHC = Maybe.map .reasonForNotSendingToHC saved
+    }
+
+
+sendToHCFormWithDefault : SendToHCForm -> Maybe SendToHCValue -> SendToHCForm
+sendToHCFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
+                , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
+                , reasonForNotSendingToHC = or form.reasonForNotSendingToHC (value.reasonForNotSendingToHC |> Just)
+                }
+            )
+
+
+toSendToHCValueWithDefault : Maybe SendToHCValue -> SendToHCForm -> Maybe SendToHCValue
+toSendToHCValueWithDefault saved form =
+    sendToHCFormWithDefault form saved
+        |> toSendToHCValue
+
+
+toSendToHCValue : SendToHCForm -> Maybe SendToHCValue
+toSendToHCValue form =
+    let
+        signs =
+            [ Maybe.map (ifTrue HandReferrerForm) form.handReferralForm
+            , Maybe.map (ifTrue ReferToHealthCenter) form.referToHealthCenter
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
+
+        reasonForNotSendingToHC =
+            form.reasonForNotSendingToHC
+                |> Maybe.withDefault NoReasonForNotSendingToHC
+                |> Just
+    in
+    Maybe.map SendToHCValue signs
+        |> andMap reasonForNotSendingToHC

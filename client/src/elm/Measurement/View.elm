@@ -22,7 +22,7 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValues, fbfFormToValue, lactationFormToSigns, mapMeasurementData, muacIndication)
+import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData, muacIndication)
 import Backend.Person.Model exposing (Gender, Person)
 import Backend.Session.Model exposing (EditableSession)
 import EverySet exposing (EverySet)
@@ -840,33 +840,28 @@ viewCounselingTopics language completed expectedTopics selectedTopics =
 viewContributingFactors : Language -> NominalDate -> MeasurementData (Maybe ( ContributingFactorsId, ContributingFactors )) -> ContributingFactorsForm -> Html MsgChild
 viewContributingFactors language currentDate measurement form =
     let
-        activity =
-            ChildActivity ContributingFactors
-
         existingId =
             Maybe.map Tuple.first measurement.current
 
-        -- saveMsg =
-        --     if EverySet.isEmpty signs then
-        --         Nothing
-        --
-        --     else
-        --         Just <| SendOutMsgChild <| SaveSendToHC existingId signs
+        saved =
+            Maybe.map (Tuple.second >> .value) measurement.current
+
+        formContent =
+            contributingFactorsFormWithDefault form saved
+                |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
+
+        saveMsg =
+            toContributingFactorsValueWithDefault saved form
+                |> Maybe.map (SaveContributingFactors existingId >> SendOutMsgChild)
     in
     div [ class "ui full segment contributing-factors" ]
-        [ div [ class "content" ]
-            [ viewContributingFactorsForm language
-                currentDate
-                SetContributingFactorsSign
-                form
-            ]
-
-        -- , div [ class "actions" ] <|
-        --     saveButton
-        --         language
-        --         saveMsg
-        --         measurement
-        --         Nothing
+        [ div [ class "content" ] [ formContent ]
+        , div [ class "actions" ] <|
+            saveButton
+                language
+                saveMsg
+                measurement
+                Nothing
         ]
 
 
@@ -892,33 +887,28 @@ viewContributingFactorsForm language currentDate setContributingFactorsSignMsg f
 viewFollowUp : Language -> NominalDate -> MeasurementData (Maybe ( FollowUpId, FollowUp )) -> FollowUpForm -> Html MsgChild
 viewFollowUp language currentDate measurement form =
     let
-        activity =
-            ChildActivity FollowUp
-
         existingId =
             Maybe.map Tuple.first measurement.current
 
-        -- saveMsg =
-        --     if EverySet.isEmpty signs then
-        --         Nothing
-        --
-        --     else
-        --         Just <| SendOutMsgChild <| SaveSendToHC existingId signs
+        saved =
+            Maybe.map (Tuple.second >> .value) measurement.current
+
+        formContent =
+            followUpFormWithDefault form saved
+                |> viewFollowUpForm language currentDate SetFollowUpOption
+
+        saveMsg =
+            toFollowUpValueWithDefault saved form
+                |> Maybe.map (SaveFollowUp existingId >> SendOutMsgChild)
     in
     div [ class "ui full segment follow-up" ]
-        [ div [ class "content" ]
-            [ viewFollowUpForm language
-                currentDate
-                SetFollowUpOption
-                form
-            ]
-
-        -- , div [ class "actions" ] <|
-        --     saveButton
-        --         language
-        --         saveMsg
-        --         measurement
-        --         Nothing
+        [ div [ class "content" ] [ formContent ]
+        , div [ class "actions" ] <|
+            saveButton
+                language
+                saveMsg
+                measurement
+                Nothing
         ]
 
 
@@ -938,34 +928,31 @@ viewFollowUpForm language currentDate setFollowUpOptionMsg form =
 viewHealthEducation : Language -> NominalDate -> MeasurementData (Maybe ( GroupHealthEducationId, GroupHealthEducation )) -> HealthEducationForm -> Html MsgChild
 viewHealthEducation language currentDate measurement form =
     let
-        activity =
-            ChildActivity Activity.Model.HealthEducation
-
         existingId =
             Maybe.map Tuple.first measurement.current
 
-        -- saveMsg =
-        --     if EverySet.isEmpty signs then
-        --         Nothing
-        --
-        --     else
-        --         Just <| SendOutMsgChild <| SaveSendToHC existingId signs
+        saved =
+            Maybe.map (Tuple.second >> .value) measurement.current
+
+        formContent =
+            healthEducationFormWithDefault form saved
+                |> viewHealthEducationForm language
+                    currentDate
+                    SetProvidedEducationForDiagnosis
+                    SetReasonForNotProvidingHealthEducation
+
+        saveMsg =
+            toHealthEducationValueWithDefault saved form
+                |> Maybe.map (SaveHealthEducation existingId >> SendOutMsgChild)
     in
     div [ class "ui full segment health-education" ]
-        [ div [ class "content" ]
-            [ viewHealthEducationForm language
-                currentDate
-                SetProvidedEducationForDiagnosis
-                SetReasonForNotProvidingHealthEducation
-                form
-            ]
-
-        -- , div [ class "actions" ] <|
-        --     saveButton
-        --         language
-        --         saveMsg
-        --         measurement
-        --         Nothing
+        [ div [ class "content" ] [ formContent ]
+        , div [ class "actions" ] <|
+            saveButton
+                language
+                saveMsg
+                measurement
+                Nothing
         ]
 
 
@@ -1043,29 +1030,32 @@ viewHealthEducationLabel language actionTranslationId iconClass maybeDate =
 viewSendToHC : Language -> NominalDate -> MeasurementData (Maybe ( GroupSendToHCId, GroupSendToHC )) -> SendToHCForm -> Html MsgChild
 viewSendToHC language currentDate measurement form =
     let
-        activity =
-            ChildActivity SendToHC
-
         existingId =
             Maybe.map Tuple.first measurement.current
 
-        -- saveMsg =
-        --     if EverySet.isEmpty signs then
-        --         Nothing
-        --
-        --     else
-        --         Just <| SendOutMsgChild <| SaveSendToHC existingId signs
+        saved =
+            Maybe.map (Tuple.second >> .value) measurement.current
+
+        formContent =
+            sendToHCFormWithDefault form saved
+                |> viewSendToHCForm language
+                    currentDate
+                    SetReferToHealthCenter
+                    SetReasonForNotSendingToHC
+                    SetHandReferralForm
+
+        saveMsg =
+            toSendToHCValueWithDefault saved form
+                |> Maybe.map (SaveSendToHC existingId >> SendOutMsgChild)
     in
     div [ class "ui full segment send-to-hc" ]
-        [ div [ class "content" ]
-            [ viewSendToHCForm language currentDate SetReferToHealthCenter SetReasonForNotSendingToHC SetHandReferralForm form ]
-
-        -- , div [ class "actions" ] <|
-        --     saveButton
-        --         language
-        --         saveMsg
-        --         measurement
-        --         Nothing
+        [ div [ class "content" ] [ formContent ]
+        , div [ class "actions" ] <|
+            saveButton
+                language
+                saveMsg
+                measurement
+                Nothing
         ]
 
 
