@@ -39,7 +39,8 @@ import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
 import Pages.Utils
     exposing
-        ( viewBoolInput
+        ( taskCompleted
+        , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewLabel
@@ -926,7 +927,7 @@ viewFollowUpForm language currentDate setFollowUpOptionMsg form =
 
 
 viewHealthEducation : Language -> NominalDate -> MeasurementData (Maybe ( GroupHealthEducationId, GroupHealthEducation )) -> HealthEducationForm -> Html MsgChild
-viewHealthEducation language currentDate measurement form =
+viewHealthEducation language currentDate measurement form_ =
     let
         existingId =
             Maybe.map Tuple.first measurement.current
@@ -934,16 +935,45 @@ viewHealthEducation language currentDate measurement form =
         saved =
             Maybe.map (Tuple.second >> .value) measurement.current
 
+        form =
+            healthEducationFormWithDefault form_ saved
+
         formContent =
-            healthEducationFormWithDefault form saved
-                |> viewHealthEducationForm language
-                    currentDate
-                    SetProvidedEducationForDiagnosis
-                    SetReasonForNotProvidingHealthEducation
+            viewHealthEducationForm language
+                currentDate
+                SetProvidedEducationForDiagnosis
+                SetReasonForNotProvidingHealthEducation
+                form
+
+        ( completed, total ) =
+            let
+                ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
+                    form.educationForDiagnosis
+                        |> Maybe.map
+                            (\providedHealthEducation ->
+                                if not providedHealthEducation then
+                                    if isJust form.reasonForNotProvidingHealthEducation then
+                                        ( 1, 1 )
+
+                                    else
+                                        ( 0, 1 )
+
+                                else
+                                    ( 0, 0 )
+                            )
+                        |> Maybe.withDefault ( 0, 0 )
+            in
+            ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
+            , reasonForProvidingEducationCompleted + 1
+            )
 
         saveMsg =
-            toHealthEducationValueWithDefault saved form
-                |> Maybe.map (SaveHealthEducation existingId >> SendOutMsgChild)
+            if completed < total then
+                Nothing
+
+            else
+                toHealthEducationValueWithDefault saved form_
+                    |> Maybe.map (SaveHealthEducation existingId >> SendOutMsgChild)
     in
     div [ class "ui full segment health-education" ]
         [ div [ class "content" ] [ formContent ]
@@ -1028,7 +1058,7 @@ viewHealthEducationLabel language actionTranslationId iconClass maybeDate =
 
 
 viewSendToHC : Language -> NominalDate -> MeasurementData (Maybe ( GroupSendToHCId, GroupSendToHC )) -> SendToHCForm -> Html MsgChild
-viewSendToHC language currentDate measurement form =
+viewSendToHC language currentDate measurement form_ =
     let
         existingId =
             Maybe.map Tuple.first measurement.current
@@ -1036,17 +1066,46 @@ viewSendToHC language currentDate measurement form =
         saved =
             Maybe.map (Tuple.second >> .value) measurement.current
 
+        form =
+            sendToHCFormWithDefault form_ saved
+
         formContent =
-            sendToHCFormWithDefault form saved
-                |> viewSendToHCForm language
-                    currentDate
-                    SetReferToHealthCenter
-                    SetReasonForNotSendingToHC
-                    SetHandReferralForm
+            viewSendToHCForm language
+                currentDate
+                SetReferToHealthCenter
+                SetReasonForNotSendingToHC
+                SetHandReferralForm
+                form
+
+        ( completed, total ) =
+            let
+                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+                    form.referToHealthCenter
+                        |> Maybe.map
+                            (\sentToHC ->
+                                if not sentToHC then
+                                    if isJust form.reasonForNotSendingToHC then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+            in
+            ( reasonForNotSentActive + taskCompleted form.handReferralForm
+            , reasonForNotSentCompleted + 1
+            )
 
         saveMsg =
-            toSendToHCValueWithDefault saved form
-                |> Maybe.map (SaveSendToHC existingId >> SendOutMsgChild)
+            if completed < total then
+                Nothing
+
+            else
+                toSendToHCValueWithDefault saved form_
+                    |> Maybe.map (SaveSendToHC existingId >> SendOutMsgChild)
     in
     div [ class "ui full segment send-to-hc" ]
         [ div [ class "content" ] [ formContent ]
