@@ -2140,12 +2140,12 @@ translationSet trans =
             case factor of
                 FactorLackOfBreastMilk ->
                     { english = "Lack of breast milk (for children < 6 months)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubura kw'amashereka (ku mwana uri munsi y'amezi atandatu)"
                     }
 
                 FactorMaternalMastitis ->
                     { english = "Maternal mastitis (for children < 6 months)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just ""
                     }
 
                 FactorPoorSuck ->
@@ -2165,7 +2165,7 @@ translationSet trans =
 
         ContributingFactorsQuestion ->
             { english = "Has patient experienced any of the following"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi yagaragaje ibimenyetso bikurikira"
             }
 
         ConvulsionsAndUnconsciousPreviousDelivery ->
@@ -4380,7 +4380,7 @@ translationSet trans =
 
                 Pages.NutritionActivity.Model.NextStepContributingFactors ->
                     { english = "Contributing Factors"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Impamvu zateye uburwayi"
                     }
 
                 Pages.NutritionActivity.Model.NextStepFollowUp ->
