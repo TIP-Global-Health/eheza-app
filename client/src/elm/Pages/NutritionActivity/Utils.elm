@@ -13,7 +13,6 @@ import Backend.Measurement.Model
         , NutritionMeasurements
         , WeightInKg(..)
         )
-import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Person)
@@ -532,13 +531,3 @@ zScoreWeightForAgeModerate currentDate child zScore previousZScore =
                         |> Maybe.withDefault False
             )
         |> Maybe.withDefault False
-
-
-muacSevere : MuacInCm -> Bool
-muacSevere muac =
-    muacIndication muac == MuacRed
-
-
-muacModerate : MuacInCm -> Bool
-muacModerate muac =
-    muacIndication muac == MuacYellow
