@@ -1,4 +1,12 @@
-module Measurement.View exposing (renderDatePart, viewActionTakenLabel, viewChild, viewMeasurementFloatDiff, viewMother, viewMuacIndication, zScoreForHeightOrLength)
+module Measurement.View exposing
+    ( renderDatePart
+    , viewActionTakenLabel
+    , viewChild
+    , viewMeasurementFloatDiff
+    , viewMother
+    , viewMuacIndication
+    , zScoreForHeightOrLength
+    )
 
 {-| This module provides a form for entering measurements.
 -}
@@ -829,6 +837,77 @@ viewFollowUp language measurement form =
 viewHealthEducation : Language -> MeasurementData (Maybe ( GroupHealthEducationId, GroupHealthEducation )) -> HealthEducationForm -> Html MsgChild
 viewHealthEducation language measurement form =
     emptyNode
+
+
+viewHealthEducationForm :
+    Language
+    -> NominalDate
+    -> (Bool -> msg)
+    -> (ReasonForNotProvidingHealthEducation -> msg)
+    -> HealthEducationForm
+    -> Html msg
+viewHealthEducationForm language currentDate setProvidedEducationForDiagnosisMsg setSetReasonForNotProvidingHealthEducationMsg form =
+    let
+        healthEducationSection =
+            let
+                providedHealthEducation =
+                    form.educationForDiagnosis
+                        |> Maybe.withDefault True
+
+                reasonForNotProvidingHealthEducation =
+                    if not providedHealthEducation then
+                        [ viewQuestionLabel language Trans.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ PatientNeedsEmergencyReferral
+                            , ReceivedEmergencyCase
+                            , LackOfAppropriateEducationUserGuide
+                            , PatientRefused
+                            , PatientTooIll
+                            ]
+                            []
+                            form.reasonForNotProvidingHealthEducation
+                            setSetReasonForNotProvidingHealthEducationMsg
+                            Trans.ReasonForNotProvidingHealthEducation
+                        ]
+
+                    else
+                        []
+            in
+            [ div [ class "label" ]
+                [ text <| translate language Trans.ProvidedPreventionEducationQuestionShort
+                , text "?"
+                ]
+            , viewBoolInput
+                language
+                form.educationForDiagnosis
+                setProvidedEducationForDiagnosisMsg
+                "education-for-diagnosis"
+                Nothing
+            ]
+                ++ reasonForNotProvidingHealthEducation
+    in
+    div [ class "ui form health-education" ] <|
+        [ h2 [] [ text <| translate language Trans.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ]
+            [ viewHealthEducationLabel language Trans.ProvideHealthEducation "icon-open-book" Nothing
+            ]
+        ]
+            ++ healthEducationSection
+
+
+viewHealthEducationLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
+viewHealthEducationLabel language actionTranslationId iconClass maybeDate =
+    let
+        message =
+            div [] <|
+                [ text <| translate language actionTranslationId ]
+                    ++ renderDatePart language maybeDate
+                    ++ [ text "." ]
+    in
+    div [ class "header icon-label" ] <|
+        [ i [ class iconClass ] []
+        , message
+        ]
 
 
 viewSendToHC : Language -> NominalDate -> MeasurementData (Maybe ( GroupSendToHCId, GroupSendToHC )) -> SendToHCForm -> Html MsgChild
