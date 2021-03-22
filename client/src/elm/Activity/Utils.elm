@@ -268,7 +268,7 @@ expectChildActivity : NominalDate -> OfflineSession -> PersonId -> Bool -> Child
 expectChildActivity currentDate offlineSession childId isChw activity =
     let
         showNextSteps =
-            isChw && mandatoryActivitiesCompleted currentDate offlineSession childId
+            isChw && mandatoryActivitiesCompleted currentDate offlineSession childId isChw
     in
     case activity of
         Height ->
@@ -311,10 +311,13 @@ expectChildActivity currentDate offlineSession childId isChw activity =
             True
 
 
-mandatoryActivitiesCompleted : NominalDate -> OfflineSession -> PersonId -> Bool
-mandatoryActivitiesCompleted currentDate offlineSession childId =
-    -- @todo
-    True
+mandatoryActivitiesCompleted : NominalDate -> OfflineSession -> PersonId -> Bool -> Bool
+mandatoryActivitiesCompleted currentDate offlineSession childId isChw =
+    let
+        mandatoryActivities =
+            [ Muac, NutritionSigns, Weight ]
+    in
+    List.all (\mandatoryActivity -> childHasCompletedActivity childId mandatoryActivity offlineSession) mandatoryActivities
 
 
 {-| Whether to expect a counseling activity is not just a yes/no question,
