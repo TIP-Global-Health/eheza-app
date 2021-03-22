@@ -2145,22 +2145,22 @@ translationSet trans =
 
                 FactorMaternalMastitis ->
                     { english = "Maternal mastitis (for children < 6 months)"
-                    , kinyarwanda = Just ""
+                    , kinyarwanda = Just "Umubyeyi yabyimbye amabere (ku mwana uri munsi y'amezi atandatu)"
                     }
 
                 FactorPoorSuck ->
                     { english = "Poor suck"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yonka nta mbaraga"
                     }
 
                 FactorDiarrheaOrVomiting ->
                     { english = "Diarrhea or vomiting"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Impiswi cyangwa kuruka"
                     }
 
                 NoContributingFactorsSign ->
                     { english = "None of these"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta kimenyetso na kimwe"
                     }
 
         ContributingFactorsQuestion ->
