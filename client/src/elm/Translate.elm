@@ -2931,29 +2931,29 @@ translationSet trans =
 
         FollowUpLabel ->
             { english = "Follow up with the patient in"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gukurikirana umurwayi mu"
             }
 
         FollowUpOption option ->
             case option of
                 OneDay ->
                     { english = "1 Day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umunsi 1"
                     }
 
                 ThreeDays ->
                     { english = "3 Days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Iminsi 3"
                     }
 
                 OneWeek ->
                     { english = "1 Week"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Icyumweru 1"
                     }
 
                 TwoWeeks ->
                     { english = "2 Weeks"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibyumweru 2"
                     }
 
         FormError errorValue ->
