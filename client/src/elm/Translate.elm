@@ -4323,42 +4323,42 @@ translationSet trans =
             case assessment of
                 AssesmentAcuteMalnutritionModerate ->
                     { english = "Moderate Acute Malnutrition"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imirire  mibi yoroheje ije vuba"
                     }
 
                 AssesmentAcuteMalnutritionSevere ->
                     { english = "Severe Acute Malnutrition"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imirire  mibi ikabije ije vuba"
                     }
 
                 AssesmentUnderweightModerate ->
                     { english = "Moderately Underweight"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imirire mibi yoroheje ku biro"
                     }
 
                 AssesmentUnderweightSevere ->
                     { english = "Severely Underweight"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imirire mibi ikabije ku biro"
                     }
 
                 AssesmentDangerSignsNotPresent ->
                     { english = "Without Danger Signs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta bimenyetso mpuruza"
                     }
 
                 AssesmentDangerSignsPresent ->
                     { english = "With Danger Signs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ifite ibimenyetso mpuruza"
                     }
 
                 AssesmentMalnutritionSigns _ ->
                     { english = "Malnutrition Signs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ifite ibimenyetso mpuruza"
                     }
 
                 AssesmentConsecutiveWeightLoss ->
                     { english = "Consecutive Weight Loss"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gutakaza ibiro mu buryo bwikurikiranije"
                     }
 
         NutritionHelper ->
@@ -4385,7 +4385,7 @@ translationSet trans =
 
                 Pages.NutritionActivity.Model.NextStepFollowUp ->
                     { english = "Follow Up"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gukurikirana umurwayi"
                     }
 
         ObstetricalDiagnosis ->
