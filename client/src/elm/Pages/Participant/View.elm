@@ -121,7 +121,7 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
             childParticipant
 
         activities =
-            summarizeChildParticipant currentDate childId session.offlineSession isChw
+            summarizeChildParticipant currentDate zscores childId session.offlineSession isChw db
 
         selectedActivity =
             case model.selectedTab of
@@ -232,14 +232,24 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
             ]
 
 
-viewMother : Language -> NominalDate -> Bool -> PersonId -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
-viewMother language currentDate isChw motherId ( sessionId, session ) pages model =
+viewMother :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Bool
+    -> PersonId
+    -> ( SessionId, EditableSession )
+    -> Pages.Session.Model.Model
+    -> ModelIndexedDb
+    -> Model MotherActivity
+    -> Html (Msg MotherActivity Measurement.Model.MsgMother)
+viewMother language currentDate zscores isChw motherId ( sessionId, session ) pages db model =
     -- It's nice to just pass in the motherId. If the session is consistent, we
     -- should always be able to get the mother.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getMother motherId session.offlineSession of
         Just mother ->
-            viewFoundMother language currentDate isChw ( motherId, mother ) ( sessionId, session ) pages model
+            viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessionId, session ) pages db model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -252,8 +262,18 @@ viewMother language currentDate isChw motherId ( sessionId, session ) pages mode
                 ]
 
 
-viewFoundMother : Language -> NominalDate -> Bool -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
-viewFoundMother language currentDate isChw ( motherId, mother ) ( sessionId, session ) pages model =
+viewFoundMother :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Bool
+    -> ( PersonId, Person )
+    -> ( SessionId, EditableSession )
+    -> Pages.Session.Model.Model
+    -> ModelIndexedDb
+    -> Model MotherActivity
+    -> Html (Msg MotherActivity Measurement.Model.MsgMother)
+viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessionId, session ) pages db model =
     let
         break =
             br [] []
@@ -267,7 +287,7 @@ viewFoundMother language currentDate isChw ( motherId, mother ) ( sessionId, ses
                 |> List.intersperse break
 
         activities =
-            summarizeMotherParticipant currentDate motherId session.offlineSession isChw
+            summarizeMotherParticipant currentDate zscores motherId session.offlineSession isChw db
 
         selectedActivity =
             case model.selectedTab of

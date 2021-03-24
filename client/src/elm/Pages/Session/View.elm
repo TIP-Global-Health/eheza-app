@@ -134,7 +134,7 @@ viewEditableSession language currentDate zscores isChw nurse sessionId page mode
         MotherPage motherId ->
             Dict.get motherId model.motherPages
                 |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                |> Pages.Participant.View.viewMother language currentDate isChw motherId ( sessionId, session ) model
+                |> Pages.Participant.View.viewMother language currentDate zscores isChw motherId ( sessionId, session ) model db
                 |> Html.map (MsgMother motherId)
 
 

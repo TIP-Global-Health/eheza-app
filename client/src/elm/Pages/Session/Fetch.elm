@@ -17,10 +17,11 @@ import Pages.Participant.Fetch
 import Pages.Participants.Fetch
 import Pages.ProgressReport.Fetch
 import RemoteData exposing (RemoteData(..))
+import ZScore.Model
 
 
-fetch : NominalDate -> SessionId -> SessionPage -> ModelIndexedDb -> List MsgIndexedDb
-fetch currentDate sessionId sessionPage db =
+fetch : NominalDate -> ZScore.Model.Model -> SessionId -> SessionPage -> ModelIndexedDb -> List MsgIndexedDb
+fetch currentDate zscores sessionId sessionPage db =
     let
         ( forSessionPage, calculations ) =
             case sessionPage of
@@ -54,7 +55,7 @@ fetch currentDate sessionId sessionPage db =
                                                             { completed = Dict.empty
                                                             , pending = Dict.empty
                                                             }
-                                                            (Activity.Utils.summarizeChildActivity currentDate childActivity ediatbleSession.offlineSession False)
+                                                            (Activity.Utils.summarizeChildActivity currentDate zscores childActivity ediatbleSession.offlineSession False db)
                                                         |> .pending
                                                         |> Dict.toList
                                                         |> List.head

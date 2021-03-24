@@ -176,9 +176,6 @@ generateNutritionAssesment currentDate zscores childId muacValue weightValue nut
                 ++ individualWeightMeasurements
                 |> List.sortWith (\m1 m2 -> Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1))
 
-        _ =
-            Debug.log "allWeightMeasuements" allWeightMeasuements
-
         weightForAgeZScore =
             Maybe.map (\child_ -> calculateZScoreWeightForAge currentDate zscores child_ weightValue) child
 

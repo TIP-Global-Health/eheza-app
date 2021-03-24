@@ -218,7 +218,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw msg model =
                     (\editable ->
                         let
                             summaryByActivity =
-                                summarizeByActivity currentDate editable.offlineSession editable.checkedIn isChw
+                                summarizeByActivity currentDate zscores editable.offlineSession editable.checkedIn isChw model
 
                             updatedEditable =
                                 { editable | summaryByActivity = summaryByActivity }
@@ -237,7 +237,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw msg model =
                     (\editable ->
                         let
                             summaryByParticipant =
-                                summarizeByParticipant currentDate editable.offlineSession editable.checkedIn isChw
+                                summarizeByParticipant currentDate zscores editable.offlineSession editable.checkedIn isChw model
 
                             updatedEditable =
                                 { editable | summaryByParticipant = summaryByParticipant }
@@ -2724,19 +2724,19 @@ makeEditableSession sessionId db =
 for our UI, when we're focused on participants. This only considers children &
 mothers who are checked in to the session.
 -}
-summarizeByParticipant : NominalDate -> OfflineSession -> LocalData CheckedIn -> Bool -> LocalData SummaryByParticipant
-summarizeByParticipant currentDate session checkedIn_ isChw =
+summarizeByParticipant : NominalDate -> ZScore.Model.Model -> OfflineSession -> LocalData CheckedIn -> Bool -> ModelIndexedDb -> LocalData SummaryByParticipant
+summarizeByParticipant currentDate zscores session checkedIn_ isChw db =
     LocalData.map
         (\checkedIn ->
             let
                 children =
                     Dict.map
-                        (\childId _ -> summarizeChildParticipant currentDate childId session isChw)
+                        (\childId _ -> summarizeChildParticipant currentDate zscores childId session isChw db)
                         checkedIn.children
 
                 mothers =
                     Dict.map
-                        (\motherId _ -> summarizeMotherParticipant currentDate motherId session isChw)
+                        (\motherId _ -> summarizeMotherParticipant currentDate zscores motherId session isChw db)
                         checkedIn.mothers
             in
             { children = children
@@ -2750,8 +2750,8 @@ summarizeByParticipant currentDate session checkedIn_ isChw =
 for our UI, when we're focused on activities. This only considers children &
 mothers who are checked in to the session.
 -}
-summarizeByActivity : NominalDate -> OfflineSession -> LocalData CheckedIn -> Bool -> LocalData SummaryByActivity
-summarizeByActivity currentDate session checkedIn_ isChw =
+summarizeByActivity : NominalDate -> ZScore.Model.Model -> OfflineSession -> LocalData CheckedIn -> Bool -> ModelIndexedDb -> LocalData SummaryByActivity
+summarizeByActivity currentDate zscores session checkedIn_ isChw db =
     LocalData.map
         (\checkedIn ->
             let
@@ -2760,7 +2760,7 @@ summarizeByActivity currentDate session checkedIn_ isChw =
                         |> List.map
                             (\activity ->
                                 ( activity
-                                , summarizeChildActivity currentDate activity session isChw checkedIn
+                                , summarizeChildActivity currentDate zscores activity session isChw db checkedIn
                                 )
                             )
                         |> Dict.fromList
@@ -2770,7 +2770,7 @@ summarizeByActivity currentDate session checkedIn_ isChw =
                         |> List.map
                             (\activity ->
                                 ( activity
-                                , summarizeMotherActivity currentDate activity session isChw checkedIn
+                                , summarizeMotherActivity currentDate zscores activity session isChw db checkedIn
                                 )
                             )
                         |> Dict.fromList

@@ -60,7 +60,7 @@ view config language currentDate zscores isChw selectedActivity ( sessionId, ses
                     { completed = Dict.empty
                     , pending = Dict.empty
                     }
-                    (config.summarizeParticipantsForActivity currentDate selectedActivity session.offlineSession isChw
+                    (config.summarizeParticipantsForActivity currentDate zscores selectedActivity session.offlineSession isChw db
                         >> applyNameFilter
                     )
 
