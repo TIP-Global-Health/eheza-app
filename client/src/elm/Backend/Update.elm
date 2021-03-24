@@ -2419,14 +2419,6 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                 offlineSession
                                 childId
                                 isChw
-
-                        -- mandatoryActivitiesCompleted =
-                        --     Activity.Utils.mandatoryActivitiesCompletedWithExclusion
-                        --         currentDate
-                        --         session.offlineSession
-                        --         childId
-                        --         isChw
-                        --         triggeringActivity
                     in
                     if not mandatoryActivitiesCompleted then
                         []

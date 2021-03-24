@@ -345,13 +345,6 @@ mandatoryActivitiesCompleted currentDate offlineSession childId isChw =
     activitiesCompleted currentDate offlineSession childId isChw allMandatoryActivities
 
 
-mandatoryActivitiesCompletedWithExclusion : NominalDate -> OfflineSession -> PersonId -> Bool -> ChildActivity -> Bool
-mandatoryActivitiesCompletedWithExclusion currentDate offlineSession childId isChw excludedActivity =
-    allMandatoryActivities
-        |> List.filter ((/=) excludedActivity)
-        |> activitiesCompleted currentDate offlineSession childId isChw
-
-
 activitiesCompleted : NominalDate -> OfflineSession -> PersonId -> Bool -> List ChildActivity -> Bool
 activitiesCompleted currentDate offlineSession childId isChw activities =
     List.all
