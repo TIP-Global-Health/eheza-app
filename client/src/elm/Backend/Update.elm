@@ -2412,6 +2412,7 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
             |> Maybe.map
                 (\session ->
                     let
+                        -- We simulate session data after measurement data is performed.
                         offlineSession =
                             mapChildMeasurementsAtOfflineSession childId updateFunc session.offlineSession
 
