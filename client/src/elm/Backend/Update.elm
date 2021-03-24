@@ -55,8 +55,10 @@ import Pages.NutritionActivity.Utils
 import Pages.NutritionEncounter.Model
 import Pages.NutritionEncounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.Participant.Model
 import Pages.Person.Model
 import Pages.Relationship.Model
+import Pages.Session.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyBackendUrl, toCmd, toTask, withoutDecoder)
 import SyncManager.Model exposing (IndexDbQueryType(..))
@@ -2431,9 +2433,18 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                     zscores
                                     childId
                                     db
-                                    session.offlineSession
+                                    offlineSession
                         in
-                        []
+                        if List.isEmpty assesment then
+                            -- View assement when we have items at assement list.
+                            []
+
+                        else
+                            [ Pages.Participant.Model.SetWarningPopupState assesment
+                                |> Pages.Session.Model.MsgChild childId
+                                |> App.Model.MsgPageSession sessionId
+                                |> App.Model.MsgLoggedIn
+                            ]
                 )
             |> Maybe.withDefault []
 

@@ -19,13 +19,14 @@ import Maybe.Extra
 import Measurement.Model
 import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Measurement.View
+import Pages.NutritionActivity.View exposing (warningPopup)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Session.Model
 import Participant.Model exposing (Participant)
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import Translate exposing (Language, translate)
-import Utils.Html exposing (tabItem, thumbnailImage)
+import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderDate)
 import ZScore.Model
 
@@ -69,7 +70,17 @@ viewChild language currentDate zscores isChw childId ( sessionId, session ) page
 
 {-| This one needs the `currentDate` in order to calculate ages from dates of birth.
 -}
-viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> Bool -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> ModelIndexedDb -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
+viewFoundChild :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Bool
+    -> ( PersonId, Person )
+    -> ( SessionId, EditableSession )
+    -> Pages.Session.Model.Model
+    -> ModelIndexedDb
+    -> Model ChildActivity
+    -> Html (Msg ChildActivity Measurement.Model.MsgChild)
 viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId, session ) pages db model =
     let
         maybeMother =
@@ -182,6 +193,15 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
 
                     Nothing ->
                         []
+
+        popup =
+            warningPopup language
+                currentDate
+                SetWarningPopupState
+                model.warningPopupState
+                |> viewModal
+                |> keyed "pupup"
+                |> List.singleton
     in
     divKeyed [ class "wrap page-participant group" ] <|
         List.concat
@@ -208,6 +228,7 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
               ]
             , viewActivityCards childParticipant language activities model.selectedTab session.offlineSession.session.clinicType selectedActivity
             , content
+            , popup
             ]
 
 

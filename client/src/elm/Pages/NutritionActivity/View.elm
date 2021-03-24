@@ -1,4 +1,4 @@
-module Pages.NutritionActivity.View exposing (view)
+module Pages.NutritionActivity.View exposing (view, warningPopup)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -86,8 +86,8 @@ viewHeaderAndContent language currentDate zscores id activity isChw db model dat
         , viewModal <|
             warningPopup language
                 currentDate
+                SetWarningPopupState
                 model.warningPopupState
-                data
         ]
 
 
@@ -116,8 +116,8 @@ viewContent language currentDate zscores id activity isChw db model assembled =
         |> div [ class "ui unstackable items" ]
 
 
-warningPopup : Language -> NominalDate -> List NutritionAssesment -> AssembledData -> Maybe (Html Msg)
-warningPopup language currentDate state data =
+warningPopup : Language -> NominalDate -> (List NutritionAssesment -> msg) -> List NutritionAssesment -> Maybe (Html msg)
+warningPopup language currentDate setStateMsg state =
     if List.isEmpty state then
         Nothing
 
@@ -152,7 +152,7 @@ warningPopup language currentDate state data =
                     [ class "actions" ]
                     [ button
                         [ class "ui primary fluid button"
-                        , onClick <| SetWarningPopupState []
+                        , onClick <| setStateMsg []
                         ]
                         [ text <| translate language Translate.Continue ]
                     ]
