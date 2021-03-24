@@ -10,12 +10,6 @@ import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Pages.NutritionActivity.Utils
-    exposing
-        ( calculateZScoreWeightForAge
-        , zScoreWeightForAgeModerate
-        , zScoreWeightForAgeSevere
-        )
 import Pages.NutritionEncounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)

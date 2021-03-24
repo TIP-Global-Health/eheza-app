@@ -14,8 +14,8 @@ import Backend.Entities exposing (..)
 import Backend.Fetch
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Update
-import Backend.Measurement.Model exposing (HistoricalMeasurements, Measurements)
-import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
+import Backend.Measurement.Model exposing (ChildMeasurements, HistoricalMeasurements, Measurements)
+import Backend.Measurement.Utils exposing (mapChildMeasurementsAtOfflineSession, splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
 import Backend.NutritionActivity.Model
 import Backend.NutritionEncounter.Model
@@ -748,7 +748,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw msg model =
                     in
                     ( newModel, extraMsgs )
 
-                processRevisionAndAssess participantId encounterId =
+                processRevisionAndAssessIndividual participantId encounterId =
                     let
                         person =
                             Dict.get participantId model.people
@@ -759,12 +759,54 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw msg model =
                             List.foldl handleRevision ( model, False ) revisions
 
                         extraMsgs =
-                            Maybe.map2 (generateNutritionAssessmentMsgs currentDate zscores isChw newModel)
+                            Maybe.map2 (generateNutritionAssessmentIndividualMsgs currentDate zscores isChw newModel)
                                 encounterId
                                 person
                                 |> Maybe.withDefault []
                     in
                     ( newModel, extraMsgs )
+
+                processRevisionAndAssessGroup data updateFunc =
+                    let
+                        participantId =
+                            data.participantId
+
+                        sessionId =
+                            data.encounterId
+
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, True ) revisions
+                    in
+                    Maybe.map
+                        (\sessionId_ ->
+                            let
+                                editableSessions =
+                                    -- The `andThen` is so that we only recalculate
+                                    -- the editable session if we already have a
+                                    -- success.
+                                    Dict.map
+                                        (\id session ->
+                                            RemoteData.andThen (\_ -> makeEditableSession id newModel) session
+                                        )
+                                        newModel.editableSessions
+
+                                withRecalc =
+                                    { newModel | editableSessions = editableSessions }
+
+                                extraMsgs =
+                                    -- Important: we pass model here, because we want to be examining the state before
+                                    -- current editable session was set for recalculation with makeEditableSession.
+                                    -- The reason for this is that at makeEditableSession, all measuerements are set to
+                                    -- be refetched, and we are not able to determine if mandatory activities are completed
+                                    -- or not.
+                                    -- Therefore, we will be examining the 'before' state, taking into consideration
+                                    -- that triggering activity is completed.
+                                    generateNutritionAssessmentGroupMsgs currentDate zscores isChw participantId sessionId_ updateFunc newModel
+                            in
+                            ( withRecalc, extraMsgs )
+                        )
+                        sessionId
+                        |> Maybe.withDefault ( newModel, [] )
             in
             case revisions of
                 -- Special handling for a single attendance revision, which means
@@ -1029,7 +1071,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw msg model =
                 [ NutritionMuacRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssess data.participantId data.encounterId
+                            processRevisionAndAssessIndividual data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1039,7 +1081,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw msg model =
                 [ NutritionNutritionRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssess data.participantId data.encounterId
+                            processRevisionAndAssessIndividual data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1049,7 +1091,37 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw msg model =
                 [ NutritionWeightRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssess data.participantId data.encounterId
+                            processRevisionAndAssessIndividual data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ MuacRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessGroup data (\childMeasurements -> { childMeasurements | muac = Just ( uuid, data ) })
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildNutritionRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessGroup data (\childMeasurements -> { childMeasurements | nutrition = Just ( uuid, data ) })
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WeightRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessGroup data (\childMeasurements -> { childMeasurements | weight = Just ( uuid, data ) })
                     in
                     ( newModel
                     , Cmd.none
@@ -2272,8 +2344,8 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
 
-generateNutritionAssessmentMsgs : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> NutritionEncounterId -> Person -> List App.Model.Msg
-generateNutritionAssessmentMsgs currentDate zscores isChw after id person =
+generateNutritionAssessmentIndividualMsgs : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> NutritionEncounterId -> Person -> List App.Model.Msg
+generateNutritionAssessmentIndividualMsgs currentDate zscores isChw after id person =
     if not isChw then
         -- Assement is done only for CHW.
         []
@@ -2315,6 +2387,62 @@ generateNutritionAssessmentMsgs currentDate zscores isChw after id person =
                         ]
             )
             (RemoteData.toMaybe <| Pages.NutritionEncounter.Utils.generateAssembledData id after)
+            |> Maybe.withDefault []
+
+
+generateNutritionAssessmentGroupMsgs :
+    NominalDate
+    -> ZScore.Model.Model
+    -> Bool
+    -> PersonId
+    -> SessionId
+    -> (ChildMeasurements -> ChildMeasurements)
+    -> ModelIndexedDb
+    -> List App.Model.Msg
+generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId updateFunc db =
+    if not isChw then
+        -- Assement is done only for CHW.
+        []
+
+    else
+        Dict.get sessionId db.editableSessions
+            |> Maybe.andThen RemoteData.toMaybe
+            |> Maybe.map
+                (\session ->
+                    let
+                        offlineSession =
+                            mapChildMeasurementsAtOfflineSession childId updateFunc session.offlineSession
+
+                        mandatoryActivitiesCompleted =
+                            Activity.Utils.mandatoryActivitiesCompleted
+                                currentDate
+                                offlineSession
+                                childId
+                                isChw
+
+                        -- mandatoryActivitiesCompleted =
+                        --     Activity.Utils.mandatoryActivitiesCompletedWithExclusion
+                        --         currentDate
+                        --         session.offlineSession
+                        --         childId
+                        --         isChw
+                        --         triggeringActivity
+                    in
+                    if not mandatoryActivitiesCompleted then
+                        []
+
+                    else
+                        let
+                            assesment =
+                                Activity.Utils.generateNutritionAssesment
+                                    currentDate
+                                    zscores
+                                    childId
+                                    db
+                                    session.offlineSession
+                        in
+                        []
+                )
             |> Maybe.withDefault []
 
 

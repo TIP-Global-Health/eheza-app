@@ -8,6 +8,7 @@ import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
+import Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge)
 import Backend.Person.Model exposing (Person)
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -232,7 +233,7 @@ viewHeightContent language currentDate zscores assembled data previousGroupValue
                 assembled.person.birthDate
 
         previousIndividualValue =
-            resolvePreviousIndividualValue assembled .height (\(HeightInCm cm) -> cm)
+            resolvePreviousIndividualValue assembled.previousMeasurementsWithDates .height (\(HeightInCm cm) -> cm)
 
         previousValue =
             resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
@@ -321,7 +322,7 @@ viewMuacContent language currentDate assembled data previousGroupValue =
             taskCompleted form.muac
 
         previousIndividualValue =
-            resolvePreviousIndividualValue assembled .muac (\(MuacInCm cm) -> cm)
+            resolvePreviousIndividualValue assembled.previousMeasurementsWithDates .muac (\(MuacInCm cm) -> cm)
 
         previousValue =
             resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
@@ -516,7 +517,7 @@ viewWeightContent language currentDate zscores isChw assembled data previousGrou
                 assembled.person.birthDate
 
         previousIndividualValue =
-            resolvePreviousIndividualValue assembled .weight (\(WeightInKg kg) -> kg)
+            resolvePreviousIndividualValue assembled.previousMeasurementsWithDates .weight (\(WeightInKg kg) -> kg)
 
         previousValue =
             resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue

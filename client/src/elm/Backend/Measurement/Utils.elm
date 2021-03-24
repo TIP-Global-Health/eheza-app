@@ -5,8 +5,10 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (Person, Ubudehe(..))
 import Backend.Person.Utils exposing (isAdult)
+import Backend.Session.Model exposing (OfflineSession)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, compare, diffMonths)
+import LocalData
 import Measurement.Model exposing (..)
 import Restful.Endpoint exposing (EntityUuid)
 
@@ -291,3 +293,30 @@ medicationNonAdministrationReasonToString reason =
 
         NonAdministrationOther ->
             "other"
+
+
+mapChildMeasurementsAtOfflineSession : PersonId -> (ChildMeasurements -> ChildMeasurements) -> OfflineSession -> OfflineSession
+mapChildMeasurementsAtOfflineSession childId func offlineSession =
+    let
+        mapped =
+            LocalData.map
+                (\measurements ->
+                    let
+                        updatedChildMeasurements =
+                            Dict.get childId measurements.current.children
+                                |> Maybe.map (\childMeasurements -> func childMeasurements)
+
+                        childrenUpdated =
+                            updatedChildMeasurements
+                                |> Maybe.map (\updated -> Dict.insert childId updated measurements.current.children)
+                                |> Maybe.withDefault measurements.current.children
+
+                        currentUpdated =
+                            measurements.current
+                                |> (\current -> { current | children = childrenUpdated })
+                    in
+                    { measurements | current = currentUpdated }
+                )
+                offlineSession.measurements
+    in
+    { offlineSession | measurements = mapped }
