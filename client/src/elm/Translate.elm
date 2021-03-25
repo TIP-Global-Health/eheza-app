@@ -596,6 +596,7 @@ type TranslationId
     | NegativeLabel
     | Never
     | Next
+    | NextSteps
     | NextStepsTask Pages.AcuteIllnessActivity.Model.NextStepsTask
     | No
     | NoActivitiesCompleted
@@ -4132,6 +4133,11 @@ translationSet trans =
 
         Next ->
             { english = "Next"
+            , kinyarwanda = Just "Ibikurikiyeho"
+            }
+
+        NextSteps ->
+            { english = "Next Steps"
             , kinyarwanda = Just "Ibikurikiyeho"
             }
 

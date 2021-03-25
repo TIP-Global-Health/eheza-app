@@ -50,6 +50,7 @@ import Pages.AcuteIllnessEncounter.Utils
         , resolveNextStepFirstEncounter
         , resolveNextStepSubsequentEncounter
         )
+import Pages.NextSteps.Model
 import Pages.NutritionActivity.Model
 import Pages.NutritionActivity.Utils
 import Pages.NutritionEncounter.Model
@@ -2437,8 +2438,13 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                     db
                                     offlineSession
 
-                            navigateToPageMsg childActivity =
-                                App.Model.SetActivePage (UserPage (SessionPage sessionId (NextStepsPage childId (ChildActivity childActivity))))
+                            activityByActivityMsgs childActivity =
+                                [ App.Model.SetActivePage (UserPage (SessionPage sessionId (NextStepsPage childId (ChildActivity childActivity))))
+                                , Pages.NextSteps.Model.SetWarningPopupState assesment
+                                    |> Pages.Session.Model.MsgNextSteps childId (ChildActivity childActivity)
+                                    |> App.Model.MsgPageSession sessionId
+                                    |> App.Model.MsgLoggedIn
+                                ]
                         in
                         if List.isEmpty assesment then
                             -- View assement when we have items at assement list.
@@ -2454,13 +2460,13 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                     ]
 
                                 UserPage (SessionPage _ (ActivityPage (ChildActivity Muac))) ->
-                                    navigateToPageMsg Muac |> List.singleton
+                                    activityByActivityMsgs Muac
 
                                 UserPage (SessionPage _ (ActivityPage (ChildActivity NutritionSigns))) ->
-                                    navigateToPageMsg NutritionSigns |> List.singleton
+                                    activityByActivityMsgs NutritionSigns
 
                                 UserPage (SessionPage _ (ActivityPage (ChildActivity Weight))) ->
-                                    navigateToPageMsg Weight |> List.singleton
+                                    activityByActivityMsgs Weight
 
                                 _ ->
                                     []
