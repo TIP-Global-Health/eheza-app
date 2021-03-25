@@ -2246,7 +2246,7 @@ translationSet trans =
                     }
 
         ContributingFactorsQuestion ->
-            { english = "Has patient experienced any of the following"
+            { english = "Has patient or patient’s mother experienced any of the following"
             , kinyarwanda = Nothing
             }
 

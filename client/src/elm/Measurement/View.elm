@@ -874,7 +874,7 @@ viewContributingFactorsForm :
     -> Html msg
 viewContributingFactorsForm language currentDate setContributingFactorsSignMsg form =
     div [ class "ui form contributing-factors" ]
-        [ viewQuestionLabel language Translate.ContributingFactorsQuestion
+        [ viewLabel language Translate.ContributingFactorsQuestion
         , viewCheckBoxMultipleSelectInput language
             [ FactorLackOfBreastMilk, FactorMaternalMastitis, FactorPoorSuck, FactorDiarrheaOrVomiting ]
             []
