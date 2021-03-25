@@ -6647,7 +6647,7 @@ translateActivePage page =
                             , kinyarwanda = Just "Umubyeyi"
                             }
 
-                        NextStepsPage childId ->
+                        NextStepsPage childId _ ->
                             { english = "Next Steps"
                             , kinyarwanda = Just "Ibikurikiyeho"
                             }

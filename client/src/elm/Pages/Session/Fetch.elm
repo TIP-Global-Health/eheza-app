@@ -92,7 +92,7 @@ fetch currentDate zscores sessionId sessionPage db =
                 MotherPage _ ->
                     Pages.Participant.Fetch.fetch sessionId
 
-                NextStepsPage childId ->
+                NextStepsPage childId _ ->
                     fetchForChild childId
 
                 ParticipantsPage ->
