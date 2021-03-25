@@ -2446,11 +2446,16 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                             []
 
                         else
-                            [ Pages.Participant.Model.SetWarningPopupState assesment
-                                |> Pages.Session.Model.MsgChild childId
-                                |> App.Model.MsgPageSession sessionId
-                                |> App.Model.MsgLoggedIn
-                            ]
+                            case activePage of
+                                UserPage (SessionPage _ (ChildPage _)) ->
+                                    [ Pages.Participant.Model.SetWarningPopupState assesment
+                                        |> Pages.Session.Model.MsgChild childId
+                                        |> App.Model.MsgPageSession sessionId
+                                        |> App.Model.MsgLoggedIn
+                                    ]
+
+                                _ ->
+                                    []
                 )
             |> Maybe.withDefault []
 
