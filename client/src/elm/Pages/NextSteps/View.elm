@@ -4,6 +4,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), emptySummaryByA
 import Activity.Utils exposing (getActivityIcon, getAllActivities, getParticipantCountForActivity)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
+import Backend.Measurement.Utils exposing (mapMeasurementData)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (EditableSession)
@@ -16,15 +17,22 @@ import Html.Events exposing (onClick)
 import LocalData
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (NextStepsTask(..))
-import Measurement.Utils exposing (allNextStepsTasks)
+import Measurement.Utils exposing (..)
+import Measurement.View
+    exposing
+        ( viewContributingFactorsForm
+        , viewFollowUpForm
+        , viewHealthEducationForm
+        , viewSendToHCForm
+        )
 import Pages.NextSteps.Model exposing (Model, Msg(..))
+import Pages.NextSteps.Utils exposing (nextStepsTasksCompletedFromTotal)
 import Pages.NutritionActivity.Model exposing (NextStepsData)
-import Pages.NutritionActivity.Utils exposing (nextStepsTasksCompletedFromTotal)
 import Pages.NutritionActivity.View exposing (warningPopup)
 import Pages.NutritionEncounter.Model exposing (NutritionAssesment)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
-import Pages.Utils exposing (backFromSessionPage, viewEndEncounterDialog)
+import Pages.Utils exposing (isTaskCompleted, tasksBarId)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
@@ -84,7 +92,47 @@ viewNextStepsContent language currentDate childId child session model =
                         allNextStepsTasks
 
                     activeTask =
-                        Maybe.Extra.or data.activeTask (List.head tasks)
+                        Maybe.Extra.or model.activeTask (List.head tasks)
+
+                    contributingFactors =
+                        mapMeasurementData .contributingFactors measurements
+                            |> .current
+
+                    contributingFactorsId =
+                        Maybe.map Tuple.first contributingFactors
+
+                    contributingFactorsValue =
+                        Maybe.map (Tuple.second >> .value) contributingFactors
+
+                    followUp =
+                        mapMeasurementData .followUp measurements
+                            |> .current
+
+                    followUpId =
+                        Maybe.map Tuple.first followUp
+
+                    followUpValue =
+                        Maybe.map (Tuple.second >> .value) followUp
+
+                    sendToHC =
+                        mapMeasurementData .sendToHC measurements
+                            |> .current
+
+                    sendToHCId =
+                        Maybe.map Tuple.first sendToHC
+
+                    sendToHCValue =
+                        Maybe.map (Tuple.second >> .value) sendToHC
+
+                    healthEducation =
+                        mapMeasurementData .healthEducation measurements
+                            |> .current
+
+                    healthEducationId =
+                        Maybe.map Tuple.first healthEducation
+
+                    healthEducationValue =
+                        Maybe.map (Tuple.second >> .value) healthEducation
 
                     viewTask task =
                         let
@@ -92,22 +140,22 @@ viewNextStepsContent language currentDate childId child session model =
                                 case task of
                                     NextStepsSendToHC ->
                                         ( "next-steps-send-to-hc"
-                                        , isJust measurements.sendToHC
+                                        , isJust sendToHCValue
                                         )
 
                                     NextStepsHealthEducation ->
                                         ( "next-steps-health-education"
-                                        , isJust measurements.healthEducation
+                                        , isJust healthEducationValue
                                         )
 
                                     NextStepContributingFactors ->
                                         ( "next-steps-contributing-factors"
-                                        , isJust measurements.contributingFactors
+                                        , isJust contributingFactorsValue
                                         )
 
                                     NextStepFollowUp ->
                                         ( "next-steps-follow-up"
-                                        , isJust measurements.followUp
+                                        , isJust followUpValue
                                         )
 
                             isActive =
@@ -129,107 +177,98 @@ viewNextStepsContent language currentDate childId child session model =
                                 ]
                             ]
 
-                    data =
-                        NextStepsData model.sendToHCForm model.healthEducationForm model.contributingFactorsForm model.followUpForm Nothing
-
                     tasksCompletedFromTotalDict =
                         tasks
-                            |> List.map (\task -> ( task, nextStepsTasksCompletedFromTotal measurements data task ))
+                            |> List.map (\task -> ( task, nextStepsTasksCompletedFromTotal measurements model task ))
                             |> Dict.fromList
 
                     ( tasksCompleted, totalTasks ) =
                         activeTask
                             |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
                             |> Maybe.withDefault ( 0, 0 )
+
+                    viewForm =
+                        case activeTask of
+                            Just NextStepsSendToHC ->
+                                sendToHCFormWithDefault model.sendToHCForm sendToHCValue
+                                    |> viewSendToHCForm language
+                                        currentDate
+                                        SetReferToHealthCenter
+                                        SetReasonForNotSendingToHC
+                                        SetHandReferralForm
+
+                            Just NextStepsHealthEducation ->
+                                healthEducationFormWithDefault model.healthEducationForm healthEducationValue
+                                    |> viewHealthEducationForm language
+                                        currentDate
+                                        SetProvidedEducationForDiagnosis
+                                        SetReasonForNotProvidingHealthEducation
+
+                            Just NextStepContributingFactors ->
+                                contributingFactorsFormWithDefault model.contributingFactorsForm contributingFactorsValue
+                                    |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
+
+                            Just NextStepFollowUp ->
+                                followUpFormWithDefault model.followUpForm followUpValue
+                                    |> viewFollowUpForm language currentDate SetFollowUpOption
+
+                            Nothing ->
+                                emptyNode
+
+                    nextTask =
+                        List.filter
+                            (\task ->
+                                (Just task /= activeTask)
+                                    && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                            )
+                            tasks
+                            |> List.head
+
+                    actions =
+                        activeTask
+                            |> Maybe.map
+                                (\task ->
+                                    let
+                                        saveAction =
+                                            case task of
+                                                NextStepsSendToHC ->
+                                                    toSendToHCValueWithDefault sendToHCValue model.sendToHCForm
+                                                        |> Maybe.map (\value -> SaveSendToHC sendToHCId value nextTask |> onClick |> List.singleton)
+                                                        |> Maybe.withDefault []
+
+                                                NextStepsHealthEducation ->
+                                                    toHealthEducationValueWithDefault healthEducationValue model.healthEducationForm
+                                                        |> Maybe.map (\value -> SaveHealthEducation healthEducationId value nextTask |> onClick |> List.singleton)
+                                                        |> Maybe.withDefault []
+
+                                                NextStepContributingFactors ->
+                                                    toContributingFactorsValueWithDefault contributingFactorsValue model.contributingFactorsForm
+                                                        |> Maybe.map (\value -> SaveContributingFactors contributingFactorsId value nextTask |> onClick |> List.singleton)
+                                                        |> Maybe.withDefault []
+
+                                                NextStepFollowUp ->
+                                                    toFollowUpValueWithDefault followUpValue model.followUpForm
+                                                        |> Maybe.map (\value -> SaveFollowUp followUpId value nextTask |> onClick |> List.singleton)
+                                                        |> Maybe.withDefault []
+                                    in
+                                    div [ class "actions next-steps" ]
+                                        [ button
+                                            (classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ] :: saveAction)
+                                            [ text <| translate language Translate.Save ]
+                                        ]
+                                )
+                            |> Maybe.withDefault emptyNode
                 in
-                []
+                [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+                    [ div [ class "ui three column grid" ] <|
+                        List.map viewTask tasks
+                    ]
+                , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+                , div [ class "ui full segment" ]
+                    [ div [ class "full content" ]
+                        [ viewForm
+                        , actions
+                        ]
+                    ]
+                ]
             )
-
-
-
---     viewForm =
---         case activeTask of
---             Just NextStepsSendToHC ->
---                 measurements.sendToHC
---                     |> Maybe.map (Tuple.second >> .value)
---                     |> sendToHCFormWithDefault data.sendToHCForm
---                     |> viewSendToHCForm language
---                         currentDate
---                         SetReferToHealthCenter
---                         SetReasonForNotSendingToHC
---                         SetHandReferralForm
---
---             Just NextStepsHealthEducation ->
---                 measurements.healthEducation
---                     |> Maybe.map (Tuple.second >> .value)
---                     |> healthEducationFormWithDefault data.healthEducationForm
---                     |> viewHealthEducationForm language
---                         currentDate
---                         SetProvidedEducationForDiagnosis
---                         SetReasonForNotProvidingHealthEducation
---
---             Just NextStepContributingFactors ->
---                 measurements.contributingFactors
---                     |> Maybe.map (Tuple.second >> .value)
---                     |> contributingFactorsFormWithDefault data.contributingFactorsForm
---                     |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
---
---             Just NextStepFollowUp ->
---                 measurements.followUp
---                     |> Maybe.map (Tuple.second >> .value)
---                     |> followUpFormWithDefault data.followUpForm
---                     |> viewFollowUpForm language currentDate SetFollowUpOption
---
---             Nothing ->
---                 emptyNode
---
---     nextTask =
---         List.filter
---             (\task ->
---                 (Just task /= activeTask)
---                     && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
---             )
---             tasks
---             |> List.head
---
---     actions =
---         activeTask
---             |> Maybe.map
---                 (\task ->
---                     let
---                         saveMsg =
---                             case task of
---                                 NextStepsSendToHC ->
---                                     SaveSendToHC personId measurements.sendToHC nextTask
---
---                                 NextStepsHealthEducation ->
---                                     SaveHealthEducation personId measurements.healthEducation nextTask
---
---                                 NextStepContributingFactors ->
---                                     SaveContributingFactors personId measurements.contributingFactors nextTask
---
---                                 NextStepFollowUp ->
---                                     SaveFollowUp personId measurements.followUp nextTask
---                     in
---                     div [ class "actions next-steps" ]
---                         [ button
---                             [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
---                             , onClick saveMsg
---                             ]
---                             [ text <| translate language Translate.Save ]
---                         ]
---                 )
---             |> Maybe.withDefault emptyNode
--- in
--- [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
---     [ div [ class "ui three column grid" ] <|
---         List.map viewTask tasks
---     ]
--- , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
--- , div [ class "ui full segment" ]
---     [ div [ class "full content" ]
---         [ viewForm
---         , actions
---         ]
---     ]
--- ]
