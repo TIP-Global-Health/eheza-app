@@ -19,7 +19,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.Model exposing (ContributingFactorsForm, FollowUpForm, HealthEducationForm, SendToHCForm)
+import Measurement.Model exposing (ContributingFactorsForm, FollowUpForm, HealthEducationForm, NextStepsTask(..), SendToHCForm)
 import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
@@ -618,7 +618,7 @@ viewNextStepsContent language currentDate id assembled data =
             assembled.measurements
 
         tasks =
-            [ NextStepContributingFactors, NextStepsHealthEducation, NextStepsSendToHC, NextStepFollowUp ]
+            allNextStepsTasks
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)

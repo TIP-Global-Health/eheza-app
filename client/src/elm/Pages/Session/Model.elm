@@ -9,7 +9,7 @@ import Pages.Activities.Model
 import Pages.Activity.Model
 import Pages.Attendance.Model
 import Pages.NextSteps.Model
-import Pages.Page exposing (Page)
+import Pages.Page exposing (Page, SessionPage, UserPage(..))
 import Pages.Participant.Model
 import Pages.Participants.Model
 
@@ -78,6 +78,7 @@ type Msg
     | MsgChild PersonId (Pages.Participant.Model.Msg ChildActivity Measurement.Model.MsgChild)
     | MsgMother PersonId (Pages.Participant.Model.Msg MotherActivity Measurement.Model.MsgMother)
     | MsgParticipants Pages.Participants.Model.Msg
-    | MsgNextSteps PersonId Pages.NextSteps.Model.Msg
+    | MsgNextSteps PersonId Activity Pages.NextSteps.Model.Msg
     | MsgSession Backend.Session.Model.Msg
     | SetActivePage Page
+    | SetActiveSessionPage SessionPage

@@ -157,10 +157,3 @@ emptyNextStepsData =
     , followUpForm = emptyFollowUpForm
     , activeTask = Nothing
     }
-
-
-type NextStepsTask
-    = NextStepsSendToHC
-    | NextStepsHealthEducation
-    | NextStepContributingFactors
-    | NextStepFollowUp

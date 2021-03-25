@@ -266,3 +266,10 @@ type OutMsgMother
     | SaveCompletedForm (Maybe ParticipantConsentId) ParticipantFormId Language
     | SaveLactation (Maybe LactationId) (EverySet LactationSign)
     | SaveMotherFbf (Maybe MotherFbfId) FbfValue
+
+
+type NextStepsTask
+    = NextStepsSendToHC
+    | NextStepsHealthEducation
+    | NextStepContributingFactors
+    | NextStepFollowUp

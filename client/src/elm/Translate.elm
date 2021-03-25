@@ -47,7 +47,7 @@ import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
 import Http
-import Measurement.Model exposing (FloatInputConstraints)
+import Measurement.Model exposing (FloatInputConstraints, NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Model
     exposing
         ( DangerSignsTask(..)
@@ -596,7 +596,7 @@ type TranslationId
     | NegativeLabel
     | Never
     | Next
-    | NextStepsTask NextStepsTask
+    | NextStepsTask Pages.AcuteIllnessActivity.Model.NextStepsTask
     | No
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -626,7 +626,7 @@ type TranslationId
     | NutritionActivityTitle NutritionActivity
     | NutritionAssesment NutritionAssesment
     | NutritionHelper
-    | NutritionNextStepsTask Pages.NutritionActivity.Model.NextStepsTask
+    | NutritionNextStepsTask Measurement.Model.NextStepsTask
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
@@ -4157,12 +4157,12 @@ translationSet trans =
                     , kinyarwanda = Just "Gutanga Imiti"
                     }
 
-                NextStepsSendToHC ->
+                Pages.AcuteIllnessActivity.Model.NextStepsSendToHC ->
                     { english = "Send to Health Center"
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
-                NextStepsHealthEducation ->
+                Pages.AcuteIllnessActivity.Model.NextStepsHealthEducation ->
                     { english = "Health Education"
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
@@ -4449,22 +4449,22 @@ translationSet trans =
 
         NutritionNextStepsTask task ->
             case task of
-                Pages.NutritionActivity.Model.NextStepsSendToHC ->
+                Measurement.Model.NextStepsSendToHC ->
                     { english = "Send to Health Center"
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
-                Pages.NutritionActivity.Model.NextStepsHealthEducation ->
+                Measurement.Model.NextStepsHealthEducation ->
                     { english = "Health Education"
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
-                Pages.NutritionActivity.Model.NextStepContributingFactors ->
+                NextStepContributingFactors ->
                     { english = "Contributing Factors"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.NutritionActivity.Model.NextStepFollowUp ->
+                NextStepFollowUp ->
                     { english = "Follow Up"
                     , kinyarwanda = Nothing
                     }

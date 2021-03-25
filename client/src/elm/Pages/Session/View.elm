@@ -143,7 +143,7 @@ viewEditableSession language currentDate zscores isChw nurse sessionId page mode
             Dict.get childId model.nextStepsPages
                 |> Maybe.withDefault Pages.NextSteps.Model.emptyModel
                 |> Pages.NextSteps.View.view language currentDate zscores childId activity ( sessionId, session )
-                |> Html.map (MsgNextSteps childId)
+                |> Html.map (MsgNextSteps childId activity)
 
 
 viewClosedSession : Language -> SessionId -> Session -> ModelIndexedDb -> Html Msg

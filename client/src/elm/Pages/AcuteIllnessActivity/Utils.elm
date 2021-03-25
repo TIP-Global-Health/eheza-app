@@ -8,7 +8,6 @@ import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Model exposing (..)
 import Measurement.Utils exposing (healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
@@ -304,7 +303,12 @@ treatmentTasksCompletedFromTotal measurements data task =
             )
 
 
-nextStepsTasksCompletedFromTotal : Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal :
+    Maybe AcuteIllnessDiagnosis
+    -> AcuteIllnessMeasurements
+    -> NextStepsData
+    -> NextStepsTask
+    -> ( Int, Int )
 nextStepsTasksCompletedFromTotal diagnosis measurements data task =
     case task of
         NextStepsIsolation ->

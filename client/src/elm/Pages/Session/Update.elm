@@ -16,6 +16,7 @@ import Pages.Activity.Update
 import Pages.Attendance.Update
 import Pages.NextSteps.Model
 import Pages.NextSteps.Update
+import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Update
@@ -255,19 +256,22 @@ updateFoundSession currentDate zscores sessionId session db msg model =
             , List.map (App.Model.MsgLoggedIn << App.Model.MsgPageSession sessionId) extraMsgs
             )
 
-        MsgNextSteps childId subMsg ->
+        MsgNextSteps childId activity subMsg ->
             let
                 nextStepsPage =
                     Dict.get childId model.nextStepsPages
                         |> Maybe.withDefault Pages.NextSteps.Model.emptyModel
 
                 ( subModel, subCmd, extraMsgs ) =
-                    Pages.NextSteps.Update.update childId subMsg nextStepsPage
+                    Pages.NextSteps.Update.update childId activity subMsg nextStepsPage
             in
             ( { model | nextStepsPages = Dict.insert childId subModel model.nextStepsPages }
-            , Cmd.map (MsgNextSteps childId) subCmd
+            , Cmd.map (MsgNextSteps childId activity) subCmd
             , List.map (App.Model.MsgLoggedIn << App.Model.MsgPageSession sessionId) extraMsgs
             )
 
         SetActivePage page ->
             ( model, Cmd.none, [ App.Model.SetActivePage page ] )
+
+        SetActiveSessionPage page ->
+            ( model, Cmd.none, [ App.Model.SetActivePage (UserPage (SessionPage sessionId page)) ] )

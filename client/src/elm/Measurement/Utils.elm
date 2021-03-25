@@ -384,3 +384,8 @@ toSendToHCValue form =
     in
     Maybe.map SendToHCValue signs
         |> andMap reasonForNotSendingToHC
+
+
+allNextStepsTasks : List NextStepsTask
+allNextStepsTasks =
+    [ NextStepContributingFactors, NextStepsHealthEducation, NextStepsSendToHC, NextStepFollowUp ]
