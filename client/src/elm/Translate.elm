@@ -6647,6 +6647,11 @@ translateActivePage page =
                             , kinyarwanda = Just "Umubyeyi"
                             }
 
+                        NextStepsPage childId ->
+                            { english = "Next Steps"
+                            , kinyarwanda = Just "Ibikurikiyeho"
+                            }
+
                         ProgressReportPage childId ->
                             { english = "Progress Report"
                             , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"

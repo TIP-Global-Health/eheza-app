@@ -137,6 +137,9 @@ viewEditableSession language currentDate zscores isChw nurse sessionId page mode
                 |> Pages.Participant.View.viewMother language currentDate zscores isChw motherId ( sessionId, session ) model db
                 |> Html.map (MsgMother motherId)
 
+        NextStepsPage childId ->
+            text "Hello"
+
 
 viewClosedSession : Language -> SessionId -> Session -> ModelIndexedDb -> Html Msg
 viewClosedSession language sessionId session db =

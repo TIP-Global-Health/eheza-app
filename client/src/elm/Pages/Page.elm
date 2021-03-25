@@ -183,4 +183,5 @@ type SessionPage
     | ParticipantsPage -- page that shows a list of participants
     | ChildPage PersonId -- page that focuses on a particular child
     | MotherPage PersonId -- page that focuses on a particular mother
+    | NextStepsPage PersonId
     | ProgressReportPage PersonId -- shows progress report for child with ID

@@ -66,8 +66,8 @@ import Task
 import ZScore.Model
 
 
-updateIndexedDb : NominalDate -> ZScore.Model.Model -> Maybe NurseId -> Maybe HealthCenterId -> Bool -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb currentDate zscores nurseId healthCenterId isChw msg model =
+updateIndexedDb : NominalDate -> ZScore.Model.Model -> Maybe NurseId -> Maybe HealthCenterId -> Bool -> Page -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
+updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -167,7 +167,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate zscores nurseId healthCenterId isChw) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage) extraMsgs
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions
@@ -803,7 +803,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw msg model =
                                     -- or not.
                                     -- Therefore, we will be examining the 'before' state, taking into consideration
                                     -- that triggering activity is completed.
-                                    generateNutritionAssessmentGroupMsgs currentDate zscores isChw participantId sessionId_ updateFunc newModel
+                                    generateNutritionAssessmentGroupMsgs currentDate zscores isChw participantId sessionId_ activePage updateFunc newModel
                             in
                             ( withRecalc, extraMsgs )
                         )
@@ -1422,7 +1422,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw msg model =
             , relationshipCmd
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate zscores nurseId healthCenterId isChw) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage) extraMsgs
 
         HandlePostedRelationship personId initiator data ->
             let
@@ -2398,10 +2398,15 @@ generateNutritionAssessmentGroupMsgs :
     -> Bool
     -> PersonId
     -> SessionId
+    -> Page
     -> (ChildMeasurements -> ChildMeasurements)
     -> ModelIndexedDb
     -> List App.Model.Msg
-generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId updateFunc db =
+generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId activePage updateFunc db =
+    let
+        _ =
+            Debug.log "activePage" activePage
+    in
     if not isChw then
         -- Assement is done only for CHW.
         []

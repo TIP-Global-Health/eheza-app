@@ -23,6 +23,13 @@ import ZScore.Model
 fetch : NominalDate -> ZScore.Model.Model -> SessionId -> SessionPage -> ModelIndexedDb -> List MsgIndexedDb
 fetch currentDate zscores sessionId sessionPage db =
     let
+        fetchForChild childId =
+            let
+                ( forChildPage, childPageCalculations ) =
+                    Pages.Participant.Fetch.fetch sessionId
+            in
+            ( forChildPage ++ Backend.NutritionEncounter.Fetch.fetchForChild childId db, childPageCalculations )
+
         ( forSessionPage, calculations ) =
             case sessionPage of
                 ActivityPage activity ->
@@ -80,14 +87,13 @@ fetch currentDate zscores sessionId sessionPage db =
                     Pages.Attendance.Fetch.fetch sessionId
 
                 ChildPage childId ->
-                    let
-                        ( forChildPage, childPageCalculations ) =
-                            Pages.Participant.Fetch.fetch sessionId
-                    in
-                    ( forChildPage ++ Backend.NutritionEncounter.Fetch.fetchForChild childId db, childPageCalculations )
+                    fetchForChild childId
 
                 MotherPage _ ->
                     Pages.Participant.Fetch.fetch sessionId
+
+                NextStepsPage childId ->
+                    fetchForChild childId
 
                 ParticipantsPage ->
                     Pages.Participants.Fetch.fetch sessionId
