@@ -1,6 +1,6 @@
 module Backend.Update exposing (updateIndexedDb)
 
-import Activity.Model exposing (SummaryByActivity, SummaryByParticipant)
+import Activity.Model exposing (Activity(..), ChildActivity(..), SummaryByActivity, SummaryByParticipant)
 import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import App.Model
@@ -2403,10 +2403,6 @@ generateNutritionAssessmentGroupMsgs :
     -> ModelIndexedDb
     -> List App.Model.Msg
 generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId activePage updateFunc db =
-    let
-        _ =
-            Debug.log "activePage" activePage
-    in
     if not isChw then
         -- Assement is done only for CHW.
         []
@@ -2440,6 +2436,9 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                     childId
                                     db
                                     offlineSession
+
+                            navigateToPageMsg childActivity =
+                                App.Model.SetActivePage (UserPage (SessionPage sessionId (NextStepsPage childId (ChildActivity childActivity))))
                         in
                         if List.isEmpty assesment then
                             -- View assement when we have items at assement list.
@@ -2453,6 +2452,15 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                         |> App.Model.MsgPageSession sessionId
                                         |> App.Model.MsgLoggedIn
                                     ]
+
+                                UserPage (SessionPage _ (ActivityPage (ChildActivity Muac))) ->
+                                    navigateToPageMsg Muac |> List.singleton
+
+                                UserPage (SessionPage _ (ActivityPage (ChildActivity NutritionSigns))) ->
+                                    navigateToPageMsg NutritionSigns |> List.singleton
+
+                                UserPage (SessionPage _ (ActivityPage (ChildActivity Weight))) ->
+                                    navigateToPageMsg Weight |> List.singleton
 
                                 _ ->
                                     []
