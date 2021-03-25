@@ -14,6 +14,8 @@ import Pages.Activities.Update
 import Pages.Activity.Model
 import Pages.Activity.Update
 import Pages.Attendance.Update
+import Pages.NextSteps.Model
+import Pages.NextSteps.Update
 import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Update
@@ -250,6 +252,20 @@ updateFoundSession currentDate zscores sessionId session db msg model =
             in
             ( { model | participantsPage = subModel }
             , Cmd.map MsgParticipants subCmd
+            , List.map (App.Model.MsgLoggedIn << App.Model.MsgPageSession sessionId) extraMsgs
+            )
+
+        MsgNextSteps childId subMsg ->
+            let
+                nextStepsPage =
+                    Dict.get childId model.nextStepsPages
+                        |> Maybe.withDefault Pages.NextSteps.Model.emptyModel
+
+                ( subModel, subCmd, extraMsgs ) =
+                    Pages.NextSteps.Update.update childId subMsg nextStepsPage
+            in
+            ( { model | nextStepsPages = Dict.insert childId subModel model.nextStepsPages }
+            , Cmd.map (MsgNextSteps childId) subCmd
             , List.map (App.Model.MsgLoggedIn << App.Model.MsgPageSession sessionId) extraMsgs
             )
 
