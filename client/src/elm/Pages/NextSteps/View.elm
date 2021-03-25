@@ -48,7 +48,7 @@ view language currentDate zscores childId originActivity ( sessionId, session ) 
         content =
             Dict.get childId db.people
                 |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map (viewContent language currentDate zscores childId)
+                |> Maybe.map (\child -> viewContent language currentDate zscores childId child session model)
                 |> Maybe.withDefault emptyNode
     in
     div [ class "page-activity nutrition" ]
@@ -72,11 +72,10 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> Html Msg
-viewContent language currentDate zscores childId child =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> EditableSession -> Model -> Html Msg
+viewContent language currentDate zscores childId child session model =
     ((viewPersonDetails language currentDate child Nothing |> div [ class "item" ])
-        :: []
-     -- viewActivity language currentDate zscores id activity isChw assembled db model
+        :: viewNextStepsContent language currentDate childId child session model
     )
         |> div [ class "ui unstackable items" ]
 
