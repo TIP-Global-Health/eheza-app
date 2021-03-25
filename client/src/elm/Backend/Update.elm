@@ -2438,6 +2438,13 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                     db
                                     offlineSession
 
+                            personByPersonMsgs =
+                                [ Pages.Participant.Model.SetWarningPopupState assesment
+                                    |> Pages.Session.Model.MsgChild childId
+                                    |> App.Model.MsgPageSession sessionId
+                                    |> App.Model.MsgLoggedIn
+                                ]
+
                             activityByActivityMsgs childActivity =
                                 [ App.Model.SetActivePage (UserPage (SessionPage sessionId (NextStepsPage childId (ChildActivity childActivity))))
                                 , Pages.NextSteps.Model.SetWarningPopupState assesment
@@ -2453,11 +2460,7 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                         else
                             case activePage of
                                 UserPage (SessionPage _ (ChildPage _)) ->
-                                    [ Pages.Participant.Model.SetWarningPopupState assesment
-                                        |> Pages.Session.Model.MsgChild childId
-                                        |> App.Model.MsgPageSession sessionId
-                                        |> App.Model.MsgLoggedIn
-                                    ]
+                                    personByPersonMsgs
 
                                 UserPage (SessionPage _ (ActivityPage (ChildActivity Muac))) ->
                                     activityByActivityMsgs Muac
