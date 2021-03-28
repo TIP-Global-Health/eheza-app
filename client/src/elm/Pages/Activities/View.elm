@@ -27,9 +27,27 @@ view language nurse ( sessionId, session ) model =
             session.summaryByActivity
                 |> LocalData.withDefault emptySummaryByActivity
 
-        ( pendingActivities, completedActivities ) =
+        allActivities =
             getAllActivities session.offlineSession
-                |> List.partition (\activity -> (getParticipantCountForActivity summary activity).pending > 0)
+                |> List.map (\activity -> ( getParticipantCountForActivity summary activity, activity ))
+
+        ( pendingActivities_, completedActivities_ ) =
+            List.partition (\( completedAndPending, _ ) -> completedAndPending.pending > 0) allActivities
+
+        pendingActivities =
+            List.map Tuple.second pendingActivities_
+
+        completedActivities =
+            List.filterMap
+                (\( completedAndPending, activity ) ->
+                    if completedAndPending.pending == 0 && completedAndPending.completed == 0 then
+                        -- Do not show activities that sum up to 0/0.
+                        Nothing
+
+                    else
+                        Just activity
+                )
+                completedActivities_
 
         pendingTabTitle =
             translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities
