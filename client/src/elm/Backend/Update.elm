@@ -2421,9 +2421,11 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                         mandatoryActivitiesCompleted =
                             Activity.Utils.mandatoryActivitiesCompleted
                                 currentDate
+                                zscores
                                 offlineSession
                                 childId
                                 isChw
+                                db
                     in
                     if not mandatoryActivitiesCompleted then
                         []

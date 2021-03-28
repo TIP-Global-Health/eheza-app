@@ -316,15 +316,6 @@ whether we would expect to perform this action if checked in.
 -}
 expectChildActivity : NominalDate -> ZScore.Model.Model -> OfflineSession -> PersonId -> Bool -> ModelIndexedDb -> ChildActivity -> Bool
 expectChildActivity currentDate zscores offlineSession childId isChw db activity =
-    let
-        showNextSteps =
-            isChw
-                && mandatoryActivitiesCompleted currentDate offlineSession childId isChw
-                && (generateNutritionAssesment currentDate zscores childId db offlineSession
-                        |> List.isEmpty
-                        |> not
-                   )
-    in
     case activity of
         Height ->
             not isChw
@@ -350,32 +341,41 @@ expectChildActivity currentDate zscores offlineSession childId isChw db activity
             List.member offlineSession.session.clinicType [ Achi, Fbf ]
 
         ContributingFactors ->
-            showNextSteps
+            isChw
+                && mandatoryActivitiesCompleted currentDate zscores offlineSession childId isChw db
+                && (generateNutritionAssesment currentDate zscores childId db offlineSession
+                        |> List.isEmpty
+                        |> not
+                   )
 
         FollowUp ->
-            showNextSteps
+            expectChildActivity currentDate zscores offlineSession childId isChw db ContributingFactors
 
         Activity.Model.HealthEducation ->
-            showNextSteps
+            expectChildActivity currentDate zscores offlineSession childId isChw db ContributingFactors
 
         Activity.Model.SendToHC ->
-            showNextSteps
+            expectChildActivity currentDate zscores offlineSession childId isChw db ContributingFactors
 
         _ ->
             -- In all other cases, we expect each ativity each time.
             True
 
 
-mandatoryActivitiesCompleted : NominalDate -> OfflineSession -> PersonId -> Bool -> Bool
-mandatoryActivitiesCompleted currentDate offlineSession childId isChw =
-    activitiesCompleted currentDate offlineSession childId isChw allMandatoryActivities
+mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> OfflineSession -> PersonId -> Bool -> ModelIndexedDb -> Bool
+mandatoryActivitiesCompleted currentDate zscores offlineSession childId isChw db =
+    childActivitiesCompleted currentDate zscores offlineSession childId isChw db allMandatoryActivities
 
 
-activitiesCompleted : NominalDate -> OfflineSession -> PersonId -> Bool -> List ChildActivity -> Bool
-activitiesCompleted currentDate offlineSession childId isChw activities =
-    List.all
-        (\mandatoryActivity -> childHasCompletedActivity childId mandatoryActivity offlineSession)
-        activities
+childActivitiesCompleted : NominalDate -> ZScore.Model.Model -> OfflineSession -> PersonId -> Bool -> ModelIndexedDb -> List ChildActivity -> Bool
+childActivitiesCompleted currentDate zscores offlineSession childId isChw db activities =
+    List.all (childActivityCompleted currentDate zscores offlineSession childId isChw db) activities
+
+
+childActivityCompleted : NominalDate -> ZScore.Model.Model -> OfflineSession -> PersonId -> Bool -> ModelIndexedDb -> ChildActivity -> Bool
+childActivityCompleted currentDate zscores offlineSession childId isChw db activity =
+    (not <| expectChildActivity currentDate zscores offlineSession childId isChw db activity)
+        || childHasCompletedActivity childId activity offlineSession
 
 
 allMandatoryActivities : List ChildActivity
