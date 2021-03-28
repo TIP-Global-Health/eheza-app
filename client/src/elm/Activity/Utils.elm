@@ -235,8 +235,21 @@ getAllActivities offlineSession =
         ]
 
 
+getAllChildActivitiesExcludingNextSteps : OfflineSession -> List Activity
+getAllChildActivitiesExcludingNextSteps offlineSession =
+    List.concat
+        [ List.map ChildActivity (getAllChildActivitiesWithExclusion offlineSession nextStepsActivities)
+        , List.map MotherActivity (getAllMotherActivities offlineSession)
+        ]
+
+
 getAllChildActivities : OfflineSession -> List ChildActivity
 getAllChildActivities offlineSession =
+    getAllChildActivitiesWithExclusion offlineSession []
+
+
+getAllChildActivitiesWithExclusion : OfflineSession -> List ChildActivity -> List ChildActivity
+getAllChildActivitiesWithExclusion offlineSession exclusionList =
     let
         forAllGroupTypesMandatory =
             [ {- Counseling, -} Height
@@ -258,15 +271,12 @@ getAllChildActivities offlineSession =
 
                 _ ->
                     []
-
-        nextSteps =
-            [ ContributingFactors
-            , Activity.Model.HealthEducation
-            , Activity.Model.SendToHC
-            , FollowUp
-            ]
     in
-    forAllGroupTypesMandatory ++ nextSteps ++ forAllGroupTypesOptional ++ forFbf
+    forAllGroupTypesMandatory
+        ++ nextStepsActivities
+        ++ forAllGroupTypesOptional
+        ++ forFbf
+        |> List.filter (\activity -> not <| List.member activity exclusionList)
 
 
 getAllMotherActivities : OfflineSession -> List MotherActivity
@@ -289,6 +299,15 @@ getAllMotherActivities offlineSession =
 
             else
                 forAllGroupTypes
+
+
+nextStepsActivities : List ChildActivity
+nextStepsActivities =
+    [ ContributingFactors
+    , Activity.Model.HealthEducation
+    , Activity.Model.SendToHC
+    , FollowUp
+    ]
 
 
 {-| Do we expect this activity to be performed in this session for this child?

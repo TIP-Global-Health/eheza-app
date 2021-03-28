@@ -1,7 +1,7 @@
 module Pages.Activities.View exposing (view)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), emptySummaryByActivity)
-import Activity.Utils exposing (getActivityIcon, getAllActivities, getParticipantCountForActivity)
+import Activity.Utils exposing (getActivityIcon, getAllChildActivitiesExcludingNextSteps, getParticipantCountForActivity)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
@@ -28,7 +28,7 @@ view language nurse ( sessionId, session ) model =
                 |> LocalData.withDefault emptySummaryByActivity
 
         allActivities =
-            getAllActivities session.offlineSession
+            getAllChildActivitiesExcludingNextSteps session.offlineSession
                 |> List.map (\activity -> ( getParticipantCountForActivity summary activity, activity ))
 
         ( pendingActivities_, completedActivities_ ) =
