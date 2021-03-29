@@ -685,3 +685,11 @@ type alias FollowUpId =
 
 type FollowUpIdUuidType
     = FollowUpIdUuidType
+
+
+type alias HomeVisitEncounterId =
+    EntityUuid HomeVisitEncounterUuidType
+
+
+type HomeVisitEncounterUuidType
+    = HomeVisitEncounterUuidType
