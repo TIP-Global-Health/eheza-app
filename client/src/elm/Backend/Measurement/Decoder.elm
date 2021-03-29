@@ -35,6 +35,11 @@ decodeAcuteIllnessMeasurement =
     decodeMeasurement "acute_illness_encounter"
 
 
+decodeHomeVisitMeasurement : Decoder value -> Decoder (Measurement HomeVisitEncounterId value)
+decodeHomeVisitMeasurement =
+    decodeMeasurement "home_visit_encounter"
+
+
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
 decodeMeasurement encounterTag valueDecoder =
     succeed Measurement

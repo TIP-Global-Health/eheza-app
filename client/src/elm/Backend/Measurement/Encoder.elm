@@ -256,6 +256,11 @@ encodeAcuteIllnessMeasurement =
     encodeMeasurement "acute_illness_encounter"
 
 
+encodeHomeVisitMeasurement : (value -> List ( String, Value )) -> HomeVisitMeasurement value -> List ( String, Value )
+encodeHomeVisitMeasurement =
+    encodeMeasurement "home_visit_encounter"
+
+
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
 encodeMeasurement encounterTag encoder measurement =
     List.concat
