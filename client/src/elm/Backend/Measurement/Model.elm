@@ -153,12 +153,6 @@ type alias FbfValue =
     }
 
 
-type alias FbfForm =
-    { distributedAmount : Maybe Float
-    , distributionNotice : Maybe DistributionNotice
-    }
-
-
 type alias ParticipantConsent =
     GroupMeasurement ParticipantConsentValue
 
@@ -189,6 +183,22 @@ type alias ChildNutrition =
 
 type alias CounselingSession =
     GroupMeasurement ( CounselingTiming, EverySet CounselingTopicId )
+
+
+type alias GroupSendToHC =
+    GroupMeasurement SendToHCValue
+
+
+type alias GroupHealthEducation =
+    GroupMeasurement HealthEducationValue
+
+
+type alias ContributingFactors =
+    GroupMeasurement (EverySet ContributingFactorsSign)
+
+
+type alias FollowUp =
+    GroupMeasurement (EverySet FollowUpOption)
 
 
 type ContributingFactorsSign
@@ -991,6 +1001,10 @@ type alias ChildMeasurementList =
     , weights : Dict WeightId Weight
     , counselingSessions : Dict CounselingSessionId CounselingSession
     , fbfs : Dict ChildFbfId Fbf
+    , contributingFactors : Dict ContributingFactorsId ContributingFactors
+    , followUp : Dict FollowUpId FollowUp
+    , healthEducation : Dict GroupHealthEducationId GroupHealthEducation
+    , sendToHC : Dict GroupSendToHCId GroupSendToHC
     }
 
 
@@ -1003,6 +1017,10 @@ emptyChildMeasurementList =
     , weights = Dict.empty
     , counselingSessions = Dict.empty
     , fbfs = Dict.empty
+    , contributingFactors = Dict.empty
+    , followUp = Dict.empty
+    , healthEducation = Dict.empty
+    , sendToHC = Dict.empty
     }
 
 
@@ -1105,6 +1123,10 @@ type alias ChildMeasurements =
     , weight : Maybe ( WeightId, Weight )
     , counselingSession : Maybe ( CounselingSessionId, CounselingSession )
     , fbf : Maybe ( ChildFbfId, Fbf )
+    , contributingFactors : Maybe ( ContributingFactorsId, ContributingFactors )
+    , followUp : Maybe ( FollowUpId, FollowUp )
+    , healthEducation : Maybe ( GroupHealthEducationId, GroupHealthEducation )
+    , sendToHC : Maybe ( GroupSendToHCId, GroupSendToHC )
     }
 
 
@@ -1117,6 +1139,10 @@ emptyChildMeasurements =
     , weight = Nothing
     , counselingSession = Nothing
     , fbf = Nothing
+    , contributingFactors = Nothing
+    , followUp = Nothing
+    , healthEducation = Nothing
+    , sendToHC = Nothing
     }
 
 

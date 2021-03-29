@@ -1536,7 +1536,6 @@ input::placeholder {
   }
 }
 
-
 .icon-lactation {
   .active &:after {
     background-image: url(#{$img-path}icon-lactation-active.svg);
@@ -1556,6 +1555,46 @@ input::placeholder {
   &:after {
     background-image: url(#{$img-path}icon-fbf.svg);
     background-size: 92px 92px;
+  }
+}
+
+.icon-contributing-factors {
+  .active &:after {
+    background-image: url(#{$img-path}icon-contributing-factors-white.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-contributing-factors-gray.svg);
+  }
+}
+
+.icon-health-education {
+  .active &:after {
+    background-image: url(#{$img-path}icon-health-education-white.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-health-education-gray.svg);
+  }
+}
+
+.icon-send-to-hc {
+  .active &:after {
+    background-image: url(#{$img-path}icon-health-center-white.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-health-center-gray.svg);
+  }
+}
+
+.icon-follow-up {
+  .active &:after {
+    background-image: url(#{$img-path}icon-follow-up-white.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-follow-up-gray.svg);
   }
 }
 

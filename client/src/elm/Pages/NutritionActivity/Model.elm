@@ -2,8 +2,7 @@ module Pages.NutritionActivity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Measurement.Model exposing (DropZoneFile)
-import Pages.AcuteIllnessActivity.Model exposing (HealthEducationForm, SendToHCForm)
+import Measurement.Model exposing (..)
 import Pages.NutritionEncounter.Model exposing (NutritionAssesment)
 import Pages.Page exposing (Page)
 
@@ -152,26 +151,9 @@ type alias NextStepsData =
 
 emptyNextStepsData : NextStepsData
 emptyNextStepsData =
-    { sendToHCForm = SendToHCForm Nothing Nothing Nothing
-    , healthEducationForm = HealthEducationForm Nothing Nothing
-    , contributingFactorsForm = ContributingFactorsForm Nothing
-    , followUpForm = FollowUpForm Nothing
+    { sendToHCForm = emptySendToHCForm
+    , healthEducationForm = emptyHealthEducationForm
+    , contributingFactorsForm = emptyContributingFactorsForm
+    , followUpForm = emptyFollowUpForm
     , activeTask = Nothing
     }
-
-
-type alias ContributingFactorsForm =
-    { signs : Maybe (List ContributingFactorsSign)
-    }
-
-
-type alias FollowUpForm =
-    { option : Maybe FollowUpOption
-    }
-
-
-type NextStepsTask
-    = NextStepsSendToHC
-    | NextStepsHealthEducation
-    | NextStepContributingFactors
-    | NextStepFollowUp

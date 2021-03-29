@@ -1,12 +1,9 @@
 module Pages.AcuteIllnessActivity.View exposing
-    ( renderDatePart
-    , view
-    , viewActionTakenLabel
+    ( view
     , viewAdministeredMedicationLabel
     , viewHCRecommendation
     , viewHealthEducationLabel
     , viewOralSolutionPrescription
-    , viewSendToHCForm
     , viewTabletsPrescription
     )
 
@@ -29,8 +26,9 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Utils exposing (getInputConstraintsMuac)
-import Measurement.View exposing (viewMuacIndication)
+import Measurement.Model exposing (HealthEducationForm, SendToHCForm)
+import Measurement.Utils exposing (getInputConstraintsMuac, healthEducationFormWithDefault, sendToHCFormWithDefault)
+import Measurement.View exposing (renderDatePart, viewMuacIndication, viewSendToHCForm)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
@@ -1605,7 +1603,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                     measurements.sendToHC
                         |> Maybe.map (Tuple.second >> .value)
                         |> sendToHCFormWithDefault data.sendToHCForm
-                        |> viewSendToHCForm language currentDate
+                        |> viewSendToHCForm language currentDate SetReferToHealthCenter SetReasonForNotSendingToHC SetHandReferralForm
 
                 Just NextStepsHealthEducation ->
                     measurements.healthEducation
@@ -1999,71 +1997,6 @@ viewCall114Form language currentDate measurements form =
         ++ called114Input
         ++ derrivedInputs
         |> div [ class "ui form next-steps call-114" ]
-
-
-viewSendToHCForm : Language -> NominalDate -> SendToHCForm -> Html Msg
-viewSendToHCForm language currentDate form =
-    let
-        sendToHCSection =
-            let
-                sentToHealthCenter =
-                    form.referToHealthCenter
-                        |> Maybe.withDefault True
-
-                reasonForNotSendingToHCInput =
-                    if not sentToHealthCenter then
-                        [ viewQuestionLabel language Translate.WhyNot
-                        , viewCheckBoxSelectInput language
-                            [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
-                            []
-                            form.reasonForNotSendingToHC
-                            SetReasonForNotSendingToHC
-                            Translate.ReasonForNotSendingToHC
-                        ]
-
-                    else
-                        []
-            in
-            [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
-            , viewBoolInput
-                language
-                form.referToHealthCenter
-                SetReferToHealthCenter
-                "refer-to-hc"
-                Nothing
-            ]
-                ++ reasonForNotSendingToHCInput
-    in
-    div [ class "ui form send-to-hc" ]
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ] <|
-            [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
-            , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
-            ]
-                ++ sendToHCSection
-        , viewQuestionLabel language Translate.HandedReferralFormQuestion
-        , viewBoolInput
-            language
-            form.handReferralForm
-            SetHandReferralForm
-            "hand-referral-form"
-            Nothing
-        ]
-
-
-viewActionTakenLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
-viewActionTakenLabel language actionTranslationId iconClass maybeDate =
-    let
-        message =
-            div [] <|
-                (text <| translate language actionTranslationId)
-                    :: renderDatePart language maybeDate
-                    ++ [ text "." ]
-    in
-    div [ class "header icon-label" ] <|
-        [ i [ class iconClass ] []
-        , message
-        ]
 
 
 viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> MedicationDistributionForm -> Html Msg
@@ -2685,15 +2618,18 @@ viewHealthEducationForm language currentDate maybeDiagnosis form =
                     form.educationForDiagnosis
                         |> Maybe.withDefault True
 
+                reasonForNotProvidingHealthEducationOptions =
+                    [ PatientNeedsEmergencyReferral
+                    , ReceivedEmergencyCase
+                    , LackOfAppropriateEducationUserGuide
+                    , PatientRefused
+                    ]
+
                 reasonForNotProvidingHealthEducation =
                     if not providedHealthEducation then
                         [ viewQuestionLabel language Translate.WhyNot
                         , viewCheckBoxSelectInput language
-                            [ PatientNeedsEmergencyReferral
-                            , ReceivedEmergencyCase
-                            , LackOfAppropriateEducationUserGuide
-                            , PatientRefused
-                            ]
+                            reasonForNotProvidingHealthEducationOptions
                             []
                             form.reasonForNotProvidingHealthEducation
                             SetReasonForNotProvidingHealthEducation
@@ -2753,14 +2689,3 @@ viewHealthEducationLabel language actionTranslationId diagnosisTranslationId ico
         [ i [ class iconClass ] []
         , message
         ]
-
-
-
--- HELPER FUNCTIONS
-
-
-renderDatePart : Language -> Maybe NominalDate -> List (Html any)
-renderDatePart language maybeDate =
-    maybeDate
-        |> Maybe.map (\date -> [ span [ class "date" ] [ text <| " (" ++ renderDate language date ++ ")" ] ])
-        |> Maybe.withDefault []

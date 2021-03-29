@@ -205,7 +205,7 @@ update msg model =
                         |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
 
                 ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateIndexedDb currentDate model.zscores nurseId model.healthCenterId isChw subMsg model.indexedDb
+                    Backend.Update.updateIndexedDb currentDate model.zscores nurseId model.healthCenterId isChw model.activePage subMsg model.indexedDb
 
                 -- Most revisions are handled at the IndexedDB level, but there
                 -- is at least one we need to catch here.
@@ -328,7 +328,7 @@ update msg model =
                                     data.sessionPages
                                         |> Dict.get sessionId
                                         |> Maybe.withDefault Pages.Session.Model.emptyModel
-                                        |> Pages.Session.Update.update currentDate sessionId model.indexedDb subMsg
+                                        |> Pages.Session.Update.update currentDate model.zscores sessionId model.indexedDb subMsg
                             in
                             ( { data | sessionPages = Dict.insert sessionId subModel data.sessionPages }
                             , Cmd.map (MsgLoggedIn << MsgPageSession sessionId) subCmd

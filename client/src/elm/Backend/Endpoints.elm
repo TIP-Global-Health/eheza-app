@@ -616,3 +616,27 @@ nutritionFollowUpEndpoint : ReadWriteEndPoint Error NutritionFollowUpId Nutritio
 nutritionFollowUpEndpoint =
     swEndpoint "nodes/nutrition_follow_up" decodeNutritionFollowUp
         |> withValueEncoder (object << encodeNutritionFollowUp)
+
+
+groupSendToHCEndpoint : ReadWriteEndPoint Error GroupSendToHCId GroupSendToHC GroupSendToHC ()
+groupSendToHCEndpoint =
+    swEndpoint "nodes/group_send_to_hc" decodeGroupSendToHC
+        |> withValueEncoder (object << encodeGroupSendToHC)
+
+
+groupHealthEducationEndpoint : ReadWriteEndPoint Error GroupHealthEducationId GroupHealthEducation GroupHealthEducation ()
+groupHealthEducationEndpoint =
+    swEndpoint "nodes/group_health_education" decodeGroupHealthEducation
+        |> withValueEncoder (object << encodeGroupHealthEducation)
+
+
+contributingFactorsEndpoint : ReadWriteEndPoint Error ContributingFactorsId ContributingFactors ContributingFactors ()
+contributingFactorsEndpoint =
+    swEndpoint "nodes/contributing_factors" decodeContributingFactors
+        |> withValueEncoder (object << encodeContributingFactors)
+
+
+followUpEndpoint : ReadWriteEndPoint Error FollowUpId FollowUp FollowUp ()
+followUpEndpoint =
+    swEndpoint "nodes/follow_up" decodeFollowUp
+        |> withValueEncoder (object << encodeFollowUp)

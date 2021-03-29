@@ -122,6 +122,23 @@ saves the current language via the Update function in local storage.
 -}
 viewLanguageSwitcherAndVersion : Model -> Html Msg
 viewLanguageSwitcherAndVersion model =
+    let
+        devicePageShortcut =
+            case RemoteData.toMaybe model.configuration of
+                Just configuration ->
+                    if not configuration.config.debug then
+                        emptyNode
+
+                    else
+                        span
+                            [ onClick <| SetActivePage DevicePage
+                            , class "sync-icon"
+                            ]
+                            [ i [ class "icon undo" ] [] ]
+
+                Nothing ->
+                    emptyNode
+    in
     div
         [ class "ui language-switcher" ]
         [ ul
@@ -147,11 +164,7 @@ viewLanguageSwitcherAndVersion model =
                 , a [] [ span [ class "icon-kinyarwanda" ] [] ]
                 ]
             ]
-        , span
-            [ onClick <| SetActivePage DevicePage
-            , class "sync-icon"
-            ]
-            [ i [ class "icon undo" ] [] ]
+        , devicePageShortcut
         , span
             [ class "version"
             , onClick <| SetActivePage ServiceWorkerPage

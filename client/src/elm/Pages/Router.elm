@@ -162,6 +162,9 @@ pageToFragment current =
                                 MotherPage id ->
                                     "/mother/" ++ fromEntityUuid id
 
+                                NextStepsPage id activity ->
+                                    "/next-steps/" ++ fromEntityUuid id ++ "/" ++ Activity.Utils.encodeActivityAsString activity
+
                                 ParticipantsPage ->
                                     "/participants"
 
@@ -266,6 +269,7 @@ parseSessionPage =
         , map ChildPage (s "child" </> parseUuid)
         , map ProgressReportPage (s "progress" </> parseUuid)
         , map MotherPage (s "mother" </> parseUuid)
+        , map NextStepsPage (s "next-steps" </> parseUuid </> parseActivity)
         , map ParticipantsPage (s "participants")
         , map AttendancePage top
         ]

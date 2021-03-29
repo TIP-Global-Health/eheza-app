@@ -1296,6 +1296,11 @@ encodeNutritionSendToHC =
     encodeNutritionMeasurement (encodeSendToHCValueWithType "nutrition_send_to_hc")
 
 
+encodeGroupSendToHC : GroupSendToHC -> List ( String, Value )
+encodeGroupSendToHC =
+    encodeGroupMeasurement (encodeSendToHCValueWithType "group_send_to_hc")
+
+
 encodeSendToHCValueWithType : String -> SendToHCValue -> List ( String, Value )
 encodeSendToHCValueWithType type_ value =
     [ ( "send_to_hc", encodeEverySet encondeSendToHCSign value.signs )
@@ -1339,6 +1344,11 @@ encodeReasonForNotSendingToHC event =
                 "none"
 
 
+encodeContributingFactors : ContributingFactors -> List ( String, Value )
+encodeContributingFactors =
+    encodeGroupMeasurement (encodeContributingFactorsValueWithType "contributing_factors")
+
+
 encodeNutritionContributingFactors : NutritionContributingFactors -> List ( String, Value )
 encodeNutritionContributingFactors =
     encodeNutritionMeasurement (encodeContributingFactorsValueWithType "nutrition_contributing_factors")
@@ -1370,6 +1380,11 @@ encodeContributingFactorsSign sign =
 
             NoContributingFactorsSign ->
                 "none"
+
+
+encodeFollowUp : FollowUp -> List ( String, Value )
+encodeFollowUp =
+    encodeGroupMeasurement (encodeFollowUpValueWithType "follow_up")
 
 
 encodeNutritionFollowUp : NutritionFollowUp -> List ( String, Value )
@@ -1898,6 +1913,11 @@ encodeHealthEducation =
 encodeNutritionHealthEducation : NutritionHealthEducation -> List ( String, Value )
 encodeNutritionHealthEducation =
     encodeNutritionMeasurement (encodeHealthEducationValueWithType "nutrition_health_education")
+
+
+encodeGroupHealthEducation : GroupHealthEducation -> List ( String, Value )
+encodeGroupHealthEducation =
+    encodeGroupMeasurement (encodeHealthEducationValueWithType "group_health_education")
 
 
 encodeHealthEducationValueWithType : String -> HealthEducationValue -> List ( String, Value )

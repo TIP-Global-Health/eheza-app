@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulPrenatalActivityBase.
  */
-abstract class HedleyRestfulPrenatalActivityBase extends HedleyRestfulIndividualActivityBase {
+abstract class HedleyRestfulPrenatalActivityBase extends HedleyRestfulActivityBase {
 
   /**
    * {@inheritdoc}
