@@ -137,6 +137,11 @@ decodeAcuteIllnessMeasurements =
         |> optional "health_education" (decodeHead decodeHealthEducation) Nothing
 
 
+decodeHomeVisitMeasurements : Decoder HomeVisitMeasurements
+decodeHomeVisitMeasurements =
+    succeed HomeVisitMeasurements
+
+
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
 decodeHead =
     map List.head << list << decodeWithEntityUuid

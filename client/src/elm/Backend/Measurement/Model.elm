@@ -1044,8 +1044,7 @@ emptyHistoricalMeasurements =
 -- ONE OF EACH KIND OF MEASUREMENT
 
 
-{-| A set of prenatal measurements that correspond to the same prenatal
-encounter.
+{-| A set of prenatal measurements that correspond to the same Prenatal encounter.
 -}
 type alias PrenatalMeasurements =
     { breastExam : Maybe ( BreastExamId, BreastExam )
@@ -1066,8 +1065,7 @@ type alias PrenatalMeasurements =
     }
 
 
-{-| A set of Nutrition measurements that correspond to the same Nutrition
-encounter.
+{-| A set of Nutrition measurements that correspond to the same Nutrition encounter.
 -}
 type alias NutritionMeasurements =
     { muac : Maybe ( NutritionMuacId, NutritionMuac )
@@ -1082,8 +1080,7 @@ type alias NutritionMeasurements =
     }
 
 
-{-| A set of Acute Illness measurements that correspond to the same Nutrition
-encounter.
+{-| A set of Acute Illness measurements that correspond to the same Acute Illness encounter.
 -}
 type alias AcuteIllnessMeasurements =
     { symptomsGeneral : Maybe ( SymptomsGeneralId, SymptomsGeneral )
@@ -1106,6 +1103,12 @@ type alias AcuteIllnessMeasurements =
     , nutrition : Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )
     , healthEducation : Maybe ( HealthEducationId, HealthEducation )
     }
+
+
+{-| A set of Home Visit measurements that correspond to the same Home Visit encounter.
+-}
+type alias HomeVisitMeasurements =
+    {}
 
 
 {-| This is like `ChildMeasurementList`, except that it just covers one
