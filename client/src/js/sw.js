@@ -53,6 +53,7 @@ var tableForType = {
     health_center: 'nodes',
     health_education: 'shards',
     height: 'shards',
+    home_visit_encounter: 'shards',
     individual_participant: 'shards',
     isolation: 'shards',
     lactation: 'shards',
