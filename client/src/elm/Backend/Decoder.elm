@@ -5,6 +5,7 @@ import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
+import Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
 import Backend.Measurement.Decoder exposing (..)
 import Backend.Model exposing (..)
@@ -109,6 +110,9 @@ decodeRevision =
 
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight
+
+                    "home_visit_encounter" ->
+                        decodeWithUuid HomeVisitEncounterRevision decodeHomeVisitEncounter
 
                     "individual_participant" ->
                         decodeWithUuid IndividualEncounterParticipantRevision decodeIndividualEncounterParticipant

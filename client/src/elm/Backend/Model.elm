@@ -305,6 +305,7 @@ type Revision
     | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
     | AttendanceRevision AttendanceId Attendance
     | BreastExamRevision BreastExamId BreastExam
+    | Call114Revision Call114Id Call114
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
     | ChildFbfRevision ChildFbfId Fbf
     | ChildNutritionRevision ChildNutritionId ChildNutrition
@@ -322,10 +323,10 @@ type Revision
     | GroupHealthEducationRevision GroupHealthEducationId GroupHealthEducation
     | GroupSendToHCRevision GroupSendToHCId GroupSendToHC
     | HCContactRevision HCContactId HCContact
-    | Call114Revision Call114Id Call114
     | HealthCenterRevision HealthCenterId HealthCenter
     | HealthEducationRevision HealthEducationId HealthEducation
     | HeightRevision HeightId Height
+    | HomeVisitEncounterRevision HomeVisitEncounterId HomeVisitEncounter
     | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant
     | IsolationRevision IsolationId Isolation
     | LactationRevision LactationId Lactation

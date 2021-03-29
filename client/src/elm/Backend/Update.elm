@@ -1974,6 +1974,21 @@ handleRevision revision (( model, recalc ) as noChange) =
             , True
             )
 
+        HomeVisitEncounterRevision uuid data ->
+            let
+                homeVisitEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.homeVisitEncounters
+
+                homeVisitEncountersByParticipant =
+                    Dict.remove data.participant model.homeVisitEncountersByParticipant
+            in
+            ( { model
+                | homeVisitEncounters = homeVisitEncounters
+                , homeVisitEncountersByParticipant = homeVisitEncountersByParticipant
+              }
+            , recalc
+            )
+
         IsolationRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId

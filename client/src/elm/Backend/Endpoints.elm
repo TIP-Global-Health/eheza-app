@@ -349,7 +349,7 @@ acuteIllnessEncounterEndpoint =
 
 homeVisitEncounterEndpoint : ReadWriteEndPoint Error HomeVisitEncounterId HomeVisitEncounter HomeVisitEncounter (Maybe IndividualEncounterParticipantId)
 homeVisitEncounterEndpoint =
-    swEndpoint "nodes/homeVisit_encounter" decodeHomeVisitEncounter
+    swEndpoint "nodes/home_visit_encounter" decodeHomeVisitEncounter
         |> withValueEncoder (object << encodeHomeVisitEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
