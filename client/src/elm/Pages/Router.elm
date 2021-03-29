@@ -4,6 +4,8 @@ import Activity.Model exposing (Activity)
 import Activity.Utils
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AcuteIllnessActivity.Utils
+import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
+import Backend.HomeVisitActivity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encodeIndividualEncounterTypeAsString)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
@@ -126,6 +128,9 @@ pageToFragment current =
                 AcuteIllnessParticipantPage id ->
                     Just <| "acute-illness-participant/" ++ fromEntityUuid id
 
+                HomeVisitParticipantPage id ->
+                    Just <| "home-visit-participant/" ++ fromEntityUuid id
+
                 IndividualEncounterParticipantsPage encounterType ->
                     Just <| "individual-participants/" ++ encodeIndividualEncounterTypeAsString encounterType
 
@@ -209,6 +214,12 @@ pageToFragment current =
                 AcuteIllnessOutcomePage id ->
                     Just <| "acute-illness-outcome/" ++ fromEntityUuid id
 
+                HomeVisitEncounterPage id ->
+                    Just <| "home-visit-encounter/" ++ fromEntityUuid id
+
+                HomeVisitActivityPage id activity ->
+                    Just <| "home-visit-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.HomeVisitActivity.Utils.encodeActivityAsString activity
+
 
 parser : Parser (Page -> c) c
 parser =
@@ -231,6 +242,7 @@ parser =
         , map (\id -> UserPage <| PrenatalParticipantPage id) (s "prenatal-participant" </> parseUuid)
         , map (\id -> UserPage <| NutritionParticipantPage id) (s "nutrition-participant" </> parseUuid)
         , map (\id -> UserPage <| AcuteIllnessParticipantPage id) (s "acute-illness-participant" </> parseUuid)
+        , map (\id -> UserPage <| HomeVisitParticipantPage id) (s "home-visit-participant" </> parseUuid)
         , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
@@ -246,6 +258,8 @@ parser =
         , map (\id activity -> UserPage <| AcuteIllnessActivityPage id activity) (s "acute-illness-activity" </> parseUuid </> parseAcuteIllnessActivity)
         , map (\id -> UserPage <| AcuteIllnessProgressReportPage id) (s "acute-illness-progress-report" </> parseUuid)
         , map (\id -> UserPage <| AcuteIllnessOutcomePage id) (s "acute-illness-outcome" </> parseUuid)
+        , map (\id -> UserPage <| HomeVisitEncounterPage id) (s "home-visit-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| HomeVisitActivityPage id activity) (s "home-visit-activity" </> parseUuid </> parseHomeVisitActivity)
 
         -- `top` represents the page without any segements ... i.e. the root page.
         , map PinCodePage top
@@ -298,6 +312,11 @@ parseNutritionActivity =
 parseAcuteIllnessActivity : Parser (AcuteIllnessActivity -> c) c
 parseAcuteIllnessActivity =
     custom "AcuteIllnessActivity" AcuteIllnessActivity.Utils.decodeActivityFromString
+
+
+parseHomeVisitActivity : Parser (HomeVisitActivity -> c) c
+parseHomeVisitActivity =
+    custom "HomeVisitActivity" Backend.HomeVisitActivity.Utils.decodeActivityFromString
 
 
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c

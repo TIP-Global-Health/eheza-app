@@ -31,6 +31,11 @@ import Pages.Clinics.View
 import Pages.Dashboard.View
 import Pages.DemographicsReport.View
 import Pages.Device.View
+import Pages.HomeVisitActivity.Model
+import Pages.HomeVisitActivity.View
+import Pages.HomeVisitEncounter.Model
+import Pages.HomeVisitEncounter.View
+import Pages.HomeVisitParticipant.View
 import Pages.IndividualEncounterParticipants.View
 import Pages.IndividualEncounterTypes.View
 import Pages.MyAccount.View
@@ -349,6 +354,10 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessParticipant id)
                             |> flexPageWrapper model
 
+                    HomeVisitParticipantPage id ->
+                        Pages.HomeVisitParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
+                            |> flexPageWrapper model
+
                     IndividualEncounterParticipantsPage encounterType ->
                         Pages.IndividualEncounterParticipants.View.view model.language
                             currentDate
@@ -493,6 +502,26 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.AcuteIllnessOutcome.View.view model.language currentDate id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessOutcome id)
+                            |> flexPageWrapper model
+
+                    HomeVisitEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.homeVisitEncounterPages
+                                    |> Maybe.withDefault Pages.HomeVisitEncounter.Model.emptyModel
+                        in
+                        Pages.HomeVisitEncounter.View.view model.language currentDate id isChw model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageHomeVisitEncounter id)
+                            |> flexPageWrapper model
+
+                    HomeVisitActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.homeVisitActivityPages
+                                    |> Maybe.withDefault Pages.HomeVisitActivity.Model.emptyModel
+                        in
+                        Pages.HomeVisitActivity.View.view model.language currentDate id activity isChw model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageHomeVisitActivity id activity)
                             |> flexPageWrapper model
 
             else

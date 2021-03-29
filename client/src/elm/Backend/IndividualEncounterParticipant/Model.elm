@@ -47,6 +47,7 @@ emptyModel =
 type IndividualEncounterType
     = AcuteIllnessEncounter
     | AntenatalEncounter
+    | HomeVisitEncounter
     | InmmunizationEncounter
     | NutritionEncounter
 

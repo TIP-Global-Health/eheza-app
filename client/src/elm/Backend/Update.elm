@@ -12,6 +12,9 @@ import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Fetch
+import Backend.HomeVisitActivity.Model
+import Backend.HomeVisitEncounter.Model
+import Backend.HomeVisitEncounter.Update
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model exposing (ChildMeasurements, HistoricalMeasurements, Measurements)
@@ -31,7 +34,16 @@ import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
-import Backend.Utils exposing (mapAcuteIllnessMeasurements, mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, sw)
+import Backend.Utils
+    exposing
+        ( mapAcuteIllnessMeasurements
+        , mapChildMeasurements
+        , mapHomeVisitMeasurements
+        , mapMotherMeasurements
+        , mapNutritionMeasurements
+        , mapPrenatalMeasurements
+        , sw
+        )
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -1257,6 +1269,25 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
             , []
             )
 
+        MsgHomeVisitEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.homeVisitEncounters
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.homeVisitEncounterRequests
+                        |> Maybe.withDefault Backend.HomeVisitEncounter.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.HomeVisitEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+            in
+            ( { model | homeVisitEncounterRequests = Dict.insert encounterId subModel model.homeVisitEncounterRequests }
+            , Cmd.map (MsgHomeVisitEncounter encounterId) subCmd
+            , []
+            )
+
         MsgIndividualSession participantId subMsg ->
             let
                 participant =
@@ -1651,6 +1682,12 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                                         |> App.Model.MsgIndexedDb
                                     ]
 
+                                HomeVisitEncounter ->
+                                    [ Backend.HomeVisitEncounter.Model.HomeVisitEncounter sessionId currentDate Nothing healthCenterId
+                                        |> Backend.Model.PostHomeVisitEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
                                 InmmunizationEncounter ->
                                     []
                         )
@@ -1698,6 +1735,27 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                     [ App.Model.SetActivePage <|
                         UserPage <|
                             Pages.Page.NutritionEncounterPage nutritionEncounterId
+                    ]
+                )
+                data
+                |> RemoteData.withDefault []
+            )
+
+        PostHomeVisitEncounter homeVisitEncounter ->
+            ( { model | postHomeVisitEncounter = Dict.insert homeVisitEncounter.participant Loading model.postHomeVisitEncounter }
+            , sw.post homeVisitEncounterEndpoint homeVisitEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedHomeVisitEncounter homeVisitEncounter.participant)
+            , []
+            )
+
+        HandlePostedHomeVisitEncounter participantId data ->
+            ( { model | postHomeVisitEncounter = Dict.insert participantId data model.postHomeVisitEncounter }
+            , Cmd.none
+            , RemoteData.map
+                (\( homeVisitEncounterId, _ ) ->
+                    [ App.Model.SetActivePage <|
+                        UserPage <|
+                            Pages.Page.HomeVisitEncounterPage homeVisitEncounterId
                     ]
                 )
                 data

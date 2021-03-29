@@ -3,6 +3,7 @@ module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, M
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
+import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.Model
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionActivity.Model exposing (NutritionActivity)
@@ -22,6 +23,8 @@ import Pages.AcuteIllnessProgressReport.Model
 import Pages.Clinics.Model
 import Pages.Dashboard.Model
 import Pages.Device.Model
+import Pages.HomeVisitActivity.Model
+import Pages.HomeVisitEncounter.Model
 import Pages.IndividualEncounterParticipants.Model
 import Pages.NutritionActivity.Model
 import Pages.NutritionEncounter.Model
@@ -195,6 +198,8 @@ type alias LoggedInModel =
     , acuteIllnessActivityPages : Dict ( AcuteIllnessEncounterId, AcuteIllnessActivity ) Pages.AcuteIllnessActivity.Model.Model
     , acuteIllnessProgressReportPages : Dict AcuteIllnessEncounterId Pages.AcuteIllnessProgressReport.Model.Model
     , acuteIllnessOutcomePages : Dict IndividualEncounterParticipantId Pages.AcuteIllnessOutcome.Model.Model
+    , homeVisitEncounterPages : Dict HomeVisitEncounterId Pages.HomeVisitEncounter.Model.Model
+    , homeVisitActivityPages : Dict ( HomeVisitEncounterId, HomeVisitActivity ) Pages.HomeVisitActivity.Model.Model
     }
 
 
@@ -219,6 +224,8 @@ emptyLoggedInModel villageId nurse =
     , acuteIllnessActivityPages = Dict.empty
     , acuteIllnessProgressReportPages = Dict.empty
     , acuteIllnessOutcomePages = Dict.empty
+    , homeVisitEncounterPages = Dict.empty
+    , homeVisitActivityPages = Dict.empty
     }
 
 
@@ -270,8 +277,10 @@ type MsgLoggedIn
     | MsgPagePrenatalEncounter PrenatalEncounterId Pages.PrenatalEncounter.Model.Msg
     | MsgPageNutritionEncounter NutritionEncounterId Pages.NutritionEncounter.Model.Msg
     | MsgPageAcuteIllnessEncounter AcuteIllnessEncounterId Pages.AcuteIllnessEncounter.Model.Msg
+    | MsgPageHomeVisitEncounter HomeVisitEncounterId Pages.HomeVisitEncounter.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.PrenatalActivity.Model.Msg
     | MsgPageNutritionActivity NutritionEncounterId NutritionActivity Pages.NutritionActivity.Model.Msg
+    | MsgPageHomeVisitActivity HomeVisitEncounterId HomeVisitActivity Pages.HomeVisitActivity.Model.Msg
     | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
     | MsgPageAcuteIllnessActivity AcuteIllnessEncounterId AcuteIllnessActivity Pages.AcuteIllnessActivity.Model.Msg
     | MsgPageAcuteIllnessProgressReport AcuteIllnessEncounterId Pages.AcuteIllnessProgressReport.Model.Msg

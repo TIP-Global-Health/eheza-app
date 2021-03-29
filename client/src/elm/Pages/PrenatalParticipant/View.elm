@@ -202,7 +202,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id db prenatalSess
             isJust maybeSessionId && not firstEncounterInProcess
     in
     div []
-        [ p [ class "label-antenatal-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter ]
+        [ p [ class "label-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter ]
         , div
             (classList
                 [ ( "ui primary button", True )

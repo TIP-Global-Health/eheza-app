@@ -16,6 +16,9 @@ import Pages.Clinics.Fetch
 import Pages.Dashboard.Fetch
 import Pages.DemographicsReport.Fetch
 import Pages.Device.Fetch
+import Pages.HomeVisitActivity.Fetch
+import Pages.HomeVisitEncounter.Fetch
+import Pages.HomeVisitParticipant.Fetch
 import Pages.IndividualEncounterParticipants.Fetch
 import Pages.IndividualEncounterTypes.Fetch
 import Pages.NutritionActivity.Fetch
@@ -150,6 +153,15 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
+            UserPage (HomeVisitParticipantPage personId) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( _, loggedIn ) ->
+                            Pages.HomeVisitParticipant.Fetch.fetch personId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
+
             UserPage (IndividualEncounterParticipantsPage encounterType) ->
                 getLoggedInData model
                     |> Maybe.map
@@ -197,6 +209,14 @@ fetch model =
 
             UserPage (AcuteIllnessActivityPage id _) ->
                 Pages.AcuteIllnessActivity.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (HomeVisitEncounterPage id) ->
+                Pages.HomeVisitEncounter.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (HomeVisitActivityPage id _) ->
+                Pages.HomeVisitActivity.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (NutritionProgressReportPage nutritionEncounterId) ->

@@ -117,6 +117,9 @@ initiatorToUrlFragmemt initiator =
                 AntenatalEncounter ->
                     "antenatal"
 
+                HomeVisitEncounter ->
+                    "home-visit"
+
                 InmmunizationEncounter ->
                     "inmmunization"
 

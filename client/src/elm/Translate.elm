@@ -30,6 +30,7 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
+import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
@@ -500,6 +501,7 @@ type TranslationId
     | HIVStatus HIVStatus
     | HIVStatusLabel
     | Home
+    | HomeVisitActivityTitle HomeVisitActivity
     | HouseholdSize
     | HowManyDoses
     | HaveAnyOfTheFollowingQuestion
@@ -3329,6 +3331,28 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        HomeVisitActivityTitle activity ->
+            case activity of
+                Feeding ->
+                    { english = "Feeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                Caring ->
+                    { english = "Caring"
+                    , kinyarwanda = Nothing
+                    }
+
+                Hygiene ->
+                    { english = "Hygiene"
+                    , kinyarwanda = Nothing
+                    }
+
+                FoodSecurity ->
+                    { english = "Food Security"
+                    , kinyarwanda = Nothing
+                    }
+
         HouseholdSize ->
             { english = "Household Size"
             , kinyarwanda = Nothing
@@ -3389,6 +3413,11 @@ translationSet trans =
                     , kinyarwanda = Just "Isuzuma rya mbere ku mirire"
                     }
 
+                HomeVisitEncounter ->
+                    { english = "First Home Visit Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
         IndividualEncounterLabel encounterType ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -3409,6 +3438,11 @@ translationSet trans =
                 NutritionEncounter ->
                     { english = "Nutrition Encounter"
                     , kinyarwanda = Just "Isuzuma ry’imirire"
+                    }
+
+                HomeVisitEncounter ->
+                    { english = "Home Visit Encounter"
+                    , kinyarwanda = Nothing
                     }
 
         IndividualEncounterSelectVisit encounterType ->
@@ -3433,6 +3467,11 @@ translationSet trans =
                     , kinyarwanda = Just "Hitamo isuzuma ry’imirire"
                     }
 
+                HomeVisitEncounter ->
+                    { english = "Select Home Visit"
+                    , kinyarwanda = Nothing
+                    }
+
         IndividualEncounterSubsequentVisit encounterType ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -3455,6 +3494,11 @@ translationSet trans =
                     , kinyarwanda = Just "Isuzuma rikurikiyeho ku mugore utwite"
                     }
 
+                HomeVisitEncounter ->
+                    { english = "Subsequent Home Visit"
+                    , kinyarwanda = Nothing
+                    }
+
         IndividualEncounterType encounterType ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -3475,6 +3519,11 @@ translationSet trans =
                 NutritionEncounter ->
                     { english = "Child Nutrition"
                     , kinyarwanda = Just "Imirire y'umwana"
+                    }
+
+                HomeVisitEncounter ->
+                    { english = "Home Visit"
+                    , kinyarwanda = Nothing
                     }
 
         IndividualEncounterTypes ->
@@ -6616,6 +6665,11 @@ translateActivePage page =
                             , kinyarwanda = Nothing
                             }
 
+                        HomeVisitEncounter ->
+                            { english = "Home Visit Participants"
+                            , kinyarwanda = Nothing
+                            }
+
                 RelationshipPage _ _ _ ->
                     { english = "Relationship"
                     , kinyarwanda = Nothing
@@ -6726,6 +6780,21 @@ translateActivePage page =
                 AcuteIllnessOutcomePage _ ->
                     { english = "Acute Illness Outcome"
                     , kinyarwanda = Just "Iherezo ry'indwara ifatiyeho"
+                    }
+
+                HomeVisitParticipantPage _ ->
+                    { english = "Home Visit Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                HomeVisitEncounterPage _ ->
+                    { english = "Home Visit Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                HomeVisitActivityPage _ _ ->
+                    { english = "Home Visit Activity"
+                    , kinyarwanda = Nothing
                     }
 
 

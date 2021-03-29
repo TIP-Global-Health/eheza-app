@@ -43,6 +43,7 @@ choices about what to show the user, rather than the details).
 import Activity.Model exposing (Activity(..))
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.Entities exposing (..)
+import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Initiator)
@@ -161,6 +162,9 @@ type UserPage
     | AcuteIllnessActivityPage AcuteIllnessEncounterId AcuteIllnessActivity -- record acute illness activity.
     | AcuteIllnessProgressReportPage AcuteIllnessEncounterId -- acute illness progress report.
     | AcuteIllnessOutcomePage IndividualEncounterParticipantId -- this is where acute illness outcome is recorded.
+    | HomeVisitParticipantPage PersonId
+    | HomeVisitEncounterPage HomeVisitEncounterId -- home visit activities index.
+    | HomeVisitActivityPage HomeVisitEncounterId HomeVisitActivity -- record  home visit activity.
 
 
 {-| We group together the pages that can only be viewed in the Dashboard

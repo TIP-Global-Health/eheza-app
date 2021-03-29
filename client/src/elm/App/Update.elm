@@ -38,6 +38,10 @@ import Pages.Dashboard.Model
 import Pages.Dashboard.Update
 import Pages.Device.Model
 import Pages.Device.Update
+import Pages.HomeVisitActivity.Model
+import Pages.HomeVisitActivity.Update
+import Pages.HomeVisitEncounter.Model
+import Pages.HomeVisitEncounter.Update
 import Pages.IndividualEncounterParticipants.Update
 import Pages.NutritionActivity.Model
 import Pages.NutritionActivity.Update
@@ -374,6 +378,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageHomeVisitEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.homeVisitEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.HomeVisitEncounter.Model.emptyModel
+                                        |> Pages.HomeVisitEncounter.Update.update subMsg
+                            in
+                            ( { data | homeVisitEncounterPages = Dict.insert id subModel data.homeVisitEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageHomeVisitEncounter id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePrenatalActivity id activity subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -410,6 +427,19 @@ update msg model =
                             in
                             ( { data | acuteIllnessActivityPages = Dict.insert ( id, activity ) subModel data.acuteIllnessActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageHomeVisitActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.homeVisitActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.HomeVisitActivity.Model.emptyModel
+                                        |> Pages.HomeVisitActivity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | homeVisitActivityPages = Dict.insert ( id, activity ) subModel data.homeVisitActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageHomeVisitActivity id activity) subCmd
                             , extraMsgs
                             )
 
