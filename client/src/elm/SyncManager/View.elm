@@ -435,6 +435,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityHeight identifier ->
                 viewMeasurement identifier "Height"
 
+            BackendAuthorityHomeVisitEncounter identifier ->
+                text ("HomeVisitEncounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
             BackendAuthorityIndividualParticipant identifier ->
                 text <| "Individual Participant for person ID " ++ fromEntityUuid identifier.entity.person
 

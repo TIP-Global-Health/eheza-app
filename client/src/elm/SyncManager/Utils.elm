@@ -6,6 +6,7 @@ import Backend.Clinic.Encoder
 import Backend.Counseling.Encoder
 import Backend.Dashboard.Encoder
 import Backend.HealthCenter.Encoder
+import Backend.HomeVisitEncounter.Encoder
 import Backend.IndividualEncounterParticipant.Encoder
 import Backend.Measurement.Encoder
 import Backend.Measurement.Model exposing (PhotoUrl(..))
@@ -439,6 +440,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityHeight identifier ->
             getIdentifier identifier "height"
 
+        BackendAuthorityHomeVisitEncounter identifier ->
+            getIdentifier identifier "home_visit_encounter"
+
         BackendAuthorityIndividualParticipant identifier ->
             getIdentifier identifier "individual_participant"
 
@@ -838,6 +842,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityHeight identifier ->
             encode Backend.Measurement.Encoder.encodeHeight identifier
 
+        BackendAuthorityHomeVisitEncounter identifier ->
+            encode Backend.HomeVisitEncounter.Encoder.encodeHomeVisitEncounter identifier
+
         BackendAuthorityIndividualParticipant identifier ->
             encode Backend.IndividualEncounterParticipant.Encoder.encodeIndividualEncounterParticipant identifier
 
@@ -1199,6 +1206,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityHeight identifier ->
             HeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHomeVisitEncounter identifier ->
+            HomeVisitEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityIndividualParticipant identifier ->
             IndividualEncounterParticipantRevision (toEntityUuid identifier.uuid) identifier.entity

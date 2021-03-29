@@ -11,6 +11,7 @@ import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
 import Backend.Dashboard.Decoder
 import Backend.HealthCenter.Decoder
+import Backend.HomeVisitEncounter.Decoder
 import Backend.IndividualEncounterParticipant.Decoder
 import Backend.Measurement.Decoder
 import Backend.Nurse.Decoder
@@ -451,6 +452,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeHeight
                             BackendAuthorityHeight
+
+                    "home_visit_encounter" ->
+                        doDecode
+                            Backend.HomeVisitEncounter.Decoder.decodeHomeVisitEncounter
+                            BackendAuthorityHomeVisitEncounter
 
                     "individual_participant" ->
                         doDecode
