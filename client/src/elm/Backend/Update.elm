@@ -402,6 +402,19 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
             , []
             )
 
+        FetchHomeVisitEncountersForParticipant id ->
+            ( { model | homeVisitEncountersByParticipant = Dict.insert id Loading model.homeVisitEncountersByParticipant }
+            , sw.select homeVisitEncounterEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedHomeVisitEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedHomeVisitEncountersForParticipant id data ->
+            ( { model | homeVisitEncountersByParticipant = Dict.insert id data model.homeVisitEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
         FetchAcuteIllnessEncountersForParticipant id ->
             ( { model | acuteIllnessEncountersByParticipant = Dict.insert id Loading model.acuteIllnessEncountersByParticipant }
             , sw.select acuteIllnessEncounterEndpoint (Just id)
@@ -450,6 +463,19 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
 
         HandleFetchedAcuteIllnessMeasurements id data ->
             ( { model | acuteIllnessMeasurements = Dict.insert id data model.acuteIllnessMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchHomeVisitMeasurements id ->
+            ( { model | homeVisitMeasurements = Dict.insert id Loading model.homeVisitMeasurements }
+            , sw.get homeVisitMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedHomeVisitMeasurements id)
+            , []
+            )
+
+        HandleFetchedHomeVisitMeasurements id data ->
+            ( { model | homeVisitMeasurements = Dict.insert id data model.homeVisitMeasurements }
             , Cmd.none
             , []
             )
@@ -675,6 +701,19 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
 
         HandleFetchedNutritionEncounter id data ->
             ( { model | nutritionEncounters = Dict.insert id data model.nutritionEncounters }
+            , Cmd.none
+            , []
+            )
+
+        FetchHomeVisitEncounter id ->
+            ( { model | homeVisitEncounters = Dict.insert id Loading model.homeVisitEncounters }
+            , sw.get homeVisitEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedHomeVisitEncounter id)
+            , []
+            )
+
+        HandleFetchedHomeVisitEncounter id data ->
+            ( { model | homeVisitEncounters = Dict.insert id data model.homeVisitEncounters }
             , Cmd.none
             , []
             )
