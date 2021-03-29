@@ -264,6 +264,11 @@ acuteIllnessMeasurementsEndpoint =
     swEndpoint "nodes/acute-illness-measurements" decodeAcuteIllnessMeasurements
 
 
+homeVisitMeasurementsEndpoint : ReadOnlyEndPoint Error HomeVisitEncounterId HomeVisitMeasurements ()
+homeVisitMeasurementsEndpoint =
+    swEndpoint "nodes/home-visit-measurements" decodeHomeVisitMeasurements
+
+
 {-| Type-safe params ... how nice!
 -}
 type SessionParams
