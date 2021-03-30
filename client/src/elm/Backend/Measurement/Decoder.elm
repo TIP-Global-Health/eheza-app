@@ -1118,19 +1118,6 @@ decodeFeedingValue =
         |> required "sachets_per_day" float
 
 
-
--- "receive-supplement"
--- "ration-present-at-home"
--- "enough-till-next-session"
--- "supplement-shared"
--- "encouraged-to-eat"
--- "refusing-to-eat"
--- "breastfeeding"
--- "clean-water-available"
--- "eaten-with-water"
--- "none"
-
-
 decodeNutritionFeedingSign : Decoder NutritionFeedingSign
 decodeNutritionFeedingSign =
     string

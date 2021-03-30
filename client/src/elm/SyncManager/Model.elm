@@ -85,6 +85,7 @@ type BackendAuthorityEntity
     | BackendAuthorityNutrition (BackendEntity ChildNutrition)
     | BackendAuthorityNutritionContributingFactors (BackendEntity NutritionContributingFactors)
     | BackendAuthorityNutritionEncounter (BackendEntity NutritionEncounter)
+    | BackendAuthorityNutritionFeeding (BackendEntity NutritionFeeding)
     | BackendAuthorityNutritionFollowUp (BackendEntity NutritionFollowUp)
     | BackendAuthorityNutritionHealthEducation (BackendEntity NutritionHealthEducation)
     | BackendAuthorityNutritionHeight (BackendEntity NutritionHeight)
