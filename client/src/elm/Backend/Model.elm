@@ -343,6 +343,7 @@ type Revision
     | NurseRevision NurseId Nurse
     | NutritionContributingFactorsRevision NutritionContributingFactorsId NutritionContributingFactors
     | NutritionEncounterRevision NutritionEncounterId NutritionEncounter
+    | NutritionFeedingRevision NutritionFeedingId NutritionFeeding
     | NutritionFollowUpRevision NutritionFollowUpId NutritionFollowUp
     | NutritionHealthEducationRevision NutritionHealthEducationId NutritionHealthEducation
     | NutritionHeightRevision NutritionHeightId NutritionHeight
