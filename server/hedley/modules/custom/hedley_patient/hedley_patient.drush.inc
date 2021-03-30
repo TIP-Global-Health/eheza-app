@@ -437,7 +437,6 @@ function hedley_patient_group_measurements_by_encounter_type(array $measurements
   $acute_illness_measurements = [];
   $home_visit_measurements = [];
 
-
   // Group the measurements using encounter type indicator field.
   foreach ($measurements as $measurement) {
     $wrapper = entity_metadata_wrapper('node', $measurement);
