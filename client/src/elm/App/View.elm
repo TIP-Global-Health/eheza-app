@@ -35,7 +35,6 @@ import Pages.HomeVisitActivity.Model
 import Pages.HomeVisitActivity.View
 import Pages.HomeVisitEncounter.Model
 import Pages.HomeVisitEncounter.View
-import Pages.HomeVisitParticipant.View
 import Pages.IndividualEncounterParticipants.View
 import Pages.IndividualEncounterTypes.View
 import Pages.MyAccount.View
@@ -352,10 +351,6 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.AcuteIllnessParticipant.View.view model.language currentDate healthCenterId id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessParticipant id)
-                            |> flexPageWrapper model
-
-                    HomeVisitParticipantPage id ->
-                        Pages.HomeVisitParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
                             |> flexPageWrapper model
 
                     IndividualEncounterParticipantsPage encounterType ->

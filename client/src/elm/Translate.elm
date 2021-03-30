@@ -6782,11 +6782,6 @@ translateActivePage page =
                     , kinyarwanda = Just "Iherezo ry'indwara ifatiyeho"
                     }
 
-                HomeVisitParticipantPage _ ->
-                    { english = "Home Visit Encounter"
-                    , kinyarwanda = Nothing
-                    }
-
                 HomeVisitEncounterPage _ ->
                     { english = "Home Visit Encounter"
                     , kinyarwanda = Nothing

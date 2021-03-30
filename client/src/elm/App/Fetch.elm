@@ -18,7 +18,6 @@ import Pages.DemographicsReport.Fetch
 import Pages.Device.Fetch
 import Pages.HomeVisitActivity.Fetch
 import Pages.HomeVisitEncounter.Fetch
-import Pages.HomeVisitParticipant.Fetch
 import Pages.IndividualEncounterParticipants.Fetch
 import Pages.IndividualEncounterTypes.Fetch
 import Pages.NutritionActivity.Fetch
@@ -149,15 +148,6 @@ fetch model =
                     |> Maybe.map
                         (\( _, loggedIn ) ->
                             Pages.AcuteIllnessParticipant.Fetch.fetch personId model.indexedDb
-                                |> List.map MsgIndexedDb
-                        )
-                    |> Maybe.withDefault []
-
-            UserPage (HomeVisitParticipantPage personId) ->
-                getLoggedInData model
-                    |> Maybe.map
-                        (\( _, loggedIn ) ->
-                            Pages.HomeVisitParticipant.Fetch.fetch personId model.indexedDb
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []
