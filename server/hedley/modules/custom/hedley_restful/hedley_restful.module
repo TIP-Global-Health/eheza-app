@@ -74,6 +74,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'muac' => 'muacs',
   'nutrition' => 'nutritions',
   'nutrition_contributing_factors' => 'nutrition-contributing-factors',
+  'nutrition_feeding' => 'nutrition-feeding',
   'nutrition_follow_up' => 'nutrition-follow-up',
   'nutrition_health_education' => 'nutrition-health-education',
   'nutrition_height' => 'nutrition-heights',
