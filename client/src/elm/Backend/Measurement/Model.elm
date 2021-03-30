@@ -265,16 +265,16 @@ type alias NutritionFollowUp =
 
 
 type alias NutritionFeeding =
-    NutritionMeasurement NutritionFeedingValue
+    HomeVisitMeasurement NutritionFeedingValue
 
 
 type alias NutritionFeedingValue =
-    { signs : EverySetNutritionFeedingSign
+    { signs : EverySet NutritionFeedingSign
     , sachetsPerDay : Float
     }
 
 
-type EverySetNutritionFeedingSign
+type NutritionFeedingSign
     = ReceiveSupplement
     | RationPresentAtHome
     | EnoughTillNextSession
@@ -284,7 +284,7 @@ type EverySetNutritionFeedingSign
     | FeedingSignBreastfeeding
     | CleanWaterAvailable
     | EatenWithWater
-    | NoEverySetNutritionFeedingSigns
+    | NoNutritionFeedingSigns
 
 
 
