@@ -261,6 +261,33 @@ type alias NutritionFollowUp =
 
 
 
+-- HOME VISIT MEASUREMENTS
+
+
+type alias NutritionFeeding =
+    NutritionMeasurement NutritionFeedingValue
+
+
+type alias NutritionFeedingValue =
+    { signs : EverySetNutritionFeedingSign
+    , sachetsPerDay : Float
+    }
+
+
+type EverySetNutritionFeedingSign
+    = ReceiveSupplement
+    | RationPresentAtHome
+    | EnoughTillNextSession
+    | SupplementShared
+    | EncouragedToEat
+    | RefusingToEat
+    | FeedingSignBreastfeeding
+    | CleanWaterAvailable
+    | EatenWithWater
+    | NoEverySetNutritionFeedingSigns
+
+
+
 -- PRENATAL MEASUREMENTS
 
 
@@ -1112,7 +1139,7 @@ type alias AcuteIllnessMeasurements =
 {-| A set of Home Visit measurements that correspond to the same Home Visit encounter.
 -}
 type alias HomeVisitMeasurements =
-    {}
+    { feeding : Maybe ( NutritionFeedingId, NutritionFeeding ) }
 
 
 {-| This is like `ChildMeasurementList`, except that it just covers one
