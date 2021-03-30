@@ -104,7 +104,7 @@ function hedley_nutrition_field_default_field_bases() {
   // Exported field_base: 'field_nutrition_feeding_signs'.
   $field_bases['field_nutrition_feeding_signs'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_nutrition_feeding_signs',
