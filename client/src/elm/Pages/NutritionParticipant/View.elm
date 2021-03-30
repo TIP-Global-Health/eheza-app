@@ -3,6 +3,7 @@ module Pages.NutritionParticipant.View exposing (view)
 import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
+import Backend.HomeVisitEncounter.Model
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (emptyIndividualEncounterParticipant, isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
@@ -62,8 +63,36 @@ viewHeader language id =
         ]
 
 
-viewActions : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
+viewActions :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> PersonId
+    -> ModelIndexedDb
+    -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant
+    -> Html App.Model.Msg
 viewActions language currentDate selectedHealthCenter id db sessions =
+    div []
+        [ p [ class "label-visit" ]
+            [ text <|
+                translate language <|
+                    Translate.IndividualEncounterSelectVisit
+                        Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+            ]
+        , viewNutritionAction language currentDate selectedHealthCenter id db sessions
+        , viewHomeVisitAction language currentDate selectedHealthCenter id db sessions
+        ]
+
+
+viewNutritionAction :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> PersonId
+    -> ModelIndexedDb
+    -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant
+    -> Html App.Model.Msg
+viewNutritionAction language currentDate selectedHealthCenter id db sessions =
     let
         -- Person nutrition session.
         maybeSessionId =
@@ -135,26 +164,115 @@ viewActions language currentDate selectedHealthCenter id db sessions =
                 |> onClick
             ]
     in
-    div []
-        [ p [ class "label-visit" ]
+    div
+        (classList
+            [ ( "ui primary button", True )
+            , ( "disabled", encounterWasCompletedToday )
+            ]
+            :: action
+        )
+        [ div [ class "button-label" ]
             [ text <|
                 translate language <|
-                    Translate.IndividualEncounterSelectVisit
+                    Translate.IndividualEncounterLabel
                         Backend.IndividualEncounterParticipant.Model.NutritionEncounter
             ]
-        , div
-            (classList
-                [ ( "ui primary button", True )
-                , ( "disabled", encounterWasCompletedToday )
-                ]
-                :: action
-            )
-            [ div [ class "button-label" ]
-                [ text <|
-                    translate language <|
-                        Translate.IndividualEncounterLabel
-                            Backend.IndividualEncounterParticipant.Model.NutritionEncounter
-                ]
-            , div [ class "icon-back" ] []
+        , div [ class "icon-back" ] []
+        ]
+
+
+viewHomeVisitAction :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> PersonId
+    -> ModelIndexedDb
+    -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant
+    -> Html App.Model.Msg
+viewHomeVisitAction language currentDate selectedHealthCenter id db sessions =
+    let
+        -- Person nutrition session.
+        maybeSessionId =
+            sessions
+                |> Dict.toList
+                |> List.filter
+                    (\( sessionId, session ) ->
+                        session.encounterType == Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter
+                    )
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        -- Resolve active encounter for person. There should not be more than one.
+        -- We also want to know if there's an encounter that was completed today,
+        -- (started and ended on the same day), as we do not want to allow creating new encounter
+        -- at same day, previous one has ended.
+        ( maybeActiveEncounterId, encounterWasCompletedToday ) =
+            maybeSessionId
+                |> Maybe.map
+                    (\sessionId ->
+                        Dict.get sessionId db.homeVisitEncountersByParticipant
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.map
+                                (\dict ->
+                                    ( Dict.toList dict
+                                        |> List.filter (Tuple.second >> isDailyEncounterActive currentDate)
+                                        |> List.head
+                                        |> Maybe.map Tuple.first
+                                    , Dict.toList dict
+                                        |> List.filter
+                                            (\( _, encounter ) ->
+                                                encounter.startDate == currentDate && encounter.endDate == Just currentDate
+                                            )
+                                        |> List.isEmpty
+                                        |> not
+                                    )
+                                )
+                            |> RemoteData.withDefault ( Nothing, False )
+                    )
+                |> Maybe.withDefault ( Nothing, False )
+
+        action =
+            maybeActiveEncounterId
+                |> Maybe.map navigateToEncounterAction
+                |> Maybe.withDefault
+                    (maybeSessionId
+                        |> Maybe.map
+                            -- If home visit session exists, create new encounter for it.
+                            (\sessionId ->
+                                [ Backend.HomeVisitEncounter.Model.HomeVisitEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
+                                    |> Backend.Model.PostHomeVisitEncounter
+                                    |> App.Model.MsgIndexedDb
+                                    |> onClick
+                                ]
+                            )
+                        -- If home visit session does not exist, create it.
+                        |> Maybe.withDefault
+                            [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter selectedHealthCenter
+                                |> Backend.Model.PostIndividualSession
+                                |> App.Model.MsgIndexedDb
+                                |> onClick
+                            ]
+                    )
+
+        navigateToEncounterAction id_ =
+            [ Pages.Page.HomeVisitEncounterPage id_
+                |> UserPage
+                |> App.Model.SetActivePage
+                |> onClick
             ]
+    in
+    div
+        (classList
+            [ ( "ui primary button", True )
+            , ( "disabled", encounterWasCompletedToday )
+            ]
+            :: action
+        )
+        [ div [ class "button-label" ]
+            [ text <|
+                translate language <|
+                    Translate.IndividualEncounterLabel
+                        Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter
+            ]
+        , div [ class "icon-back" ] []
         ]
