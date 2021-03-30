@@ -19,14 +19,20 @@ type alias HomeVisitEncounter =
 to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
-    { closeHomeVisitEncounter : WebData () }
+    { closeHomeVisitEncounter : WebData ()
+    , saveFeeding : WebData ()
+    }
 
 
 emptyModel : Model
 emptyModel =
-    { closeHomeVisitEncounter = NotAsked }
+    { closeHomeVisitEncounter = NotAsked
+    , saveFeeding = NotAsked
+    }
 
 
 type Msg
     = CloseHomeVisitEncounter
     | HandleClosedHomeVisitEncounter (WebData ())
+    | SaveFeeding PersonId (Maybe NutritionFeedingId) NutritionFeedingValue
+    | HandleSavedFeeding (WebData ())
