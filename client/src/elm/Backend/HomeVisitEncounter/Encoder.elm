@@ -20,6 +20,6 @@ encodeHomeVisitEncounter session =
       )
     , ( "individual_participant", encodeEntityUuid session.participant )
     , ( "deleted", bool False )
-    , ( "type", string "nutrition_encounter" )
+    , ( "type", string "home_visit_encounter" )
     ]
         ++ encodeIfExists "shard" session.shard encodeEntityUuid
