@@ -66,5 +66,90 @@ function hedley_nutrition_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_home_visit_encounter'.
+  $field_bases['field_home_visit_encounter'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_home_visit_encounter',
+    'indexes' => array(
+      'target_id' => array(
+        0 => 'target_id',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'entityreference',
+    'settings' => array(
+      'handler' => 'base',
+      'handler_settings' => array(
+        'behaviors' => array(
+          'views-select-list' => array(
+            'status' => 0,
+          ),
+        ),
+        'sort' => array(
+          'type' => 'none',
+        ),
+        'target_bundles' => array(
+          'home_visit_encounter' => 'home_visit_encounter',
+        ),
+      ),
+      'target_type' => 'node',
+    ),
+    'translatable' => 0,
+    'type' => 'entityreference',
+  );
+
+  // Exported field_base: 'field_nutrition_feeding_signs'.
+  $field_bases['field_nutrition_feeding_signs'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_nutrition_feeding_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'receive-supplement' => 'Receive supplement',
+        'ration-present-at-home' => 'Ration present at home',
+        'enough-till-next-session' => 'Enough till next session',
+        'supplement-shared' => 'Supplement shared',
+        'encouraged-to-eat' => 'Encouraged to eat',
+        'refusing-to-eat' => 'Refusing to eat',
+        'breastfeeding' => 'Breastfeeding',
+        'clean-water-available' => 'Clean water available',
+        'eaten-with-water' => 'Eaten with water',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_sachets_per_day'.
+  $field_bases['field_sachets_per_day'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_sachets_per_day',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
+  );
+
   return $field_bases;
 }
