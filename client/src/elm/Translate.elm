@@ -1434,13 +1434,13 @@ translationSet trans =
                     }
 
                 ChildActivity Activity.Model.HealthEducation ->
-                    { english = ""
-                    , kinyarwanda = Nothing
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
                 ChildActivity Activity.Model.SendToHC ->
-                    { english = ""
-                    , kinyarwanda = Nothing
+                    { english = "Send to Health Center"
+                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
         ActivitiesLabel activity ->
@@ -2246,7 +2246,7 @@ translationSet trans =
 
         ContributingFactorsQuestion ->
             { english = "Has patient or patient’s mother experienced any of the following"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi cyangwa umubyeyi we bagaragaje ibimenyetso bikurikira"
             }
 
         ConvulsionsAndUnconsciousPreviousDelivery ->
@@ -4004,7 +4004,7 @@ translationSet trans =
 
         ModeratelyUnderweight ->
             { english = "Moderately Underweight"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Imirire mibi yoroheje ku biro"
             }
 
         Month ->
@@ -4369,8 +4369,8 @@ translationSet trans =
                     }
 
                 Backend.NutritionActivity.Model.NextSteps ->
-                    { english = ""
-                    , kinyarwanda = Nothing
+                    { english = "Next Steps"
+                    , kinyarwanda = Just "Ibikurikiyeho"
                     }
 
         NutritionActivityTitle activity ->
@@ -5025,7 +5025,7 @@ translationSet trans =
 
         ProvidedPreventionEducationQuestionShort ->
             { english = "Have you provided health education and anticipatory guidance"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Mwatanze inyigisho ku buzima n' umurongo ngenderwaho"
             }
 
         Province ->
