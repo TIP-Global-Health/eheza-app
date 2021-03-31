@@ -151,5 +151,33 @@ function hedley_nutrition_field_default_field_bases() {
     'type' => 'number_float',
   );
 
+  // Exported field_base: 'field_supplement_type'.
+  $field_bases['field_supplement_type'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_supplement_type',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'fortified-porridge' => 'Fortified porridge',
+        'rutf' => 'RUTF',
+        'ongera' => 'Ongera',
+        'therapeutic-milk' => 'Therapeutik milk',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   return $field_bases;
 }
