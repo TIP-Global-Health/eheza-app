@@ -592,3 +592,51 @@ healthEducationEndpoint : ReadWriteEndPoint Error HealthEducationId HealthEducat
 healthEducationEndpoint =
     swEndpoint "nodes/health_education" decodeHealthEducation
         |> withValueEncoder (object << encodeHealthEducation)
+
+
+nutritionSendToHCEndpoint : ReadWriteEndPoint Error NutritionSendToHCId NutritionSendToHC NutritionSendToHC ()
+nutritionSendToHCEndpoint =
+    swEndpoint "nodes/nutrition_send_to_hc" decodeNutritionSendToHC
+        |> withValueEncoder (object << encodeNutritionSendToHC)
+
+
+nutritionHealthEducationEndpoint : ReadWriteEndPoint Error NutritionHealthEducationId NutritionHealthEducation NutritionHealthEducation ()
+nutritionHealthEducationEndpoint =
+    swEndpoint "nodes/nutrition_health_education" decodeNutritionHealthEducation
+        |> withValueEncoder (object << encodeNutritionHealthEducation)
+
+
+nutritionContributingFactorsEndpoint : ReadWriteEndPoint Error NutritionContributingFactorsId NutritionContributingFactors NutritionContributingFactors ()
+nutritionContributingFactorsEndpoint =
+    swEndpoint "nodes/nutrition_contributing_factors" decodeNutritionContributingFactors
+        |> withValueEncoder (object << encodeNutritionContributingFactors)
+
+
+nutritionFollowUpEndpoint : ReadWriteEndPoint Error NutritionFollowUpId NutritionFollowUp NutritionFollowUp ()
+nutritionFollowUpEndpoint =
+    swEndpoint "nodes/nutrition_follow_up" decodeNutritionFollowUp
+        |> withValueEncoder (object << encodeNutritionFollowUp)
+
+
+groupSendToHCEndpoint : ReadWriteEndPoint Error GroupSendToHCId GroupSendToHC GroupSendToHC ()
+groupSendToHCEndpoint =
+    swEndpoint "nodes/group_send_to_hc" decodeGroupSendToHC
+        |> withValueEncoder (object << encodeGroupSendToHC)
+
+
+groupHealthEducationEndpoint : ReadWriteEndPoint Error GroupHealthEducationId GroupHealthEducation GroupHealthEducation ()
+groupHealthEducationEndpoint =
+    swEndpoint "nodes/group_health_education" decodeGroupHealthEducation
+        |> withValueEncoder (object << encodeGroupHealthEducation)
+
+
+contributingFactorsEndpoint : ReadWriteEndPoint Error ContributingFactorsId ContributingFactors ContributingFactors ()
+contributingFactorsEndpoint =
+    swEndpoint "nodes/contributing_factors" decodeContributingFactors
+        |> withValueEncoder (object << encodeContributingFactors)
+
+
+followUpEndpoint : ReadWriteEndPoint Error FollowUpId FollowUp FollowUp ()
+followUpEndpoint =
+    swEndpoint "nodes/follow_up" decodeFollowUp
+        |> withValueEncoder (object << encodeFollowUp)

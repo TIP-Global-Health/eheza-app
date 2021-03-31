@@ -5,6 +5,7 @@ import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
+import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict, decodeStringWithDefault)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
@@ -72,6 +73,10 @@ decodeChildMeasurementList =
         |> optional "weight" (map Dict.fromList <| list (decodeWithEntityUuid decodeWeight)) Dict.empty
         |> optional "counseling_session" (map Dict.fromList <| list (decodeWithEntityUuid decodeCounselingSession)) Dict.empty
         |> optional "child_fbf" (map Dict.fromList <| list (decodeWithEntityUuid decodeFbf)) Dict.empty
+        |> optional "contributing_factors" (map Dict.fromList <| list (decodeWithEntityUuid decodeContributingFactors)) Dict.empty
+        |> optional "follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeFollowUp)) Dict.empty
+        |> optional "group_health_education" (map Dict.fromList <| list (decodeWithEntityUuid decodeGroupHealthEducation)) Dict.empty
+        |> optional "group_send_to_hc" (map Dict.fromList <| list (decodeWithEntityUuid decodeGroupSendToHC)) Dict.empty
 
 
 decodePrenatalMeasurements : Decoder PrenatalMeasurements
@@ -102,6 +107,10 @@ decodeNutritionMeasurements =
         |> optional "nutrition_nutrition" (decodeHead decodeNutritionNutrition) Nothing
         |> optional "nutrition_photo" (decodeHead decodeNutritionPhoto) Nothing
         |> optional "nutrition_weight" (decodeHead decodeNutritionWeight) Nothing
+        |> optional "nutrition_send_to_hc" (decodeHead decodeNutritionSendToHC) Nothing
+        |> optional "nutrition_health_education" (decodeHead decodeNutritionHealthEducation) Nothing
+        |> optional "nutrition_contributing_factors" (decodeHead decodeNutritionContributingFactors) Nothing
+        |> optional "nutrition_follow_up" (decodeHead decodeNutritionFollowUp) Nothing
 
 
 decodeAcuteIllnessMeasurements : Decoder AcuteIllnessMeasurements
@@ -1054,6 +1063,38 @@ decodeNutritionWeight =
         |> decodeNutritionMeasurement
 
 
+decodeContributingFactors : Decoder ContributingFactors
+decodeContributingFactors =
+    decodeGroupMeasurement decodeContributingFactorsValue
+
+
+decodeNutritionContributingFactors : Decoder NutritionContributingFactors
+decodeNutritionContributingFactors =
+    decodeNutritionMeasurement decodeContributingFactorsValue
+
+
+decodeContributingFactorsValue : Decoder (EverySet ContributingFactorsSign)
+decodeContributingFactorsValue =
+    decodeEverySet decodeContributingFactorsSign
+        |> field "contributing_factors_signs"
+
+
+decodeFollowUp : Decoder FollowUp
+decodeFollowUp =
+    decodeGroupMeasurement decodeFollowUpValue
+
+
+decodeNutritionFollowUp : Decoder NutritionFollowUp
+decodeNutritionFollowUp =
+    decodeNutritionMeasurement decodeFollowUpValue
+
+
+decodeFollowUpValue : Decoder (EverySet FollowUpOption)
+decodeFollowUpValue =
+    decodeEverySet decodeFollowUpOption
+        |> field "follow_up_options"
+
+
 decodeSymptomsGeneral : Decoder SymptomsGeneral
 decodeSymptomsGeneral =
     succeed SymptomsGeneralValue
@@ -1314,10 +1355,24 @@ malariaRapidTestResultFromString result =
 
 decodeSendToHC : Decoder SendToHC
 decodeSendToHC =
+    decodeAcuteIllnessMeasurement decodeSendToHCValue
+
+
+decodeNutritionSendToHC : Decoder NutritionSendToHC
+decodeNutritionSendToHC =
+    decodeNutritionMeasurement decodeSendToHCValue
+
+
+decodeGroupSendToHC : Decoder GroupSendToHC
+decodeGroupSendToHC =
+    decodeGroupMeasurement decodeSendToHCValue
+
+
+decodeSendToHCValue : Decoder SendToHCValue
+decodeSendToHCValue =
     succeed SendToHCValue
         |> required "send_to_hc" (decodeEverySet decodeSendToHCSign)
         |> optional "reason_not_sent_to_hc" decodeReasonForNotSendingToHC NoReasonForNotSendingToHC
-        |> decodeAcuteIllnessMeasurement
 
 
 decodeSendToHCSign : Decoder SendToHCSign
@@ -1367,6 +1422,59 @@ decodeReasonForNotSendingToHC =
                         fail <|
                             event
                                 ++ "is not a recognized ReasonForNotSendingToHC"
+            )
+
+
+decodeContributingFactorsSign : Decoder ContributingFactorsSign
+decodeContributingFactorsSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "lack-of-breast-milk" ->
+                        succeed FactorLackOfBreastMilk
+
+                    "maternal-mastitis" ->
+                        succeed FactorMaternalMastitis
+
+                    "poor-suck" ->
+                        succeed FactorPoorSuck
+
+                    "diarrhea-or-vomiting" ->
+                        succeed FactorDiarrheaOrVomiting
+
+                    "none" ->
+                        succeed NoContributingFactorsSign
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized ContributingFactorsSign"
+            )
+
+
+decodeFollowUpOption : Decoder FollowUpOption
+decodeFollowUpOption =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "1-d" ->
+                        succeed OneDay
+
+                    "3-d" ->
+                        succeed ThreeDays
+
+                    "1-w" ->
+                        succeed OneWeek
+
+                    "2-w" ->
+                        succeed TwoWeeks
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized FollowUpOption"
             )
 
 
@@ -1964,10 +2072,24 @@ decodeAcuteIllnessNutrition =
 
 decodeHealthEducation : Decoder HealthEducation
 decodeHealthEducation =
+    decodeAcuteIllnessMeasurement decodeHealthEducationValue
+
+
+decodeNutritionHealthEducation : Decoder NutritionHealthEducation
+decodeNutritionHealthEducation =
+    decodeNutritionMeasurement decodeHealthEducationValue
+
+
+decodeGroupHealthEducation : Decoder GroupHealthEducation
+decodeGroupHealthEducation =
+    decodeGroupMeasurement decodeHealthEducationValue
+
+
+decodeHealthEducationValue : Decoder HealthEducationValue
+decodeHealthEducationValue =
     succeed HealthEducationValue
         |> required "health_education_signs" (decodeEverySet decodeHealthEducationSign)
         |> optional "reason_not_given_education" decodeReasonForNotProvidingHealthEducation NoReasonForNotProvidingHealthEducation
-        |> decodeAcuteIllnessMeasurement
 
 
 decodeHealthEducationSign : Decoder HealthEducationSign
@@ -2006,6 +2128,9 @@ decodeReasonForNotProvidingHealthEducation =
 
                     "patient-refused" ->
                         succeed PatientRefused
+
+                    "patient-too-ill" ->
+                        succeed PatientTooIll
 
                     "none" ->
                         succeed NoReasonForNotProvidingHealthEducation

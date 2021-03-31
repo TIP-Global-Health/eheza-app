@@ -1,4 +1,4 @@
-module NutritionActivity.Utils exposing (decodeActivityFromString, encodeActivityAsString, expectActivity, getActivityIcon, getAllActivities)
+module Backend.NutritionActivity.Utils exposing (..)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -10,10 +10,7 @@ expected (and not completed).
 
 -}
 
-import Backend.Person.Model exposing (Person)
-import Gizra.NominalDate exposing (NominalDate, diffMonths)
-import NutritionActivity.Model exposing (..)
-import Translate exposing (Language, translate)
+import Backend.NutritionActivity.Model exposing (..)
 
 
 {-| Used for URL etc., not for display in the normal UI (since we'd translate
@@ -37,6 +34,9 @@ encodeActivityAsString activity =
         Weight ->
             "nutrition-weight"
 
+        NextSteps ->
+            "nutrition-next-steps"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -57,6 +57,9 @@ decodeActivityFromString s =
 
         "nutrition-weight" ->
             Just Weight
+
+        "nutrition-next-steps" ->
+            Just NextSteps
 
         _ ->
             Nothing
@@ -90,25 +93,10 @@ getActivityIcon activity =
         Weight ->
             "weight"
 
+        NextSteps ->
+            "next-steps"
+
 
 getAllActivities : List NutritionActivity
 getAllActivities =
-    [ Height, Muac, Nutrition, Weight, Photo ]
-
-
-expectActivity : NominalDate -> Person -> Bool -> NutritionActivity -> Bool
-expectActivity currentDate child isChw activity =
-    case activity of
-        -- Do not show for community health workers.
-        Height ->
-            isChw |> not
-
-        -- Show for children that are 6 month old, or older than that.
-        Muac ->
-            child.birthDate
-                |> Maybe.map
-                    (\birthDate -> diffMonths birthDate currentDate > 5)
-                |> Maybe.withDefault False
-
-        _ ->
-            True
+    [ Height, Muac, Nutrition, Weight, Photo, NextSteps ]

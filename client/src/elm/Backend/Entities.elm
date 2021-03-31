@@ -621,3 +621,67 @@ type alias HealthEducationId =
 
 type HealthEducationUuidType
     = HealthEducationUuidType
+
+
+type alias NutritionSendToHCId =
+    EntityUuid NutritionSendToHCIdUuidType
+
+
+type NutritionSendToHCIdUuidType
+    = NutritionSendToHCIdUuidType
+
+
+type alias NutritionHealthEducationId =
+    EntityUuid NutritionHealthEducationUuidType
+
+
+type NutritionHealthEducationUuidType
+    = NutritionHealthEducationUuidType
+
+
+type alias NutritionContributingFactorsId =
+    EntityUuid NutritionContributingFactorsIdUuidType
+
+
+type NutritionContributingFactorsIdUuidType
+    = NutritionContributingFactorsIdUuidType
+
+
+type alias NutritionFollowUpId =
+    EntityUuid NutritionFollowUpIdUuidType
+
+
+type NutritionFollowUpIdUuidType
+    = NutritionFollowUpIdUuidType
+
+
+type alias GroupSendToHCId =
+    EntityUuid GroupSendToHCIdUuidType
+
+
+type GroupSendToHCIdUuidType
+    = GroupSendToHCIdUuidType
+
+
+type alias GroupHealthEducationId =
+    EntityUuid GroupHealthEducationUuidType
+
+
+type GroupHealthEducationUuidType
+    = GroupHealthEducationUuidType
+
+
+type alias ContributingFactorsId =
+    EntityUuid ContributingFactorsIdUuidType
+
+
+type ContributingFactorsIdUuidType
+    = ContributingFactorsIdUuidType
+
+
+type alias FollowUpId =
+    EntityUuid FollowUpIdUuidType
+
+
+type FollowUpIdUuidType
+    = FollowUpIdUuidType

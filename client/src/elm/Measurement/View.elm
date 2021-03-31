@@ -1,4 +1,16 @@
-module Measurement.View exposing (viewChild, viewMeasurementFloatDiff, viewMother, viewMuacIndication, zScoreForHeightOrLength)
+module Measurement.View exposing
+    ( renderDatePart
+    , viewActionTakenLabel
+    , viewChild
+    , viewContributingFactorsForm
+    , viewFollowUpForm
+    , viewHealthEducationForm
+    , viewMeasurementFloatDiff
+    , viewMother
+    , viewMuacIndication
+    , viewSendToHCForm
+    , zScoreForHeightOrLength
+    )
 
 {-| This module provides a form for entering measurements.
 -}
@@ -10,7 +22,7 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValues, fbfFormToValue, lactationFormToSigns, mapMeasurementData, muacIndication)
+import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData, muacIndication)
 import Backend.Person.Model exposing (Gender, Person)
 import Backend.Session.Model exposing (EditableSession)
 import EverySet exposing (EverySet)
@@ -25,14 +37,24 @@ import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
-import Pages.Utils exposing (viewBoolInput, viewCheckBoxSelectInput, viewLabel, viewMeasurementInput, viewPhotoThumbFromPhotoUrl, viewQuestionLabel)
+import Pages.Utils
+    exposing
+        ( taskCompleted
+        , viewBoolInput
+        , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectInput
+        , viewLabel
+        , viewMeasurementInput
+        , viewPhotoThumbFromPhotoUrl
+        , viewQuestionLabel
+        )
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
-import Translate as Trans exposing (Language, TranslationId, translate)
+import Translate exposing (Language, TranslationId, translate)
 import Translate.Utils exposing (selectLanguage)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (Days(..), diffDays)
+import Utils.NominalDate exposing (Days(..), diffDays, renderDate)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
@@ -89,6 +111,18 @@ viewChild language currentDate isChw child activity measurements zscores session
             in
             viewWeight language currentDate isChw child (mapMeasurementData .weight measurements) previousIndividualWeight zscores model
 
+        ContributingFactors ->
+            viewContributingFactors language currentDate (mapMeasurementData .contributingFactors measurements) model.contributingFactorsForm
+
+        FollowUp ->
+            viewFollowUp language currentDate (mapMeasurementData .followUp measurements) model.followUpForm
+
+        Activity.Model.HealthEducation ->
+            viewHealthEducation language currentDate (mapMeasurementData .healthEducation measurements) model.healthEducationForm
+
+        Activity.Model.SendToHC ->
+            viewSendToHC language currentDate (mapMeasurementData .sendToHC measurements) model.sendToHCForm
+
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
 different types of `Float` inputs.
@@ -115,12 +149,12 @@ heightFormConfig : FloatFormConfig HeightId Height
 heightFormConfig =
     { blockName = "height"
     , activity = ChildActivity Height
-    , placeholderText = Trans.PlaceholderEnterHeight
-    , zScoreLabelForAge = Trans.ZScoreHeightForAge
+    , placeholderText = Translate.PlaceholderEnterHeight
+    , zScoreLabelForAge = Translate.ZScoreHeightForAge
     , zScoreForAge = Just <| \model age gender height -> zScoreLengthHeightForAge model age gender (Centimetres height)
     , zScoreForHeightOrLength = Nothing
     , constraints = getInputConstraintsHeight
-    , unit = Trans.CentimeterShorthand
+    , unit = Translate.CentimeterShorthand
     , inputValue = .height
     , storedValue = .value >> (\(HeightInCm val) -> val)
     , dateMeasured = .dateMeasured
@@ -134,12 +168,12 @@ muacFormConfig : FloatFormConfig MuacId Muac
 muacFormConfig =
     { blockName = "muac"
     , activity = ChildActivity Muac
-    , placeholderText = Trans.PlaceholderEnterMUAC
-    , zScoreLabelForAge = Trans.ZScoreMuacForAge
+    , placeholderText = Translate.PlaceholderEnterMUAC
+    , zScoreLabelForAge = Translate.ZScoreMuacForAge
     , zScoreForAge = Nothing
     , zScoreForHeightOrLength = Nothing
     , constraints = getInputConstraintsMuac
-    , unit = Trans.CentimeterShorthand
+    , unit = Translate.CentimeterShorthand
     , inputValue = .muac
     , storedValue = .value >> (\(MuacInCm val) -> val)
     , dateMeasured = .dateMeasured
@@ -153,12 +187,12 @@ weightFormConfig : FloatFormConfig WeightId Weight
 weightFormConfig =
     { blockName = "weight"
     , activity = ChildActivity Weight
-    , placeholderText = Trans.PlaceholderEnterWeight
-    , zScoreLabelForAge = Trans.ZScoreWeightForAge
+    , placeholderText = Translate.PlaceholderEnterWeight
+    , zScoreLabelForAge = Translate.ZScoreWeightForAge
     , zScoreForAge = Just <| \model age gender weight -> zScoreWeightForAge model age gender (Kilograms weight)
     , zScoreForHeightOrLength = Just zScoreForHeightOrLength
     , constraints = getInputConstraintsWeight
-    , unit = Trans.KilogramShorthand
+    , unit = Translate.KilogramShorthand
     , inputValue = .weight
     , storedValue = .value >> (\(WeightInKg val) -> val)
     , dateMeasured = .dateMeasured
@@ -275,7 +309,7 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
                                                 maybeAgeInDays
                                         )
                                     |> Maybe.map viewZScore
-                                    |> Maybe.withDefault (translate language Trans.NotAvailable)
+                                    |> Maybe.withDefault (translate language Translate.NotAvailable)
                         in
                         div
                             [ class "ui large header z-score age" ]
@@ -319,11 +353,11 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
                                                     floatValue
                                             )
                                         |> Maybe.map viewZScore
-                                        |> Maybe.withDefault (translate language Trans.NotAvailable)
+                                        |> Maybe.withDefault (translate language Translate.NotAvailable)
                             in
                             div
                                 [ class "ui large header z-score height" ]
-                                [ text <| translate language Trans.ZScoreWeightForHeight
+                                [ text <| translate language Translate.ZScoreWeightForHeight
                                 , span
                                     [ class "sub header" ]
                                     [ text zScoreText
@@ -347,10 +381,10 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
         [ div [ class "content" ]
             [ h3
                 [ class "ui header" ]
-                [ text <| translate language (Trans.ActivitiesTitle config.activity)
+                [ text <| translate language (Translate.ActivitiesTitle config.activity)
                 ]
-            , p [ class "activity-helper" ] [ text <| translate language (Trans.ActivitiesHelp config.activity) ]
-            , p [ class "range-helper" ] [ text <| translate language (Trans.AllowedValuesRangeHelper config.constraints) ]
+            , p [ class "activity-helper" ] [ text <| translate language (Translate.ActivitiesHelp config.activity) ]
+            , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper config.constraints) ]
             , div
                 [ class "ui form" ]
                 [ div [ class "ui grid" ]
@@ -407,7 +441,7 @@ viewMuacIndication language muac =
         [ muacColor muac
         , class "label-form"
         ]
-        [ translate language (Trans.MuacIndication muac)
+        [ translate language (Translate.MuacIndication muac)
             |> String.toUpper
             |> text
         ]
@@ -416,7 +450,7 @@ viewMuacIndication language muac =
 viewPreviousMeasurement : FloatFormConfig id value -> Language -> Float -> Html any
 viewPreviousMeasurement config language previousValue =
     [ previousValue
-        |> Trans.PreviousFloatMeasurement
+        |> Translate.PreviousFloatMeasurement
         |> translate language
     , " "
     , translate language config.unit
@@ -492,9 +526,9 @@ viewPhoto language measurement photo =
             [ class "content" ]
             [ h3
                 [ class "ui header" ]
-                [ text <| translate language (Trans.ActivitiesTitle activity) ]
+                [ text <| translate language (Translate.ActivitiesTitle activity) ]
                 |> keyed "title"
-            , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+            , p [] [ text <| translate language (Translate.ActivitiesHelp activity) ]
                 |> keyed "help"
             , keyedDivKeyed "grid"
                 [ class "ui grid" ]
@@ -514,7 +548,7 @@ viewPhoto language measurement photo =
                         ]
                         [ span
                             []
-                            [ text <| translate language Trans.DropzoneDefaultMessage ]
+                            [ text <| translate language Translate.DropzoneDefaultMessage ]
                         ]
                     ]
                     |> keyed "dropzone"
@@ -546,10 +580,10 @@ saveButton language msg measurement maybeDivClass =
 
         ( updateText, errorText ) =
             if isJust measurement.current then
-                ( Trans.Update, Trans.UpdateError )
+                ( Translate.Update, Translate.UpdateError )
 
             else
-                ( Trans.Save, Trans.SaveError )
+                ( Translate.Save, Translate.SaveError )
 
         saveAttr =
             if isLoading then
@@ -600,11 +634,11 @@ viewNutritionSigns language measurement signs =
         ]
         [ div [ class "content" ]
             [ h3 [ class "ui header" ]
-                [ text <| translate language (Trans.ActivitiesTitle activity)
+                [ text <| translate language (Translate.ActivitiesTitle activity)
                 ]
-            , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+            , p [] [ text <| translate language (Translate.ActivitiesHelp activity) ]
             , div [ class "ui form" ] <|
-                p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                p [] [ text <| translate language (Translate.ActivitiesLabel activity) ]
                     :: viewNutritionSignsSelector language signs
             ]
         , div [ class "actions" ] <|
@@ -664,7 +698,7 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
             ]
             []
         , label [ for inputId ]
-            [ text <| translate language (Trans.ChildNutritionSignLabel sign) ]
+            [ text <| translate language (Translate.ChildNutritionSignLabel sign) ]
         ]
 
 
@@ -753,13 +787,13 @@ viewChildFbf language currentDate child clinicType measurement form =
                    ]
                    [ div [ class "content" ]
                        [ h3 [ class "ui header" ]
-                           [ text <| translate language (Trans.ActivitiesTitle activity)
+                           [ text <| translate language (Translate.ActivitiesTitle activity)
                            ]
                        , h3 [ class "ui header" ]
-                           [ text <| translate language (Trans.CounselingTimingHeading timing)
+                           [ text <| translate language (Translate.CounselingTimingHeading timing)
                            ]
                        , div [ class "ui form" ] <|
-                           p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                           p [] [ text <| translate language (Translate.ActivitiesLabel activity) ]
                                :: viewCounselingTopics language completed expected topics
                        ]
                    , div [ class "actions" ] <|
@@ -798,10 +832,370 @@ viewCounselingTopics language completed expectedTopics selectedTopics =
                         []
                     , label
                         [ for inputId ]
-                        [ text <| translate language (Trans.CounselingTopic topic) ]
+                        [ text <| translate language (Translate.CounselingTopic topic) ]
                     ]
             )
         |> Dict.values
+
+
+viewContributingFactors : Language -> NominalDate -> MeasurementData (Maybe ( ContributingFactorsId, ContributingFactors )) -> ContributingFactorsForm -> Html MsgChild
+viewContributingFactors language currentDate measurement form =
+    let
+        existingId =
+            Maybe.map Tuple.first measurement.current
+
+        saved =
+            Maybe.map (Tuple.second >> .value) measurement.current
+
+        formContent =
+            contributingFactorsFormWithDefault form saved
+                |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
+
+        saveMsg =
+            toContributingFactorsValueWithDefault saved form
+                |> Maybe.map (SaveContributingFactors existingId >> SendOutMsgChild)
+    in
+    div [ class "ui full segment contributing-factors" ]
+        [ div [ class "content" ] [ formContent ]
+        , div [ class "actions" ] <|
+            saveButton
+                language
+                saveMsg
+                measurement
+                Nothing
+        ]
+
+
+viewContributingFactorsForm :
+    Language
+    -> NominalDate
+    -> (ContributingFactorsSign -> msg)
+    -> ContributingFactorsForm
+    -> Html msg
+viewContributingFactorsForm language currentDate setContributingFactorsSignMsg form =
+    div [ class "ui form contributing-factors" ]
+        [ viewQuestionLabel language Translate.ContributingFactorsQuestion
+        , viewCheckBoxMultipleSelectInput language
+            [ FactorLackOfBreastMilk, FactorMaternalMastitis, FactorPoorSuck, FactorDiarrheaOrVomiting ]
+            []
+            (form.signs |> Maybe.withDefault [])
+            (Just NoContributingFactorsSign)
+            setContributingFactorsSignMsg
+            Translate.ContributingFactor
+        ]
+
+
+viewFollowUp : Language -> NominalDate -> MeasurementData (Maybe ( FollowUpId, FollowUp )) -> FollowUpForm -> Html MsgChild
+viewFollowUp language currentDate measurement form =
+    let
+        existingId =
+            Maybe.map Tuple.first measurement.current
+
+        saved =
+            Maybe.map (Tuple.second >> .value) measurement.current
+
+        formContent =
+            followUpFormWithDefault form saved
+                |> viewFollowUpForm language currentDate SetFollowUpOption
+
+        saveMsg =
+            toFollowUpValueWithDefault saved form
+                |> Maybe.map (SaveFollowUp existingId >> SendOutMsgChild)
+    in
+    div [ class "ui full segment follow-up" ]
+        [ div [ class "content" ] [ formContent ]
+        , div [ class "actions" ] <|
+            saveButton
+                language
+                saveMsg
+                measurement
+                Nothing
+        ]
+
+
+viewFollowUpForm : Language -> NominalDate -> (FollowUpOption -> msg) -> FollowUpForm -> Html msg
+viewFollowUpForm language currentDate setFollowUpOptionMsg form =
+    div [ class "ui form follow-up" ]
+        [ viewLabel language Translate.FollowUpLabel
+        , viewCheckBoxSelectInput language
+            [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
+            []
+            form.option
+            setFollowUpOptionMsg
+            Translate.FollowUpOption
+        ]
+
+
+viewHealthEducation : Language -> NominalDate -> MeasurementData (Maybe ( GroupHealthEducationId, GroupHealthEducation )) -> HealthEducationForm -> Html MsgChild
+viewHealthEducation language currentDate measurement form_ =
+    let
+        existingId =
+            Maybe.map Tuple.first measurement.current
+
+        saved =
+            Maybe.map (Tuple.second >> .value) measurement.current
+
+        form =
+            healthEducationFormWithDefault form_ saved
+
+        formContent =
+            viewHealthEducationForm language
+                currentDate
+                SetProvidedEducationForDiagnosis
+                SetReasonForNotProvidingHealthEducation
+                form
+
+        ( completed, total ) =
+            let
+                ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
+                    form.educationForDiagnosis
+                        |> Maybe.map
+                            (\providedHealthEducation ->
+                                if not providedHealthEducation then
+                                    if isJust form.reasonForNotProvidingHealthEducation then
+                                        ( 1, 1 )
+
+                                    else
+                                        ( 0, 1 )
+
+                                else
+                                    ( 0, 0 )
+                            )
+                        |> Maybe.withDefault ( 0, 0 )
+            in
+            ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
+            , reasonForProvidingEducationCompleted + 1
+            )
+
+        saveMsg =
+            if completed < total then
+                Nothing
+
+            else
+                toHealthEducationValueWithDefault saved form_
+                    |> Maybe.map (SaveHealthEducation existingId >> SendOutMsgChild)
+    in
+    div [ class "ui full segment health-education" ]
+        [ div [ class "content" ] [ formContent ]
+        , div [ class "actions" ] <|
+            saveButton
+                language
+                saveMsg
+                measurement
+                Nothing
+        ]
+
+
+viewHealthEducationForm :
+    Language
+    -> NominalDate
+    -> (Bool -> msg)
+    -> (ReasonForNotProvidingHealthEducation -> msg)
+    -> HealthEducationForm
+    -> Html msg
+viewHealthEducationForm language currentDate setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form =
+    let
+        healthEducationSection =
+            let
+                providedHealthEducation =
+                    form.educationForDiagnosis
+                        |> Maybe.withDefault True
+
+                reasonForNotProvidingHealthEducation =
+                    if not providedHealthEducation then
+                        [ viewQuestionLabel language Translate.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ PatientNeedsEmergencyReferral
+                            , ReceivedEmergencyCase
+                            , LackOfAppropriateEducationUserGuide
+                            , PatientRefused
+                            , PatientTooIll
+                            ]
+                            []
+                            form.reasonForNotProvidingHealthEducation
+                            setReasonForNotProvidingHealthEducationMsg
+                            Translate.ReasonForNotProvidingHealthEducation
+                        ]
+
+                    else
+                        []
+            in
+            [ div [ class "label" ]
+                [ text <| translate language Translate.ProvidedPreventionEducationQuestionShort
+                , text "?"
+                ]
+            , viewBoolInput
+                language
+                form.educationForDiagnosis
+                setProvidedEducationForDiagnosisMsg
+                "education-for-diagnosis"
+                Nothing
+            ]
+                ++ reasonForNotProvidingHealthEducation
+    in
+    div [ class "ui form health-education" ] <|
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ]
+            [ viewHealthEducationLabel language Translate.ProvideHealthEducation "icon-open-book" Nothing
+            ]
+        ]
+            ++ healthEducationSection
+
+
+viewHealthEducationLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
+viewHealthEducationLabel language actionTranslationId iconClass maybeDate =
+    let
+        message =
+            div [] <|
+                [ text <| translate language actionTranslationId ]
+                    ++ renderDatePart language maybeDate
+                    ++ [ text "." ]
+    in
+    div [ class "header icon-label" ] <|
+        [ i [ class iconClass ] []
+        , message
+        ]
+
+
+viewSendToHC : Language -> NominalDate -> MeasurementData (Maybe ( GroupSendToHCId, GroupSendToHC )) -> SendToHCForm -> Html MsgChild
+viewSendToHC language currentDate measurement form_ =
+    let
+        existingId =
+            Maybe.map Tuple.first measurement.current
+
+        saved =
+            Maybe.map (Tuple.second >> .value) measurement.current
+
+        form =
+            sendToHCFormWithDefault form_ saved
+
+        formContent =
+            viewSendToHCForm language
+                currentDate
+                SetReferToHealthCenter
+                SetReasonForNotSendingToHC
+                SetHandReferralForm
+                form
+
+        ( completed, total ) =
+            let
+                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+                    form.referToHealthCenter
+                        |> Maybe.map
+                            (\sentToHC ->
+                                if not sentToHC then
+                                    if isJust form.reasonForNotSendingToHC then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+            in
+            ( reasonForNotSentActive + taskCompleted form.handReferralForm
+            , reasonForNotSentCompleted + 1
+            )
+
+        saveMsg =
+            if completed < total then
+                Nothing
+
+            else
+                toSendToHCValueWithDefault saved form_
+                    |> Maybe.map (SaveSendToHC existingId >> SendOutMsgChild)
+    in
+    div [ class "ui full segment send-to-hc" ]
+        [ div [ class "content" ] [ formContent ]
+        , div [ class "actions" ] <|
+            saveButton
+                language
+                saveMsg
+                measurement
+                Nothing
+        ]
+
+
+viewSendToHCForm :
+    Language
+    -> NominalDate
+    -> (Bool -> msg)
+    -> (ReasonForNotSendingToHC -> msg)
+    -> (Bool -> msg)
+    -> SendToHCForm
+    -> Html msg
+viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotSendingToHCMsg setHandReferralFormMsg form =
+    let
+        sendToHCSection =
+            let
+                sentToHealthCenter =
+                    form.referToHealthCenter
+                        |> Maybe.withDefault True
+
+                reasonForNotSendingToHCInput =
+                    if not sentToHealthCenter then
+                        [ viewQuestionLabel language Translate.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
+                            []
+                            form.reasonForNotSendingToHC
+                            setReasonForNotSendingToHCMsg
+                            Translate.ReasonForNotSendingToHC
+                        ]
+
+                    else
+                        []
+            in
+            [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
+            , viewBoolInput
+                language
+                form.referToHealthCenter
+                setReferToHealthCenterMsg
+                "refer-to-hc"
+                Nothing
+            ]
+                ++ reasonForNotSendingToHCInput
+    in
+    div [ class "ui form send-to-hc" ] <|
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ]
+            [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
+            , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
+            ]
+        ]
+            ++ sendToHCSection
+            ++ [ viewQuestionLabel language Translate.HandedReferralFormQuestion
+               , viewBoolInput
+                    language
+                    form.handReferralForm
+                    setHandReferralFormMsg
+                    "hand-referral-form"
+                    Nothing
+               ]
+
+
+viewActionTakenLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
+viewActionTakenLabel language actionTranslationId iconClass maybeDate =
+    let
+        message =
+            div [] <|
+                (text <| translate language actionTranslationId)
+                    :: renderDatePart language maybeDate
+                    ++ [ text "." ]
+    in
+    div [ class "header icon-label" ] <|
+        [ i [ class iconClass ] []
+        , message
+        ]
+
+
+renderDatePart : Language -> Maybe NominalDate -> List (Html any)
+renderDatePart language maybeDate =
+    maybeDate
+        |> Maybe.map (\date -> [ span [ class "date" ] [ text <| " (" ++ renderDate language date ++ ")" ] ])
+        |> Maybe.withDefault []
 
 
 type alias MotherMeasurementData =
@@ -885,9 +1279,9 @@ viewParticipantConsent language measurement ui =
                 [ div [ class "content" ]
                     [ h3
                         [ class "ui header" ]
-                        [ text <| translate language (Trans.ActivitiesTitle activity)
+                        [ text <| translate language (Translate.ActivitiesTitle activity)
                         ]
-                    , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+                    , p [] [ text <| translate language (Translate.ActivitiesHelp activity) ]
                     , completedLast
                         |> Dict.map viewParticipantForm
                         |> Dict.values
@@ -953,7 +1347,7 @@ viewParticipantConsent language measurement ui =
                             []
                         , label
                             [ for "counselor-reviewed" ]
-                            [ text <| translate language Trans.CounselorReviewed ]
+                            [ text <| translate language Translate.CounselorReviewed ]
                         ]
 
                 participantReviewed =
@@ -970,7 +1364,7 @@ viewParticipantConsent language measurement ui =
                             []
                         , label
                             [ for "participant-reviewed" ]
-                            [ text <| translate language Trans.ParticipantReviewed ]
+                            [ text <| translate language Translate.ParticipantReviewed ]
                         ]
 
                 msg =
@@ -994,10 +1388,10 @@ viewParticipantConsent language measurement ui =
 
                 ( updateText, errorText ) =
                     if EverySet.member formId completedFormIds then
-                        ( Trans.Update, Trans.UpdateError )
+                        ( Translate.Update, Translate.UpdateError )
 
                     else
-                        ( Trans.Save, Trans.SaveError )
+                        ( Translate.Save, Translate.SaveError )
 
                 saveAttr =
                     if isLoading then
@@ -1042,9 +1436,9 @@ viewParticipantConsent language measurement ui =
                                 [ class "form-body" ]
                                 [ body
                                 , hr [] []
-                                , h2 [] [ text <| translate language Trans.ParticipantSignature ]
+                                , h2 [] [ text <| translate language Translate.ParticipantSignature ]
                                 , participantReviewed
-                                , h2 [] [ text <| translate language Trans.CounselorSignature ]
+                                , h2 [] [ text <| translate language Translate.CounselorSignature ]
                                 , counselorReviewed
                                 ]
                             , div [ class "actions" ] saveButton_
@@ -1084,11 +1478,11 @@ viewFamilyPlanning language measurement signs =
         [ div [ class "content" ]
             [ h3
                 [ class "ui header" ]
-                [ text <| translate language (Trans.ActivitiesTitle activity)
+                [ text <| translate language (Translate.ActivitiesTitle activity)
                 ]
-            , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+            , p [] [ text <| translate language (Translate.ActivitiesHelp activity) ]
             , div [ class "ui form" ] <|
-                p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                p [] [ text <| translate language (Translate.ActivitiesLabel activity) ]
                     :: viewFamilyPlanningSelector language signs
             ]
         , div [ class "actions" ] <|
@@ -1147,7 +1541,7 @@ viewFamilyPlanningSelectorItem language familyPlanningSigns sign =
             )
             []
         , label [ for inputId ]
-            [ text <| translate language (Trans.FamilyPlanningSignLabel sign) ]
+            [ text <| translate language (Translate.FamilyPlanningSignLabel sign) ]
         ]
 
 
@@ -1176,11 +1570,11 @@ viewLactation language measurement form =
         [ div [ class "content" ]
             [ h3
                 [ class "ui header" ]
-                [ text <| translate language (Trans.ActivitiesTitle activity)
+                [ text <| translate language (Translate.ActivitiesTitle activity)
                 ]
-            , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+            , p [] [ text <| translate language (Translate.ActivitiesHelp activity) ]
             , div [ class "ui form" ] <|
-                [ viewQuestionLabel language Trans.IsCurrentlyBreastfeeding
+                [ viewQuestionLabel language Translate.IsCurrentlyBreastfeeding
                 , viewBoolInput language
                     form.breastfeeding
                     (SelectLactationSign Breastfeeding)
@@ -1279,22 +1673,22 @@ viewFbfForm language measurement activity clinicType setDistributedAmountMsg set
                     []
 
                 _ ->
-                    [ viewLabel language <| Trans.WasFbfDistirbuted activity
+                    [ viewLabel language <| Translate.WasFbfDistirbuted activity
                     , viewCheckBoxSelectInput language
                         [ DistributedPartiallyLackOfStock, DistributedPartiallyOther ]
                         []
                         form.distributionNotice
                         setDistributoinNoticeMsg
-                        Trans.DistributionNotice
+                        Translate.DistributionNotice
                     ]
 
         ( quantityUnitLabel, activityLabel ) =
             case clinicType of
                 Achi ->
-                    ( Trans.KilogramShorthand, Trans.ActivitityLabelAchi )
+                    ( Translate.KilogramShorthand, Translate.ActivitityLabelAchi )
 
                 _ ->
-                    ( Trans.PackagesPerMonth, Trans.ActivitiesLabel activity )
+                    ( Translate.PackagesPerMonth, Translate.ActivitiesLabel activity )
     in
     div
         [ class "ui full segment fbf"
@@ -1302,7 +1696,7 @@ viewFbfForm language measurement activity clinicType setDistributedAmountMsg set
         ]
         [ div [ class "content" ]
             [ h3 [ class "ui header" ]
-                [ text <| translate language (Trans.FbfDistribution clinicType) ]
+                [ text <| translate language (Translate.FbfDistribution clinicType) ]
             , p [] [ text <| translate language activityLabel ]
             , formContentCommon
                 :: formContentByClinicType

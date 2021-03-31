@@ -32,6 +32,7 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
+import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model
     exposing
         ( EducationLevel(..)
@@ -46,8 +47,7 @@ import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
 import Http
-import Measurement.Model exposing (FloatInputConstraints)
-import NutritionActivity.Model exposing (NutritionActivity(..))
+import Measurement.Model exposing (FloatInputConstraints, NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Model
     exposing
         ( DangerSignsTask(..)
@@ -68,6 +68,8 @@ import Pages.Dashboard.Model as Dashboard
         , FilterPeriod(..)
         , FilterProgramType(..)
         )
+import Pages.NutritionActivity.Model
+import Pages.NutritionEncounter.Model exposing (NutritionAssesment(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
     exposing
@@ -355,6 +357,8 @@ type TranslationId
     | ContactedRecommendedSiteQuestion
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
+    | ContributingFactor ContributingFactorsSign
+    | ContributingFactorsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
     | CurrentIllnessBegan
@@ -457,6 +461,8 @@ type TranslationId
     | FirstName
     | FiveVisits
     | ForIllustrativePurposesOnly
+    | FollowUpLabel
+    | FollowUpOption FollowUpOption
     | FormError (ErrorValue ValidationError)
     | FormField String
     | FundalHeight
@@ -567,6 +573,7 @@ type TranslationId
     | MissedDosesOfMedicatgion Int
     | ModeOfDelivery ModeOfDelivery
     | ModeOfDeliveryLabel
+    | ModeratelyUnderweight
     | Month
     | MonthAbbrev
     | MonthsOld
@@ -589,7 +596,8 @@ type TranslationId
     | NegativeLabel
     | Never
     | Next
-    | NextStepsTask NextStepsTask
+    | NextSteps
+    | NextStepsTask Pages.AcuteIllnessActivity.Model.NextStepsTask
     | No
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -617,7 +625,9 @@ type TranslationId
     | NumberOfStillbirthsPreTerm
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
+    | NutritionAssesment NutritionAssesment
     | NutritionHelper
+    | NutritionNextStepsTask Measurement.Model.NextStepsTask
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
@@ -694,6 +704,7 @@ type TranslationId
     | ProvideHealthEducation
     | ProvidedHealthEducationAction
     | ProvidedPreventionEducationQuestion
+    | ProvidedPreventionEducationQuestionShort
     | Province
     | ReasonForCSection
     | ReasonForNotIsolating ReasonForNotIsolating
@@ -1412,6 +1423,27 @@ translationSet trans =
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
                     }
 
+                -- @todo
+                ChildActivity Activity.Model.ContributingFactors ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.FollowUp ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.HealthEducation ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.SendToHC ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         ActivitiesLabel activity ->
             case activity of
                 MotherActivity Activity.Model.FamilyPlanning ->
@@ -1469,6 +1501,26 @@ translationSet trans =
                     , kinyarwanda = Just "Ibiro:"
                     }
 
+                ChildActivity Activity.Model.ContributingFactors ->
+                    { english = "Contributing Factors:"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.FollowUp ->
+                    { english = "Follow Up:"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.HealthEducation ->
+                    { english = "Health Education:"
+                    , kinyarwanda = Just "Inyigisho ku buzima:"
+                    }
+
+                ChildActivity Activity.Model.SendToHC ->
+                    { english = "Send to Health Center:"
+                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima:"
+                    }
+
         ActivitiesTitle activity ->
             case activity of
                 MotherActivity Activity.Model.FamilyPlanning ->
@@ -1524,6 +1576,26 @@ translationSet trans =
                 ChildActivity Activity.Model.Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
+                    }
+
+                ChildActivity Activity.Model.ContributingFactors ->
+                    { english = "Contributing Factors"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.FollowUp ->
+                    { english = "Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.HealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
+                    }
+
+                ChildActivity Activity.Model.SendToHC ->
+                    { english = "Send to Health Center"
+                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
         ActivitityTitleAchi ->
@@ -1586,6 +1658,26 @@ translationSet trans =
                 ChildActivity Activity.Model.Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
+                    }
+
+                ChildActivity Activity.Model.ContributingFactors ->
+                    { english = "Contributing Factors"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.FollowUp ->
+                    { english = "Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity Activity.Model.HealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
+                    }
+
+                ChildActivity Activity.Model.SendToHC ->
+                    { english = "Send to Health Center"
+                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
         ActivitiesToComplete count ->
@@ -2124,6 +2216,38 @@ translationSet trans =
         ContactWithCOVID19SymptomsQuestion ->
             { english = "Have you had contacts with others who exhibit symptoms or have been exposed to COVID-19"
             , kinyarwanda = Just "Waba warigeze uhura n'abantu bagaragaje ibimenyetso bya covid-19 cyangwa n'abari bafite ibyago byo kuyandura"
+            }
+
+        ContributingFactor factor ->
+            case factor of
+                FactorLackOfBreastMilk ->
+                    { english = "Lack of breast milk (for children < 6 months)"
+                    , kinyarwanda = Just "Kubura kw'amashereka (ku mwana uri munsi y'amezi atandatu)"
+                    }
+
+                FactorMaternalMastitis ->
+                    { english = "Maternal mastitis (for children < 6 months)"
+                    , kinyarwanda = Just "Umubyeyi yabyimbye amabere (ku mwana uri munsi y'amezi atandatu)"
+                    }
+
+                FactorPoorSuck ->
+                    { english = "Poor suck"
+                    , kinyarwanda = Just "Yonka nta mbaraga"
+                    }
+
+                FactorDiarrheaOrVomiting ->
+                    { english = "Diarrhea or vomiting"
+                    , kinyarwanda = Just "Impiswi cyangwa kuruka"
+                    }
+
+                NoContributingFactorsSign ->
+                    { english = "None of these"
+                    , kinyarwanda = Just "Nta kimenyetso na kimwe"
+                    }
+
+        ContributingFactorsQuestion ->
+            { english = "Has patient or patient’s mother experienced any of the following"
+            , kinyarwanda = Nothing
             }
 
         ConvulsionsAndUnconsciousPreviousDelivery ->
@@ -2886,6 +3010,33 @@ translationSet trans =
             { english = "For illustrative purposes only"
             , kinyarwanda = Nothing
             }
+
+        FollowUpLabel ->
+            { english = "Follow up with the patient in"
+            , kinyarwanda = Just "Gukurikirana umurwayi mu"
+            }
+
+        FollowUpOption option ->
+            case option of
+                OneDay ->
+                    { english = "1 Day"
+                    , kinyarwanda = Just "Umunsi 1"
+                    }
+
+                ThreeDays ->
+                    { english = "3 Days"
+                    , kinyarwanda = Just "Iminsi 3"
+                    }
+
+                OneWeek ->
+                    { english = "1 Week"
+                    , kinyarwanda = Just "Icyumweru 1"
+                    }
+
+                TwoWeeks ->
+                    { english = "2 Weeks"
+                    , kinyarwanda = Just "Ibyumweru 2"
+                    }
 
         FormError errorValue ->
             translateFormError errorValue
@@ -3852,6 +4003,11 @@ translationSet trans =
             , kinyarwanda = Just "Uburyo yabyayemo"
             }
 
+        ModeratelyUnderweight ->
+            { english = "Moderately Underweight"
+            , kinyarwanda = Nothing
+            }
+
         Month ->
             { english = "Month"
             , kinyarwanda = Just "Ukwezi"
@@ -3980,6 +4136,11 @@ translationSet trans =
             , kinyarwanda = Just "Ibikurikiyeho"
             }
 
+        NextSteps ->
+            { english = "Next Steps"
+            , kinyarwanda = Just "Ibikurikiyeho"
+            }
+
         NextStepsTask task ->
             case task of
                 NextStepsIsolation ->
@@ -4002,12 +4163,12 @@ translationSet trans =
                     , kinyarwanda = Just "Gutanga Imiti"
                     }
 
-                NextStepsSendToHC ->
+                Pages.AcuteIllnessActivity.Model.NextStepsSendToHC ->
                     { english = "Send to Health Center"
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
-                NextStepsHealthEducation ->
+                Pages.AcuteIllnessActivity.Model.NextStepsHealthEducation ->
                     { english = "Health Education"
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
@@ -4183,62 +4344,136 @@ translationSet trans =
 
         NutritionActivityHelper activity ->
             case activity of
-                NutritionActivity.Model.Muac ->
+                Backend.NutritionActivity.Model.Muac ->
                     { english = "Make sure to measure at the center of the baby’s upper arm."
                     , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe gupima ikizigira cy'akaboko"
                     }
 
-                NutritionActivity.Model.Height ->
+                Backend.NutritionActivity.Model.Height ->
                     { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight."
                     , kinyarwanda = Just "Saba Umubyeyi guhagarara inyuma y’umwana we agaramye, afata umutwe ku gice cy’amatwi. Sunikira akabaho ku buryo gakora mu bworo by’ibirenge byombi."
                     }
 
-                NutritionActivity.Model.Nutrition ->
+                Backend.NutritionActivity.Model.Nutrition ->
                     { english = "Explain to the mother how to check the malnutrition signs for their own child."
                     , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye."
                     }
 
-                NutritionActivity.Model.Photo ->
+                Backend.NutritionActivity.Model.Photo ->
                     { english = "Take each baby’s photo at each health assessment. Photos should show the entire body of each child."
                     , kinyarwanda = Just "Fata ifoto ya buri mwana kuri buri bikorwa by'ipimwa Ifoto igomba kwerekana ibice by'umubiri wose by'umwana"
                     }
 
-                NutritionActivity.Model.Weight ->
+                Backend.NutritionActivity.Model.Weight ->
                     { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on."
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
                     }
 
+                Backend.NutritionActivity.Model.NextSteps ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         NutritionActivityTitle activity ->
             case activity of
-                NutritionActivity.Model.Muac ->
+                Backend.NutritionActivity.Model.Muac ->
                     { english = "MUAC"
                     , kinyarwanda = Just "Ikizigira cy'akaboko"
                     }
 
-                NutritionActivity.Model.Height ->
+                Backend.NutritionActivity.Model.Height ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"
                     }
 
-                NutritionActivity.Model.Nutrition ->
+                Backend.NutritionActivity.Model.Nutrition ->
                     { english = "Nutrition"
                     , kinyarwanda = Just "Imirire"
                     }
 
-                NutritionActivity.Model.Photo ->
+                Backend.NutritionActivity.Model.Photo ->
                     { english = "Photo"
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                NutritionActivity.Model.Weight ->
+                Backend.NutritionActivity.Model.Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
+                    }
+
+                Backend.NutritionActivity.Model.NextSteps ->
+                    { english = "Next Steps"
+                    , kinyarwanda = Just "Ibikurikiyeho"
+                    }
+
+        NutritionAssesment assessment ->
+            case assessment of
+                AssesmentAcuteMalnutritionModerate ->
+                    { english = "Moderate Acute Malnutrition"
+                    , kinyarwanda = Just "Imirire  mibi yoroheje ije vuba"
+                    }
+
+                AssesmentAcuteMalnutritionSevere ->
+                    { english = "Severe Acute Malnutrition"
+                    , kinyarwanda = Just "Imirire  mibi ikabije ije vuba"
+                    }
+
+                AssesmentUnderweightModerate ->
+                    { english = "Moderately Underweight"
+                    , kinyarwanda = Just "Imirire mibi yoroheje ku biro"
+                    }
+
+                AssesmentUnderweightSevere ->
+                    { english = "Severely Underweight"
+                    , kinyarwanda = Just "Imirire mibi ikabije ku biro"
+                    }
+
+                AssesmentDangerSignsNotPresent ->
+                    { english = "Without Danger Signs"
+                    , kinyarwanda = Just "Nta bimenyetso mpuruza"
+                    }
+
+                AssesmentDangerSignsPresent ->
+                    { english = "With Danger Signs"
+                    , kinyarwanda = Just "Ifite ibimenyetso mpuruza"
+                    }
+
+                AssesmentMalnutritionSigns _ ->
+                    { english = "Malnutrition Signs"
+                    , kinyarwanda = Just "Ifite ibimenyetso mpuruza"
+                    }
+
+                AssesmentConsecutiveWeightLoss ->
+                    { english = "Consecutive Weight Loss"
+                    , kinyarwanda = Just "Gutakaza ibiro mu buryo bwikurikiranije"
                     }
 
         NutritionHelper ->
             { english = "Explain to the mother how to check the malnutrition signs for their own child."
             , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye."
             }
+
+        NutritionNextStepsTask task ->
+            case task of
+                Measurement.Model.NextStepsSendToHC ->
+                    { english = "Send to Health Center"
+                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+                    }
+
+                Measurement.Model.NextStepsHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
+                    }
+
+                NextStepContributingFactors ->
+                    { english = "Contributing Factors"
+                    , kinyarwanda = Just "Impamvu zateye uburwayi"
+                    }
+
+                NextStepFollowUp ->
+                    { english = "Follow Up"
+                    , kinyarwanda = Just "Gukurikirana umurwayi"
+                    }
 
         ObstetricalDiagnosis ->
             { english = "Obstetrical Diagnosis"
@@ -4789,6 +5024,11 @@ translationSet trans =
             , kinyarwanda = Just "Mwatanze inyigisho ku buzima n' umurongo ngenderwaho ku kwirinda"
             }
 
+        ProvidedPreventionEducationQuestionShort ->
+            { english = "Have you provided health education and anticipatory guidance"
+            , kinyarwanda = Nothing
+            }
+
         Province ->
             { english = "Province"
             , kinyarwanda = Just "Intara"
@@ -4878,6 +5118,11 @@ translationSet trans =
                 PatientRefused ->
                     { english = "Patient refused"
                     , kinyarwanda = Just "Umurwayi yabyanze"
+                    }
+
+                PatientTooIll ->
+                    { english = "Patient too ill"
+                    , kinyarwanda = Just "Umurwayi ararembye"
                     }
 
                 NoReasonForNotProvidingHealthEducation ->
@@ -6406,6 +6651,11 @@ translateActivePage page =
                         MotherPage motherId ->
                             { english = "Mother"
                             , kinyarwanda = Just "Umubyeyi"
+                            }
+
+                        NextStepsPage childId _ ->
+                            { english = "Next Steps"
+                            , kinyarwanda = Just "Ibikurikiyeho"
                             }
 
                         ProgressReportPage childId ->

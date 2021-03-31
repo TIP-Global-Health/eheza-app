@@ -396,6 +396,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityClinic identifier ->
                 text <| "Clinic " ++ identifier.entity.name
 
+            BackendAuthorityContributingFactors identifier ->
+                viewMeasurement identifier "Contributing Factors"
+
             BackendAuthorityCounselingSession identifier ->
                 viewMeasurement identifier "Counseling Session"
 
@@ -413,6 +416,15 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityFamilyPlanning identifier ->
                 viewMeasurement identifier "Family Planning"
+
+            BackendAuthorityFollowUp identifier ->
+                viewMeasurement identifier "Follow Up"
+
+            BackendAuthorityGroupHealthEducation identifier ->
+                viewMeasurement identifier "Group Health Education"
+
+            BackendAuthorityGroupSendToHC identifier ->
+                viewMeasurement identifier "Group Send to HC"
 
             BackendAuthorityHealthEducation identifier ->
                 viewMeasurement identifier "Health Education"
@@ -456,8 +468,17 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityNutrition identifier ->
                 viewMeasurement identifier "Nutrition"
 
+            BackendAuthorityNutritionContributingFactors identifier ->
+                viewMeasurement identifier "Nutrition Contributing Factors"
+
             BackendAuthorityNutritionEncounter identifier ->
                 text ("NutritionEncounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
+            BackendAuthorityNutritionFollowUp identifier ->
+                viewMeasurement identifier "Nutrition Follow Up"
+
+            BackendAuthorityNutritionHealthEducation identifier ->
+                viewMeasurement identifier "Nutrition Health Education"
 
             BackendAuthorityNutritionHeight identifier ->
                 viewMeasurement identifier "Nutrition Height"
@@ -470,6 +491,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityNutritionPhoto identifier ->
                 viewMeasurement identifier "Nutrition Photo"
+
+            BackendAuthorityNutritionSendToHC identifier ->
+                viewMeasurement identifier "Nutrition Send to HC"
 
             BackendAuthorityNutritionWeight identifier ->
                 viewMeasurement identifier "Nutrition Weight"

@@ -25,6 +25,10 @@ type alias Model =
     , saveNutrition : WebData ()
     , savePhoto : WebData ()
     , saveWeight : WebData ()
+    , saveSendToHC : WebData ()
+    , saveHealthEducation : WebData ()
+    , saveContributingFactors : WebData ()
+    , saveFollowUp : WebData ()
     }
 
 
@@ -36,6 +40,10 @@ emptyModel =
     , saveNutrition = NotAsked
     , savePhoto = NotAsked
     , saveWeight = NotAsked
+    , saveSendToHC = NotAsked
+    , saveHealthEducation = NotAsked
+    , saveContributingFactors = NotAsked
+    , saveFollowUp = NotAsked
     }
 
 
@@ -52,3 +60,11 @@ type Msg
     | HandleSavedPhoto (WebData ())
     | SaveWeight PersonId (Maybe NutritionWeightId) WeightInKg
     | HandleSavedWeight (WebData ())
+    | SaveSendToHC PersonId (Maybe NutritionSendToHCId) SendToHCValue
+    | HandleSavedSendToHC (WebData ())
+    | SaveHealthEducation PersonId (Maybe NutritionHealthEducationId) HealthEducationValue
+    | HandleSavedHealthEducation (WebData ())
+    | SaveContributingFactors PersonId (Maybe NutritionContributingFactorsId) (EverySet ContributingFactorsSign)
+    | HandleSavedContributingFactors (WebData ())
+    | SaveFollowUp PersonId (Maybe NutritionFollowUpId) (EverySet FollowUpOption)
+    | HandleSavedFollowUp (WebData ())

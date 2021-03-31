@@ -424,9 +424,13 @@
     // taken during groups encounter.
     var groupMeasurementTypes = [
       'attendance',
+      'contributing_factors',
       'counseling_session',
       'child_fbf',
       'family_planning',
+      'follow_up',
+      'group_health_education',
+      'group_send_to_hc',
       'height',
       'lactation',
       'mother_fbf',

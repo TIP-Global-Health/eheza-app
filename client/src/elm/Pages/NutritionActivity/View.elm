@@ -1,4 +1,4 @@
-module Pages.NutritionActivity.View exposing (view)
+module Pages.NutritionActivity.View exposing (view, warningPopup)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -6,7 +6,9 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
+import Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge)
 import Backend.Person.Model exposing (Person)
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -17,22 +19,47 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
+import Measurement.Model exposing (ContributingFactorsForm, FollowUpForm, HealthEducationForm, NextStepsTask(..), SendToHCForm)
 import Measurement.Utils exposing (..)
-import Measurement.View exposing (viewMeasurementFloatDiff, viewMuacIndication, zScoreForHeightOrLength)
-import NutritionActivity.Model exposing (NutritionActivity(..))
+import Measurement.View
+    exposing
+        ( renderDatePart
+        , viewContributingFactorsForm
+        , viewFollowUpForm
+        , viewHealthEducationForm
+        , viewMeasurementFloatDiff
+        , viewMuacIndication
+        , viewSendToHCForm
+        , zScoreForHeightOrLength
+        )
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
-import Pages.NutritionEncounter.Model exposing (AssembledData)
+import Pages.NutritionEncounter.Model exposing (AssembledData, NutritionAssesment(..))
 import Pages.NutritionEncounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
-import Pages.Utils exposing (taskCompleted, viewCheckBoxMultipleSelectInput, viewCustomLabel, viewLabel, viewMeasurementInput, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement)
+import Pages.Utils
+    exposing
+        ( isTaskCompleted
+        , taskCompleted
+        , tasksBarId
+        , viewBoolInput
+        , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectInput
+        , viewCustomLabel
+        , viewLabel
+        , viewMeasurementInput
+        , viewPhotoThumbFromPhotoUrl
+        , viewPreviousMeasurement
+        , viewQuestionLabel
+        )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
+import Utils.Html exposing (viewModal)
 import Utils.NominalDate exposing (Days(..), diffDays)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
-import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
+import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
 
 view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> ModelIndexedDb -> Model -> Html Msg
@@ -41,9 +68,26 @@ view language currentDate zscores id activity isChw db model =
         data =
             generateAssembledData id db
     in
-    div [ class "page-activity nutrition" ] <|
-        [ viewHeader language id activity
-        , viewWebData language (viewContent language currentDate zscores id activity isChw db model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate zscores id activity isChw db model) identity data
+
+
+viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate zscores id activity isChw db model data =
+    let
+        header =
+            viewHeader language id activity
+
+        content =
+            viewContent language currentDate zscores id activity isChw db model data
+    in
+    div [ class "page-activity nutrition" ]
+        [ header
+        , content
+        , viewModal <|
+            warningPopup language
+                currentDate
+                SetWarningPopupState
+                model.warningPopupState
         ]
 
 
@@ -70,6 +114,49 @@ viewContent language currentDate zscores id activity isChw db model assembled =
         :: viewActivity language currentDate zscores id activity isChw assembled db model
     )
         |> div [ class "ui unstackable items" ]
+
+
+warningPopup : Language -> NominalDate -> (List NutritionAssesment -> msg) -> List NutritionAssesment -> Maybe (Html msg)
+warningPopup language currentDate setStateMsg state =
+    if List.isEmpty state then
+        Nothing
+
+    else
+        let
+            infoHeading =
+                [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
+
+            assessments =
+                List.map (\assessment -> p [] [ translateAssement assessment ]) state
+
+            translateAssement assessment =
+                case assessment of
+                    AssesmentMalnutritionSigns signs ->
+                        let
+                            translatedSigns =
+                                List.map (Translate.ChildNutritionSignLabel >> translate language) signs
+                                    |> String.join ", "
+                        in
+                        text <| translate language (Translate.NutritionAssesment assessment) ++ ": " ++ translatedSigns
+
+                    _ ->
+                        text <| translate language <| Translate.NutritionAssesment assessment
+        in
+        Just <|
+            div [ class "ui active modal diagnosis-popup" ]
+                [ div [ class "content" ] <|
+                    [ div [ class "popup-heading-wrapper" ] infoHeading
+                    , div [ class "popup-title" ] assessments
+                    ]
+                , div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick <| setStateMsg []
+                        ]
+                        [ text <| translate language Translate.Continue ]
+                    ]
+                ]
 
 
 viewActivity : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
@@ -119,6 +206,9 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
         Weight ->
             viewWeightContent language currentDate zscores isChw assembled model.weightData previousGroupWeight
 
+        NextSteps ->
+            viewNextStepsContent language currentDate id assembled model.nextStepsData
+
 
 viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> HeightData -> Maybe ( NominalDate, Float ) -> List (Html Msg)
 viewHeightContent language currentDate zscores assembled data previousGroupValue =
@@ -143,7 +233,7 @@ viewHeightContent language currentDate zscores assembled data previousGroupValue
                 assembled.person.birthDate
 
         previousIndividualValue =
-            resolvePreviousIndividualValue assembled .height (\(HeightInCm cm) -> cm)
+            resolvePreviousIndividualValue assembled.previousMeasurementsWithDates .height (\(HeightInCm cm) -> cm)
 
         previousValue =
             resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
@@ -232,7 +322,7 @@ viewMuacContent language currentDate assembled data previousGroupValue =
             taskCompleted form.muac
 
         previousIndividualValue =
-            resolvePreviousIndividualValue assembled .muac (\(MuacInCm cm) -> cm)
+            resolvePreviousIndividualValue assembled.previousMeasurementsWithDates .muac (\(MuacInCm cm) -> cm)
 
         previousValue =
             resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
@@ -427,21 +517,13 @@ viewWeightContent language currentDate zscores isChw assembled data previousGrou
                 assembled.person.birthDate
 
         previousIndividualValue =
-            resolvePreviousIndividualValue assembled .weight (\(WeightInKg kg) -> kg)
+            resolvePreviousIndividualValue assembled.previousMeasurementsWithDates .weight (\(WeightInKg kg) -> kg)
 
         previousValue =
             resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
 
         zScoreForAgeText =
-            form.weight
-                |> Maybe.andThen
-                    (\weight ->
-                        Maybe.andThen
-                            (\ageInDays ->
-                                zScoreWeightForAge zscores ageInDays assembled.person.gender (Kilograms weight)
-                            )
-                            maybeAgeInDays
-                    )
+            calculateZScoreWeightForAge currentDate zscores assembled.person form.weight
                 |> Maybe.map viewZScore
                 |> Maybe.withDefault (translate language Translate.NotAvailable)
 
@@ -518,6 +600,165 @@ viewWeightContent language currentDate zscores isChw assembled data previousGrou
                 , onClick <| SaveWeight assembled.participant.person assembled.measurements.weight
                 ]
                 [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
+
+
+viewNextStepsContent : Language -> NominalDate -> NutritionEncounterId -> AssembledData -> NextStepsData -> List (Html Msg)
+viewNextStepsContent language currentDate id assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            allNextStepsTasks
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        NextStepsSendToHC ->
+                            ( "next-steps-send-to-hc"
+                            , isJust measurements.sendToHC
+                            )
+
+                        NextStepsHealthEducation ->
+                            ( "next-steps-health-education"
+                            , isJust measurements.healthEducation
+                            )
+
+                        NextStepContributingFactors ->
+                            ( "next-steps-contributing-factors"
+                            , isJust measurements.contributingFactors
+                            )
+
+                        NextStepFollowUp ->
+                            ( "next-steps-follow-up"
+                            , isJust measurements.followUp
+                            )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveNextStepsTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ a attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.NutritionNextStepsTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map (\task -> ( task, nextStepsTasksCompletedFromTotal measurements data task ))
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just NextStepsSendToHC ->
+                    measurements.sendToHC
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> sendToHCFormWithDefault data.sendToHCForm
+                        |> viewSendToHCForm language
+                            currentDate
+                            SetReferToHealthCenter
+                            SetReasonForNotSendingToHC
+                            SetHandReferralForm
+
+                Just NextStepsHealthEducation ->
+                    measurements.healthEducation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> healthEducationFormWithDefault data.healthEducationForm
+                        |> viewHealthEducationForm language
+                            currentDate
+                            SetProvidedEducationForDiagnosis
+                            SetReasonForNotProvidingHealthEducation
+
+                Just NextStepContributingFactors ->
+                    measurements.contributingFactors
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> contributingFactorsFormWithDefault data.contributingFactorsForm
+                        |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
+
+                Just NextStepFollowUp ->
+                    measurements.followUp
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> followUpFormWithDefault data.followUpForm
+                        |> viewFollowUpForm language currentDate SetFollowUpOption
+
+                Nothing ->
+                    emptyNode
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                case task of
+                                    NextStepsSendToHC ->
+                                        SaveSendToHC personId measurements.sendToHC nextTask
+
+                                    NextStepsHealthEducation ->
+                                        SaveHealthEducation personId measurements.healthEducation nextTask
+
+                                    NextStepContributingFactors ->
+                                        SaveContributingFactors personId measurements.contributingFactors nextTask
+
+                                    NextStepFollowUp ->
+                                        SaveFollowUp personId measurements.followUp nextTask
+                        in
+                        div [ class "actions next-steps" ]
+                            [ button
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                , onClick saveMsg
+                                ]
+                                [ text <| translate language Translate.Save ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui three column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
             ]
         ]
     ]

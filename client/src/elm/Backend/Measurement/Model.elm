@@ -153,12 +153,6 @@ type alias FbfValue =
     }
 
 
-type alias FbfForm =
-    { distributedAmount : Maybe Float
-    , distributionNotice : Maybe DistributionNotice
-    }
-
-
 type alias ParticipantConsent =
     GroupMeasurement ParticipantConsentValue
 
@@ -191,6 +185,37 @@ type alias CounselingSession =
     GroupMeasurement ( CounselingTiming, EverySet CounselingTopicId )
 
 
+type alias GroupSendToHC =
+    GroupMeasurement SendToHCValue
+
+
+type alias GroupHealthEducation =
+    GroupMeasurement HealthEducationValue
+
+
+type alias ContributingFactors =
+    GroupMeasurement (EverySet ContributingFactorsSign)
+
+
+type alias FollowUp =
+    GroupMeasurement (EverySet FollowUpOption)
+
+
+type ContributingFactorsSign
+    = FactorLackOfBreastMilk
+    | FactorMaternalMastitis
+    | FactorPoorSuck
+    | FactorDiarrheaOrVomiting
+    | NoContributingFactorsSign
+
+
+type FollowUpOption
+    = OneDay
+    | ThreeDays
+    | OneWeek
+    | TwoWeeks
+
+
 
 -- NUTRITION MEASUREMENTS
 
@@ -213,6 +238,22 @@ type alias NutritionPhoto =
 
 type alias NutritionWeight =
     NutritionMeasurement WeightInKg
+
+
+type alias NutritionSendToHC =
+    NutritionMeasurement SendToHCValue
+
+
+type alias NutritionHealthEducation =
+    NutritionMeasurement HealthEducationValue
+
+
+type alias NutritionContributingFactors =
+    NutritionMeasurement (EverySet ContributingFactorsSign)
+
+
+type alias NutritionFollowUp =
+    NutritionMeasurement (EverySet FollowUpOption)
 
 
 
@@ -859,6 +900,7 @@ type ReasonForNotProvidingHealthEducation
     | ReceivedEmergencyCase
     | LackOfAppropriateEducationUserGuide
     | PatientRefused
+    | PatientTooIll
     | NoReasonForNotProvidingHealthEducation
 
 
@@ -959,6 +1001,10 @@ type alias ChildMeasurementList =
     , weights : Dict WeightId Weight
     , counselingSessions : Dict CounselingSessionId CounselingSession
     , fbfs : Dict ChildFbfId Fbf
+    , contributingFactors : Dict ContributingFactorsId ContributingFactors
+    , followUp : Dict FollowUpId FollowUp
+    , healthEducation : Dict GroupHealthEducationId GroupHealthEducation
+    , sendToHC : Dict GroupSendToHCId GroupSendToHC
     }
 
 
@@ -971,6 +1017,10 @@ emptyChildMeasurementList =
     , weights = Dict.empty
     , counselingSessions = Dict.empty
     , fbfs = Dict.empty
+    , contributingFactors = Dict.empty
+    , followUp = Dict.empty
+    , healthEducation = Dict.empty
+    , sendToHC = Dict.empty
     }
 
 
@@ -1025,6 +1075,10 @@ type alias NutritionMeasurements =
     , nutrition : Maybe ( NutritionNutritionId, NutritionNutrition )
     , photo : Maybe ( NutritionPhotoId, NutritionPhoto )
     , weight : Maybe ( NutritionWeightId, NutritionWeight )
+    , sendToHC : Maybe ( NutritionSendToHCId, NutritionSendToHC )
+    , healthEducation : Maybe ( NutritionHealthEducationId, NutritionHealthEducation )
+    , contributingFactors : Maybe ( NutritionContributingFactorsId, NutritionContributingFactors )
+    , followUp : Maybe ( NutritionFollowUpId, NutritionFollowUp )
     }
 
 
@@ -1069,6 +1123,10 @@ type alias ChildMeasurements =
     , weight : Maybe ( WeightId, Weight )
     , counselingSession : Maybe ( CounselingSessionId, CounselingSession )
     , fbf : Maybe ( ChildFbfId, Fbf )
+    , contributingFactors : Maybe ( ContributingFactorsId, ContributingFactors )
+    , followUp : Maybe ( FollowUpId, FollowUp )
+    , healthEducation : Maybe ( GroupHealthEducationId, GroupHealthEducation )
+    , sendToHC : Maybe ( GroupSendToHCId, GroupSendToHC )
     }
 
 
@@ -1081,6 +1139,10 @@ emptyChildMeasurements =
     , weight = Nothing
     , counselingSession = Nothing
     , fbf = Nothing
+    , contributingFactors = Nothing
+    , followUp = Nothing
+    , healthEducation = Nothing
+    , sendToHC = Nothing
     }
 
 

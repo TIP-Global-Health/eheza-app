@@ -53,6 +53,9 @@ decodeRevision =
                     "breast_exam" ->
                         decodeWithUuid BreastExamRevision decodeBreastExam
 
+                    "call_114" ->
+                        decodeWithUuid Call114Revision decodeCall114
+
                     "catchment_area" ->
                         decodeWithUuid CatchmentAreaRevision decodeCatchmentArea
 
@@ -61,6 +64,9 @@ decodeRevision =
 
                     "clinic" ->
                         decodeWithUuid ClinicRevision decodeClinic
+
+                    "contributing_factors" ->
+                        decodeWithUuid ContributingFactorsRevision decodeContributingFactors
 
                     "core_physical_exam" ->
                         decodeWithUuid CorePhysicalExamRevision decodeCorePhysicalExam
@@ -83,11 +89,17 @@ decodeRevision =
                     "family_planning" ->
                         decodeWithUuid FamilyPlanningRevision decodeFamilyPlanning
 
+                    "follow_up" ->
+                        decodeWithUuid FollowUpRevision decodeFollowUp
+
+                    "group_health_education" ->
+                        decodeWithUuid GroupHealthEducationRevision decodeGroupHealthEducation
+
+                    "group_send_to_hc" ->
+                        decodeWithUuid GroupSendToHCRevision decodeGroupSendToHC
+
                     "hc_contact" ->
                         decodeWithUuid HCContactRevision decodeHCContact
-
-                    "call_114" ->
-                        decodeWithUuid Call114Revision decodeCall114
 
                     "health_center" ->
                         decodeWithUuid HealthCenterRevision decodeHealthCenter
@@ -134,8 +146,17 @@ decodeRevision =
                     "nutrition" ->
                         decodeWithUuid ChildNutritionRevision decodeNutrition
 
+                    "nutrition_contributing_factors" ->
+                        decodeWithUuid NutritionContributingFactorsRevision decodeNutritionContributingFactors
+
                     "nutrition_encounter" ->
                         decodeWithUuid NutritionEncounterRevision decodeNutritionEncounter
+
+                    "nutrition_follow_up" ->
+                        decodeWithUuid NutritionFollowUpRevision decodeNutritionFollowUp
+
+                    "nutrition_health_education" ->
+                        decodeWithUuid NutritionHealthEducationRevision decodeNutritionHealthEducation
 
                     "nutrition_height" ->
                         decodeWithUuid NutritionHeightRevision decodeNutritionHeight
@@ -148,6 +169,9 @@ decodeRevision =
 
                     "nutrition_photo" ->
                         decodeWithUuid NutritionPhotoRevision decodeNutritionPhoto
+
+                    "nutrition_send_to_hc" ->
+                        decodeWithUuid NutritionSendToHCRevision decodeNutritionSendToHC
 
                     "nutrition_weight" ->
                         decodeWithUuid NutritionWeightRevision decodeNutritionWeight

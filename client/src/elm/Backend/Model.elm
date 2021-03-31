@@ -292,6 +292,7 @@ type Revision
     | ChildFbfRevision ChildFbfId Fbf
     | ChildNutritionRevision ChildNutritionId ChildNutrition
     | ClinicRevision ClinicId Clinic
+    | ContributingFactorsRevision ContributingFactorsId ContributingFactors
     | CorePhysicalExamRevision CorePhysicalExamId CorePhysicalExam
     | CounselingScheduleRevision CounselingScheduleId CounselingSchedule
     | CounselingSessionRevision CounselingSessionId CounselingSession
@@ -300,6 +301,9 @@ type Revision
     | DashboardStatsRevision HealthCenterId DashboardStats
     | ExposureRevision ExposureId Exposure
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
+    | FollowUpRevision FollowUpId FollowUp
+    | GroupHealthEducationRevision GroupHealthEducationId GroupHealthEducation
+    | GroupSendToHCRevision GroupSendToHCId GroupSendToHC
     | HCContactRevision HCContactId HCContact
     | Call114Revision Call114Id Call114
     | HealthCenterRevision HealthCenterId HealthCenter
@@ -316,11 +320,15 @@ type Revision
     | MotherFbfRevision MotherFbfId Fbf
     | MuacRevision MuacId Muac
     | NurseRevision NurseId Nurse
+    | NutritionContributingFactorsRevision NutritionContributingFactorsId NutritionContributingFactors
     | NutritionEncounterRevision NutritionEncounterId NutritionEncounter
+    | NutritionFollowUpRevision NutritionFollowUpId NutritionFollowUp
+    | NutritionHealthEducationRevision NutritionHealthEducationId NutritionHealthEducation
     | NutritionHeightRevision NutritionHeightId NutritionHeight
     | NutritionMuacRevision NutritionMuacId NutritionMuac
     | NutritionNutritionRevision NutritionNutritionId NutritionNutrition
     | NutritionPhotoRevision NutritionPhotoId NutritionPhoto
+    | NutritionSendToHCRevision NutritionSendToHCId NutritionSendToHC
     | NutritionWeightRevision NutritionWeightId NutritionWeight
     | ObstetricalExamRevision ObstetricalExamId ObstetricalExam
     | ObstetricHistoryRevision ObstetricHistoryId ObstetricHistory

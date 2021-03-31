@@ -452,6 +452,16 @@ h3.ui.header {
   background-size: 78px 78px;
 }
 
+.icon-task-send-to-hc {
+  background-image: url(#{$img-path}icon-health-center-white.svg);
+  background-size: 78px 78px;
+}
+
+.icon-task-health-education {
+  background-image: url(#{$img-path}icon-health-education-white.svg);
+  background-size: 122px 122px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {
@@ -1526,7 +1536,6 @@ input::placeholder {
   }
 }
 
-
 .icon-lactation {
   .active &:after {
     background-image: url(#{$img-path}icon-lactation-active.svg);
@@ -1546,6 +1555,46 @@ input::placeholder {
   &:after {
     background-image: url(#{$img-path}icon-fbf.svg);
     background-size: 92px 92px;
+  }
+}
+
+.icon-contributing-factors {
+  .active &:after {
+    background-image: url(#{$img-path}icon-contributing-factors-white.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-contributing-factors-gray.svg);
+  }
+}
+
+.icon-health-education {
+  .active &:after {
+    background-image: url(#{$img-path}icon-health-education-white.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-health-education-gray.svg);
+  }
+}
+
+.icon-send-to-hc {
+  .active &:after {
+    background-image: url(#{$img-path}icon-health-center-white.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-health-center-gray.svg);
+  }
+}
+
+.icon-follow-up {
+  .active &:after {
+    background-image: url(#{$img-path}icon-follow-up-white.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-follow-up-gray.svg);
   }
 }
 
@@ -1944,6 +1993,34 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-health-education-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-next-steps-contributing-factors {
+  .active &:after {
+    background-image: url(#{$img-path}icon-contributing-factors-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-contributing-factors-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-contributing-factors-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-next-steps-follow-up {
+  .active &:after {
+    background-image: url(#{$img-path}icon-follow-up-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-follow-up-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-follow-up-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 

@@ -3,8 +3,8 @@ module Pages.NutritionEncounter.Update exposing (update)
 import App.Model
 import App.Ports
 import Backend.Model
+import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Model
-import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.NutritionEncounter.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 

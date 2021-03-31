@@ -5,6 +5,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.NutritionActivity.Model exposing (NutritionActivity)
 import Browser
 import Browser.Navigation as Nav
 import Config.Model
@@ -13,7 +14,6 @@ import Error.Model exposing (Error)
 import Http
 import Json.Encode exposing (Value)
 import List.Zipper as Zipper
-import NutritionActivity.Model exposing (NutritionActivity)
 import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessOutcome.Model

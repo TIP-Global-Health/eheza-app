@@ -400,6 +400,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityChildFbf identifier ->
             getIdentifier identifier "child_fbf"
 
+        BackendAuthorityContributingFactors identifier ->
+            getIdentifier identifier "contributing_factors"
+
         BackendAuthorityCounselingSession identifier ->
             getIdentifier identifier "counseling_session"
 
@@ -417,6 +420,15 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityFamilyPlanning identifier ->
             getIdentifier identifier "family_planning"
+
+        BackendAuthorityFollowUp identifier ->
+            getIdentifier identifier "follow_up"
+
+        BackendAuthorityGroupHealthEducation identifier ->
+            getIdentifier identifier "group_health_education"
+
+        BackendAuthorityGroupSendToHC identifier ->
+            getIdentifier identifier "group_send_to_hc"
 
         BackendAuthorityHealthEducation identifier ->
             getIdentifier identifier "health_education"
@@ -460,8 +472,17 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityNutrition identifier ->
             getIdentifier identifier "nutrition"
 
+        BackendAuthorityNutritionContributingFactors identifier ->
+            getIdentifier identifier "nutrition_contributing_factors"
+
         BackendAuthorityNutritionEncounter identifier ->
             getIdentifier identifier "nutrition_encounter"
+
+        BackendAuthorityNutritionFollowUp identifier ->
+            getIdentifier identifier "nutrition_follow_up"
+
+        BackendAuthorityNutritionHealthEducation identifier ->
+            getIdentifier identifier "nutrition_health_education"
 
         BackendAuthorityNutritionHeight identifier ->
             getIdentifier identifier "nutrition_height"
@@ -474,6 +495,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityNutritionPhoto identifier ->
             getIdentifier identifier "nutrition_photo"
+
+        BackendAuthorityNutritionSendToHC identifier ->
+            getIdentifier identifier "nutrition_send_to_hc"
 
         BackendAuthorityNutritionWeight identifier ->
             getIdentifier identifier "nutrition_weight"
@@ -775,6 +799,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityChildFbf identifier ->
             encode Backend.Measurement.Encoder.encodeChildFbf identifier
 
+        BackendAuthorityContributingFactors identifier ->
+            encode Backend.Measurement.Encoder.encodeContributingFactors identifier
+
         BackendAuthorityCounselingSession identifier ->
             encode Backend.Measurement.Encoder.encodeCounselingSession identifier
 
@@ -792,6 +819,15 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityFamilyPlanning identifier ->
             encode Backend.Measurement.Encoder.encodeFamilyPlanning identifier
+
+        BackendAuthorityFollowUp identifier ->
+            encode Backend.Measurement.Encoder.encodeFollowUp identifier
+
+        BackendAuthorityGroupHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodeGroupHealthEducation identifier
+
+        BackendAuthorityGroupSendToHC identifier ->
+            encode Backend.Measurement.Encoder.encodeGroupSendToHC identifier
 
         BackendAuthorityHealthEducation identifier ->
             encode Backend.Measurement.Encoder.encodeHealthEducation identifier
@@ -835,8 +871,17 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityNutrition identifier ->
             encode Backend.Measurement.Encoder.encodeNutrition identifier
 
+        BackendAuthorityNutritionContributingFactors identifier ->
+            encode Backend.Measurement.Encoder.encodeNutritionContributingFactors identifier
+
         BackendAuthorityNutritionEncounter identifier ->
             encode Backend.NutritionEncounter.Encoder.encodeNutritionEncounter identifier
+
+        BackendAuthorityNutritionFollowUp identifier ->
+            encode Backend.Measurement.Encoder.encodeNutritionFollowUp identifier
+
+        BackendAuthorityNutritionHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodeNutritionHealthEducation identifier
 
         BackendAuthorityNutritionHeight identifier ->
             encode Backend.Measurement.Encoder.encodeNutritionHeight identifier
@@ -849,6 +894,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityNutritionPhoto identifier ->
             encode Backend.Measurement.Encoder.encodeNutritionPhoto identifier
+
+        BackendAuthorityNutritionSendToHC identifier ->
+            encode Backend.Measurement.Encoder.encodeNutritionSendToHC identifier
 
         BackendAuthorityNutritionWeight identifier ->
             encode Backend.Measurement.Encoder.encodeNutritionWeight identifier
@@ -1113,6 +1161,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityChildFbf identifier ->
             ChildFbfRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityContributingFactors identifier ->
+            ContributingFactorsRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityCounselingSession identifier ->
             CounselingSessionRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1130,6 +1181,15 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityFamilyPlanning identifier ->
             FamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityFollowUp identifier ->
+            FollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityGroupHealthEducation identifier ->
+            GroupHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityGroupSendToHC identifier ->
+            GroupSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityHealthEducation identifier ->
             HealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -1173,8 +1233,17 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityNutrition identifier ->
             ChildNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityNutritionContributingFactors identifier ->
+            NutritionContributingFactorsRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityNutritionEncounter identifier ->
             NutritionEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutritionFollowUp identifier ->
+            NutritionFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutritionHealthEducation identifier ->
+            NutritionHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityNutritionHeight identifier ->
             NutritionHeightRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -1187,6 +1256,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityNutritionPhoto identifier ->
             NutritionPhotoRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutritionSendToHC identifier ->
+            NutritionSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityNutritionWeight identifier ->
             NutritionWeightRevision (toEntityUuid identifier.uuid) identifier.entity

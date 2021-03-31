@@ -1288,15 +1288,25 @@ malariaRapidTestResultAsString sign =
 
 encodeSendToHC : SendToHC -> List ( String, Value )
 encodeSendToHC =
-    encodeAcuteIllnessMeasurement encodeSendToHCValue
+    encodeAcuteIllnessMeasurement (encodeSendToHCValueWithType "send_to_hc")
 
 
-encodeSendToHCValue : SendToHCValue -> List ( String, Value )
-encodeSendToHCValue value =
+encodeNutritionSendToHC : NutritionSendToHC -> List ( String, Value )
+encodeNutritionSendToHC =
+    encodeNutritionMeasurement (encodeSendToHCValueWithType "nutrition_send_to_hc")
+
+
+encodeGroupSendToHC : GroupSendToHC -> List ( String, Value )
+encodeGroupSendToHC =
+    encodeGroupMeasurement (encodeSendToHCValueWithType "group_send_to_hc")
+
+
+encodeSendToHCValueWithType : String -> SendToHCValue -> List ( String, Value )
+encodeSendToHCValueWithType type_ value =
     [ ( "send_to_hc", encodeEverySet encondeSendToHCSign value.signs )
     , ( "reason_not_sent_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
     , ( "deleted", bool False )
-    , ( "type", string "send_to_hc" )
+    , ( "type", string type_ )
     ]
 
 
@@ -1332,6 +1342,79 @@ encodeReasonForNotSendingToHC event =
 
             NoReasonForNotSendingToHC ->
                 "none"
+
+
+encodeContributingFactors : ContributingFactors -> List ( String, Value )
+encodeContributingFactors =
+    encodeGroupMeasurement (encodeContributingFactorsValueWithType "contributing_factors")
+
+
+encodeNutritionContributingFactors : NutritionContributingFactors -> List ( String, Value )
+encodeNutritionContributingFactors =
+    encodeNutritionMeasurement (encodeContributingFactorsValueWithType "nutrition_contributing_factors")
+
+
+encodeContributingFactorsValueWithType : String -> EverySet ContributingFactorsSign -> List ( String, Value )
+encodeContributingFactorsValueWithType type_ value =
+    [ ( "contributing_factors_signs", encodeEverySet encodeContributingFactorsSign value )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+
+
+encodeContributingFactorsSign : ContributingFactorsSign -> Value
+encodeContributingFactorsSign sign =
+    string <|
+        case sign of
+            FactorLackOfBreastMilk ->
+                "lack-of-breast-milk"
+
+            FactorMaternalMastitis ->
+                "maternal-mastitis"
+
+            FactorPoorSuck ->
+                "poor-suck"
+
+            FactorDiarrheaOrVomiting ->
+                "diarrhea-or-vomiting"
+
+            NoContributingFactorsSign ->
+                "none"
+
+
+encodeFollowUp : FollowUp -> List ( String, Value )
+encodeFollowUp =
+    encodeGroupMeasurement (encodeFollowUpValueWithType "follow_up")
+
+
+encodeNutritionFollowUp : NutritionFollowUp -> List ( String, Value )
+encodeNutritionFollowUp =
+    encodeNutritionMeasurement (encodeFollowUpValueWithType "nutrition_follow_up")
+
+
+encodeFollowUpValueWithType : String -> EverySet FollowUpOption -> List ( String, Value )
+encodeFollowUpValueWithType type_ value =
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+
+
+encodeFollowUpOption : FollowUpOption -> Value
+encodeFollowUpOption option =
+    string <|
+        case option of
+            OneDay ->
+                "1-d"
+
+            ThreeDays ->
+                "3-d"
+
+            OneWeek ->
+                "1-w"
+
+            TwoWeeks ->
+                "2-w"
 
 
 encodeMedicationDistribution : MedicationDistribution -> List ( String, Value )
@@ -1824,15 +1907,25 @@ encodeAcuteIllnessNutritionValue nutritions =
 
 encodeHealthEducation : HealthEducation -> List ( String, Value )
 encodeHealthEducation =
-    encodeAcuteIllnessMeasurement encodeHealthEducationValue
+    encodeAcuteIllnessMeasurement (encodeHealthEducationValueWithType "health_education")
 
 
-encodeHealthEducationValue : HealthEducationValue -> List ( String, Value )
-encodeHealthEducationValue value =
+encodeNutritionHealthEducation : NutritionHealthEducation -> List ( String, Value )
+encodeNutritionHealthEducation =
+    encodeNutritionMeasurement (encodeHealthEducationValueWithType "nutrition_health_education")
+
+
+encodeGroupHealthEducation : GroupHealthEducation -> List ( String, Value )
+encodeGroupHealthEducation =
+    encodeGroupMeasurement (encodeHealthEducationValueWithType "group_health_education")
+
+
+encodeHealthEducationValueWithType : String -> HealthEducationValue -> List ( String, Value )
+encodeHealthEducationValueWithType type_ value =
     [ ( "health_education_signs", encodeEverySet encodeHealthEducationSign value.signs )
     , ( "reason_not_given_education", encodeReasonForNotProvidingHealthEducation value.reasonForNotProvidingHealthEducation )
     , ( "deleted", bool False )
-    , ( "type", string "health_education" )
+    , ( "type", string type_ )
     ]
 
 
@@ -1862,6 +1955,9 @@ encodeReasonForNotProvidingHealthEducation reason =
 
             PatientRefused ->
                 "patient-refused"
+
+            PatientTooIll ->
+                "patient-too-ill"
 
             NoReasonForNotProvidingHealthEducation ->
                 "none"

@@ -1,4 +1,4 @@
-module Activity.Utils exposing (childHasAnyCompletedActivity, childHasCompletedActivity, childIsCheckedIn, decodeActivityFromString, defaultActivity, encodeActivityAsString, expectChildActivity, expectCounselingActivity, expectMotherActivity, expectParticipantConsent, getActivityCountForMother, getActivityIcon, getAllActivities, getAllChildActivities, getAllMotherActivities, getParticipantCountForActivity, hasAnyCompletedChildActivity, hasAnyCompletedMotherActivity, hasCompletedChildActivity, hasCompletedMotherActivity, isCompleted, motherHasAnyCompletedActivity, motherHasCompletedActivity, motherIsCheckedIn, motherOrAnyChildHasAnyCompletedActivity, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
+module Activity.Utils exposing (..)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -17,6 +17,8 @@ import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
+import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person, Ubudehe(..))
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
@@ -26,10 +28,37 @@ import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths)
 import LocalData
 import Maybe.Extra exposing (isJust, isNothing)
+import Pages.NutritionEncounter.Model exposing (NutritionAssesment)
+import RemoteData exposing (RemoteData(..))
+import ZScore.Model
+import ZScore.Utils exposing (zScoreWeightForAge)
 
 
-{-| Used for URL etc., not for display in the normal UI (since we'd translate
-for that).
+generateNutritionAssesment : NominalDate -> ZScore.Model.Model -> PersonId -> ModelIndexedDb -> OfflineSession -> List NutritionAssesment
+generateNutritionAssesment currentDate zscores childId db offlineSession =
+    let
+        measurements =
+            LocalData.unwrap
+                Nothing
+                (\measurements_ -> Dict.get childId measurements_.current.children)
+                offlineSession.measurements
+
+        muacValue =
+            Maybe.andThen (.muac >> Maybe.map (Tuple.second >> .value)) measurements
+
+        nutritionValue =
+            Maybe.andThen (.nutrition >> Maybe.map (Tuple.second >> .value)) measurements
+
+        weightValue =
+            Maybe.andThen (.weight >> Maybe.map (Tuple.second >> .value >> weightValueFunc)) measurements
+
+        weightValueFunc =
+            \(WeightInKg kg) -> kg
+    in
+    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores childId muacValue weightValue nutritionValue db
+
+
+{-| Used for URL etc., not for display in the normal UI (since we'd translatefor that).
 -}
 encodeActivityAsString : Activity -> String
 encodeActivityAsString activity =
@@ -42,8 +71,17 @@ encodeActivityAsString activity =
                 ChildPicture ->
                     "picture"
 
+                ContributingFactors ->
+                    "contributing_factors"
+
                 -- Counseling ->
                 --   "counseling"
+                FollowUp ->
+                    "follow_up"
+
+                Activity.Model.HealthEducation ->
+                    "group_health_education"
+
                 Height ->
                     "height"
 
@@ -52,6 +90,9 @@ encodeActivityAsString activity =
 
                 NutritionSigns ->
                     "nutrition"
+
+                Activity.Model.SendToHC ->
+                    "group_send_to_hc"
 
                 Weight ->
                     "weight"
@@ -82,6 +123,15 @@ decodeActivityFromString s =
         "picture" ->
             Just <| ChildActivity ChildPicture
 
+        "contributing_factors" ->
+            Just <| ChildActivity ContributingFactors
+
+        "follow_up" ->
+            Just <| ChildActivity FollowUp
+
+        "group_health_education" ->
+            Just <| ChildActivity Activity.Model.HealthEducation
+
         -- "counseling" ->
         --  Just <| ChildActivity Counseling
         "height" ->
@@ -92,6 +142,9 @@ decodeActivityFromString s =
 
         "nutrition" ->
             Just <| ChildActivity NutritionSigns
+
+        "group_send_to_hc" ->
+            Just <| ChildActivity Activity.Model.SendToHC
 
         "weight" ->
             Just <| ChildActivity Weight
@@ -133,16 +186,28 @@ getActivityIcon activity =
                 ChildPicture ->
                     "photo"
 
+                ContributingFactors ->
+                    "contributing-factors"
+
+                FollowUp ->
+                    "follow-up"
+
+                Activity.Model.HealthEducation ->
+                    "health-education"
+
                 -- Counseling ->
                 --    "counseling"
                 Height ->
                     "height"
 
-                Weight ->
-                    "weight"
-
                 Muac ->
                     "muac"
+
+                Activity.Model.SendToHC ->
+                    "send-to-hc"
+
+                Weight ->
+                    "weight"
 
                 NutritionSigns ->
                     "nutrition"
@@ -170,11 +235,31 @@ getAllActivities offlineSession =
         ]
 
 
+getAllChildActivitiesExcludingNextSteps : OfflineSession -> List Activity
+getAllChildActivitiesExcludingNextSteps offlineSession =
+    List.concat
+        [ List.map ChildActivity (getAllChildActivitiesWithExclusion offlineSession nextStepsActivities)
+        , List.map MotherActivity (getAllMotherActivities offlineSession)
+        ]
+
+
 getAllChildActivities : OfflineSession -> List ChildActivity
 getAllChildActivities offlineSession =
+    getAllChildActivitiesWithExclusion offlineSession []
+
+
+getAllChildActivitiesWithExclusion : OfflineSession -> List ChildActivity -> List ChildActivity
+getAllChildActivitiesWithExclusion offlineSession exclusionList =
     let
-        forAllGroupTypes =
-            [ {- Counseling, -} Height, Muac, NutritionSigns, Weight, ChildPicture ]
+        forAllGroupTypesMandatory =
+            [ {- Counseling, -} Height
+            , Muac
+            , NutritionSigns
+            , Weight
+            ]
+
+        forAllGroupTypesOptional =
+            [ ChildPicture ]
 
         forFbf =
             case offlineSession.session.clinicType of
@@ -187,7 +272,11 @@ getAllChildActivities offlineSession =
                 _ ->
                     []
     in
-    forAllGroupTypes ++ forFbf
+    forAllGroupTypesMandatory
+        ++ nextStepsActivities
+        ++ forAllGroupTypesOptional
+        ++ forFbf
+        |> List.filter (\activity -> not <| List.member activity exclusionList)
 
 
 getAllMotherActivities : OfflineSession -> List MotherActivity
@@ -212,15 +301,24 @@ getAllMotherActivities offlineSession =
                 forAllGroupTypes
 
 
+nextStepsActivities : List ChildActivity
+nextStepsActivities =
+    [ ContributingFactors
+    , Activity.Model.HealthEducation
+    , Activity.Model.SendToHC
+    , FollowUp
+    ]
+
+
 {-| Do we expect this activity to be performed in this session for this child?
 Note that we don't consider whether the child is checked in here -- just
 whether we would expect to perform this action if checked in.
 -}
-expectChildActivity : NominalDate -> OfflineSession -> PersonId -> Bool -> ChildActivity -> Bool
-expectChildActivity currentDate offlineSession childId isChw activity =
+expectChildActivity : NominalDate -> ZScore.Model.Model -> OfflineSession -> PersonId -> Bool -> ModelIndexedDb -> ChildActivity -> Bool
+expectChildActivity currentDate zscores offlineSession childId isChw db activity =
     case activity of
         Height ->
-            isChw |> not
+            not isChw
 
         Muac ->
             Dict.get childId offlineSession.children
@@ -242,9 +340,47 @@ expectChildActivity currentDate offlineSession childId isChw activity =
         ChildFbf ->
             List.member offlineSession.session.clinicType [ Achi, Fbf ]
 
+        ContributingFactors ->
+            isChw
+                && mandatoryActivitiesCompleted currentDate zscores offlineSession childId isChw db
+                && (generateNutritionAssesment currentDate zscores childId db offlineSession
+                        |> List.isEmpty
+                        |> not
+                   )
+
+        FollowUp ->
+            expectChildActivity currentDate zscores offlineSession childId isChw db ContributingFactors
+
+        Activity.Model.HealthEducation ->
+            expectChildActivity currentDate zscores offlineSession childId isChw db ContributingFactors
+
+        Activity.Model.SendToHC ->
+            expectChildActivity currentDate zscores offlineSession childId isChw db ContributingFactors
+
         _ ->
             -- In all other cases, we expect each ativity each time.
             True
+
+
+mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> OfflineSession -> PersonId -> Bool -> ModelIndexedDb -> Bool
+mandatoryActivitiesCompleted currentDate zscores offlineSession childId isChw db =
+    childActivitiesCompleted currentDate zscores offlineSession childId isChw db allMandatoryActivities
+
+
+childActivitiesCompleted : NominalDate -> ZScore.Model.Model -> OfflineSession -> PersonId -> Bool -> ModelIndexedDb -> List ChildActivity -> Bool
+childActivitiesCompleted currentDate zscores offlineSession childId isChw db activities =
+    List.all (childActivityCompleted currentDate zscores offlineSession childId isChw db) activities
+
+
+childActivityCompleted : NominalDate -> ZScore.Model.Model -> OfflineSession -> PersonId -> Bool -> ModelIndexedDb -> ChildActivity -> Bool
+childActivityCompleted currentDate zscores offlineSession childId isChw db activity =
+    (not <| expectChildActivity currentDate zscores offlineSession childId isChw db activity)
+        || childHasCompletedActivity childId activity offlineSession
+
+
+allMandatoryActivities : List ChildActivity
+allMandatoryActivities =
+    [ Muac, NutritionSigns, Weight ]
 
 
 {-| Whether to expect a counseling activity is not just a yes/no question,
@@ -569,10 +705,10 @@ the activity and have the activity pending. (This may not add up to all the
 children, because we only consider a child "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeChildActivity : NominalDate -> ChildActivity -> OfflineSession -> Bool -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
-summarizeChildActivity currentDate activity session isChw checkedIn =
+summarizeChildActivity : NominalDate -> ZScore.Model.Model -> ChildActivity -> OfflineSession -> Bool -> ModelIndexedDb -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
+summarizeChildActivity currentDate zscores activity session isChw db checkedIn =
     checkedIn.children
-        |> Dict.filter (\childId _ -> expectChildActivity currentDate session childId isChw activity)
+        |> Dict.filter (\childId _ -> expectChildActivity currentDate zscores session childId isChw db activity)
         |> Dict.partition (\childId _ -> childHasCompletedActivity childId activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
@@ -582,8 +718,8 @@ the activity and have the activity pending. (This may not add up to all the
 mothers, because we only consider a mother "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeMotherActivity : NominalDate -> MotherActivity -> OfflineSession -> Bool -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
-summarizeMotherActivity currentDate activity session isChw checkedIn =
+summarizeMotherActivity : NominalDate -> ZScore.Model.Model -> MotherActivity -> OfflineSession -> Bool -> ModelIndexedDb -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
+summarizeMotherActivity currentDate zscores activity session isChw db checkedIn =
     -- For participant consent, we only consider the activity to be completed once
     -- all expected consents have been saved.
     checkedIn.mothers
@@ -631,10 +767,10 @@ getParticipantCountForActivity summary activity =
 and which are pending. (This may not add up to all the activities, because some
 activities may not be expected for this child).
 -}
-summarizeChildParticipant : NominalDate -> PersonId -> OfflineSession -> Bool -> CompletedAndPending (List ChildActivity)
-summarizeChildParticipant currentDate id session isChw =
+summarizeChildParticipant : NominalDate -> ZScore.Model.Model -> PersonId -> OfflineSession -> Bool -> ModelIndexedDb -> CompletedAndPending (List ChildActivity)
+summarizeChildParticipant currentDate zscores id session isChw db =
     getAllChildActivities session
-        |> List.filter (expectChildActivity currentDate session id isChw)
+        |> List.filter (expectChildActivity currentDate zscores session id isChw db)
         |> List.partition (\activity -> childHasCompletedActivity id activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
@@ -643,8 +779,8 @@ summarizeChildParticipant currentDate id session isChw =
 and which are pending. (This may not add up to all the activities, because some
 activities may not be expected for this mother).
 -}
-summarizeMotherParticipant : NominalDate -> PersonId -> OfflineSession -> Bool -> CompletedAndPending (List MotherActivity)
-summarizeMotherParticipant currentDate id session isChw =
+summarizeMotherParticipant : NominalDate -> ZScore.Model.Model -> PersonId -> OfflineSession -> Bool -> ModelIndexedDb -> CompletedAndPending (List MotherActivity)
+summarizeMotherParticipant currentDate zscores id session isChw db =
     getAllMotherActivities session
         |> List.filter (expectMotherActivity currentDate session id)
         |> List.partition (\activity -> motherHasCompletedActivity id activity session)
@@ -711,6 +847,18 @@ hasCompletedChildActivity activityType measurements =
 
         NutritionSigns ->
             isCompleted (Maybe.map Tuple.second measurements.current.nutrition)
+
+        ContributingFactors ->
+            isCompleted (Maybe.map Tuple.second measurements.current.contributingFactors)
+
+        FollowUp ->
+            isCompleted (Maybe.map Tuple.second measurements.current.followUp)
+
+        Activity.Model.HealthEducation ->
+            isCompleted (Maybe.map Tuple.second measurements.current.healthEducation)
+
+        Activity.Model.SendToHC ->
+            isCompleted (Maybe.map Tuple.second measurements.current.sendToHC)
 
 
 childHasCompletedActivity : PersonId -> ChildActivity -> OfflineSession -> Bool

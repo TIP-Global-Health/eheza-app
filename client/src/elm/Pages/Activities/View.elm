@@ -1,7 +1,7 @@
 module Pages.Activities.View exposing (view)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), emptySummaryByActivity)
-import Activity.Utils exposing (getActivityIcon, getAllActivities, getParticipantCountForActivity)
+import Activity.Utils exposing (getActivityIcon, getAllChildActivitiesExcludingNextSteps, getParticipantCountForActivity)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
@@ -27,9 +27,27 @@ view language nurse ( sessionId, session ) model =
             session.summaryByActivity
                 |> LocalData.withDefault emptySummaryByActivity
 
-        ( pendingActivities, completedActivities ) =
-            getAllActivities session.offlineSession
-                |> List.partition (\activity -> (getParticipantCountForActivity summary activity).pending > 0)
+        allActivities =
+            getAllChildActivitiesExcludingNextSteps session.offlineSession
+                |> List.map (\activity -> ( getParticipantCountForActivity summary activity, activity ))
+
+        ( pendingActivities_, completedActivities_ ) =
+            List.partition (\( completedAndPending, _ ) -> completedAndPending.pending > 0) allActivities
+
+        pendingActivities =
+            List.map Tuple.second pendingActivities_
+
+        completedActivities =
+            List.filterMap
+                (\( completedAndPending, activity ) ->
+                    if completedAndPending.pending == 0 && completedAndPending.completed == 0 then
+                        -- Do not show activities that sum up to 0/0.
+                        Nothing
+
+                    else
+                        Just activity
+                )
+                completedActivities_
 
         pendingTabTitle =
             translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities

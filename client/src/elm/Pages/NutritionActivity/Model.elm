@@ -1,13 +1,15 @@
-module Pages.NutritionActivity.Model exposing (HeightData, HeightForm, Model, Msg(..), MuacData, MuacForm, NutritionData, NutritionForm, PhotoData, PhotoForm, WeightData, WeightForm, emptyHeightData, emptyModel, emptyMuacData, emptyNutritionData, emptyPhotoData, emptyWeightData)
+module Pages.NutritionActivity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Measurement.Model exposing (DropZoneFile)
+import Measurement.Model exposing (..)
+import Pages.NutritionEncounter.Model exposing (NutritionAssesment)
 import Pages.Page exposing (Page)
 
 
 type Msg
     = SetActivePage Page
+    | SetWarningPopupState (List NutritionAssesment)
     | SetHeight String
     | SaveHeight PersonId (Maybe ( NutritionHeightId, NutritionHeight ))
     | SetMuac String
@@ -18,6 +20,18 @@ type Msg
     | SavePhoto PersonId (Maybe NutritionPhotoId) PhotoUrl
     | SetWeight String
     | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
+    | SetActiveNextStepsTask NextStepsTask
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SaveSendToHC PersonId (Maybe ( NutritionSendToHCId, NutritionSendToHC )) (Maybe NextStepsTask)
+    | SetProvidedEducationForDiagnosis Bool
+    | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
+    | SaveHealthEducation PersonId (Maybe ( NutritionHealthEducationId, NutritionHealthEducation )) (Maybe NextStepsTask)
+    | SetContributingFactorsSign ContributingFactorsSign
+    | SaveContributingFactors PersonId (Maybe ( NutritionContributingFactorsId, NutritionContributingFactors )) (Maybe NextStepsTask)
+    | SetFollowUpOption FollowUpOption
+    | SaveFollowUp PersonId (Maybe ( NutritionFollowUpId, NutritionFollowUp )) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -26,6 +40,8 @@ type alias Model =
     , nutritionData : NutritionData
     , photoData : PhotoData
     , weightData : WeightData
+    , nextStepsData : NextStepsData
+    , warningPopupState : List NutritionAssesment
     }
 
 
@@ -36,6 +52,8 @@ emptyModel =
     , nutritionData = emptyNutritionData
     , photoData = emptyPhotoData
     , weightData = emptyWeightData
+    , nextStepsData = emptyNextStepsData
+    , warningPopupState = []
     }
 
 
@@ -119,4 +137,23 @@ emptyWeightData =
 type alias WeightForm =
     { weight : Maybe Float
     , weightDirty : Bool
+    }
+
+
+type alias NextStepsData =
+    { sendToHCForm : SendToHCForm
+    , healthEducationForm : HealthEducationForm
+    , contributingFactorsForm : ContributingFactorsForm
+    , followUpForm : FollowUpForm
+    , activeTask : Maybe NextStepsTask
+    }
+
+
+emptyNextStepsData : NextStepsData
+emptyNextStepsData =
+    { sendToHCForm = emptySendToHCForm
+    , healthEducationForm = emptyHealthEducationForm
+    , contributingFactorsForm = emptyContributingFactorsForm
+    , followUpForm = emptyFollowUpForm
+    , activeTask = Nothing
     }

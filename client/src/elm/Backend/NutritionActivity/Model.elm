@@ -1,4 +1,4 @@
-module NutritionActivity.Model exposing (NutritionActivity(..))
+module Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 
 {-| This module provides types relating to the UI for presenting
 nutrition activities.
@@ -11,3 +11,4 @@ type NutritionActivity
     | Nutrition
     | Photo
     | Weight
+    | NextSteps

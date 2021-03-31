@@ -8,7 +8,7 @@ import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (getMotherHeightMeasurement)
-import Pages.Utils exposing (ifEverySetEmpty, taskCompleted, taskListCompleted, valueConsideringIsDirtyField)
+import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskCompleted, taskListCompleted, valueConsideringIsDirtyField)
 
 
 {-| This is a convenience for cases where the form values ought to be redefined
@@ -21,26 +21,6 @@ toEverySet presentValue absentValue present =
 
     else
         EverySet.singleton absentValue
-
-
-ifTrue : a -> Bool -> EverySet a
-ifTrue value condition =
-    if condition then
-        EverySet.singleton value
-
-    else
-        EverySet.empty
-
-
-ifFalse : a -> Bool -> EverySet a
-ifFalse value condition =
-    ifTrue value (not condition)
-
-
-ifNullableTrue : a -> Maybe Bool -> Maybe (EverySet a)
-ifNullableTrue value maybeCondition =
-    Maybe.map (ifTrue value >> Just) maybeCondition
-        |> Maybe.withDefault (Just EverySet.empty)
 
 
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
@@ -970,3 +950,22 @@ patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestio
             ( taskCompleted form.receivedMosquitoNet
             , 1
             )
+
+
+socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
+socialHistoryHivTestingResultFromString result =
+    case result of
+        "positive" ->
+            Just ResultHivPositive
+
+        "negative" ->
+            Just ResultHivNegative
+
+        "indeterminate" ->
+            Just ResultHivIndeterminate
+
+        "none" ->
+            Just NoHivTesting
+
+        _ ->
+            Nothing

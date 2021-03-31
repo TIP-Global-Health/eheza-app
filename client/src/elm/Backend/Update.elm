@@ -1,6 +1,6 @@
 module Backend.Update exposing (updateIndexedDb)
 
-import Activity.Model exposing (SummaryByActivity, SummaryByParticipant)
+import Activity.Model exposing (Activity(..), ChildActivity(..), SummaryByActivity, SummaryByParticipant)
 import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import App.Model
@@ -14,9 +14,10 @@ import Backend.Entities exposing (..)
 import Backend.Fetch
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Update
-import Backend.Measurement.Model exposing (HistoricalMeasurements, Measurements)
-import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
+import Backend.Measurement.Model exposing (ChildMeasurements, HistoricalMeasurements, Measurements)
+import Backend.Measurement.Utils exposing (mapChildMeasurementsAtOfflineSession, splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
+import Backend.NutritionActivity.Model
 import Backend.NutritionEncounter.Model
 import Backend.NutritionEncounter.Update
 import Backend.Person.Model exposing (Initiator(..), Person)
@@ -43,24 +44,31 @@ import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.Utils
     exposing
         ( activityCompleted
-        , generateAssembledData
         , mandatoryActivitiesCompletedSubsequentVisit
         , noImprovementOnSubsequentVisit
         , resolveAcuteIllnessDiagnosis
         , resolveNextStepFirstEncounter
         , resolveNextStepSubsequentEncounter
         )
+import Pages.NextSteps.Model
+import Pages.NutritionActivity.Model
+import Pages.NutritionActivity.Utils
+import Pages.NutritionEncounter.Model
+import Pages.NutritionEncounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.Participant.Model
 import Pages.Person.Model
 import Pages.Relationship.Model
+import Pages.Session.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyBackendUrl, toCmd, toTask, withoutDecoder)
 import SyncManager.Model exposing (IndexDbQueryType(..))
 import Task
+import ZScore.Model
 
 
-updateIndexedDb : NominalDate -> Maybe NurseId -> Maybe HealthCenterId -> Bool -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
+updateIndexedDb : NominalDate -> ZScore.Model.Model -> Maybe NurseId -> Maybe HealthCenterId -> Bool -> Page -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
+updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -160,7 +168,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate nurseId healthCenterId isChw) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage) extraMsgs
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions
@@ -211,7 +219,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     (\editable ->
                         let
                             summaryByActivity =
-                                summarizeByActivity currentDate editable.offlineSession editable.checkedIn isChw
+                                summarizeByActivity currentDate zscores editable.offlineSession editable.checkedIn isChw model
 
                             updatedEditable =
                                 { editable | summaryByActivity = summaryByActivity }
@@ -230,7 +238,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     (\editable ->
                         let
                             summaryByParticipant =
-                                summarizeByParticipant currentDate editable.offlineSession editable.checkedIn isChw
+                                summarizeByParticipant currentDate zscores editable.offlineSession editable.checkedIn isChw model
 
                             updatedEditable =
                                 { editable | summaryByParticipant = summaryByParticipant }
@@ -742,6 +750,66 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                 |> Maybe.withDefault []
                     in
                     ( newModel, extraMsgs )
+
+                processRevisionAndAssessIndividual participantId encounterId =
+                    let
+                        person =
+                            Dict.get participantId model.people
+                                |> Maybe.withDefault NotAsked
+                                |> RemoteData.toMaybe
+
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map2 (generateNutritionAssessmentIndividualMsgs currentDate zscores isChw newModel)
+                                encounterId
+                                person
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel, extraMsgs )
+
+                processRevisionAndAssessGroup data updateFunc =
+                    let
+                        participantId =
+                            data.participantId
+
+                        sessionId =
+                            data.encounterId
+
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, True ) revisions
+                    in
+                    Maybe.map
+                        (\sessionId_ ->
+                            let
+                                editableSessions =
+                                    -- The `andThen` is so that we only recalculate
+                                    -- the editable session if we already have a
+                                    -- success.
+                                    Dict.map
+                                        (\id session ->
+                                            RemoteData.andThen (\_ -> makeEditableSession id newModel) session
+                                        )
+                                        newModel.editableSessions
+
+                                withRecalc =
+                                    { newModel | editableSessions = editableSessions }
+
+                                extraMsgs =
+                                    -- Important: we pass model here, because we want to be examining the state before
+                                    -- current editable session was set for recalculation with makeEditableSession.
+                                    -- The reason for this is that at makeEditableSession, all measuerements are set to
+                                    -- be refetched, and we are not able to determine if mandatory activities are completed
+                                    -- or not.
+                                    -- Therefore, we will be examining the 'before' state, taking into consideration
+                                    -- that triggering activity is completed.
+                                    generateNutritionAssessmentGroupMsgs currentDate zscores isChw participantId sessionId_ activePage updateFunc newModel
+                            in
+                            ( withRecalc, extraMsgs )
+                        )
+                        sessionId
+                        |> Maybe.withDefault ( newModel, [] )
             in
             case revisions of
                 -- Special handling for a single attendance revision, which means
@@ -920,7 +988,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -935,7 +1003,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -950,7 +1018,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -965,7 +1033,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -980,7 +1048,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -995,8 +1063,68 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
                                 |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ NutritionMuacRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessIndividual data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ NutritionNutritionRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessIndividual data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ NutritionWeightRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessIndividual data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ MuacRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessGroup data (\childMeasurements -> { childMeasurements | muac = Just ( uuid, data ) })
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildNutritionRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessGroup data (\childMeasurements -> { childMeasurements | nutrition = Just ( uuid, data ) })
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WeightRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessGroup data (\childMeasurements -> { childMeasurements | weight = Just ( uuid, data ) })
                     in
                     ( newModel
                     , Cmd.none
@@ -1295,7 +1423,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             , relationshipCmd
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate nurseId healthCenterId isChw) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage) extraMsgs
 
         HandlePostedRelationship personId initiator data ->
             let
@@ -1688,6 +1816,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        ContributingFactorsRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | contributingFactors = Dict.insert uuid data measurements.contributingFactors })
+                model
+            , True
+            )
+
         CorePhysicalExamRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
@@ -1738,6 +1874,30 @@ handleRevision revision (( model, recalc ) as noChange) =
             ( mapMotherMeasurements
                 data.participantId
                 (\measurements -> { measurements | familyPlannings = Dict.insert uuid data measurements.familyPlannings })
+                model
+            , True
+            )
+
+        FollowUpRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | followUp = Dict.insert uuid data measurements.followUp })
+                model
+            , True
+            )
+
+        GroupHealthEducationRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | healthEducation = Dict.insert uuid data measurements.healthEducation })
+                model
+            , True
+            )
+
+        GroupSendToHCRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | sendToHC = Dict.insert uuid data measurements.sendToHC })
                 model
             , True
             )
@@ -1866,6 +2026,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             -- Nothing to do in ModelIndexedDb yet. App.Update does do something with this one.
             noChange
 
+        NutritionContributingFactorsRevision uuid data ->
+            ( mapNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | contributingFactors = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         NutritionEncounterRevision uuid data ->
             let
                 nutritionEncounters =
@@ -1878,6 +2046,22 @@ handleRevision revision (( model, recalc ) as noChange) =
                 | nutritionEncounters = nutritionEncounters
                 , nutritionEncountersByParticipant = nutritionEncountersByParticipant
               }
+            , recalc
+            )
+
+        NutritionFollowUpRevision uuid data ->
+            ( mapNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NutritionHealthEducationRevision uuid data ->
+            ( mapNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                model
             , recalc
             )
 
@@ -1909,6 +2093,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             ( mapNutritionMeasurements
                 data.encounterId
                 (\measurements -> { measurements | photo = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NutritionSendToHCRevision uuid data ->
+            ( mapNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | sendToHC = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -2155,6 +2347,138 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
 
+generateNutritionAssessmentIndividualMsgs : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> NutritionEncounterId -> Person -> List App.Model.Msg
+generateNutritionAssessmentIndividualMsgs currentDate zscores isChw after id person =
+    if not isChw then
+        -- Assement is done only for CHW.
+        []
+
+    else
+        Maybe.map
+            (\assembledAfter ->
+                let
+                    mandatoryActivitiesCompleted =
+                        Pages.NutritionActivity.Utils.mandatoryActivitiesCompleted
+                            currentDate
+                            zscores
+                            assembledAfter.person
+                            isChw
+                            assembledAfter
+                            after
+                in
+                if not mandatoryActivitiesCompleted then
+                    -- Assement is done only when all mandatory measurements were recorded.
+                    []
+
+                else
+                    let
+                        assesmentAfter =
+                            Pages.NutritionActivity.Utils.generateNutritionAssesment currentDate zscores after assembledAfter
+                    in
+                    if List.isEmpty assesmentAfter then
+                        -- View assement when we have items at assement list.
+                        []
+
+                    else
+                        [ -- Navigate to Nutrition encounter page.
+                          App.Model.SetActivePage (UserPage (NutritionActivityPage id Backend.NutritionActivity.Model.NextSteps))
+
+                        -- Show warning popup with new assesment.
+                        , Pages.NutritionActivity.Model.SetWarningPopupState assesmentAfter
+                            |> App.Model.MsgPageNutritionActivity id Backend.NutritionActivity.Model.NextSteps
+                            |> App.Model.MsgLoggedIn
+                        ]
+            )
+            (RemoteData.toMaybe <| Pages.NutritionEncounter.Utils.generateAssembledData id after)
+            |> Maybe.withDefault []
+
+
+generateNutritionAssessmentGroupMsgs :
+    NominalDate
+    -> ZScore.Model.Model
+    -> Bool
+    -> PersonId
+    -> SessionId
+    -> Page
+    -> (ChildMeasurements -> ChildMeasurements)
+    -> ModelIndexedDb
+    -> List App.Model.Msg
+generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId activePage updateFunc db =
+    if not isChw then
+        -- Assement is done only for CHW.
+        []
+
+    else
+        Dict.get sessionId db.editableSessions
+            |> Maybe.andThen RemoteData.toMaybe
+            |> Maybe.map
+                (\session ->
+                    let
+                        -- We simulate session data after measurement data is performed.
+                        offlineSession =
+                            mapChildMeasurementsAtOfflineSession childId updateFunc session.offlineSession
+
+                        mandatoryActivitiesCompleted =
+                            Activity.Utils.mandatoryActivitiesCompleted
+                                currentDate
+                                zscores
+                                offlineSession
+                                childId
+                                isChw
+                                db
+                    in
+                    if not mandatoryActivitiesCompleted then
+                        []
+
+                    else
+                        let
+                            assesment =
+                                Activity.Utils.generateNutritionAssesment
+                                    currentDate
+                                    zscores
+                                    childId
+                                    db
+                                    offlineSession
+
+                            personByPersonMsgs =
+                                [ Pages.Participant.Model.SetWarningPopupState assesment
+                                    |> Pages.Session.Model.MsgChild childId
+                                    |> App.Model.MsgPageSession sessionId
+                                    |> App.Model.MsgLoggedIn
+                                ]
+
+                            activityByActivityMsgs childActivity =
+                                [ App.Model.SetActivePage (UserPage (SessionPage sessionId (NextStepsPage childId (ChildActivity childActivity))))
+                                , Pages.NextSteps.Model.SetWarningPopupState assesment
+                                    |> Pages.Session.Model.MsgNextSteps childId (ChildActivity childActivity)
+                                    |> App.Model.MsgPageSession sessionId
+                                    |> App.Model.MsgLoggedIn
+                                ]
+                        in
+                        if List.isEmpty assesment then
+                            -- View assement when we have items at assement list.
+                            []
+
+                        else
+                            case activePage of
+                                UserPage (SessionPage _ (ChildPage _)) ->
+                                    personByPersonMsgs
+
+                                UserPage (SessionPage _ (ActivityPage (ChildActivity Muac))) ->
+                                    activityByActivityMsgs Muac
+
+                                UserPage (SessionPage _ (ActivityPage (ChildActivity NutritionSigns))) ->
+                                    activityByActivityMsgs NutritionSigns
+
+                                UserPage (SessionPage _ (ActivityPage (ChildActivity Weight))) ->
+                                    activityByActivityMsgs Weight
+
+                                _ ->
+                                    []
+                )
+            |> Maybe.withDefault []
+
+
 generateSuspectedDiagnosisMsgs : NominalDate -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
 generateSuspectedDiagnosisMsgs currentDate before after id person =
     Maybe.map2
@@ -2165,8 +2489,8 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
             else
                 generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate assembledAfter
         )
-        (RemoteData.toMaybe <| generateAssembledData currentDate id before)
-        (RemoteData.toMaybe <| generateAssembledData currentDate id after)
+        (RemoteData.toMaybe <| Pages.AcuteIllnessEncounter.Utils.generateAssembledData currentDate id before)
+        (RemoteData.toMaybe <| Pages.AcuteIllnessEncounter.Utils.generateAssembledData currentDate id after)
         |> Maybe.withDefault []
 
 
@@ -2277,9 +2601,9 @@ updateDiagnosisMsg id diagnosis =
         |> App.Model.MsgIndexedDb
 
 
-generateAssesmentCompletedMsgs : NominalDate -> ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
-generateAssesmentCompletedMsgs currentDate after id =
-    generateAssembledData currentDate id after
+generateAcuteIllnessAssesmentCompletedMsgs : NominalDate -> ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
+generateAcuteIllnessAssesmentCompletedMsgs currentDate after id =
+    Pages.AcuteIllnessEncounter.Utils.generateAssembledData currentDate id after
         |> RemoteData.toMaybe
         |> Maybe.map
             (\data ->
@@ -2429,19 +2753,19 @@ makeEditableSession sessionId db =
 for our UI, when we're focused on participants. This only considers children &
 mothers who are checked in to the session.
 -}
-summarizeByParticipant : NominalDate -> OfflineSession -> LocalData CheckedIn -> Bool -> LocalData SummaryByParticipant
-summarizeByParticipant currentDate session checkedIn_ isChw =
+summarizeByParticipant : NominalDate -> ZScore.Model.Model -> OfflineSession -> LocalData CheckedIn -> Bool -> ModelIndexedDb -> LocalData SummaryByParticipant
+summarizeByParticipant currentDate zscores session checkedIn_ isChw db =
     LocalData.map
         (\checkedIn ->
             let
                 children =
                     Dict.map
-                        (\childId _ -> summarizeChildParticipant currentDate childId session isChw)
+                        (\childId _ -> summarizeChildParticipant currentDate zscores childId session isChw db)
                         checkedIn.children
 
                 mothers =
                     Dict.map
-                        (\motherId _ -> summarizeMotherParticipant currentDate motherId session isChw)
+                        (\motherId _ -> summarizeMotherParticipant currentDate zscores motherId session isChw db)
                         checkedIn.mothers
             in
             { children = children
@@ -2455,8 +2779,8 @@ summarizeByParticipant currentDate session checkedIn_ isChw =
 for our UI, when we're focused on activities. This only considers children &
 mothers who are checked in to the session.
 -}
-summarizeByActivity : NominalDate -> OfflineSession -> LocalData CheckedIn -> Bool -> LocalData SummaryByActivity
-summarizeByActivity currentDate session checkedIn_ isChw =
+summarizeByActivity : NominalDate -> ZScore.Model.Model -> OfflineSession -> LocalData CheckedIn -> Bool -> ModelIndexedDb -> LocalData SummaryByActivity
+summarizeByActivity currentDate zscores session checkedIn_ isChw db =
     LocalData.map
         (\checkedIn ->
             let
@@ -2465,7 +2789,7 @@ summarizeByActivity currentDate session checkedIn_ isChw =
                         |> List.map
                             (\activity ->
                                 ( activity
-                                , summarizeChildActivity currentDate activity session isChw checkedIn
+                                , summarizeChildActivity currentDate zscores activity session isChw db checkedIn
                                 )
                             )
                         |> Dict.fromList
@@ -2475,7 +2799,7 @@ summarizeByActivity currentDate session checkedIn_ isChw =
                         |> List.map
                             (\activity ->
                                 ( activity
-                                , summarizeMotherActivity currentDate activity session isChw checkedIn
+                                , summarizeMotherActivity currentDate zscores activity session isChw db checkedIn
                                 )
                             )
                         |> Dict.fromList

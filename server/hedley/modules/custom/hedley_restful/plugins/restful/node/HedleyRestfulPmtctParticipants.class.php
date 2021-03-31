@@ -60,16 +60,6 @@ class HedleyRestfulPmtctParticipants extends HedleyRestfulSyncBase {
   }
 
   /**
-   * Show the date only.
-   */
-  public function renderDate($date) {
-    return [
-      'value' => $date['value'] ? hedley_restful_timestamp_only_date($date['value']) : NULL,
-      'value2' => $date['value2'] ? hedley_restful_timestamp_only_date($date['value2']) : NULL,
-    ];
-  }
-
-  /**
    * {@inheritdoc}
    */
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {

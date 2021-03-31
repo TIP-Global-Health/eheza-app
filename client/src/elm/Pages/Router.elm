@@ -6,10 +6,10 @@ import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AcuteIllnessActivity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encodeIndividualEncounterTypeAsString)
+import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
+import Backend.NutritionActivity.Utils
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (initiatorFromUrlFragmemt, initiatorToUrlFragmemt)
-import NutritionActivity.Model exposing (NutritionActivity(..))
-import NutritionActivity.Utils
 import Pages.Page exposing (..)
 import PrenatalActivity.Model exposing (PrenatalActivity)
 import PrenatalActivity.Utils
@@ -162,6 +162,9 @@ pageToFragment current =
                                 MotherPage id ->
                                     "/mother/" ++ fromEntityUuid id
 
+                                NextStepsPage id activity ->
+                                    "/next-steps/" ++ fromEntityUuid id ++ "/" ++ Activity.Utils.encodeActivityAsString activity
+
                                 ParticipantsPage ->
                                     "/participants"
 
@@ -189,7 +192,7 @@ pageToFragment current =
                     Just <| "nutrition-encounter/" ++ fromEntityUuid id
 
                 NutritionActivityPage id activity ->
-                    Just <| "nutrition-activity/" ++ fromEntityUuid id ++ "/" ++ NutritionActivity.Utils.encodeActivityAsString activity
+                    Just <| "nutrition-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.NutritionActivity.Utils.encodeActivityAsString activity
 
                 NutritionProgressReportPage encounterId ->
                     Just <| "nutrition-progress-report/" ++ fromEntityUuid encounterId
@@ -266,6 +269,7 @@ parseSessionPage =
         , map ChildPage (s "child" </> parseUuid)
         , map ProgressReportPage (s "progress" </> parseUuid)
         , map MotherPage (s "mother" </> parseUuid)
+        , map NextStepsPage (s "next-steps" </> parseUuid </> parseActivity)
         , map ParticipantsPage (s "participants")
         , map AttendancePage top
         ]
@@ -288,7 +292,7 @@ parsePrenatalActivity =
 
 parseNutritionActivity : Parser (NutritionActivity -> c) c
 parseNutritionActivity =
-    custom "NutritionActivity" NutritionActivity.Utils.decodeActivityFromString
+    custom "NutritionActivity" Backend.NutritionActivity.Utils.decodeActivityFromString
 
 
 parseAcuteIllnessActivity : Parser (AcuteIllnessActivity -> c) c
