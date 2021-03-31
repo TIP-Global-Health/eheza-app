@@ -3,7 +3,7 @@ module Pages.HomeVisitActivity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (HomeVisitEncounterId)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
-import Backend.Measurement.Model exposing (NutritionFeedingSign(..), NutritionFeedingValue)
+import Backend.Measurement.Model exposing (NutritionFeedingSign(..), NutritionFeedingValue, NutritionSupplementType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import EverySet exposing (EverySet)
@@ -19,7 +19,7 @@ import RemoteData exposing (RemoteData(..))
 
 expectActivity : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> HomeVisitActivity -> Bool
 expectActivity currentDate child data db activity =
-    -- @todo
+    -- For now, we show all activities without any conditions.
     case activity of
         _ ->
             True
@@ -51,6 +51,7 @@ fromNutritionFeedingValue saved =
     , breastfeeding = Maybe.map (.signs >> EverySet.member FeedingSignBreastfeeding) saved
     , cleanWaterAvailable = Maybe.map (.signs >> EverySet.member CleanWaterAvailable) saved
     , eatenWithWater = Maybe.map (.signs >> EverySet.member EatenWithWater) saved
+    , supplementType = Maybe.map .supplementType saved
     , sachetsPerDay = Maybe.map .sachetsPerDay saved
     }
 
@@ -70,6 +71,7 @@ nutritionFeedingFormWithDefault form saved =
                 , breastfeeding = or form.breastfeeding (EverySet.member FeedingSignBreastfeeding value.signs |> Just)
                 , cleanWaterAvailable = or form.cleanWaterAvailable (EverySet.member CleanWaterAvailable value.signs |> Just)
                 , eatenWithWater = or form.eatenWithWater (EverySet.member EatenWithWater value.signs |> Just)
+                , supplementType = or form.supplementType (Just value.supplementType)
                 , sachetsPerDay = or form.sachetsPerDay (Just value.sachetsPerDay)
                 }
             )
@@ -98,10 +100,16 @@ toNutritionFeedingValue form =
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNutritionFeedingSigns)
 
+        supplementType =
+            form.supplementType
+                |> Maybe.withDefault NoNutritionSupplementType
+                |> Just
+
         sachetsPerDay =
             form.sachetsPerDay
                 |> Maybe.withDefault 0
                 |> Just
     in
     Maybe.map NutritionFeedingValue distributionSigns
+        |> andMap supplementType
         |> andMap sachetsPerDay

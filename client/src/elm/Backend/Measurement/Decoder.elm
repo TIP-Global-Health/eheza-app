@@ -1115,7 +1115,36 @@ decodeFeedingValue : Decoder NutritionFeedingValue
 decodeFeedingValue =
     succeed NutritionFeedingValue
         |> required "nutrition_feeding_signs" (decodeEverySet decodeNutritionFeedingSign)
+        |> required "supplement_type" decodeNutritionSupplementType
         |> required "sachets_per_day" float
+
+
+decodeNutritionSupplementType : Decoder NutritionSupplementType
+decodeNutritionSupplementType =
+    string
+        |> andThen
+            (\type_ ->
+                case type_ of
+                    "fortified-porridge" ->
+                        succeed FortifiedPorridge
+
+                    "rutf" ->
+                        succeed Rutf
+
+                    "ongera" ->
+                        succeed Ongera
+
+                    "therapeutic-milk" ->
+                        succeed TherapeutikMilk
+
+                    "none" ->
+                        succeed NoNutritionSupplementType
+
+                    _ ->
+                        fail <|
+                            type_
+                                ++ " is not a recognized NutritionSupplementType"
+            )
 
 
 decodeNutritionFeedingSign : Decoder NutritionFeedingSign

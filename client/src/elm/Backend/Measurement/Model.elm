@@ -270,6 +270,7 @@ type alias NutritionFeeding =
 
 type alias NutritionFeedingValue =
     { signs : EverySet NutritionFeedingSign
+    , supplementType : NutritionSupplementType
     , sachetsPerDay : Float
     }
 
@@ -285,6 +286,14 @@ type NutritionFeedingSign
     | CleanWaterAvailable
     | EatenWithWater
     | NoNutritionFeedingSigns
+
+
+type NutritionSupplementType
+    = FortifiedPorridge
+    | Rutf
+    | Ongera
+    | TherapeutikMilk
+    | NoNutritionSupplementType
 
 
 

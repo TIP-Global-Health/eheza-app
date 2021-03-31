@@ -33,6 +33,7 @@ type alias NutritionFeedingForm =
     , breastfeeding : Maybe Bool
     , cleanWaterAvailable : Maybe Bool
     , eatenWithWater : Maybe Bool
+    , supplementType : Maybe NutritionSupplementType
     , sachetsPerDay : Maybe Float
     }
 
@@ -48,5 +49,6 @@ emptyNutritionFeedingForm =
     , breastfeeding = Nothing
     , cleanWaterAvailable = Nothing
     , eatenWithWater = Nothing
+    , supplementType = Nothing
     , sachetsPerDay = Nothing
     }

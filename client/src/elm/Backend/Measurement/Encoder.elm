@@ -1430,10 +1430,31 @@ encodeNutritionFeeding =
 encodeNutritionFeedingValue : NutritionFeedingValue -> List ( String, Value )
 encodeNutritionFeedingValue value =
     [ ( "nutrition_feeding_signs", encodeEverySet encodeNutritionFeedingSign value.signs )
+    , ( "supplement_type", encodeNutritionSupplementType value.supplementType )
     , ( "sachets_per_day", float value.sachetsPerDay )
     , ( "deleted", bool False )
     , ( "type", string "nutrition_feeding" )
     ]
+
+
+encodeNutritionSupplementType : NutritionSupplementType -> Value
+encodeNutritionSupplementType type_ =
+    string <|
+        case type_ of
+            FortifiedPorridge ->
+                "fortified-porridge"
+
+            Rutf ->
+                "rutf"
+
+            Ongera ->
+                "ongera"
+
+            TherapeutikMilk ->
+                "therapeutic-milk"
+
+            NoNutritionSupplementType ->
+                "none"
 
 
 encodeNutritionFeedingSign : NutritionFeedingSign -> Value
