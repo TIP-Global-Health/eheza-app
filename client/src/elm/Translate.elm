@@ -1423,7 +1423,6 @@ translationSet trans =
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
                     }
 
-                -- @todo
                 ChildActivity Activity.Model.ContributingFactors ->
                     { english = "Contributing Factors"
                     , kinyarwanda = Just "Impamvu zateye uburwayi"
