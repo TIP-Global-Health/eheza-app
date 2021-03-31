@@ -8,44 +8,44 @@ import Pages.Page exposing (Page)
 
 type Msg
     = SetActivePage Page
-    | SetFeedingBoolInput (Bool -> FeedingForm -> FeedingForm) Bool
+    | SetFeedingBoolInput (Bool -> NutritionFeedingForm -> NutritionFeedingForm) Bool
     | SetSachetsPerDay String
 
 
 type alias Model =
-    { feedingForm : FeedingForm
+    { feedingForm : NutritionFeedingForm
     }
 
 
 emptyModel : Model
 emptyModel =
-    { feedingForm = emptyFeedingForm
+    { feedingForm = emptyNutritionFeedingForm
     }
 
 
-type alias FeedingForm =
+type alias NutritionFeedingForm =
     { receiveSupplement : Maybe Bool
     , rationPresentAtHome : Maybe Bool
     , enoughTillNextSession : Maybe Bool
     , supplementShared : Maybe Bool
     , encouragedToEat : Maybe Bool
     , refusingToEat : Maybe Bool
-    , feedingSignBreastfeeding : Maybe Bool
+    , breastfeeding : Maybe Bool
     , cleanWaterAvailable : Maybe Bool
     , eatenWithWater : Maybe Bool
     , sachetsPerDay : Maybe Float
     }
 
 
-emptyFeedingForm : FeedingForm
-emptyFeedingForm =
+emptyNutritionFeedingForm : NutritionFeedingForm
+emptyNutritionFeedingForm =
     { receiveSupplement = Nothing
     , rationPresentAtHome = Nothing
     , enoughTillNextSession = Nothing
     , supplementShared = Nothing
     , encouragedToEat = Nothing
     , refusingToEat = Nothing
-    , feedingSignBreastfeeding = Nothing
+    , breastfeeding = Nothing
     , cleanWaterAvailable = Nothing
     , eatenWithWater = Nothing
     , sachetsPerDay = Nothing
