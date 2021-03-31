@@ -14,7 +14,7 @@ class HedleyRestfulNutritionFeeding extends HedleyRestfulHomeVisitActivityBase {
    * {@inheritdoc}
    */
   protected $fields = [
-    'field_supplement_type'
+    'field_supplement_type',
     'field_sachets_per_day',
   ];
 
