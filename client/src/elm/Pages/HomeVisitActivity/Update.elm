@@ -22,3 +22,26 @@ update currentDate id db msg model =
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
+
+        SetFeedingBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.feedingForm
+            in
+            ( { model | feedingForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetSachetsPerDay value ->
+            let
+                form =
+                    model.feedingForm
+
+                updatedForm =
+                    { form | sachetsPerDay = String.toFloat value }
+            in
+            ( { model | feedingForm = updatedForm }
+            , Cmd.none
+            , []
+            )

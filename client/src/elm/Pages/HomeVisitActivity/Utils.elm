@@ -16,17 +16,24 @@ import Pages.Utils exposing (ifEverySetEmpty, taskCompleted, valueConsideringIsD
 import RemoteData exposing (RemoteData(..))
 
 
-expectActivity : NominalDate -> Person -> Bool -> AssembledData -> ModelIndexedDb -> HomeVisitActivity -> Bool
-expectActivity currentDate child isChw data db activity =
+expectActivity : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> HomeVisitActivity -> Bool
+expectActivity currentDate child data db activity =
     -- @todo
     case activity of
         _ ->
             True
 
 
-activityCompleted : NominalDate -> Person -> Bool -> AssembledData -> ModelIndexedDb -> HomeVisitActivity -> Bool
-activityCompleted currentDate child isChw data db activity =
-    -- @todo
+activityCompleted : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> HomeVisitActivity -> Bool
+activityCompleted currentDate child data db activity =
+    let
+        measurements =
+            data.measurements
+    in
     case activity of
+        Feeding ->
+            (not <| expectActivity currentDate child data db Feeding)
+                || isJust measurements.feeding
+
         _ ->
             True
