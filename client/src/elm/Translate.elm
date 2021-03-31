@@ -1425,13 +1425,13 @@ translationSet trans =
 
                 -- @todo
                 ChildActivity Activity.Model.ContributingFactors ->
-                    { english = ""
-                    , kinyarwanda = Nothing
+                    { english = "Contributing Factors"
+                    , kinyarwanda = Just "Impamvu zateye uburwayi"
                     }
 
                 ChildActivity Activity.Model.FollowUp ->
-                    { english = ""
-                    , kinyarwanda = Nothing
+                    { english = "Follow Up"
+                    , kinyarwanda = Just "Gukurikirana umurwayi"
                     }
 
                 ChildActivity Activity.Model.HealthEducation ->
@@ -1503,12 +1503,12 @@ translationSet trans =
 
                 ChildActivity Activity.Model.ContributingFactors ->
                     { english = "Contributing Factors:"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Impamvu zateye uburwayi:"
                     }
 
                 ChildActivity Activity.Model.FollowUp ->
                     { english = "Follow Up:"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gukurikirana umurwayi:"
                     }
 
                 ChildActivity Activity.Model.HealthEducation ->
@@ -1580,12 +1580,12 @@ translationSet trans =
 
                 ChildActivity Activity.Model.ContributingFactors ->
                     { english = "Contributing Factors"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Impamvu zateye uburwayi"
                     }
 
                 ChildActivity Activity.Model.FollowUp ->
                     { english = "Follow Up"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gukurikirana umurwayi"
                     }
 
                 ChildActivity Activity.Model.HealthEducation ->
@@ -1662,12 +1662,12 @@ translationSet trans =
 
                 ChildActivity Activity.Model.ContributingFactors ->
                     { english = "Contributing Factors"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Impamvu zateye uburwayi"
                     }
 
                 ChildActivity Activity.Model.FollowUp ->
                     { english = "Follow Up"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gukurikirana umurwayi"
                     }
 
                 ChildActivity Activity.Model.HealthEducation ->
