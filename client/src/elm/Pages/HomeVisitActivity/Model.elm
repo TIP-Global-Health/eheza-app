@@ -9,6 +9,7 @@ import Pages.Page exposing (Page)
 type Msg
     = SetActivePage Page
     | SetFeedingBoolInput (Bool -> NutritionFeedingForm -> NutritionFeedingForm) Bool
+    | SetNutritionSupplementType NutritionSupplementType
     | SetSachetsPerDay String
 
 

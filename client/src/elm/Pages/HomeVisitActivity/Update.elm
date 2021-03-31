@@ -33,6 +33,19 @@ update currentDate id db msg model =
             , []
             )
 
+        SetNutritionSupplementType value ->
+            let
+                form =
+                    model.feedingForm
+
+                updatedForm =
+                    { form | supplementType = Just value }
+            in
+            ( { model | feedingForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
         SetSachetsPerDay value ->
             let
                 form =
