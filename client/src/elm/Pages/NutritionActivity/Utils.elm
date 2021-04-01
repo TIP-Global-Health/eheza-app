@@ -10,13 +10,13 @@ import Backend.Measurement.Model
         , HeightInCm(..)
         , MuacInCm(..)
         , MuacIndication(..)
+        , NutritionAssesment(..)
         , NutritionMeasurement
         , NutritionMeasurements
         , WeightInKg(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
-import Backend.Measurement.Model exposing (NutritionAssesment(..))
 import Backend.NutritionEncounter.Utils
     exposing
         ( calculateZScoreWeightForAge

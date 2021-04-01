@@ -28,7 +28,6 @@ import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths)
 import LocalData
 import Maybe.Extra exposing (isJust, isNothing)
-import Backend.Measurement.Model exposing (NutritionAssesment)
 import RemoteData exposing (RemoteData(..))
 import ZScore.Model
 import ZScore.Utils exposing (zScoreWeightForAge)

@@ -33,7 +33,6 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
-import Backend.Measurement.Model exposing (NutritionAssesment(..))
 import Backend.Person.Model
     exposing
         ( EducationLevel(..)
