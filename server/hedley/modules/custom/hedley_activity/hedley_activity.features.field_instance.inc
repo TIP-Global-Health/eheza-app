@@ -12933,6 +12933,7 @@ function hedley_activity_field_default_field_instances() {
   t('Mother');
   t('Neck');
   t('Nurse');
+  t('Nutrition Assesment');
   t('Nutrition Encounter');
   t('Nutrition Signs');
   t('Obstetric History');
