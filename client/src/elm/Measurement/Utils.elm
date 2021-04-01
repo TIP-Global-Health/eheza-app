@@ -290,20 +290,27 @@ followUpFormWithDefault form saved =
 
 toFollowUpValueWithDefault : Maybe FollowUpValue -> FollowUpForm -> Maybe FollowUpValue
 toFollowUpValueWithDefault saved form =
+    let
+        assesment =
+            Maybe.map .assesment saved
+    in
     followUpFormWithDefault form saved
-        |> toFollowUpValue
+        |> toFollowUpValue assesment
 
 
-toFollowUpValue : FollowUpForm -> Maybe FollowUpValue
-toFollowUpValue form =
+toFollowUpValue : Maybe (EverySet NutritionAssesment) -> FollowUpForm -> Maybe FollowUpValue
+toFollowUpValue assesment form =
     form.option
         |> Maybe.map
             (\option ->
                 let
                     options =
                         List.singleton option |> EverySet.fromList
+
+                    assesmentForBackend =
+                        Maybe.withDefault (EverySet.singleton NoNutritionAssesment) assesment
                 in
-                FollowUpValue options EverySet.empty
+                FollowUpValue options assesmentForBackend
             )
 
 
