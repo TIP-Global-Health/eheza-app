@@ -375,6 +375,8 @@ nutritionAssesmentFromString assesment =
             Just AssesmentDangerSignsPresent
 
         "malnutrition-signs" ->
+            -- We don't actually know which malnutrition signs we discovered.
+            -- We will be able to deterine this by looking at the Nutrition activity.
             Just (AssesmentMalnutritionSigns [])
 
         "consecutive-weight-loss" ->
