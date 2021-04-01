@@ -2224,27 +2224,27 @@ translationSet trans =
             case factor of
                 FactorLackOfBreastMilk ->
                     { english = "Lack of breast milk (for children < 6 months)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubura kw'amashereka (ku mwana uri munsi y'amezi atandatu)"
                     }
 
                 FactorMaternalMastitis ->
                     { english = "Maternal mastitis (for children < 6 months)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi yabyimbye amabere (ku mwana uri munsi y'amezi atandatu)"
                     }
 
                 FactorPoorSuck ->
                     { english = "Poor suck"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yonka nta mbaraga"
                     }
 
                 FactorDiarrheaOrVomiting ->
                     { english = "Diarrhea or vomiting"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Impiswi cyangwa kuruka"
                     }
 
                 NoContributingFactorsSign ->
                     { english = "None of these"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta kimenyetso na kimwe"
                     }
 
         ContributingFactorsQuestion ->
@@ -3015,29 +3015,29 @@ translationSet trans =
 
         FollowUpLabel ->
             { english = "Follow up with the patient in"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gukurikirana umurwayi mu"
             }
 
         FollowUpOption option ->
             case option of
                 OneDay ->
                     { english = "1 Day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umunsi 1"
                     }
 
                 ThreeDays ->
                     { english = "3 Days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Iminsi 3"
                     }
 
                 OneWeek ->
                     { english = "1 Week"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Icyumweru 1"
                     }
 
                 TwoWeeks ->
                     { english = "2 Weeks"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibyumweru 2"
                     }
 
         FormError errorValue ->
@@ -4459,42 +4459,42 @@ translationSet trans =
             case assessment of
                 AssesmentAcuteMalnutritionModerate ->
                     { english = "Moderate Acute Malnutrition"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imirire  mibi yoroheje ije vuba"
                     }
 
                 AssesmentAcuteMalnutritionSevere ->
                     { english = "Severe Acute Malnutrition"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imirire  mibi ikabije ije vuba"
                     }
 
                 AssesmentUnderweightModerate ->
                     { english = "Moderately Underweight"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imirire mibi yoroheje ku biro"
                     }
 
                 AssesmentUnderweightSevere ->
                     { english = "Severely Underweight"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imirire mibi ikabije ku biro"
                     }
 
                 AssesmentDangerSignsNotPresent ->
                     { english = "Without Danger Signs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta bimenyetso mpuruza"
                     }
 
                 AssesmentDangerSignsPresent ->
                     { english = "With Danger Signs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ifite ibimenyetso mpuruza"
                     }
 
                 AssesmentMalnutritionSigns _ ->
                     { english = "Malnutrition Signs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ifite ibimenyetso mpuruza"
                     }
 
                 AssesmentConsecutiveWeightLoss ->
                     { english = "Consecutive Weight Loss"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gutakaza ibiro mu buryo bwikurikiranije"
                     }
 
         NutritionHelper ->
@@ -4516,12 +4516,12 @@ translationSet trans =
 
                 NextStepContributingFactors ->
                     { english = "Contributing Factors"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Impamvu zateye uburwayi"
                     }
 
                 NextStepFollowUp ->
                     { english = "Follow Up"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gukurikirana umurwayi"
                     }
 
         ObstetricalDiagnosis ->

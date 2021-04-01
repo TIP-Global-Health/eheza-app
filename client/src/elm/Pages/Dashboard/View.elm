@@ -529,14 +529,14 @@ generateCaseNutritionNewCases currentDate caseNutrition =
                 (\( month, nutritionValue ) ( _, previousNutritionValue ) ->
                     case nutritionValue.class of
                         Backend.Dashboard.Model.Moderate ->
-                            if previousNutritionValue.class == Backend.Dashboard.Model.Moderate then
+                            if previousNutritionValue.class /= Backend.Dashboard.Model.Moderate then
                                 ( month, Backend.Dashboard.Model.Nutrition 0 1 )
 
                             else
                                 ( month, Backend.Dashboard.Model.Nutrition 0 0 )
 
                         Backend.Dashboard.Model.Severe ->
-                            if previousNutritionValue.class == Backend.Dashboard.Model.Severe then
+                            if previousNutritionValue.class /= Backend.Dashboard.Model.Severe then
                                 ( month, Backend.Dashboard.Model.Nutrition 1 0 )
 
                             else
