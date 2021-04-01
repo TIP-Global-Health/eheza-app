@@ -1116,7 +1116,7 @@ decodeFeedingValue =
     succeed NutritionFeedingValue
         |> required "nutrition_feeding_signs" (decodeEverySet decodeNutritionFeedingSign)
         |> required "supplement_type" decodeNutritionSupplementType
-        |> required "sachets_per_day" float
+        |> required "sachets_per_day" decodeFloat
 
 
 decodeNutritionSupplementType : Decoder NutritionSupplementType

@@ -325,50 +325,6 @@ function hedley_nutrition_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-nutrition_feeding-field_child'.
-  $field_instances['node-nutrition_feeding-field_child'] = array(
-    'bundle' => 'nutrition_feeding',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'entityreference',
-        'settings' => array(
-          'bypass_access' => FALSE,
-          'link' => FALSE,
-        ),
-        'type' => 'entityreference_label',
-        'weight' => 0,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_child',
-    'label' => 'Person',
-    'required' => 1,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'entityreference',
-      'settings' => array(
-        'match_operator' => 'CONTAINS',
-        'path' => '',
-        'size' => 60,
-      ),
-      'type' => 'entityreference_autocomplete',
-      'weight' => 1,
-    ),
-  );
-
   // Exported field_instance: 'node-nutrition_feeding-field_date_measured'.
   $field_instances['node-nutrition_feeding-field_date_measured'] = array(
     'bundle' => 'nutrition_feeding',
@@ -549,6 +505,50 @@ function hedley_nutrition_field_default_field_instances() {
       'settings' => array(),
       'type' => 'options_buttons',
       'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition_feeding-field_person'.
+  $field_instances['node-nutrition_feeding-field_person'] = array(
+    'bundle' => 'nutrition_feeding',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_person',
+    'label' => 'Person',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 1,
     ),
   );
 

@@ -1379,9 +1379,16 @@ div.page-activity.home-visit {
 
   .ui.full.segment {
 
-    .full.content .helper {
-      font-style: italic;
-      margin-bottom: 20px;
+    .full.content {
+
+      .helper {
+        font-style: italic;
+        margin-bottom: 20px;
+      }
+
+      .checkbox-select-input {
+        margin-bottom: 20px;
+      }
     }
   }
 }
