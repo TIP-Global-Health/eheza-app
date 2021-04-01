@@ -158,7 +158,7 @@ generateNutritionAssesment currentDate zscores childId muacValue weightValue nut
             generateIndividualMeasurementsForChild childId db
 
         individualWeightMeasurements =
-            resolvePreviousIndividualValues individualMeasurements .weight weightValueFunc
+            resolveIndividualValues individualMeasurements .weight weightValueFunc
 
         groupWeightMeasurements =
             Dict.get childId db.childMeasurements
@@ -292,13 +292,13 @@ generateNutritionAssesment currentDate zscores childId muacValue weightValue nut
         |> List.filterMap identity
 
 
-resolvePreviousIndividualValues :
+resolveIndividualValues :
     List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a ))
     -> (a -> b)
     -> List ( NominalDate, b )
-resolvePreviousIndividualValues previousMeasurementsWithDates measurementFunc valueFunc =
-    previousMeasurementsWithDates
+resolveIndividualValues measurementsWithDates measurementFunc valueFunc =
+    measurementsWithDates
         |> List.filterMap
             (\( date, ( _, measurements ) ) ->
                 measurementFunc measurements

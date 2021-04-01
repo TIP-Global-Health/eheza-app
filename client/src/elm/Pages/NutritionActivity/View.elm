@@ -233,7 +233,7 @@ viewHeightContent language currentDate zscores assembled data previousGroupValue
                 assembled.person.birthDate
 
         previousIndividualValue =
-            resolvePreviousIndividualValue assembled.previousMeasurementsWithDates .height (\(HeightInCm cm) -> cm)
+            resolveIndividualValue assembled.previousMeasurementsWithDates .height (\(HeightInCm cm) -> cm)
 
         previousValue =
             resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
@@ -322,7 +322,7 @@ viewMuacContent language currentDate assembled data previousGroupValue =
             taskCompleted form.muac
 
         previousIndividualValue =
-            resolvePreviousIndividualValue assembled.previousMeasurementsWithDates .muac (\(MuacInCm cm) -> cm)
+            resolveIndividualValue assembled.previousMeasurementsWithDates .muac (\(MuacInCm cm) -> cm)
 
         previousValue =
             resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
@@ -517,7 +517,7 @@ viewWeightContent language currentDate zscores isChw assembled data previousGrou
                 assembled.person.birthDate
 
         previousIndividualValue =
-            resolvePreviousIndividualValue assembled.previousMeasurementsWithDates .weight (\(WeightInKg kg) -> kg)
+            resolveIndividualValue assembled.previousMeasurementsWithDates .weight (\(WeightInKg kg) -> kg)
 
         previousValue =
             resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
