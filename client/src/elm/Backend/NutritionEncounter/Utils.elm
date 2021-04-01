@@ -21,8 +21,8 @@ import ZScore.Model exposing (Kilograms(..))
 import ZScore.Utils exposing (zScoreWeightForAge)
 
 
-generatePreviousMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
-generatePreviousMeasurementsForChild childId db =
+generateIndividualMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
+generateIndividualMeasurementsForChild childId db =
     resolveNutritionParticipantForChild childId db
         |> Maybe.map
             (\participantId ->
@@ -155,7 +155,7 @@ generateNutritionAssesment currentDate zscores childId muacValue weightValue nut
             \(WeightInKg kg) -> kg
 
         individualMeasurements =
-            generatePreviousMeasurementsForChild childId db
+            generateIndividualMeasurementsForChild childId db
 
         individualWeightMeasurements =
             resolvePreviousIndividualValues individualMeasurements .weight weightValueFunc

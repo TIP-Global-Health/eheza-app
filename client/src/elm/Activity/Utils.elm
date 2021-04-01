@@ -18,7 +18,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (generatePreviousMeasurementsForChild)
+import Backend.NutritionEncounter.Utils
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person, Ubudehe(..))
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
