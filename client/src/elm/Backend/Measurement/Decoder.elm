@@ -1089,10 +1089,11 @@ decodeNutritionFollowUp =
     decodeNutritionMeasurement decodeFollowUpValue
 
 
-decodeFollowUpValue : Decoder (EverySet FollowUpOption)
+decodeFollowUpValue : Decoder FollowUpValue
 decodeFollowUpValue =
-    decodeEverySet decodeFollowUpOption
-        |> field "follow_up_options"
+    succeed FollowUpValue
+        |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
+        |> required "nutrition_assesment" (decodeEverySet decodeNutritionAssesment)
 
 
 decodeSymptomsGeneral : Decoder SymptomsGeneral
@@ -2139,4 +2140,15 @@ decodeReasonForNotProvidingHealthEducation =
                         fail <|
                             reason
                                 ++ " is not a recognized ReasonForNotProvidingHealthEducation"
+            )
+
+
+decodeNutritionAssesment : Decoder NutritionAssesment
+decodeNutritionAssesment =
+    string
+        |> andThen
+            (\s ->
+                nutritionAssesmentFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized NutritionAssesment" |> fail)
             )

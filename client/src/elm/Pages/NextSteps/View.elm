@@ -1,14 +1,17 @@
 module Pages.NextSteps.View exposing (view)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), emptySummaryByActivity)
-import Activity.Utils exposing (getActivityIcon, getAllActivities, getParticipantCountForActivity)
+import Activity.Utils exposing (generateNutritionAssesment, getActivityIcon, getAllActivities, getParticipantCountForActivity)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (NutritionAssesment)
 import Backend.Measurement.Utils exposing (mapMeasurementData)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData)
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -29,7 +32,6 @@ import Pages.NextSteps.Model exposing (Model, Msg(..))
 import Pages.NextSteps.Utils exposing (nextStepsTasksCompletedFromTotal)
 import Pages.NutritionActivity.Model exposing (NextStepsData)
 import Pages.NutritionActivity.View exposing (warningPopup)
-import Pages.NutritionEncounter.Model exposing (NutritionAssesment)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
 import Pages.Utils exposing (isTaskCompleted, tasksBarId)
@@ -48,7 +50,7 @@ view language currentDate zscores childId originActivity ( sessionId, session ) 
         content =
             Dict.get childId db.people
                 |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map (\child -> viewContent language currentDate zscores childId child session model)
+                |> Maybe.map (\child -> viewContent language currentDate zscores childId child session db model)
                 |> Maybe.withDefault emptyNode
     in
     div [ class "page-activity nutrition" ]
@@ -72,16 +74,16 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> EditableSession -> Model -> Html Msg
-viewContent language currentDate zscores childId child session model =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> EditableSession -> ModelIndexedDb -> Model -> Html Msg
+viewContent language currentDate zscores childId child session db model =
     ((viewPersonDetails language currentDate child Nothing |> div [ class "item" ])
-        :: viewNextStepsContent language currentDate childId child session model
+        :: viewNextStepsContent language currentDate zscores childId child session db model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewNextStepsContent : Language -> NominalDate -> PersonId -> Person -> EditableSession -> Model -> List (Html Msg)
-viewNextStepsContent language currentDate childId child session model =
+viewNextStepsContent : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> EditableSession -> ModelIndexedDb -> Model -> List (Html Msg)
+viewNextStepsContent language currentDate zscores childId child session db model =
     getChildMeasurementData childId session
         |> LocalData.unwrap
             []
@@ -247,7 +249,17 @@ viewNextStepsContent language currentDate childId child session model =
 
                                                 NextStepFollowUp ->
                                                     toFollowUpValueWithDefault followUpValue model.followUpForm
-                                                        |> Maybe.map (\value -> SaveFollowUp followUpId value nextTask |> onClick |> List.singleton)
+                                                        |> Maybe.map
+                                                            (\value ->
+                                                                let
+                                                                    assesment =
+                                                                        generateNutritionAssesment currentDate zscores childId db session.offlineSession
+
+                                                                    value_ =
+                                                                        { value | assesment = nutritionAssesmentForBackend assesment }
+                                                                in
+                                                                SaveFollowUp followUpId value_ nextTask |> onClick |> List.singleton
+                                                            )
                                                         |> Maybe.withDefault []
                                     in
                                     div [ class "actions next-steps" ]

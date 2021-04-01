@@ -9,11 +9,11 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
 import Maybe.Extra exposing (isNothing)
-import Pages.NutritionEncounter.Model exposing (NutritionAssesment(..))
+import Pages.Utils exposing (ifEverySetEmpty)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language)
 import Utils.NominalDate exposing (diffDays)
@@ -364,3 +364,9 @@ muacSevere muac =
 muacModerate : MuacInCm -> Bool
 muacModerate muac =
     muacIndication muac == MuacYellow
+
+
+nutritionAssesmentForBackend : List NutritionAssesment -> EverySet NutritionAssesment
+nutritionAssesmentForBackend assesment =
+    EverySet.fromList assesment
+        |> ifEverySetEmpty NoNutritionAssesment

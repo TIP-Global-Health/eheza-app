@@ -3,7 +3,7 @@ module Pages.NutritionActivity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Measurement.Model exposing (..)
-import Pages.NutritionEncounter.Model exposing (NutritionAssesment)
+import Backend.Measurement.Model exposing (NutritionAssesment)
 import Pages.Page exposing (Page)
 
 

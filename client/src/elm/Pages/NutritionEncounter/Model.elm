@@ -40,14 +40,3 @@ type alias AssembledData =
     , measurements : NutritionMeasurements
     , previousMeasurementsWithDates : List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     }
-
-
-type NutritionAssesment
-    = AssesmentAcuteMalnutritionModerate
-    | AssesmentAcuteMalnutritionSevere
-    | AssesmentUnderweightModerate
-    | AssesmentUnderweightSevere
-    | AssesmentDangerSignsNotPresent
-    | AssesmentDangerSignsPresent
-    | AssesmentMalnutritionSigns (List ChildNutritionSign)
-    | AssesmentConsecutiveWeightLoss

@@ -274,28 +274,37 @@ toContributingFactorsValue form =
     Maybe.map (EverySet.fromList >> ifEverySetEmpty NoContributingFactorsSign) form.signs
 
 
-fromFollowUpValue : Maybe (EverySet FollowUpOption) -> FollowUpForm
+fromFollowUpValue : Maybe FollowUpValue -> FollowUpForm
 fromFollowUpValue saved =
-    { option = Maybe.andThen (EverySet.toList >> List.head) saved }
+    { option = Maybe.andThen (.options >> EverySet.toList >> List.head) saved
+    }
 
 
-followUpFormWithDefault : FollowUpForm -> Maybe (EverySet FollowUpOption) -> FollowUpForm
+followUpFormWithDefault : FollowUpForm -> Maybe FollowUpValue -> FollowUpForm
 followUpFormWithDefault form saved =
     saved
         |> unwrap
             form
-            (\value -> { option = or form.option (EverySet.toList value |> List.head) })
+            (\value -> { option = or form.option (EverySet.toList value.options |> List.head) })
 
 
-toFollowUpValueWithDefault : Maybe (EverySet FollowUpOption) -> FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValueWithDefault : Maybe FollowUpValue -> FollowUpForm -> Maybe FollowUpValue
 toFollowUpValueWithDefault saved form =
     followUpFormWithDefault form saved
         |> toFollowUpValue
 
 
-toFollowUpValue : FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValue : FollowUpForm -> Maybe FollowUpValue
 toFollowUpValue form =
-    Maybe.map (List.singleton >> EverySet.fromList) form.option
+    form.option
+        |> Maybe.map
+            (\option ->
+                let
+                    options =
+                        List.singleton option |> EverySet.fromList
+                in
+                FollowUpValue options EverySet.empty
+            )
 
 
 fromHealthEducationValue : Maybe HealthEducationValue -> HealthEducationForm

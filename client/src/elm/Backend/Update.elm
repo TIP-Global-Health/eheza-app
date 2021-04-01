@@ -1607,7 +1607,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                                     ]
 
                                 NutritionEncounter ->
-                                    [ Backend.NutritionEncounter.Model.NutritionEncounter sessionId currentDate Nothing healthCenterId
+                                    [ Backend.NutritionEncounter.Model.emptyNutritionEncounter sessionId currentDate healthCenterId
                                         |> Backend.Model.PostNutritionEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]

@@ -16,6 +16,7 @@ import Backend.Measurement.Model
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
+import Backend.Measurement.Model exposing (NutritionAssesment(..))
 import Backend.NutritionEncounter.Utils
     exposing
         ( calculateZScoreWeightForAge
@@ -34,7 +35,7 @@ import Maybe.Extra exposing (isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (contributingFactorsFormWithDefault, followUpFormWithDefault, healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Pages.NutritionActivity.Model exposing (..)
-import Pages.NutritionEncounter.Model exposing (AssembledData, NutritionAssesment(..))
+import Pages.NutritionEncounter.Model exposing (AssembledData)
 import Pages.Utils exposing (ifEverySetEmpty, taskCompleted, valueConsideringIsDirtyField)
 import RemoteData exposing (RemoteData(..))
 import Utils.NominalDate exposing (diffDays)

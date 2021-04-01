@@ -33,6 +33,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
+import Backend.Measurement.Model exposing (NutritionAssesment(..))
 import Backend.Person.Model
     exposing
         ( EducationLevel(..)
@@ -69,7 +70,6 @@ import Pages.Dashboard.Model as Dashboard
         , FilterProgramType(..)
         )
 import Pages.NutritionActivity.Model
-import Pages.NutritionEncounter.Model exposing (NutritionAssesment(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
     exposing
@@ -4445,6 +4445,11 @@ translationSet trans =
                 AssesmentConsecutiveWeightLoss ->
                     { english = "Consecutive Weight Loss"
                     , kinyarwanda = Just "Gutakaza ibiro mu buryo bwikurikiranije"
+                    }
+
+                NoNutritionAssesment ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
                     }
 
         NutritionHelper ->

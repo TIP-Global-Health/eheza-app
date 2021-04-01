@@ -185,7 +185,7 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                                 []
                                 (\measurements ->
                                     [ generatePreviousValuesForChild childId db
-                                        |> Measurement.View.viewChild language currentDate isChw child activity measurements zscores session form
+                                        |> Measurement.View.viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db form
                                         |> Html.map MsgMeasurement
                                         |> keyed "content"
                                     ]

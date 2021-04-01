@@ -16,6 +16,7 @@ module Measurement.View exposing
 -}
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
+import Activity.Utils exposing (generateNutritionAssesment)
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
@@ -23,8 +24,10 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData, muacIndication)
+import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
 import Backend.Person.Model exposing (Gender, Person)
-import Backend.Session.Model exposing (EditableSession)
+import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -66,15 +69,16 @@ viewChild :
     Language
     -> NominalDate
     -> Bool
-    -> Person
+    -> ( PersonId, Person )
     -> ChildActivity
     -> MeasurementData ChildMeasurements
     -> ZScore.Model.Model
     -> EditableSession
+    -> ModelIndexedDb
     -> ModelChild
     -> PreviousMeasurementsValue
     -> Html MsgChild
-viewChild language currentDate isChw child activity measurements zscores session model previousIndividualMeasurements =
+viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db model previousIndividualMeasurements =
     case activity of
         ChildFbf ->
             viewChildFbf language currentDate child session.offlineSession.session.clinicType (mapMeasurementData .fbf measurements) model.fbfForm
@@ -115,7 +119,7 @@ viewChild language currentDate isChw child activity measurements zscores session
             viewContributingFactors language currentDate (mapMeasurementData .contributingFactors measurements) model.contributingFactorsForm
 
         FollowUp ->
-            viewFollowUp language currentDate (mapMeasurementData .followUp measurements) model.followUpForm
+            viewFollowUp language currentDate zscores childId (mapMeasurementData .followUp measurements) session.offlineSession db model.followUpForm
 
         Activity.Model.HealthEducation ->
             viewHealthEducation language currentDate (mapMeasurementData .healthEducation measurements) model.healthEducationForm
@@ -885,8 +889,17 @@ viewContributingFactorsForm language currentDate setContributingFactorsSignMsg f
         ]
 
 
-viewFollowUp : Language -> NominalDate -> MeasurementData (Maybe ( FollowUpId, FollowUp )) -> FollowUpForm -> Html MsgChild
-viewFollowUp language currentDate measurement form =
+viewFollowUp :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> PersonId
+    -> MeasurementData (Maybe ( FollowUpId, FollowUp ))
+    -> OfflineSession
+    -> ModelIndexedDb
+    -> FollowUpForm
+    -> Html MsgChild
+viewFollowUp language currentDate zscores childId measurement offlineSession db form =
     let
         existingId =
             Maybe.map Tuple.first measurement.current
@@ -900,7 +913,18 @@ viewFollowUp language currentDate measurement form =
 
         saveMsg =
             toFollowUpValueWithDefault saved form
-                |> Maybe.map (SaveFollowUp existingId >> SendOutMsgChild)
+                |> Maybe.map
+                    (\value ->
+                        let
+                            assesment =
+                                generateNutritionAssesment currentDate zscores childId db offlineSession
+
+                            value_ =
+                                { value | assesment = nutritionAssesmentForBackend assesment }
+                        in
+                        SaveFollowUp existingId value_
+                            |> SendOutMsgChild
+                    )
     in
     div [ class "ui full segment follow-up" ]
         [ div [ class "content" ] [ formContent ]
