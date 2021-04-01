@@ -956,6 +956,38 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
+  // Exported field_base: 'field_nutrition_assesment'.
+  $field_bases['field_nutrition_assesment'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_nutrition_assesment',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'malnutrition-moderate' => 'Malnutrition Moderate',
+        'malnutrition-severe' => 'Malnutrition Severe',
+        'underweight-moderate' => 'Underweight Moderate',
+        'underweight-severe' => 'Underweight Severe',
+        'danger-signs-not-present' => 'Danger signs not present',
+        'danger-signs-present' => 'Danger signs present',
+        'malnutrition-signs' => 'Malnutrition signs',
+        'consecutive-weight-loss' => 'Consecutive weight loss',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_nutrition_encounter'.
   $field_bases['field_nutrition_encounter'] = array(
     'active' => 1,
