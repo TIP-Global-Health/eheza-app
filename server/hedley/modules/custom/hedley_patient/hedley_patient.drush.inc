@@ -423,6 +423,7 @@ function hedley_patient_consolidate_acute_illness_content(array $measurements, $
  *   - Antenatal.
  *   - Nutrition.
  *   - Acute Illness.
+ *   - Home visit.
  *
  * @param array $measurements
  *   A list of measurements IDs.
