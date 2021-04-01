@@ -758,6 +758,8 @@ type TranslationId
     | RhNegative
     | RiskFactorAlert RiskFactor
     | RiskFactors
+    | SachetsPerDayHelper Float Float
+    | SachetsPerDayQuestion
     | Save
     | SaveAndNext
     | SaveAndRecordOutcome
@@ -5712,6 +5714,16 @@ translationSet trans =
         RiskFactors ->
             { english = "Risk Factors"
             , kinyarwanda = Just "Abashobora kwibasirwa n'indwara runaka (kubera impamvu zitandukanye:kuba atwite..)"
+            }
+
+        SachetsPerDayHelper weight recommendation ->
+            { english = "The recommended amount for a " ++ String.fromFloat weight ++ " kg child is " ++ String.fromFloat recommendation ++ " sachets a day"
+            , kinyarwanda = Nothing
+            }
+
+        SachetsPerDayQuestion ->
+            { english = "How many sachets of supplement is given to child per day"
+            , kinyarwanda = Nothing
             }
 
         Save ->

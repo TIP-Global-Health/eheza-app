@@ -251,11 +251,36 @@ viewFeedingContent language currentDate assembled feedingForm =
                 Nothing
             ]
 
+        sachetsPerDayInput =
+            [ viewLabel language Translate.SachetsPerDayQuestion
+            , option
+                [ value ""
+                , selected (form.sachetsPerDay == Nothing)
+                ]
+                [ text "" ]
+                :: (List.repeat 20 0.5
+                        |> List.indexedMap
+                            (\index number ->
+                                let
+                                    s =
+                                        String.fromFloat (toFloat index * number)
+                                in
+                                option
+                                    [ value s
+                                    , selected (form.sachetsPerDay == Just (toFloat index * number))
+                                    ]
+                                    [ text s ]
+                            )
+                   )
+                |> select [ onInput SetSachetsPerDay, class "form-input sachets-per-day" ]
+            ]
+
         content =
             receiveSupplementSection
                 ++ rationPresentAtHomeInput
                 ++ enoughTillNextSessionInput
                 ++ supplementSharedInput
+                ++ sachetsPerDayInput
                 ++ encouragedToEatInput
                 ++ refusingToEatInput
                 ++ breastfeedingInput
