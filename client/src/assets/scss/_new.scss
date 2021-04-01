@@ -1011,7 +1011,8 @@ div.page-activity.acute-illness {
 
 // Prenatal Activity and Nutrition Activity pages
 div.page-activity.prenatal,
-div.page-activity.nutrition {
+div.page-activity.nutrition,
+div.page-activity.home-visit {
 
   .ui.full.segment {
 
@@ -1027,7 +1028,7 @@ div.page-activity.nutrition {
         margin-bottom: 30px;
 
       // Pregnanacy Dating Inputs
-      &.range {
+      &.select {
         background: $color-white;
         border: 2px solid $color-light-gray;
         padding: 5px;
@@ -1370,6 +1371,17 @@ div.page-activity.nutrition {
       &.derived {
         margin-left: 70px;
       }
+    }
+  }
+}
+
+div.page-activity.home-visit {
+
+  .ui.full.segment {
+
+    .full.content .helper {
+      font-style: italic;
+      margin-bottom: 20px;
     }
   }
 }

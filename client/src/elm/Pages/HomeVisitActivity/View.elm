@@ -7,7 +7,9 @@ import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (resolveAllWeightMeasurementsForChild)
 import EverySet
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -27,6 +29,7 @@ import Pages.Utils
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxSelectInput
+        , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
         , viewQuestionLabel
@@ -89,14 +92,14 @@ viewActivity : Language -> NominalDate -> HomeVisitEncounterId -> HomeVisitActiv
 viewActivity language currentDate id activity assembled db model =
     case activity of
         Feeding ->
-            viewFeedingContent language currentDate assembled model.feedingForm
+            viewFeedingContent language currentDate assembled db model.feedingForm
 
         _ ->
             []
 
 
-viewFeedingContent : Language -> NominalDate -> AssembledData -> NutritionFeedingForm -> List (Html Msg)
-viewFeedingContent language currentDate assembled feedingForm =
+viewFeedingContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> NutritionFeedingForm -> List (Html Msg)
+viewFeedingContent language currentDate assembled db feedingForm =
     let
         form =
             assembled.measurements.feeding
@@ -104,7 +107,7 @@ viewFeedingContent language currentDate assembled feedingForm =
                 |> nutritionFeedingFormWithDefault feedingForm
 
         totalTasks =
-            9 + supplementTypeActive
+            10 + supplementTypeActive
 
         tasksCompleted =
             taskCompleted form.receiveSupplement
@@ -112,6 +115,7 @@ viewFeedingContent language currentDate assembled feedingForm =
                 + taskCompleted form.rationPresentAtHome
                 + taskCompleted form.enoughTillNextSession
                 + taskCompleted form.supplementShared
+                + taskCompleted form.sachetsPerDay
                 + taskCompleted form.encouragedToEat
                 + taskCompleted form.refusingToEat
                 + taskCompleted form.breastfeeding
@@ -188,7 +192,7 @@ viewFeedingContent language currentDate assembled feedingForm =
                 form.supplementShared
                 (SetFeedingBoolInput supplementSharedUpdateFunc)
                 "enough-till-next-section"
-                Nothing
+                (Just ( Translate.Shared, Translate.OnlySickChild ))
             ]
 
         encouragedToEatUpdateFunc value form_ =
@@ -252,7 +256,8 @@ viewFeedingContent language currentDate assembled feedingForm =
             ]
 
         sachetsPerDayInput =
-            [ viewLabel language Translate.SachetsPerDayQuestion
+            [ viewQuestionLabel language Translate.SachetsPerDayQuestion
+            , sachetsPerDayHelper
             , option
                 [ value ""
                 , selected (form.sachetsPerDay == Nothing)
@@ -272,8 +277,49 @@ viewFeedingContent language currentDate assembled feedingForm =
                                     [ text s ]
                             )
                    )
-                |> select [ onInput SetSachetsPerDay, class "form-input sachets-per-day" ]
+                |> select [ onInput SetSachetsPerDay, class "form-input select" ]
             ]
+
+        allWeightMeasuements =
+            resolveAllWeightMeasurementsForChild assembled.participant.person db
+
+        childWeight =
+            List.head allWeightMeasuements
+                |> Maybe.map Tuple.second
+
+        sachetsPerDayHelper =
+            childWeight
+                |> Maybe.map
+                    (\weight ->
+                        let
+                            recommendation =
+                                if weight < 4 then
+                                    1.5
+
+                                else if weight < 5.5 then
+                                    2
+
+                                else if weight < 7 then
+                                    2.5
+
+                                else if weight < 8.5 then
+                                    3
+
+                                else if weight < 9.5 then
+                                    3.5
+
+                                else if weight < 10.5 then
+                                    4
+
+                                else if weight < 12 then
+                                    4.5
+
+                                else
+                                    5
+                        in
+                        viewCustomLabel language (Translate.SachetsPerDayHelper weight recommendation) "." "helper"
+                    )
+                |> Maybe.withDefault emptyNode
 
         content =
             receiveSupplementSection
@@ -286,22 +332,23 @@ viewFeedingContent language currentDate assembled feedingForm =
                 ++ breastfeedingInput
                 ++ cleanWaterAvailableInput
                 ++ eatenWithWaterInput
-
-        action =
-            [ div [ class "actions" ]
-                [ button
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-
-                    -- , onClick <| SaveHeight assembled.participant.person assembled.measurements.height
-                    ]
-                    [ text <| translate language Translate.Save ]
-                ]
-            ]
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             content
-                ++ action
+                ++ viewAction language (SaveFeeding assembled.participant.person assembled.measurements.feeding) disabled
+        ]
+    ]
+
+
+viewAction : Language -> Msg -> Bool -> List (Html Msg)
+viewAction language saveMsg disabled =
+    [ div [ class "actions" ]
+        [ button
+            [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
+            , onClick saveMsg
+            ]
+            [ text <| translate language Translate.Save ]
         ]
     ]

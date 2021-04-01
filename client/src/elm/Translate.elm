@@ -641,6 +641,7 @@ type TranslationId
     | OnceYouEndTheEncounter
     | OnceYouEndYourGroupEncounter
     | OngoingTreatmentTask OngoingTreatmentTask
+    | OnlySickChild
     | Or
     | PackagesPerMonth
     | Page
@@ -807,6 +808,7 @@ type TranslationId
     | ServiceWorkerStatus
     | SevereAcuteMalnutrition
     | SevereHemorrhagingPreviousDelivery
+    | Shared
     | SignOnDoorPostedQuestion
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | StillbornPreviousDelivery
@@ -4712,6 +4714,11 @@ translationSet trans =
                     , kinyarwanda = Just "Kureba imiti yahawe"
                     }
 
+        OnlySickChild ->
+            { english = "Only sick child"
+            , kinyarwanda = Nothing
+            }
+
         Or ->
             { english = "or"
             , kinyarwanda = Nothing
@@ -5959,6 +5966,11 @@ translationSet trans =
         SevereHemorrhagingPreviousDelivery ->
             { english = "Severe Hemorrhaging in previous delivery (>500 ml)"
             , kinyarwanda = Just "Ubushize yavuye cyane akimara kubyara hejuru ya Ml 500"
+            }
+
+        Shared ->
+            { english = "Shared"
+            , kinyarwanda = Nothing
             }
 
         SignOnDoorPostedQuestion ->

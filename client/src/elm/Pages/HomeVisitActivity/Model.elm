@@ -11,6 +11,7 @@ type Msg
     | SetFeedingBoolInput (Bool -> NutritionFeedingForm -> NutritionFeedingForm) Bool
     | SetNutritionSupplementType NutritionSupplementType
     | SetSachetsPerDay String
+    | SaveFeeding PersonId (Maybe ( NutritionFeedingId, NutritionFeeding ))
 
 
 type alias Model =
