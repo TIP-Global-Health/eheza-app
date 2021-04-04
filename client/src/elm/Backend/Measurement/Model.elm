@@ -308,7 +308,7 @@ type alias NutritionHygieneValue =
 
 type NutritionHygieneSign
     = SoapInTheHouse
-    | BashHandsBeforeFeeding
+    | WashHandsBeforeFeeding
     | FoodCovered
     | NoNutritionHygieneSign
 
@@ -333,12 +333,12 @@ type alias NutritionFoodSecurityValue =
 
 
 type NutritionFoodSecuritySign
-    = HousholdGotFood
+    = HouseholdGotFood
     | NoNutritionFoodSecuritySign
 
 
 type IncomeSource
-    = HomebasedAgriculture
+    = HomeBasedAgriculture
     | CommercialAgriculture
     | PublicEmployee
     | PrivateBusinessEmpployee
