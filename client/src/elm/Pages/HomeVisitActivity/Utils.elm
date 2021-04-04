@@ -36,8 +36,17 @@ activityCompleted currentDate child data db activity =
             (not <| expectActivity currentDate child data db Feeding)
                 || isJust measurements.feeding
 
-        _ ->
+        Caring ->
+            -- @todo
             True
+
+        Hygiene ->
+            (not <| expectActivity currentDate child data db Hygiene)
+                || isJust measurements.hygiene
+
+        FoodSecurity ->
+            (not <| expectActivity currentDate child data db FoodSecurity)
+                || isJust measurements.foodSecurity
 
 
 fromNutritionFeedingValue : Maybe NutritionFeedingValue -> NutritionFeedingForm
