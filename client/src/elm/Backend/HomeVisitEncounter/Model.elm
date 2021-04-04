@@ -21,6 +21,8 @@ to peform the updates indicated by the `Msg` type below.
 type alias Model =
     { closeHomeVisitEncounter : WebData ()
     , saveFeeding : WebData ()
+    , saveHygiene : WebData ()
+    , saveFoodSecurity : WebData ()
     }
 
 
@@ -28,6 +30,8 @@ emptyModel : Model
 emptyModel =
     { closeHomeVisitEncounter = NotAsked
     , saveFeeding = NotAsked
+    , saveHygiene = NotAsked
+    , saveFoodSecurity = NotAsked
     }
 
 
@@ -36,3 +40,7 @@ type Msg
     | HandleClosedHomeVisitEncounter (WebData ())
     | SaveFeeding PersonId (Maybe NutritionFeedingId) NutritionFeedingValue
     | HandleSavedFeeding (WebData ())
+    | SaveHygiene PersonId (Maybe NutritionHygieneId) NutritionHygieneValue
+    | HandleSavedHygiene (WebData ())
+    | SaveFoodSecurity PersonId (Maybe NutritionFoodSecurityId) NutritionFoodSecurityValue
+    | HandleSavedFoodSecurity (WebData ())

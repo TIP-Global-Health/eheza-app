@@ -44,3 +44,23 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveFeeding = data }
             , Cmd.none
             )
+
+        SaveHygiene personId valueId value ->
+            ( { model | saveHygiene = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value nutritionHygieneEndpoint HandleSavedHygiene
+            )
+
+        HandleSavedHygiene data ->
+            ( { model | saveHygiene = data }
+            , Cmd.none
+            )
+
+        SaveFoodSecurity personId valueId value ->
+            ( { model | saveFoodSecurity = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value nutritionFoodSecurityEndpoint HandleSavedFoodSecurity
+            )
+
+        HandleSavedFoodSecurity data ->
+            ( { model | saveFoodSecurity = data }
+            , Cmd.none
+            )
