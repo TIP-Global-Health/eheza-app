@@ -345,8 +345,10 @@ type Revision
     | NutritionEncounterRevision NutritionEncounterId NutritionEncounter
     | NutritionFeedingRevision NutritionFeedingId NutritionFeeding
     | NutritionFollowUpRevision NutritionFollowUpId NutritionFollowUp
+    | NutritionFoodSecurityRevision NutritionFoodSecurityId NutritionFoodSecurity
     | NutritionHealthEducationRevision NutritionHealthEducationId NutritionHealthEducation
     | NutritionHeightRevision NutritionHeightId NutritionHeight
+    | NutritionHygieneRevision NutritionHygieneId NutritionHygiene
     | NutritionMuacRevision NutritionMuacId NutritionMuac
     | NutritionNutritionRevision NutritionNutritionId NutritionNutrition
     | NutritionPhotoRevision NutritionPhotoId NutritionPhoto
