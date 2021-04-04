@@ -328,7 +328,7 @@ type alias NutritionFoodSecurity =
 
 type alias NutritionFoodSecurityValue =
     { signs : EverySet NutritionFoodSecuritySign
-    , incomeSource : IncomeSource
+    , mianIncomeSource : MianIncomeSource
     }
 
 
@@ -337,7 +337,7 @@ type NutritionFoodSecuritySign
     | NoNutritionFoodSecuritySign
 
 
-type IncomeSource
+type MianIncomeSource
     = HomeBasedAgriculture
     | CommercialAgriculture
     | PublicEmployee

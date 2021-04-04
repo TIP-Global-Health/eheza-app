@@ -14,7 +14,7 @@ class HedleyRestfulNutritionFoodSecurity extends HedleyRestfulHomeVisitActivityB
    * {@inheritdoc}
    */
   protected $fields = [
-    'field_income_source',
+    'field_main_income_source',
   ];
 
   /**

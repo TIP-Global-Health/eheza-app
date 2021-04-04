@@ -1171,8 +1171,8 @@ function hedley_nutrition_field_default_field_instances() {
   );
 
   // Exported field_instance:
-  // 'node-nutrition_food_security-field_income_source'.
-  $field_instances['node-nutrition_food_security-field_income_source'] = array(
+  // 'node-nutrition_food_security-field_main_income_source'.
+  $field_instances['node-nutrition_food_security-field_main_income_source'] = array(
     'bundle' => 'nutrition_food_security',
     'default_value' => NULL,
     'deleted' => 0,
@@ -1193,7 +1193,7 @@ function hedley_nutrition_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_income_source',
+    'field_name' => 'field_main_income_source',
     'label' => 'Income Source',
     'required' => 0,
     'settings' => array(

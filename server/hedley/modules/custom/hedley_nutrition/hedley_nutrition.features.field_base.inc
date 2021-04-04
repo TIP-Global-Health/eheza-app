@@ -126,13 +126,13 @@ function hedley_nutrition_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
-  // Exported field_base: 'field_income_source'.
-  $field_bases['field_income_source'] = array(
+  // Exported field_base: 'field_main_income_source'.
+  $field_bases['field_main_income_source'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_income_source',
+    'field_name' => 'field_main_income_source',
     'indexes' => array(
       'value' => array(
         0 => 'value',
