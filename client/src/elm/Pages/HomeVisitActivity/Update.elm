@@ -119,7 +119,7 @@ update currentDate id db msg model =
 
                 appMsgs =
                     model.hygieneForm
-                        |> toNutritionHhygieneValueWithDefault measurement
+                        |> toNutritionHygieneValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->
