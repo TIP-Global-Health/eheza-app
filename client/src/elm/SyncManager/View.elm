@@ -483,11 +483,17 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityNutritionFollowUp identifier ->
                 viewMeasurement identifier "Nutrition Follow Up"
 
+            BackendAuthorityNutritionFoodSecurity identifier ->
+                viewMeasurement identifier "Nutrition Food Security"
+
             BackendAuthorityNutritionHealthEducation identifier ->
                 viewMeasurement identifier "Nutrition Health Education"
 
             BackendAuthorityNutritionHeight identifier ->
                 viewMeasurement identifier "Nutrition Height"
+
+            BackendAuthorityNutritionHygiene identifier ->
+                viewMeasurement identifier "Nutrition Hygiene"
 
             BackendAuthorityNutritionMuac identifier ->
                 viewMeasurement identifier "Nutrition Muac"
