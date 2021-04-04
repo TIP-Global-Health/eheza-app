@@ -1088,8 +1088,8 @@ function hedley_nutrition_field_default_field_instances() {
   );
 
   // Exported field_instance:
-  // 'node-nutrition_food_security-field_food_security_sign'.
-  $field_instances['node-nutrition_food_security-field_food_security_sign'] = array(
+  // 'node-nutrition_food_security-field_food_security_signs'.
+  $field_instances['node-nutrition_food_security-field_food_security_signs'] = array(
     'bundle' => 'nutrition_food_security',
     'default_value' => NULL,
     'deleted' => 0,
@@ -1110,7 +1110,7 @@ function hedley_nutrition_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_food_security_sign',
+    'field_name' => 'field_food_security_signs',
     'label' => 'Food Security Sign',
     'required' => 0,
     'settings' => array(
@@ -1913,8 +1913,8 @@ function hedley_nutrition_field_default_field_instances() {
   );
 
   // Exported field_instance:
-  // 'node-nutrition_hygiene-field_nutrition_hygiene_sign'.
-  $field_instances['node-nutrition_hygiene-field_nutrition_hygiene_sign'] = array(
+  // 'node-nutrition_hygiene-field_nutrition_hygiene_signs'.
+  $field_instances['node-nutrition_hygiene-field_nutrition_hygiene_signs'] = array(
     'bundle' => 'nutrition_hygiene',
     'default_value' => NULL,
     'deleted' => 0,
@@ -1935,7 +1935,7 @@ function hedley_nutrition_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_nutrition_hygiene_sign',
+    'field_name' => 'field_nutrition_hygiene_signs',
     'label' => 'Nutrition Hygiene Sign',
     'required' => 0,
     'settings' => array(

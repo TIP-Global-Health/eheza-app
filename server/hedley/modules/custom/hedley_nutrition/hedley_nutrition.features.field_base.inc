@@ -66,13 +66,13 @@ function hedley_nutrition_field_default_field_bases() {
     'type' => 'list_text',
   );
 
-  // Exported field_base: 'field_food_security_sign'.
-  $field_bases['field_food_security_sign'] = array(
+  // Exported field_base: 'field_food_security_signs'.
+  $field_bases['field_food_security_signs'] = array(
     'active' => 1,
     'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_food_security_sign',
+    'field_name' => 'field_food_security_signs',
     'indexes' => array(
       'value' => array(
         0 => 'value',
@@ -215,13 +215,13 @@ function hedley_nutrition_field_default_field_bases() {
     'type' => 'list_text',
   );
 
-  // Exported field_base: 'field_nutrition_hygiene_sign'.
-  $field_bases['field_nutrition_hygiene_sign'] = array(
+  // Exported field_base: 'field_nutrition_hygiene_signs'.
+  $field_bases['field_nutrition_hygiene_signs'] = array(
     'active' => 1,
     'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_nutrition_hygiene_sign',
+    'field_name' => 'field_nutrition_hygiene_signs',
     'indexes' => array(
       'value' => array(
         0 => 'value',
