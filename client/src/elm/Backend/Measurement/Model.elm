@@ -296,6 +296,54 @@ type NutritionSupplementType
     | NoNutritionSupplementType
 
 
+type alias NutritionHygiene =
+    HomeVisitMeasurement NutritionHygieneValue
+
+
+type alias NutritionHygieneValue =
+    { signs : EverySet NutritionHygieneSign
+    , mainWaterSource : MainWaterSource
+    }
+
+
+type NutritionHygieneSign
+    = SoapInTheHouse
+    | BashHandsBeforeFeeding
+    | FoodCovered
+    | NoNutritionHygieneSign
+
+
+type MainWaterSource
+    = PipedWaterToHome
+    | PublicWaterTap
+    | RainWaterCollectionSystem
+    | NaturalSourceFlowingWater
+    | NaturalSourceStandingWater
+    | BottledWater
+
+
+type alias NutritionFoodSecurity =
+    HomeVisitMeasurement NutritionFoodSecurityValue
+
+
+type alias NutritionFoodSecurityValue =
+    { signs : EverySet NutritionFoodSecuritySign
+    , incomeSource : IncomeSource
+    }
+
+
+type NutritionFoodSecuritySign
+    = HousholdGotFood
+    | NoNutritionFoodSecuritySign
+
+
+type IncomeSource
+    = HomebasedAgriculture
+    | CommercialAgriculture
+    | PublicEmployee
+    | PrivateBusinessEmpployee
+
+
 
 -- PRENATAL MEASUREMENTS
 
@@ -1148,7 +1196,10 @@ type alias AcuteIllnessMeasurements =
 {-| A set of Home Visit measurements that correspond to the same Home Visit encounter.
 -}
 type alias HomeVisitMeasurements =
-    { feeding : Maybe ( NutritionFeedingId, NutritionFeeding ) }
+    { feeding : Maybe ( NutritionFeedingId, NutritionFeeding )
+    , hygiene : Maybe ( NutritionHygieneId, NutritionHygiene )
+    , foodSecurity : Maybe ( NutritionFoodSecurityId, NutritionFoodSecurity )
+    }
 
 
 {-| This is like `ChildMeasurementList`, except that it just covers one
