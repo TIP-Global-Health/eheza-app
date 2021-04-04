@@ -3759,7 +3759,7 @@ translationSet trans =
                     }
 
                 PrivateBusinessEmpployee ->
-                    { english = "Private Business Empployee"
+                    { english = "Private Business Employee"
                     , kinyarwanda = Nothing
                     }
 
