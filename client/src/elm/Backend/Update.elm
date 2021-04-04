@@ -2180,7 +2180,7 @@ handleRevision revision (( model, recalc ) as noChange) =
         NutritionFoodSecurityRevision uuid data ->
             ( mapHomeVisitMeasurements
                 data.encounterId
-                (\measurements -> { measurements | feeding = Just ( uuid, data ) })
+                (\measurements -> { measurements | foodSecurity = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -2204,7 +2204,7 @@ handleRevision revision (( model, recalc ) as noChange) =
         NutritionHygieneRevision uuid data ->
             ( mapHomeVisitMeasurements
                 data.encounterId
-                (\measurements -> { measurements | feeding = Just ( uuid, data ) })
+                (\measurements -> { measurements | hygiene = Just ( uuid, data ) })
                 model
             , recalc
             )
