@@ -310,7 +310,7 @@ type NutritionHygieneSign
     = SoapInTheHouse
     | WashHandsBeforeFeeding
     | FoodCovered
-    | NoNutritionHygieneSign
+    | NoNutritionHygieneSigns
 
 
 type MainWaterSource
@@ -328,13 +328,13 @@ type alias NutritionFoodSecurity =
 
 type alias NutritionFoodSecurityValue =
     { signs : EverySet NutritionFoodSecuritySign
-    , mianIncomeSource : MainIncomeSource
+    , mainIncomeSource : MainIncomeSource
     }
 
 
 type NutritionFoodSecuritySign
     = HouseholdGotFood
-    | NoNutritionFoodSecuritySign
+    | NoNutritionFoodSecuritySigns
 
 
 type MainIncomeSource

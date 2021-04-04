@@ -1492,6 +1492,102 @@ encodeNutritionFeedingSign sign =
                 "none"
 
 
+encodeNutritionHygiene : NutritionHygiene -> List ( String, Value )
+encodeNutritionHygiene =
+    encodeHomeVisitMeasurement encodeNutritionHygieneValue
+
+
+encodeNutritionHygieneValue : NutritionHygieneValue -> List ( String, Value )
+encodeNutritionHygieneValue value =
+    [ ( "nutrition_hygiene_signs", encodeEverySet encodeNutritionHygieneSign value.signs )
+    , ( "main_water_source", encodeMainWaterSource value.mainWaterSource )
+    , ( "deleted", bool False )
+    , ( "type", string "nutrition_hygiene" )
+    ]
+
+
+encodeNutritionHygieneSign : NutritionHygieneSign -> Value
+encodeNutritionHygieneSign sign =
+    string <|
+        case sign of
+            SoapInTheHouse ->
+                "soap-in-the-house"
+
+            WashHandsBeforeFeeding ->
+                "wash-hands-before-feeding"
+
+            FoodCovered ->
+                "food-covered"
+
+            NoNutritionHygieneSigns ->
+                "none"
+
+
+encodeMainWaterSource : MainWaterSource -> Value
+encodeMainWaterSource type_ =
+    string <|
+        case type_ of
+            PipedWaterToHome ->
+                "piped-water-to-home"
+
+            PublicWaterTap ->
+                "public-water-tap"
+
+            RainWaterCollectionSystem ->
+                "rain-water-collection-system"
+
+            NaturalSourceFlowingWater ->
+                "natural-source-flowing-water"
+
+            NaturalSourceStandingWater ->
+                "natural-source-standing-water"
+
+            BottledWater ->
+                "bottled-water"
+
+
+encodeNutritionFoodSecurity : NutritionFoodSecurity -> List ( String, Value )
+encodeNutritionFoodSecurity =
+    encodeHomeVisitMeasurement encodeNutritionFoodSecurityValue
+
+
+encodeNutritionFoodSecurityValue : NutritionFoodSecurityValue -> List ( String, Value )
+encodeNutritionFoodSecurityValue value =
+    [ ( "food_security_signs", encodeEverySet encodeNutritionFoodSecuritySign value.signs )
+    , ( "main_income_source", encodeMainIncomeSource value.mainIncomeSource )
+    , ( "deleted", bool False )
+    , ( "type", string "nutrition_food_security" )
+    ]
+
+
+encodeNutritionFoodSecuritySign : NutritionFoodSecuritySign -> Value
+encodeNutritionFoodSecuritySign sign =
+    string <|
+        case sign of
+            HouseholdGotFood ->
+                "household-got-food"
+
+            NoNutritionFoodSecuritySigns ->
+                "none"
+
+
+encodeMainIncomeSource : MainIncomeSource -> Value
+encodeMainIncomeSource type_ =
+    string <|
+        case type_ of
+            HomeBasedAgriculture ->
+                "home-based-agriculture"
+
+            CommercialAgriculture ->
+                "commercial-agriculture"
+
+            PublicEmployee ->
+                "public-employee"
+
+            PrivateBusinessEmpployee ->
+                "private-business-employee"
+
+
 encodeMedicationDistribution : MedicationDistribution -> List ( String, Value )
 encodeMedicationDistribution =
     encodeAcuteIllnessMeasurement encodeMedicationDistributionValue

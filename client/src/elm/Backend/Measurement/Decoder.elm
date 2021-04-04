@@ -1220,7 +1220,7 @@ decodeNutritionHygieneSign =
                         succeed FoodCovered
 
                     "none" ->
-                        succeed NoNutritionHygieneSign
+                        succeed NoNutritionHygieneSigns
 
                     _ ->
                         fail <|
@@ -1282,7 +1282,7 @@ decodeNutritionFoodSecuritySign =
                         succeed HouseholdGotFood
 
                     "none" ->
-                        succeed NoNutritionFoodSecuritySign
+                        succeed NoNutritionFoodSecuritySigns
 
                     _ ->
                         fail <|
