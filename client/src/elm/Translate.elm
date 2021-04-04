@@ -3754,7 +3754,7 @@ translationSet trans =
                     }
 
                 PublicEmployee ->
-                    { english = "Punlic Employee"
+                    { english = "Public Employee"
                     , kinyarwanda = Nothing
                     }
 
