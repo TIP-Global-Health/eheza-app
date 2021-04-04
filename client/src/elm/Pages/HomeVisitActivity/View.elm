@@ -94,8 +94,16 @@ viewActivity language currentDate id activity assembled db model =
         Feeding ->
             viewFeedingContent language currentDate assembled db model.feedingForm
 
-        _ ->
+        Caring ->
+            --@tood
+            -- viewCaringContent language currentDate assembled db caringForm =
             []
+
+        Hygiene ->
+            viewHygieneContent language currentDate assembled db model.hygieneForm
+
+        FoodSecurity ->
+            viewFoodSecurityContent language currentDate assembled db model.foodSecurityForm
 
 
 viewFeedingContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> NutritionFeedingForm -> List (Html Msg)
@@ -338,6 +346,157 @@ viewFeedingContent language currentDate assembled db feedingForm =
         [ div [ class "full content" ] <|
             content
                 ++ viewAction language (SaveFeeding assembled.participant.person assembled.measurements.feeding) disabled
+        ]
+    ]
+
+
+
+-- @todo
+-- viewCaringContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> NutritionCaringForm -> List (Html Msg)
+-- viewCaringContent language currentDate assembled db caringForm =
+--   []
+
+
+viewHygieneContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> NutritionHygieneForm -> List (Html Msg)
+viewHygieneContent language currentDate assembled db hygieneForm =
+    let
+        form =
+            assembled.measurements.hygiene
+                |> Maybe.map (Tuple.second >> .value)
+                |> nutritionHygieneFormWithDefault hygieneForm
+
+        totalTasks =
+            4
+
+        tasksCompleted =
+            taskCompleted form.mainWaterSource
+                + taskCompleted form.soapInTheHouse
+                + taskCompleted form.washHandsBeforeFeeding
+                + taskCompleted form.foodCovered
+
+        disabled =
+            tasksCompleted /= totalTasks
+
+        mainWaterSourceInput =
+            [ viewQuestionLabel language Translate.MainWaterSourceQuestion
+            , viewCheckBoxSelectInput language
+                [ PipedWaterToHome
+                , PublicWaterTap
+                , RainWaterCollectionSystem
+                , NaturalSourceFlowingWater
+                , NaturalSourceStandingWater
+                , BottledWater
+                ]
+                []
+                form.mainWaterSource
+                SetMainWaterSource
+                Translate.MainWaterSource
+            ]
+
+        soapInTheHouseUpdateFunc value form_ =
+            { form_ | soapInTheHouse = Just value }
+
+        soapInTheHouseInput =
+            [ viewQuestionLabel language <| Translate.NutritionHygieneSignQuestion SoapInTheHouse
+            , viewBoolInput language
+                form.soapInTheHouse
+                (SetHygieneBoolInput soapInTheHouseUpdateFunc)
+                "soap-in-the-house"
+                Nothing
+            ]
+
+        washHandsBeforeFeedingUpdateFunc value form_ =
+            { form_ | washHandsBeforeFeeding = Just value }
+
+        washHandsBeforeFeedingInput =
+            [ viewQuestionLabel language <| Translate.NutritionHygieneSignQuestion WashHandsBeforeFeeding
+            , viewBoolInput language
+                form.washHandsBeforeFeeding
+                (SetHygieneBoolInput washHandsBeforeFeedingUpdateFunc)
+                "wash-hands-before-feeding"
+                Nothing
+            ]
+
+        foodCoveredUpdateFunc value form_ =
+            { form_ | foodCovered = Just value }
+
+        foodCoveredInput =
+            [ viewQuestionLabel language <| Translate.NutritionHygieneSignQuestion FoodCovered
+            , viewBoolInput language
+                form.foodCovered
+                (SetHygieneBoolInput foodCoveredUpdateFunc)
+                "food-covered"
+                Nothing
+            ]
+
+        content =
+            mainWaterSourceInput
+                ++ soapInTheHouseInput
+                ++ washHandsBeforeFeedingInput
+                ++ foodCoveredInput
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            content
+                ++ viewAction language (SaveHygiene assembled.participant.person assembled.measurements.hygiene) disabled
+        ]
+    ]
+
+
+viewFoodSecurityContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> NutritionFoodSecurityForm -> List (Html Msg)
+viewFoodSecurityContent language currentDate assembled db foodSecurityForm =
+    let
+        form =
+            assembled.measurements.foodSecurity
+                |> Maybe.map (Tuple.second >> .value)
+                |> nutritionFoodSecurityFormWithDefault foodSecurityForm
+
+        totalTasks =
+            2
+
+        tasksCompleted =
+            taskCompleted form.householdGotFood
+                + taskCompleted form.mainIncomeSource
+
+        disabled =
+            tasksCompleted /= totalTasks
+
+        mainIncomeSourceInput =
+            [ viewQuestionLabel language Translate.MainIncomeSourceQuestion
+            , viewCheckBoxSelectInput language
+                [ HomeBasedAgriculture
+                , CommercialAgriculture
+                , PublicEmployee
+                , PrivateBusinessEmpployee
+                ]
+                []
+                form.mainIncomeSource
+                SetMainIncomeSource
+                Translate.MainIncomeSource
+            ]
+
+        householdGotFoodUpdateFunc value form_ =
+            { form_ | householdGotFood = Just value }
+
+        householdGotFoodInput =
+            [ viewQuestionLabel language <| Translate.NutritionFoodSecuritySignQuestion HouseholdGotFood
+            , viewBoolInput language
+                form.householdGotFood
+                (SetFoodSecurityBoolInput householdGotFoodUpdateFunc)
+                "household-got-fFood"
+                Nothing
+            ]
+
+        content =
+            householdGotFoodInput
+                ++ mainIncomeSourceInput
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            content
+                ++ viewAction language (SaveFoodSecurity assembled.participant.person assembled.measurements.foodSecurity) disabled
         ]
     ]
 

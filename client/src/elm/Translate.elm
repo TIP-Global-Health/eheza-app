@@ -541,6 +541,10 @@ type TranslationId
     | LowRiskCase
     | Lungs
     | LungsCPESign LungsCPESign
+    | MainIncomeSource MainIncomeSource
+    | MainIncomeSourceQuestion
+    | MainWaterSource MainWaterSource
+    | MainWaterSourceQuestion
     | MakeSureYouAreConnected
     | MalariaRapidDiagnosticTest
     | MalariaRapidTestResult MalariaRapidTestResult
@@ -629,7 +633,9 @@ type TranslationId
     | NutritionActivityTitle NutritionActivity
     | NutritionAssesment NutritionAssesment
     | NutritionFeedingSignQuestion NutritionFeedingSign
+    | NutritionFoodSecuritySignQuestion NutritionFoodSecuritySign
     | NutritionHelper
+    | NutritionHygieneSignQuestion NutritionHygieneSign
     | NutritionNextStepsTask Measurement.Model.NextStepsTask
     | NutritionSupplementType NutritionSupplementType
     | ObstetricalDiagnosis
@@ -3735,6 +3741,70 @@ translationSet trans =
                 NormalLungs ->
                     translationSet Normal
 
+        MainIncomeSource source ->
+            case source of
+                HomeBasedAgriculture ->
+                    { english = "Homebased Agriculture / Livestock"
+                    , kinyarwanda = Nothing
+                    }
+
+                CommercialAgriculture ->
+                    { english = "Commercial Agriculture / Livestock"
+                    , kinyarwanda = Nothing
+                    }
+
+                PublicEmployee ->
+                    { english = "Punlic Employee"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrivateBusinessEmpployee ->
+                    { english = "Private Business Empployee"
+                    , kinyarwanda = Nothing
+                    }
+
+        MainIncomeSourceQuestion ->
+            { english = "What is the most important sorce of income for the household"
+            , kinyarwanda = Nothing
+            }
+
+        MainWaterSource source ->
+            case source of
+                PipedWaterToHome ->
+                    { english = "Piped Water to Home"
+                    , kinyarwanda = Nothing
+                    }
+
+                PublicWaterTap ->
+                    { english = "Public Water Tap"
+                    , kinyarwanda = Nothing
+                    }
+
+                RainWaterCollectionSystem ->
+                    { english = "Rain Water Collection System"
+                    , kinyarwanda = Nothing
+                    }
+
+                NaturalSourceFlowingWater ->
+                    { english = "Natural Source Flowing Water"
+                    , kinyarwanda = Nothing
+                    }
+
+                NaturalSourceStandingWater ->
+                    { english = "Natural Source Standing Water"
+                    , kinyarwanda = Nothing
+                    }
+
+                BottledWater ->
+                    { english = "Bottled Water"
+                    , kinyarwanda = Nothing
+                    }
+
+        MainWaterSourceQuestion ->
+            { english = "What is the household's main source of water"
+            , kinyarwanda = Nothing
+            }
+
         MakeSureYouAreConnected ->
             { english = "Make sure you are connected to the internet. If the issue continues, call The Ihangane Project at +250 788 817 542."
             , kinyarwanda = Just "Banza urebe ko ufite interineti. Ikibazo nigikomeza, hamagara The Ihangane Project kuri +250 788 817 542"
@@ -4555,10 +4625,44 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        NutritionFoodSecuritySignQuestion sign ->
+            case sign of
+                HouseholdGotFood ->
+                    { english = "Does the household currently have food available"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNutritionFoodSecuritySigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         NutritionHelper ->
             { english = "Explain to the mother how to check the malnutrition signs for their own child."
             , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye."
             }
+
+        NutritionHygieneSignQuestion sign ->
+            case sign of
+                SoapInTheHouse ->
+                    { english = "Is there soap for washing in the house"
+                    , kinyarwanda = Nothing
+                    }
+
+                WashHandsBeforeFeeding ->
+                    { english = "Do the caregiver and chils wash hands before the child is fed"
+                    , kinyarwanda = Nothing
+                    }
+
+                FoodCovered ->
+                    { english = "Is the food / RUTF covered and free from flies"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNutritionHygieneSigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
 
         NutritionNextStepsTask task ->
             case task of
