@@ -66,6 +66,31 @@ function hedley_nutrition_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_food_security_sign'.
+  $field_bases['field_food_security_sign'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_food_security_sign',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'household-got-food' => 'Household Got Food',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_home_visit_encounter'.
   $field_bases['field_home_visit_encounter'] = array(
     'active' => 1,
@@ -101,6 +126,62 @@ function hedley_nutrition_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
+  // Exported field_base: 'field_income_source'.
+  $field_bases['field_income_source'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_income_source',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'home-based-agriculture' => 'Home Based Agriculture',
+        'commercial-agriculture' => 'Commercial Agriculture',
+        'public-employee' => 'Public Employee',
+        'private-business-employee' => 'Private Business Employee',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_main_water_source'.
+  $field_bases['field_main_water_source'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_main_water_source',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'piped-water-to-home' => 'Piped Water to Home',
+        'public-water-tap' => 'Public Water Tap',
+        'rain-water-collection-system' => 'Rain Water Collection System',
+        'natural-source-flowing-water' => 'Natural Source Flowing Water',
+        'natural-source-standing-water' => 'Natural Source Standing Water',
+        'bottled-water' => 'Bottled Water',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_nutrition_feeding_signs'.
   $field_bases['field_nutrition_feeding_signs'] = array(
     'active' => 1,
@@ -126,6 +207,33 @@ function hedley_nutrition_field_default_field_bases() {
         'breastfeeding' => 'Breastfeeding',
         'clean-water-available' => 'Clean water available',
         'eaten-with-water' => 'Eaten with water',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_nutrition_hygiene_sign'.
+  $field_bases['field_nutrition_hygiene_sign'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_nutrition_hygiene_sign',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'soap-in-the-house' => 'Soap in the House',
+        'wash-hands-before-feeding' => 'Wash Hands Before Feeding',
+        'food-covered' => 'Food Covered',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
