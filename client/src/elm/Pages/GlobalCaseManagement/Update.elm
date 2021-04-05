@@ -14,7 +14,7 @@ update msg model =
             )
 
         SetEncounterTypeFilter encounterType ->
-            ( { model | encounterType = encounterType }
+            ( { model | encounterTypeFilter = encounterType }
             , Cmd.none
             , []
             )

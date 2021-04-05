@@ -40,22 +40,35 @@ view language page healthCenterId isChw model db =
                     [ span [ class "icon-back" ] [] ]
                 ]
 
+        panes =
+            allEncounterTypes
+                |> List.filterMap
+                    (\type_ ->
+                        if isNothing model.encounterTypeFilter || model.encounterTypeFilter == Just type_ then
+                            Just <| viewEncounterTypePane language type_ [] model
+
+                        else
+                            Nothing
+                    )
+
         content =
-            [ viewFiltersPane language model
-            ]
+            div [ class "ui unstackable items" ] <|
+                viewFilters language model
+                    :: panes
     in
     div [ class "wrap wrap-alt-2 page-case-management" ]
         [ header
-        , div [ class "ui unstackable items" ]
-            content
+        , content
         ]
 
 
-viewFiltersPane : Language -> Model -> Html Msg
-viewFiltersPane language model =
+viewFilters : Language -> Model -> Html Msg
+viewFilters language model =
     let
         filters =
-            [ Nothing, Just AcuteIllnessEncounter, Just NutritionEncounter ]
+            allEncounterTypes
+                |> List.map Just
+                |> List.append [ Nothing ]
 
         renderButton maybeFilter =
             let
@@ -65,7 +78,7 @@ viewFiltersPane language model =
             in
             button
                 [ classList
-                    [ ( "active", model.encounterType == maybeFilter )
+                    [ ( "active", model.encounterTypeFilter == maybeFilter )
                     , ( "primary ui button", True )
                     ]
                 , onClick <| SetEncounterTypeFilter maybeFilter
@@ -74,6 +87,34 @@ viewFiltersPane language model =
     in
     div [ class "ui segment filters" ] <|
         List.map renderButton filters
+
+
+viewEncounterTypePane : Language -> IndividualEncounterType -> List FollowUpCase -> Model -> Html Msg
+viewEncounterTypePane language encounterType cases model =
+    let
+        content =
+            if List.isEmpty cases then
+                [ translateText language Translate.NoMatchesFound ]
+
+            else
+                List.map (viewFollowUpCase language) cases
+    in
+    div [ class "pane" ]
+        [ viewItemHeading language encounterType
+        , div [ class "pane-content" ]
+            content
+        ]
+
+
+viewItemHeading : Language -> IndividualEncounterType -> Html Msg
+viewItemHeading language encounterType =
+    div [ class "pane-heading" ]
+        [ text <| translate language <| Translate.EncounterTypeFollowUpLabel encounterType ]
+
+
+viewFollowUpCase : Language -> FollowUpCase -> Html Msg
+viewFollowUpCase language followUpCase =
+    emptyNode
 
 
 
@@ -128,7 +169,7 @@ viewFiltersPane language model =
 --     in
 --     div [ class "dashboard main" ]
 --         [ div [ class "timestamp" ] [ text <| (translate language <| Translate.GlobalCaseManagement Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
---         , viewFiltersPane language MainPage filterPeriodsForMainPage db model
+--         , viewFilters language MainPage filterPeriodsForMainPage db model
 --         , div [ class "ui grid" ]
 --             [ div [ class "eight wide column" ]
 --                 [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
@@ -571,7 +612,7 @@ viewFiltersPane language model =
 --                 mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodCaseManagement
 --         in
 --         div [ class "dashboard stats" ]
---             [ viewFiltersPane language StatsPage filterPeriodsForStatsPage db model
+--             [ viewFilters language StatsPage filterPeriodsForStatsPage db model
 --             , div [ class "ui equal width grid" ]
 --                 [ viewMalnourishedCards language malnourishedCurrentMonth malnourishedPreviousMonth
 --                 , viewMiscCards language currentDate currentPeriodStats monthBeforeStats
@@ -743,7 +784,7 @@ viewFiltersPane language model =
 --                     |> List.reverse
 --         in
 --         div [ class "dashboard case" ]
---             [ viewFiltersPane language CaseManagementPage filterPeriodsForCaseManagementPage db model
+--             [ viewFilters language CaseManagementPage filterPeriodsForCaseManagementPage db model
 --             , div [ class "ui segment blue" ]
 --                 [ div [ class "case-management" ]
 --                     [ div [ class "header" ]

@@ -2311,6 +2311,7 @@ div.page-case-management {
     background-color: $color-white;
     display: flex;
     justify-content: space-around;
+    margin-bottom: 0;
     min-height: 60px;
     padding: 25px;
 
@@ -2327,6 +2328,28 @@ div.page-case-management {
     button.active {
       background-color: $color-primary;
       color: $color-white;
+    }
+  }
+
+  .pane {
+    background: $color-primary;
+
+    .pane-heading {
+      color: $color-white;
+      font-size: 22px;
+      font-weight: bold;
+      padding: 10px 0;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .pane-content {
+      background: $color-white;
+      color: $color-dark-gray;
+      font-size: 22px;
+      font-weight: bold;
+      padding: 20px;
+      text-align: center;
     }
   }
 }

@@ -431,6 +431,7 @@ type TranslationId
     | EgaWeeks
     | EmptyString
     | EncounterTypeFileterLabel IndividualEncounterType
+    | EncounterTypeFollowUpLabel IndividualEncounterType
     | EndEncounter
     | EndEncounterQuestion
     | EndGroupEncounter
@@ -2732,6 +2733,28 @@ translationSet trans =
 
                 NutritionEncounter ->
                     { english = "Child Nutrition"
+                    , kinyarwanda = Nothing
+                    }
+
+        EncounterTypeFollowUpLabel encounterType ->
+            case encounterType of
+                AcuteIllnessEncounter ->
+                    { english = "Acute Illness Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+                AntenatalEncounter ->
+                    { english = "Antenatal Care Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Inmmunization Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = "Child Nutrition Follow Up"
                     , kinyarwanda = Nothing
                     }
 

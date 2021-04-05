@@ -1,7 +1,9 @@
 module Pages.GlobalCaseManagement.Utils exposing (..)
 
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Pages.GlobalCaseManagement.Model exposing (..)
 
 
-tmp =
-    1
+allEncounterTypes : List IndividualEncounterType
+allEncounterTypes =
+    [ AcuteIllnessEncounter, NutritionEncounter ]

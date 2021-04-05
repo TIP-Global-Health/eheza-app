@@ -7,14 +7,28 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { encounterType : Maybe IndividualEncounterType
+    { encounterTypeFilter : Maybe IndividualEncounterType
     }
 
 
 emptyModel : Model
 emptyModel =
-    { encounterType = Nothing
+    { encounterTypeFilter = Nothing
     }
+
+
+type alias FollowUpCase =
+    { name : String
+    , dueOption : FollowUpDueOption
+    , assessment : String
+    }
+
+
+type FollowUpDueOption
+    = DueToday
+    | DueThisWeek
+    | DueThisMonth
+    | OverDue
 
 
 type Msg
