@@ -1588,6 +1588,54 @@ encodeMainIncomeSource type_ =
                 "private-business-employee"
 
 
+encodeNutritionCaring : NutritionCaring -> List ( String, Value )
+encodeNutritionCaring =
+    encodeHomeVisitMeasurement encodeNutritionCaringValue
+
+
+encodeNutritionCaringValue : NutritionCaringValue -> List ( String, Value )
+encodeNutritionCaringValue value =
+    [ ( "nutrition_caring_questions", encodeEverySet encondeNutritionCaringSign value.signs )
+    , ( "child_caring_options", encodeNutritionCaringOption value.caringOption )
+    , ( "deleted", bool False )
+    , ( "type", string "nutrition_caring" )
+    ]
+
+
+encondeNutritionCaringSign : NutritionCaringSign -> Value
+encondeNutritionCaringSign sign =
+    string <|
+        case sign of
+            ParentsAliveHealthy ->
+                "parent-alive-and-healthy"
+
+            ChildClean ->
+                "child-clean"
+
+            NoCaringSigns ->
+                "none"
+
+
+encodeNutritionCaringOption : CaringOption -> Value
+encodeNutritionCaringOption option =
+    string <|
+        case option of
+            CaredByParent ->
+                "parent"
+
+            CaredByGrandparent ->
+                "grandparent"
+
+            CaredBySibling ->
+                "sibling"
+
+            CaredByNeighbor ->
+                "neighbor"
+
+            CaredByDayCare ->
+                "daycare"
+
+
 encodeMedicationDistribution : MedicationDistribution -> List ( String, Value )
 encodeMedicationDistribution =
     encodeAcuteIllnessMeasurement encodeMedicationDistributionValue
