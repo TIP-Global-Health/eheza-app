@@ -66,6 +66,7 @@ var tableForType = {
     muac: 'shards',
     nurse: 'nodes',
     nutrition: 'shards',
+    nutrition_caring: 'shards',
     nutrition_contributing_factors: 'shards',
     nutrition_feeding: 'shards',
     nutrition_follow_up: 'shards',
