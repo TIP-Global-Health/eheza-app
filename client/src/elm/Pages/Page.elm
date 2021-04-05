@@ -124,6 +124,7 @@ type UserPage
     | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
     | ClinicalProgressReportPage PrenatalEncounterId
     | DashboardPage DashboardPage -- Dashboard with visual summary of the data
+    | GlobalCaseManagementPage -- page where info about needed follow ups is displayed.
     | DemographicsReportPage PrenatalEncounterId
     | SessionPage SessionId SessionPage -- pages that manipulate a group session
     | MyAccountPage -- shows information about the logged-in user

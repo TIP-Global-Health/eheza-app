@@ -223,8 +223,7 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) deviceName sele
             caseManagementButton =
                 button
                     [ class "ui primary button"
-
-                    --, onClick <| SendOutMsg <| SetActivePage <| UserPage CaseManagementPage
+                    , onClick <| SendOutMsg <| SetActivePage <| UserPage GlobalCaseManagementPage
                     ]
                     [ text <| translate language Translate.CaseManagement
                     ]

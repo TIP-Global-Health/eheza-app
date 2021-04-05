@@ -31,6 +31,7 @@ import Pages.Clinics.View
 import Pages.Dashboard.View
 import Pages.DemographicsReport.View
 import Pages.Device.View
+import Pages.GlobalCaseManagement.View
 import Pages.IndividualEncounterParticipants.View
 import Pages.IndividualEncounterTypes.View
 import Pages.MyAccount.View
@@ -304,6 +305,11 @@ viewUserPage page deviceName model configured =
                     DashboardPage subPage ->
                         Pages.Dashboard.View.view model.language subPage currentDate healthCenterId isChw (Tuple.second loggedInModel.nurse) loggedInModel.dashboardPage model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageDashboard subPage)
+                            |> flexPageWrapper model
+
+                    GlobalCaseManagementPage ->
+                        Pages.GlobalCaseManagement.View.view model.language currentDate healthCenterId isChw loggedInModel.globalCaseManagementPage model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageGlobalCaseManagement)
                             |> flexPageWrapper model
 
                     DemographicsReportPage prenatalEncounterId ->

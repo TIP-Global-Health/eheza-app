@@ -6569,6 +6569,11 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                GlobalCaseManagementPage ->
+                    { english = "Case Management"
+                    , kinyarwanda = Nothing
+                    }
+
                 DemographicsReportPage _ ->
                     { english = "Demographics Report"
                     , kinyarwanda = Just "Raporo y'umwirondoro"

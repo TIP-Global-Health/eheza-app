@@ -38,6 +38,7 @@ import Pages.Dashboard.Model
 import Pages.Dashboard.Update
 import Pages.Device.Model
 import Pages.Device.Update
+import Pages.GlobalCaseManagement.Update
 import Pages.IndividualEncounterParticipants.Update
 import Pages.NutritionActivity.Model
 import Pages.NutritionActivity.Update
@@ -253,6 +254,16 @@ update msg model =
                             in
                             ( { data | dashboardPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageDashboard subPage) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageGlobalCaseManagement subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.GlobalCaseManagement.Update.update subMsg data.globalCaseManagementPage
+                            in
+                            ( { data | globalCaseManagementPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageGlobalCaseManagement) subCmd
                             , appMsgs
                             )
 

@@ -16,6 +16,7 @@ import Pages.Clinics.Fetch
 import Pages.Dashboard.Fetch
 import Pages.DemographicsReport.Fetch
 import Pages.Device.Fetch
+import Pages.GlobalCaseManagement.Fetch
 import Pages.IndividualEncounterParticipants.Fetch
 import Pages.IndividualEncounterTypes.Fetch
 import Pages.NutritionActivity.Fetch
@@ -90,6 +91,15 @@ fetch model =
                     |> Maybe.map
                         (\( healthCenterId, loggedIn ) ->
                             Pages.Dashboard.Fetch.fetch healthCenterId loggedIn.dashboardPage
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
+
+            UserPage GlobalCaseManagementPage ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( healthCenterId, loggedIn ) ->
+                            Pages.GlobalCaseManagement.Fetch.fetch healthCenterId loggedIn.globalCaseManagementPage
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []
