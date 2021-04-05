@@ -23,6 +23,7 @@ type alias Model =
     , saveFeeding : WebData ()
     , saveHygiene : WebData ()
     , saveFoodSecurity : WebData ()
+    , saveCaring : WebData ()
     }
 
 
@@ -32,6 +33,7 @@ emptyModel =
     , saveFeeding = NotAsked
     , saveHygiene = NotAsked
     , saveFoodSecurity = NotAsked
+    , saveCaring = NotAsked
     }
 
 
@@ -44,3 +46,5 @@ type Msg
     | HandleSavedHygiene (WebData ())
     | SaveFoodSecurity PersonId (Maybe NutritionFoodSecurityId) NutritionFoodSecurityValue
     | HandleSavedFoodSecurity (WebData ())
+    | SaveCaring PersonId (Maybe NutritionCaringId) NutritionCaringValue
+    | HandleSavedCaring (WebData ())
