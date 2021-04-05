@@ -18,12 +18,17 @@ type Msg
     | SetFoodSecurityBoolInput (Bool -> NutritionFoodSecurityForm -> NutritionFoodSecurityForm) Bool
     | SetMainIncomeSource MainIncomeSource
     | SaveFoodSecurity PersonId (Maybe ( NutritionFoodSecurityId, NutritionFoodSecurity ))
+    | SetParentsAliveAndHealthy Bool
+    | SetChildClean Bool
+    | SetNutritionCaringOption CaringOption
+    | SaveNutritionCaring PersonId (Maybe ( NutritionCaringId, NutritionCaring )) (Maybe NextStepsTask)
 
 
 type alias Model =
     { feedingForm : NutritionFeedingForm
     , hygieneForm : NutritionHygieneForm
     , foodSecurityForm : NutritionFoodSecurityForm
+    , caringForm : NutritionCaringForm
     }
 
 
@@ -32,6 +37,7 @@ emptyModel =
     { feedingForm = emptyNutritionFeedingForm
     , hygieneForm = emptyNutritionHygieneForm
     , foodSecurityForm = emptyNutritionFoodSecurityForm
+    , caringForm = emptyNutritionCaringForm
     }
 
 
@@ -92,3 +98,15 @@ type alias NutritionFoodSecurityForm =
 emptyNutritionFoodSecurityForm : NutritionFoodSecurityForm
 emptyNutritionFoodSecurityForm =
     NutritionFoodSecurityForm Nothing Nothing
+
+
+type alias NutritionCaringForm =
+    { caringOption : Maybe CaringOption
+    , parentHealth : Maybe Bool
+    , childClean : Maybe Bool
+    }
+
+
+emptyNutritionCaringForm : NutritionCaringForm
+emptyNutritionCaringForm =
+    NutritionCaringForm Nothing Nothing Nothing
