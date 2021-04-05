@@ -335,6 +335,7 @@ type TranslationId
     | ChartPhrase ChartPhrase
     | CheckAllThatApply
     | CheckIn
+    | ChildCleanQuestion
     | ChildHmisNumber
     | ChildDemographicInformation
     | ChildNutritionSignLabel ChildNutritionSign
@@ -632,6 +633,7 @@ type TranslationId
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
     | NutritionAssesment NutritionAssesment
+    | NutritionCaringOption CaringOption
     | NutritionFeedingSignQuestion NutritionFeedingSign
     | NutritionFoodSecuritySignQuestion NutritionFoodSecuritySign
     | NutritionHelper
@@ -656,6 +658,7 @@ type TranslationId
     | PaleConjuctiva
     | Pallor
     | Para
+    | ParentsAliveAndHealthyQuestion
     | PartialPlacentaPreviousDelivery
     | ParticipantDirectory
     | Participants
@@ -891,6 +894,7 @@ type TranslationId
     | WhatDoYouWantToDo
     | WhatType
     | WhatWasTheirResponse
+    | WhoCaresForTheChildDuringTheDay
     | WhyNot
     | WhyDifferentFbfAmount Activity
     | Year
@@ -2039,6 +2043,11 @@ translationSet trans =
         CheckIn ->
             { english = "Check in:"
             , kinyarwanda = Just "Kureba abaje"
+            }
+
+        ChildCleanQuestion ->
+            { english = "Is the sick child clean"
+            , kinyarwanda = Nothing
             }
 
         ChildHmisNumber ->
@@ -4573,6 +4582,33 @@ translationSet trans =
                     , kinyarwanda = Just "Gutakaza ibiro mu buryo bwikurikiranije"
                     }
 
+        NutritionCaringOption option ->
+            case option of
+                CaredByParent ->
+                    { english = "Parent"
+                    , kinyarwanda = Nothing
+                    }
+
+                CaredByGrandparent ->
+                    { english = "Grandparent"
+                    , kinyarwanda = Nothing
+                    }
+
+                CaredBySibling ->
+                    { english = "Sibling"
+                    , kinyarwanda = Nothing
+                    }
+
+                CaredByNeighbor ->
+                    { english = "Neighbor"
+                    , kinyarwanda = Nothing
+                    }
+
+                CaredByDayCare ->
+                    { english = "DayCare"
+                    , kinyarwanda = Nothing
+                    }
+
         NutritionFeedingSignQuestion sign ->
             case sign of
                 ReceiveSupplement ->
@@ -4854,6 +4890,11 @@ translationSet trans =
 
         Para ->
             { english = "Para"
+            , kinyarwanda = Nothing
+            }
+
+        ParentsAliveAndHealthyQuestion ->
+            { english = "Are both parents alive and health"
             , kinyarwanda = Nothing
             }
 
@@ -6660,6 +6701,11 @@ translationSet trans =
         WhatWasTheirResponse ->
             { english = "What was their response"
             , kinyarwanda = Just "Ni iki bagusubije"
+            }
+
+        WhoCaresForTheChildDuringTheDay ->
+            { english = "Who cares for the baby during the day"
+            , kinyarwanda = Nothing
             }
 
         WhyNot ->

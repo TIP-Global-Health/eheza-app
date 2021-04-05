@@ -21,7 +21,7 @@ type Msg
     | SetParentsAliveAndHealthy Bool
     | SetChildClean Bool
     | SetNutritionCaringOption CaringOption
-    | SaveNutritionCaring PersonId (Maybe ( NutritionCaringId, NutritionCaring )) (Maybe NextStepsTask)
+    | SaveNutritionCaring PersonId (Maybe ( NutritionCaringId, NutritionCaring ))
 
 
 type alias Model =
