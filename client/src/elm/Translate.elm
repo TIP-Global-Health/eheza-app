@@ -327,6 +327,7 @@ type TranslationId
     | CardiacDisease
     | CaregiverName
     | CaregiverNationalId
+    | CaseManagement
     | CentimeterShorthand
     | Celsius
     | CelsiusAbbrev
@@ -1996,6 +1997,11 @@ translationSet trans =
         Cell ->
             { english = "Cell"
             , kinyarwanda = Just "Akagali"
+            }
+
+        CaseManagement ->
+            { english = "Case Management"
+            , kinyarwanda = Nothing
             }
 
         CentimeterShorthand ->
