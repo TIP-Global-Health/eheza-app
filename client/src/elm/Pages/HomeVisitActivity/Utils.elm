@@ -13,7 +13,7 @@ import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (..)
 import Pages.HomeVisitActivity.Model exposing (..)
 import Pages.HomeVisitEncounter.Model exposing (AssembledData)
-import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, taskCompleted)
+import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskCompleted)
 import RemoteData exposing (RemoteData(..))
 
 
@@ -37,8 +37,8 @@ activityCompleted currentDate child data db activity =
                 || isJust measurements.feeding
 
         Caring ->
-            -- @todo
-            True
+            (not <| expectActivity currentDate child data db Caring)
+                || isJust measurements.caring
 
         Hygiene ->
             (not <| expectActivity currentDate child data db Hygiene)
@@ -204,3 +204,44 @@ toNutritionFoodSecurityValue form =
     in
     Maybe.map NutritionFoodSecurityValue signs
         |> andMap form.mainIncomeSource
+
+
+fromNutritionCaringValue : Maybe NutritionCaringValue -> NutritionCaringForm
+fromNutritionCaringValue saved =
+    { parentHealth = Maybe.map (.signs >> EverySet.member ParentsAliveHealthy) saved
+    , childClean = Maybe.map (.signs >> EverySet.member ChildClean) saved
+    , caringOption = Maybe.map .caringOption saved
+    }
+
+
+nutritionCaringFormWithDefault : NutritionCaringForm -> Maybe NutritionCaringValue -> NutritionCaringForm
+nutritionCaringFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { parentHealth = or form.parentHealth (EverySet.member ParentsAliveHealthy value.signs |> Just)
+                , childClean = or form.childClean (EverySet.member ChildClean value.signs |> Just)
+                , caringOption = or form.caringOption (value.caringOption |> Just)
+                }
+            )
+
+
+toNutritionCaringValueWithDefault : Maybe NutritionCaringValue -> NutritionCaringForm -> Maybe NutritionCaringValue
+toNutritionCaringValueWithDefault saved form =
+    nutritionCaringFormWithDefault form saved
+        |> toNutritionCaringValue
+
+
+toNutritionCaringValue : NutritionCaringForm -> Maybe NutritionCaringValue
+toNutritionCaringValue form =
+    let
+        signs =
+            [ ifNullableTrue ParentsAliveHealthy form.parentHealth
+            , ifNullableTrue ChildClean form.childClean
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoCaringSigns)
+    in
+    Maybe.map NutritionCaringValue signs
+        |> andMap form.caringOption
