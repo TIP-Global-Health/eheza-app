@@ -11,6 +11,34 @@
 function hedley_nutrition_field_default_field_bases() {
   $field_bases = array();
 
+  // Exported field_base: 'field_child_caring_options'.
+  $field_bases['field_child_caring_options'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_child_caring_options',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'parent' => 'Parent',
+        'grandparent' => ' Grandparent',
+        'sibling' => ' Sibling',
+        'neighbor' => ' Neighbor',
+        'daycare' => ' DayCare',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_contributing_factors_signs'.
   $field_bases['field_contributing_factors_signs'] = array(
     'active' => 1,
@@ -175,6 +203,32 @@ function hedley_nutrition_field_default_field_bases() {
         'natural-source-flowing-water' => 'Natural Source Flowing Water',
         'natural-source-standing-water' => 'Natural Source Standing Water',
         'bottled-water' => 'Bottled Water',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_nutrition_caring_questions'.
+  $field_bases['field_nutrition_caring_questions'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_nutrition_caring_questions',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'parent-alive-and-healthy' => 'Parents alive and healthy',
+        'child-clean' => 'Child clean',
+        'none' => 'None of these',
       ),
       'allowed_values_function' => '',
     ),
