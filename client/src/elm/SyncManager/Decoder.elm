@@ -513,6 +513,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeNutrition
                             BackendAuthorityNutrition
 
+                    "nutrition_caring" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionCaring
+                            BackendAuthorityNutritionCaring
+
                     "nutrition_contributing_factors" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeNutritionContributingFactors
