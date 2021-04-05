@@ -8,8 +8,7 @@
 /**
  * Class HedleyRestfulNutritionCaring.
  */
-class HedleyRestfulNutritionCaring extends HedleyRestfulHomeVisitActivityBase
-{
+class HedleyRestfulNutritionCaring extends HedleyRestfulHomeVisitActivityBase {
   /**
    * {@inheritdoc}
    */
