@@ -289,6 +289,7 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
+    | All
     | AllowedValuesRangeHelper FloatInputConstraints
     | AmbulancArrivalPeriodQuestion
     | And
@@ -429,6 +430,7 @@ type TranslationId
     | EgaHeader
     | EgaWeeks
     | EmptyString
+    | EncounterTypeFileterLabel IndividualEncounterType
     | EndEncounter
     | EndEncounterQuestion
     | EndGroupEncounter
@@ -1809,6 +1811,11 @@ translationSet trans =
             , kinyarwanda = Just "E-heza sisiteme"
             }
 
+        All ->
+            { english = "All"
+            , kinyarwanda = Nothing
+            }
+
         AllowedValuesRangeHelper constraints ->
             { english = "Allowed values are between " ++ String.fromFloat constraints.minVal ++ " and " ++ String.fromFloat constraints.maxVal ++ "."
             , kinyarwanda = Just <| "Imibare yemewe iri hagati ya " ++ String.fromFloat constraints.minVal ++ " na " ++ String.fromFloat constraints.maxVal ++ "."
@@ -2705,6 +2712,28 @@ translationSet trans =
             { english = ""
             , kinyarwanda = Just ""
             }
+
+        EncounterTypeFileterLabel encounterType ->
+            case encounterType of
+                AcuteIllnessEncounter ->
+                    { english = "Acute Illness"
+                    , kinyarwanda = Nothing
+                    }
+
+                AntenatalEncounter ->
+                    { english = "Antenatal Care"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Inmmunization"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = "Child Nutrition"
+                    , kinyarwanda = Nothing
+                    }
 
         EndEncounter ->
             { english = "End Encounter"

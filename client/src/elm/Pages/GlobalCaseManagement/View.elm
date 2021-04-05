@@ -2,6 +2,7 @@ module Pages.GlobalCaseManagement.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
@@ -40,13 +41,39 @@ view language page healthCenterId isChw model db =
                 ]
 
         content =
-            text "GlobalCaseManagement"
+            [ viewFiltersPane language model
+            ]
     in
-    div
-        [ class "wrap" ]
+    div [ class "wrap wrap-alt-2 page-case-management" ]
         [ header
-        , content
+        , div [ class "ui unstackable items" ]
+            content
         ]
+
+
+viewFiltersPane : Language -> Model -> Html Msg
+viewFiltersPane language model =
+    let
+        filters =
+            [ Nothing, Just AcuteIllnessEncounter, Just NutritionEncounter ]
+
+        renderButton maybeFilter =
+            let
+                label =
+                    Maybe.map Translate.EncounterTypeFileterLabel maybeFilter
+                        |> Maybe.withDefault Translate.All
+            in
+            button
+                [ classList
+                    [ ( "active", model.encounterType == maybeFilter )
+                    , ( "primary ui button", True )
+                    ]
+                , onClick <| SetEncounterTypeFilter maybeFilter
+                ]
+                [ translateText language label ]
+    in
+    div [ class "ui segment filters" ] <|
+        List.map renderButton filters
 
 
 
@@ -781,62 +808,6 @@ view language page healthCenterId isChw model db =
 --     td [ class ] [ span [] [ text cellData.value ] ]
 --
 --
--- viewFiltersPane : Language -> GlobalCaseManagementPage -> List FilterPeriod -> ModelIndexedDb -> Model -> Html Msg
--- viewFiltersPane language page filterPeriodsPerPage db model =
---     let
---         ( programTypeFilterFilterButton, labelSelected ) =
---             if page == MainPage then
---                 ( div
---                     [ class "primary ui button program-type-filter"
---                     , onClick <| SetModalState <| Just FiltersModal
---                     ]
---                     [ span [] [ translateText language <| Translate.GlobalCaseManagement Translate.Filters ]
---                     , span [ class "icon-settings" ] []
---                     ]
---                 , if model.programTypeFilter == FilterProgramCommunity then
---                     db.villages
---                         |> RemoteData.toMaybe
---                         |> Maybe.andThen
---                             (\villages ->
---                                 model.selectedVillageFilter
---                                     |> Maybe.andThen
---                                         (\villageId ->
---                                             Dict.get villageId villages
---                                                 |> Maybe.map
---                                                     (\village ->
---                                                         span [ class "label" ]
---                                                             [ text <| translate language Translate.SelectedVillage ++ ": "
---                                                             , text village.name
---                                                             ]
---                                                     )
---                                         )
---                             )
---                         |> Maybe.withDefault emptyNode
---
---                   else
---                     span [ class "label" ]
---                         [ text <| translate language Translate.SelectedProgram ++ ": "
---                         , translateText language <| Translate.GlobalCaseManagement <| Translate.FilterProgramType model.programTypeFilter
---                         ]
---                 )
---
---             else
---                 ( emptyNode, emptyNode )
---
---         renderButton period =
---             button
---                 [ classList
---                     [ ( "inactive", model.period /= period )
---                     , ( "primary ui button", True )
---                     ]
---                 , onClick <| SetFilterPeriod period
---                 ]
---                 [ translateText language <| Translate.GlobalCaseManagement <| Translate.PeriodFilter period
---                 ]
---     in
---     div [ class "ui segment filters" ] <|
---         List.map renderButton filterPeriodsPerPage
---             ++ [ labelSelected, programTypeFilterFilterButton ]
 --
 --
 -- viewGoodNutrition : Language -> List CaseNutritionTotal -> List CaseNutritionTotal -> Html Msg

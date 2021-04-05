@@ -18,5 +18,5 @@ emptyModel =
 
 
 type Msg
-    = SetEncounterType (Maybe IndividualEncounterType)
+    = SetEncounterTypeFilter (Maybe IndividualEncounterType)
     | SetActivePage Page

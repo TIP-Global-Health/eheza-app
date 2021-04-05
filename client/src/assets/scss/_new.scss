@@ -2304,3 +2304,27 @@ div.page-report.acute-illness {
   }
 
 }
+
+div.page-case-management {
+
+  .ui.segment.filters {
+    background-color: $color-white;
+    min-height: 60px;
+    padding: 25px;
+
+    button {
+      background-color: $color-white;
+      border-radius: 3px;
+      color: $color-dark-gray;
+      font-size: 24px;
+      font-weight: 700;
+      padding: 15px;
+      text-transform: none;
+    }
+
+    button.active {
+      background-color: $color-primary;
+      color: $color-white;
+    }
+  }
+}

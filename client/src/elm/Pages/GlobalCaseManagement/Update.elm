@@ -13,7 +13,7 @@ update msg model =
             , [ App.Model.SetActivePage page ]
             )
 
-        SetEncounterType encounterType ->
+        SetEncounterTypeFilter encounterType ->
             ( { model | encounterType = encounterType }
             , Cmd.none
             , []
