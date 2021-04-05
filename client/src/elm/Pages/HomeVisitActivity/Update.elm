@@ -223,7 +223,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveNutritionCaring personId saved nextTask_ ->
+        SaveNutritionCaring personId saved ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -231,25 +231,17 @@ update currentDate id db msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], Just task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| HomeVisitEncounterPage id ]
-                            , Nothing
-                            )
-
                 appMsgs =
                     model.caringForm
                         |> toNutritionCaringValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->
-                                (Backend.HomeVisitEncounter.Model.SaveCaring personId measurementId value
+                                [ Backend.HomeVisitEncounter.Model.SaveCaring personId measurementId value
                                     |> Backend.Model.MsgHomeVisitEncounter id
                                     |> App.Model.MsgIndexedDb
-                                )
-                                    :: backToActivitiesMsg
+                                , App.Model.SetActivePage <| UserPage <| HomeVisitEncounterPage id
+                                ]
                             )
             in
             ( model
