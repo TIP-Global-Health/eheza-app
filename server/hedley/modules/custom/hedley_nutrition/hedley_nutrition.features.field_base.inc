@@ -28,7 +28,7 @@ function hedley_nutrition_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'parent' => 'Parent',
-        'grandparent' => ' Grandparent',
+        'grandparent' => 'Grandparent',
         'sibling' => ' Sibling',
         'neighbor' => ' Neighbor',
         'daycare' => ' DayCare',
@@ -213,7 +213,7 @@ function hedley_nutrition_field_default_field_bases() {
   // Exported field_base: 'field_nutrition_caring_questions'.
   $field_bases['field_nutrition_caring_questions'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_nutrition_caring_questions',
