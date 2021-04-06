@@ -1325,7 +1325,7 @@ decodeNutritionCaring =
 decodeNutritionCaringValue : Decoder NutritionCaringValue
 decodeNutritionCaringValue =
     succeed NutritionCaringValue
-        |> required "nutrition_caring_questions" (decodeEverySet decodeNutritionCaringSign)
+        |> required "nutrition_caring_signs" (decodeEverySet decodeNutritionCaringSign)
         |> required "child_caring_options" decodeNutritionCaringOption
 
 
@@ -1370,7 +1370,7 @@ decodeNutritionCaringOption =
                         succeed CaredByNeighbor
 
                     "daycare" ->
-                        succeed CaredByDayCare
+                        succeed CaredByDaycare
 
                     _ ->
                         fail <|

@@ -368,7 +368,7 @@ viewCaringContent language currentDate assembled db caringForm =
             tasksCompleted /= totalTasks
 
         parentsAliveHealthyInput =
-            [ viewLabel language Translate.ParentsAliveAndHealthyQuestion
+            [ viewQuestionLabel language Translate.ParentsAliveAndHealthyQuestion
             , viewBoolInput
                 language
                 form.parentHealth
@@ -384,7 +384,7 @@ viewCaringContent language currentDate assembled db caringForm =
                 , CaredByGrandparent
                 , CaredBySibling
                 , CaredByNeighbor
-                , CaredByDayCare
+                , CaredByDaycare
                 ]
                 []
                 form.caringOption

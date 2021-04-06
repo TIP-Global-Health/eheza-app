@@ -365,7 +365,7 @@ type CaringOption
     | CaredByGrandparent
     | CaredBySibling
     | CaredByNeighbor
-    | CaredByDayCare
+    | CaredByDaycare
 
 
 

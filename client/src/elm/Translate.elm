@@ -4604,8 +4604,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                CaredByDayCare ->
-                    { english = "DayCare"
+                CaredByDaycare ->
+                    { english = "Daycare"
                     , kinyarwanda = Nothing
                     }
 

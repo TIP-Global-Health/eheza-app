@@ -1595,7 +1595,7 @@ encodeNutritionCaring =
 
 encodeNutritionCaringValue : NutritionCaringValue -> List ( String, Value )
 encodeNutritionCaringValue value =
-    [ ( "nutrition_caring_questions", encodeEverySet encondeNutritionCaringSign value.signs )
+    [ ( "nutrition_caring_signs", encodeEverySet encondeNutritionCaringSign value.signs )
     , ( "child_caring_options", encodeNutritionCaringOption value.caringOption )
     , ( "deleted", bool False )
     , ( "type", string "nutrition_caring" )
@@ -1632,7 +1632,7 @@ encodeNutritionCaringOption option =
             CaredByNeighbor ->
                 "neighbor"
 
-            CaredByDayCare ->
+            CaredByDaycare ->
                 "daycare"
 
 
