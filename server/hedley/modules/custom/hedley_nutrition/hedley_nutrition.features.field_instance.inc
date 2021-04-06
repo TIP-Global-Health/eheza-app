@@ -195,8 +195,8 @@ function hedley_nutrition_field_default_field_instances() {
   );
 
   // Exported field_instance:
-  // 'node-nutrition_caring-field_nutrition_caring_questions'.
-  $field_instances['node-nutrition_caring-field_nutrition_caring_questions'] = array(
+  // 'node-nutrition_caring-field_nutrition_caring_signs'.
+  $field_instances['node-nutrition_caring-field_nutrition_caring_signs'] = array(
     'bundle' => 'nutrition_caring',
     'default_value' => NULL,
     'deleted' => 0,
@@ -217,8 +217,8 @@ function hedley_nutrition_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_nutrition_caring_questions',
-    'label' => 'Nutrition Caring Questions',
+    'field_name' => 'field_nutrition_caring_signs',
+    'label' => 'Nutrition Caring Signs',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -2787,7 +2787,7 @@ function hedley_nutrition_field_default_field_instances() {
   t('Income Source');
   t('Main Water Source');
   t('Nurse');
-  t('Nutrition Caring Questions');
+  t('Nutrition Caring Signs');
   t('Nutrition Encounter');
   t('Nutrition Feeding Signs');
   t('Nutrition Hygiene Sign');

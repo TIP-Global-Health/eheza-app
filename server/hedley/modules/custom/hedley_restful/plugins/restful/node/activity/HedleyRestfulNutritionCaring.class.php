@@ -13,7 +13,7 @@ class HedleyRestfulNutritionCaring extends HedleyRestfulHomeVisitActivityBase {
    * {@inheritdoc}
    */
   protected $multiFields = [
-    'field_nutrition_caring_questions',
+    'field_nutrition_caring_signs',
   ];
 
   /**
