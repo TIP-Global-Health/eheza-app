@@ -115,6 +115,9 @@
                 else if (type === 'acute-illness-measurements') {
                     return viewMeasurements('acute_illness_encounter', uuid);
                 }
+                else if (type === 'follow-up-measurements') {
+                    return viewFollowUpMeasurements(uuid);
+                }
                 else {
                     return view(type, uuid);
                 }
@@ -496,6 +499,59 @@
                 var body = JSON.stringify({
                     // Decoder is expecting a list, so we use Object.values().
                     data: Object.values(data)
+                });
+
+                var response = new Response(body, {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return Promise.resolve(response);
+            } else {
+                response = new Response('', {
+                    status: 404,
+                    statusText: 'Not found'
+                });
+
+                return Promise.reject(response);
+            }
+        }).catch(sendErrorResponses);
+    }
+
+    var followUpMeasurementsTypes = [
+      'follow_up',
+      'nutrition_follow_up'
+    ];
+
+    function viewFollowUpMeasurements (shard) {
+        // Load all types of follow up measurements that belong to provided healh center.
+        var query = dbSync.shards.where('type').anyOf(followUpMeasurementsTypes).and(function (item) {
+          return item.shard === shard;
+        });
+
+        // Build an empty list of measurements, so we return some value, even
+        // if no measurements were ever taken.
+        var data = {};
+        data = {};
+        // Decoder is expecting to have the Person's UUID.
+        data.uuid = shard;
+
+        return query.toArray().catch(databaseError).then(function (nodes) {
+            if (nodes) {
+                nodes.forEach(function (node) {
+                    if (data[node.type]) {
+                        data[node.type].push(node);
+                    } else {
+                        data[node.type] = [node];
+                    }
+                });
+
+                var body = JSON.stringify({
+                    // Decoder is expecting a list, so we use Object.values().
+                    data: [data]
                 });
 
                 var response = new Response(body, {

@@ -7,4 +7,7 @@ import Pages.GlobalCaseManagement.Model exposing (..)
 
 fetch : HealthCenterId -> Model -> List MsgIndexedDb
 fetch healthCenterId model =
-    [ FetchVillages ]
+    [ FetchVillages
+    , FetchHealthCenters
+    , FetchFollowUpMeasurements healthCenterId
+    ]

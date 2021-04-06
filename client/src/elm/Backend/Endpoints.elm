@@ -264,6 +264,11 @@ acuteIllnessMeasurementsEndpoint =
     swEndpoint "nodes/acute-illness-measurements" decodeAcuteIllnessMeasurements
 
 
+followUpMeasurementsEndpoint : ReadOnlyEndPoint Error HealthCenterId FollowUpMeasurements ()
+followUpMeasurementsEndpoint =
+    swEndpoint "nodes/follow-up-measurements" decodeFollowUpMeasurements
+
+
 {-| Type-safe params ... how nice!
 -}
 type SessionParams

@@ -137,6 +137,13 @@ decodeAcuteIllnessMeasurements =
         |> optional "health_education" (decodeHead decodeHealthEducation) Nothing
 
 
+decodeFollowUpMeasurements : Decoder FollowUpMeasurements
+decodeFollowUpMeasurements =
+    succeed FollowUpMeasurements
+        |> optional "follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeFollowUp)) Dict.empty
+        |> optional "nutrition_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeNutritionFollowUp)) Dict.empty
+
+
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
 decodeHead =
     map List.head << list << decodeWithEntityUuid

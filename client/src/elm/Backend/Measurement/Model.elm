@@ -1108,6 +1108,14 @@ type alias AcuteIllnessMeasurements =
     }
 
 
+{-| A set of measurements that represent follow ups needed for certain Healh Center.
+-}
+type alias FollowUpMeasurements =
+    { nutritionGroup : Dict FollowUpId FollowUp
+    , nutritionIndividual : Dict NutritionFollowUpId NutritionFollowUp
+    }
+
+
 {-| This is like `ChildMeasurementList`, except that it just covers one
 of each kind of measurements (rather than a list of each kind).
 

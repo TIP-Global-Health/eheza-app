@@ -454,6 +454,19 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
             , []
             )
 
+        FetchFollowUpMeasurements id ->
+            ( { model | followUpMeasurements = Dict.insert id Loading model.followUpMeasurements }
+            , sw.get followUpMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedFollowUpMeasurements id)
+            , []
+            )
+
+        HandleFetchedFollowUpMeasurements id data ->
+            ( { model | followUpMeasurements = Dict.insert id data model.followUpMeasurements }
+            , Cmd.none
+            , []
+            )
+
         FetchParticipantsForPerson personId ->
             let
                 query1 =
