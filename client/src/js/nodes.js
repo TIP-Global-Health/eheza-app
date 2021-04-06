@@ -521,6 +521,7 @@
         }).catch(sendErrorResponses);
     }
 
+    // List with all types of Follow Up measurements.
     var followUpMeasurementsTypes = [
       'follow_up',
       'nutrition_follow_up'
@@ -536,7 +537,7 @@
         // if no measurements were ever taken.
         var data = {};
         data = {};
-        // Decoder is expecting to have the Person's UUID.
+        // Decoder is expecting to have the health center UUID.
         data.uuid = shard;
 
         return query.toArray().catch(databaseError).then(function (nodes) {
@@ -550,7 +551,7 @@
                 });
 
                 var body = JSON.stringify({
-                    // Decoder is expecting a list, so we use Object.values().
+                    // Decoder is expecting a list.
                     data: [data]
                 });
 
