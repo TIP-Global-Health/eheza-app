@@ -95,9 +95,7 @@ viewActivity language currentDate id activity assembled db model =
             viewFeedingContent language currentDate assembled db model.feedingForm
 
         Caring ->
-            --@tood
-            -- viewCaringContent language currentDate assembled db caringForm =
-            []
+            viewCaringContent language currentDate assembled db model.caringForm
 
         Hygiene ->
             viewHygieneContent language currentDate assembled db model.hygieneForm
@@ -350,11 +348,72 @@ viewFeedingContent language currentDate assembled db feedingForm =
     ]
 
 
+viewCaringContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> NutritionCaringForm -> List (Html Msg)
+viewCaringContent language currentDate assembled db caringForm =
+    let
+        form =
+            assembled.measurements.caring
+                |> Maybe.map (Tuple.second >> .value)
+                |> nutritionCaringFormWithDefault caringForm
 
--- @todo
--- viewCaringContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> NutritionCaringForm -> List (Html Msg)
--- viewCaringContent language currentDate assembled db caringForm =
---   []
+        totalTasks =
+            3
+
+        tasksCompleted =
+            taskCompleted form.parentHealth
+                + taskCompleted form.caringOption
+                + taskCompleted form.childClean
+
+        disabled =
+            tasksCompleted /= totalTasks
+
+        parentsAliveHealthyInput =
+            [ viewQuestionLabel language Translate.ParentsAliveAndHealthyQuestion
+            , viewBoolInput
+                language
+                form.parentHealth
+                SetParentsAliveAndHealthy
+                "parents-health"
+                Nothing
+            ]
+
+        caringOptionInput =
+            [ viewQuestionLabel language Translate.WhoCaresForTheChildDuringTheDay
+            , viewCheckBoxSelectInput language
+                [ CaredByParent
+                , CaredByGrandparent
+                , CaredBySibling
+                , CaredByNeighbor
+                , CaredByDaycare
+                ]
+                []
+                form.caringOption
+                SetNutritionCaringOption
+                Translate.NutritionCaringOption
+            ]
+
+        childCleanInput =
+            [ viewQuestionLabel language Translate.ChildCleanQuestion
+            , viewBoolInput
+                language
+                form.childClean
+                SetChildClean
+                "child-clean"
+                Nothing
+            ]
+
+        content =
+            parentsAliveHealthyInput
+                ++ caringOptionInput
+                ++ childCleanInput
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            content
+                ++ viewAction language (SaveNutritionCaring assembled.participant.person assembled.measurements.caring) disabled
+        ]
+    ]
 
 
 viewHygieneContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> NutritionHygieneForm -> List (Html Msg)

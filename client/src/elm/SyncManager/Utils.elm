@@ -476,6 +476,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityNutrition identifier ->
             getIdentifier identifier "nutrition"
 
+        BackendAuthorityNutritionCaring identifier ->
+            getIdentifier identifier "nutrition_caring"
+
         BackendAuthorityNutritionContributingFactors identifier ->
             getIdentifier identifier "nutrition_contributing_factors"
 
@@ -887,6 +890,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityNutrition identifier ->
             encode Backend.Measurement.Encoder.encodeNutrition identifier
 
+        BackendAuthorityNutritionCaring identifier ->
+            encode Backend.Measurement.Encoder.encodeNutritionCaring identifier
+
         BackendAuthorityNutritionContributingFactors identifier ->
             encode Backend.Measurement.Encoder.encodeNutritionContributingFactors identifier
 
@@ -1260,6 +1266,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityNutrition identifier ->
             ChildNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutritionCaring identifier ->
+            NutritionCaringRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityNutritionContributingFactors identifier ->
             NutritionContributingFactorsRevision (toEntityUuid identifier.uuid) identifier.entity

@@ -150,6 +150,9 @@ decodeRevision =
                     "nutrition" ->
                         decodeWithUuid ChildNutritionRevision decodeNutrition
 
+                    "nutrition_caring" ->
+                        decodeWithUuid NutritionCaringRevision decodeNutritionCaring
+
                     "nutrition_contributing_factors" ->
                         decodeWithUuid NutritionContributingFactorsRevision decodeNutritionContributingFactors
 

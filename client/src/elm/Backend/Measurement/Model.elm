@@ -344,6 +344,30 @@ type MainIncomeSource
     | PrivateBusinessEmpployee
 
 
+type alias NutritionCaringValue =
+    { signs : EverySet NutritionCaringSign
+    , caringOption : CaringOption
+    }
+
+
+type alias NutritionCaring =
+    HomeVisitMeasurement NutritionCaringValue
+
+
+type NutritionCaringSign
+    = ParentsAliveHealthy
+    | ChildClean
+    | NoCaringSigns
+
+
+type CaringOption
+    = CaredByParent
+    | CaredByGrandparent
+    | CaredBySibling
+    | CaredByNeighbor
+    | CaredByDaycare
+
+
 
 -- PRENATAL MEASUREMENTS
 
@@ -1199,6 +1223,7 @@ type alias HomeVisitMeasurements =
     { feeding : Maybe ( NutritionFeedingId, NutritionFeeding )
     , hygiene : Maybe ( NutritionHygieneId, NutritionHygiene )
     , foodSecurity : Maybe ( NutritionFoodSecurityId, NutritionFoodSecurity )
+    , caring : Maybe ( NutritionCaringId, NutritionCaring )
     }
 
 

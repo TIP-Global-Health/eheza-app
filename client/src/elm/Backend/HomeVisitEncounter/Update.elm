@@ -64,3 +64,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveFoodSecurity = data }
             , Cmd.none
             )
+
+        SaveCaring personId valueId value ->
+            ( { model | saveCaring = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value nutritionCaringEndpoint HandleSavedCaring
+            )
+
+        HandleSavedCaring data ->
+            ( { model | saveCaring = data }
+            , Cmd.none
+            )

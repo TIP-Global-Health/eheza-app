@@ -183,3 +183,68 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetParentsAliveAndHealthy value ->
+            let
+                form =
+                    model.caringForm
+
+                updatedForm =
+                    { form | parentHealth = Just value }
+            in
+            ( { model | caringForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetChildClean value ->
+            let
+                form =
+                    model.caringForm
+
+                updatedForm =
+                    { form | childClean = Just value }
+            in
+            ( { model | caringForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetNutritionCaringOption option ->
+            let
+                form =
+                    model.caringForm
+
+                updatedForm =
+                    { form | caringOption = Just option }
+            in
+            ( { model | caringForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveNutritionCaring personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.caringForm
+                        |> toNutritionCaringValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.HomeVisitEncounter.Model.SaveCaring personId measurementId value
+                                    |> Backend.Model.MsgHomeVisitEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| HomeVisitEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )

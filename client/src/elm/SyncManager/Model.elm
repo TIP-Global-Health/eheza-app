@@ -83,6 +83,7 @@ type BackendAuthorityEntity
     | BackendAuthorityMotherFbf (BackendEntity Fbf)
     | BackendAuthorityMuac (BackendEntity Muac)
     | BackendAuthorityNutrition (BackendEntity ChildNutrition)
+    | BackendAuthorityNutritionCaring (BackendEntity NutritionCaring)
     | BackendAuthorityNutritionContributingFactors (BackendEntity NutritionContributingFactors)
     | BackendAuthorityNutritionEncounter (BackendEntity NutritionEncounter)
     | BackendAuthorityNutritionFeeding (BackendEntity NutritionFeeding)

@@ -148,6 +148,7 @@ decodeHomeVisitMeasurements =
         |> optional "nutrition_feeding" (decodeHead decodeNutritionFeeding) Nothing
         |> optional "nutrition_hygiene" (decodeHead decodeNutritionHygiene) Nothing
         |> optional "nutrition_food_security" (decodeHead decodeNutritionFoodSecurity) Nothing
+        |> optional "nutrition_caring" (decodeHead decodeNutritionCaring) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1313,6 +1314,68 @@ decodeMainIncomeSource =
                         fail <|
                             sign
                                 ++ " is not a recognized MainIncomeSource"
+            )
+
+
+decodeNutritionCaring : Decoder NutritionCaring
+decodeNutritionCaring =
+    decodeHomeVisitMeasurement decodeNutritionCaringValue
+
+
+decodeNutritionCaringValue : Decoder NutritionCaringValue
+decodeNutritionCaringValue =
+    succeed NutritionCaringValue
+        |> required "nutrition_caring_signs" (decodeEverySet decodeNutritionCaringSign)
+        |> required "child_caring_options" decodeNutritionCaringOption
+
+
+decodeNutritionCaringSign : Decoder NutritionCaringSign
+decodeNutritionCaringSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "parent-alive-and-healthy" ->
+                        succeed ParentsAliveHealthy
+
+                    "child-clean" ->
+                        succeed ChildClean
+
+                    "none" ->
+                        succeed NoCaringSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized NutritionCaringSign"
+            )
+
+
+decodeNutritionCaringOption : Decoder CaringOption
+decodeNutritionCaringOption =
+    string
+        |> andThen
+            (\option ->
+                case option of
+                    "parent" ->
+                        succeed CaredByParent
+
+                    "grandparent" ->
+                        succeed CaredByGrandparent
+
+                    "sibling" ->
+                        succeed CaredBySibling
+
+                    "neighbor" ->
+                        succeed CaredByNeighbor
+
+                    "daycare" ->
+                        succeed CaredByDaycare
+
+                    _ ->
+                        fail <|
+                            option
+                                ++ " is not a recognized CaringOption"
             )
 
 

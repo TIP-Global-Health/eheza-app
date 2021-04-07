@@ -717,3 +717,11 @@ type alias NutritionFoodSecurityId =
 
 type NutritionFoodSecurityIdUuidType
     = NutritionFoodSecurityIdUuidType
+
+
+type alias NutritionCaringId =
+    EntityUuid NutritionCaringIdUuidType
+
+
+type NutritionCaringIdUuidType
+    = NutritionCaringIdUuidType

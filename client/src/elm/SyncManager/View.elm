@@ -471,6 +471,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityNutrition identifier ->
                 viewMeasurement identifier "Nutrition"
 
+            BackendAuthorityNutritionCaring identifier ->
+                viewMeasurement identifier "Nutrition Caring"
+
             BackendAuthorityNutritionContributingFactors identifier ->
                 viewMeasurement identifier "Nutrition Contributing Factors"
 
