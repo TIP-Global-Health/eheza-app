@@ -51,7 +51,7 @@
 
         // If placeholder still indicates tha DB was not initialized,
         // initialize it.
-        if (dbSync === null) {
+        if (dbSync === null || dbSync.verno != dbVerno) {
             // Check if IndexedDB exists.
             var dbExists = await Dexie.exists('sync');
             if (!dbExists) {
