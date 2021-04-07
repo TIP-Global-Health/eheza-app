@@ -21,6 +21,16 @@ var photosUploadCache = "photos-upload";
 var photosDownloadUrlRegex = /\/system\/files\//;
 var photosUploadUrlRegex = /\/cache-upload\/images/;
 
+/**
+ * The DB version on the backend.
+ *
+ * We use this constant to verify that we work with most updated
+ * DB at nodes.js.
+ *
+ * @type {number}
+ */
+const dbVerno = 16;
+
 // All those entities are the entities we're going to get from the backend.
 // They should also be mapped in SyncManager.Model.BackendGeneralEntity (for
 // General entities), or SyncManager.Model.BackendAuthorityEntity (for Authority
