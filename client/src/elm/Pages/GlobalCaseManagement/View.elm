@@ -43,12 +43,15 @@ view language currentDate healthCenterId isChw model db =
         nutritionFollowUps =
             generateNutritionFollowUps currentDate healthCenterId db
 
+        acuteIllnessFollowUps =
+            Dict.empty
+
         panes =
-            allEncounterTypes
+            [ ( AcuteIllnessEncounter, acuteIllnessFollowUps ), ( NutritionEncounter, nutritionFollowUps ) ]
                 |> List.filterMap
-                    (\type_ ->
+                    (\( type_, followUps ) ->
                         if isNothing model.encounterTypeFilter || model.encounterTypeFilter == Just type_ then
-                            Just <| viewEncounterTypePane language type_ [] model
+                            Just <| viewEncounterTypePane language currentDate type_ followUps db model
 
                         else
                             Nothing
@@ -92,15 +95,16 @@ viewFilters language model =
         List.map renderButton filters
 
 
-viewEncounterTypePane : Language -> IndividualEncounterType -> List FollowUpItem -> Model -> Html Msg
-viewEncounterTypePane language encounterType items model =
+viewEncounterTypePane : Language -> NominalDate -> IndividualEncounterType -> Dict PersonId FollowUpItem -> ModelIndexedDb -> Model -> Html Msg
+viewEncounterTypePane language currentDate encounterType itemsDict db model =
     let
         content =
-            if List.isEmpty items then
+            if Dict.isEmpty itemsDict then
                 [ translateText language Translate.NoMatchesFound ]
 
             else
-                List.map (viewFollowUpItem language) items
+                Dict.map (viewFollowUpItem language currentDate db) itemsDict
+                    |> Dict.values
     in
     div [ class "pane" ]
         [ viewItemHeading language encounterType
@@ -115,9 +119,24 @@ viewItemHeading language encounterType =
         [ text <| translate language <| Translate.EncounterTypeFollowUpLabel encounterType ]
 
 
-viewFollowUpItem : Language -> FollowUpItem -> Html Msg
-viewFollowUpItem language followUpCase =
-    emptyNode
+viewFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> PersonId -> FollowUpItem -> Html Msg
+viewFollowUpItem language currentDate db personId item =
+    Dict.get personId db.people
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map
+            (\person ->
+                let
+                    _ =
+                        Debug.log "person" person
+
+                    dueLabel =
+                        followUpDueOptionByDate currentDate item.dateMeasured item.value
+                            |> Translate.FollowUpDueOption
+                            |> translateText language
+                in
+                div [] [ text person.name, dueLabel ]
+            )
+        |> Maybe.withDefault emptyNode
 
 
 

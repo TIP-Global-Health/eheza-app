@@ -20,13 +20,6 @@ emptyModel =
     }
 
 
-type alias FollowUpCase =
-    { name : String
-    , dueOption : FollowUpDueOption
-    , assessment : String
-    }
-
-
 type FollowUpDueOption
     = DueToday
     | DueThisWeek
@@ -34,12 +27,12 @@ type FollowUpDueOption
     | OverDue
 
 
-type Msg
-    = SetEncounterTypeFilter (Maybe IndividualEncounterType)
-    | SetActivePage Page
-
-
 type alias FollowUpItem =
     { dateMeasured : NominalDate
     , value : FollowUpValue
     }
+
+
+type Msg
+    = SetEncounterTypeFilter (Maybe IndividualEncounterType)
+    | SetActivePage Page

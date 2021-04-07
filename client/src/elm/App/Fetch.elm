@@ -99,7 +99,7 @@ fetch model =
                 getLoggedInData model
                     |> Maybe.map
                         (\( healthCenterId, loggedIn ) ->
-                            Pages.GlobalCaseManagement.Fetch.fetch healthCenterId model.indexedDb
+                            Pages.GlobalCaseManagement.Fetch.fetch currentDate healthCenterId model.indexedDb
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []

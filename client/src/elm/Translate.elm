@@ -68,6 +68,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterPeriod(..)
         , FilterProgramType(..)
         )
+import Pages.GlobalCaseManagement.Model exposing (FollowUpDueOption(..))
 import Pages.NutritionActivity.Model
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -466,6 +467,7 @@ type TranslationId
     | ForIllustrativePurposesOnly
     | FollowUpLabel
     | FollowUpOption FollowUpOption
+    | FollowUpDueOption FollowUpDueOption
     | FormError (ErrorValue ValidationError)
     | FormField String
     | FundalHeight
@@ -3092,6 +3094,28 @@ translationSet trans =
                 TwoWeeks ->
                     { english = "2 Weeks"
                     , kinyarwanda = Just "Ibyumweru 2"
+                    }
+
+        FollowUpDueOption option ->
+            case option of
+                OverDue ->
+                    { english = "Over Due"
+                    , kinyarwanda = Nothing
+                    }
+
+                DueToday ->
+                    { english = "Due Today"
+                    , kinyarwanda = Nothing
+                    }
+
+                DueThisWeek ->
+                    { english = "This week"
+                    , kinyarwanda = Nothing
+                    }
+
+                DueThisMonth ->
+                    { english = "This Month"
+                    , kinyarwanda = Nothing
                     }
 
         FormError errorValue ->
