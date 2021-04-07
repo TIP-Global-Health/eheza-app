@@ -3773,7 +3773,7 @@ translationSet trans =
                     }
 
         MainIncomeSourceQuestion ->
-            { english = "What is the most important sorce of income for the household"
+            { english = "What is the most important source of income for the household"
             , kinyarwanda = Nothing
             }
 
