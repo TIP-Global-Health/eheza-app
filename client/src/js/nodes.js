@@ -50,6 +50,7 @@
         });
 
         // If placeholder still indicates tha DB was not initialized,
+        // or version of initialized DB is not as we expect,
         // initialize it.
         if (dbSync === null || dbSync.verno != dbVerno) {
             // Check if IndexedDB exists.
@@ -100,10 +101,6 @@
                 return addPhotoUploadChanges(self, dbSync.authorityPhotoUploadChanges, obj);
             });
         }
-
-        console.log(dbSync.verno);
-        console.log(dbVerno);
-
 
         if (event.request.method === 'GET') {
             if (uuid) {

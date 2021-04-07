@@ -24,7 +24,8 @@ var photosUploadUrlRegex = /\/cache-upload\/images/;
 /**
  * The DB version on the backend.
  *
- * This must be sent whenever we POST or PATCH an entity to the backend.
+ * We use this constant to verify that we work with most updated
+ * DB at nodes.js.
  *
  * @type {number}
  */
