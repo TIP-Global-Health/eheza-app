@@ -2047,7 +2047,7 @@ translationSet trans =
 
         ChildCleanQuestion ->
             { english = "Is the sick child clean"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ese umwana urwaye afite isuku"
             }
 
         ChildHmisNumber ->
@@ -3366,7 +3366,7 @@ translationSet trans =
 
                 Hygiene ->
                     { english = "Hygiene"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuku"
                     }
 
                 FoodSecurity ->
@@ -3754,64 +3754,64 @@ translationSet trans =
             case source of
                 HomeBasedAgriculture ->
                     { english = "Homebased Agriculture / Livestock"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubuhinzi / Ubworozi"
                     }
 
                 CommercialAgriculture ->
                     { english = "Commercial Agriculture / Livestock"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubucuruzi bw'imyaka / Amatungo"
                     }
 
                 PublicEmployee ->
                     { english = "Public Employee"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umukozi wa Leta"
                     }
 
                 PrivateBusinessEmpployee ->
                     { english = "Private Business Employee"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umukozi w'igenga"
                     }
 
         MainIncomeSourceQuestion ->
             { english = "What is the most important source of income for the household"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ese nihe urugo rukura ubushobozi bwo gutunga urugo"
             }
 
         MainWaterSource source ->
             case source of
                 PipedWaterToHome ->
                     { english = "Piped Water to Home"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amazi agera mu rugo"
                     }
 
                 PublicWaterTap ->
                     { english = "Public Water Tap"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ivomo rusange"
                     }
 
                 RainWaterCollectionSystem ->
                     { english = "Rain Water Collection System"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amazi y'imvura "
                     }
 
                 NaturalSourceFlowingWater ->
                     { english = "Natural Source - Flowing Water"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umugezi utemba"
                     }
 
                 NaturalSourceStandingWater ->
                     { english = "Natural Source - Standing Water"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amazi y'ibiyaga"
                     }
 
                 BottledWater ->
                     { english = "Bottled Water"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amazi akorwa mu nganda (aza mu macupa)"
                     }
 
         MainWaterSourceQuestion ->
             { english = "What is the household's main source of water"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ni hehe h'ibanze urugo ruvana amazi"
             }
 
         MakeSureYouAreConnected ->
@@ -4591,69 +4591,69 @@ translationSet trans =
 
                 CaredByGrandparent ->
                     { english = "Grandparent"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nyirakuru/Sekuru"
                     }
 
                 CaredBySibling ->
                     { english = "Sibling"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuvandimwe"
                     }
 
                 CaredByNeighbor ->
                     { english = "Neighbor"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuturanyi"
                     }
 
                 CaredByDaycare ->
                     { english = "Daycare"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Irerero"
                     }
 
         NutritionFeedingSignQuestion sign ->
             case sign of
                 ReceiveSupplement ->
                     { english = "Did you receive food supplementation"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba warahawe inyongeramirire"
                     }
 
                 RationPresentAtHome ->
                     { english = "Is the ration of the food supplement present in the home"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Haba hari inyongeramirire usigaranye mu nzu"
                     }
 
                 EnoughTillNextSession ->
                     { english = "Is the available food supplement enough to last until the next health center session"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Iyo nyongeramiriee ufite yaba ihagije kugeza igihe uzasubirira ku kigonderabuzima?"
                     }
 
                 SupplementShared ->
                     { english = "Is the food supplement being shared or eaten only by the sick child"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ese inyongeramirire yaba ifatwa n'umwana urwaye gusa cyangwa yaba ayisangira n'abandi"
                     }
 
                 EncouragedToEat ->
                     { english = "Does someone help / encourage the sick child to eat"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hari umuntu waba afasha cyangwa ashishikariza umwana kurya"
                     }
 
                 RefusingToEat ->
                     { english = "Is the child refusing to eat"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ese umwana yanga kurya"
                     }
 
                 FeedingSignBreastfeeding ->
                     { english = "Is the child currently breastfeeding (for children < 2)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana yaba yonka (ku bana bari munsi y'imyaka 2)"
                     }
 
                 CleanWaterAvailable ->
                     { english = "Is clean water available"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ese mazi asukuye arahari"
                     }
 
                 EatenWithWater ->
                     { english = "Is water given to the child when eating the food supplement"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ese umwana yaba ahabwa amazi yo kunwa igihe afata inyongeramirire"
                     }
 
                 NoNutritionFeedingSigns ->
@@ -4665,7 +4665,7 @@ translationSet trans =
             case sign of
                 HouseholdGotFood ->
                     { english = "Does the household currently have food available"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ese ubu urugo rufite ibyo kurya"
                     }
 
                 NoNutritionFoodSecuritySigns ->
@@ -4682,17 +4682,17 @@ translationSet trans =
             case sign of
                 SoapInTheHouse ->
                     { english = "Is there soap for washing in the house"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ese mu rugo haba hari isabune yo koga?"
                     }
 
                 WashHandsBeforeFeeding ->
                     { english = "Do the caregiver and child wash hands before the child is fed"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ese umurezi n'umwana bakaraba intoki mbere y'uko umwana agaburirwa"
                     }
 
                 FoodCovered ->
                     { english = "Is the food / RUTF covered and free from flies"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ese ibiryo/RUTUFU birapfundikiye kandi nta sazi zibiriho?"
                     }
 
                 NoNutritionHygieneSigns ->
@@ -4726,27 +4726,27 @@ translationSet trans =
             case type_ of
                 FortifiedPorridge ->
                     { english = "Fortified Porridge"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igikoma kirimo Imyunyu ngugu na  Vitamine"
                     }
 
                 Rutf ->
                     { english = "RUTF"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "RUTUFU"
                     }
 
                 Ongera ->
                     { english = "Ongera intungamubiri at the village level / CHW"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ongera Intungamubiri mu mudugudu/Ku mujyanama w'Ubuzima"
                     }
 
                 TherapeuticMilk ->
                     { english = "Therapeutic Milk"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amata avura "
                     }
 
                 NoNutritionSupplementType ->
                     { english = "None"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "None of these"
                     }
 
         ObstetricalDiagnosis ->
@@ -4855,12 +4855,12 @@ translationSet trans =
 
         OnlySickChild ->
             { english = "Only Sick Child"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umwana urwaye gusa"
             }
 
         Or ->
             { english = "or"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "cyangwa"
             }
 
         PackagesPerMonth ->
@@ -4895,7 +4895,7 @@ translationSet trans =
 
         ParentsAliveAndHealthyQuestion ->
             { english = "Are both parents alive and healthy"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ese ababyeyi bombi bariho kandi bafite ubuzima bwiza?"
             }
 
         PaleConjuctiva ->
@@ -5874,7 +5874,7 @@ translationSet trans =
 
         SachetsPerDayQuestion ->
             { english = "How many sachets of supplement is given to the child per day"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ni amasashe angahe ahabwa umwana ku munsi"
             }
 
         Save ->
@@ -6114,7 +6114,7 @@ translationSet trans =
 
         Shared ->
             { english = "Shared"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ayisangira n'abandi"
             }
 
         SignOnDoorPostedQuestion ->
@@ -6705,7 +6705,7 @@ translationSet trans =
 
         WhoCaresForTheChildDuringTheDay ->
             { english = "Who cares for the child during the day"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ni inde wita ku mwana ku manywa"
             }
 
         WhyNot ->
