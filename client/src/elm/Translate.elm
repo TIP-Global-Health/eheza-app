@@ -4894,7 +4894,7 @@ translationSet trans =
             }
 
         ParentsAliveAndHealthyQuestion ->
-            { english = "Are both parents alive and health"
+            { english = "Are both parents alive and healthy"
             , kinyarwanda = Nothing
             }
 
@@ -6704,7 +6704,7 @@ translationSet trans =
             }
 
         WhoCaresForTheChildDuringTheDay ->
-            { english = "Who cares for the baby during the day"
+            { english = "Who cares for the child during the day"
             , kinyarwanda = Nothing
             }
 
