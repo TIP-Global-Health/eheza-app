@@ -3436,7 +3436,7 @@ translationSet trans =
 
                 HomeVisitEncounter ->
                     { english = "First Home Visit Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusura abarwayi mu rugo bwambere"
                     }
 
         IndividualEncounterLabel encounterType ->
@@ -3463,7 +3463,7 @@ translationSet trans =
 
                 HomeVisitEncounter ->
                     { english = "Home Visit Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusura abarwayi mu rugo"
                     }
 
         IndividualEncounterSelectVisit encounterType ->
@@ -7044,7 +7044,7 @@ translateActivePage page =
 
                 HomeVisitEncounterPage _ ->
                     { english = "Home Visit Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusura abarwayi mu rugo"
                     }
 
                 HomeVisitActivityPage _ _ ->
