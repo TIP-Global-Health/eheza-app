@@ -22,5 +22,9 @@ fetch currentDate healthCenterId db =
     [ FetchVillages
     , FetchHealthCenters
     , FetchFollowUpMeasurements healthCenterId
+    , FetchFollowUpParticipants (Dict.keys nutritionFollowUps)
     ]
-        ++ fetchPatientsMsgs
+
+
+
+-- ++ fetchPatientsMsgs

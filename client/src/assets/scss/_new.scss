@@ -2350,6 +2350,11 @@ div.page-case-management {
       font-weight: bold;
       padding: 20px;
       text-align: center;
+
+      .entry {
+        display: flex;
+        justify-content: space-around;
+      }
     }
   }
 }

@@ -142,6 +142,13 @@ shouldFetch model msg =
                 |> isNotAsked
 
         FetchPeople ids ->
+            let
+                _ =
+                    Debug.log "should FetchPeople" ids
+
+                _ =
+                    Debug.log "model.people" model.people
+            in
             if List.isEmpty ids then
                 False
 
@@ -202,6 +209,13 @@ shouldFetch model msg =
             Dict.get id model.followUpMeasurements
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
+
+        FetchFollowUpParticipants ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.people)) ids
 
         FetchIndividualEncounterParticipant id ->
             Dict.get id model.individualParticipants

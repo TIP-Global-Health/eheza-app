@@ -468,6 +468,36 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
             , []
             )
 
+        FetchFollowUpParticipants ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    peopleUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.people ids
+                in
+                ( { model | people = peopleUpdated }
+                , sw.getMany personEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchFollowUpParticipants)
+                , []
+                )
+
+        HandleFetchFollowUpParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | people = Dict.union dictUpdated model.people }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchParticipantsForPerson personId ->
             let
                 query1 =

@@ -30,7 +30,10 @@ generateNutritionFollowUps currentDate healthCenterId db =
                 |> Maybe.withDefault []
 
         _ =
-            Debug.log "nutritionIndividual" (List.length nutritionIndividual)
+            followUps
+                |> Maybe.map (.nutritionIndividual >> Dict.values >> List.map .participantId)
+                |> Maybe.withDefault []
+                |> Debug.log "nutritionIndividual"
 
         nutritionGroup =
             followUps
@@ -61,7 +64,7 @@ generateNutritionFollowUps currentDate healthCenterId db =
                                     accum
                                 )
                     )
-                    Dict.empty
+                    accumDict
     in
     generateFollowUpItems nutritionIndividual Dict.empty
         |> generateFollowUpItems nutritionGroup

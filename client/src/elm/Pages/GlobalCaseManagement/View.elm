@@ -3,6 +3,7 @@ module Pages.GlobalCaseManagement.View exposing (view)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.Measurement.Model exposing (NutritionAssesment(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
@@ -23,8 +24,6 @@ import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
 
 
-{-| Shows a dashboard page.
--}
 view : Language -> NominalDate -> HealthCenterId -> Bool -> Model -> ModelIndexedDb -> Html Msg
 view language currentDate healthCenterId isChw model db =
     let
@@ -126,15 +125,34 @@ viewFollowUpItem language currentDate db personId item =
         |> Maybe.map
             (\person ->
                 let
-                    _ =
-                        Debug.log "person" person
-
                     dueLabel =
                         followUpDueOptionByDate currentDate item.dateMeasured item.value
                             |> Translate.FollowUpDueOption
                             |> translateText language
+
+                    assessments =
+                        EverySet.toList item.value.assesment
+                            |> List.reverse
+                            |> List.map (\assessment -> p [] [ translateAssement assessment ])
+
+                    translateAssement assessment =
+                        case assessment of
+                            AssesmentMalnutritionSigns signs ->
+                                let
+                                    translatedSigns =
+                                        List.map (Translate.ChildNutritionSignLabel >> translate language) signs
+                                            |> String.join ", "
+                                in
+                                text <| translate language (Translate.NutritionAssesment assessment) ++ ": " ++ translatedSigns
+
+                            _ ->
+                                text <| translate language <| Translate.NutritionAssesment assessment
                 in
-                div [] [ text person.name, dueLabel ]
+                div [ class "entry" ]
+                    [ div [] [ text person.name ]
+                    , div [] [ dueLabel ]
+                    , div [] assessments
+                    ]
             )
         |> Maybe.withDefault emptyNode
 

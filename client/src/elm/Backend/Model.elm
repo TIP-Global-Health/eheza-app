@@ -196,6 +196,7 @@ type MsgIndexedDb
     | FetchExpectedParticipants SessionId
     | FetchExpectedSessions PersonId
     | FetchFollowUpMeasurements HealthCenterId
+    | FetchFollowUpParticipants (List PersonId)
     | FetchHealthCenters
     | FetchIndividualEncounterParticipantsForPerson PersonId
     | FetchMotherMeasurements PersonId
@@ -228,6 +229,7 @@ type MsgIndexedDb
     | HandleFetchedExpectedParticipants SessionId (WebData ExpectedParticipants)
     | HandleFetchedExpectedSessions PersonId (WebData (Dict SessionId Session))
     | HandleFetchedFollowUpMeasurements HealthCenterId (WebData FollowUpMeasurements)
+    | HandleFetchFollowUpParticipants (WebData (Dict PersonId Person))
     | HandleFetchedHealthCenters (WebData (Dict HealthCenterId HealthCenter))
     | HandleFetchedIndividualEncounterParticipantsForPerson PersonId (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
     | HandleFetchedMotherMeasurements PersonId (WebData MotherMeasurementList)
