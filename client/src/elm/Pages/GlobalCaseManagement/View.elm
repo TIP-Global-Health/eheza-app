@@ -40,6 +40,40 @@ view language page healthCenterId isChw model db =
                     [ span [ class "icon-back" ] [] ]
                 ]
 
+        followUps =
+            Dict.get healthCenterId db.followUpMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+
+        nutritionIndividual =
+            followUps
+                |> Maybe.map (.nutritionIndividual >> Dict.values)
+                |> Maybe.withDefault []
+
+        nutritionGroup =
+            followUps
+                |> Maybe.map (.nutritionGroup >> Dict.values)
+                |> Maybe.withDefault []
+
+        dict =
+            nutritionIndividual
+                |> List.foldl
+                    (\item accum ->
+                        Dict.get item.participantId accum
+                            |> Maybe.map
+                                (\member ->
+                                    if True then
+                                        Dict.insert item.participantId item accum
+
+                                    else
+                                        accum
+                                )
+                            |> Maybe.withDefault (Dict.insert item.participantId item accum)
+                    )
+                    Dict.empty
+
+        _ =
+            Debug.log "dict" dict
+
         panes =
             allEncounterTypes
                 |> List.filterMap
