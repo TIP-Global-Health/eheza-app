@@ -3795,12 +3795,12 @@ translationSet trans =
                     }
 
                 NaturalSourceFlowingWater ->
-                    { english = "Natural Source Flowing Water"
+                    { english = "Natural Source - Flowing Water"
                     , kinyarwanda = Nothing
                     }
 
                 NaturalSourceStandingWater ->
-                    { english = "Natural Source Standing Water"
+                    { english = "Natural Source - Standing Water"
                     , kinyarwanda = Nothing
                     }
 
@@ -4686,7 +4686,7 @@ translationSet trans =
                     }
 
                 WashHandsBeforeFeeding ->
-                    { english = "Do the caregiver and chils wash hands before the child is fed"
+                    { english = "Do the caregiver and child wash hands before the child is fed"
                     , kinyarwanda = Nothing
                     }
 
