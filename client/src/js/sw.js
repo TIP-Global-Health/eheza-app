@@ -29,7 +29,7 @@ var photosUploadUrlRegex = /\/cache-upload\/images/;
  *
  * @type {number}
  */
-const dbVerno = 16;
+var dbVerno = 16;
 
 // All those entities are the entities we're going to get from the backend.
 // They should also be mapped in SyncManager.Model.BackendGeneralEntity (for
