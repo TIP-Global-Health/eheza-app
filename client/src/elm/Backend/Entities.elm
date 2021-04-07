@@ -701,3 +701,19 @@ type alias NutritionFeedingId =
 
 type NutritionFeedingIdUuidType
     = NutritionFeedingIdUuidType
+
+
+type alias NutritionHygieneId =
+    EntityUuid NutritionHygieneIdUuidType
+
+
+type NutritionHygieneIdUuidType
+    = NutritionHygieneIdUuidType
+
+
+type alias NutritionFoodSecurityId =
+    EntityUuid NutritionFoodSecurityIdUuidType
+
+
+type NutritionFoodSecurityIdUuidType
+    = NutritionFoodSecurityIdUuidType

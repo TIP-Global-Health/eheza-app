@@ -661,3 +661,15 @@ nutritionFeedingEndpoint : ReadWriteEndPoint Error NutritionFeedingId NutritionF
 nutritionFeedingEndpoint =
     swEndpoint "nodes/nutrition_feeding" decodeNutritionFeeding
         |> withValueEncoder (object << encodeNutritionFeeding)
+
+
+nutritionHygieneEndpoint : ReadWriteEndPoint Error NutritionHygieneId NutritionHygiene NutritionHygiene ()
+nutritionHygieneEndpoint =
+    swEndpoint "nodes/nutrition_hygiene" decodeNutritionHygiene
+        |> withValueEncoder (object << encodeNutritionHygiene)
+
+
+nutritionFoodSecurityEndpoint : ReadWriteEndPoint Error NutritionFoodSecurityId NutritionFoodSecurity NutritionFoodSecurity ()
+nutritionFoodSecurityEndpoint =
+    swEndpoint "nodes/nutrition_food_security" decodeNutritionFoodSecurity
+        |> withValueEncoder (object << encodeNutritionFoodSecurity)

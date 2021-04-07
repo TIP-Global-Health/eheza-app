@@ -85,3 +85,101 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetHygieneBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.hygieneForm
+            in
+            ( { model | hygieneForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetMainWaterSource value ->
+            let
+                form =
+                    model.hygieneForm
+
+                updatedForm =
+                    { form | mainWaterSource = Just value }
+            in
+            ( { model | hygieneForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveHygiene personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.hygieneForm
+                        |> toNutritionHygieneValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.HomeVisitEncounter.Model.SaveHygiene personId measurementId value
+                                    |> Backend.Model.MsgHomeVisitEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| HomeVisitEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetFoodSecurityBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.foodSecurityForm
+            in
+            ( { model | foodSecurityForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetMainIncomeSource value ->
+            let
+                form =
+                    model.foodSecurityForm
+
+                updatedForm =
+                    { form | mainIncomeSource = Just value }
+            in
+            ( { model | foodSecurityForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveFoodSecurity personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.foodSecurityForm
+                        |> toNutritionFoodSecurityValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.HomeVisitEncounter.Model.SaveFoodSecurity personId measurementId value
+                                    |> Backend.Model.MsgHomeVisitEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| HomeVisitEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )

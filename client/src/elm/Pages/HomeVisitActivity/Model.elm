@@ -12,16 +12,26 @@ type Msg
     | SetNutritionSupplementType NutritionSupplementType
     | SetSachetsPerDay String
     | SaveFeeding PersonId (Maybe ( NutritionFeedingId, NutritionFeeding ))
+    | SetHygieneBoolInput (Bool -> NutritionHygieneForm -> NutritionHygieneForm) Bool
+    | SetMainWaterSource MainWaterSource
+    | SaveHygiene PersonId (Maybe ( NutritionHygieneId, NutritionHygiene ))
+    | SetFoodSecurityBoolInput (Bool -> NutritionFoodSecurityForm -> NutritionFoodSecurityForm) Bool
+    | SetMainIncomeSource MainIncomeSource
+    | SaveFoodSecurity PersonId (Maybe ( NutritionFoodSecurityId, NutritionFoodSecurity ))
 
 
 type alias Model =
     { feedingForm : NutritionFeedingForm
+    , hygieneForm : NutritionHygieneForm
+    , foodSecurityForm : NutritionFoodSecurityForm
     }
 
 
 emptyModel : Model
 emptyModel =
     { feedingForm = emptyNutritionFeedingForm
+    , hygieneForm = emptyNutritionHygieneForm
+    , foodSecurityForm = emptyNutritionFoodSecurityForm
     }
 
 
@@ -54,3 +64,31 @@ emptyNutritionFeedingForm =
     , supplementType = Nothing
     , sachetsPerDay = Nothing
     }
+
+
+type alias NutritionHygieneForm =
+    { soapInTheHouse : Maybe Bool
+    , washHandsBeforeFeeding : Maybe Bool
+    , foodCovered : Maybe Bool
+    , mainWaterSource : Maybe MainWaterSource
+    }
+
+
+emptyNutritionHygieneForm : NutritionHygieneForm
+emptyNutritionHygieneForm =
+    { soapInTheHouse = Nothing
+    , washHandsBeforeFeeding = Nothing
+    , foodCovered = Nothing
+    , mainWaterSource = Nothing
+    }
+
+
+type alias NutritionFoodSecurityForm =
+    { householdGotFood : Maybe Bool
+    , mainIncomeSource : Maybe MainIncomeSource
+    }
+
+
+emptyNutritionFoodSecurityForm : NutritionFoodSecurityForm
+emptyNutritionFoodSecurityForm =
+    NutritionFoodSecurityForm Nothing Nothing

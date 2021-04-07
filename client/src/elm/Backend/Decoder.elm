@@ -162,11 +162,17 @@ decodeRevision =
                     "nutrition_follow_up" ->
                         decodeWithUuid NutritionFollowUpRevision decodeNutritionFollowUp
 
+                    "nutrition_food_security" ->
+                        decodeWithUuid NutritionFoodSecurityRevision decodeNutritionFoodSecurity
+
                     "nutrition_health_education" ->
                         decodeWithUuid NutritionHealthEducationRevision decodeNutritionHealthEducation
 
                     "nutrition_height" ->
                         decodeWithUuid NutritionHeightRevision decodeNutritionHeight
+
+                    "nutrition_hygiene" ->
+                        decodeWithUuid NutritionHygieneRevision decodeNutritionHygiene
 
                     "nutrition_muac" ->
                         decodeWithUuid NutritionMuacRevision decodeNutritionMuac

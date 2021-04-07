@@ -146,6 +146,8 @@ decodeHomeVisitMeasurements : Decoder HomeVisitMeasurements
 decodeHomeVisitMeasurements =
     succeed HomeVisitMeasurements
         |> optional "nutrition_feeding" (decodeHead decodeNutritionFeeding) Nothing
+        |> optional "nutrition_hygiene" (decodeHead decodeNutritionHygiene) Nothing
+        |> optional "nutrition_food_security" (decodeHead decodeNutritionFoodSecurity) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1187,6 +1189,130 @@ decodeNutritionFeedingSign =
                         fail <|
                             sign
                                 ++ " is not a recognized NutritionFeedingSign"
+            )
+
+
+decodeNutritionHygiene : Decoder NutritionHygiene
+decodeNutritionHygiene =
+    decodeHomeVisitMeasurement decodeNutritionHygieneValue
+
+
+decodeNutritionHygieneValue : Decoder NutritionHygieneValue
+decodeNutritionHygieneValue =
+    succeed NutritionHygieneValue
+        |> required "nutrition_hygiene_signs" (decodeEverySet decodeNutritionHygieneSign)
+        |> required "main_water_source" decodeMainWaterSource
+
+
+decodeNutritionHygieneSign : Decoder NutritionHygieneSign
+decodeNutritionHygieneSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "soap-in-the-house" ->
+                        succeed SoapInTheHouse
+
+                    "wash-hands-before-feeding" ->
+                        succeed WashHandsBeforeFeeding
+
+                    "food-covered" ->
+                        succeed FoodCovered
+
+                    "none" ->
+                        succeed NoNutritionHygieneSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized NutritionHygieneSign"
+            )
+
+
+decodeMainWaterSource : Decoder MainWaterSource
+decodeMainWaterSource =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "piped-water-to-home" ->
+                        succeed PipedWaterToHome
+
+                    "public-water-tap" ->
+                        succeed PublicWaterTap
+
+                    "rain-water-collection-system" ->
+                        succeed RainWaterCollectionSystem
+
+                    "natural-source-flowing-water" ->
+                        succeed NaturalSourceFlowingWater
+
+                    "natural-source-standing-water" ->
+                        succeed NaturalSourceStandingWater
+
+                    "bottled-water" ->
+                        succeed BottledWater
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized MainWaterSource"
+            )
+
+
+decodeNutritionFoodSecurity : Decoder NutritionFoodSecurity
+decodeNutritionFoodSecurity =
+    decodeHomeVisitMeasurement decodeFoodSecurityValue
+
+
+decodeFoodSecurityValue : Decoder NutritionFoodSecurityValue
+decodeFoodSecurityValue =
+    succeed NutritionFoodSecurityValue
+        |> required "food_security_signs" (decodeEverySet decodeNutritionFoodSecuritySign)
+        |> required "main_income_source" decodeMainIncomeSource
+
+
+decodeNutritionFoodSecuritySign : Decoder NutritionFoodSecuritySign
+decodeNutritionFoodSecuritySign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "household-got-food" ->
+                        succeed HouseholdGotFood
+
+                    "none" ->
+                        succeed NoNutritionFoodSecuritySigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized NutritionFoodSecuritySign"
+            )
+
+
+decodeMainIncomeSource : Decoder MainIncomeSource
+decodeMainIncomeSource =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "home-based-agriculture" ->
+                        succeed HomeBasedAgriculture
+
+                    "commercial-agriculture" ->
+                        succeed CommercialAgriculture
+
+                    "public-employee" ->
+                        succeed PublicEmployee
+
+                    "private-business-employee" ->
+                        succeed PrivateBusinessEmpployee
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized MainIncomeSource"
             )
 
 

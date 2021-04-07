@@ -488,11 +488,17 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityNutritionFollowUp identifier ->
             getIdentifier identifier "nutrition_follow_up"
 
+        BackendAuthorityNutritionFoodSecurity identifier ->
+            getIdentifier identifier "nutrition_food_security"
+
         BackendAuthorityNutritionHealthEducation identifier ->
             getIdentifier identifier "nutrition_health_education"
 
         BackendAuthorityNutritionHeight identifier ->
             getIdentifier identifier "nutrition_height"
+
+        BackendAuthorityNutritionHygiene identifier ->
+            getIdentifier identifier "nutrition_hygiene"
 
         BackendAuthorityNutritionMuac identifier ->
             getIdentifier identifier "nutrition_muac"
@@ -893,11 +899,17 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityNutritionFollowUp identifier ->
             encode Backend.Measurement.Encoder.encodeNutritionFollowUp identifier
 
+        BackendAuthorityNutritionFoodSecurity identifier ->
+            encode Backend.Measurement.Encoder.encodeNutritionFoodSecurity identifier
+
         BackendAuthorityNutritionHealthEducation identifier ->
             encode Backend.Measurement.Encoder.encodeNutritionHealthEducation identifier
 
         BackendAuthorityNutritionHeight identifier ->
             encode Backend.Measurement.Encoder.encodeNutritionHeight identifier
+
+        BackendAuthorityNutritionHygiene identifier ->
+            encode Backend.Measurement.Encoder.encodeNutritionHygiene identifier
 
         BackendAuthorityNutritionMuac identifier ->
             encode Backend.Measurement.Encoder.encodeNutritionMuac identifier
@@ -1261,11 +1273,17 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityNutritionFollowUp identifier ->
             NutritionFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityNutritionFoodSecurity identifier ->
+            NutritionFoodSecurityRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityNutritionHealthEducation identifier ->
             NutritionHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityNutritionHeight identifier ->
             NutritionHeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutritionHygiene identifier ->
+            NutritionHygieneRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityNutritionMuac identifier ->
             NutritionMuacRevision (toEntityUuid identifier.uuid) identifier.entity
