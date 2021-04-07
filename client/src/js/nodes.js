@@ -101,6 +101,10 @@
             });
         }
 
+        console.log(dbSync.verno);
+        console.log(dbVerno);
+
+
         if (event.request.method === 'GET') {
             if (uuid) {
                 if (type === 'child-measurements' || type === 'mother-measurements') {

@@ -21,6 +21,15 @@ var photosUploadCache = "photos-upload";
 var photosDownloadUrlRegex = /\/system\/files\//;
 var photosUploadUrlRegex = /\/cache-upload\/images/;
 
+/**
+ * The DB version on the backend.
+ *
+ * This must be sent whenever we POST or PATCH an entity to the backend.
+ *
+ * @type {number}
+ */
+const dbVerno = 16;
+
 // All those entities are the entities we're going to get from the backend.
 // They should also be mapped in SyncManager.Model.BackendGeneralEntity (for
 // General entities), or SyncManager.Model.BackendAuthorityEntity (for Authority
