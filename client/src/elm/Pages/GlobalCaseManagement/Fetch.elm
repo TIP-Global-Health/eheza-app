@@ -5,8 +5,8 @@ import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Pages.GlobalCaseManagement.Model exposing (..)
 
 
-fetch : HealthCenterId -> Model -> List MsgIndexedDb
-fetch healthCenterId model =
+fetch : HealthCenterId -> ModelIndexedDb -> List MsgIndexedDb
+fetch healthCenterId db =
     [ FetchVillages
     , FetchHealthCenters
     , FetchFollowUpMeasurements healthCenterId

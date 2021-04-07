@@ -8,7 +8,7 @@ import Backend.Person.Model
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, allMonths, formatYYYYMMDD, isDiffTruthy, yearYYNumber)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -26,7 +26,7 @@ import Utils.Html exposing (spinner, viewModal)
 {-| Shows a dashboard page.
 -}
 view : Language -> NominalDate -> HealthCenterId -> Bool -> Model -> ModelIndexedDb -> Html Msg
-view language page healthCenterId isChw model db =
+view language currentDate healthCenterId isChw model db =
     let
         header =
             div
@@ -40,39 +40,8 @@ view language page healthCenterId isChw model db =
                     [ span [ class "icon-back" ] [] ]
                 ]
 
-        followUps =
-            Dict.get healthCenterId db.followUpMeasurements
-                |> Maybe.andThen RemoteData.toMaybe
-
-        nutritionIndividual =
-            followUps
-                |> Maybe.map (.nutritionIndividual >> Dict.values)
-                |> Maybe.withDefault []
-
-        nutritionGroup =
-            followUps
-                |> Maybe.map (.nutritionGroup >> Dict.values)
-                |> Maybe.withDefault []
-
-        dict =
-            nutritionIndividual
-                |> List.foldl
-                    (\item accum ->
-                        Dict.get item.participantId accum
-                            |> Maybe.map
-                                (\member ->
-                                    if True then
-                                        Dict.insert item.participantId item accum
-
-                                    else
-                                        accum
-                                )
-                            |> Maybe.withDefault (Dict.insert item.participantId item accum)
-                    )
-                    Dict.empty
-
-        _ =
-            Debug.log "dict" dict
+        nutritionFollowUps =
+            generateNutritionFollowUps currentDate healthCenterId db
 
         panes =
             allEncounterTypes
@@ -123,15 +92,15 @@ viewFilters language model =
         List.map renderButton filters
 
 
-viewEncounterTypePane : Language -> IndividualEncounterType -> List FollowUpCase -> Model -> Html Msg
-viewEncounterTypePane language encounterType cases model =
+viewEncounterTypePane : Language -> IndividualEncounterType -> List FollowUpItem -> Model -> Html Msg
+viewEncounterTypePane language encounterType items model =
     let
         content =
-            if List.isEmpty cases then
+            if List.isEmpty items then
                 [ translateText language Translate.NoMatchesFound ]
 
             else
-                List.map (viewFollowUpCase language) cases
+                List.map (viewFollowUpItem language) items
     in
     div [ class "pane" ]
         [ viewItemHeading language encounterType
@@ -146,8 +115,8 @@ viewItemHeading language encounterType =
         [ text <| translate language <| Translate.EncounterTypeFollowUpLabel encounterType ]
 
 
-viewFollowUpCase : Language -> FollowUpCase -> Html Msg
-viewFollowUpCase language followUpCase =
+viewFollowUpItem : Language -> FollowUpItem -> Html Msg
+viewFollowUpItem language followUpCase =
     emptyNode
 
 
