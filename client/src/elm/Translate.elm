@@ -4739,8 +4739,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                TherapeutikMilk ->
-                    { english = "Therapeutik Milk"
+                TherapeuticMilk ->
+                    { english = "Therapeutic Milk"
                     , kinyarwanda = Nothing
                     }
 
@@ -4854,7 +4854,7 @@ translationSet trans =
                     }
 
         OnlySickChild ->
-            { english = "Only sick child"
+            { english = "Only Sick Child"
             , kinyarwanda = Nothing
             }
 
@@ -5873,7 +5873,7 @@ translationSet trans =
             }
 
         SachetsPerDayQuestion ->
-            { english = "How many sachets of supplement is given to child per day"
+            { english = "How many sachets of supplement is given to the child per day"
             , kinyarwanda = Nothing
             }
 

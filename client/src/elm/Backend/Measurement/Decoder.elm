@@ -1138,7 +1138,7 @@ decodeNutritionSupplementType =
                         succeed Ongera
 
                     "therapeutic-milk" ->
-                        succeed TherapeutikMilk
+                        succeed TherapeuticMilk
 
                     "none" ->
                         succeed NoNutritionSupplementType

@@ -1450,7 +1450,7 @@ encodeNutritionSupplementType type_ =
             Ongera ->
                 "ongera"
 
-            TherapeutikMilk ->
+            TherapeuticMilk ->
                 "therapeutic-milk"
 
             NoNutritionSupplementType ->

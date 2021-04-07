@@ -292,7 +292,7 @@ type NutritionSupplementType
     = FortifiedPorridge
     | Rutf
     | Ongera
-    | TherapeutikMilk
+    | TherapeuticMilk
     | NoNutritionSupplementType
 
 

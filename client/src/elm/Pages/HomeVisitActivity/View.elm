@@ -155,7 +155,7 @@ viewFeedingContent language currentDate assembled db feedingForm =
             if form.receiveSupplement == Just True then
                 [ viewQuestionLabel language Translate.WhatType
                 , viewCheckBoxSelectInput language
-                    [ FortifiedPorridge, Rutf, Ongera, TherapeutikMilk ]
+                    [ FortifiedPorridge, Rutf, Ongera, TherapeuticMilk ]
                     []
                     form.supplementType
                     SetNutritionSupplementType
