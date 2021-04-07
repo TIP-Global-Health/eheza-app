@@ -320,3 +320,70 @@ mapChildMeasurementsAtOfflineSession childId func offlineSession =
                 offlineSession.measurements
     in
     { offlineSession | measurements = mapped }
+
+
+nutritionAssesmentToString : NutritionAssesment -> String
+nutritionAssesmentToString assesment =
+    case assesment of
+        AssesmentAcuteMalnutritionModerate ->
+            "malnutrition-moderate"
+
+        AssesmentAcuteMalnutritionSevere ->
+            "malnutrition-severe"
+
+        AssesmentUnderweightModerate ->
+            "underweight-moderate"
+
+        AssesmentUnderweightSevere ->
+            "underweight-severe"
+
+        AssesmentDangerSignsNotPresent ->
+            "danger-signs-not-present"
+
+        AssesmentDangerSignsPresent ->
+            "danger-signs-present"
+
+        AssesmentMalnutritionSigns _ ->
+            "malnutrition-signs"
+
+        AssesmentConsecutiveWeightLoss ->
+            "consecutive-weight-loss"
+
+        NoNutritionAssesment ->
+            "none"
+
+
+nutritionAssesmentFromString : String -> Maybe NutritionAssesment
+nutritionAssesmentFromString assesment =
+    case assesment of
+        "malnutrition-moderate" ->
+            Just AssesmentAcuteMalnutritionModerate
+
+        "malnutrition-severe" ->
+            Just AssesmentAcuteMalnutritionSevere
+
+        "underweight-moderate" ->
+            Just AssesmentUnderweightModerate
+
+        "underweight-severe" ->
+            Just AssesmentUnderweightSevere
+
+        "danger-signs-not-present" ->
+            Just AssesmentDangerSignsNotPresent
+
+        "danger-signs-present" ->
+            Just AssesmentDangerSignsPresent
+
+        "malnutrition-signs" ->
+            -- We don't actually know which malnutrition signs we discovered.
+            -- We will be able to determine this by looking at the Nutrition activity.
+            Just (AssesmentMalnutritionSigns [])
+
+        "consecutive-weight-loss" ->
+            Just AssesmentConsecutiveWeightLoss
+
+        "none" ->
+            Just NoNutritionAssesment
+
+        _ ->
+            Nothing

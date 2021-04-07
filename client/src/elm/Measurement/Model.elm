@@ -255,7 +255,7 @@ type OutMsgChild
     | SavePhoto (Maybe PhotoId) PhotoUrl
     | SaveChildFbf (Maybe ChildFbfId) FbfValue
     | SaveContributingFactors (Maybe ContributingFactorsId) (EverySet ContributingFactorsSign)
-    | SaveFollowUp (Maybe FollowUpId) (EverySet FollowUpOption)
+    | SaveFollowUp (Maybe FollowUpId) FollowUpValue
     | SaveHealthEducation (Maybe GroupHealthEducationId) HealthEducationValue
     | SaveSendToHC (Maybe GroupSendToHCId) SendToHCValue
 

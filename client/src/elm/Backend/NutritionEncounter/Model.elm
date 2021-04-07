@@ -1,4 +1,4 @@
-module Backend.NutritionEncounter.Model exposing (Model, Msg(..), NutritionEncounter, emptyModel)
+module Backend.NutritionEncounter.Model exposing (Model, Msg(..), NutritionEncounter, emptyModel, emptyNutritionEncounter)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -12,6 +12,15 @@ type alias NutritionEncounter =
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , shard : Maybe HealthCenterId
+    }
+
+
+emptyNutritionEncounter : IndividualEncounterParticipantId -> NominalDate -> Maybe HealthCenterId -> NutritionEncounter
+emptyNutritionEncounter participant startDate shard =
+    { participant = participant
+    , startDate = startDate
+    , endDate = Nothing
+    , shard = shard
     }
 
 
@@ -66,5 +75,5 @@ type Msg
     | HandleSavedHealthEducation (WebData ())
     | SaveContributingFactors PersonId (Maybe NutritionContributingFactorsId) (EverySet ContributingFactorsSign)
     | HandleSavedContributingFactors (WebData ())
-    | SaveFollowUp PersonId (Maybe NutritionFollowUpId) (EverySet FollowUpOption)
+    | SaveFollowUp PersonId (Maybe NutritionFollowUpId) FollowUpValue
     | HandleSavedFollowUp (WebData ())

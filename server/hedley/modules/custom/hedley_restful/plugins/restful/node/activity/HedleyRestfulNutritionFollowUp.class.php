@@ -15,6 +15,7 @@ class HedleyRestfulNutritionFollowUp extends HedleyRestfulNutritionActivityBase 
    */
   protected $multiFields = [
     'field_follow_up_options',
+    'field_nutrition_assesment',
   ];
 
 }
