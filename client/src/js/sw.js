@@ -67,6 +67,7 @@ var tableForType = {
     nurse: 'nodes',
     nutrition: 'shards',
     nutrition_contributing_factors: 'shards',
+    nutrition_feeding: 'shards',
     nutrition_follow_up: 'shards',
     nutrition_encounter: 'shards',
     nutrition_health_education: 'shards',

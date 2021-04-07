@@ -85,8 +85,8 @@ viewMainPageContent language currentDate id isChw db data model =
     let
         ( completedActivities, pendingActivities ) =
             getAllActivities
-                |> List.filter (expectActivity currentDate data.person isChw data db)
-                |> List.partition (activityCompleted currentDate data.person isChw data db)
+                |> List.filter (expectActivity currentDate data.person data db)
+                |> List.partition (activityCompleted currentDate data.person data db)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities

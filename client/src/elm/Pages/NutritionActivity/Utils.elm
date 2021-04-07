@@ -21,7 +21,7 @@ import Backend.NutritionEncounter.Utils
         ( calculateZScoreWeightForAge
         , muacModerate
         , muacSevere
-        , resolvePreviousIndividualValues
+        , resolveIndividualValues
         , zScoreWeightForAgeModerate
         , zScoreWeightForAgeSevere
         )
@@ -215,13 +215,13 @@ nextStepsTasksCompletedFromTotal measurements data task =
             )
 
 
-resolvePreviousIndividualValue :
+resolveIndividualValue :
     List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a ))
     -> (a -> b)
     -> Maybe ( NominalDate, b )
-resolvePreviousIndividualValue previousMeasurementsWithDates measurementFunc valueFunc =
-    resolvePreviousIndividualValues previousMeasurementsWithDates measurementFunc valueFunc
+resolveIndividualValue measurementsWithDates measurementFunc valueFunc =
+    resolveIndividualValues measurementsWithDates measurementFunc valueFunc
         |> List.head
 
 

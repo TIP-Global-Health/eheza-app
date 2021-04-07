@@ -1422,6 +1422,76 @@ encodeFollowUpOption option =
                 "2-w"
 
 
+encodeNutritionFeeding : NutritionFeeding -> List ( String, Value )
+encodeNutritionFeeding =
+    encodeHomeVisitMeasurement encodeNutritionFeedingValue
+
+
+encodeNutritionFeedingValue : NutritionFeedingValue -> List ( String, Value )
+encodeNutritionFeedingValue value =
+    [ ( "nutrition_feeding_signs", encodeEverySet encodeNutritionFeedingSign value.signs )
+    , ( "supplement_type", encodeNutritionSupplementType value.supplementType )
+    , ( "sachets_per_day", float value.sachetsPerDay )
+    , ( "deleted", bool False )
+    , ( "type", string "nutrition_feeding" )
+    ]
+
+
+encodeNutritionSupplementType : NutritionSupplementType -> Value
+encodeNutritionSupplementType type_ =
+    string <|
+        case type_ of
+            FortifiedPorridge ->
+                "fortified-porridge"
+
+            Rutf ->
+                "rutf"
+
+            Ongera ->
+                "ongera"
+
+            TherapeutikMilk ->
+                "therapeutic-milk"
+
+            NoNutritionSupplementType ->
+                "none"
+
+
+encodeNutritionFeedingSign : NutritionFeedingSign -> Value
+encodeNutritionFeedingSign sign =
+    string <|
+        case sign of
+            ReceiveSupplement ->
+                "receive-supplement"
+
+            RationPresentAtHome ->
+                "ration-present-at-home"
+
+            EnoughTillNextSession ->
+                "enough-till-next-session"
+
+            SupplementShared ->
+                "supplement-shared"
+
+            EncouragedToEat ->
+                "encouraged-to-eat"
+
+            RefusingToEat ->
+                "refusing-to-eat"
+
+            FeedingSignBreastfeeding ->
+                "breastfeeding"
+
+            CleanWaterAvailable ->
+                "clean-water-available"
+
+            EatenWithWater ->
+                "eaten-with-water"
+
+            NoNutritionFeedingSigns ->
+                "none"
+
+
 encodeMedicationDistribution : MedicationDistribution -> List ( String, Value )
 encodeMedicationDistribution =
     encodeAcuteIllnessMeasurement encodeMedicationDistributionValue

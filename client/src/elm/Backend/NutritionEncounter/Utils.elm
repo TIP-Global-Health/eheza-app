@@ -151,30 +151,8 @@ generateNutritionAssesment currentDate zscores childId muacValue weightValue nut
                             Nothing
                     )
 
-        weightValueFunc =
-            \(WeightInKg kg) -> kg
-
-        individualMeasurements =
-            generateIndividualMeasurementsForChild childId db
-
-        individualWeightMeasurements =
-            resolvePreviousIndividualValues individualMeasurements .weight weightValueFunc
-
-        groupWeightMeasurements =
-            Dict.get childId db.childMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-                |> Maybe.map
-                    (.weights
-                        >> Dict.values
-                        >> List.map (\measurement -> ( measurement.dateMeasured, weightValueFunc measurement.value ))
-                    )
-                |> Maybe.withDefault []
-
         allWeightMeasuements =
-            groupWeightMeasurements
-                ++ individualWeightMeasurements
-                |> List.sortWith (\m1 m2 -> Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1))
+            resolveAllWeightMeasurementsForChild childId db
 
         weightForAgeZScore =
             Maybe.map (\child_ -> calculateZScoreWeightForAge currentDate zscores child_ weightValue) child
@@ -292,13 +270,41 @@ generateNutritionAssesment currentDate zscores childId muacValue weightValue nut
         |> List.filterMap identity
 
 
-resolvePreviousIndividualValues :
+resolveAllWeightMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, Float )
+resolveAllWeightMeasurementsForChild childId db =
+    let
+        weightValueFunc =
+            \(WeightInKg kg) -> kg
+
+        individualMeasurements =
+            generateIndividualMeasurementsForChild childId db
+
+        individualWeightMeasurements =
+            resolveIndividualValues individualMeasurements .weight weightValueFunc
+
+        groupWeightMeasurements =
+            Dict.get childId db.childMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (.weights
+                        >> Dict.values
+                        >> List.map (\measurement -> ( measurement.dateMeasured, weightValueFunc measurement.value ))
+                    )
+                |> Maybe.withDefault []
+    in
+    groupWeightMeasurements
+        ++ individualWeightMeasurements
+        |> List.sortWith (\m1 m2 -> Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1))
+
+
+resolveIndividualValues :
     List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a ))
     -> (a -> b)
     -> List ( NominalDate, b )
-resolvePreviousIndividualValues previousMeasurementsWithDates measurementFunc valueFunc =
-    previousMeasurementsWithDates
+resolveIndividualValues measurementsWithDates measurementFunc valueFunc =
+    measurementsWithDates
         |> List.filterMap
             (\( date, ( _, measurements ) ) ->
                 measurementFunc measurements

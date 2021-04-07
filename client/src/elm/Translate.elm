@@ -628,8 +628,10 @@ type TranslationId
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
     | NutritionAssesment NutritionAssesment
+    | NutritionFeedingSignQuestion NutritionFeedingSign
     | NutritionHelper
     | NutritionNextStepsTask Measurement.Model.NextStepsTask
+    | NutritionSupplementType NutritionSupplementType
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
@@ -639,6 +641,7 @@ type TranslationId
     | OnceYouEndTheEncounter
     | OnceYouEndYourGroupEncounter
     | OngoingTreatmentTask OngoingTreatmentTask
+    | OnlySickChild
     | Or
     | PackagesPerMonth
     | Page
@@ -756,6 +759,8 @@ type TranslationId
     | RhNegative
     | RiskFactorAlert RiskFactor
     | RiskFactors
+    | SachetsPerDayHelper Float Float
+    | SachetsPerDayQuestion
     | Save
     | SaveAndNext
     | SaveAndRecordOutcome
@@ -803,6 +808,7 @@ type TranslationId
     | ServiceWorkerStatus
     | SevereAcuteMalnutrition
     | SevereHemorrhagingPreviousDelivery
+    | Shared
     | SignOnDoorPostedQuestion
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | StillbornPreviousDelivery
@@ -877,6 +883,7 @@ type TranslationId
     | Weight
     | WelcomeUser String
     | WhatDoYouWantToDo
+    | WhatType
     | WhatWasTheirResponse
     | WhyNot
     | WhyDifferentFbfAmount Activity
@@ -4496,6 +4503,58 @@ translationSet trans =
                     , kinyarwanda = Just "Gutakaza ibiro mu buryo bwikurikiranije"
                     }
 
+        NutritionFeedingSignQuestion sign ->
+            case sign of
+                ReceiveSupplement ->
+                    { english = "Did you receive food supplementation"
+                    , kinyarwanda = Nothing
+                    }
+
+                RationPresentAtHome ->
+                    { english = "Is the ration of the food supplement present in the home"
+                    , kinyarwanda = Nothing
+                    }
+
+                EnoughTillNextSession ->
+                    { english = "Is the available food supplement enough to last until the next health center session"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplementShared ->
+                    { english = "Is the food supplement being shared or eaten only by the sick child"
+                    , kinyarwanda = Nothing
+                    }
+
+                EncouragedToEat ->
+                    { english = "Does someone help / encourage the sick child to eat"
+                    , kinyarwanda = Nothing
+                    }
+
+                RefusingToEat ->
+                    { english = "Is the child refusing to eat"
+                    , kinyarwanda = Nothing
+                    }
+
+                FeedingSignBreastfeeding ->
+                    { english = "Is the child currently breastfeeding (for children < 2)"
+                    , kinyarwanda = Nothing
+                    }
+
+                CleanWaterAvailable ->
+                    { english = "Is clean water available"
+                    , kinyarwanda = Nothing
+                    }
+
+                EatenWithWater ->
+                    { english = "Is water given to the child when eating the food supplement"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNutritionFeedingSigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         NutritionHelper ->
             { english = "Explain to the mother how to check the malnutrition signs for their own child."
             , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye."
@@ -4521,6 +4580,33 @@ translationSet trans =
                 NextStepFollowUp ->
                     { english = "Follow Up"
                     , kinyarwanda = Just "Gukurikirana umurwayi"
+                    }
+
+        NutritionSupplementType type_ ->
+            case type_ of
+                FortifiedPorridge ->
+                    { english = "Fortified Porridge"
+                    , kinyarwanda = Nothing
+                    }
+
+                Rutf ->
+                    { english = "RUTF"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ongera ->
+                    { english = "Ongera intungamubiri at the village level / CHW"
+                    , kinyarwanda = Nothing
+                    }
+
+                TherapeutikMilk ->
+                    { english = "Therapeutik Milk"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNutritionSupplementType ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
                     }
 
         ObstetricalDiagnosis ->
@@ -4626,6 +4712,11 @@ translationSet trans =
                     { english = "Treatment Review"
                     , kinyarwanda = Just "Kureba imiti yahawe"
                     }
+
+        OnlySickChild ->
+            { english = "Only sick child"
+            , kinyarwanda = Nothing
+            }
 
         Or ->
             { english = "or"
@@ -5631,6 +5722,16 @@ translationSet trans =
             , kinyarwanda = Just "Abashobora kwibasirwa n'indwara runaka (kubera impamvu zitandukanye:kuba atwite..)"
             }
 
+        SachetsPerDayHelper weight recommendation ->
+            { english = "The recommended amount for a " ++ String.fromFloat weight ++ " kg child is " ++ String.fromFloat recommendation ++ " sachets a day"
+            , kinyarwanda = Nothing
+            }
+
+        SachetsPerDayQuestion ->
+            { english = "How many sachets of supplement is given to child per day"
+            , kinyarwanda = Nothing
+            }
+
         Save ->
             { english = "Save"
             , kinyarwanda = Just "Kubika"
@@ -5864,6 +5965,11 @@ translationSet trans =
         SevereHemorrhagingPreviousDelivery ->
             { english = "Severe Hemorrhaging in previous delivery (>500 ml)"
             , kinyarwanda = Just "Ubushize yavuye cyane akimara kubyara hejuru ya Ml 500"
+            }
+
+        Shared ->
+            { english = "Shared"
+            , kinyarwanda = Nothing
             }
 
         SignOnDoorPostedQuestion ->
@@ -6440,6 +6546,11 @@ translationSet trans =
         WhatDoYouWantToDo ->
             { english = "What do you want to do?"
             , kinyarwanda = Just "Urashaka gukora iki?"
+            }
+
+        WhatType ->
+            { english = "What type"
+            , kinyarwanda = Nothing
             }
 
         WhatWasTheirResponse ->

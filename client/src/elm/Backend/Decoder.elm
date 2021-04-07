@@ -156,6 +156,9 @@ decodeRevision =
                     "nutrition_encounter" ->
                         decodeWithUuid NutritionEncounterRevision decodeNutritionEncounter
 
+                    "nutrition_feeding" ->
+                        decodeWithUuid NutritionFeedingRevision decodeNutritionFeeding
+
                     "nutrition_follow_up" ->
                         decodeWithUuid NutritionFollowUpRevision decodeNutritionFollowUp
 

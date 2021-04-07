@@ -693,3 +693,11 @@ type alias HomeVisitEncounterId =
 
 type HomeVisitEncounterUuidType
     = HomeVisitEncounterUuidType
+
+
+type alias NutritionFeedingId =
+    EntityUuid NutritionFeedingIdUuidType
+
+
+type NutritionFeedingIdUuidType
+    = NutritionFeedingIdUuidType

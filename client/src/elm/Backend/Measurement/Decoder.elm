@@ -145,6 +145,7 @@ decodeAcuteIllnessMeasurements =
 decodeHomeVisitMeasurements : Decoder HomeVisitMeasurements
 decodeHomeVisitMeasurements =
     succeed HomeVisitMeasurements
+        |> optional "nutrition_feeding" (decodeHead decodeNutritionFeeding) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1103,6 +1104,90 @@ decodeFollowUpValue : Decoder (EverySet FollowUpOption)
 decodeFollowUpValue =
     decodeEverySet decodeFollowUpOption
         |> field "follow_up_options"
+
+
+decodeNutritionFeeding : Decoder NutritionFeeding
+decodeNutritionFeeding =
+    decodeHomeVisitMeasurement decodeFeedingValue
+
+
+decodeFeedingValue : Decoder NutritionFeedingValue
+decodeFeedingValue =
+    succeed NutritionFeedingValue
+        |> required "nutrition_feeding_signs" (decodeEverySet decodeNutritionFeedingSign)
+        |> required "supplement_type" decodeNutritionSupplementType
+        |> required "sachets_per_day" decodeFloat
+
+
+decodeNutritionSupplementType : Decoder NutritionSupplementType
+decodeNutritionSupplementType =
+    string
+        |> andThen
+            (\type_ ->
+                case type_ of
+                    "fortified-porridge" ->
+                        succeed FortifiedPorridge
+
+                    "rutf" ->
+                        succeed Rutf
+
+                    "ongera" ->
+                        succeed Ongera
+
+                    "therapeutic-milk" ->
+                        succeed TherapeutikMilk
+
+                    "none" ->
+                        succeed NoNutritionSupplementType
+
+                    _ ->
+                        fail <|
+                            type_
+                                ++ " is not a recognized NutritionSupplementType"
+            )
+
+
+decodeNutritionFeedingSign : Decoder NutritionFeedingSign
+decodeNutritionFeedingSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "receive-supplement" ->
+                        succeed ReceiveSupplement
+
+                    "ration-present-at-home" ->
+                        succeed RationPresentAtHome
+
+                    "enough-till-next-session" ->
+                        succeed EnoughTillNextSession
+
+                    "supplement-shared" ->
+                        succeed SupplementShared
+
+                    "encouraged-to-eat" ->
+                        succeed EncouragedToEat
+
+                    "refusing-to-eat" ->
+                        succeed RefusingToEat
+
+                    "breastfeeding" ->
+                        succeed FeedingSignBreastfeeding
+
+                    "clean-water-available" ->
+                        succeed CleanWaterAvailable
+
+                    "eaten-with-water" ->
+                        succeed EatenWithWater
+
+                    "none" ->
+                        succeed NoNutritionFeedingSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized NutritionFeedingSign"
+            )
 
 
 decodeSymptomsGeneral : Decoder SymptomsGeneral

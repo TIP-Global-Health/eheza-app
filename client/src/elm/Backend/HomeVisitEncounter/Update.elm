@@ -34,3 +34,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | closeHomeVisitEncounter = data }
             , Cmd.none
             )
+
+        SaveFeeding personId valueId value ->
+            ( { model | saveFeeding = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value nutritionFeedingEndpoint HandleSavedFeeding
+            )
+
+        HandleSavedFeeding data ->
+            ( { model | saveFeeding = data }
+            , Cmd.none
+            )

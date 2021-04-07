@@ -655,3 +655,9 @@ followUpEndpoint : ReadWriteEndPoint Error FollowUpId FollowUp FollowUp ()
 followUpEndpoint =
     swEndpoint "nodes/follow_up" decodeFollowUp
         |> withValueEncoder (object << encodeFollowUp)
+
+
+nutritionFeedingEndpoint : ReadWriteEndPoint Error NutritionFeedingId NutritionFeeding NutritionFeeding ()
+nutritionFeedingEndpoint =
+    swEndpoint "nodes/nutrition_feeding" decodeNutritionFeeding
+        |> withValueEncoder (object << encodeNutritionFeeding)

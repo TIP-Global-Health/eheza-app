@@ -515,7 +515,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get ( id, activity ) loggedInModel.homeVisitActivityPages
                                     |> Maybe.withDefault Pages.HomeVisitActivity.Model.emptyModel
                         in
-                        Pages.HomeVisitActivity.View.view model.language currentDate id activity isChw model.indexedDb page_
+                        Pages.HomeVisitActivity.View.view model.language currentDate id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageHomeVisitActivity id activity)
                             |> flexPageWrapper model
 

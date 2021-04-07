@@ -482,6 +482,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityNutritionEncounter identifier ->
             getIdentifier identifier "nutrition_encounter"
 
+        BackendAuthorityNutritionFeeding identifier ->
+            getIdentifier identifier "nutrition_feeding"
+
         BackendAuthorityNutritionFollowUp identifier ->
             getIdentifier identifier "nutrition_follow_up"
 
@@ -884,6 +887,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityNutritionEncounter identifier ->
             encode Backend.NutritionEncounter.Encoder.encodeNutritionEncounter identifier
 
+        BackendAuthorityNutritionFeeding identifier ->
+            encode Backend.Measurement.Encoder.encodeNutritionFeeding identifier
+
         BackendAuthorityNutritionFollowUp identifier ->
             encode Backend.Measurement.Encoder.encodeNutritionFollowUp identifier
 
@@ -1248,6 +1254,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityNutritionEncounter identifier ->
             NutritionEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutritionFeeding identifier ->
+            NutritionFeedingRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityNutritionFollowUp identifier ->
             NutritionFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
