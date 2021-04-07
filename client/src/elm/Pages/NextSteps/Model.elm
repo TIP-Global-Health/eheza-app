@@ -4,7 +4,6 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
-import Pages.NutritionEncounter.Model exposing (NutritionAssesment)
 import Pages.Page exposing (Page)
 
 
@@ -49,7 +48,7 @@ type Msg
     | SetContributingFactorsSign ContributingFactorsSign
     | SaveContributingFactors (Maybe ContributingFactorsId) (EverySet ContributingFactorsSign) (Maybe NextStepsTask)
     | SetFollowUpOption FollowUpOption
-    | SaveFollowUp (Maybe FollowUpId) (EverySet FollowUpOption) (Maybe NextStepsTask)
+    | SaveFollowUp (Maybe FollowUpId) FollowUpValue (Maybe NextStepsTask)
 
 
 emptyModel : Model

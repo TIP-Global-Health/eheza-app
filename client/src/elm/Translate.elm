@@ -69,7 +69,6 @@ import Pages.Dashboard.Model as Dashboard
         , FilterProgramType(..)
         )
 import Pages.NutritionActivity.Model
-import Pages.NutritionEncounter.Model exposing (NutritionAssesment(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
     exposing
@@ -4445,6 +4444,11 @@ translationSet trans =
                 AssesmentConsecutiveWeightLoss ->
                     { english = "Consecutive Weight Loss"
                     , kinyarwanda = Just "Gutakaza ibiro mu buryo bwikurikiranije"
+                    }
+
+                NoNutritionAssesment ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
                     }
 
         NutritionHelper ->

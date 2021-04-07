@@ -18,8 +18,8 @@ mother and child with the appropriate types.
 
 import Activity.Model exposing (ChildActivity, MotherActivity)
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (NutritionAssesment)
 import Measurement.Model
-import Pages.NutritionEncounter.Model exposing (NutritionAssesment)
 import Pages.Page exposing (Page(..))
 
 
