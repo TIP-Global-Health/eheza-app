@@ -15,6 +15,9 @@ encodeIndividualEncounterTypeAsString encounterType =
         AntenatalEncounter ->
             "antenatal"
 
+        HomeVisitEncounter ->
+            "home-visit"
+
         InmmunizationEncounter ->
             "inmmunization"
 
@@ -30,6 +33,9 @@ decodeIndividualEncounterTypeFromString string =
 
         "antenatal" ->
             Just AntenatalEncounter
+
+        "home-visit" ->
+            Just HomeVisitEncounter
 
         "inmmunization" ->
             Just InmmunizationEncounter

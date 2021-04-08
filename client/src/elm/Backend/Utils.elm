@@ -1,8 +1,16 @@
-module Backend.Utils exposing (mapAcuteIllnessMeasurements, mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, saveMeasurementCmd, sw)
+module Backend.Utils exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (AcuteIllnessMeasurements, ChildMeasurementList, MotherMeasurementList, NutritionMeasurements, PrenatalMeasurements)
+import Backend.Measurement.Model
+    exposing
+        ( AcuteIllnessMeasurements
+        , ChildMeasurementList
+        , HomeVisitMeasurements
+        , MotherMeasurementList
+        , NutritionMeasurements
+        , PrenatalMeasurements
+        )
 import Backend.Model exposing (..)
 import Json.Encode exposing (object)
 import RemoteData exposing (RemoteData(..))
@@ -71,6 +79,16 @@ mapAcuteIllnessMeasurements id func model =
     case id of
         Just encounterId ->
             { model | acuteIllnessMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.acuteIllnessMeasurements }
+
+        Nothing ->
+            model
+
+
+mapHomeVisitMeasurements : Maybe HomeVisitEncounterId -> (HomeVisitMeasurements -> HomeVisitMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapHomeVisitMeasurements id func model =
+    case id of
+        Just encounterId ->
+            { model | homeVisitMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.homeVisitMeasurements }
 
         Nothing ->
             model

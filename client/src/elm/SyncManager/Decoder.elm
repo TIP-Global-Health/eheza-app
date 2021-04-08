@@ -11,6 +11,7 @@ import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
 import Backend.Dashboard.Decoder
 import Backend.HealthCenter.Decoder
+import Backend.HomeVisitEncounter.Decoder
 import Backend.IndividualEncounterParticipant.Decoder
 import Backend.Measurement.Decoder
 import Backend.Nurse.Decoder
@@ -452,6 +453,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeHeight
                             BackendAuthorityHeight
 
+                    "home_visit_encounter" ->
+                        doDecode
+                            Backend.HomeVisitEncounter.Decoder.decodeHomeVisitEncounter
+                            BackendAuthorityHomeVisitEncounter
+
                     "individual_participant" ->
                         doDecode
                             Backend.IndividualEncounterParticipant.Decoder.decodeIndividualEncounterParticipant
@@ -507,6 +513,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeNutrition
                             BackendAuthorityNutrition
 
+                    "nutrition_caring" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionCaring
+                            BackendAuthorityNutritionCaring
+
                     "nutrition_contributing_factors" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeNutritionContributingFactors
@@ -517,10 +528,20 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.NutritionEncounter.Decoder.decodeNutritionEncounter
                             BackendAuthorityNutritionEncounter
 
+                    "nutrition_feeding" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionFeeding
+                            BackendAuthorityNutritionFeeding
+
                     "nutrition_follow_up" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeNutritionFollowUp
                             BackendAuthorityNutritionFollowUp
+
+                    "nutrition_food_security" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionFoodSecurity
+                            BackendAuthorityNutritionFoodSecurity
 
                     "nutrition_health_education" ->
                         doDecode
@@ -531,6 +552,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeNutritionHeight
                             BackendAuthorityNutritionHeight
+
+                    "nutrition_hygiene" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionHygiene
+                            BackendAuthorityNutritionHygiene
 
                     "nutrition_muac" ->
                         doDecode

@@ -1011,7 +1011,8 @@ div.page-activity.acute-illness {
 
 // Prenatal Activity and Nutrition Activity pages
 div.page-activity.prenatal,
-div.page-activity.nutrition {
+div.page-activity.nutrition,
+div.page-activity.home-visit {
 
   .ui.full.segment {
 
@@ -1027,7 +1028,7 @@ div.page-activity.nutrition {
         margin-bottom: 30px;
 
       // Pregnanacy Dating Inputs
-      &.range {
+      &.select {
         background: $color-white;
         border: 2px solid $color-light-gray;
         padding: 5px;
@@ -1369,6 +1370,23 @@ div.page-activity.nutrition {
 
       &.derived {
         margin-left: 70px;
+      }
+    }
+  }
+}
+
+div.page-activity.home-visit {
+
+  .ui.full.segment {
+
+    .full.content {
+
+      .helper {
+        margin-bottom: 20px;
+      }
+
+      .checkbox-select-input {
+        margin-bottom: 20px;
       }
     }
   }
@@ -1988,6 +2006,7 @@ div.page-participant.group {
 
 div.page-participant.acute-illness,
 div.page-participant.nutrition,
+div.page-participant.home-visit,
 div.page-participant.prenatal {
     padding-bottom: 35px;
 
@@ -1997,7 +2016,7 @@ div.page-participant.prenatal {
     text-align: center;
   }
 
-  .label-antenatal-visit {
+  .label-visit {
     margin-bottom: 30px;
     margin-top: 40px;
   }

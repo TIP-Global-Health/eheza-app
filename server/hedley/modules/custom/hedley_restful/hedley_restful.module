@@ -5,7 +5,7 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 15);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 16);
 define('HEDLEY_RESTFUL_INCIDENT_TYPE_CONTENT_UPLOAD', 'content-upload');
 
 /**
@@ -38,6 +38,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'prenatal_encounter' => 'prenatal-encounters',
   'nutrition_encounter' => 'nutrition-encounters',
   'acute_illness_encounter' => 'acute-illness-encounters',
+  'home_visit_encounter' => 'home-visit-encounter',
   'relationship' => 'relationships',
   'session' => 'sessions',
   // Measurements.
@@ -72,10 +73,14 @@ const HEDLEY_RESTFUL_SHARDED = [
   'mother_fbf' => 'mother-fbfs',
   'muac' => 'muacs',
   'nutrition' => 'nutritions',
+  'nutrition_caring' => 'nutrition-caring',
   'nutrition_contributing_factors' => 'nutrition-contributing-factors',
+  'nutrition_feeding' => 'nutrition-feeding',
   'nutrition_follow_up' => 'nutrition-follow-up',
+  'nutrition_food_security' => 'nutrition-food-security',
   'nutrition_health_education' => 'nutrition-health-education',
   'nutrition_height' => 'nutrition-heights',
+  'nutrition_hygiene' => 'nutrition-hygiene',
   'nutrition_muac' => 'nutrition-muacs',
   'nutrition_nutrition' => 'nutrition-nutritions',
   'nutrition_photo' => 'nutrition-photos',

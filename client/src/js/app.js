@@ -256,6 +256,20 @@ dbSync.version(15).upgrade(function (tx) {
     })
 });
 
+dbSync.version(16).stores({
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
+});
+
+/**
+ * --- !!! IMPORTANT !!! ---
+ *
+ * When creating new DB version, update:
+ *
+ * 1. dbVersion constant bellow (app.js)
+ * 2. dbVerno constant at sw.js
+ * 3. HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION at hedley_restful.module
+ */
+
 dbSync.shards.hook('creating', function (primKey, obj, trans) {
   if (obj.type === 'person') {
     if (typeof obj.label == 'string') {
@@ -302,7 +316,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 15;
+const dbVersion = 16;
 
 /**
  * Return saved info for General sync.

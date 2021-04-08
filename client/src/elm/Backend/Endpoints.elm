@@ -14,6 +14,9 @@ import Backend.Dashboard.Model exposing (DashboardStats)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
 import Backend.HealthCenter.Model exposing (HealthCenter)
+import Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
+import Backend.HomeVisitEncounter.Encoder exposing (encodeHomeVisitEncounter)
+import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Encoder exposing (encodeIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
@@ -264,6 +267,11 @@ acuteIllnessMeasurementsEndpoint =
     swEndpoint "nodes/acute-illness-measurements" decodeAcuteIllnessMeasurements
 
 
+homeVisitMeasurementsEndpoint : ReadOnlyEndPoint Error HomeVisitEncounterId HomeVisitMeasurements ()
+homeVisitMeasurementsEndpoint =
+    swEndpoint "nodes/home-visit-measurements" decodeHomeVisitMeasurements
+
+
 {-| Type-safe params ... how nice!
 -}
 type SessionParams
@@ -336,6 +344,13 @@ acuteIllnessEncounterEndpoint : ReadWriteEndPoint Error AcuteIllnessEncounterId 
 acuteIllnessEncounterEndpoint =
     swEndpoint "nodes/acute_illness_encounter" decodeAcuteIllnessEncounter
         |> withValueEncoder (object << encodeAcuteIllnessEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
+
+
+homeVisitEncounterEndpoint : ReadWriteEndPoint Error HomeVisitEncounterId HomeVisitEncounter HomeVisitEncounter (Maybe IndividualEncounterParticipantId)
+homeVisitEncounterEndpoint =
+    swEndpoint "nodes/home_visit_encounter" decodeHomeVisitEncounter
+        |> withValueEncoder (object << encodeHomeVisitEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
@@ -606,6 +621,12 @@ nutritionHealthEducationEndpoint =
         |> withValueEncoder (object << encodeNutritionHealthEducation)
 
 
+nutritionCaringEndpoint : ReadWriteEndPoint Error NutritionCaringId NutritionCaring NutritionCaring ()
+nutritionCaringEndpoint =
+    swEndpoint "nodes/nutrition_caring" decodeNutritionCaring
+        |> withValueEncoder (object << encodeNutritionCaring)
+
+
 nutritionContributingFactorsEndpoint : ReadWriteEndPoint Error NutritionContributingFactorsId NutritionContributingFactors NutritionContributingFactors ()
 nutritionContributingFactorsEndpoint =
     swEndpoint "nodes/nutrition_contributing_factors" decodeNutritionContributingFactors
@@ -640,3 +661,21 @@ followUpEndpoint : ReadWriteEndPoint Error FollowUpId FollowUp FollowUp ()
 followUpEndpoint =
     swEndpoint "nodes/follow_up" decodeFollowUp
         |> withValueEncoder (object << encodeFollowUp)
+
+
+nutritionFeedingEndpoint : ReadWriteEndPoint Error NutritionFeedingId NutritionFeeding NutritionFeeding ()
+nutritionFeedingEndpoint =
+    swEndpoint "nodes/nutrition_feeding" decodeNutritionFeeding
+        |> withValueEncoder (object << encodeNutritionFeeding)
+
+
+nutritionHygieneEndpoint : ReadWriteEndPoint Error NutritionHygieneId NutritionHygiene NutritionHygiene ()
+nutritionHygieneEndpoint =
+    swEndpoint "nodes/nutrition_hygiene" decodeNutritionHygiene
+        |> withValueEncoder (object << encodeNutritionHygiene)
+
+
+nutritionFoodSecurityEndpoint : ReadWriteEndPoint Error NutritionFoodSecurityId NutritionFoodSecurity NutritionFoodSecurity ()
+nutritionFoodSecurityEndpoint =
+    swEndpoint "nodes/nutrition_food_security" decodeNutritionFoodSecurity
+        |> withValueEncoder (object << encodeNutritionFoodSecurity)

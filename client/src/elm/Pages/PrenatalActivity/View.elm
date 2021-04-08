@@ -136,7 +136,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                                     [ text <| translate language <| Translate.LmpRange range ]
                             )
                    )
-                |> select [ onInput SetLmpRange, class "form-input range" ]
+                |> select [ onInput SetLmpRange, class "form-input select" ]
 
         today =
             currentDate

@@ -30,6 +30,7 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
+import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
@@ -333,6 +334,7 @@ type TranslationId
     | ChartPhrase ChartPhrase
     | CheckAllThatApply
     | CheckIn
+    | ChildCleanQuestion
     | ChildHmisNumber
     | ChildDemographicInformation
     | ChildNutritionSignLabel ChildNutritionSign
@@ -499,6 +501,7 @@ type TranslationId
     | HIVStatus HIVStatus
     | HIVStatusLabel
     | Home
+    | HomeVisitActivityTitle HomeVisitActivity
     | HouseholdSize
     | HowManyDoses
     | HaveAnyOfTheFollowingQuestion
@@ -538,6 +541,10 @@ type TranslationId
     | LowRiskCase
     | Lungs
     | LungsCPESign LungsCPESign
+    | MainIncomeSource MainIncomeSource
+    | MainIncomeSourceQuestion
+    | MainWaterSource MainWaterSource
+    | MainWaterSourceQuestion
     | MakeSureYouAreConnected
     | MalariaRapidDiagnosticTest
     | MalariaRapidTestResult MalariaRapidTestResult
@@ -625,8 +632,13 @@ type TranslationId
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
     | NutritionAssesment NutritionAssesment
+    | NutritionCaringOption CaringOption
+    | NutritionFeedingSignQuestion NutritionFeedingSign
+    | NutritionFoodSecuritySignQuestion NutritionFoodSecuritySign
     | NutritionHelper
+    | NutritionHygieneSignQuestion NutritionHygieneSign
     | NutritionNextStepsTask Measurement.Model.NextStepsTask
+    | NutritionSupplementType NutritionSupplementType
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
@@ -636,6 +648,7 @@ type TranslationId
     | OnceYouEndTheEncounter
     | OnceYouEndYourGroupEncounter
     | OngoingTreatmentTask OngoingTreatmentTask
+    | OnlySickChild
     | Or
     | PackagesPerMonth
     | Page
@@ -644,6 +657,7 @@ type TranslationId
     | PaleConjuctiva
     | Pallor
     | Para
+    | ParentsAliveAndHealthyQuestion
     | PartialPlacentaPreviousDelivery
     | ParticipantDirectory
     | Participants
@@ -753,6 +767,8 @@ type TranslationId
     | RhNegative
     | RiskFactorAlert RiskFactor
     | RiskFactors
+    | SachetsPerDayHelper Float Float
+    | SachetsPerDayQuestion
     | Save
     | SaveAndNext
     | SaveAndRecordOutcome
@@ -800,6 +816,7 @@ type TranslationId
     | ServiceWorkerStatus
     | SevereAcuteMalnutrition
     | SevereHemorrhagingPreviousDelivery
+    | Shared
     | SignOnDoorPostedQuestion
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | StillbornPreviousDelivery
@@ -874,7 +891,9 @@ type TranslationId
     | Weight
     | WelcomeUser String
     | WhatDoYouWantToDo
+    | WhatType
     | WhatWasTheirResponse
+    | WhoCaresForTheChildDuringTheDay
     | WhyNot
     | WhyDifferentFbfAmount Activity
     | Year
@@ -2023,6 +2042,11 @@ translationSet trans =
         CheckIn ->
             { english = "Check in:"
             , kinyarwanda = Just "Kureba abaje"
+            }
+
+        ChildCleanQuestion ->
+            { english = "Is the sick child clean"
+            , kinyarwanda = Nothing
             }
 
         ChildHmisNumber ->
@@ -3327,6 +3351,28 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        HomeVisitActivityTitle activity ->
+            case activity of
+                Feeding ->
+                    { english = "Feeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                Caring ->
+                    { english = "Caring"
+                    , kinyarwanda = Nothing
+                    }
+
+                Hygiene ->
+                    { english = "Hygiene"
+                    , kinyarwanda = Nothing
+                    }
+
+                FoodSecurity ->
+                    { english = "Food Security"
+                    , kinyarwanda = Nothing
+                    }
+
         HouseholdSize ->
             { english = "Household Size"
             , kinyarwanda = Nothing
@@ -3387,6 +3433,11 @@ translationSet trans =
                     , kinyarwanda = Just "Isuzuma rya mbere ku mirire"
                     }
 
+                HomeVisitEncounter ->
+                    { english = "First Home Visit Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
         IndividualEncounterLabel encounterType ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -3407,6 +3458,11 @@ translationSet trans =
                 NutritionEncounter ->
                     { english = "Nutrition Encounter"
                     , kinyarwanda = Just "Isuzuma ry’imirire"
+                    }
+
+                HomeVisitEncounter ->
+                    { english = "Home Visit Encounter"
+                    , kinyarwanda = Nothing
                     }
 
         IndividualEncounterSelectVisit encounterType ->
@@ -3431,6 +3487,11 @@ translationSet trans =
                     , kinyarwanda = Just "Hitamo isuzuma ry’imirire"
                     }
 
+                HomeVisitEncounter ->
+                    { english = "Select Home Visit"
+                    , kinyarwanda = Nothing
+                    }
+
         IndividualEncounterSubsequentVisit encounterType ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -3453,6 +3514,11 @@ translationSet trans =
                     , kinyarwanda = Just "Isuzuma rikurikiyeho ku mugore utwite"
                     }
 
+                HomeVisitEncounter ->
+                    { english = "Subsequent Home Visit"
+                    , kinyarwanda = Nothing
+                    }
+
         IndividualEncounterType encounterType ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -3473,6 +3539,11 @@ translationSet trans =
                 NutritionEncounter ->
                     { english = "Child Nutrition"
                     , kinyarwanda = Just "Imirire y'umwana"
+                    }
+
+                HomeVisitEncounter ->
+                    { english = "Home Visit"
+                    , kinyarwanda = Nothing
                     }
 
         IndividualEncounterTypes ->
@@ -3677,6 +3748,70 @@ translationSet trans =
 
                 NormalLungs ->
                     translationSet Normal
+
+        MainIncomeSource source ->
+            case source of
+                HomeBasedAgriculture ->
+                    { english = "Homebased Agriculture / Livestock"
+                    , kinyarwanda = Nothing
+                    }
+
+                CommercialAgriculture ->
+                    { english = "Commercial Agriculture / Livestock"
+                    , kinyarwanda = Nothing
+                    }
+
+                PublicEmployee ->
+                    { english = "Public Employee"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrivateBusinessEmpployee ->
+                    { english = "Private Business Employee"
+                    , kinyarwanda = Nothing
+                    }
+
+        MainIncomeSourceQuestion ->
+            { english = "What is the most important source of income for the household"
+            , kinyarwanda = Nothing
+            }
+
+        MainWaterSource source ->
+            case source of
+                PipedWaterToHome ->
+                    { english = "Piped Water to Home"
+                    , kinyarwanda = Nothing
+                    }
+
+                PublicWaterTap ->
+                    { english = "Public Water Tap"
+                    , kinyarwanda = Nothing
+                    }
+
+                RainWaterCollectionSystem ->
+                    { english = "Rain Water Collection System"
+                    , kinyarwanda = Nothing
+                    }
+
+                NaturalSourceFlowingWater ->
+                    { english = "Natural Source - Flowing Water"
+                    , kinyarwanda = Nothing
+                    }
+
+                NaturalSourceStandingWater ->
+                    { english = "Natural Source - Standing Water"
+                    , kinyarwanda = Nothing
+                    }
+
+                BottledWater ->
+                    { english = "Bottled Water"
+                    , kinyarwanda = Nothing
+                    }
+
+        MainWaterSourceQuestion ->
+            { english = "What is the household's main source of water"
+            , kinyarwanda = Nothing
+            }
 
         MakeSureYouAreConnected ->
             { english = "Make sure you are connected to the internet. If the issue continues, call The Ihangane Project at +250 788 817 542."
@@ -4451,10 +4586,123 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        NutritionCaringOption option ->
+            case option of
+                CaredByParent ->
+                    { english = "Parent"
+                    , kinyarwanda = Nothing
+                    }
+
+                CaredByGrandparent ->
+                    { english = "Grandparent"
+                    , kinyarwanda = Nothing
+                    }
+
+                CaredBySibling ->
+                    { english = "Sibling"
+                    , kinyarwanda = Nothing
+                    }
+
+                CaredByNeighbor ->
+                    { english = "Neighbor"
+                    , kinyarwanda = Nothing
+                    }
+
+                CaredByDaycare ->
+                    { english = "Daycare"
+                    , kinyarwanda = Nothing
+                    }
+
+        NutritionFeedingSignQuestion sign ->
+            case sign of
+                ReceiveSupplement ->
+                    { english = "Did you receive food supplementation"
+                    , kinyarwanda = Nothing
+                    }
+
+                RationPresentAtHome ->
+                    { english = "Is the ration of the food supplement present in the home"
+                    , kinyarwanda = Nothing
+                    }
+
+                EnoughTillNextSession ->
+                    { english = "Is the available food supplement enough to last until the next health center session"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplementShared ->
+                    { english = "Is the food supplement being shared or eaten only by the sick child"
+                    , kinyarwanda = Nothing
+                    }
+
+                EncouragedToEat ->
+                    { english = "Does someone help / encourage the sick child to eat"
+                    , kinyarwanda = Nothing
+                    }
+
+                RefusingToEat ->
+                    { english = "Is the child refusing to eat"
+                    , kinyarwanda = Nothing
+                    }
+
+                FeedingSignBreastfeeding ->
+                    { english = "Is the child currently breastfeeding (for children < 2)"
+                    , kinyarwanda = Nothing
+                    }
+
+                CleanWaterAvailable ->
+                    { english = "Is clean water available"
+                    , kinyarwanda = Nothing
+                    }
+
+                EatenWithWater ->
+                    { english = "Is water given to the child when eating the food supplement"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNutritionFeedingSigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        NutritionFoodSecuritySignQuestion sign ->
+            case sign of
+                HouseholdGotFood ->
+                    { english = "Does the household currently have food available"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNutritionFoodSecuritySigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         NutritionHelper ->
             { english = "Explain to the mother how to check the malnutrition signs for their own child."
             , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye."
             }
+
+        NutritionHygieneSignQuestion sign ->
+            case sign of
+                SoapInTheHouse ->
+                    { english = "Is there soap for washing in the house"
+                    , kinyarwanda = Nothing
+                    }
+
+                WashHandsBeforeFeeding ->
+                    { english = "Do the caregiver and child wash hands before the child is fed"
+                    , kinyarwanda = Nothing
+                    }
+
+                FoodCovered ->
+                    { english = "Is the food / RUTF covered and free from flies"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNutritionHygieneSigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
 
         NutritionNextStepsTask task ->
             case task of
@@ -4476,6 +4724,33 @@ translationSet trans =
                 NextStepFollowUp ->
                     { english = "Follow Up"
                     , kinyarwanda = Just "Gukurikirana umurwayi"
+                    }
+
+        NutritionSupplementType type_ ->
+            case type_ of
+                FortifiedPorridge ->
+                    { english = "Fortified Porridge"
+                    , kinyarwanda = Nothing
+                    }
+
+                Rutf ->
+                    { english = "RUTF"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ongera ->
+                    { english = "Ongera intungamubiri at the village level / CHW"
+                    , kinyarwanda = Nothing
+                    }
+
+                TherapeuticMilk ->
+                    { english = "Therapeutic Milk"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNutritionSupplementType ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
                     }
 
         ObstetricalDiagnosis ->
@@ -4582,6 +4857,11 @@ translationSet trans =
                     , kinyarwanda = Just "Kureba imiti yahawe"
                     }
 
+        OnlySickChild ->
+            { english = "Only Sick Child"
+            , kinyarwanda = Nothing
+            }
+
         Or ->
             { english = "or"
             , kinyarwanda = Nothing
@@ -4614,6 +4894,11 @@ translationSet trans =
 
         Para ->
             { english = "Para"
+            , kinyarwanda = Nothing
+            }
+
+        ParentsAliveAndHealthyQuestion ->
+            { english = "Are both parents alive and healthy"
             , kinyarwanda = Nothing
             }
 
@@ -5586,6 +5871,16 @@ translationSet trans =
             , kinyarwanda = Just "Abashobora kwibasirwa n'indwara runaka (kubera impamvu zitandukanye:kuba atwite..)"
             }
 
+        SachetsPerDayHelper weight recommendation ->
+            { english = "The recommended amount for a " ++ String.fromFloat weight ++ " kg child is " ++ String.fromFloat recommendation ++ " sachets a day"
+            , kinyarwanda = Nothing
+            }
+
+        SachetsPerDayQuestion ->
+            { english = "How many sachets of supplement is given to the child per day"
+            , kinyarwanda = Nothing
+            }
+
         Save ->
             { english = "Save"
             , kinyarwanda = Just "Kubika"
@@ -5819,6 +6114,11 @@ translationSet trans =
         SevereHemorrhagingPreviousDelivery ->
             { english = "Severe Hemorrhaging in previous delivery (>500 ml)"
             , kinyarwanda = Just "Ubushize yavuye cyane akimara kubyara hejuru ya Ml 500"
+            }
+
+        Shared ->
+            { english = "Shared"
+            , kinyarwanda = Nothing
             }
 
         SignOnDoorPostedQuestion ->
@@ -6397,9 +6697,19 @@ translationSet trans =
             , kinyarwanda = Just "Urashaka gukora iki?"
             }
 
+        WhatType ->
+            { english = "What type"
+            , kinyarwanda = Nothing
+            }
+
         WhatWasTheirResponse ->
             { english = "What was their response"
             , kinyarwanda = Just "Ni iki bagusubije"
+            }
+
+        WhoCaresForTheChildDuringTheDay ->
+            { english = "Who cares for the child during the day"
+            , kinyarwanda = Nothing
             }
 
         WhyNot ->
@@ -6619,6 +6929,11 @@ translateActivePage page =
                             , kinyarwanda = Nothing
                             }
 
+                        HomeVisitEncounter ->
+                            { english = "Home Visit Participants"
+                            , kinyarwanda = Nothing
+                            }
+
                 RelationshipPage _ _ _ ->
                     { english = "Relationship"
                     , kinyarwanda = Nothing
@@ -6729,6 +7044,16 @@ translateActivePage page =
                 AcuteIllnessOutcomePage _ ->
                     { english = "Acute Illness Outcome"
                     , kinyarwanda = Just "Iherezo ry'indwara ifatiyeho"
+                    }
+
+                HomeVisitEncounterPage _ ->
+                    { english = "Home Visit Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                HomeVisitActivityPage _ _ ->
+                    { english = "Home Visit Activity"
+                    , kinyarwanda = Nothing
                     }
 
 

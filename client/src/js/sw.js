@@ -21,6 +21,16 @@ var photosUploadCache = "photos-upload";
 var photosDownloadUrlRegex = /\/system\/files\//;
 var photosUploadUrlRegex = /\/cache-upload\/images/;
 
+/**
+ * The DB version on the backend.
+ *
+ * We use this constant to verify that we work with most updated
+ * DB at nodes.js.
+ *
+ * @type {number}
+ */
+var dbVerno = 16;
+
 // All those entities are the entities we're going to get from the backend.
 // They should also be mapped in SyncManager.Model.BackendGeneralEntity (for
 // General entities), or SyncManager.Model.BackendAuthorityEntity (for Authority
@@ -53,6 +63,7 @@ var tableForType = {
     health_center: 'nodes',
     health_education: 'shards',
     height: 'shards',
+    home_visit_encounter: 'shards',
     individual_participant: 'shards',
     isolation: 'shards',
     lactation: 'shards',
@@ -65,11 +76,15 @@ var tableForType = {
     muac: 'shards',
     nurse: 'nodes',
     nutrition: 'shards',
+    nutrition_caring: 'shards',
     nutrition_contributing_factors: 'shards',
+    nutrition_feeding: 'shards',
     nutrition_follow_up: 'shards',
+    nutrition_food_security: 'shards',
     nutrition_encounter: 'shards',
     nutrition_health_education: 'shards',
     nutrition_height: 'shards',
+    nutrition_hygiene: 'shards',
     nutrition_muac: 'shards',
     nutrition_nutrition: 'shards',
     nutrition_photo: 'shards',
