@@ -277,6 +277,7 @@ toContributingFactorsValue form =
 fromFollowUpValue : Maybe FollowUpValue -> FollowUpForm
 fromFollowUpValue saved =
     { option = Maybe.andThen (.options >> EverySet.toList >> List.head) saved
+    , assesment = Maybe.map .assesment saved
     }
 
 
@@ -285,33 +286,28 @@ followUpFormWithDefault form saved =
     saved
         |> unwrap
             form
-            (\value -> { option = or form.option (EverySet.toList value.options |> List.head) })
+            (\value ->
+                { option = or form.option (EverySet.toList value.options |> List.head)
+                , assesment = or form.assesment (Just value.assesment)
+                }
+            )
 
 
 toFollowUpValueWithDefault : Maybe FollowUpValue -> FollowUpForm -> Maybe FollowUpValue
 toFollowUpValueWithDefault saved form =
-    let
-        assesment =
-            Maybe.map .assesment saved
-    in
     followUpFormWithDefault form saved
-        |> toFollowUpValue assesment
+        |> toFollowUpValue
 
 
-toFollowUpValue : Maybe (EverySet NutritionAssesment) -> FollowUpForm -> Maybe FollowUpValue
-toFollowUpValue assesment form =
-    form.option
-        |> Maybe.map
-            (\option ->
-                let
-                    options =
-                        List.singleton option |> EverySet.fromList
-
-                    assesmentForBackend =
-                        Maybe.withDefault (EverySet.singleton NoNutritionAssesment) assesment
-                in
-                FollowUpValue options assesmentForBackend
-            )
+toFollowUpValue : FollowUpForm -> Maybe FollowUpValue
+toFollowUpValue form =
+    let
+        options =
+            form.option
+                |> Maybe.map (List.singleton >> EverySet.fromList)
+    in
+    Maybe.map FollowUpValue options
+        |> andMap form.assesment
 
 
 fromHealthEducationValue : Maybe HealthEducationValue -> HealthEducationForm

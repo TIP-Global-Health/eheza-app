@@ -3,7 +3,7 @@ module Pages.GlobalCaseManagement.View exposing (view)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (NutritionAssesment(..))
+import Backend.Measurement.Model exposing (FollowUpMeasurements, NutritionAssesment(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
@@ -22,6 +22,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
+import Utils.WebData exposing (viewWebData)
 
 
 view : Language -> NominalDate -> HealthCenterId -> Bool -> Model -> ModelIndexedDb -> Html Msg
@@ -39,8 +40,24 @@ view language currentDate healthCenterId isChw model db =
                     [ span [ class "icon-back" ] [] ]
                 ]
 
+        followUps =
+            Dict.get healthCenterId db.followUpMeasurements
+                |> Maybe.withDefault NotAsked
+
+        content =
+            viewWebData language (viewContent language currentDate healthCenterId isChw model db) identity followUps
+    in
+    div [ class "wrap wrap-alt-2 page-case-management" ]
+        [ header
+        , content
+        ]
+
+
+viewContent : Language -> NominalDate -> HealthCenterId -> Bool -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
+viewContent language currentDate healthCenterId isChw model db followUps =
+    let
         nutritionFollowUps =
-            generateNutritionFollowUps currentDate healthCenterId db
+            generateNutritionFollowUps currentDate healthCenterId followUps
 
         acuteIllnessFollowUps =
             Dict.empty
@@ -48,23 +65,17 @@ view language currentDate healthCenterId isChw model db =
         panes =
             [ ( AcuteIllnessEncounter, acuteIllnessFollowUps ), ( NutritionEncounter, nutritionFollowUps ) ]
                 |> List.filterMap
-                    (\( type_, followUps ) ->
+                    (\( type_, followUps_ ) ->
                         if isNothing model.encounterTypeFilter || model.encounterTypeFilter == Just type_ then
-                            Just <| viewEncounterTypePane language currentDate type_ followUps db model
+                            Just <| viewEncounterTypePane language currentDate type_ followUps_ db model
 
                         else
                             Nothing
                     )
-
-        content =
-            div [ class "ui unstackable items" ] <|
-                viewFilters language model
-                    :: panes
     in
-    div [ class "wrap wrap-alt-2 page-case-management" ]
-        [ header
-        , content
-        ]
+    div [ class "ui unstackable items" ] <|
+        viewFilters language model
+            :: panes
 
 
 viewFilters : Language -> Model -> Html Msg
@@ -148,7 +159,7 @@ viewFollowUpItem language currentDate db personId item =
                             _ ->
                                 text <| translate language <| Translate.NutritionAssesment assessment
                 in
-                div [ class "entry" ]
+                div [ class "follow-up-entry" ]
                     [ div [] [ text person.name ]
                     , div [] [ dueLabel ]
                     , div [] assessments

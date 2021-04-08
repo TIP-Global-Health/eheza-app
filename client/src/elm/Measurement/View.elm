@@ -907,24 +907,20 @@ viewFollowUp language currentDate zscores childId measurement offlineSession db 
         saved =
             Maybe.map (Tuple.second >> .value) measurement.current
 
+        assesment =
+            generateNutritionAssesment currentDate zscores childId db offlineSession
+                |> nutritionAssesmentForBackend
+
+        form_ =
+            { form | assesment = Just assesment }
+
         formContent =
-            followUpFormWithDefault form saved
+            followUpFormWithDefault form_ saved
                 |> viewFollowUpForm language currentDate SetFollowUpOption
 
         saveMsg =
-            toFollowUpValueWithDefault saved form
-                |> Maybe.map
-                    (\value ->
-                        let
-                            assesment =
-                                generateNutritionAssesment currentDate zscores childId db offlineSession
-
-                            value_ =
-                                { value | assesment = nutritionAssesmentForBackend assesment }
-                        in
-                        SaveFollowUp existingId value_
-                            |> SendOutMsgChild
-                    )
+            toFollowUpValueWithDefault saved form_
+                |> Maybe.map (SaveFollowUp existingId >> SendOutMsgChild)
     in
     div [ class "ui full segment follow-up" ]
         [ div [ class "content" ] [ formContent ]

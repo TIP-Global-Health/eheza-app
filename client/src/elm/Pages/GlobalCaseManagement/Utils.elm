@@ -3,7 +3,7 @@ module Pages.GlobalCaseManagement.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue)
+import Backend.Measurement.Model exposing (FollowUpMeasurements, FollowUpOption(..), FollowUpValue)
 import Backend.Model exposing (ModelIndexedDb)
 import Date
 import EverySet exposing (EverySet)
@@ -17,31 +17,17 @@ allEncounterTypes =
     [ AcuteIllnessEncounter, NutritionEncounter ]
 
 
-generateNutritionFollowUps : NominalDate -> HealthCenterId -> ModelIndexedDb -> Dict PersonId FollowUpItem
-generateNutritionFollowUps currentDate healthCenterId db =
+generateNutritionFollowUps : NominalDate -> HealthCenterId -> FollowUpMeasurements -> Dict PersonId FollowUpItem
+generateNutritionFollowUps currentDate healthCenterId followUps =
     let
-        followUps =
-            Dict.get healthCenterId db.followUpMeasurements
-                |> Maybe.andThen RemoteData.toMaybe
-
+        -- followUps =
+        --     Dict.get healthCenterId db.followUpMeasurements
+        --         |> Maybe.andThen RemoteData.toMaybe
         nutritionIndividual =
-            followUps
-                |> Maybe.map (.nutritionIndividual >> Dict.values)
-                |> Maybe.withDefault []
-
-        _ =
-            followUps
-                |> Maybe.map (.nutritionIndividual >> Dict.values >> List.map .participantId)
-                |> Maybe.withDefault []
-                |> Debug.log "nutritionIndividual"
+            Dict.values followUps.nutritionIndividual
 
         nutritionGroup =
-            followUps
-                |> Maybe.map (.nutritionGroup >> Dict.values)
-                |> Maybe.withDefault []
-
-        _ =
-            Debug.log "nutritionGroup" (List.length nutritionGroup)
+            Dict.values followUps.nutritionGroup
 
         generateFollowUpItems itemsList accumDict =
             itemsList
@@ -96,13 +82,13 @@ followUpDueOptionByDate currentDate dateMeasured value =
         diff =
             diffDays dateMeasured currentDate + dueIn
     in
-    if diff < 1 then
+    if diff < 0 then
         OverDue
 
-    else if diff == 1 then
+    else if diff == 0 then
         DueToday
 
-    else if diff < 8 then
+    else if diff < 7 then
         DueThisWeek
 
     else
