@@ -3356,12 +3356,12 @@ translationSet trans =
             case activity of
                 Feeding ->
                     { english = "Feeding"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kugaburira umwana"
                     }
 
                 Caring ->
                     { english = "Caring"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kwita ku mwana"
                     }
 
                 Hygiene ->
@@ -3371,7 +3371,7 @@ translationSet trans =
 
                 FoodSecurity ->
                     { english = "Food Security"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kwihaza ku biribwa"
                     }
 
         HouseholdSize ->
@@ -4623,7 +4623,7 @@ translationSet trans =
 
                 EnoughTillNextSession ->
                     { english = "Is the available food supplement enough to last until the next health center session"
-                    , kinyarwanda = Just "Iyo nyongeramiriee ufite yaba ihagije kugeza igihe uzasubirira ku kigonderabuzima?"
+                    , kinyarwanda = Just "Iyo nyongeramiriee ufite yaba ihagije kugeza igihe uzasubirira ku kigonderabuzima"
                     }
 
                 SupplementShared ->
@@ -4682,7 +4682,7 @@ translationSet trans =
             case sign of
                 SoapInTheHouse ->
                     { english = "Is there soap for washing in the house"
-                    , kinyarwanda = Just "Ese mu rugo haba hari isabune yo koga?"
+                    , kinyarwanda = Just "Ese mu rugo haba hari isabune yo koga"
                     }
 
                 WashHandsBeforeFeeding ->
@@ -4692,7 +4692,7 @@ translationSet trans =
 
                 FoodCovered ->
                     { english = "Is the food / RUTF covered and free from flies"
-                    , kinyarwanda = Just "Ese ibiryo/RUTUFU birapfundikiye kandi nta sazi zibiriho?"
+                    , kinyarwanda = Just "Ese ibiryo/RUTUFU birapfundikiye kandi nta sazi zibiriho"
                     }
 
                 NoNutritionHygieneSigns ->
@@ -4895,7 +4895,7 @@ translationSet trans =
 
         ParentsAliveAndHealthyQuestion ->
             { english = "Are both parents alive and healthy"
-            , kinyarwanda = Just "Ese ababyeyi bombi bariho kandi bafite ubuzima bwiza?"
+            , kinyarwanda = Just "Ese ababyeyi bombi bariho kandi bafite ubuzima bwiza"
             }
 
         PaleConjuctiva ->
