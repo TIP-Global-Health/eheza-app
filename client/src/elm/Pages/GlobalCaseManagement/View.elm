@@ -136,10 +136,28 @@ viewFollowUpItem language currentDate db personId item =
         |> Maybe.map
             (\person ->
                 let
-                    dueLabel =
+                    dueOption =
                         followUpDueOptionByDate currentDate item.dateMeasured item.value
-                            |> Translate.FollowUpDueOption
+
+                    dueLabel =
+                        Translate.FollowUpDueOption dueOption
                             |> translateText language
+
+                    dueClass =
+                        "due "
+                            ++ (case dueOption of
+                                    OverDue ->
+                                        "overdue"
+
+                                    DueToday ->
+                                        "today"
+
+                                    DueThisWeek ->
+                                        "this-week"
+
+                                    DueThisMonth ->
+                                        "this-month"
+                               )
 
                     assessments =
                         EverySet.toList item.value.assesment
@@ -160,9 +178,9 @@ viewFollowUpItem language currentDate db personId item =
                                 text <| translate language <| Translate.NutritionAssesment assessment
                 in
                 div [ class "follow-up-entry" ]
-                    [ div [] [ text person.name ]
-                    , div [] [ dueLabel ]
-                    , div [] assessments
+                    [ div [ class "name" ] [ text person.name ]
+                    , div [ class dueClass ] [ dueLabel ]
+                    , div [ class "assesment" ] assessments
                     ]
             )
         |> Maybe.withDefault emptyNode
