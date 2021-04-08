@@ -2416,13 +2416,21 @@ div.page-case-management {
           align-self: center;
           font-size: 18px;
           font-weight: 600;
-          margin-left: 10px;
+          margin-left: 20px;
           text-align: left;
-          width: 230px;
+          width: 285px;
 
           p {
             margin-bottom: 0;
           }
+        }
+
+        .icon-forward {
+          align-self: center;
+          background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+          background-size: 45px 45px;
+          height: 45px;
+          width: 45px;
         }
       }
     }

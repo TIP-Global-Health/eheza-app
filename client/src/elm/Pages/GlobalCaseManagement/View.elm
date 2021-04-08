@@ -181,6 +181,7 @@ viewFollowUpItem language currentDate db personId item =
                     [ div [ class "name" ] [ text person.name ]
                     , div [ class dueClass ] [ dueLabel ]
                     , div [ class "assesment" ] assessments
+                    , span [ class "icon-forward" ] []
                     ]
             )
         |> Maybe.withDefault emptyNode
