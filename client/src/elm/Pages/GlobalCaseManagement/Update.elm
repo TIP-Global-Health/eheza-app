@@ -62,7 +62,7 @@ update currentDate healthCenterId msg db model =
                             )
                         |> Maybe.withDefault []
             in
-            ( model
+            ( { model | dialogState = Nothing }
             , Cmd.none
             , startFollowUpEncounterMsgs
             )
