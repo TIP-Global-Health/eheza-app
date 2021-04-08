@@ -264,7 +264,7 @@ update msg model =
                         MsgPageGlobalCaseManagement subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.GlobalCaseManagement.Update.update subMsg data.globalCaseManagementPage
+                                    Pages.GlobalCaseManagement.Update.update currentDate model.healthCenterId subMsg model.indexedDb data.globalCaseManagementPage
                             in
                             ( { data | globalCaseManagementPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageGlobalCaseManagement) subCmd

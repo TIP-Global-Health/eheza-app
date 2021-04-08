@@ -50,6 +50,9 @@ view language currentDate healthCenterId isChw model db =
     div [ class "wrap wrap-alt-2 page-case-management" ]
         [ header
         , content
+        , viewModal <|
+            viewStartFollowUpEncounterDialog language
+                model.dialogState
         ]
 
 
@@ -76,6 +79,37 @@ viewContent language currentDate healthCenterId isChw model db followUps =
     div [ class "ui unstackable items" ] <|
         viewFilters language model
             :: panes
+
+
+viewStartFollowUpEncounterDialog : Language -> Maybe FollowUpEncounterData -> Maybe (Html Msg)
+viewStartFollowUpEncounterDialog language dialogState =
+    dialogState
+        |> Maybe.map
+            (\data ->
+                div [ class "ui tiny active modal" ]
+                    [ div
+                        [ class "content" ]
+                        [ p [] [ text "Hello" ]
+
+                        -- p [] [ text <| translate language message ]
+                        ]
+                    , div
+                        [ class "actions" ]
+                        [ div [ class "two ui buttons" ]
+                            [ button
+                                [ class "ui primary fluid button"
+                                , onClick <| StartFollowUpEncounter data
+                                ]
+                                [ text <| translate language Translate.Yes ]
+                            , button
+                                [ class "ui fluid button"
+                                , onClick <| SetDialogState Nothing
+                                ]
+                                [ text <| translate language Translate.No ]
+                            ]
+                        ]
+                    ]
+            )
 
 
 viewFilters : Language -> Model -> Html Msg
@@ -181,7 +215,11 @@ viewFollowUpItem language currentDate db personId item =
                     [ div [ class "name" ] [ text person.name ]
                     , div [ class dueClass ] [ dueLabel ]
                     , div [ class "assesment" ] assessments
-                    , span [ class "icon-forward" ] []
+                    , div
+                        [ class "icon-forward"
+                        , onClick <| SetDialogState <| Just <| FollowUpEncounterData NutritionEncounter personId
+                        ]
+                        []
                     ]
             )
         |> Maybe.withDefault emptyNode

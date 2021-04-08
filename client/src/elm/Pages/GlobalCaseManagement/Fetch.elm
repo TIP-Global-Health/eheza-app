@@ -20,9 +20,16 @@ fetch currentDate healthCenterId db =
             followUps
                 |> Maybe.map (generateNutritionFollowUps currentDate healthCenterId)
                 |> Maybe.withDefault Dict.empty
+
+        people =
+            Dict.keys nutritionFollowUps
+
+        individualParticipantsFetchMsgs =
+            List.map FetchIndividualEncounterParticipantsForPerson people
     in
     [ FetchVillages
     , FetchHealthCenters
     , FetchFollowUpMeasurements healthCenterId
-    , FetchFollowUpParticipants (Dict.keys nutritionFollowUps)
+    , FetchFollowUpParticipants people
     ]
+        ++ individualParticipantsFetchMsgs
