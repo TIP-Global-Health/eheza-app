@@ -35,6 +35,11 @@ decodeAcuteIllnessMeasurement =
     decodeMeasurement "acute_illness_encounter"
 
 
+decodeHomeVisitMeasurement : Decoder value -> Decoder (Measurement HomeVisitEncounterId value)
+decodeHomeVisitMeasurement =
+    decodeMeasurement "home_visit_encounter"
+
+
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
 decodeMeasurement encounterTag valueDecoder =
     succeed Measurement
@@ -142,6 +147,15 @@ decodeFollowUpMeasurements =
     succeed FollowUpMeasurements
         |> optional "follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeFollowUp)) Dict.empty
         |> optional "nutrition_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeNutritionFollowUp)) Dict.empty
+
+
+decodeHomeVisitMeasurements : Decoder HomeVisitMeasurements
+decodeHomeVisitMeasurements =
+    succeed HomeVisitMeasurements
+        |> optional "nutrition_feeding" (decodeHead decodeNutritionFeeding) Nothing
+        |> optional "nutrition_hygiene" (decodeHead decodeNutritionHygiene) Nothing
+        |> optional "nutrition_food_security" (decodeHead decodeNutritionFoodSecurity) Nothing
+        |> optional "nutrition_caring" (decodeHead decodeNutritionCaring) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1101,6 +1115,276 @@ decodeFollowUpValue =
     succeed FollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
         |> required "nutrition_assesment" (decodeEverySet decodeNutritionAssesment)
+
+
+decodeNutritionFeeding : Decoder NutritionFeeding
+decodeNutritionFeeding =
+    decodeHomeVisitMeasurement decodeFeedingValue
+
+
+decodeFeedingValue : Decoder NutritionFeedingValue
+decodeFeedingValue =
+    succeed NutritionFeedingValue
+        |> required "nutrition_feeding_signs" (decodeEverySet decodeNutritionFeedingSign)
+        |> required "supplement_type" decodeNutritionSupplementType
+        |> required "sachets_per_day" decodeFloat
+
+
+decodeNutritionSupplementType : Decoder NutritionSupplementType
+decodeNutritionSupplementType =
+    string
+        |> andThen
+            (\type_ ->
+                case type_ of
+                    "fortified-porridge" ->
+                        succeed FortifiedPorridge
+
+                    "rutf" ->
+                        succeed Rutf
+
+                    "ongera" ->
+                        succeed Ongera
+
+                    "therapeutic-milk" ->
+                        succeed TherapeuticMilk
+
+                    "none" ->
+                        succeed NoNutritionSupplementType
+
+                    _ ->
+                        fail <|
+                            type_
+                                ++ " is not a recognized NutritionSupplementType"
+            )
+
+
+decodeNutritionFeedingSign : Decoder NutritionFeedingSign
+decodeNutritionFeedingSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "receive-supplement" ->
+                        succeed ReceiveSupplement
+
+                    "ration-present-at-home" ->
+                        succeed RationPresentAtHome
+
+                    "enough-till-next-session" ->
+                        succeed EnoughTillNextSession
+
+                    "supplement-shared" ->
+                        succeed SupplementShared
+
+                    "encouraged-to-eat" ->
+                        succeed EncouragedToEat
+
+                    "refusing-to-eat" ->
+                        succeed RefusingToEat
+
+                    "breastfeeding" ->
+                        succeed FeedingSignBreastfeeding
+
+                    "clean-water-available" ->
+                        succeed CleanWaterAvailable
+
+                    "eaten-with-water" ->
+                        succeed EatenWithWater
+
+                    "none" ->
+                        succeed NoNutritionFeedingSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized NutritionFeedingSign"
+            )
+
+
+decodeNutritionHygiene : Decoder NutritionHygiene
+decodeNutritionHygiene =
+    decodeHomeVisitMeasurement decodeNutritionHygieneValue
+
+
+decodeNutritionHygieneValue : Decoder NutritionHygieneValue
+decodeNutritionHygieneValue =
+    succeed NutritionHygieneValue
+        |> required "nutrition_hygiene_signs" (decodeEverySet decodeNutritionHygieneSign)
+        |> required "main_water_source" decodeMainWaterSource
+
+
+decodeNutritionHygieneSign : Decoder NutritionHygieneSign
+decodeNutritionHygieneSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "soap-in-the-house" ->
+                        succeed SoapInTheHouse
+
+                    "wash-hands-before-feeding" ->
+                        succeed WashHandsBeforeFeeding
+
+                    "food-covered" ->
+                        succeed FoodCovered
+
+                    "none" ->
+                        succeed NoNutritionHygieneSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized NutritionHygieneSign"
+            )
+
+
+decodeMainWaterSource : Decoder MainWaterSource
+decodeMainWaterSource =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "piped-water-to-home" ->
+                        succeed PipedWaterToHome
+
+                    "public-water-tap" ->
+                        succeed PublicWaterTap
+
+                    "rain-water-collection-system" ->
+                        succeed RainWaterCollectionSystem
+
+                    "natural-source-flowing-water" ->
+                        succeed NaturalSourceFlowingWater
+
+                    "natural-source-standing-water" ->
+                        succeed NaturalSourceStandingWater
+
+                    "bottled-water" ->
+                        succeed BottledWater
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized MainWaterSource"
+            )
+
+
+decodeNutritionFoodSecurity : Decoder NutritionFoodSecurity
+decodeNutritionFoodSecurity =
+    decodeHomeVisitMeasurement decodeFoodSecurityValue
+
+
+decodeFoodSecurityValue : Decoder NutritionFoodSecurityValue
+decodeFoodSecurityValue =
+    succeed NutritionFoodSecurityValue
+        |> required "food_security_signs" (decodeEverySet decodeNutritionFoodSecuritySign)
+        |> required "main_income_source" decodeMainIncomeSource
+
+
+decodeNutritionFoodSecuritySign : Decoder NutritionFoodSecuritySign
+decodeNutritionFoodSecuritySign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "household-got-food" ->
+                        succeed HouseholdGotFood
+
+                    "none" ->
+                        succeed NoNutritionFoodSecuritySigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized NutritionFoodSecuritySign"
+            )
+
+
+decodeMainIncomeSource : Decoder MainIncomeSource
+decodeMainIncomeSource =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "home-based-agriculture" ->
+                        succeed HomeBasedAgriculture
+
+                    "commercial-agriculture" ->
+                        succeed CommercialAgriculture
+
+                    "public-employee" ->
+                        succeed PublicEmployee
+
+                    "private-business-employee" ->
+                        succeed PrivateBusinessEmpployee
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized MainIncomeSource"
+            )
+
+
+decodeNutritionCaring : Decoder NutritionCaring
+decodeNutritionCaring =
+    decodeHomeVisitMeasurement decodeNutritionCaringValue
+
+
+decodeNutritionCaringValue : Decoder NutritionCaringValue
+decodeNutritionCaringValue =
+    succeed NutritionCaringValue
+        |> required "nutrition_caring_signs" (decodeEverySet decodeNutritionCaringSign)
+        |> required "child_caring_options" decodeNutritionCaringOption
+
+
+decodeNutritionCaringSign : Decoder NutritionCaringSign
+decodeNutritionCaringSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "parent-alive-and-healthy" ->
+                        succeed ParentsAliveHealthy
+
+                    "child-clean" ->
+                        succeed ChildClean
+
+                    "none" ->
+                        succeed NoCaringSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized NutritionCaringSign"
+            )
+
+
+decodeNutritionCaringOption : Decoder CaringOption
+decodeNutritionCaringOption =
+    string
+        |> andThen
+            (\option ->
+                case option of
+                    "parent" ->
+                        succeed CaredByParent
+
+                    "grandparent" ->
+                        succeed CaredByGrandparent
+
+                    "sibling" ->
+                        succeed CaredBySibling
+
+                    "neighbor" ->
+                        succeed CaredByNeighbor
+
+                    "daycare" ->
+                        succeed CaredByDaycare
+
+                    _ ->
+                        fail <|
+                            option
+                                ++ " is not a recognized CaringOption"
+            )
 
 
 decodeSymptomsGeneral : Decoder SymptomsGeneral

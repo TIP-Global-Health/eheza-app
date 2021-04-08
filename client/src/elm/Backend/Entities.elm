@@ -685,3 +685,43 @@ type alias FollowUpId =
 
 type FollowUpIdUuidType
     = FollowUpIdUuidType
+
+
+type alias HomeVisitEncounterId =
+    EntityUuid HomeVisitEncounterUuidType
+
+
+type HomeVisitEncounterUuidType
+    = HomeVisitEncounterUuidType
+
+
+type alias NutritionFeedingId =
+    EntityUuid NutritionFeedingIdUuidType
+
+
+type NutritionFeedingIdUuidType
+    = NutritionFeedingIdUuidType
+
+
+type alias NutritionHygieneId =
+    EntityUuid NutritionHygieneIdUuidType
+
+
+type NutritionHygieneIdUuidType
+    = NutritionHygieneIdUuidType
+
+
+type alias NutritionFoodSecurityId =
+    EntityUuid NutritionFoodSecurityIdUuidType
+
+
+type NutritionFoodSecurityIdUuidType
+    = NutritionFoodSecurityIdUuidType
+
+
+type alias NutritionCaringId =
+    EntityUuid NutritionCaringIdUuidType
+
+
+type NutritionCaringIdUuidType
+    = NutritionCaringIdUuidType

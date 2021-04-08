@@ -12,6 +12,9 @@ import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Fetch
+import Backend.HomeVisitActivity.Model
+import Backend.HomeVisitEncounter.Model
+import Backend.HomeVisitEncounter.Update
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model exposing (ChildMeasurements, HistoricalMeasurements, Measurements)
@@ -32,7 +35,16 @@ import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getChildMeasurementData2, getMyMother)
-import Backend.Utils exposing (mapAcuteIllnessMeasurements, mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, sw)
+import Backend.Utils
+    exposing
+        ( mapAcuteIllnessMeasurements
+        , mapChildMeasurements
+        , mapHomeVisitMeasurements
+        , mapMotherMeasurements
+        , mapNutritionMeasurements
+        , mapPrenatalMeasurements
+        , sw
+        )
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -403,6 +415,19 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
             , []
             )
 
+        FetchHomeVisitEncountersForParticipant id ->
+            ( { model | homeVisitEncountersByParticipant = Dict.insert id Loading model.homeVisitEncountersByParticipant }
+            , sw.select homeVisitEncounterEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedHomeVisitEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedHomeVisitEncountersForParticipant id data ->
+            ( { model | homeVisitEncountersByParticipant = Dict.insert id data model.homeVisitEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
         FetchAcuteIllnessEncountersForParticipant id ->
             ( { model | acuteIllnessEncountersByParticipant = Dict.insert id Loading model.acuteIllnessEncountersByParticipant }
             , sw.select acuteIllnessEncounterEndpoint (Just id)
@@ -464,6 +489,19 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
 
         HandleFetchedFollowUpMeasurements id data ->
             ( { model | followUpMeasurements = Dict.insert id data model.followUpMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchHomeVisitMeasurements id ->
+            ( { model | homeVisitMeasurements = Dict.insert id Loading model.homeVisitMeasurements }
+            , sw.get homeVisitMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedHomeVisitMeasurements id)
+            , []
+            )
+
+        HandleFetchedHomeVisitMeasurements id data ->
+            ( { model | homeVisitMeasurements = Dict.insert id data model.homeVisitMeasurements }
             , Cmd.none
             , []
             )
@@ -719,6 +757,19 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
 
         HandleFetchedNutritionEncounter id data ->
             ( { model | nutritionEncounters = Dict.insert id data model.nutritionEncounters }
+            , Cmd.none
+            , []
+            )
+
+        FetchHomeVisitEncounter id ->
+            ( { model | homeVisitEncounters = Dict.insert id Loading model.homeVisitEncounters }
+            , sw.get homeVisitEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedHomeVisitEncounter id)
+            , []
+            )
+
+        HandleFetchedHomeVisitEncounter id data ->
+            ( { model | homeVisitEncounters = Dict.insert id data model.homeVisitEncounters }
             , Cmd.none
             , []
             )
@@ -1262,6 +1313,25 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
             , []
             )
 
+        MsgHomeVisitEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.homeVisitEncounters
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.homeVisitEncounterRequests
+                        |> Maybe.withDefault Backend.HomeVisitEncounter.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.HomeVisitEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+            in
+            ( { model | homeVisitEncounterRequests = Dict.insert encounterId subModel model.homeVisitEncounterRequests }
+            , Cmd.map (MsgHomeVisitEncounter encounterId) subCmd
+            , []
+            )
+
         MsgIndividualSession participantId subMsg ->
             let
                 participant =
@@ -1656,6 +1726,12 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                                         |> App.Model.MsgIndexedDb
                                     ]
 
+                                HomeVisitEncounter ->
+                                    [ Backend.HomeVisitEncounter.Model.HomeVisitEncounter sessionId currentDate Nothing healthCenterId
+                                        |> Backend.Model.PostHomeVisitEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
                                 InmmunizationEncounter ->
                                     []
                         )
@@ -1703,6 +1779,27 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                     [ App.Model.SetActivePage <|
                         UserPage <|
                             Pages.Page.NutritionEncounterPage nutritionEncounterId
+                    ]
+                )
+                data
+                |> RemoteData.withDefault []
+            )
+
+        PostHomeVisitEncounter homeVisitEncounter ->
+            ( { model | postHomeVisitEncounter = Dict.insert homeVisitEncounter.participant Loading model.postHomeVisitEncounter }
+            , sw.post homeVisitEncounterEndpoint homeVisitEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedHomeVisitEncounter homeVisitEncounter.participant)
+            , []
+            )
+
+        HandlePostedHomeVisitEncounter participantId data ->
+            ( { model | postHomeVisitEncounter = Dict.insert participantId data model.postHomeVisitEncounter }
+            , Cmd.none
+            , RemoteData.map
+                (\( homeVisitEncounterId, _ ) ->
+                    [ App.Model.SetActivePage <|
+                        UserPage <|
+                            Pages.Page.HomeVisitEncounterPage homeVisitEncounterId
                     ]
                 )
                 data
@@ -1979,6 +2076,21 @@ handleRevision revision (( model, recalc ) as noChange) =
             , True
             )
 
+        HomeVisitEncounterRevision uuid data ->
+            let
+                homeVisitEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.homeVisitEncounters
+
+                homeVisitEncountersByParticipant =
+                    Dict.remove data.participant model.homeVisitEncountersByParticipant
+            in
+            ( { model
+                | homeVisitEncounters = homeVisitEncounters
+                , homeVisitEncountersByParticipant = homeVisitEncountersByParticipant
+              }
+            , recalc
+            )
+
         IsolationRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
@@ -2070,6 +2182,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             -- Nothing to do in ModelIndexedDb yet. App.Update does do something with this one.
             noChange
 
+        NutritionCaringRevision uuid data ->
+            ( mapHomeVisitMeasurements
+                data.encounterId
+                (\measurements -> { measurements | caring = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         NutritionContributingFactorsRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
@@ -2093,10 +2213,26 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        NutritionFeedingRevision uuid data ->
+            ( mapHomeVisitMeasurements
+                data.encounterId
+                (\measurements -> { measurements | feeding = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         NutritionFollowUpRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
                 (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NutritionFoodSecurityRevision uuid data ->
+            ( mapHomeVisitMeasurements
+                data.encounterId
+                (\measurements -> { measurements | foodSecurity = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -2113,6 +2249,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             ( mapNutritionMeasurements
                 data.encounterId
                 (\measurements -> { measurements | height = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NutritionHygieneRevision uuid data ->
+            ( mapHomeVisitMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hygiene = Just ( uuid, data ) })
                 model
             , recalc
             )

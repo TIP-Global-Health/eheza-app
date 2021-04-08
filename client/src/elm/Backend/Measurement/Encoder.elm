@@ -256,6 +256,11 @@ encodeAcuteIllnessMeasurement =
     encodeMeasurement "acute_illness_encounter"
 
 
+encodeHomeVisitMeasurement : (value -> List ( String, Value )) -> HomeVisitMeasurement value -> List ( String, Value )
+encodeHomeVisitMeasurement =
+    encodeMeasurement "home_visit_encounter"
+
+
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
 encodeMeasurement encounterTag encoder measurement =
     List.concat
@@ -1422,6 +1427,220 @@ encodeFollowUpOption option =
 
             TwoWeeks ->
                 "2-w"
+
+
+encodeNutritionFeeding : NutritionFeeding -> List ( String, Value )
+encodeNutritionFeeding =
+    encodeHomeVisitMeasurement encodeNutritionFeedingValue
+
+
+encodeNutritionFeedingValue : NutritionFeedingValue -> List ( String, Value )
+encodeNutritionFeedingValue value =
+    [ ( "nutrition_feeding_signs", encodeEverySet encodeNutritionFeedingSign value.signs )
+    , ( "supplement_type", encodeNutritionSupplementType value.supplementType )
+    , ( "sachets_per_day", float value.sachetsPerDay )
+    , ( "deleted", bool False )
+    , ( "type", string "nutrition_feeding" )
+    ]
+
+
+encodeNutritionSupplementType : NutritionSupplementType -> Value
+encodeNutritionSupplementType type_ =
+    string <|
+        case type_ of
+            FortifiedPorridge ->
+                "fortified-porridge"
+
+            Rutf ->
+                "rutf"
+
+            Ongera ->
+                "ongera"
+
+            TherapeuticMilk ->
+                "therapeutic-milk"
+
+            NoNutritionSupplementType ->
+                "none"
+
+
+encodeNutritionFeedingSign : NutritionFeedingSign -> Value
+encodeNutritionFeedingSign sign =
+    string <|
+        case sign of
+            ReceiveSupplement ->
+                "receive-supplement"
+
+            RationPresentAtHome ->
+                "ration-present-at-home"
+
+            EnoughTillNextSession ->
+                "enough-till-next-session"
+
+            SupplementShared ->
+                "supplement-shared"
+
+            EncouragedToEat ->
+                "encouraged-to-eat"
+
+            RefusingToEat ->
+                "refusing-to-eat"
+
+            FeedingSignBreastfeeding ->
+                "breastfeeding"
+
+            CleanWaterAvailable ->
+                "clean-water-available"
+
+            EatenWithWater ->
+                "eaten-with-water"
+
+            NoNutritionFeedingSigns ->
+                "none"
+
+
+encodeNutritionHygiene : NutritionHygiene -> List ( String, Value )
+encodeNutritionHygiene =
+    encodeHomeVisitMeasurement encodeNutritionHygieneValue
+
+
+encodeNutritionHygieneValue : NutritionHygieneValue -> List ( String, Value )
+encodeNutritionHygieneValue value =
+    [ ( "nutrition_hygiene_signs", encodeEverySet encodeNutritionHygieneSign value.signs )
+    , ( "main_water_source", encodeMainWaterSource value.mainWaterSource )
+    , ( "deleted", bool False )
+    , ( "type", string "nutrition_hygiene" )
+    ]
+
+
+encodeNutritionHygieneSign : NutritionHygieneSign -> Value
+encodeNutritionHygieneSign sign =
+    string <|
+        case sign of
+            SoapInTheHouse ->
+                "soap-in-the-house"
+
+            WashHandsBeforeFeeding ->
+                "wash-hands-before-feeding"
+
+            FoodCovered ->
+                "food-covered"
+
+            NoNutritionHygieneSigns ->
+                "none"
+
+
+encodeMainWaterSource : MainWaterSource -> Value
+encodeMainWaterSource type_ =
+    string <|
+        case type_ of
+            PipedWaterToHome ->
+                "piped-water-to-home"
+
+            PublicWaterTap ->
+                "public-water-tap"
+
+            RainWaterCollectionSystem ->
+                "rain-water-collection-system"
+
+            NaturalSourceFlowingWater ->
+                "natural-source-flowing-water"
+
+            NaturalSourceStandingWater ->
+                "natural-source-standing-water"
+
+            BottledWater ->
+                "bottled-water"
+
+
+encodeNutritionFoodSecurity : NutritionFoodSecurity -> List ( String, Value )
+encodeNutritionFoodSecurity =
+    encodeHomeVisitMeasurement encodeNutritionFoodSecurityValue
+
+
+encodeNutritionFoodSecurityValue : NutritionFoodSecurityValue -> List ( String, Value )
+encodeNutritionFoodSecurityValue value =
+    [ ( "food_security_signs", encodeEverySet encodeNutritionFoodSecuritySign value.signs )
+    , ( "main_income_source", encodeMainIncomeSource value.mainIncomeSource )
+    , ( "deleted", bool False )
+    , ( "type", string "nutrition_food_security" )
+    ]
+
+
+encodeNutritionFoodSecuritySign : NutritionFoodSecuritySign -> Value
+encodeNutritionFoodSecuritySign sign =
+    string <|
+        case sign of
+            HouseholdGotFood ->
+                "household-got-food"
+
+            NoNutritionFoodSecuritySigns ->
+                "none"
+
+
+encodeMainIncomeSource : MainIncomeSource -> Value
+encodeMainIncomeSource type_ =
+    string <|
+        case type_ of
+            HomeBasedAgriculture ->
+                "home-based-agriculture"
+
+            CommercialAgriculture ->
+                "commercial-agriculture"
+
+            PublicEmployee ->
+                "public-employee"
+
+            PrivateBusinessEmpployee ->
+                "private-business-employee"
+
+
+encodeNutritionCaring : NutritionCaring -> List ( String, Value )
+encodeNutritionCaring =
+    encodeHomeVisitMeasurement encodeNutritionCaringValue
+
+
+encodeNutritionCaringValue : NutritionCaringValue -> List ( String, Value )
+encodeNutritionCaringValue value =
+    [ ( "nutrition_caring_signs", encodeEverySet encondeNutritionCaringSign value.signs )
+    , ( "child_caring_options", encodeNutritionCaringOption value.caringOption )
+    , ( "deleted", bool False )
+    , ( "type", string "nutrition_caring" )
+    ]
+
+
+encondeNutritionCaringSign : NutritionCaringSign -> Value
+encondeNutritionCaringSign sign =
+    string <|
+        case sign of
+            ParentsAliveHealthy ->
+                "parent-alive-and-healthy"
+
+            ChildClean ->
+                "child-clean"
+
+            NoCaringSigns ->
+                "none"
+
+
+encodeNutritionCaringOption : CaringOption -> Value
+encodeNutritionCaringOption option =
+    string <|
+        case option of
+            CaredByParent ->
+                "parent"
+
+            CaredByGrandparent ->
+                "grandparent"
+
+            CaredBySibling ->
+                "sibling"
+
+            CaredByNeighbor ->
+                "neighbor"
+
+            CaredByDaycare ->
+                "daycare"
 
 
 encodeMedicationDistribution : MedicationDistribution -> List ( String, Value )

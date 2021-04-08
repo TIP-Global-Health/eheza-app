@@ -5,6 +5,7 @@ import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
+import Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
 import Backend.Measurement.Decoder exposing (..)
 import Backend.Model exposing (..)
@@ -110,6 +111,9 @@ decodeRevision =
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight
 
+                    "home_visit_encounter" ->
+                        decodeWithUuid HomeVisitEncounterRevision decodeHomeVisitEncounter
+
                     "individual_participant" ->
                         decodeWithUuid IndividualEncounterParticipantRevision decodeIndividualEncounterParticipant
 
@@ -146,20 +150,32 @@ decodeRevision =
                     "nutrition" ->
                         decodeWithUuid ChildNutritionRevision decodeNutrition
 
+                    "nutrition_caring" ->
+                        decodeWithUuid NutritionCaringRevision decodeNutritionCaring
+
                     "nutrition_contributing_factors" ->
                         decodeWithUuid NutritionContributingFactorsRevision decodeNutritionContributingFactors
 
                     "nutrition_encounter" ->
                         decodeWithUuid NutritionEncounterRevision decodeNutritionEncounter
 
+                    "nutrition_feeding" ->
+                        decodeWithUuid NutritionFeedingRevision decodeNutritionFeeding
+
                     "nutrition_follow_up" ->
                         decodeWithUuid NutritionFollowUpRevision decodeNutritionFollowUp
+
+                    "nutrition_food_security" ->
+                        decodeWithUuid NutritionFoodSecurityRevision decodeNutritionFoodSecurity
 
                     "nutrition_health_education" ->
                         decodeWithUuid NutritionHealthEducationRevision decodeNutritionHealthEducation
 
                     "nutrition_height" ->
                         decodeWithUuid NutritionHeightRevision decodeNutritionHeight
+
+                    "nutrition_hygiene" ->
+                        decodeWithUuid NutritionHygieneRevision decodeNutritionHygiene
 
                     "nutrition_muac" ->
                         decodeWithUuid NutritionMuacRevision decodeNutritionMuac

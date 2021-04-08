@@ -462,6 +462,26 @@ h3.ui.header {
   background-size: 122px 122px;
 }
 
+.icon-task-feeding {
+  background-image: url(#{$img-path}icon-feeding-white.svg);
+  background-size: 122px 122px;
+}
+
+.icon-task-caring {
+  background-image: url(#{$img-path}icon-caring-white.svg);
+  background-size: 122px 122px;
+}
+
+.icon-task-hygiene {
+  background-image: url(#{$img-path}icon-hygiene-white.svg);
+  background-size: 122px 122px;
+}
+
+.icon-task-food-security {
+  background-image: url(#{$img-path}icon-food-security-white.svg);
+  background-size: 92px 92px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {

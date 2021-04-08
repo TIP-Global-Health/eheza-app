@@ -19,8 +19,24 @@ function hedley_nutrition_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function hedley_nutrition_node_info() {
   $items = array(
+    'nutrition_caring' => array(
+      'name' => t('Nutrition Caring'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'nutrition_contributing_factors' => array(
       'name' => t('Nutrition Contributing Factors'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'nutrition_feeding' => array(
+      'name' => t('Nutrition Feeding'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',
@@ -35,8 +51,24 @@ function hedley_nutrition_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'nutrition_food_security' => array(
+      'name' => t('Nutrition Food Security'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'nutrition_health_education' => array(
       'name' => t('Nutrition Health Education'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'nutrition_hygiene' => array(
+      'name' => t('Nutrition Hygiene'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

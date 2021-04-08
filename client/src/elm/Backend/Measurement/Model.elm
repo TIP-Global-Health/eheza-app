@@ -51,6 +51,10 @@ type alias AcuteIllnessMeasurement value =
     Measurement AcuteIllnessEncounterId value
 
 
+type alias HomeVisitMeasurement value =
+    Measurement HomeVisitEncounterId value
+
+
 
 -- GROUP MEASUREMENT TYPES
 
@@ -272,6 +276,114 @@ type alias NutritionContributingFactors =
 
 type alias NutritionFollowUp =
     NutritionMeasurement FollowUpValue
+
+
+
+-- HOME VISIT MEASUREMENTS
+
+
+type alias NutritionFeeding =
+    HomeVisitMeasurement NutritionFeedingValue
+
+
+type alias NutritionFeedingValue =
+    { signs : EverySet NutritionFeedingSign
+    , supplementType : NutritionSupplementType
+    , sachetsPerDay : Float
+    }
+
+
+type NutritionFeedingSign
+    = ReceiveSupplement
+    | RationPresentAtHome
+    | EnoughTillNextSession
+    | SupplementShared
+    | EncouragedToEat
+    | RefusingToEat
+    | FeedingSignBreastfeeding
+    | CleanWaterAvailable
+    | EatenWithWater
+    | NoNutritionFeedingSigns
+
+
+type NutritionSupplementType
+    = FortifiedPorridge
+    | Rutf
+    | Ongera
+    | TherapeuticMilk
+    | NoNutritionSupplementType
+
+
+type alias NutritionHygiene =
+    HomeVisitMeasurement NutritionHygieneValue
+
+
+type alias NutritionHygieneValue =
+    { signs : EverySet NutritionHygieneSign
+    , mainWaterSource : MainWaterSource
+    }
+
+
+type NutritionHygieneSign
+    = SoapInTheHouse
+    | WashHandsBeforeFeeding
+    | FoodCovered
+    | NoNutritionHygieneSigns
+
+
+type MainWaterSource
+    = PipedWaterToHome
+    | PublicWaterTap
+    | RainWaterCollectionSystem
+    | NaturalSourceFlowingWater
+    | NaturalSourceStandingWater
+    | BottledWater
+
+
+type alias NutritionFoodSecurity =
+    HomeVisitMeasurement NutritionFoodSecurityValue
+
+
+type alias NutritionFoodSecurityValue =
+    { signs : EverySet NutritionFoodSecuritySign
+    , mainIncomeSource : MainIncomeSource
+    }
+
+
+type NutritionFoodSecuritySign
+    = HouseholdGotFood
+    | NoNutritionFoodSecuritySigns
+
+
+type MainIncomeSource
+    = HomeBasedAgriculture
+    | CommercialAgriculture
+    | PublicEmployee
+    | PrivateBusinessEmpployee
+
+
+type alias NutritionCaringValue =
+    { signs : EverySet NutritionCaringSign
+    , caringOption : CaringOption
+    }
+
+
+type alias NutritionCaring =
+    HomeVisitMeasurement NutritionCaringValue
+
+
+type NutritionCaringSign
+    = ParentsAliveHealthy
+    | ChildClean
+    | NoCaringSigns
+
+
+type CaringOption
+    = CaredByParent
+    | CaredByGrandparent
+    | CaredBySibling
+    | CaredByNeighbor
+    | CaredByDaycare
 
 
 
@@ -1062,8 +1174,7 @@ emptyHistoricalMeasurements =
 -- ONE OF EACH KIND OF MEASUREMENT
 
 
-{-| A set of prenatal measurements that correspond to the same prenatal
-encounter.
+{-| A set of prenatal measurements that correspond to the same Prenatal encounter.
 -}
 type alias PrenatalMeasurements =
     { breastExam : Maybe ( BreastExamId, BreastExam )
@@ -1084,8 +1195,7 @@ type alias PrenatalMeasurements =
     }
 
 
-{-| A set of Nutrition measurements that correspond to the same Nutrition
-encounter.
+{-| A set of Nutrition measurements that correspond to the same Nutrition encounter.
 -}
 type alias NutritionMeasurements =
     { muac : Maybe ( NutritionMuacId, NutritionMuac )
@@ -1100,8 +1210,7 @@ type alias NutritionMeasurements =
     }
 
 
-{-| A set of Acute Illness measurements that correspond to the same Nutrition
-encounter.
+{-| A set of Acute Illness measurements that correspond to the same Acute Illness encounter.
 -}
 type alias AcuteIllnessMeasurements =
     { symptomsGeneral : Maybe ( SymptomsGeneralId, SymptomsGeneral )
@@ -1131,6 +1240,16 @@ type alias AcuteIllnessMeasurements =
 type alias FollowUpMeasurements =
     { nutritionGroup : Dict FollowUpId FollowUp
     , nutritionIndividual : Dict NutritionFollowUpId NutritionFollowUp
+    }
+
+
+{-| A set of Home Visit measurements that correspond to the same Home Visit encounter.
+-}
+type alias HomeVisitMeasurements =
+    { feeding : Maybe ( NutritionFeedingId, NutritionFeeding )
+    , hygiene : Maybe ( NutritionHygieneId, NutritionHygiene )
+    , foodSecurity : Maybe ( NutritionFoodSecurityId, NutritionFoodSecurity )
+    , caring : Maybe ( NutritionCaringId, NutritionCaring )
     }
 
 

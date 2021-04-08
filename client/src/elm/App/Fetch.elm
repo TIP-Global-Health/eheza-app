@@ -17,6 +17,8 @@ import Pages.Dashboard.Fetch
 import Pages.DemographicsReport.Fetch
 import Pages.Device.Fetch
 import Pages.GlobalCaseManagement.Fetch
+import Pages.HomeVisitActivity.Fetch
+import Pages.HomeVisitEncounter.Fetch
 import Pages.IndividualEncounterParticipants.Fetch
 import Pages.IndividualEncounterTypes.Fetch
 import Pages.NutritionActivity.Fetch
@@ -207,6 +209,14 @@ fetch model =
 
             UserPage (AcuteIllnessActivityPage id _) ->
                 Pages.AcuteIllnessActivity.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (HomeVisitEncounterPage id) ->
+                Pages.HomeVisitEncounter.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (HomeVisitActivityPage id _) ->
+                Pages.HomeVisitActivity.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (NutritionProgressReportPage nutritionEncounterId) ->

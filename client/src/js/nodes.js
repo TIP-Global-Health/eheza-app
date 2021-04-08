@@ -50,8 +50,9 @@
         });
 
         // If placeholder still indicates tha DB was not initialized,
+        // or version of initialized DB is not as we expect,
         // initialize it.
-        if (dbSync === null) {
+        if (dbSync === null || dbSync.verno != dbVerno) {
             // Check if IndexedDB exists.
             var dbExists = await Dexie.exists('sync');
             if (!dbExists) {
@@ -114,6 +115,9 @@
                 }
                 else if (type === 'acute-illness-measurements') {
                     return viewMeasurements('acute_illness_encounter', uuid);
+                }
+                else if (type === 'home-visit-measurements') {
+                    return viewMeasurements('home_visit_encounter', uuid);
                 }
                 else if (type === 'follow-up-measurements') {
                     return viewFollowUpMeasurements(uuid);
@@ -486,6 +490,9 @@
                     else if (key === 'acute_illness_encounter') {
                       target = node.acute_illness_encounter;
                     }
+                    else if (key === 'home_visit_encounter') {
+                        target = node.home_visit_encounter;
+                    }
 
                     data[target] = data[target] || {};
                     if (data[target][node.type]) {
@@ -705,7 +712,14 @@
                     }
                 }
 
-                if (type === 'prenatal_encounter' || type === 'nutrition_encounter' || type === 'acute_illness_encounter') {
+                var encounterTypes = [
+                  'prenatal_encounter',
+                  'nutrition_encounter',
+                  'acute_illness_encounter',
+                  'home_visit_encounter'
+                ];
+
+                if (encounterTypes.includes(type)) {
                   var individualSessionId = params.get('individual_participant');
                   if (individualSessionId) {
                     modifyQuery = modifyQuery.then(function () {
