@@ -2220,15 +2220,15 @@ div.page-report.acute-illness {
       text-transform: uppercase;
 
       &.general {
-        background: $color-symptom-general;
+        background: $color-velvet;
       }
 
       &.respiratory {
-        background: $color-symptom-respiratory;
+        background: $color-orange-dark;
       }
 
       &.gi {
-        background: $color-symptom-gi;
+        background: $color-blue;
       }
     }
 
