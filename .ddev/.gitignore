@@ -16,8 +16,9 @@
 /import-db
 /config.*.y*ml
 /.webimageBuild
-/.dbimageBuild
-/.sshimageBuild
+../.ddev/.dbimageBuild/
+../.ddev/.sshimageBuild/
+../.ddev/.gitignore
 /.webimageExtra
 /.dbimageExtra
 /*-build/Dockerfile.example
