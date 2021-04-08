@@ -2,7 +2,9 @@ module Pages.GlobalCaseManagement.Fetch exposing (fetch)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (generateNutritionFollowUps)
@@ -24,12 +26,22 @@ fetch currentDate healthCenterId db =
         people =
             Dict.keys nutritionFollowUps
 
-        individualParticipantsFetchMsgs =
+        fetchIndividualParticipantsMsgs =
             List.map FetchIndividualEncounterParticipantsForPerson people
+
+        fetchHomeVisitEncountersMsgs =
+            people
+                |> List.map
+                    (\personId ->
+                        resolveIndividualParticipantsForPerson personId HomeVisitEncounter db
+                            |> List.map FetchHomeVisitEncountersForParticipant
+                    )
+                |> List.concat
     in
     [ FetchVillages
     , FetchHealthCenters
     , FetchFollowUpMeasurements healthCenterId
     , FetchFollowUpParticipants people
     ]
-        ++ individualParticipantsFetchMsgs
+        ++ fetchIndividualParticipantsMsgs
+        ++ fetchHomeVisitEncountersMsgs

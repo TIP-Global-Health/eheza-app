@@ -50,9 +50,6 @@ generateAssembledData id db =
                         generatePreviousMeasurements id encounter_.participant db
                     )
                 |> RemoteData.withDefault []
-
-        previousMeasurements =
-            List.map Tuple.second previousMeasurementsWithDates
     in
     RemoteData.map AssembledData (Success id)
         |> RemoteData.andMap encounter

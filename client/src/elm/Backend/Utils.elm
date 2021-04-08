@@ -2,6 +2,7 @@ module Backend.Utils exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.Measurement.Model
     exposing
         ( AcuteIllnessMeasurements
@@ -118,3 +119,27 @@ saveMeasurementCmd date encounter person nurse healthCenter savedValueId savedVa
                         |> withoutDecoder
     in
     toCmd (RemoteData.fromResult >> handleSavedMsg) requestData
+
+
+resolveIndividualParticipantsForPerson : PersonId -> IndividualEncounterType -> ModelIndexedDb -> List IndividualEncounterParticipantId
+resolveIndividualParticipantsForPerson personId encounterType db =
+    Dict.get personId db.individualParticipantsByPerson
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map
+            (Dict.toList
+                >> List.filterMap
+                    (\( participantId, participant ) ->
+                        if participant.encounterType == encounterType then
+                            Just participantId
+
+                        else
+                            Nothing
+                    )
+            )
+        |> Maybe.withDefault []
+
+
+resolveIndividualParticipantForPerson : PersonId -> IndividualEncounterType -> ModelIndexedDb -> Maybe IndividualEncounterParticipantId
+resolveIndividualParticipantForPerson personId encounterType db =
+    resolveIndividualParticipantsForPerson personId encounterType db
+        |> List.head

@@ -6,7 +6,8 @@ import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Model
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (emptyIndividualEncounterParticipant)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.Model exposing (ModelIndexedDb)
+import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.GlobalCaseManagement.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
@@ -28,57 +29,16 @@ update currentDate healthCenterId msg db model =
             )
 
         SetDialogState state ->
-            let
-                fetchMsgs =
-                    state
-                        |> Maybe.map
-                            (\data ->
-                                case data.encounterType of
-                                    NutritionEncounter ->
-                                        let
-                                            individualParticipants =
-                                                Dict.get data.personId db.individualParticipantsByPerson
-                                                    |> Maybe.withDefault NotAsked
-                                        in
-                                        individualParticipants
-                                            |> RemoteData.map
-                                                (Dict.toList
-                                                    >> List.filterMap
-                                                        (\( participantId, participant ) ->
-                                                            if participant.encounterType == Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter then
-                                                                Just participantId
-
-                                                            else
-                                                                Nothing
-                                                        )
-                                                    >> List.map (FetchHomeVisitEncountersForParticipant >> App.Model.MsgIndexedDb)
-                                                )
-                                            |> RemoteData.withDefault []
-
-                                    _ ->
-                                        []
-                            )
-                        |> Maybe.withDefault []
-            in
             ( { model | dialogState = state }
             , Cmd.none
-            , fetchMsgs
+            , []
             )
 
         StartFollowUpEncounter data ->
             let
                 -- Resolving Home Visit participant for person.
                 participantId =
-                    Dict.get data.personId db.individualParticipantsByPerson
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.withDefault Dict.empty
-                        |> Dict.toList
-                        |> List.filter
-                            (\( sessionId, session ) ->
-                                session.encounterType == Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter
-                            )
-                        |> List.head
-                        |> Maybe.map Tuple.first
+                    resolveIndividualParticipantForPerson data.personId HomeVisitEncounter db
 
                 startFollowUpEncounterMsgs =
                     healthCenterId

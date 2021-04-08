@@ -2,13 +2,14 @@ module Backend.NutritionEncounter.Utils exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
+import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
@@ -23,7 +24,7 @@ import ZScore.Utils exposing (zScoreWeightForAge)
 
 generateIndividualMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
 generateIndividualMeasurementsForChild childId db =
-    resolveNutritionParticipantForChild childId db
+    resolveIndividualParticipantForPerson childId NutritionEncounter db
         |> Maybe.map
             (\participantId ->
                 Dict.get participantId db.nutritionEncountersByParticipant
@@ -48,25 +49,9 @@ generateIndividualMeasurementsForChild childId db =
         |> Maybe.withDefault []
 
 
-resolveNutritionParticipantForChild : PersonId -> ModelIndexedDb -> Maybe IndividualEncounterParticipantId
-resolveNutritionParticipantForChild id db =
-    Dict.get id db.individualParticipantsByPerson
-        |> Maybe.withDefault NotAsked
-        |> RemoteData.toMaybe
-        |> Maybe.andThen
-            (Dict.toList
-                >> List.filter
-                    (\( _, participant ) ->
-                        participant.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter
-                    )
-                >> List.head
-                >> Maybe.map Tuple.first
-            )
-
-
 generatePreviousValuesForChild : PersonId -> ModelIndexedDb -> PreviousMeasurementsValue
 generatePreviousValuesForChild childId db =
-    resolveNutritionParticipantForChild childId db
+    resolveIndividualParticipantForPerson childId NutritionEncounter db
         |> Maybe.map
             (\participantId ->
                 let

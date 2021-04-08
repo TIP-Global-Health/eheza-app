@@ -2,8 +2,9 @@ module Pages.NutritionParticipant.Fetch exposing (fetch)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
 import RemoteData exposing (RemoteData(..))
 
 
@@ -15,39 +16,15 @@ fetch id db =
                 |> Maybe.withDefault NotAsked
 
         fetchNutritionEncounters =
-            individualParticipants
-                |> RemoteData.map
-                    (Dict.toList
-                        >> List.filterMap
-                            (\( participantId, participant ) ->
-                                if participant.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter then
-                                    Just participantId
-
-                                else
-                                    Nothing
-                            )
-                        >> List.map FetchNutritionEncountersForParticipant
-                    )
-                |> RemoteData.withDefault []
+            resolveIndividualParticipantsForPerson id NutritionEncounter db
+                |> List.map FetchNutritionEncountersForParticipant
 
         fetchHomeVisitEncounters =
-            individualParticipants
-                |> RemoteData.map
-                    (Dict.toList
-                        >> List.filterMap
-                            (\( participantId, participant ) ->
-                                if participant.encounterType == Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter then
-                                    Just participantId
-
-                                else
-                                    Nothing
-                            )
-                        >> List.map FetchHomeVisitEncountersForParticipant
-                    )
-                |> RemoteData.withDefault []
+            resolveIndividualParticipantsForPerson id HomeVisitEncounter db
+                |> List.map FetchHomeVisitEncountersForParticipant
     in
-    fetchNutritionEncounters
+    [ FetchPerson id
+    , FetchIndividualEncounterParticipantsForPerson id
+    ]
+        ++ fetchNutritionEncounters
         ++ fetchHomeVisitEncounters
-        ++ [ FetchPerson id
-           , FetchIndividualEncounterParticipantsForPerson id
-           ]

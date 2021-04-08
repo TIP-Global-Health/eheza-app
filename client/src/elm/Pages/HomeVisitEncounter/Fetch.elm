@@ -2,8 +2,9 @@ module Pages.HomeVisitEncounter.Fetch exposing (fetch)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import Backend.NutritionEncounter.Utils exposing (resolveNutritionParticipantForChild)
+import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import RemoteData exposing (RemoteData(..))
 
 
@@ -43,7 +44,10 @@ fetch id db =
         -- determine latest weight measurement that was taken for child.
         nutritionParticipantId =
             personId
-                |> Maybe.andThen (\personId_ -> resolveNutritionParticipantForChild personId_ db)
+                |> Maybe.andThen
+                    (\personId_ ->
+                        resolveIndividualParticipantForPerson personId_ NutritionEncounter db
+                    )
 
         nutritionEncountersIds =
             nutritionParticipantId
