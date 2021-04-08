@@ -202,7 +202,25 @@ type alias ContributingFactors =
 
 
 type alias FollowUp =
-    GroupMeasurement (EverySet FollowUpOption)
+    GroupMeasurement FollowUpValue
+
+
+type alias FollowUpValue =
+    { options : EverySet FollowUpOption
+    , assesment : EverySet NutritionAssesment
+    }
+
+
+type NutritionAssesment
+    = AssesmentAcuteMalnutritionModerate
+    | AssesmentAcuteMalnutritionSevere
+    | AssesmentUnderweightModerate
+    | AssesmentUnderweightSevere
+    | AssesmentDangerSignsNotPresent
+    | AssesmentDangerSignsPresent
+    | AssesmentMalnutritionSigns (List ChildNutritionSign)
+    | AssesmentConsecutiveWeightLoss
+    | NoNutritionAssesment
 
 
 type ContributingFactorsSign
@@ -257,7 +275,7 @@ type alias NutritionContributingFactors =
 
 
 type alias NutritionFollowUp =
-    NutritionMeasurement (EverySet FollowUpOption)
+    NutritionMeasurement FollowUpValue
 
 
 

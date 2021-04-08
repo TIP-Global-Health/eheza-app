@@ -1397,12 +1397,19 @@ encodeNutritionFollowUp =
     encodeNutritionMeasurement (encodeFollowUpValueWithType "nutrition_follow_up")
 
 
-encodeFollowUpValueWithType : String -> EverySet FollowUpOption -> List ( String, Value )
+encodeFollowUpValueWithType : String -> FollowUpValue -> List ( String, Value )
 encodeFollowUpValueWithType type_ value =
-    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value )
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
+    , ( "nutrition_assesment", encodeEverySet encodeNutritionAssesment value.assesment )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
+
+
+encodeNutritionAssesment : NutritionAssesment -> Value
+encodeNutritionAssesment assesment =
+    nutritionAssesmentToString assesment
+        |> string
 
 
 encodeFollowUpOption : FollowUpOption -> Value

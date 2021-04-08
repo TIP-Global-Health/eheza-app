@@ -8,7 +8,7 @@ import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
-import Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge)
+import Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, nutritionAssesmentForBackend)
 import Backend.Person.Model exposing (Person)
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -34,7 +34,7 @@ import Measurement.View
         )
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
-import Pages.NutritionEncounter.Model exposing (AssembledData, NutritionAssesment(..))
+import Pages.NutritionEncounter.Model exposing (AssembledData)
 import Pages.NutritionEncounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
@@ -207,7 +207,7 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
             viewWeightContent language currentDate zscores isChw assembled model.weightData previousGroupWeight
 
         NextSteps ->
-            viewNextStepsContent language currentDate id assembled model.nextStepsData
+            viewNextStepsContent language currentDate zscores id assembled db model.nextStepsData
 
 
 viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> HeightData -> Maybe ( NominalDate, Float ) -> List (Html Msg)
@@ -605,8 +605,8 @@ viewWeightContent language currentDate zscores isChw assembled data previousGrou
     ]
 
 
-viewNextStepsContent : Language -> NominalDate -> NutritionEncounterId -> AssembledData -> NextStepsData -> List (Html Msg)
-viewNextStepsContent language currentDate id assembled data =
+viewNextStepsContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)
+viewNextStepsContent language currentDate zscores id assembled db data =
     let
         personId =
             assembled.participant.person
@@ -738,7 +738,23 @@ viewNextStepsContent language currentDate id assembled data =
                                         SaveContributingFactors personId measurements.contributingFactors nextTask
 
                                     NextStepFollowUp ->
-                                        SaveFollowUp personId measurements.followUp nextTask
+                                        let
+                                            assesment =
+                                                generateNutritionAssesment currentDate zscores db assembled
+
+                                            updated =
+                                                measurements.followUp
+                                                    |> Maybe.map
+                                                        (\( measurementId, measurement ) ->
+                                                            let
+                                                                updatedValue =
+                                                                    measurement.value
+                                                                        |> (\value -> { value | assesment = nutritionAssesmentForBackend assesment })
+                                                            in
+                                                            ( measurementId, { measurement | value = updatedValue } )
+                                                        )
+                                        in
+                                        SaveFollowUp personId updated nextTask
                         in
                         div [ class "actions next-steps" ]
                             [ button

@@ -142,7 +142,7 @@ viewNutritionAction language currentDate selectedHealthCenter id db sessions =
                         |> Maybe.map
                             -- If nutrition session exists, create new encounter for it.
                             (\sessionId ->
-                                [ Backend.NutritionEncounter.Model.NutritionEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
+                                [ Backend.NutritionEncounter.Model.emptyNutritionEncounter sessionId currentDate (Just selectedHealthCenter)
                                     |> Backend.Model.PostNutritionEncounter
                                     |> App.Model.MsgIndexedDb
                                     |> onClick

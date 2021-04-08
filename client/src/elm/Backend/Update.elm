@@ -18,11 +18,12 @@ import Backend.HomeVisitEncounter.Update
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model exposing (ChildMeasurements, HistoricalMeasurements, Measurements)
-import Backend.Measurement.Utils exposing (mapChildMeasurementsAtOfflineSession, splitChildMeasurements, splitMotherMeasurements)
+import Backend.Measurement.Utils exposing (mapChildMeasurementsAtOfflineSession, mapMeasurementData, splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
 import Backend.NutritionActivity.Model
 import Backend.NutritionEncounter.Model
 import Backend.NutritionEncounter.Update
+import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
@@ -33,7 +34,7 @@ import Backend.Relationship.Model exposing (RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
-import Backend.Session.Utils exposing (getMyMother)
+import Backend.Session.Utils exposing (getChildMeasurementData2, getMyMother)
 import Backend.Utils
     exposing
         ( mapAcuteIllnessMeasurements
@@ -1677,7 +1678,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                                     ]
 
                                 NutritionEncounter ->
-                                    [ Backend.NutritionEncounter.Model.NutritionEncounter sessionId currentDate Nothing healthCenterId
+                                    [ Backend.NutritionEncounter.Model.emptyNutritionEncounter sessionId currentDate healthCenterId
                                         |> Backend.Model.PostNutritionEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
@@ -2518,20 +2519,38 @@ generateNutritionAssessmentIndividualMsgs currentDate zscores isChw after id per
                     let
                         assesmentAfter =
                             Pages.NutritionActivity.Utils.generateNutritionAssesment currentDate zscores after assembledAfter
+
+                        updateFollowUpAssesmentMsg =
+                            assembledAfter.measurements.followUp
+                                |> Maybe.map
+                                    (\( measurementId, measurement ) ->
+                                        let
+                                            updatedValue =
+                                                measurement.value
+                                                    |> (\value -> { value | assesment = nutritionAssesmentForBackend assesmentAfter })
+                                        in
+                                        Backend.NutritionEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
+                                            |> Backend.Model.MsgNutritionEncounter id
+                                            |> App.Model.MsgIndexedDb
+                                            |> List.singleton
+                                    )
+                                |> Maybe.withDefault []
                     in
                     if List.isEmpty assesmentAfter then
-                        -- View assement when we have items at assement list.
-                        []
+                        -- No assesment, so, only thing we want to update is the
+                        -- assesment field on Follow Up measurement, if it exists already.
+                        updateFollowUpAssesmentMsg
 
                     else
-                        [ -- Navigate to Nutrition encounter page.
-                          App.Model.SetActivePage (UserPage (NutritionActivityPage id Backend.NutritionActivity.Model.NextSteps))
+                        updateFollowUpAssesmentMsg
+                            ++ [ -- Navigate to Nutrition encounter page.
+                                 App.Model.SetActivePage (UserPage (NutritionActivityPage id Backend.NutritionActivity.Model.NextSteps))
 
-                        -- Show warning popup with new assesment.
-                        , Pages.NutritionActivity.Model.SetWarningPopupState assesmentAfter
-                            |> App.Model.MsgPageNutritionActivity id Backend.NutritionActivity.Model.NextSteps
-                            |> App.Model.MsgLoggedIn
-                        ]
+                               -- Show warning popup with new assesment.
+                               , Pages.NutritionActivity.Model.SetWarningPopupState assesmentAfter
+                                    |> App.Model.MsgPageNutritionActivity id Backend.NutritionActivity.Model.NextSteps
+                                    |> App.Model.MsgLoggedIn
+                               ]
             )
             (RemoteData.toMaybe <| Pages.NutritionEncounter.Utils.generateAssembledData id after)
             |> Maybe.withDefault []
@@ -2584,24 +2603,59 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                     db
                                     offlineSession
 
+                            updateFollowUpAssesmentMsg =
+                                getChildMeasurementData2 childId offlineSession
+                                    |> LocalData.unwrap
+                                        []
+                                        (\measurements ->
+                                            let
+                                                followUp =
+                                                    mapMeasurementData .followUp measurements
+                                                        |> .current
+
+                                                followUpId =
+                                                    Maybe.map Tuple.first followUp
+
+                                                followUpValue =
+                                                    Maybe.map (Tuple.second >> .value) followUp
+                                            in
+                                            followUpValue
+                                                |> Maybe.map
+                                                    (\value ->
+                                                        let
+                                                            updatedValue =
+                                                                { value | assesment = nutritionAssesmentForBackend assesment }
+                                                        in
+                                                        Measurement.Model.SaveFollowUp followUpId updatedValue
+                                                            |> Backend.Session.Model.MeasurementOutMsgChild childId
+                                                            |> Backend.Model.MsgSession sessionId
+                                                            |> App.Model.MsgIndexedDb
+                                                            |> List.singleton
+                                                    )
+                                                |> Maybe.withDefault []
+                                        )
+
                             personByPersonMsgs =
-                                [ Pages.Participant.Model.SetWarningPopupState assesment
-                                    |> Pages.Session.Model.MsgChild childId
-                                    |> App.Model.MsgPageSession sessionId
-                                    |> App.Model.MsgLoggedIn
-                                ]
+                                updateFollowUpAssesmentMsg
+                                    ++ [ Pages.Participant.Model.SetWarningPopupState assesment
+                                            |> Pages.Session.Model.MsgChild childId
+                                            |> App.Model.MsgPageSession sessionId
+                                            |> App.Model.MsgLoggedIn
+                                       ]
 
                             activityByActivityMsgs childActivity =
-                                [ App.Model.SetActivePage (UserPage (SessionPage sessionId (NextStepsPage childId (ChildActivity childActivity))))
-                                , Pages.NextSteps.Model.SetWarningPopupState assesment
-                                    |> Pages.Session.Model.MsgNextSteps childId (ChildActivity childActivity)
-                                    |> App.Model.MsgPageSession sessionId
-                                    |> App.Model.MsgLoggedIn
-                                ]
+                                updateFollowUpAssesmentMsg
+                                    ++ [ App.Model.SetActivePage (UserPage (SessionPage sessionId (NextStepsPage childId (ChildActivity childActivity))))
+                                       , Pages.NextSteps.Model.SetWarningPopupState assesment
+                                            |> Pages.Session.Model.MsgNextSteps childId (ChildActivity childActivity)
+                                            |> App.Model.MsgPageSession sessionId
+                                            |> App.Model.MsgLoggedIn
+                                       ]
                         in
                         if List.isEmpty assesment then
-                            -- View assement when we have items at assement list.
-                            []
+                            -- No assesment, so, only thing we want to update is the
+                            -- assesment field on Follow Up measurement, if it exists already.
+                            updateFollowUpAssesmentMsg
 
                         else
                             case activePage of

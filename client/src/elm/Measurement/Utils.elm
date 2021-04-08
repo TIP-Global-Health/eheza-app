@@ -274,28 +274,44 @@ toContributingFactorsValue form =
     Maybe.map (EverySet.fromList >> ifEverySetEmpty NoContributingFactorsSign) form.signs
 
 
-fromFollowUpValue : Maybe (EverySet FollowUpOption) -> FollowUpForm
+fromFollowUpValue : Maybe FollowUpValue -> FollowUpForm
 fromFollowUpValue saved =
-    { option = Maybe.andThen (EverySet.toList >> List.head) saved }
+    { option = Maybe.andThen (.options >> EverySet.toList >> List.head) saved
+    }
 
 
-followUpFormWithDefault : FollowUpForm -> Maybe (EverySet FollowUpOption) -> FollowUpForm
+followUpFormWithDefault : FollowUpForm -> Maybe FollowUpValue -> FollowUpForm
 followUpFormWithDefault form saved =
     saved
         |> unwrap
             form
-            (\value -> { option = or form.option (EverySet.toList value |> List.head) })
+            (\value -> { option = or form.option (EverySet.toList value.options |> List.head) })
 
 
-toFollowUpValueWithDefault : Maybe (EverySet FollowUpOption) -> FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValueWithDefault : Maybe FollowUpValue -> FollowUpForm -> Maybe FollowUpValue
 toFollowUpValueWithDefault saved form =
+    let
+        assesment =
+            Maybe.map .assesment saved
+    in
     followUpFormWithDefault form saved
-        |> toFollowUpValue
+        |> toFollowUpValue assesment
 
 
-toFollowUpValue : FollowUpForm -> Maybe (EverySet FollowUpOption)
-toFollowUpValue form =
-    Maybe.map (List.singleton >> EverySet.fromList) form.option
+toFollowUpValue : Maybe (EverySet NutritionAssesment) -> FollowUpForm -> Maybe FollowUpValue
+toFollowUpValue assesment form =
+    form.option
+        |> Maybe.map
+            (\option ->
+                let
+                    options =
+                        List.singleton option |> EverySet.fromList
+
+                    assesmentForBackend =
+                        Maybe.withDefault (EverySet.singleton NoNutritionAssesment) assesment
+                in
+                FollowUpValue options assesmentForBackend
+            )
 
 
 fromHealthEducationValue : Maybe HealthEducationValue -> HealthEducationForm

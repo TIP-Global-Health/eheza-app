@@ -10,6 +10,7 @@ import Backend.Measurement.Model
         , HeightInCm(..)
         , MuacInCm(..)
         , MuacIndication(..)
+        , NutritionAssesment(..)
         , NutritionMeasurement
         , NutritionMeasurements
         , WeightInKg(..)
@@ -34,7 +35,7 @@ import Maybe.Extra exposing (isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (contributingFactorsFormWithDefault, followUpFormWithDefault, healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Pages.NutritionActivity.Model exposing (..)
-import Pages.NutritionEncounter.Model exposing (AssembledData, NutritionAssesment(..))
+import Pages.NutritionEncounter.Model exposing (AssembledData)
 import Pages.Utils exposing (ifEverySetEmpty, taskCompleted, valueConsideringIsDirtyField)
 import RemoteData exposing (RemoteData(..))
 import Utils.NominalDate exposing (diffDays)
