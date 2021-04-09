@@ -3791,7 +3791,7 @@ translationSet trans =
 
                 RainWaterCollectionSystem ->
                     { english = "Rain Water Collection System"
-                    , kinyarwanda = Just "Amazi y'imvura "
+                    , kinyarwanda = Just "Amazi y'imvura"
                     }
 
                 NaturalSourceFlowingWater ->
@@ -4726,7 +4726,7 @@ translationSet trans =
             case type_ of
                 FortifiedPorridge ->
                     { english = "Fortified Porridge"
-                    , kinyarwanda = Just "Igikoma kirimo Imyunyu ngugu na  Vitamine"
+                    , kinyarwanda = Just "Igikoma kirimo Imyunyu ngugu na Vitamine"
                     }
 
                 Rutf ->
@@ -4741,7 +4741,7 @@ translationSet trans =
 
                 TherapeuticMilk ->
                     { english = "Therapeutic Milk"
-                    , kinyarwanda = Just "Amata avura "
+                    , kinyarwanda = Just "Amata avura"
                     }
 
                 NoNutritionSupplementType ->
