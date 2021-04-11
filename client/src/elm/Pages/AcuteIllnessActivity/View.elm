@@ -1541,6 +1541,11 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                             , isJust measurements.healthEducation
                             )
 
+                        NextStepsFollowUp ->
+                            ( "next-steps-follow-up"
+                            , isJust measurements.followUp
+                            )
+
                 isActive =
                     activeTask == Just task
 
@@ -1611,6 +1616,12 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate diagnosis
 
+                Just NextStepsFollowUp ->
+                    measurements.followUp
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> followUpFormWithDefault data.followUpForm
+                        |> viewFollowUpForm language currentDate
+
                 Nothing ->
                     emptyNode
 
@@ -1627,10 +1638,10 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                                     |> call114FormWithDefault data.call114Form
                         in
                         if call114Form.called114 == Just False then
-                            [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC ]
+                            [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsFollowUp ]
 
                         else if call114Form.called114 == Just True then
-                            [ NextStepsIsolation, NextStepsCall114 ]
+                            [ NextStepsIsolation, NextStepsCall114, NextStepsFollowUp ]
 
                         else
                             tasks
@@ -1652,10 +1663,10 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                                     |> hcContactFormWithDefault data.hcContactForm
                         in
                         if healthCenterRecommendedToCome measurements && hcContactForm.recommendations /= Just ComeToHealthCenter then
-                            [ NextStepsContactHC, NextStepsHealthEducation ]
+                            [ NextStepsContactHC, NextStepsFollowUp, NextStepsHealthEducation ]
 
                         else if (not <| healthCenterRecommendedToCome measurements) && hcContactForm.recommendations == Just ComeToHealthCenter then
-                            [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation ]
+                            [ NextStepsContactHC, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation ]
 
                         else
                             tasks
@@ -1687,10 +1698,10 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                                 |> Maybe.withDefault False
                     in
                     if medicationOutOfStockOrPatientAlergic then
-                        [ NextStepsMedicationDistribution, NextStepsSendToHC ]
+                        [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
 
                     else
-                        [ NextStepsMedicationDistribution ]
+                        [ NextStepsMedicationDistribution, NextStepsFollowUp ]
 
                 _ ->
                     tasks
@@ -1728,6 +1739,9 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
 
                                     NextStepsHealthEducation ->
                                         SaveHealthEducation personId measurements.healthEducation nextTask
+
+                                    NextStepsFollowUp ->
+                                        SaveFollowUp personId measurements.followUp nextTask
 
                             saveLabel =
                                 case task of
@@ -2688,4 +2702,17 @@ viewHealthEducationLabel language actionTranslationId diagnosisTranslationId ico
     div [ class "header icon-label" ] <|
         [ i [ class iconClass ] []
         , message
+        ]
+
+
+viewFollowUpForm : Language -> NominalDate -> FollowUpForm -> Html Msg
+viewFollowUpForm language currentDate form =
+    div [ class "ui form follow-up" ]
+        [ viewLabel language Translate.FollowUpLabel
+        , viewCheckBoxSelectInput language
+            [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
+            []
+            form.option
+            SetFollowUpOption
+            Translate.FollowUpOption
         ]

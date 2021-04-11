@@ -245,12 +245,12 @@ resolveNextStepsTasks currentDate isFirstEncounter data =
     in
     if isFirstEncounter then
         -- The order is important. Do not change.
-        [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
+        [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
             |> List.filter (expectNextStepsTaskFirstEncounter currentDate data.person diagnosis data.measurements)
 
     else if mandatoryActivitiesCompletedSubsequentVisit currentDate data then
         -- The order is important. Do not change.
-        [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsHealthEducation ]
+        [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation ]
             |> List.filter (expectNextStepsTaskSubsequentEncounter currentDate data.person diagnosis data.measurements)
 
     else
@@ -297,6 +297,9 @@ expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements task
 
         NextStepsHealthEducation ->
             False
+
+        NextStepsFollowUp ->
+            True
 
 
 {-| Send patient to health center if patient is alergic to any of prescribed medications,
@@ -389,6 +392,14 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
 
         NextStepsHealthEducation ->
             not malariaDiagnosedAtCurrentEncounter
+
+        NextStepsFollowUp ->
+            -- Whenever we have a next step task that is other than NextStepsHealthEducation.
+            -- When there's only NextStepsHealthEducation, illness will be resolved, therefore,
+            -- there's no need for a follow up.
+            expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements NextStepsMedicationDistribution
+                || expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements NextStepsSendToHC
+                || expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements NextStepsContactHC
 
         _ ->
             False
@@ -617,22 +628,27 @@ activityCompleted currentDate isFirstEncounter data activity =
             in
             if isFirstEncounter then
                 case nextStepsTasks of
-                    [ NextStepsIsolation, NextStepsCall114 ] ->
-                        isJust measurements.isolation && isJust measurements.call114
+                    [ NextStepsIsolation, NextStepsCall114, NextStepsFollowUp ] ->
+                        isJust measurements.isolation && isJust measurements.call114 && isJust measurements.followUp
 
-                    [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC ] ->
-                        isJust measurements.isolation && isJust measurements.call114 && isJust measurements.hcContact
+                    [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsFollowUp ] ->
+                        isJust measurements.isolation
+                            && isJust measurements.call114
+                            && isJust measurements.hcContact
+                            && isJust measurements.followUp
 
-                    [ NextStepsMedicationDistribution ] ->
-                        isJust measurements.medicationDistribution
+                    [ NextStepsMedicationDistribution, NextStepsFollowUp ] ->
+                        isJust measurements.medicationDistribution && isJust measurements.followUp
 
                     -- When medication was prescribed, but it is out
                     -- of stock, or patient is alergic.
-                    [ NextStepsMedicationDistribution, NextStepsSendToHC ] ->
-                        isJust measurements.medicationDistribution && isJust measurements.sendToHC
+                    [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ] ->
+                        isJust measurements.medicationDistribution
+                            && isJust measurements.sendToHC
+                            && isJust measurements.followUp
 
-                    [ NextStepsSendToHC ] ->
-                        isJust measurements.sendToHC
+                    [ NextStepsSendToHC, NextStepsFollowUp ] ->
+                        isJust measurements.sendToHC && isJust measurements.followUp
 
                     _ ->
                         False

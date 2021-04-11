@@ -140,6 +140,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "acute_illness_danger_signs" (decodeHead decodeAcuteIllnessDangerSigns) Nothing
         |> optional "acute_illness_nutrition" (decodeHead decodeAcuteIllnessNutrition) Nothing
         |> optional "health_education" (decodeHead decodeHealthEducation) Nothing
+        |> optional "acute_illness_follow_up" (decodeHead decodeAcuteIllnessFollowUp) Nothing
 
 
 decodeFollowUpMeasurements : Decoder FollowUpMeasurements
@@ -1115,6 +1116,17 @@ decodeFollowUpValue =
     succeed FollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
         |> required "nutrition_assesment" (decodeEverySet decodeNutritionAssesment)
+
+
+decodeAcuteIllnessFollowUp : Decoder AcuteIllnessFollowUp
+decodeAcuteIllnessFollowUp =
+    decodeAcuteIllnessMeasurement decodeAcuteIllnessFollowUpValue
+
+
+decodeAcuteIllnessFollowUpValue : Decoder (EverySet FollowUpOption)
+decodeAcuteIllnessFollowUpValue =
+    decodeEverySet decodeFollowUpOption
+        |> field "follow_up_options"
 
 
 decodeNutritionFeeding : Decoder NutritionFeeding
