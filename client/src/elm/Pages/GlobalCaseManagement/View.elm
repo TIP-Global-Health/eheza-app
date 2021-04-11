@@ -1,6 +1,7 @@
 module Pages.GlobalCaseManagement.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (FollowUpMeasurements, NutritionAssesment(..))
@@ -17,6 +18,7 @@ import Html.Events exposing (onClick, onInput)
 import List.Extra
 import Maybe exposing (Maybe)
 import Maybe.Extra exposing (isJust, isNothing)
+import Pages.AcuteIllnessEncounter.Utils exposing (compareAcuteIllnessEncounterDataDesc)
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -64,10 +66,10 @@ viewContent language currentDate healthCenterId isChw model db followUps =
             generateNutritionFollowUps currentDate followUps
 
         acuteIllnessFollowUps =
-            Dict.empty
+            generateAcuteIllnessFollowUps db followUps
 
         panes =
-            [ ( AcuteIllnessEncounter, acuteIllnessFollowUps ), ( HomeVisitEncounter, nutritionFollowUps ) ]
+            [ ( AcuteIllnessEncounter, Dict.empty ), ( HomeVisitEncounter, nutritionFollowUps ) ]
                 |> List.filterMap
                     (\( type_, followUps_ ) ->
                         if isNothing model.encounterTypeFilter || model.encounterTypeFilter == Just type_ then
@@ -256,3 +258,76 @@ viewFollowUpEntry language currentDate db personId item =
                     ]
             )
         |> Maybe.withDefault emptyNode
+
+
+viewAcuteIllnessPane :
+    Language
+    -> NominalDate
+    -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+viewAcuteIllnessPane language currentDate itemsDict db model =
+    let
+        content =
+            if Dict.isEmpty itemsDict then
+                [ translateText language Translate.NoMatchesFound ]
+
+            else
+                Dict.map (viewAcuteIllnessFollowUpItem language currentDate db) itemsDict
+                    |> Dict.values
+    in
+    div [ class "pane" ]
+        [ viewItemHeading language AcuteIllnessEncounter
+        , div [ class "pane-content" ]
+            content
+        ]
+
+
+viewAcuteIllnessFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> ( IndividualEncounterParticipantId, PersonId ) -> AcuteIllnessFollowUpItem -> Html Msg
+viewAcuteIllnessFollowUpItem language currentDate db ( participantId, personId ) item =
+    let
+        outcome =
+            Dict.get participantId db.individualParticipants
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.andThen .outcome
+    in
+    if isJust outcome then
+        -- Ilness was concluded, so we do not need to follow up on it.
+        emptyNode
+
+    else
+        let
+            allEncounters =
+                Dict.get participantId db.acuteIllnessEncountersByParticipant
+                    |> Maybe.andThen RemoteData.toMaybe
+                    |> Maybe.map Dict.values
+                    |> Maybe.withDefault []
+                    -- Sort DESC, by date and sequence number.
+                    |> List.sortWith compareAcuteIllnessEncounterDataDesc
+
+            lastEncounter =
+                List.head allEncounters
+        in
+        lastEncounter
+            |> Maybe.map
+                (\encounter ->
+                    -- Last encounter occurred before follow up was scheduled.
+                    if Date.compare encounter.startDate item.dateMeasured == LT then
+                        allEncounters
+                            |> List.filter
+                                -- We filters out encounters that got no diagnosis set.
+                                (.diagnosis >> (/=) NoAcuteIllnessDiagnosis)
+                            |> List.head
+                            |> Maybe.map (.diagnosis >> viewAcuteIllnessFollowUpEntry language currentDate db personId item)
+                            |> Maybe.withDefault emptyNode
+
+                    else
+                        emptyNode
+                )
+            |> Maybe.withDefault emptyNode
+
+
+viewAcuteIllnessFollowUpEntry : Language -> NominalDate -> ModelIndexedDb -> PersonId -> AcuteIllnessFollowUpItem -> AcuteIllnessDiagnosis -> Html Msg
+viewAcuteIllnessFollowUpEntry language currentDate db personId item diagnosis =
+    emptyNode

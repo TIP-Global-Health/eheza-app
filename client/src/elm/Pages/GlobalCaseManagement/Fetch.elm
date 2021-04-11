@@ -70,7 +70,7 @@ fetch currentDate healthCenterId db =
             Dict.keys acuteIllnessFollowUps
                 |> List.map Tuple.second
 
-        -- People for both types of encounters.
+        -- People for both types of follow ups.
         people =
             peopleForNutrition
                 ++ peopleForAccuteIllness
