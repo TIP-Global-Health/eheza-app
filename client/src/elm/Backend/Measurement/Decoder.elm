@@ -1115,10 +1115,12 @@ decodeAcuteIllnessFollowUp : Decoder AcuteIllnessFollowUp
 decodeAcuteIllnessFollowUp =
     decodeAcuteIllnessMeasurement decodeAcuteIllnessFollowUpValue
 
-decodeAcuteIllnessFollowUpValue : Decoder AcuteIllnessFollowUpValue
+
+decodeAcuteIllnessFollowUpValue : Decoder (EverySet FollowUpOption)
 decodeAcuteIllnessFollowUpValue =
-    succeed AcuteIllnessFollowUpValue
-            |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
+    decodeEverySet decodeFollowUpOption
+        |> field "follow_up_options"
+
 
 decodeNutritionFeeding : Decoder NutritionFeeding
 decodeNutritionFeeding =

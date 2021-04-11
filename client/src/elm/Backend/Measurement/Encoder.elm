@@ -1405,16 +1405,19 @@ encodeFollowUpValueWithType type_ value =
     , ( "type", string type_ )
     ]
 
+
 encodeAcuteIllnessFollowUp : AcuteIllnessFollowUp -> List ( String, Value )
 encodeAcuteIllnessFollowUp =
-    encodeAcuteIllnessMeasurement (encodeAcuteIllnessFollowUpValueWithType "follow_up")
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessFollowUpValue
 
-encodeAcuteIllnessFollowUpValueWithType : String -> AcuteIllnessFollowUpValue -> List ( String, Value )
-encodeAcuteIllnessFollowUpValueWithType type_ value =
-    [ (  "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
+
+encodeAcuteIllnessFollowUpValue : EverySet FollowUpOption -> List ( String, Value )
+encodeAcuteIllnessFollowUpValue value =
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value )
     , ( "deleted", bool False )
-    , ( "type", string type_ )
+    , ( "type", string "acute_illness_follow_up" )
     ]
+
 
 encodeNutritionAssesment : NutritionAssesment -> Value
 encodeNutritionAssesment assesment =
