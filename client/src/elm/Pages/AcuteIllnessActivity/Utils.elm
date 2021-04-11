@@ -529,6 +529,17 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
             , reasonForProvidingEducationCompleted + 1
             )
 
+        NextStepsFollowUp ->
+            let
+                form =
+                    measurements.followUp
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> followUpFormWithDefault data.followUpForm
+            in
+            ( taskCompleted form.option
+            , 1
+            )
+
 
 ongoingTreatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )
 ongoingTreatmentTasksCompletedFromTotal measurements data task =

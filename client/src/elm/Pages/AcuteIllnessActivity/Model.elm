@@ -80,6 +80,8 @@ type Msg
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution )) (Maybe NextStepsTask)
     | SetProvidedEducationForDiagnosis Bool
     | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation )) (Maybe NextStepsTask)
+    | SetFollowUpOption FollowUpOption
+    | SaveFollowUp PersonId (Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )) (Maybe NextStepsTask)
       -- ONGOIN TREATMENT
     | SetActiveOngoingTreatmentTask OngoingTreatmentTask
     | SetOngoingTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
@@ -341,6 +343,7 @@ type alias NextStepsData =
     , sendToHCForm : SendToHCForm
     , medicationDistributionForm : MedicationDistributionForm
     , healthEducationForm : HealthEducationForm
+    , followUpForm : FollowUpForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -353,6 +356,7 @@ emptyNextStepsData =
     , sendToHCForm = emptySendToHCForm
     , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
     , healthEducationForm = emptyHealthEducationForm
+    , followUpForm = FollowUpForm Nothing
     , activeTask = Nothing
     }
 
@@ -364,6 +368,7 @@ type NextStepsTask
     | NextStepsMedicationDistribution
     | NextStepsSendToHC
     | NextStepsHealthEducation
+    | NextStepsFollowUp
 
 
 type alias IsolationForm =
@@ -390,6 +395,11 @@ type alias Call114Form =
     , contactedSiteDirty : Bool
     , recommendationSite : Maybe RecommendationSite
     , recommendationSiteDirty : Bool
+    }
+
+
+type alias FollowUpForm =
+    { option : Maybe FollowUpOption
     }
 
 
