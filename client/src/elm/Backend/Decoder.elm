@@ -39,6 +39,9 @@ decodeRevision =
                     "acute_illness_encounter" ->
                         decodeWithUuid AcuteIllnessEncounterRevision decodeAcuteIllnessEncounter
 
+                    "acute_illness_follow_up" ->
+                        decodeWithUuid AcuteIllnessFollowUpRevision decodeAcuteIllnessFollowUp
+
                     "acute_illness_muac" ->
                         decodeWithUuid AcuteIllnessMuacRevision decodeAcuteIllnessMuac
 
