@@ -61,7 +61,7 @@ viewContent : Language -> NominalDate -> HealthCenterId -> Bool -> Model -> Mode
 viewContent language currentDate healthCenterId isChw model db followUps =
     let
         nutritionFollowUps =
-            generateNutritionFollowUps currentDate healthCenterId followUps
+            generateNutritionFollowUps currentDate followUps
 
         acuteIllnessFollowUps =
             Dict.empty

@@ -3,7 +3,7 @@ module Pages.GlobalCaseManagement.Model exposing (..)
 import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
-import Backend.Measurement.Model exposing (FollowUpValue, NutritionAssesment)
+import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue, NutritionAssesment)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
@@ -32,6 +32,12 @@ type FollowUpDueOption
 type alias FollowUpItem =
     { dateMeasured : NominalDate
     , value : FollowUpValue
+    }
+
+
+type alias AcuteIllnessFollowUpItem =
+    { dateMeasured : NominalDate
+    , value : EverySet FollowUpOption
     }
 
 

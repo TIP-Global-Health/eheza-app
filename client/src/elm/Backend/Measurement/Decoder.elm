@@ -148,6 +148,7 @@ decodeFollowUpMeasurements =
     succeed FollowUpMeasurements
         |> optional "follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeFollowUp)) Dict.empty
         |> optional "nutrition_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeNutritionFollowUp)) Dict.empty
+        |> optional "acute_illness_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeAcuteIllnessFollowUp)) Dict.empty
 
 
 decodeHomeVisitMeasurements : Decoder HomeVisitMeasurements
