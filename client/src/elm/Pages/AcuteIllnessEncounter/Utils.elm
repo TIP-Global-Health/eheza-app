@@ -394,8 +394,12 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
             not malariaDiagnosedAtCurrentEncounter
 
         NextStepsFollowUp ->
-            -- @todo: Check what is needed when only Health Education appears.
-            True
+            -- Whenever we have a next step task that is other than NextStepsHealthEducation.
+            -- When there's only NextStepsHealthEducation, illness will be resolved, therefore,
+            -- there's no need for a follow up.
+            expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements NextStepsMedicationDistribution
+                || expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements NextStepsSendToHC
+                || expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements NextStepsContactHC
 
         _ ->
             False
