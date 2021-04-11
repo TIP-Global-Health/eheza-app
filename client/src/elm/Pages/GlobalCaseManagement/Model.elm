@@ -38,6 +38,7 @@ type alias FollowUpItem =
 type alias FollowUpEncounterData =
     { encounterType : IndividualEncounterType
     , personId : PersonId
+    , personName : String
     }
 
 

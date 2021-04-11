@@ -67,7 +67,7 @@ viewContent language currentDate healthCenterId isChw model db followUps =
             Dict.empty
 
         panes =
-            [ ( AcuteIllnessEncounter, acuteIllnessFollowUps ), ( NutritionEncounter, nutritionFollowUps ) ]
+            [ ( AcuteIllnessEncounter, acuteIllnessFollowUps ), ( HomeVisitEncounter, nutritionFollowUps ) ]
                 |> List.filterMap
                     (\( type_, followUps_ ) ->
                         if isNothing model.encounterTypeFilter || model.encounterTypeFilter == Just type_ then
@@ -90,9 +90,10 @@ viewStartFollowUpEncounterDialog language dialogState =
                 div [ class "ui tiny active modal" ]
                     [ div
                         [ class "content" ]
-                        [ p [] [ text "Hello" ]
-
-                        -- p [] [ text <| translate language message ]
+                        [ text <| translate language <| Translate.EncounterTypeFollowUpQuestion data.encounterType
+                        , text " "
+                        , span [ class "person-name " ] [ text data.personName ]
+                        , text "?"
                         ]
                     , div
                         [ class "actions" ]
@@ -249,7 +250,7 @@ viewFollowUpEntry language currentDate db personId item =
                     , div [ class "assesment" ] assessments
                     , div
                         [ class "icon-forward"
-                        , onClick <| SetDialogState <| Just <| FollowUpEncounterData NutritionEncounter personId
+                        , onClick <| SetDialogState <| Just <| FollowUpEncounterData HomeVisitEncounter personId person.name
                         ]
                         []
                     ]

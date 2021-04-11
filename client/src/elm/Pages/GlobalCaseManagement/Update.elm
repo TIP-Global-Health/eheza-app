@@ -35,34 +35,36 @@ update currentDate healthCenterId msg db model =
             )
 
         StartFollowUpEncounter data ->
-            let
-                -- Resolving Home Visit participant for person.
-                participantId =
-                    resolveIndividualParticipantForPerson data.personId HomeVisitEncounter db
-
-                startFollowUpEncounterMsgs =
-                    healthCenterId
-                        |> Maybe.map
-                            (\selectedHealthCenter ->
-                                participantId
-                                    |> Maybe.map
-                                        -- If home visit participant exists, create new encounter for it.
-                                        (\sessionId ->
-                                            [ Backend.HomeVisitEncounter.Model.HomeVisitEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
-                                                |> Backend.Model.PostHomeVisitEncounter
-                                                |> App.Model.MsgIndexedDb
-                                            ]
-                                        )
-                                    -- If not, create it.
-                                    |> Maybe.withDefault
-                                        [ emptyIndividualEncounterParticipant currentDate data.personId Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter selectedHealthCenter
-                                            |> Backend.Model.PostIndividualSession
-                                            |> App.Model.MsgIndexedDb
-                                        ]
-                            )
-                        |> Maybe.withDefault []
-            in
             ( { model | dialogState = Nothing }
             , Cmd.none
-            , startFollowUpEncounterMsgs
+            , startFollowUpEncounterOfTypeMsgs currentDate healthCenterId db data
             )
+
+
+startFollowUpEncounterOfTypeMsgs : NominalDate -> Maybe HealthCenterId -> ModelIndexedDb -> FollowUpEncounterData -> List App.Model.Msg
+startFollowUpEncounterOfTypeMsgs currentDate healthCenterId db data =
+    case data.encounterType of
+        HomeVisitEncounter ->
+            healthCenterId
+                |> Maybe.map
+                    (\selectedHealthCenter ->
+                        resolveIndividualParticipantForPerson data.personId HomeVisitEncounter db
+                            |> Maybe.map
+                                -- If home visit participant exists, create new encounter for it.
+                                (\sessionId ->
+                                    [ Backend.HomeVisitEncounter.Model.HomeVisitEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
+                                        |> Backend.Model.PostHomeVisitEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+                                )
+                            -- If not, create it.
+                            |> Maybe.withDefault
+                                [ emptyIndividualEncounterParticipant currentDate data.personId Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter selectedHealthCenter
+                                    |> Backend.Model.PostIndividualSession
+                                    |> App.Model.MsgIndexedDb
+                                ]
+                    )
+                |> Maybe.withDefault []
+
+        _ ->
+            []
