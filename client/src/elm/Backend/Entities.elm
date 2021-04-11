@@ -725,3 +725,11 @@ type alias NutritionCaringId =
 
 type NutritionCaringIdUuidType
     = NutritionCaringIdUuidType
+
+
+type alias AcuteIllnessFollowUpId =
+    EntityUuid AcuteIllnessFollowUpIdUuidType
+
+
+type AcuteIllnessFollowUpIdUuidType
+    = AcuteIllnessFollowUpIdUuidType
