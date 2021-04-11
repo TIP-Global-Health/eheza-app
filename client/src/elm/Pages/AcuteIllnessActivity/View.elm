@@ -1638,10 +1638,10 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                                     |> call114FormWithDefault data.call114Form
                         in
                         if call114Form.called114 == Just False then
-                            [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC ]
+                            [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsFollowUp ]
 
                         else if call114Form.called114 == Just True then
-                            [ NextStepsIsolation, NextStepsCall114 ]
+                            [ NextStepsIsolation, NextStepsCall114, NextStepsFollowUp ]
 
                         else
                             tasks
@@ -1663,10 +1663,10 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                                     |> hcContactFormWithDefault data.hcContactForm
                         in
                         if healthCenterRecommendedToCome measurements && hcContactForm.recommendations /= Just ComeToHealthCenter then
-                            [ NextStepsContactHC, NextStepsHealthEducation ]
+                            [ NextStepsContactHC, NextStepsFollowUp, NextStepsHealthEducation ]
 
                         else if (not <| healthCenterRecommendedToCome measurements) && hcContactForm.recommendations == Just ComeToHealthCenter then
-                            [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation ]
+                            [ NextStepsContactHC, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation ]
 
                         else
                             tasks
@@ -1698,10 +1698,10 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                                 |> Maybe.withDefault False
                     in
                     if medicationOutOfStockOrPatientAlergic then
-                        [ NextStepsMedicationDistribution, NextStepsSendToHC ]
+                        [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
 
                     else
-                        [ NextStepsMedicationDistribution ]
+                        [ NextStepsMedicationDistribution, NextStepsFollowUp ]
 
                 _ ->
                     tasks
