@@ -61,6 +61,10 @@ fetch currentDate healthCenterId db =
             EverySet.toList acuteIllnessParticipants
                 |> List.map FetchIndividualEncounterParticipant
 
+        fetchAcuteIllnessEncountersForParticipantMsgs =
+            EverySet.toList acuteIllnessParticipants
+                |> List.map FetchAcuteIllnessEncountersForParticipant
+
         acuteIllnessFollowUps =
             followUps
                 |> Maybe.map (generateAcuteIllnessFollowUps db)
@@ -86,3 +90,4 @@ fetch currentDate healthCenterId db =
         ++ fetchHomeVisitEncountersMsgs
         ++ fetchAcuteIllnessEncountersMsgs
         ++ fetchAcuteIllnessParticipantsMsgs
+        ++ fetchAcuteIllnessEncountersForParticipantMsgs

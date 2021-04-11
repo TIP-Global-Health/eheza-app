@@ -127,11 +127,11 @@ generateAcuteIllnessParticipants encounters db =
         |> EverySet.fromList
 
 
-followUpDueOptionByDate : NominalDate -> NominalDate -> FollowUpValue -> FollowUpDueOption
-followUpDueOptionByDate currentDate dateMeasured value =
+followUpDueOptionByDate : NominalDate -> NominalDate -> EverySet FollowUpOption -> FollowUpDueOption
+followUpDueOptionByDate currentDate dateMeasured options =
     let
         dueIn =
-            EverySet.toList value.options
+            EverySet.toList options
                 |> List.head
                 |> Maybe.map
                     (\option ->

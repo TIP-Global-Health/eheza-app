@@ -65,15 +65,21 @@ viewContent language currentDate healthCenterId isChw model db followUps =
         nutritionFollowUps =
             generateNutritionFollowUps currentDate followUps
 
+        nutritionFollowUpsPane =
+            viewEncounterTypePane language currentDate HomeVisitEncounter nutritionFollowUps db model
+
         acuteIllnessFollowUps =
             generateAcuteIllnessFollowUps db followUps
 
+        acuteIllnessFollowUpsPane =
+            viewAcuteIllnessPane language currentDate acuteIllnessFollowUps db model
+
         panes =
-            [ ( AcuteIllnessEncounter, Dict.empty ), ( HomeVisitEncounter, nutritionFollowUps ) ]
+            [ ( AcuteIllnessEncounter, acuteIllnessFollowUpsPane ), ( HomeVisitEncounter, nutritionFollowUpsPane ) ]
                 |> List.filterMap
-                    (\( type_, followUps_ ) ->
+                    (\( type_, pane ) ->
                         if isNothing model.encounterTypeFilter || model.encounterTypeFilter == Just type_ then
-                            Just <| viewEncounterTypePane language currentDate type_ followUps_ db model
+                            Just pane
 
                         else
                             Nothing
@@ -206,27 +212,14 @@ viewFollowUpEntry language currentDate db personId item =
             (\person ->
                 let
                     dueOption =
-                        followUpDueOptionByDate currentDate item.dateMeasured item.value
+                        followUpDueOptionByDate currentDate item.dateMeasured item.value.options
 
                     dueLabel =
                         Translate.FollowUpDueOption dueOption
                             |> translateText language
 
                     dueClass =
-                        "due "
-                            ++ (case dueOption of
-                                    OverDue ->
-                                        "overdue"
-
-                                    DueToday ->
-                                        "today"
-
-                                    DueThisWeek ->
-                                        "this-week"
-
-                                    DueThisMonth ->
-                                        "this-month"
-                               )
+                        viewDueClass dueOption
 
                     assessments =
                         EverySet.toList item.value.assesment
@@ -258,6 +251,24 @@ viewFollowUpEntry language currentDate db personId item =
                     ]
             )
         |> Maybe.withDefault emptyNode
+
+
+viewDueClass : FollowUpDueOption -> String
+viewDueClass dueOption =
+    "due "
+        ++ (case dueOption of
+                OverDue ->
+                    "overdue"
+
+                DueToday ->
+                    "today"
+
+                DueThisWeek ->
+                    "this-week"
+
+                DueThisMonth ->
+                    "this-month"
+           )
 
 
 viewAcuteIllnessPane :
@@ -308,6 +319,9 @@ viewAcuteIllnessFollowUpItem language currentDate db ( participantId, personId )
 
             lastEncounter =
                 List.head allEncounters
+
+            _ =
+                Debug.log "lastEncounter" (Dict.get participantId db.acuteIllnessEncountersByParticipant)
         in
         lastEncounter
             |> Maybe.map
@@ -330,4 +344,30 @@ viewAcuteIllnessFollowUpItem language currentDate db ( participantId, personId )
 
 viewAcuteIllnessFollowUpEntry : Language -> NominalDate -> ModelIndexedDb -> PersonId -> AcuteIllnessFollowUpItem -> AcuteIllnessDiagnosis -> Html Msg
 viewAcuteIllnessFollowUpEntry language currentDate db personId item diagnosis =
-    emptyNode
+    Dict.get personId db.people
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map
+            (\person ->
+                let
+                    dueOption =
+                        followUpDueOptionByDate currentDate item.dateMeasured item.value
+
+                    dueLabel =
+                        Translate.FollowUpDueOption dueOption
+                            |> translateText language
+
+                    dueClass =
+                        viewDueClass dueOption
+                in
+                div [ class "follow-up-entry" ]
+                    [ div [ class "name" ] [ text person.name ]
+                    , div [ class dueClass ] [ dueLabel ]
+                    , div [ class "assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
+                    , div
+                        [ class "icon-forward"
+                        , onClick <| SetDialogState <| Just <| FollowUpEncounterData AcuteIllnessEncounter personId person.name
+                        ]
+                        []
+                    ]
+            )
+        |> Maybe.withDefault emptyNode
