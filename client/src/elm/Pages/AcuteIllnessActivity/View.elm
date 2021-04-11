@@ -1541,6 +1541,11 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                             , isJust measurements.healthEducation
                             )
 
+                        NextStepsFollowUp ->
+                            ( "next-steps-follow-up"
+                            , isJust measurements.followUp
+                            )
+
                 isActive =
                     activeTask == Just task
 
@@ -1610,6 +1615,12 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                         |> Maybe.map (Tuple.second >> .value)
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate diagnosis
+
+                Just NextStepsFollowUp ->
+                    measurements.followUp
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> followUpFormWithDefault data.followUpForm
+                        |> viewFollowUpForm language currentDate
 
                 Nothing ->
                     emptyNode
@@ -1728,6 +1739,9 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
 
                                     NextStepsHealthEducation ->
                                         SaveHealthEducation personId measurements.healthEducation nextTask
+
+                                    NextStepsFollowUp ->
+                                        SaveFollowUp personId measurements.followUp nextTask
 
                             saveLabel =
                                 case task of
@@ -2688,4 +2702,17 @@ viewHealthEducationLabel language actionTranslationId diagnosisTranslationId ico
     div [ class "header icon-label" ] <|
         [ i [ class iconClass ] []
         , message
+        ]
+
+
+viewFollowUpForm : Language -> NominalDate -> FollowUpForm -> Html Msg
+viewFollowUpForm language currentDate form =
+    div [ class "ui form follow-up" ]
+        [ viewLabel language Translate.FollowUpLabel
+        , viewCheckBoxSelectInput language
+            [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
+            []
+            form.option
+            SetFollowUpOption
+            Translate.FollowUpOption
         ]
