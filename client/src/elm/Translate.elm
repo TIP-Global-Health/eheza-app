@@ -4306,6 +4306,11 @@ translationSet trans =
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
+                Pages.AcuteIllnessActivity.Model.NextStepsFollowUp ->
+                    { english = "Follow Up"
+                    , kinyarwanda = Just "Gukurikirana umurwayi"
+                    }
+
         No ->
             { english = "No"
             , kinyarwanda = Just "Oya"

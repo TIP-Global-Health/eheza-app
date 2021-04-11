@@ -2,7 +2,53 @@ module Pages.AcuteIllnessActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
-import Backend.Measurement.Model exposing (AcuteFindingsGeneralSign(..), AcuteFindingsRespiratorySign(..), AcuteFindingsValue, AcuteIllnessDangerSign(..), AcuteIllnessMeasurement, AcuteIllnessMeasurements, AcuteIllnessVitalsValue, AdverseEvent(..), Call114Sign(..), Call114Value, ChildNutritionSign(..), ExposureSign(..), HCContactSign(..), HCContactValue, HCRecommendation(..), HealthEducationSign(..), HealthEducationValue, IsolationSign(..), IsolationValue, MalariaRapidTestResult(..), MedicationDistributionSign(..), MedicationDistributionValue, MedicationNonAdministrationReason(..), MedicationNonAdministrationSign(..), MuacInCm(..), ReasonForNotIsolating(..), ReasonForNotProvidingHealthEducation(..), ReasonForNotSendingToHC(..), ReasonForNotTaking(..), Recommendation114(..), RecommendationSite(..), ResponsePeriod(..), SendToHCSign(..), SendToHCValue, SymptomsGIDerivedSign(..), SymptomsGISign(..), SymptomsGIValue, SymptomsGeneralSign(..), SymptomsRespiratorySign(..), TravelHistorySign(..), TreatmentOngoingSign(..), TreatmentOngoingValue, TreatmentReviewSign(..))
+import Backend.Measurement.Model
+    exposing
+        ( AcuteFindingsGeneralSign(..)
+        , AcuteFindingsRespiratorySign(..)
+        , AcuteFindingsValue
+        , AcuteIllnessDangerSign(..)
+        , AcuteIllnessMeasurement
+        , AcuteIllnessMeasurements
+        , AcuteIllnessVitalsValue
+        , AdverseEvent(..)
+        , Call114Sign(..)
+        , Call114Value
+        , ChildNutritionSign(..)
+        , ExposureSign(..)
+        , FollowUpOption(..)
+        , HCContactSign(..)
+        , HCContactValue
+        , HCRecommendation(..)
+        , HealthEducationSign(..)
+        , HealthEducationValue
+        , IsolationSign(..)
+        , IsolationValue
+        , MalariaRapidTestResult(..)
+        , MedicationDistributionSign(..)
+        , MedicationDistributionValue
+        , MedicationNonAdministrationReason(..)
+        , MedicationNonAdministrationSign(..)
+        , MuacInCm(..)
+        , ReasonForNotIsolating(..)
+        , ReasonForNotProvidingHealthEducation(..)
+        , ReasonForNotSendingToHC(..)
+        , ReasonForNotTaking(..)
+        , Recommendation114(..)
+        , RecommendationSite(..)
+        , ResponsePeriod(..)
+        , SendToHCSign(..)
+        , SendToHCValue
+        , SymptomsGIDerivedSign(..)
+        , SymptomsGISign(..)
+        , SymptomsGIValue
+        , SymptomsGeneralSign(..)
+        , SymptomsRespiratorySign(..)
+        , TravelHistorySign(..)
+        , TreatmentOngoingSign(..)
+        , TreatmentOngoingValue
+        , TreatmentReviewSign(..)
+        )
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAFertileWoman)
 import EverySet exposing (EverySet)
@@ -527,6 +573,17 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
             in
             ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
             , reasonForProvidingEducationCompleted + 1
+            )
+
+        NextStepsFollowUp ->
+            let
+                form =
+                    measurements.followUp
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> followUpFormWithDefault data.followUpForm
+            in
+            ( taskCompleted form.option
+            , 1
             )
 
 
@@ -1532,6 +1589,30 @@ expectPhysicalExamTask currentDate person isFirstEncounter task =
         -- We show Acute Finding only on first encounter
         PhysicalExamAcuteFindings ->
             isFirstEncounter
+
+
+fromFollowUpValue : Maybe (EverySet FollowUpOption) -> FollowUpForm
+fromFollowUpValue saved =
+    { option = Maybe.andThen (EverySet.toList >> List.head) saved }
+
+
+followUpFormWithDefault : FollowUpForm -> Maybe (EverySet FollowUpOption) -> FollowUpForm
+followUpFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value -> { option = or form.option (EverySet.toList value |> List.head) })
+
+
+toFollowUpValueWithDefault : Maybe (EverySet FollowUpOption) -> FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValueWithDefault saved form =
+    followUpFormWithDefault form saved
+        |> toFollowUpValue
+
+
+toFollowUpValue : FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValue form =
+    Maybe.map (List.singleton >> EverySet.fromList) form.option
 
 
 

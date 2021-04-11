@@ -1092,6 +1092,10 @@ type HealthEducationSign
     | NoHealthEducationSigns
 
 
+type alias AcuteIllnessFollowUp =
+    AcuteIllnessMeasurement (EverySet FollowUpOption)
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -1232,6 +1236,7 @@ type alias AcuteIllnessMeasurements =
     , dangerSigns : Maybe ( AcuteIllnessDangerSignsId, AcuteIllnessDangerSigns )
     , nutrition : Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )
     , healthEducation : Maybe ( HealthEducationId, HealthEducation )
+    , followUp : Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )
     }
 
 
