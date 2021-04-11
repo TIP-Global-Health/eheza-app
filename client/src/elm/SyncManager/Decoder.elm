@@ -353,6 +353,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.AcuteIllnessEncounter.Decoder.decodeAcuteIllnessEncounter
                             BackendAuthorityAcuteIllnessEncounter
 
+                    "acute_illness_follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteIllnessFollowUp
+                            BackendAuthorityAcuteIllnessFollowUp
+
                     "acute_illness_muac" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeAcuteIllnessMuac
