@@ -140,7 +140,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "acute_illness_danger_signs" (decodeHead decodeAcuteIllnessDangerSigns) Nothing
         |> optional "acute_illness_nutrition" (decodeHead decodeAcuteIllnessNutrition) Nothing
         |> optional "health_education" (decodeHead decodeHealthEducation) Nothing
-        |> optional "follow_up" (decodeHead decodeAcuteIllnessFollowUp) Nothing
+        |> optional "acute_illness_follow_up" (decodeHead decodeAcuteIllnessFollowUp) Nothing
 
 
 decodeHomeVisitMeasurements : Decoder HomeVisitMeasurements
