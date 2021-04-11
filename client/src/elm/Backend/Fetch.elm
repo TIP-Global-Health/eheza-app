@@ -142,13 +142,6 @@ shouldFetch model msg =
                 |> isNotAsked
 
         FetchPeople ids ->
-            let
-                _ =
-                    Debug.log "should FetchPeople" ids
-
-                _ =
-                    Debug.log "model.people" model.people
-            in
             if List.isEmpty ids then
                 False
 
