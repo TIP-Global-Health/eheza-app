@@ -1166,6 +1166,21 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                     , extraMsgs
                     )
 
+                [ AcuteIllnessFollowUpRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ NutritionMuacRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
