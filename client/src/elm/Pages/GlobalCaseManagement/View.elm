@@ -66,7 +66,7 @@ viewContent language currentDate healthCenterId isChw model db followUps =
             generateNutritionFollowUps currentDate followUps
 
         nutritionFollowUpsPane =
-            viewEncounterTypePane language currentDate HomeVisitEncounter nutritionFollowUps db model
+            viewNutritionPane language currentDate HomeVisitEncounter nutritionFollowUps db model
 
         acuteIllnessFollowUps =
             generateAcuteIllnessFollowUps db followUps
@@ -158,21 +158,20 @@ viewFilters language model =
         List.map renderButton filters
 
 
-viewEncounterTypePane : Language -> NominalDate -> IndividualEncounterType -> Dict PersonId FollowUpItem -> ModelIndexedDb -> Model -> Html Msg
-viewEncounterTypePane language currentDate encounterType itemsDict db model =
+viewNutritionPane : Language -> NominalDate -> IndividualEncounterType -> Dict PersonId FollowUpItem -> ModelIndexedDb -> Model -> Html Msg
+viewNutritionPane language currentDate encounterType itemsDict db model =
     let
         content =
             if Dict.isEmpty itemsDict then
                 [ translateText language Translate.NoMatchesFound ]
 
             else
-                Dict.map (viewFollowUpItem language currentDate db) itemsDict
+                Dict.map (viewNutritionFollowUpItem language currentDate db) itemsDict
                     |> Dict.values
     in
     div [ class "pane" ]
         [ viewItemHeading language encounterType
-        , div [ class "pane-content" ]
-            content
+        , div [ class "pane-content" ] content
         ]
 
 
@@ -182,8 +181,8 @@ viewItemHeading language encounterType =
         [ text <| translate language <| Translate.EncounterTypeFollowUpLabel encounterType ]
 
 
-viewFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> PersonId -> FollowUpItem -> Html Msg
-viewFollowUpItem language currentDate db personId item =
+viewNutritionFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> PersonId -> FollowUpItem -> Html Msg
+viewNutritionFollowUpItem language currentDate db personId item =
     let
         lastHomeVisitEncounter =
             resolveIndividualParticipantForPerson personId HomeVisitEncounter db
@@ -204,17 +203,17 @@ viewFollowUpItem language currentDate db personId item =
             (\encounter ->
                 -- Last Home Visitit encounter occurred before follow up was scheduled.
                 if Date.compare encounter.startDate item.dateMeasured == LT then
-                    viewFollowUpEntry language currentDate db personId item
+                    viewNutritionFollowUpEntry language currentDate db personId item
 
                 else
                     emptyNode
             )
         |> -- No Home Visitit encounter found.
-           Maybe.withDefault (viewFollowUpEntry language currentDate db personId item)
+           Maybe.withDefault (viewNutritionFollowUpEntry language currentDate db personId item)
 
 
-viewFollowUpEntry : Language -> NominalDate -> ModelIndexedDb -> PersonId -> FollowUpItem -> Html Msg
-viewFollowUpEntry language currentDate db personId item =
+viewNutritionFollowUpEntry : Language -> NominalDate -> ModelIndexedDb -> PersonId -> FollowUpItem -> Html Msg
+viewNutritionFollowUpEntry language currentDate db personId item =
     Dict.get personId db.people
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map
