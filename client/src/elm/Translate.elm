@@ -4586,7 +4586,7 @@ translationSet trans =
             case option of
                 CaredByParent ->
                     { english = "Parent"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi"
                     }
 
                 CaredByGrandparent ->
@@ -5869,7 +5869,7 @@ translationSet trans =
 
         SachetsPerDayHelper weight recommendation ->
             { english = "The recommended amount for a " ++ String.fromFloat weight ++ " kg child is " ++ String.fromFloat recommendation ++ " sachets a day"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just <| "Hemewe amasashe " ++ String.fromFloat recommendation ++ " ku munsi ku mwana w'ibiro " ++ String.fromFloat weight ++ " ku munsi"
             }
 
         SachetsPerDayQuestion ->
@@ -6695,7 +6695,7 @@ translationSet trans =
 
         WhatType ->
             { english = "What type"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ubuhe bwoko"
             }
 
         WhatWasTheirResponse ->
