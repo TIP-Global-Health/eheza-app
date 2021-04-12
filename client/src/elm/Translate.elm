@@ -5869,7 +5869,7 @@ translationSet trans =
 
         SachetsPerDayHelper weight recommendation ->
             { english = "The recommended amount for a " ++ String.fromFloat weight ++ " kg child is " ++ String.fromFloat recommendation ++ " sachets a day"
-            , kinyarwanda = Just <| "Hemewe amasashe " ++ String.fromFloat recommendation ++ " ku munsi ku mwana w'ibiro " ++ String.fromFloat weight ++ " ku munsi"
+            , kinyarwanda = Just <| "Amasashe yemewe ku mwana w'ibiro " ++ String.fromFloat weight ++ " ni " ++ String.fromFloat recommendation ++ " ku munsi"
             }
 
         SachetsPerDayQuestion ->
