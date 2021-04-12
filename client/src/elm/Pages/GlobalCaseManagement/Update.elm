@@ -2,6 +2,7 @@ module Pages.GlobalCaseManagement.Update exposing (update)
 
 import App.Model
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (emptyAcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Model
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
@@ -34,37 +35,49 @@ update currentDate healthCenterId msg db model =
             , []
             )
 
-        StartFollowUpEncounter data ->
+        StartFollowUpEncounter dataType ->
+            let
+                msgs =
+                    healthCenterId
+                        |> Maybe.map
+                            (\selectedHealthCenter ->
+                                case dataType of
+                                    FollowUpNutrition data ->
+                                        startFollowUpEncounterHomeVisit currentDate selectedHealthCenter db data
+
+                                    FollowUpAcuteIllness data ->
+                                        startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data
+                            )
+                        |> Maybe.withDefault []
+            in
             ( { model | dialogState = Nothing }
             , Cmd.none
-            , startFollowUpEncounterOfTypeMsgs currentDate healthCenterId db data
+            , msgs
             )
 
 
-startFollowUpEncounterOfTypeMsgs : NominalDate -> Maybe HealthCenterId -> ModelIndexedDb -> FollowUpEncounterData -> List App.Model.Msg
-startFollowUpEncounterOfTypeMsgs currentDate healthCenterId db data =
-    case data.encounterType of
-        HomeVisitEncounter ->
-            healthCenterId
-                |> Maybe.map
-                    (\selectedHealthCenter ->
-                        resolveIndividualParticipantForPerson data.personId HomeVisitEncounter db
-                            |> Maybe.map
-                                -- If home visit participant exists, create new encounter for it.
-                                (\sessionId ->
-                                    [ Backend.HomeVisitEncounter.Model.HomeVisitEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
-                                        |> Backend.Model.PostHomeVisitEncounter
-                                        |> App.Model.MsgIndexedDb
-                                    ]
-                                )
-                            -- If not, create it.
-                            |> Maybe.withDefault
-                                [ emptyIndividualEncounterParticipant currentDate data.personId Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter selectedHealthCenter
-                                    |> Backend.Model.PostIndividualSession
-                                    |> App.Model.MsgIndexedDb
-                                ]
-                    )
-                |> Maybe.withDefault []
+startFollowUpEncounterHomeVisit : NominalDate -> HealthCenterId -> ModelIndexedDb -> FollowUpNutritionData -> List App.Model.Msg
+startFollowUpEncounterHomeVisit currentDate selectedHealthCenter db data =
+    resolveIndividualParticipantForPerson data.personId HomeVisitEncounter db
+        |> Maybe.map
+            -- If home visit participant exists, create new encounter for it.
+            (\sessionId ->
+                [ Backend.HomeVisitEncounter.Model.HomeVisitEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
+                    |> Backend.Model.PostHomeVisitEncounter
+                    |> App.Model.MsgIndexedDb
+                ]
+            )
+        -- If not, create it.
+        |> Maybe.withDefault
+            [ emptyIndividualEncounterParticipant currentDate data.personId Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter selectedHealthCenter
+                |> Backend.Model.PostIndividualSession
+                |> App.Model.MsgIndexedDb
+            ]
 
-        _ ->
-            []
+
+startFollowUpEncounterAcuteIllness : NominalDate -> HealthCenterId -> ModelIndexedDb -> FollowUpAcuteIllnessData -> List App.Model.Msg
+startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data =
+    [ emptyAcuteIllnessEncounter data.participantId currentDate data.sequenceNumber (Just selectedHealthCenter)
+        |> Backend.Model.PostAcuteIllnessEncounter
+        |> App.Model.MsgIndexedDb
+    ]

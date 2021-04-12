@@ -11,7 +11,7 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { encounterTypeFilter : Maybe IndividualEncounterType
-    , dialogState : Maybe FollowUpEncounterData
+    , dialogState : Maybe FollowUpEncounterDataType
     }
 
 
@@ -37,19 +37,32 @@ type alias FollowUpItem =
 
 type alias AcuteIllnessFollowUpItem =
     { dateMeasured : NominalDate
+    , encounterId : Maybe AcuteIllnessEncounterId
     , value : EverySet FollowUpOption
     }
 
 
-type alias FollowUpEncounterData =
-    { encounterType : IndividualEncounterType
-    , personId : PersonId
+type FollowUpEncounterDataType
+    = FollowUpNutrition FollowUpNutritionData
+    | FollowUpAcuteIllness FollowUpAcuteIllnessData
+
+
+type alias FollowUpNutritionData =
+    { personId : PersonId
     , personName : String
+    }
+
+
+type alias FollowUpAcuteIllnessData =
+    { personId : PersonId
+    , personName : String
+    , participantId : IndividualEncounterParticipantId
+    , sequenceNumber : Int
     }
 
 
 type Msg
     = SetActivePage Page
     | SetEncounterTypeFilter (Maybe IndividualEncounterType)
-    | SetDialogState (Maybe FollowUpEncounterData)
-    | StartFollowUpEncounter FollowUpEncounterData
+    | SetDialogState (Maybe FollowUpEncounterDataType)
+    | StartFollowUpEncounter FollowUpEncounterDataType

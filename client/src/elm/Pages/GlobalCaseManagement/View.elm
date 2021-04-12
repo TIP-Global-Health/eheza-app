@@ -90,17 +90,26 @@ viewContent language currentDate healthCenterId isChw model db followUps =
             :: panes
 
 
-viewStartFollowUpEncounterDialog : Language -> Maybe FollowUpEncounterData -> Maybe (Html Msg)
+viewStartFollowUpEncounterDialog : Language -> Maybe FollowUpEncounterDataType -> Maybe (Html Msg)
 viewStartFollowUpEncounterDialog language dialogState =
     dialogState
         |> Maybe.map
-            (\data ->
+            (\dataType ->
+                let
+                    ( encounterType, personName ) =
+                        case dataType of
+                            FollowUpNutrition data ->
+                                ( HomeVisitEncounter, data.personName )
+
+                            FollowUpAcuteIllness data ->
+                                ( AcuteIllnessEncounter, data.personName )
+                in
                 div [ class "ui tiny active modal" ]
                     [ div
                         [ class "content" ]
-                        [ text <| translate language <| Translate.EncounterTypeFollowUpQuestion data.encounterType
+                        [ text <| translate language <| Translate.EncounterTypeFollowUpQuestion encounterType
                         , text " "
-                        , span [ class "person-name " ] [ text data.personName ]
+                        , span [ class "person-name " ] [ text personName ]
                         , text "?"
                         ]
                     , div
@@ -108,7 +117,7 @@ viewStartFollowUpEncounterDialog language dialogState =
                         [ div [ class "two ui buttons" ]
                             [ button
                                 [ class "ui primary fluid button"
-                                , onClick <| StartFollowUpEncounter data
+                                , onClick <| StartFollowUpEncounter dataType
                                 ]
                                 [ text <| translate language Translate.Yes ]
                             , button
@@ -238,6 +247,9 @@ viewFollowUpEntry language currentDate db personId item =
 
                             _ ->
                                 text <| translate language <| Translate.NutritionAssesment assessment
+
+                    popupData =
+                        FollowUpNutritionData personId person.name
                 in
                 div [ class "follow-up-entry" ]
                     [ div [ class "name" ] [ text person.name ]
@@ -245,7 +257,7 @@ viewFollowUpEntry language currentDate db personId item =
                     , div [ class "assesment" ] assessments
                     , div
                         [ class "icon-forward"
-                        , onClick <| SetDialogState <| Just <| FollowUpEncounterData HomeVisitEncounter personId person.name
+                        , onClick <| SetDialogState <| Just <| FollowUpNutrition popupData
                         ]
                         []
                     ]
@@ -304,36 +316,52 @@ viewAcuteIllnessFollowUpItem language currentDate db ( participantId, personId )
                 |> Maybe.andThen .outcome
     in
     if isJust outcome then
-        -- Ilness was concluded, so we do not need to follow up on it.
+        -- Illness was concluded, so we do not need to follow up on it.
         emptyNode
 
     else
         let
-            allEncounters =
+            allEncountersWithIds =
                 Dict.get participantId db.acuteIllnessEncountersByParticipant
                     |> Maybe.andThen RemoteData.toMaybe
-                    |> Maybe.map Dict.values
+                    |> Maybe.map Dict.toList
                     |> Maybe.withDefault []
                     -- Sort DESC, by date and sequence number.
-                    |> List.sortWith compareAcuteIllnessEncounterDataDesc
+                    |> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncounterDataDesc e1 e2)
 
-            lastEncounter =
-                List.head allEncounters
+            allEncounters =
+                List.map Tuple.second allEncountersWithIds
 
-            _ =
-                Debug.log "lastEncounter" (Dict.get participantId db.acuteIllnessEncountersByParticipant)
+            lastEncounterWithId =
+                List.head allEncountersWithIds
         in
-        lastEncounter
+        lastEncounterWithId
             |> Maybe.map
-                (\encounter ->
-                    -- Last encounter occurred before follow up was scheduled.
-                    if Date.compare encounter.startDate item.dateMeasured == LT then
-                        allEncounters
-                            |> List.filter
-                                -- We filters out encounters that got no diagnosis set.
-                                (.diagnosis >> (/=) NoAcuteIllnessDiagnosis)
-                            |> List.head
-                            |> Maybe.map (.diagnosis >> viewAcuteIllnessFollowUpEntry language currentDate db personId item)
+                (\( encounterId, encounter ) ->
+                    -- The follow up was issued at last encounter for the illness,
+                    -- so we know we still need to follow up on that.
+                    if item.encounterId == Just encounterId then
+                        let
+                            diagnosis =
+                                allEncounters
+                                    |> List.filter
+                                        -- We filters out encounters that got no diagnosis set,
+                                        -- to get most recent diagnosis made for the illness.
+                                        (.diagnosis >> (/=) NoAcuteIllnessDiagnosis)
+                                    |> List.head
+                                    |> Maybe.map .diagnosis
+
+                            encounterSequenceNumber =
+                                allEncounters
+                                    |> List.filter (.startDate >> (==) currentDate)
+                                    |> List.sortBy .sequenceNumber
+                                    |> List.reverse
+                                    |> List.head
+                                    |> Maybe.map (.sequenceNumber >> (+) 1)
+                                    |> Maybe.withDefault 1
+                        in
+                        diagnosis
+                            |> Maybe.map (viewAcuteIllnessFollowUpEntry language currentDate db ( participantId, personId ) item encounterSequenceNumber)
                             |> Maybe.withDefault emptyNode
 
                     else
@@ -342,8 +370,16 @@ viewAcuteIllnessFollowUpItem language currentDate db ( participantId, personId )
             |> Maybe.withDefault emptyNode
 
 
-viewAcuteIllnessFollowUpEntry : Language -> NominalDate -> ModelIndexedDb -> PersonId -> AcuteIllnessFollowUpItem -> AcuteIllnessDiagnosis -> Html Msg
-viewAcuteIllnessFollowUpEntry language currentDate db personId item diagnosis =
+viewAcuteIllnessFollowUpEntry :
+    Language
+    -> NominalDate
+    -> ModelIndexedDb
+    -> ( IndividualEncounterParticipantId, PersonId )
+    -> AcuteIllnessFollowUpItem
+    -> Int
+    -> AcuteIllnessDiagnosis
+    -> Html Msg
+viewAcuteIllnessFollowUpEntry language currentDate db ( participantId, personId ) item sequenceNumber diagnosis =
     Dict.get personId db.people
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map
@@ -358,6 +394,9 @@ viewAcuteIllnessFollowUpEntry language currentDate db personId item diagnosis =
 
                     dueClass =
                         viewDueClass dueOption
+
+                    popupData =
+                        FollowUpAcuteIllnessData personId person.name participantId sequenceNumber
                 in
                 div [ class "follow-up-entry" ]
                     [ div [ class "name" ] [ text person.name ]
@@ -365,7 +404,7 @@ viewAcuteIllnessFollowUpEntry language currentDate db personId item diagnosis =
                     , div [ class "assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
                     , div
                         [ class "icon-forward"
-                        , onClick <| SetDialogState <| Just <| FollowUpEncounterData AcuteIllnessEncounter personId person.name
+                        , onClick <| SetDialogState <| Just <| FollowUpAcuteIllness popupData
                         ]
                         []
                     ]

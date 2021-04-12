@@ -84,23 +84,21 @@ generateAcuteIllnessFollowUps db followUps =
                             let
                                 personId =
                                     item.participantId
+
+                                newItem =
+                                    AcuteIllnessFollowUpItem item.dateMeasured item.encounterId item.value
                             in
                             Dict.get ( participantId, personId ) accum
                                 |> Maybe.map
                                     (\member ->
                                         if Date.compare item.dateMeasured member.dateMeasured == GT then
-                                            Dict.insert ( participantId, personId )
-                                                (AcuteIllnessFollowUpItem item.dateMeasured item.value)
-                                                accum
+                                            Dict.insert ( participantId, personId ) newItem accum
 
                                         else
                                             accum
                                     )
                                 |> Maybe.withDefault
-                                    (Dict.insert ( participantId, personId )
-                                        (AcuteIllnessFollowUpItem item.dateMeasured item.value)
-                                        accum
-                                    )
+                                    (Dict.insert ( participantId, personId ) newItem accum)
                         )
                     |> Maybe.withDefault accum
             )
