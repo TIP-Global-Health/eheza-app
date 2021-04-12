@@ -660,28 +660,28 @@ activityCompleted currentDate isFirstEncounter data activity =
                         isJust measurements.healthEducation
 
                     -- Not improving, without danger signs present.
-                    [ NextStepsSendToHC, NextStepsHealthEducation ] ->
+                    [ NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation ] ->
                         isJust measurements.sendToHC && isJust measurements.healthEducation
 
                     -- Not improving, with danger signs, and not instructed to send patient to health center.
-                    [ NextStepsContactHC, NextStepsHealthEducation ] ->
+                    [ NextStepsContactHC, NextStepsFollowUp, NextStepsHealthEducation ] ->
                         isJust measurements.hcContact && isJust measurements.healthEducation
 
                     -- Not improving, with danger signs, and instructed to send patient to health center.
-                    [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation ] ->
+                    [ NextStepsContactHC, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation ] ->
                         isJust measurements.hcContact && isJust measurements.sendToHC && isJust measurements.healthEducation
 
                     -- Uncomplicated malarial for adult.
-                    [ NextStepsMedicationDistribution ] ->
+                    [ NextStepsMedicationDistribution, NextStepsFollowUp ] ->
                         isJust measurements.medicationDistribution
 
                     -- Uncomplicated malarial for adult, when medicine is out
                     -- of stock, or patient is alergic.
-                    [ NextStepsMedicationDistribution, NextStepsSendToHC ] ->
+                    [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ] ->
                         isJust measurements.medicationDistribution && isJust measurements.sendToHC
 
                     -- Other cases of malaria.
-                    [ NextStepsSendToHC ] ->
+                    [ NextStepsSendToHC, NextStepsFollowUp ] ->
                         isJust measurements.sendToHC
 
                     _ ->
