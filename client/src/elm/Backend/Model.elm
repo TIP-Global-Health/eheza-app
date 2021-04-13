@@ -112,6 +112,7 @@ type alias ModelIndexedDb =
     , prenatalMeasurements : Dict PrenatalEncounterId (WebData PrenatalMeasurements)
     , nutritionMeasurements : Dict NutritionEncounterId (WebData NutritionMeasurements)
     , acuteIllnessMeasurements : Dict AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
+    , followUpMeasurements : Dict HealthCenterId (WebData FollowUpMeasurements)
     , homeVisitMeasurements : Dict HomeVisitEncounterId (WebData HomeVisitMeasurements)
 
     -- From the point of view of the specified person, all of their relationships.
@@ -182,6 +183,7 @@ emptyModelIndexedDb =
     , sessionRequests = Dict.empty
     , sessions = Dict.empty
     , sessionsByClinic = Dict.empty
+    , followUpMeasurements = Dict.empty
     }
 
 
@@ -204,6 +206,8 @@ type MsgIndexedDb
     | FetchEveryCounselingSchedule
     | FetchExpectedParticipants SessionId
     | FetchExpectedSessions PersonId
+    | FetchFollowUpMeasurements HealthCenterId
+    | FetchFollowUpParticipants (List PersonId)
     | FetchHealthCenters
     | FetchIndividualEncounterParticipantsForPerson PersonId
     | FetchMotherMeasurements PersonId
@@ -238,6 +242,8 @@ type MsgIndexedDb
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
     | HandleFetchedExpectedParticipants SessionId (WebData ExpectedParticipants)
     | HandleFetchedExpectedSessions PersonId (WebData (Dict SessionId Session))
+    | HandleFetchedFollowUpMeasurements HealthCenterId (WebData FollowUpMeasurements)
+    | HandleFetchFollowUpParticipants (WebData (Dict PersonId Person))
     | HandleFetchedHealthCenters (WebData (Dict HealthCenterId HealthCenter))
     | HandleFetchedIndividualEncounterParticipantsForPerson PersonId (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
     | HandleFetchedMotherMeasurements PersonId (WebData MotherMeasurementList)

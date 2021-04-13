@@ -198,6 +198,18 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchFollowUpMeasurements id ->
+            Dict.get id model.followUpMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchFollowUpParticipants ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.people)) ids
+
         FetchHomeVisitEncounter id ->
             Dict.get id model.homeVisitEncounters
                 |> Maybe.withDefault NotAsked
@@ -316,6 +328,9 @@ forget msg model =
 
         FetchAcuteIllnessMeasurements id ->
             { model | acuteIllnessMeasurements = Dict.remove id model.acuteIllnessMeasurements }
+
+        FetchFollowUpMeasurements id ->
+            { model | followUpMeasurements = Dict.remove id model.followUpMeasurements }
 
         FetchHomeVisitEncounter id ->
             { model | homeVisitEncounters = Dict.remove id model.homeVisitEncounters }

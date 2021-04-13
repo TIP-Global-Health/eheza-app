@@ -3,6 +3,7 @@ module Backend.HomeVisitEncounter.Fetch exposing (fetchForChild)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Utils exposing (resolveHomeVisitParticipantForChild)
+import Backend.IndividualEncounterType.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import RemoteData exposing (RemoteData(..))
 
@@ -11,7 +12,7 @@ fetchForChild : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetchForChild id db =
     let
         participantId =
-            resolveHomeVisitParticipantForChild id db
+            resolveIndividualParticipantForPerson id HomeVisitEncounter db
 
         encountersIds =
             participantId

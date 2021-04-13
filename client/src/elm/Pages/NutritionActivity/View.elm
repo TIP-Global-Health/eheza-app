@@ -741,20 +741,9 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                                         let
                                             assesment =
                                                 generateNutritionAssesment currentDate zscores db assembled
-
-                                            updated =
-                                                measurements.followUp
-                                                    |> Maybe.map
-                                                        (\( measurementId, measurement ) ->
-                                                            let
-                                                                updatedValue =
-                                                                    measurement.value
-                                                                        |> (\value -> { value | assesment = nutritionAssesmentForBackend assesment })
-                                                            in
-                                                            ( measurementId, { measurement | value = updatedValue } )
-                                                        )
+                                                    |> nutritionAssesmentForBackend
                                         in
-                                        SaveFollowUp personId updated nextTask
+                                        SaveFollowUp personId measurements.followUp assesment nextTask
                         in
                         div [ class "actions next-steps" ]
                             [ button

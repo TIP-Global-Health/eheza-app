@@ -69,6 +69,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterPeriod(..)
         , FilterProgramType(..)
         )
+import Pages.GlobalCaseManagement.Model exposing (FollowUpDueOption(..))
 import Pages.NutritionActivity.Model
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -289,6 +290,7 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
+    | All
     | AllowedValuesRangeHelper FloatInputConstraints
     | AmbulancArrivalPeriodQuestion
     | And
@@ -327,6 +329,7 @@ type TranslationId
     | CardiacDisease
     | CaregiverName
     | CaregiverNationalId
+    | CaseManagement
     | CentimeterShorthand
     | Celsius
     | CelsiusAbbrev
@@ -429,6 +432,9 @@ type TranslationId
     | EgaHeader
     | EgaWeeks
     | EmptyString
+    | EncounterTypeFileterLabel IndividualEncounterType
+    | EncounterTypeFollowUpQuestion IndividualEncounterType
+    | EncounterTypeFollowUpLabel IndividualEncounterType
     | EndEncounter
     | EndEncounterQuestion
     | EndGroupEncounter
@@ -464,6 +470,7 @@ type TranslationId
     | ForIllustrativePurposesOnly
     | FollowUpLabel
     | FollowUpOption FollowUpOption
+    | FollowUpDueOption FollowUpDueOption
     | FormError (ErrorValue ValidationError)
     | FormField String
     | FundalHeight
@@ -1826,6 +1833,11 @@ translationSet trans =
             , kinyarwanda = Just "E-heza sisiteme"
             }
 
+        All ->
+            { english = "All"
+            , kinyarwanda = Nothing
+            }
+
         AllowedValuesRangeHelper constraints ->
             { english = "Allowed values are between " ++ String.fromFloat constraints.minVal ++ " and " ++ String.fromFloat constraints.maxVal ++ "."
             , kinyarwanda = Just <| "Imibare yemewe iri hagati ya " ++ String.fromFloat constraints.minVal ++ " na " ++ String.fromFloat constraints.maxVal ++ "."
@@ -2014,6 +2026,11 @@ translationSet trans =
         Cell ->
             { english = "Cell"
             , kinyarwanda = Just "Akagali"
+            }
+
+        CaseManagement ->
+            { english = "Case Management"
+            , kinyarwanda = Nothing
             }
 
         CentimeterShorthand ->
@@ -2723,6 +2740,87 @@ translationSet trans =
             , kinyarwanda = Just ""
             }
 
+        EncounterTypeFileterLabel encounterType ->
+            case encounterType of
+                AcuteIllnessEncounter ->
+                    { english = "Acute Illness"
+                    , kinyarwanda = Nothing
+                    }
+
+                AntenatalEncounter ->
+                    { english = "Antenatal Care"
+                    , kinyarwanda = Nothing
+                    }
+
+                HomeVisitEncounter ->
+                    { english = "Home Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Inmmunization"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = "Child Nutrition"
+                    , kinyarwanda = Nothing
+                    }
+
+        EncounterTypeFollowUpQuestion encounterType ->
+            case encounterType of
+                AcuteIllnessEncounter ->
+                    { english = "Do you want to start a subsequent Acute Illness encounter for"
+                    , kinyarwanda = Nothing
+                    }
+
+                AntenatalEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                HomeVisitEncounter ->
+                    { english = "Do you want to start a Home Visit assessment for"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        EncounterTypeFollowUpLabel encounterType ->
+            case encounterType of
+                AcuteIllnessEncounter ->
+                    { english = "Acute Illness Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+                AntenatalEncounter ->
+                    { english = "Antenatal Care Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+                HomeVisitEncounter ->
+                    { english = "Home Visit Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Inmmunization Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = "Child Nutrition Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
         EndEncounter ->
             { english = "End Encounter"
             , kinyarwanda = Just "Rangiza ibyo wakoraga"
@@ -3058,6 +3156,28 @@ translationSet trans =
                 TwoWeeks ->
                     { english = "2 Weeks"
                     , kinyarwanda = Just "Ibyumweru 2"
+                    }
+
+        FollowUpDueOption option ->
+            case option of
+                OverDue ->
+                    { english = "Over Due"
+                    , kinyarwanda = Nothing
+                    }
+
+                DueToday ->
+                    { english = "Due Today"
+                    , kinyarwanda = Nothing
+                    }
+
+                DueThisWeek ->
+                    { english = "This week"
+                    , kinyarwanda = Nothing
+                    }
+
+                DueThisMonth ->
+                    { english = "This Month"
+                    , kinyarwanda = Nothing
                     }
 
         FormError errorValue ->
@@ -6879,6 +6999,11 @@ translateActivePage page =
 
                 DashboardPage dashboardPage ->
                     { english = "Dashboards"
+                    , kinyarwanda = Nothing
+                    }
+
+                GlobalCaseManagementPage ->
+                    { english = "Case Management"
                     , kinyarwanda = Nothing
                     }
 

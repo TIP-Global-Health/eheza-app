@@ -2,10 +2,12 @@ module Backend.Utils exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.Measurement.Model
     exposing
         ( AcuteIllnessMeasurements
         , ChildMeasurementList
+        , FollowUpMeasurements
         , HomeVisitMeasurements
         , MotherMeasurementList
         , NutritionMeasurements
@@ -84,6 +86,27 @@ mapAcuteIllnessMeasurements id func model =
             model
 
 
+mapFollowUpMeasurements : Maybe HealthCenterId -> (FollowUpMeasurements -> FollowUpMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapFollowUpMeasurements id func model =
+    case id of
+        Just healthCenterId ->
+            let
+                mapped =
+                    Dict.get healthCenterId model.followUpMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (\measurements ->
+                                Dict.insert healthCenterId (func measurements |> Success) model.followUpMeasurements
+                            )
+                        |> Maybe.withDefault model.followUpMeasurements
+            in
+            { model | followUpMeasurements = mapped }
+
+        Nothing ->
+            model
+
+
 mapHomeVisitMeasurements : Maybe HomeVisitEncounterId -> (HomeVisitMeasurements -> HomeVisitMeasurements) -> ModelIndexedDb -> ModelIndexedDb
 mapHomeVisitMeasurements id func model =
     case id of
@@ -118,3 +141,27 @@ saveMeasurementCmd date encounter person nurse healthCenter savedValueId savedVa
                         |> withoutDecoder
     in
     toCmd (RemoteData.fromResult >> handleSavedMsg) requestData
+
+
+resolveIndividualParticipantsForPerson : PersonId -> IndividualEncounterType -> ModelIndexedDb -> List IndividualEncounterParticipantId
+resolveIndividualParticipantsForPerson personId encounterType db =
+    Dict.get personId db.individualParticipantsByPerson
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map
+            (Dict.toList
+                >> List.filterMap
+                    (\( participantId, participant ) ->
+                        if participant.encounterType == encounterType then
+                            Just participantId
+
+                        else
+                            Nothing
+                    )
+            )
+        |> Maybe.withDefault []
+
+
+resolveIndividualParticipantForPerson : PersonId -> IndividualEncounterType -> ModelIndexedDb -> Maybe IndividualEncounterParticipantId
+resolveIndividualParticipantForPerson personId encounterType db =
+    resolveIndividualParticipantsForPerson personId encounterType db
+        |> List.head

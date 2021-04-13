@@ -16,6 +16,7 @@ import Pages.Clinics.Fetch
 import Pages.Dashboard.Fetch
 import Pages.DemographicsReport.Fetch
 import Pages.Device.Fetch
+import Pages.GlobalCaseManagement.Fetch
 import Pages.HomeVisitActivity.Fetch
 import Pages.HomeVisitEncounter.Fetch
 import Pages.IndividualEncounterParticipants.Fetch
@@ -94,6 +95,16 @@ fetch model =
                             Pages.Dashboard.Fetch.fetch healthCenterId loggedIn.dashboardPage
                                 |> List.map MsgIndexedDb
                         )
+                    |> Maybe.withDefault []
+
+            UserPage GlobalCaseManagementPage ->
+                Maybe.map2
+                    (\( healthCenterId, loggedIn ) villageId ->
+                        Pages.GlobalCaseManagement.Fetch.fetch currentDate healthCenterId villageId model.indexedDb
+                            |> List.map MsgIndexedDb
+                    )
+                    (getLoggedInData model)
+                    model.villageId
                     |> Maybe.withDefault []
 
             UserPage (ClinicalProgressReportPage prenatalEncounterId) ->

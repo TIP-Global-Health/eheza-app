@@ -73,6 +73,9 @@ pageToFragment current =
                     in
                     Just ("dashboard/" ++ url)
 
+                GlobalCaseManagementPage ->
+                    Just "case-management"
+
                 ClinicalProgressReportPage prenatalEncounterId ->
                     Just <| "clinical-progress-report/" ++ fromEntityUuid prenatalEncounterId
 
@@ -223,12 +226,13 @@ parser =
     oneOf
         [ map (UserPage << ClinicsPage << Just) (s "clinics" </> parseUuid)
         , map (UserPage (ClinicsPage Nothing)) (s "clinics")
-        , map (\page -> UserPage <| DashboardPage page) (s "dashboard" </> parseDashboardPage)
         , map DevicePage (s "device")
         , map PinCodePage (s "pincode")
         , map ServiceWorkerPage (s "deployment")
         , map (UserPage MyAccountPage) (s "my-account")
         , map (UserPage ClinicalPage) (s "clinical")
+        , map (\page -> UserPage <| DashboardPage page) (s "dashboard" </> parseDashboardPage)
+        , map (UserPage GlobalCaseManagementPage) (s "case-management")
         , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
         , map (\origin -> UserPage <| PersonsPage Nothing origin) (s "persons" </> parseOrigin)
         , map (\id origin -> UserPage <| PersonsPage (Just id) origin) (s "relations" </> parseUuid </> parseOrigin)

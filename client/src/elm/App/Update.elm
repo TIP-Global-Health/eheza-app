@@ -38,6 +38,7 @@ import Pages.Dashboard.Model
 import Pages.Dashboard.Update
 import Pages.Device.Model
 import Pages.Device.Update
+import Pages.GlobalCaseManagement.Update
 import Pages.HomeVisitActivity.Model
 import Pages.HomeVisitActivity.Update
 import Pages.HomeVisitEncounter.Model
@@ -257,6 +258,16 @@ update msg model =
                             in
                             ( { data | dashboardPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageDashboard subPage) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageGlobalCaseManagement subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.GlobalCaseManagement.Update.update currentDate model.healthCenterId subMsg model.indexedDb data.globalCaseManagementPage
+                            in
+                            ( { data | globalCaseManagementPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageGlobalCaseManagement) subCmd
                             , appMsgs
                             )
 

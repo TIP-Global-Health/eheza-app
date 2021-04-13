@@ -191,7 +191,7 @@ viewHomeVisitAction :
     -> Html App.Model.Msg
 viewHomeVisitAction language currentDate selectedHealthCenter id db sessions =
     let
-        -- Person nutrition session.
+        -- Person Home Visit session.
         maybeSessionId =
             sessions
                 |> Dict.toList

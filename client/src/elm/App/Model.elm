@@ -23,6 +23,7 @@ import Pages.AcuteIllnessProgressReport.Model
 import Pages.Clinics.Model
 import Pages.Dashboard.Model
 import Pages.Device.Model
+import Pages.GlobalCaseManagement.Model
 import Pages.HomeVisitActivity.Model
 import Pages.HomeVisitEncounter.Model
 import Pages.IndividualEncounterParticipants.Model
@@ -177,6 +178,7 @@ it at the appropriate moment.
 type alias LoggedInModel =
     { createPersonPage : Pages.Person.Model.Model
     , dashboardPage : Pages.Dashboard.Model.Model
+    , globalCaseManagementPage : Pages.GlobalCaseManagement.Model.Model
     , editPersonPage : Pages.Person.Model.Model
     , relationshipPages : Dict ( PersonId, PersonId ) Pages.Relationship.Model.Model
     , personsPage : Pages.People.Model.Model
@@ -207,6 +209,7 @@ emptyLoggedInModel : Maybe VillageId -> ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel villageId nurse =
     { createPersonPage = Pages.Person.Model.emptyCreateModel
     , dashboardPage = Pages.Dashboard.Model.emptyModel villageId
+    , globalCaseManagementPage = Pages.GlobalCaseManagement.Model.emptyModel
     , editPersonPage = Pages.Person.Model.emptyEditModel
     , personsPage = Pages.People.Model.emptyModel
     , individualEncounterParticipantsPage = Pages.IndividualEncounterParticipants.Model.emptyModel
@@ -267,6 +270,7 @@ type MsgLoggedIn
     = MsgPageClinics Pages.Clinics.Model.Msg
     | MsgPageCreatePerson Pages.Person.Model.Msg
     | MsgPageDashboard DashboardPage Pages.Dashboard.Model.Msg
+    | MsgPageGlobalCaseManagement Pages.GlobalCaseManagement.Model.Msg
     | MsgPageEditPerson Pages.Person.Model.Msg
     | MsgPagePersons Pages.People.Model.Msg
     | MsgPagePrenatalParticipant PersonId Pages.PrenatalParticipant.Model.Msg

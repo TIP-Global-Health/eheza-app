@@ -1240,6 +1240,15 @@ type alias AcuteIllnessMeasurements =
     }
 
 
+{-| A set of measurements that represent follow ups needed for certain Healh Center.
+-}
+type alias FollowUpMeasurements =
+    { nutritionGroup : Dict FollowUpId FollowUp
+    , nutritionIndividual : Dict NutritionFollowUpId NutritionFollowUp
+    , acuteIllness : Dict AcuteIllnessFollowUpId AcuteIllnessFollowUp
+    }
+
+
 {-| A set of Home Visit measurements that correspond to the same Home Visit encounter.
 -}
 type alias HomeVisitMeasurements =

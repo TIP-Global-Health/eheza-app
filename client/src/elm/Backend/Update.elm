@@ -39,6 +39,7 @@ import Backend.Utils
     exposing
         ( mapAcuteIllnessMeasurements
         , mapChildMeasurements
+        , mapFollowUpMeasurements
         , mapHomeVisitMeasurements
         , mapMotherMeasurements
         , mapNutritionMeasurements
@@ -480,6 +481,19 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
             , []
             )
 
+        FetchFollowUpMeasurements id ->
+            ( { model | followUpMeasurements = Dict.insert id Loading model.followUpMeasurements }
+            , sw.get followUpMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedFollowUpMeasurements id)
+            , []
+            )
+
+        HandleFetchedFollowUpMeasurements id data ->
+            ( { model | followUpMeasurements = Dict.insert id data model.followUpMeasurements }
+            , Cmd.none
+            , []
+            )
+
         FetchHomeVisitMeasurements id ->
             ( { model | homeVisitMeasurements = Dict.insert id Loading model.homeVisitMeasurements }
             , sw.get homeVisitMeasurementsEndpoint id
@@ -492,6 +506,36 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
             , Cmd.none
             , []
             )
+
+        FetchFollowUpParticipants ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    peopleUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.people ids
+                in
+                ( { model | people = peopleUpdated }
+                , sw.getMany personEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchFollowUpParticipants)
+                , []
+                )
+
+        HandleFetchFollowUpParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | people = Dict.union dictUpdated model.people }
+                    , Cmd.none
+                    , []
+                    )
 
         FetchParticipantsForPerson personId ->
             let
@@ -793,7 +837,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                                 |> RemoteData.toMaybe
 
                         ( newModel, _ ) =
-                            List.foldl handleRevision ( model, False ) revisions
+                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
 
                         extraMsgs =
                             Maybe.map2 (generateSuspectedDiagnosisMsgs currentDate model newModel)
@@ -811,7 +855,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                                 |> RemoteData.toMaybe
 
                         ( newModel, _ ) =
-                            List.foldl handleRevision ( model, False ) revisions
+                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
 
                         extraMsgs =
                             Maybe.map2 (generateNutritionAssessmentIndividualMsgs currentDate zscores isChw newModel)
@@ -830,7 +874,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                             data.encounterId
 
                         ( newModel, _ ) =
-                            List.foldl handleRevision ( model, True ) revisions
+                            List.foldl (handleRevision healthCenterId) ( model, True ) revisions
                     in
                     Maybe.map
                         (\sessionId_ ->
@@ -1036,7 +1080,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ IsolationRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
-                            List.foldl handleRevision ( model, False ) revisions
+                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
@@ -1051,7 +1095,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ Call114Revision uuid data ] ->
                     let
                         ( newModel, _ ) =
-                            List.foldl handleRevision ( model, False ) revisions
+                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
@@ -1066,7 +1110,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ HCContactRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
-                            List.foldl handleRevision ( model, False ) revisions
+                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
@@ -1081,7 +1125,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ MedicationDistributionRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
-                            List.foldl handleRevision ( model, False ) revisions
+                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
@@ -1096,7 +1140,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ SendToHCRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
-                            List.foldl handleRevision ( model, False ) revisions
+                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
@@ -1111,7 +1155,22 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ HealthEducationRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
-                            List.foldl handleRevision ( model, False ) revisions
+                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ AcuteIllnessFollowUpRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
@@ -1186,7 +1245,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 _ ->
                     let
                         ( newModel, recalculateEditableSessions ) =
-                            List.foldl handleRevision ( model, False ) revisions
+                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
 
                         withRecalc =
                             -- If needed, we recalculate all editable sessions that we
@@ -1804,8 +1863,8 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
 successful EditableSessions. Ideally, we would handle this in a more
 nuanced way.
 -}
-handleRevision : Revision -> ( ModelIndexedDb, Bool ) -> ( ModelIndexedDb, Bool )
-handleRevision revision (( model, recalc ) as noChange) =
+handleRevision : Maybe HealthCenterId -> Revision -> ( ModelIndexedDb, Bool ) -> ( ModelIndexedDb, Bool )
+handleRevision healthCenterId revision (( model, recalc ) as noChange) =
     case revision of
         AcuteFindingsRevision uuid data ->
             ( mapAcuteIllnessMeasurements
@@ -1839,10 +1898,17 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
         AcuteIllnessFollowUpRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | acuteIllness = Dict.insert uuid data measurements.acuteIllness })
+                        model
+            in
             ( mapAcuteIllnessMeasurements
                 data.encounterId
                 (\measurements -> { measurements | followUp = Just ( uuid, data ) })
-                model
+                modelWithMappedFollowUp
             , recalc
             )
 
@@ -1985,10 +2051,17 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
         FollowUpRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | nutritionGroup = Dict.insert uuid data measurements.nutritionGroup })
+                        model
+            in
             ( mapChildMeasurements
                 data.participantId
                 (\measurements -> { measurements | followUp = Dict.insert uuid data measurements.followUp })
-                model
+                modelWithMappedFollowUp
             , True
             )
 
@@ -2187,10 +2260,17 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
         NutritionFollowUpRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | nutritionIndividual = Dict.insert uuid data measurements.nutritionIndividual })
+                        model
+            in
             ( mapNutritionMeasurements
                 data.encounterId
                 (\measurements -> { measurements | followUp = Just ( uuid, data ) })
-                model
+                modelWithMappedFollowUp
             , recalc
             )
 

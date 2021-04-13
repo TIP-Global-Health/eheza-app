@@ -267,6 +267,11 @@ acuteIllnessMeasurementsEndpoint =
     swEndpoint "nodes/acute-illness-measurements" decodeAcuteIllnessMeasurements
 
 
+followUpMeasurementsEndpoint : ReadOnlyEndPoint Error HealthCenterId FollowUpMeasurements ()
+followUpMeasurementsEndpoint =
+    swEndpoint "nodes/follow-up-measurements" decodeFollowUpMeasurements
+
+
 homeVisitMeasurementsEndpoint : ReadOnlyEndPoint Error HomeVisitEncounterId HomeVisitMeasurements ()
 homeVisitMeasurementsEndpoint =
     swEndpoint "nodes/home-visit-measurements" decodeHomeVisitMeasurements

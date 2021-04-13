@@ -2,6 +2,7 @@ module Pages.NutritionActivity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
 import Pages.Page exposing (Page)
 
@@ -30,7 +31,7 @@ type Msg
     | SetContributingFactorsSign ContributingFactorsSign
     | SaveContributingFactors PersonId (Maybe ( NutritionContributingFactorsId, NutritionContributingFactors )) (Maybe NextStepsTask)
     | SetFollowUpOption FollowUpOption
-    | SaveFollowUp PersonId (Maybe ( NutritionFollowUpId, NutritionFollowUp )) (Maybe NextStepsTask)
+    | SaveFollowUp PersonId (Maybe ( NutritionFollowUpId, NutritionFollowUp )) (EverySet NutritionAssesment) (Maybe NextStepsTask)
 
 
 type alias Model =

@@ -660,29 +660,32 @@ activityCompleted currentDate isFirstEncounter data activity =
                         isJust measurements.healthEducation
 
                     -- Not improving, without danger signs present.
-                    [ NextStepsSendToHC, NextStepsHealthEducation ] ->
-                        isJust measurements.sendToHC && isJust measurements.healthEducation
+                    [ NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation ] ->
+                        isJust measurements.sendToHC && isJust measurements.followUp && isJust measurements.healthEducation
 
                     -- Not improving, with danger signs, and not instructed to send patient to health center.
-                    [ NextStepsContactHC, NextStepsHealthEducation ] ->
-                        isJust measurements.hcContact && isJust measurements.healthEducation
+                    [ NextStepsContactHC, NextStepsFollowUp, NextStepsHealthEducation ] ->
+                        isJust measurements.hcContact && isJust measurements.followUp && isJust measurements.healthEducation
 
                     -- Not improving, with danger signs, and instructed to send patient to health center.
-                    [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation ] ->
-                        isJust measurements.hcContact && isJust measurements.sendToHC && isJust measurements.healthEducation
+                    [ NextStepsContactHC, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation ] ->
+                        isJust measurements.hcContact
+                            && isJust measurements.sendToHC
+                            && isJust measurements.followUp
+                            && isJust measurements.healthEducation
 
-                    -- Uncomplicated malarial for adult.
-                    [ NextStepsMedicationDistribution ] ->
-                        isJust measurements.medicationDistribution
+                    -- Uncomplicated malaria for adult.
+                    [ NextStepsMedicationDistribution, NextStepsFollowUp ] ->
+                        isJust measurements.medicationDistribution && isJust measurements.followUp
 
-                    -- Uncomplicated malarial for adult, when medicine is out
+                    -- Uncomplicated malaria for adult, when medicine is out
                     -- of stock, or patient is alergic.
-                    [ NextStepsMedicationDistribution, NextStepsSendToHC ] ->
-                        isJust measurements.medicationDistribution && isJust measurements.sendToHC
+                    [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ] ->
+                        isJust measurements.medicationDistribution && isJust measurements.sendToHC && isJust measurements.followUp
 
                     -- Other cases of malaria.
-                    [ NextStepsSendToHC ] ->
-                        isJust measurements.sendToHC
+                    [ NextStepsSendToHC, NextStepsFollowUp ] ->
+                        isJust measurements.sendToHC && isJust measurements.followUp
 
                     _ ->
                         False
@@ -949,14 +952,14 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements
             (\testResult ->
                 case testResult of
                     RapidTestPositive ->
-                        if malarialDangerSignsPresent measurements then
+                        if malariaDangerSignsPresent measurements then
                             Just DiagnosisMalariaComplicated
 
                         else
                             Just DiagnosisMalariaUncomplicated
 
                     RapidTestPositiveAndPregnant ->
-                        if malarialDangerSignsPresent measurements then
+                        if malariaDangerSignsPresent measurements then
                             Just DiagnosisMalariaComplicated
 
                         else
@@ -1074,8 +1077,8 @@ malariaRapidTestResult measurements =
         |> Maybe.map (Tuple.second >> .value)
 
 
-malarialDangerSignsPresent : AcuteIllnessMeasurements -> Bool
-malarialDangerSignsPresent measurements =
+malariaDangerSignsPresent : AcuteIllnessMeasurements -> Bool
+malariaDangerSignsPresent measurements =
     Maybe.map3
         (\symptomsGeneral symptomsGI acuteFindings ->
             let

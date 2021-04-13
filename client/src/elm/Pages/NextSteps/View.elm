@@ -248,18 +248,16 @@ viewNextStepsContent language currentDate zscores childId child session db model
                                                         |> Maybe.withDefault []
 
                                                 NextStepFollowUp ->
-                                                    toFollowUpValueWithDefault followUpValue model.followUpForm
-                                                        |> Maybe.map
-                                                            (\value ->
-                                                                let
-                                                                    assesment =
-                                                                        generateNutritionAssesment currentDate zscores childId db session.offlineSession
+                                                    let
+                                                        assesment =
+                                                            generateNutritionAssesment currentDate zscores childId db session.offlineSession
+                                                                |> nutritionAssesmentForBackend
 
-                                                                    value_ =
-                                                                        { value | assesment = nutritionAssesmentForBackend assesment }
-                                                                in
-                                                                SaveFollowUp followUpId value_ nextTask |> onClick |> List.singleton
-                                                            )
+                                                        form =
+                                                            model.followUpForm |> (\form_ -> { form_ | assesment = Just assesment })
+                                                    in
+                                                    toFollowUpValueWithDefault followUpValue form
+                                                        |> Maybe.map (\value -> SaveFollowUp followUpId value nextTask |> onClick |> List.singleton)
                                                         |> Maybe.withDefault []
                                     in
                                     div [ class "actions next-steps" ]
