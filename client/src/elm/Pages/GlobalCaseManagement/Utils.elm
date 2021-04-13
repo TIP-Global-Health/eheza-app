@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (FollowUpMeasurements, FollowUpOption(..), FollowUpValue)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Village.Utils exposing (personLivesInVillage)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
@@ -17,8 +18,8 @@ allEncounterTypes =
     [ AcuteIllnessEncounter, NutritionEncounter ]
 
 
-generateNutritionFollowUps : NominalDate -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem
-generateNutritionFollowUps currentDate followUps =
+generateNutritionFollowUps : ModelIndexedDb -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem
+generateNutritionFollowUps db followUps =
     let
         nutritionIndividual =
             Dict.values followUps.nutritionIndividual
@@ -32,7 +33,7 @@ generateNutritionFollowUps currentDate followUps =
                     (\item accum ->
                         let
                             newItem =
-                                NutritionFollowUpItem item.dateMeasured item.value
+                                NutritionFollowUpItem item.dateMeasured "" item.value
                         in
                         Dict.get item.participantId accum
                             |> Maybe.map
@@ -82,7 +83,7 @@ generateAcuteIllnessFollowUps db followUps =
                                     item.participantId
 
                                 newItem =
-                                    AcuteIllnessFollowUpItem item.dateMeasured item.encounterId encounterSequenceNumber item.value
+                                    AcuteIllnessFollowUpItem item.dateMeasured "" item.encounterId encounterSequenceNumber item.value
                             in
                             Dict.get ( participantId, personId ) accum
                                 |> Maybe.map
@@ -99,6 +100,25 @@ generateAcuteIllnessFollowUps db followUps =
                     |> Maybe.withDefault accum
             )
             Dict.empty
+
+
+filterVillageResidents : VillageId -> (k -> PersonId) -> ModelIndexedDb -> Dict k { v | personName : String } -> Dict k { v | personName : String }
+filterVillageResidents villageId keyToPersonIdFunc db dict =
+    Dict.toList dict
+        |> List.filterMap
+            (\( k, v ) ->
+                Dict.get (keyToPersonIdFunc k) db.people
+                    |> Maybe.andThen RemoteData.toMaybe
+                    |> Maybe.andThen
+                        (\person ->
+                            if personLivesInVillage person db villageId then
+                                Just ( k, { v | personName = person.name } )
+
+                            else
+                                Nothing
+                        )
+            )
+        |> Dict.fromList
 
 
 generateAcuteIllnessEncounters : FollowUpMeasurements -> EverySet AcuteIllnessEncounterId

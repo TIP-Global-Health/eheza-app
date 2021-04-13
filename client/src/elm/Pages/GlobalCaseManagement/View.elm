@@ -22,6 +22,7 @@ import Pages.AcuteIllnessEncounter.Utils exposing (compareAcuteIllnessEncounterD
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
@@ -29,47 +30,54 @@ import Utils.WebData exposing (viewWebData)
 
 
 view : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate ( healthCenterId, villageId ) isChw model db =
-    let
-        header =
-            div
-                [ class "ui basic head segment" ]
-                [ h1 [ class "ui header" ]
-                    [ translateText language Translate.CaseManagement ]
-                , a
-                    [ class "link-back"
-                    , onClick <| SetActivePage PinCodePage
+view language currentDate ( healthCenterId, maybeVillageId ) isChw model db =
+    maybeVillageId
+        |> Maybe.map
+            (\villageId ->
+                let
+                    header =
+                        div
+                            [ class "ui basic head segment" ]
+                            [ h1 [ class "ui header" ]
+                                [ translateText language Translate.CaseManagement ]
+                            , a
+                                [ class "link-back"
+                                , onClick <| SetActivePage PinCodePage
+                                ]
+                                [ span [ class "icon-back" ] [] ]
+                            ]
+
+                    followUps =
+                        Dict.get healthCenterId db.followUpMeasurements
+                            |> Maybe.withDefault NotAsked
+
+                    content =
+                        viewWebData language (viewContent language currentDate healthCenterId villageId isChw model db) identity followUps
+                in
+                div [ class "wrap wrap-alt-2 page-case-management" ]
+                    [ header
+                    , content
+                    , viewModal <|
+                        viewStartFollowUpEncounterDialog language
+                            model.dialogState
                     ]
-                    [ span [ class "icon-back" ] [] ]
-                ]
-
-        followUps =
-            Dict.get healthCenterId db.followUpMeasurements
-                |> Maybe.withDefault NotAsked
-
-        content =
-            viewWebData language (viewContent language currentDate healthCenterId isChw model db) identity followUps
-    in
-    div [ class "wrap wrap-alt-2 page-case-management" ]
-        [ header
-        , content
-        , viewModal <|
-            viewStartFollowUpEncounterDialog language
-                model.dialogState
-        ]
+            )
+        |> Maybe.withDefault (Pages.PageNotFound.View.viewPage language (SetActivePage PinCodePage) (UserPage GlobalCaseManagementPage))
 
 
-viewContent : Language -> NominalDate -> HealthCenterId -> Bool -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
-viewContent language currentDate healthCenterId isChw model db followUps =
+viewContent : Language -> NominalDate -> HealthCenterId -> VillageId -> Bool -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
+viewContent language currentDate healthCenterId villageId isChw model db followUps =
     let
         nutritionFollowUps =
-            generateNutritionFollowUps currentDate followUps
+            generateNutritionFollowUps db followUps
+                |> filterVillageResidents villageId identity db
 
         nutritionFollowUpsPane =
             viewNutritionPane language currentDate nutritionFollowUps db model
 
         acuteIllnessFollowUps =
             generateAcuteIllnessFollowUps db followUps
+                |> filterVillageResidents villageId Tuple.second db
 
         acuteIllnessFollowUpsPane =
             viewAcuteIllnessPane language currentDate acuteIllnessFollowUps db model
@@ -161,13 +169,15 @@ viewFilters language model =
 viewNutritionPane : Language -> NominalDate -> Dict PersonId NutritionFollowUpItem -> ModelIndexedDb -> Model -> Html Msg
 viewNutritionPane language currentDate itemsDict db model =
     let
+        entries =
+            Dict.map (viewNutritionFollowUpItem language currentDate db) itemsDict
+
         content =
-            if Dict.isEmpty itemsDict then
+            if Dict.isEmpty entries then
                 [ translateText language Translate.NoMatchesFound ]
 
             else
-                Dict.map (viewNutritionFollowUpItem language currentDate db) itemsDict
-                    |> Dict.values
+                Dict.values entries
     in
     div [ class "pane" ]
         [ viewItemHeading language NutritionEncounter
@@ -203,65 +213,59 @@ viewNutritionFollowUpItem language currentDate db personId item =
             (\encounter ->
                 -- Last Home Visitit encounter occurred before follow up was scheduled.
                 if Date.compare encounter.startDate item.dateMeasured == LT then
-                    viewNutritionFollowUpEntry language currentDate db personId item
+                    viewNutritionFollowUpEntry language currentDate personId item
 
                 else
                     emptyNode
             )
         |> -- No Home Visitit encounter found.
-           Maybe.withDefault (viewNutritionFollowUpEntry language currentDate db personId item)
+           Maybe.withDefault (viewNutritionFollowUpEntry language currentDate personId item)
 
 
-viewNutritionFollowUpEntry : Language -> NominalDate -> ModelIndexedDb -> PersonId -> NutritionFollowUpItem -> Html Msg
-viewNutritionFollowUpEntry language currentDate db personId item =
-    Dict.get personId db.people
-        |> Maybe.andThen RemoteData.toMaybe
-        |> Maybe.map
-            (\person ->
-                let
-                    dueOption =
-                        followUpDueOptionByDate currentDate item.dateMeasured item.value.options
+viewNutritionFollowUpEntry : Language -> NominalDate -> PersonId -> NutritionFollowUpItem -> Html Msg
+viewNutritionFollowUpEntry language currentDate personId item =
+    let
+        dueOption =
+            followUpDueOptionByDate currentDate item.dateMeasured item.value.options
 
-                    dueLabel =
-                        Translate.FollowUpDueOption dueOption
-                            |> translateText language
+        dueLabel =
+            Translate.FollowUpDueOption dueOption
+                |> translateText language
 
-                    dueClass =
-                        viewDueClass dueOption
+        dueClass =
+            viewDueClass dueOption
 
-                    assessments =
-                        EverySet.toList item.value.assesment
-                            |> List.reverse
-                            |> List.map (\assessment -> p [] [ translateAssement assessment ])
+        assessments =
+            EverySet.toList item.value.assesment
+                |> List.reverse
+                |> List.map (\assessment -> p [] [ translateAssement assessment ])
 
-                    translateAssement assessment =
-                        case assessment of
-                            AssesmentMalnutritionSigns signs ->
-                                let
-                                    translatedSigns =
-                                        List.map (Translate.ChildNutritionSignLabel >> translate language) signs
-                                            |> String.join ", "
-                                in
-                                text <| translate language (Translate.NutritionAssesment assessment) ++ ": " ++ translatedSigns
+        translateAssement assessment =
+            case assessment of
+                AssesmentMalnutritionSigns signs ->
+                    let
+                        translatedSigns =
+                            List.map (Translate.ChildNutritionSignLabel >> translate language) signs
+                                |> String.join ", "
+                    in
+                    text <| translate language (Translate.NutritionAssesment assessment) ++ ": " ++ translatedSigns
 
-                            _ ->
-                                text <| translate language <| Translate.NutritionAssesment assessment
+                _ ->
+                    text <| translate language <| Translate.NutritionAssesment assessment
 
-                    popupData =
-                        FollowUpNutritionData personId person.name
-                in
-                div [ class "follow-up-entry" ]
-                    [ div [ class "name" ] [ text person.name ]
-                    , div [ class dueClass ] [ dueLabel ]
-                    , div [ class "assesment" ] assessments
-                    , div
-                        [ class "icon-forward"
-                        , onClick <| SetDialogState <| Just <| FollowUpNutrition popupData
-                        ]
-                        []
-                    ]
-            )
-        |> Maybe.withDefault emptyNode
+        popupData =
+            FollowUpNutritionData personId item.personName
+    in
+    div [ class "follow-up-entry" ]
+        [ div [ class "name" ] [ text item.personName ]
+        , div [ class dueClass ] [ dueLabel ]
+        , div [ class "assesment" ] assessments
+        , div
+            [ class "icon-forward"
+            , onClick <| SetDialogState <| Just <| FollowUpNutrition popupData
+            ]
+            []
+        ]
 
 
 viewDueClass : FollowUpDueOption -> String
@@ -291,13 +295,15 @@ viewAcuteIllnessPane :
     -> Html Msg
 viewAcuteIllnessPane language currentDate itemsDict db model =
     let
+        entries =
+            Dict.map (viewAcuteIllnessFollowUpItem language currentDate db) itemsDict
+
         content =
-            if Dict.isEmpty itemsDict then
+            if Dict.isEmpty entries then
                 [ translateText language Translate.NoMatchesFound ]
 
             else
-                Dict.map (viewAcuteIllnessFollowUpItem language currentDate db) itemsDict
-                    |> Dict.values
+                Dict.values entries
     in
     div [ class "pane" ]
         [ viewItemHeading language AcuteIllnessEncounter
@@ -360,7 +366,7 @@ viewAcuteIllnessFollowUpItem language currentDate db ( participantId, personId )
                                     |> Maybe.withDefault 1
                         in
                         diagnosis
-                            |> Maybe.map (viewAcuteIllnessFollowUpEntry language currentDate db ( participantId, personId ) item encounterSequenceNumber)
+                            |> Maybe.map (viewAcuteIllnessFollowUpEntry language currentDate ( participantId, personId ) item encounterSequenceNumber)
                             |> Maybe.withDefault emptyNode
 
                     else
@@ -372,40 +378,33 @@ viewAcuteIllnessFollowUpItem language currentDate db ( participantId, personId )
 viewAcuteIllnessFollowUpEntry :
     Language
     -> NominalDate
-    -> ModelIndexedDb
     -> ( IndividualEncounterParticipantId, PersonId )
     -> AcuteIllnessFollowUpItem
     -> Int
     -> AcuteIllnessDiagnosis
     -> Html Msg
-viewAcuteIllnessFollowUpEntry language currentDate db ( participantId, personId ) item sequenceNumber diagnosis =
-    Dict.get personId db.people
-        |> Maybe.andThen RemoteData.toMaybe
-        |> Maybe.map
-            (\person ->
-                let
-                    dueOption =
-                        followUpDueOptionByDate currentDate item.dateMeasured item.value
+viewAcuteIllnessFollowUpEntry language currentDate ( participantId, personId ) item sequenceNumber diagnosis =
+    let
+        dueOption =
+            followUpDueOptionByDate currentDate item.dateMeasured item.value
 
-                    dueLabel =
-                        Translate.FollowUpDueOption dueOption
-                            |> translateText language
+        dueLabel =
+            Translate.FollowUpDueOption dueOption
+                |> translateText language
 
-                    dueClass =
-                        viewDueClass dueOption
+        dueClass =
+            viewDueClass dueOption
 
-                    popupData =
-                        FollowUpAcuteIllnessData personId person.name participantId sequenceNumber
-                in
-                div [ class "follow-up-entry" ]
-                    [ div [ class "name" ] [ text person.name ]
-                    , div [ class dueClass ] [ dueLabel ]
-                    , div [ class "assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
-                    , div
-                        [ class "icon-forward"
-                        , onClick <| SetDialogState <| Just <| FollowUpAcuteIllness popupData
-                        ]
-                        []
-                    ]
-            )
-        |> Maybe.withDefault emptyNode
+        popupData =
+            FollowUpAcuteIllnessData personId item.personName participantId sequenceNumber
+    in
+    div [ class "follow-up-entry" ]
+        [ div [ class "name" ] [ text item.personName ]
+        , div [ class dueClass ] [ dueLabel ]
+        , div [ class "assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
+        , div
+            [ class "icon-forward"
+            , onClick <| SetDialogState <| Just <| FollowUpAcuteIllness popupData
+            ]
+            []
+        ]

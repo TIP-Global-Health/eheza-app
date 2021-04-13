@@ -31,12 +31,14 @@ type FollowUpDueOption
 
 type alias NutritionFollowUpItem =
     { dateMeasured : NominalDate
+    , personName : String
     , value : FollowUpValue
     }
 
 
 type alias AcuteIllnessFollowUpItem =
     { dateMeasured : NominalDate
+    , personName : String
     , encounterId : Maybe AcuteIllnessEncounterId
 
     -- Since there may ne multiple encounters during same day,

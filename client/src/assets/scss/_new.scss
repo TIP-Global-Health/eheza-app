@@ -2376,6 +2376,10 @@ div.page-case-management {
         margin-top: 15px;
         padding-bottom: 15px;
 
+        &:last-child {
+          border-bottom: none;
+        }
+
         .name {
           align-self: center;
           font-size: 20px;
