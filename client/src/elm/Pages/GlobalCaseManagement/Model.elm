@@ -3,7 +3,7 @@ module Pages.GlobalCaseManagement.Model exposing (..)
 import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
-import Backend.Measurement.Model exposing (FollowUpValue, NutritionAssesment)
+import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue, NutritionAssesment)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
@@ -11,7 +11,7 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { encounterTypeFilter : Maybe IndividualEncounterType
-    , dialogState : Maybe FollowUpEncounterData
+    , dialogState : Maybe FollowUpEncounterDataType
     }
 
 
@@ -29,21 +29,47 @@ type FollowUpDueOption
     | OverDue
 
 
-type alias FollowUpItem =
+type alias NutritionFollowUpItem =
     { dateMeasured : NominalDate
+    , personName : String
     , value : FollowUpValue
     }
 
 
-type alias FollowUpEncounterData =
-    { encounterType : IndividualEncounterType
-    , personId : PersonId
+type alias AcuteIllnessFollowUpItem =
+    { dateMeasured : NominalDate
     , personName : String
+    , encounterId : Maybe AcuteIllnessEncounterId
+
+    -- Since there may be multiple encounters during same day,
+    -- we need to store sequence number, to be able to order
+    -- follow ups correctly.
+    , encounterSequenceNumber : Int
+    , value : EverySet FollowUpOption
+    }
+
+
+type FollowUpEncounterDataType
+    = FollowUpNutrition FollowUpNutritionData
+    | FollowUpAcuteIllness FollowUpAcuteIllnessData
+
+
+type alias FollowUpNutritionData =
+    { personId : PersonId
+    , personName : String
+    }
+
+
+type alias FollowUpAcuteIllnessData =
+    { personId : PersonId
+    , personName : String
+    , participantId : IndividualEncounterParticipantId
+    , sequenceNumber : Int
     }
 
 
 type Msg
     = SetActivePage Page
     | SetEncounterTypeFilter (Maybe IndividualEncounterType)
-    | SetDialogState (Maybe FollowUpEncounterData)
-    | StartFollowUpEncounter FollowUpEncounterData
+    | SetDialogState (Maybe FollowUpEncounterDataType)
+    | StartFollowUpEncounter FollowUpEncounterDataType

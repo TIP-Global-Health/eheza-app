@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (FollowUpMeasurements, FollowUpOption(..), FollowUpValue)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Village.Utils exposing (personLivesInVillage)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
@@ -17,12 +18,9 @@ allEncounterTypes =
     [ AcuteIllnessEncounter, NutritionEncounter ]
 
 
-generateNutritionFollowUps : NominalDate -> HealthCenterId -> FollowUpMeasurements -> Dict PersonId FollowUpItem
-generateNutritionFollowUps currentDate healthCenterId followUps =
+generateNutritionFollowUps : ModelIndexedDb -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem
+generateNutritionFollowUps db followUps =
     let
-        -- followUps =
-        --     Dict.get healthCenterId db.followUpMeasurements
-        --         |> Maybe.andThen RemoteData.toMaybe
         nutritionIndividual =
             Dict.values followUps.nutritionIndividual
 
@@ -33,22 +31,20 @@ generateNutritionFollowUps currentDate healthCenterId followUps =
             itemsList
                 |> List.foldl
                     (\item accum ->
+                        let
+                            newItem =
+                                NutritionFollowUpItem item.dateMeasured "" item.value
+                        in
                         Dict.get item.participantId accum
                             |> Maybe.map
                                 (\member ->
                                     if Date.compare item.dateMeasured member.dateMeasured == GT then
-                                        Dict.insert item.participantId
-                                            (FollowUpItem item.dateMeasured item.value)
-                                            accum
+                                        Dict.insert item.participantId newItem accum
 
                                     else
                                         accum
                                 )
-                            |> Maybe.withDefault
-                                (Dict.insert item.participantId
-                                    (FollowUpItem item.dateMeasured item.value)
-                                    accum
-                                )
+                            |> Maybe.withDefault (Dict.insert item.participantId newItem accum)
                     )
                     accumDict
     in
@@ -56,11 +52,100 @@ generateNutritionFollowUps currentDate healthCenterId followUps =
         |> generateFollowUpItems nutritionGroup
 
 
-followUpDueOptionByDate : NominalDate -> NominalDate -> FollowUpValue -> FollowUpDueOption
-followUpDueOptionByDate currentDate dateMeasured value =
+generateAcuteIllnessFollowUps : ModelIndexedDb -> FollowUpMeasurements -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
+generateAcuteIllnessFollowUps db followUps =
+    let
+        encountersData =
+            generateAcuteIllnessEncounters followUps
+                |> EverySet.toList
+                |> List.filterMap
+                    (\encounterId ->
+                        Dict.get encounterId db.acuteIllnessEncounters
+                            |> Maybe.andThen RemoteData.toMaybe
+                            |> Maybe.map (\encounter -> ( encounterId, ( encounter.participant, encounter.sequenceNumber ) ))
+                    )
+                |> Dict.fromList
+    in
+    Dict.values followUps.acuteIllness
+        |> List.foldl
+            (\item accum ->
+                let
+                    encounterData =
+                        item.encounterId
+                            |> Maybe.andThen
+                                (\encounterId -> Dict.get encounterId encountersData)
+                in
+                encounterData
+                    |> Maybe.map
+                        (\( participantId, encounterSequenceNumber ) ->
+                            let
+                                personId =
+                                    item.participantId
+
+                                newItem =
+                                    AcuteIllnessFollowUpItem item.dateMeasured "" item.encounterId encounterSequenceNumber item.value
+                            in
+                            Dict.get ( participantId, personId ) accum
+                                |> Maybe.map
+                                    (\member ->
+                                        if compareAcuteIllnessFollowUpItems newItem member == GT then
+                                            Dict.insert ( participantId, personId ) newItem accum
+
+                                        else
+                                            accum
+                                    )
+                                |> Maybe.withDefault
+                                    (Dict.insert ( participantId, personId ) newItem accum)
+                        )
+                    |> Maybe.withDefault accum
+            )
+            Dict.empty
+
+
+filterVillageResidents : VillageId -> (k -> PersonId) -> ModelIndexedDb -> Dict k { v | personName : String } -> Dict k { v | personName : String }
+filterVillageResidents villageId keyToPersonIdFunc db dict =
+    Dict.toList dict
+        |> List.filterMap
+            (\( k, v ) ->
+                Dict.get (keyToPersonIdFunc k) db.people
+                    |> Maybe.andThen RemoteData.toMaybe
+                    |> Maybe.andThen
+                        (\person ->
+                            if personLivesInVillage person db villageId then
+                                Just ( k, { v | personName = person.name } )
+
+                            else
+                                Nothing
+                        )
+            )
+        |> Dict.fromList
+
+
+generateAcuteIllnessEncounters : FollowUpMeasurements -> EverySet AcuteIllnessEncounterId
+generateAcuteIllnessEncounters followUps =
+    Dict.values followUps.acuteIllness
+        |> List.filterMap .encounterId
+        |> EverySet.fromList
+
+
+generateAcuteIllnessParticipants : EverySet AcuteIllnessEncounterId -> ModelIndexedDb -> EverySet IndividualEncounterParticipantId
+generateAcuteIllnessParticipants encounters db =
+    encounters
+        |> EverySet.toList
+        |> List.filterMap
+            (\encounterId ->
+                Dict.get encounterId db.acuteIllnessEncounters
+                    |> Maybe.andThen RemoteData.toMaybe
+                    |> Maybe.map .participant
+            )
+        |> EverySet.fromList
+
+
+followUpDueOptionByDate : NominalDate -> NominalDate -> EverySet FollowUpOption -> FollowUpDueOption
+followUpDueOptionByDate currentDate dateMeasured options =
     let
         dueIn =
-            EverySet.toList value.options
+            EverySet.toList options
                 |> List.head
                 |> Maybe.map
                     (\option ->
@@ -80,7 +165,7 @@ followUpDueOptionByDate currentDate dateMeasured value =
                 |> Maybe.withDefault 0
 
         diff =
-            diffDays dateMeasured currentDate + dueIn
+            diffDays currentDate dateMeasured + dueIn
     in
     if diff < 0 then
         OverDue
@@ -93,3 +178,16 @@ followUpDueOptionByDate currentDate dateMeasured value =
 
     else
         DueThisMonth
+
+
+compareAcuteIllnessFollowUpItems : AcuteIllnessFollowUpItem -> AcuteIllnessFollowUpItem -> Order
+compareAcuteIllnessFollowUpItems item1 item2 =
+    let
+        byDate =
+            Date.compare item1.dateMeasured item2.dateMeasured
+    in
+    if byDate == EQ then
+        compare item1.encounterSequenceNumber item2.encounterSequenceNumber
+
+    else
+        byDate

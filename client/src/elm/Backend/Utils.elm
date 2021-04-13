@@ -7,6 +7,7 @@ import Backend.Measurement.Model
     exposing
         ( AcuteIllnessMeasurements
         , ChildMeasurementList
+        , FollowUpMeasurements
         , HomeVisitMeasurements
         , MotherMeasurementList
         , NutritionMeasurements
@@ -80,6 +81,27 @@ mapAcuteIllnessMeasurements id func model =
     case id of
         Just encounterId ->
             { model | acuteIllnessMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.acuteIllnessMeasurements }
+
+        Nothing ->
+            model
+
+
+mapFollowUpMeasurements : Maybe HealthCenterId -> (FollowUpMeasurements -> FollowUpMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapFollowUpMeasurements id func model =
+    case id of
+        Just healthCenterId ->
+            let
+                mapped =
+                    Dict.get healthCenterId model.followUpMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (\measurements ->
+                                Dict.insert healthCenterId (func measurements |> Success) model.followUpMeasurements
+                            )
+                        |> Maybe.withDefault model.followUpMeasurements
+            in
+            { model | followUpMeasurements = mapped }
 
         Nothing ->
             model

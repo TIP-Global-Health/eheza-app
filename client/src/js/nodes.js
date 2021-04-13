@@ -530,6 +530,7 @@
 
     // List with all types of Follow Up measurements.
     var followUpMeasurementsTypes = [
+      'acute_illness_follow_up',
       'follow_up',
       'nutrition_follow_up'
     ];

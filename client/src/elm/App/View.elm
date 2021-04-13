@@ -312,7 +312,7 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     GlobalCaseManagementPage ->
-                        Pages.GlobalCaseManagement.View.view model.language currentDate healthCenterId isChw loggedInModel.globalCaseManagementPage model.indexedDb
+                        Pages.GlobalCaseManagement.View.view model.language currentDate ( healthCenterId, model.villageId ) isChw loggedInModel.globalCaseManagementPage model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageGlobalCaseManagement)
                             |> flexPageWrapper model
 
