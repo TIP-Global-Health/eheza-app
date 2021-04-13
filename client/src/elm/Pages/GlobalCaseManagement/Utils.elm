@@ -17,7 +17,7 @@ allEncounterTypes =
     [ AcuteIllnessEncounter, NutritionEncounter ]
 
 
-generateNutritionFollowUps : NominalDate -> FollowUpMeasurements -> Dict PersonId FollowUpItem
+generateNutritionFollowUps : NominalDate -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem
 generateNutritionFollowUps currentDate followUps =
     let
         nutritionIndividual =
@@ -30,22 +30,20 @@ generateNutritionFollowUps currentDate followUps =
             itemsList
                 |> List.foldl
                     (\item accum ->
+                        let
+                            newItem =
+                                NutritionFollowUpItem item.dateMeasured item.value
+                        in
                         Dict.get item.participantId accum
                             |> Maybe.map
                                 (\member ->
                                     if Date.compare item.dateMeasured member.dateMeasured == GT then
-                                        Dict.insert item.participantId
-                                            (FollowUpItem item.dateMeasured item.value)
-                                            accum
+                                        Dict.insert item.participantId newItem accum
 
                                     else
                                         accum
                                 )
-                            |> Maybe.withDefault
-                                (Dict.insert item.participantId
-                                    (FollowUpItem item.dateMeasured item.value)
-                                    accum
-                                )
+                            |> Maybe.withDefault (Dict.insert item.participantId newItem accum)
                     )
                     accumDict
     in
@@ -56,14 +54,14 @@ generateNutritionFollowUps currentDate followUps =
 generateAcuteIllnessFollowUps : ModelIndexedDb -> FollowUpMeasurements -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
 generateAcuteIllnessFollowUps db followUps =
     let
-        encountersToParticipantsDict =
+        encountersData =
             generateAcuteIllnessEncounters followUps
                 |> EverySet.toList
                 |> List.filterMap
                     (\encounterId ->
                         Dict.get encounterId db.acuteIllnessEncounters
                             |> Maybe.andThen RemoteData.toMaybe
-                            |> Maybe.map (\encounter -> ( encounterId, encounter.participant ))
+                            |> Maybe.map (\encounter -> ( encounterId, ( encounter.participant, encounter.sequenceNumber ) ))
                     )
                 |> Dict.fromList
     in
@@ -71,27 +69,25 @@ generateAcuteIllnessFollowUps db followUps =
         |> List.foldl
             (\item accum ->
                 let
-                    maybeIndividualParticipantId =
+                    encounterData =
                         item.encounterId
                             |> Maybe.andThen
-                                (\encounterId ->
-                                    Dict.get encounterId encountersToParticipantsDict
-                                )
+                                (\encounterId -> Dict.get encounterId encountersData)
                 in
-                maybeIndividualParticipantId
+                encounterData
                     |> Maybe.map
-                        (\participantId ->
+                        (\( participantId, encounterSequenceNumber ) ->
                             let
                                 personId =
                                     item.participantId
 
                                 newItem =
-                                    AcuteIllnessFollowUpItem item.dateMeasured item.encounterId item.value
+                                    AcuteIllnessFollowUpItem item.dateMeasured item.encounterId encounterSequenceNumber item.value
                             in
                             Dict.get ( participantId, personId ) accum
                                 |> Maybe.map
                                     (\member ->
-                                        if Date.compare item.dateMeasured member.dateMeasured == GT then
+                                        if compareAcuteIllnessFollowUpItems newItem member == GT then
                                             Dict.insert ( participantId, personId ) newItem accum
 
                                         else
@@ -149,7 +145,7 @@ followUpDueOptionByDate currentDate dateMeasured options =
                 |> Maybe.withDefault 0
 
         diff =
-            diffDays dateMeasured currentDate + dueIn
+            diffDays currentDate dateMeasured + dueIn
     in
     if diff < 0 then
         OverDue
@@ -162,3 +158,16 @@ followUpDueOptionByDate currentDate dateMeasured options =
 
     else
         DueThisMonth
+
+
+compareAcuteIllnessFollowUpItems : AcuteIllnessFollowUpItem -> AcuteIllnessFollowUpItem -> Order
+compareAcuteIllnessFollowUpItems item1 item2 =
+    let
+        byDate =
+            Date.compare item1.dateMeasured item2.dateMeasured
+    in
+    if byDate == EQ then
+        compare item1.encounterSequenceNumber item2.encounterSequenceNumber
+
+    else
+        byDate

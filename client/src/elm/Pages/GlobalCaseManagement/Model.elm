@@ -29,7 +29,7 @@ type FollowUpDueOption
     | OverDue
 
 
-type alias FollowUpItem =
+type alias NutritionFollowUpItem =
     { dateMeasured : NominalDate
     , value : FollowUpValue
     }
@@ -38,6 +38,11 @@ type alias FollowUpItem =
 type alias AcuteIllnessFollowUpItem =
     { dateMeasured : NominalDate
     , encounterId : Maybe AcuteIllnessEncounterId
+
+    -- Since there may ne multiple encounters during same day,
+    -- we need to know sequence number to be able to order
+    -- follow ups correctly.
+    , encounterSequenceNumber : Int
     , value : EverySet FollowUpOption
     }
 

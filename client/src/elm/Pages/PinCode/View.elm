@@ -26,8 +26,11 @@ view language activePage nurseData ( healthCenterId, villageId ) deviceName mode
             case nurseData of
                 Success ( _, nurse ) ->
                     let
+                        isChw =
+                            isCommunityHealthWorker nurse
+
                         selectedAuthorizedLocation =
-                            if isCommunityHealthWorker nurse then
+                            if isChw then
                                 villageId
                                     |> Maybe.map (\id -> EverySet.member id nurse.villages)
                                     |> Maybe.withDefault False
@@ -38,7 +41,7 @@ view language activePage nurseData ( healthCenterId, villageId ) deviceName mode
                                     |> Maybe.withDefault False
                     in
                     ( viewLoggedInHeader language nurse selectedAuthorizedLocation
-                    , viewLoggedInContent language nurse ( healthCenterId, villageId ) deviceName selectedAuthorizedLocation db
+                    , viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db
                     )
 
                 _ ->
@@ -144,8 +147,8 @@ viewAnonymousContent language activePage nurseData model =
     ]
 
 
-viewLoggedInContent : Language -> Nurse -> ( Maybe HealthCenterId, Maybe VillageId ) -> Maybe String -> Bool -> ModelIndexedDb -> List (Html Msg)
-viewLoggedInContent language nurse ( healthCenterId, villageId ) deviceName selectedAuthorizedLocation db =
+viewLoggedInContent : Language -> Nurse -> ( Maybe HealthCenterId, Maybe VillageId ) -> Bool -> Maybe String -> Bool -> ModelIndexedDb -> List (Html Msg)
+viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db =
     let
         logoutButton =
             button
@@ -221,12 +224,16 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) deviceName sele
                     [ text <| translate language Translate.ParticipantDirectory ]
 
             caseManagementButton =
-                button
-                    [ class "ui primary button"
-                    , onClick <| SendOutMsg <| SetActivePage <| UserPage GlobalCaseManagementPage
-                    ]
-                    [ text <| translate language Translate.CaseManagement
-                    ]
+                if isChw then
+                    button
+                        [ class "ui primary button"
+                        , onClick <| SendOutMsg <| SetActivePage <| UserPage GlobalCaseManagementPage
+                        ]
+                        [ text <| translate language Translate.CaseManagement
+                        ]
+
+                else
+                    emptyNode
         in
         [ generalInfo
         , clinicalButton

@@ -28,8 +28,8 @@ import Utils.Html exposing (spinner, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> HealthCenterId -> Bool -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate healthCenterId isChw model db =
+view : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> Model -> ModelIndexedDb -> Html Msg
+view language currentDate ( healthCenterId, villageId ) isChw model db =
     let
         header =
             div
@@ -66,7 +66,7 @@ viewContent language currentDate healthCenterId isChw model db followUps =
             generateNutritionFollowUps currentDate followUps
 
         nutritionFollowUpsPane =
-            viewNutritionPane language currentDate HomeVisitEncounter nutritionFollowUps db model
+            viewNutritionPane language currentDate nutritionFollowUps db model
 
         acuteIllnessFollowUps =
             generateAcuteIllnessFollowUps db followUps
@@ -75,7 +75,7 @@ viewContent language currentDate healthCenterId isChw model db followUps =
             viewAcuteIllnessPane language currentDate acuteIllnessFollowUps db model
 
         panes =
-            [ ( AcuteIllnessEncounter, acuteIllnessFollowUpsPane ), ( HomeVisitEncounter, nutritionFollowUpsPane ) ]
+            [ ( AcuteIllnessEncounter, acuteIllnessFollowUpsPane ), ( NutritionEncounter, nutritionFollowUpsPane ) ]
                 |> List.filterMap
                     (\( type_, pane ) ->
                         if isNothing model.encounterTypeFilter || model.encounterTypeFilter == Just type_ then
@@ -158,8 +158,8 @@ viewFilters language model =
         List.map renderButton filters
 
 
-viewNutritionPane : Language -> NominalDate -> IndividualEncounterType -> Dict PersonId FollowUpItem -> ModelIndexedDb -> Model -> Html Msg
-viewNutritionPane language currentDate encounterType itemsDict db model =
+viewNutritionPane : Language -> NominalDate -> Dict PersonId NutritionFollowUpItem -> ModelIndexedDb -> Model -> Html Msg
+viewNutritionPane language currentDate itemsDict db model =
     let
         content =
             if Dict.isEmpty itemsDict then
@@ -170,7 +170,7 @@ viewNutritionPane language currentDate encounterType itemsDict db model =
                     |> Dict.values
     in
     div [ class "pane" ]
-        [ viewItemHeading language encounterType
+        [ viewItemHeading language NutritionEncounter
         , div [ class "pane-content" ] content
         ]
 
@@ -181,7 +181,7 @@ viewItemHeading language encounterType =
         [ text <| translate language <| Translate.EncounterTypeFollowUpLabel encounterType ]
 
 
-viewNutritionFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> PersonId -> FollowUpItem -> Html Msg
+viewNutritionFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> PersonId -> NutritionFollowUpItem -> Html Msg
 viewNutritionFollowUpItem language currentDate db personId item =
     let
         lastHomeVisitEncounter =
@@ -212,7 +212,7 @@ viewNutritionFollowUpItem language currentDate db personId item =
            Maybe.withDefault (viewNutritionFollowUpEntry language currentDate db personId item)
 
 
-viewNutritionFollowUpEntry : Language -> NominalDate -> ModelIndexedDb -> PersonId -> FollowUpItem -> Html Msg
+viewNutritionFollowUpEntry : Language -> NominalDate -> ModelIndexedDb -> PersonId -> NutritionFollowUpItem -> Html Msg
 viewNutritionFollowUpEntry language currentDate db personId item =
     Dict.get personId db.people
         |> Maybe.andThen RemoteData.toMaybe
