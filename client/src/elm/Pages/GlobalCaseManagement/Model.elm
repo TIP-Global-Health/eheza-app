@@ -41,8 +41,8 @@ type alias AcuteIllnessFollowUpItem =
     , personName : String
     , encounterId : Maybe AcuteIllnessEncounterId
 
-    -- Since there may ne multiple encounters during same day,
-    -- we need to know sequence number to be able to order
+    -- Since there may be multiple encounters during same day,
+    -- we need to store sequence number, to be able to order
     -- follow ups correctly.
     , encounterSequenceNumber : Int
     , value : EverySet FollowUpOption
