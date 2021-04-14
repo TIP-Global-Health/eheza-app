@@ -2030,7 +2030,7 @@ translationSet trans =
 
         CaseManagement ->
             { english = "Case Management"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kuvura Uburwayi"
             }
 
         CentimeterShorthand ->
@@ -2771,7 +2771,7 @@ translationSet trans =
             case encounterType of
                 AcuteIllnessEncounter ->
                     { english = "Do you want to start a subsequent Acute Illness encounter for"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Urashaka Gutangira Ibikorwa bikurikiyeho ku burwayi bwa"
                     }
 
                 AntenatalEncounter ->
@@ -2781,7 +2781,7 @@ translationSet trans =
 
                 HomeVisitEncounter ->
                     { english = "Do you want to start a Home Visit assessment for"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Urashaka gutangira igikorwa cyo gusura mu rugo"
                     }
 
                 InmmunizationEncounter ->
@@ -2798,7 +2798,7 @@ translationSet trans =
             case encounterType of
                 AcuteIllnessEncounter ->
                     { english = "Acute Illness Follow Up"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gukurikirana umurwayi wavuwe indwara zifatiyeho"
                     }
 
                 AntenatalEncounter ->
@@ -2818,7 +2818,7 @@ translationSet trans =
 
                 NutritionEncounter ->
                     { english = "Child Nutrition Follow Up"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gukurikirana imirire y'umwana"
                     }
 
         EndEncounter ->
@@ -3162,12 +3162,12 @@ translationSet trans =
             case option of
                 OverDue ->
                     { english = "Over Due"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki yarenze"
                     }
 
                 DueToday ->
                     { english = "Due Today"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki yageze uyu munsi"
                     }
 
                 DueThisWeek ->
@@ -4463,7 +4463,7 @@ translationSet trans =
 
         NoMatchesFound ->
             { english = "No matches found"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibyo wifuza ntibiboneste"
             }
 
         ReasonForNotSendingToHC reason ->
@@ -7004,7 +7004,7 @@ translateActivePage page =
 
                 GlobalCaseManagementPage ->
                     { english = "Case Management"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuvura Uburwayi"
                     }
 
                 DemographicsReportPage _ ->
@@ -7401,7 +7401,7 @@ translateDashboard trans =
 
         CaseManagementLabel ->
             { english = "Case Management"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kuvura Uburwayi"
             }
 
         CompletedProgramLabel ->
