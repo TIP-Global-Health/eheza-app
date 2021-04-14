@@ -1835,7 +1835,7 @@ translationSet trans =
 
         All ->
             { english = "All"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uburwayi bwose"
             }
 
         AllowedValuesRangeHelper constraints ->
@@ -2744,7 +2744,7 @@ translationSet trans =
             case encounterType of
                 AcuteIllnessEncounter ->
                     { english = "Acute Illness"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uburwayi butunguranye"
                     }
 
                 AntenatalEncounter ->
@@ -2764,7 +2764,7 @@ translationSet trans =
 
                 NutritionEncounter ->
                     { english = "Child Nutrition"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imirire y'umwana"
                     }
 
         EncounterTypeFollowUpQuestion encounterType ->
@@ -3172,12 +3172,12 @@ translationSet trans =
 
                 DueThisWeek ->
                     { english = "This week"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Iki cyumweru"
                     }
 
                 DueThisMonth ->
                     { english = "This Month"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uku kwezi"
                     }
 
         FormError errorValue ->
