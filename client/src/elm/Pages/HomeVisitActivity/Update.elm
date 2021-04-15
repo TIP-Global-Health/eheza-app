@@ -109,15 +109,15 @@ update currentDate id db msg model =
             , []
             )
 
-        SetWaterPreparation value ->
+        SetWaterPreparationOption value ->
             let
                 form =
                     model.hygieneForm
 
                 updatedForm =
-                    { form | waterPreparation = Just value }
+                    { form | waterPreparationOption = Just value }
             in
-            ( {model | hygieneForm = updatedForm }
+            ( { model | hygieneForm = updatedForm }
             , Cmd.none
             , []
             )

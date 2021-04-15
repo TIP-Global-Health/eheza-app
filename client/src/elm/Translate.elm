@@ -551,7 +551,7 @@ type TranslationId
     | MainIncomeSource MainIncomeSource
     | MainIncomeSourceQuestion
     | MainWaterSource MainWaterSource
-    | MainWaterPreparationOption WaterPreparation
+    | MainWaterPreparationOption WaterPreparationOption
     | MainWaterSourceQuestion
     | MainWaterPreparationQuestion
     | MakeSureYouAreConnected
@@ -3929,6 +3929,7 @@ translationSet trans =
                     { english = "Bottled Water"
                     , kinyarwanda = Just "Amazi akorwa mu nganda (aza mu macupa)"
                     }
+
         MainWaterPreparationOption option ->
             case option of
                 Boiled ->
@@ -3951,7 +3952,7 @@ translationSet trans =
                     , kinyarwanda = Just "Bakoresha amazi yo mu macupa"
                     }
 
-                NoWaterPreparation ->
+                NoWaterPreparationOption ->
                     { english = "None of these"
                     , kinyarwanda = Just "Nta na kimwe"
                     }

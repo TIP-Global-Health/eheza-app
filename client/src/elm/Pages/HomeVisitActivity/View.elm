@@ -429,7 +429,7 @@ viewHygieneContent language currentDate assembled db hygieneForm =
 
         tasksCompleted =
             taskCompleted form.mainWaterSource
-                + taskCompleted form.waterPreparation
+                + taskCompleted form.waterPreparationOption
                 + taskCompleted form.soapInTheHouse
                 + taskCompleted form.washHandsBeforeFeeding
                 + taskCompleted form.foodCovered
@@ -453,20 +453,20 @@ viewHygieneContent language currentDate assembled db hygieneForm =
                 Translate.MainWaterSource
             ]
 
-        mainWaterPreparationInput =
-                [ viewQuestionLabel language Translate.MainWaterPreparationQuestion
-                , viewCheckBoxSelectInput language
-                    [ Boiled
-                    , PurificationSolution
-                    , Filtered
-                    , Bottled
-                    , NoWaterPreparation
-                    ]
-                    []
-                    form.waterPreparation
-                    SetWaterPreparation
-                    Translate.MainWaterPreparationOption
+        mainWaterPreparationOptionInput =
+            [ viewQuestionLabel language Translate.MainWaterPreparationQuestion
+            , viewCheckBoxSelectInput language
+                [ Boiled
+                , PurificationSolution
+                , Filtered
+                , Bottled
+                , NoWaterPreparationOption
                 ]
+                []
+                form.waterPreparationOption
+                SetWaterPreparationOption
+                Translate.MainWaterPreparationOption
+            ]
 
         soapInTheHouseUpdateFunc value form_ =
             { form_ | soapInTheHouse = Just value }
@@ -506,7 +506,7 @@ viewHygieneContent language currentDate assembled db hygieneForm =
 
         content =
             mainWaterSourceInput
-                ++ mainWaterPreparationInput
+                ++ mainWaterPreparationOptionInput
                 ++ soapInTheHouseInput
                 ++ washHandsBeforeFeedingInput
                 ++ foodCoveredInput

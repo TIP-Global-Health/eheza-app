@@ -321,7 +321,7 @@ type alias NutritionHygiene =
 type alias NutritionHygieneValue =
     { signs : EverySet NutritionHygieneSign
     , mainWaterSource : MainWaterSource
-    , waterPreparation : WaterPreparation
+    , waterPreparationOption : WaterPreparationOption
     }
 
 
@@ -340,12 +340,14 @@ type MainWaterSource
     | NaturalSourceStandingWater
     | BottledWater
 
-type WaterPreparation
+
+type WaterPreparationOption
     = Boiled
     | PurificationSolution
     | Filtered
     | Bottled
-    | NoWaterPreparation
+    | NoWaterPreparationOption
+
 
 type alias NutritionFoodSecurity =
     HomeVisitMeasurement NutritionFoodSecurityValue

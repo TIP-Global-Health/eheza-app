@@ -130,7 +130,7 @@ fromNutritionHygieneValue saved =
     , washHandsBeforeFeeding = Maybe.map (.signs >> EverySet.member WashHandsBeforeFeeding) saved
     , foodCovered = Maybe.map (.signs >> EverySet.member FoodCovered) saved
     , mainWaterSource = Maybe.map .mainWaterSource saved
-    , waterPreparation = Maybe.map .waterPreparation saved
+    , waterPreparationOption = Maybe.map .waterPreparationOption saved
     }
 
 
@@ -144,7 +144,7 @@ nutritionHygieneFormWithDefault form saved =
                 , washHandsBeforeFeeding = or form.washHandsBeforeFeeding (EverySet.member WashHandsBeforeFeeding value.signs |> Just)
                 , foodCovered = or form.foodCovered (EverySet.member FoodCovered value.signs |> Just)
                 , mainWaterSource = or form.mainWaterSource (Just value.mainWaterSource)
-                , waterPreparation = or form.waterPreparation (Just value.waterPreparation)
+                , waterPreparationOption = or form.waterPreparationOption (Just value.waterPreparationOption)
                 }
             )
 
@@ -168,7 +168,7 @@ toNutritionHygieneValue form =
     in
     Maybe.map NutritionHygieneValue signs
         |> andMap form.mainWaterSource
-        |> andMap form.waterPreparation
+        |> andMap form.waterPreparationOption
 
 
 fromNutritionFoodSecurityValue : Maybe NutritionFoodSecurityValue -> NutritionFoodSecurityForm
