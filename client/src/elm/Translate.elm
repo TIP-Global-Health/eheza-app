@@ -551,7 +551,9 @@ type TranslationId
     | MainIncomeSource MainIncomeSource
     | MainIncomeSourceQuestion
     | MainWaterSource MainWaterSource
+    | MainWaterPreparationOption WaterPreparation
     | MainWaterSourceQuestion
+    | MainWaterPreparationQuestion
     | MakeSureYouAreConnected
     | MalariaRapidDiagnosticTest
     | MalariaRapidTestResult MalariaRapidTestResult
@@ -3927,10 +3929,41 @@ translationSet trans =
                     { english = "Bottled Water"
                     , kinyarwanda = Just "Amazi akorwa mu nganda (aza mu macupa)"
                     }
+        MainWaterPreparationOption option ->
+            case option of
+                Boiled ->
+                    { english = "Boiled"
+                    , kinyarwanda = Just "Barayateka"
+                    }
+
+                PurificationSolution ->
+                    { english = "Purification solution"
+                    , kinyarwanda = Just "Bakoresha umuti usukura amazi"
+                    }
+
+                Filtered ->
+                    { english = "Filtered"
+                    , kinyarwanda = Just "Barayayungurura"
+                    }
+
+                Bottled ->
+                    { english = "Bottled"
+                    , kinyarwanda = Just "Bakoresha amazi yo mu macupa"
+                    }
+
+                NoWaterPreparation ->
+                    { english = "None of these"
+                    , kinyarwanda = Just "Nta na kimwe"
+                    }
 
         MainWaterSourceQuestion ->
             { english = "What is the household's main source of water"
             , kinyarwanda = Just "Ni hehe h'ibanze urugo ruvana amazi"
+            }
+
+        MainWaterPreparationQuestion ->
+            { english = "How is drinking water prepared"
+            , kinyarwanda = Just "Amazi yo kunywa ategurwa gute"
             }
 
         MakeSureYouAreConnected ->
