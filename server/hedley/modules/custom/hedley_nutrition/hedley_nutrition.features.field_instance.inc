@@ -2174,44 +2174,6 @@ function hedley_nutrition_field_default_field_instances() {
   );
 
   // Exported field_instance:
-  // 'node-nutrition_hygiene-field_drinking_water_preparation'.
-  $field_instances['node-nutrition_hygiene-field_drinking_water_preparation'] = array(
-    'bundle' => 'nutrition_hygiene',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 8,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_drinking_water_preparation',
-    'label' => 'Drinking Water Preparation',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 10,
-    ),
-  );
-
-  // Exported field_instance:
   // 'node-nutrition_hygiene-field_home_visit_encounter'.
   $field_instances['node-nutrition_hygiene-field_home_visit_encounter'] = array(
     'bundle' => 'nutrition_hygiene',
@@ -2500,6 +2462,44 @@ function hedley_nutrition_field_default_field_instances() {
       ),
       'type' => 'text_textfield',
       'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-nutrition_hygiene-field_water_preparation_option'.
+  $field_instances['node-nutrition_hygiene-field_water_preparation_option'] = array(
+    'bundle' => 'nutrition_hygiene',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_water_preparation_option',
+    'label' => 'Water Preparation Option',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 10,
     ),
   );
 
@@ -2856,7 +2856,6 @@ function hedley_nutrition_field_default_field_instances() {
   t('Child Caring Option');
   t('Contributing Factors Signs');
   t('Date Measured');
-  t('Drinking Water Preparation');
   t('Follow up options');
   t('Food Security Sign');
   t('Health education signs');
@@ -2877,6 +2876,7 @@ function hedley_nutrition_field_default_field_instances() {
   t('Shards');
   t('Supplement Type');
   t('UUID');
+  t('Water Preparation Option');
 
   return $field_instances;
 }
