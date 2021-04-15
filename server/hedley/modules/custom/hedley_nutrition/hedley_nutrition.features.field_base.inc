@@ -39,6 +39,34 @@ function hedley_nutrition_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_drinking_water_preparation'.
+  $field_bases['field_drinking_water_preparation'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_drinking_water_preparation',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'boiled' => 'Boiled',
+        'purification-solution' => 'Purification Solution',
+        'filtered' => 'Filtered',
+        'bottled' => 'Bottled',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_food_security_signs'.
   $field_bases['field_food_security_signs'] = array(
     'active' => 1,
