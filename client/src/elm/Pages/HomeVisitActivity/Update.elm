@@ -109,6 +109,19 @@ update currentDate id db msg model =
             , []
             )
 
+        SetWaterPreparation value ->
+            let
+                form =
+                    model.hygieneForm
+
+                updatedForm =
+                    { form | waterPreparation = Just value }
+            in
+            ( {model | hygieneForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
         SaveHygiene personId saved ->
             let
                 measurementId =
