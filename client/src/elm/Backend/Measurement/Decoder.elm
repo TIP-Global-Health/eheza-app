@@ -1224,7 +1224,7 @@ decodeNutritionHygieneValue =
     succeed NutritionHygieneValue
         |> required "nutrition_hygiene_signs" (decodeEverySet decodeNutritionHygieneSign)
         |> required "main_water_source" decodeMainWaterSource
-        |> required "drinking_water_preparation" decodeWaterPreparationOption
+        |> required "water_preparation_option" decodeWaterPreparationOption
 
 
 decodeNutritionHygieneSign : Decoder NutritionHygieneSign

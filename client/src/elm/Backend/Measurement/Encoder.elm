@@ -1521,7 +1521,7 @@ encodeNutritionHygieneValue : NutritionHygieneValue -> List ( String, Value )
 encodeNutritionHygieneValue value =
     [ ( "nutrition_hygiene_signs", encodeEverySet encodeNutritionHygieneSign value.signs )
     , ( "main_water_source", encodeMainWaterSource value.mainWaterSource )
-    , ( "drinking_water_preparation", encodeWaterPreparationOption value.waterPreparationOption )
+    , ( "water_preparation_option", encodeWaterPreparationOption value.waterPreparationOption )
     , ( "deleted", bool False )
     , ( "type", string "nutrition_hygiene" )
     ]
