@@ -1224,6 +1224,7 @@ decodeNutritionHygieneValue =
     succeed NutritionHygieneValue
         |> required "nutrition_hygiene_signs" (decodeEverySet decodeNutritionHygieneSign)
         |> required "main_water_source" decodeMainWaterSource
+        |> required "drinking_water_preparation" decodeWaterPreparation
 
 
 decodeNutritionHygieneSign : Decoder NutritionHygieneSign
@@ -1279,6 +1280,34 @@ decodeMainWaterSource =
                         fail <|
                             sign
                                 ++ " is not a recognized MainWaterSource"
+            )
+
+decodeWaterPreparation : Decoder WaterPreparation
+decodeWaterPreparation =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "boiled" ->
+                        succeed Boiled
+
+                    "purification-solution" ->
+                        succeed PurificationSolution
+
+                    "filtered" ->
+                        succeed Filtered
+
+                    "bottled" ->
+                        succeed Bottled
+
+                    "none" ->
+                        succeed NoWaterPreparation
+
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized WaterPreparation"
             )
 
 
