@@ -76,21 +76,13 @@ viewContent language currentDate selectedHealthCenter isChw app =
                     _ ->
                         let
                             encounterButton encounterType =
-                                if isChw then
-                                    button
-                                        [ class "ui primary button encounter-type" ]
-                                        [ span [ class "text" ] [ text <| translate language <| Translate.IndividualEncounterType encounterType ]
-                                        , span [ class "icon-back" ] []
-                                        ]
-
-                                else
-                                    button
-                                        [ class "ui primary button encounter-type"
-                                        , onClick <| SetActivePage <| UserPage <| IndividualEncounterParticipantsPage encounterType
-                                        ]
-                                        [ span [ class "text" ] [ text <| translate language <| Translate.IndividualEncounterType encounterType ]
-                                        , span [ class "icon-back" ] []
-                                        ]
+                                button
+                                    [ class "ui primary button encounter-type"
+                                    , onClick <| SetActivePage <| UserPage <| IndividualEncounterParticipantsPage encounterType
+                                    ]
+                                    [ span [ class "text" ] [ text <| translate language <| Translate.IndividualEncounterType encounterType ]
+                                    , span [ class "icon-back" ] []
+                                    ]
 
                             buttons =
                                 if isChw then
