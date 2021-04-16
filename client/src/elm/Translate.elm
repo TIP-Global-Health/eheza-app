@@ -3161,7 +3161,7 @@ translationSet trans =
         FollowUpDueOption option ->
             case option of
                 OverDue ->
-                    { english = "Over Due"
+                    { english = "Past Due"
                     , kinyarwanda = Just "Itariki yarenze"
                     }
 
