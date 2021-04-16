@@ -3949,7 +3949,7 @@ translationSet trans =
 
                 Bottled ->
                     { english = "Bottled"
-                    , kinyarwanda = Just "Bakoresha amazi yo mu macupa"
+                    , kinyarwanda = Just "amazi yo mu  nganda ( afunze mu macupa )"
                     }
 
                 NoWaterPreparationOption ->
@@ -3964,7 +3964,7 @@ translationSet trans =
 
         MainWaterPreparationQuestion ->
             { english = "How is drinking water prepared"
-            , kinyarwanda = Just "Amazi yo kunywa ategurwa gute"
+            , kinyarwanda = Just "Ni gute amazi yo kunywa ategurwa"
             }
 
         MakeSureYouAreConnected ->
