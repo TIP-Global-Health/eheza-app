@@ -4735,7 +4735,8 @@ translationSet trans =
 
                 CaredByHouseHelper ->
                     { english = "House helper"
-                    , kinyarwanda = Just "Umukozi wo mu rugo"}
+                    , kinyarwanda = Just "Umukozi wo mu rugo"
+                    }
 
                 CaredByDaycare ->
                     { english = "Daycare"
