@@ -521,6 +521,9 @@ type TranslationId
     | IndividualEncounterLabel IndividualEncounterType
     | IndividualEncounterSelectVisit IndividualEncounterType
     | IndividualEncounterSubsequentVisit IndividualEncounterType
+    | IndividualEncounterSecondVisit IndividualEncounterType
+    | IndividualEncounterThirdVisit IndividualEncounterType
+    | IndividualEncounterPostpartumVisit IndividualEncounterType
     | IndividualEncounterType IndividualEncounterType
     | IndividualEncounterTypes
     | InitialResultsDisplay InitialResultsDisplay
@@ -3636,6 +3639,87 @@ translationSet trans =
 
                 HomeVisitEncounter ->
                     { english = "Subsequent Home Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+        IndividualEncounterSecondVisit encounterType ->
+            case encounterType of
+                AcuteIllnessEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                AntenatalEncounter ->
+                    { english = "Second Antenatal Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                HomeVisitEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        IndividualEncounterThirdVisit encounterType ->
+            case encounterType of
+                AcuteIllnessEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                AntenatalEncounter ->
+                    { english = "Third Antenatal Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                HomeVisitEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        IndividualEncounterPostpartumVisit encounterType ->
+            case encounterType of
+                AcuteIllnessEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                AntenatalEncounter ->
+                    { english = "Postpartum"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                HomeVisitEncounter ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
