@@ -3949,7 +3949,7 @@ translationSet trans =
 
                 Bottled ->
                     { english = "Bottled"
-                    , kinyarwanda = Just "amazi yo mu  nganda ( afunze mu macupa )"
+                    , kinyarwanda = Just "Amazi yo mu nganda (afunze mu macupa)"
                     }
 
                 NoWaterPreparationOption ->
