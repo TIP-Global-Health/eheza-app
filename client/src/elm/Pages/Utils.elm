@@ -549,3 +549,16 @@ isTaskCompleted dict task =
 tasksBarId : String
 tasksBarId =
     "tasks-bar"
+
+
+viewButton : Language -> msg -> TranslationId -> Bool -> Html msg
+viewButton language action lablelTransId disabled =
+    div
+        [ class "ui primary button"
+        , classList [ ( "disabled", disabled ) ]
+        , onClick action
+        ]
+        [ div [ class "button-label" ]
+            [ text <| translate language lablelTransId ]
+        , div [ class "icon-back" ] []
+        ]
