@@ -384,6 +384,7 @@ viewCaringContent language currentDate assembled db caringForm =
                 , CaredByGrandparent
                 , CaredBySibling
                 , CaredByNeighbor
+                , CaredByHouseHelper
                 , CaredByDaycare
                 ]
                 []
