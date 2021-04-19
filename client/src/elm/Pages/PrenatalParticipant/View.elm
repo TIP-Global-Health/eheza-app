@@ -17,13 +17,14 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalParticipant.Model exposing (..)
 import Pages.PrenatalParticipant.Utils exposing (isPregnancyActive)
+import Pages.Utils exposing (viewButton)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate selectedHealthCenter id db =
+view : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate selectedHealthCenter id isChw db =
     let
         prenatalSessions =
             Dict.get id db.individualParticipantsByPerson
@@ -34,7 +35,7 @@ view language currentDate selectedHealthCenter id db =
         [ viewHeader language id
         , div
             [ class "ui full segment" ]
-            [ viewWebData language (viewPrenatalActions language currentDate selectedHealthCenter id db) identity prenatalSessions
+            [ viewWebData language (viewPrenatalActions language currentDate selectedHealthCenter id isChw db) identity prenatalSessions
             ]
         ]
 
@@ -56,8 +57,8 @@ viewHeader language id =
         ]
 
 
-viewPrenatalActions : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
-viewPrenatalActions language currentDate selectedHealthCenter id db prenatalSessions =
+viewPrenatalActions : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
+viewPrenatalActions language currentDate selectedHealthCenter id isChw db prenatalSessions =
     let
         -- Person prenatal session.
         maybeSessionId =
@@ -200,39 +201,95 @@ viewPrenatalActions language currentDate selectedHealthCenter id db prenatalSess
 
         firstVisitButtonDisabled =
             isJust maybeSessionId && not firstEncounterInProcess
+
+        createFirstEncounterButton =
+            viewButton language
+                firstVisitAction
+                (Translate.IndividualEncounterFirstVisit Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
+                firstVisitButtonDisabled
     in
-    div []
-        [ p [ class "label-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter ]
-        , div
-            (classList
-                [ ( "ui primary button", True )
-                , ( "disabled", firstVisitButtonDisabled )
+    if isChw then
+        div []
+            [ p [ class "label-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter ]
+            , createFirstEncounterButton
+            , div
+                (classList
+                    [ ( "ui primary button", True )
+                    , ( "disabled", not firstVisitButtonDisabled || encounterWasCompletedToday )
+                    ]
+                    --@todo
+                    :: subsequentVisitAction
+                )
+                [ div [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterSecondVisit AntenatalEncounter ]
+                , div [ class "icon-back" ] []
                 ]
-                :: firstVisitAction
-            )
-            [ div [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterFirstVisit AntenatalEncounter ]
-            , div [ class "icon-back" ] []
-            ]
-        , div
-            (classList
-                [ ( "ui primary button", True )
-                , ( "disabled", not firstVisitButtonDisabled || encounterWasCompletedToday )
+            , div
+                (classList
+                    [ ( "ui primary button", True )
+                    , ( "disabled", not firstVisitButtonDisabled || encounterWasCompletedToday )
+                    ]
+                    :: subsequentVisitAction
+                )
+                [ div [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterThirdVisit AntenatalEncounter ]
+                , div [ class "icon-back" ] []
                 ]
-                :: subsequentVisitAction
-            )
-            [ div [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterSubsequentVisit AntenatalEncounter ]
-            , div [ class "icon-back" ] []
-            ]
-        , div [ class "separator" ] []
-        , p [ class "label-pregnancy-concluded" ] [ text <| translate language Translate.PregnancyConcludedLabel ]
-        , div
-            (classList
-                [ ( "ui primary button", True )
-                , ( "disabled", List.isEmpty navigateToPregnancyOutcomeAction )
+            , div
+                (classList
+                    [ ( "ui primary button", True )
+                    , ( "disabled", not firstVisitButtonDisabled || encounterWasCompletedToday )
+                    ]
+                    :: subsequentVisitAction
+                )
+                [ div [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterPostpartumVisit AntenatalEncounter ]
+                , div [ class "icon-back" ] []
                 ]
-                :: navigateToPregnancyOutcomeAction
-            )
-            [ div [ class "button-label" ] [ text <| translate language Translate.RecordPregnancyOutcome ]
-            , div [ class "icon-back" ] []
+            , div [ class "separator" ] []
+            , p [ class "label-pregnancy-concluded" ] [ text <| translate language Translate.PregnancyConcludedLabel ]
+            , div
+                (classList
+                    [ ( "ui primary button", True )
+                    , ( "disabled", List.isEmpty navigateToPregnancyOutcomeAction )
+                    ]
+                    :: navigateToPregnancyOutcomeAction
+                )
+                [ div [ class "button-label" ] [ text <| translate language Translate.RecordPregnancyOutcome ]
+                , div [ class "icon-back" ] []
+                ]
             ]
-        ]
+
+    else
+        div []
+            [ p [ class "label-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter ]
+            , div
+                (classList
+                    [ ( "ui primary button", True )
+                    , ( "disabled", firstVisitButtonDisabled )
+                    ]
+                    :: firstVisitAction
+                )
+                [ div [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterFirstVisit AntenatalEncounter ]
+                , div [ class "icon-back" ] []
+                ]
+            , div
+                (classList
+                    [ ( "ui primary button", True )
+                    , ( "disabled", not firstVisitButtonDisabled || encounterWasCompletedToday )
+                    ]
+                    :: subsequentVisitAction
+                )
+                [ div [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterSubsequentVisit AntenatalEncounter ]
+                , div [ class "icon-back" ] []
+                ]
+            , div [ class "separator" ] []
+            , p [ class "label-pregnancy-concluded" ] [ text <| translate language Translate.PregnancyConcludedLabel ]
+            , div
+                (classList
+                    [ ( "ui primary button", True )
+                    , ( "disabled", List.isEmpty navigateToPregnancyOutcomeAction )
+                    ]
+                    :: navigateToPregnancyOutcomeAction
+                )
+                [ div [ class "button-label" ] [ text <| translate language Translate.RecordPregnancyOutcome ]
+                , div [ class "icon-back" ] []
+                ]
+            ]
