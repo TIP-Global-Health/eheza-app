@@ -383,6 +383,7 @@ type CaringOption
     | CaredByGrandparent
     | CaredBySibling
     | CaredByNeighbor
+    | CaredByHouseHelper
     | CaredByDaycare
 
 
