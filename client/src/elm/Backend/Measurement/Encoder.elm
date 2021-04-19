@@ -1652,6 +1652,9 @@ encodeNutritionCaringOption option =
             CaredByNeighbor ->
                 "neighbor"
 
+            CaredByHouseHelper ->
+                "house-helper"
+
             CaredByDaycare ->
                 "daycare"
 

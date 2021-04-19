@@ -1390,6 +1390,9 @@ decodeNutritionCaringOption =
                     "neighbor" ->
                         succeed CaredByNeighbor
 
+                    "house-helper" ->
+                        succeed CaredByHouseHelper
+
                     "daycare" ->
                         succeed CaredByDaycare
 
