@@ -286,5 +286,33 @@ function hedley_nutrition_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_water_preparation_option'.
+  $field_bases['field_water_preparation_option'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_water_preparation_option',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'boiled' => 'Boiled',
+        'purification-solution' => 'Purification Solution',
+        'filtered' => 'Filtered',
+        'bottled' => 'Bottled',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   return $field_bases;
 }

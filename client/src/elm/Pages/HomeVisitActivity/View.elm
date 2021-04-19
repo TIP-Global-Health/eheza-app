@@ -425,10 +425,11 @@ viewHygieneContent language currentDate assembled db hygieneForm =
                 |> nutritionHygieneFormWithDefault hygieneForm
 
         totalTasks =
-            4
+            5
 
         tasksCompleted =
             taskCompleted form.mainWaterSource
+                + taskCompleted form.waterPreparationOption
                 + taskCompleted form.soapInTheHouse
                 + taskCompleted form.washHandsBeforeFeeding
                 + taskCompleted form.foodCovered
@@ -450,6 +451,21 @@ viewHygieneContent language currentDate assembled db hygieneForm =
                 form.mainWaterSource
                 SetMainWaterSource
                 Translate.MainWaterSource
+            ]
+
+        mainWaterPreparationOptionInput =
+            [ viewQuestionLabel language Translate.MainWaterPreparationQuestion
+            , viewCheckBoxSelectInput language
+                [ Boiled
+                , PurificationSolution
+                , Filtered
+                , Bottled
+                , NoWaterPreparationOption
+                ]
+                []
+                form.waterPreparationOption
+                SetWaterPreparationOption
+                Translate.MainWaterPreparationOption
             ]
 
         soapInTheHouseUpdateFunc value form_ =
@@ -490,6 +506,7 @@ viewHygieneContent language currentDate assembled db hygieneForm =
 
         content =
             mainWaterSourceInput
+                ++ mainWaterPreparationOptionInput
                 ++ soapInTheHouseInput
                 ++ washHandsBeforeFeedingInput
                 ++ foodCoveredInput
