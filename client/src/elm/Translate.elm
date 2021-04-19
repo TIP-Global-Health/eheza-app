@@ -4733,6 +4733,10 @@ translationSet trans =
                     , kinyarwanda = Just "Umuturanyi"
                     }
 
+                CaredByHouseHelper ->
+                    { english = "House helper"
+                    , kinyarwanda = Just "Umukozi wo mu rugo"}
+
                 CaredByDaycare ->
                     { english = "Daycare"
                     , kinyarwanda = Just "Irerero"
