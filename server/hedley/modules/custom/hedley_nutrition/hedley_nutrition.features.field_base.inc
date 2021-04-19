@@ -29,9 +29,10 @@ function hedley_nutrition_field_default_field_bases() {
       'allowed_values' => array(
         'parent' => 'Parent',
         'grandparent' => 'Grandparent',
-        'sibling' => ' Sibling',
-        'neighbor' => ' Neighbor',
-        'daycare' => ' DayCare',
+        'sibling' => 'Sibling',
+        'neighbor' => 'Neighbor',
+        'house-helper' => 'House helper',
+        'daycare' => 'DayCare',
       ),
       'allowed_values_function' => '',
     ),
