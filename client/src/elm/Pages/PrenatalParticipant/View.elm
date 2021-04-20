@@ -71,6 +71,76 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db prenat
                 |> List.head
                 |> Maybe.map Tuple.first
 
+        label =
+            p [ class "label-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter ]
+
+        encounterTypeSpecificButtons =
+            if isChw then
+                viewPrenatalActionsForChw language currentDate selectedHealthCenter id db maybeSessionId
+
+            else
+                viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId
+
+        recordPregannacyOutcomeSection =
+            [ div [ class "separator" ] []
+            , p [ class "label-pregnancy-concluded" ] [ text <| translate language Translate.PregnancyConcludedLabel ]
+            , recordPrenatalOutcomeButton
+            ]
+
+        totalCompletedEncounts =
+            maybeSessionId
+                |> Maybe.map
+                    (\sessionId ->
+                        Dict.get sessionId db.prenatalEncountersByParticipant
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.map
+                                (\dict ->
+                                    let
+                                        activeEncounters =
+                                            Dict.toList dict
+                                                |> List.filter (\( _, encounter ) -> isNothing encounter.endDate)
+                                    in
+                                    Dict.size dict - List.length activeEncounters
+                                )
+                            |> RemoteData.withDefault 0
+                    )
+                |> Maybe.withDefault 0
+
+        recordPrenatalOutcomeButton =
+            viewButton language
+                navigateToPregnancyOutcomeAction
+                Translate.RecordPregnancyOutcome
+                (List.isEmpty navigateToPregnancyOutcomeAction)
+
+        navigateToPregnancyOutcomeAction =
+            if totalCompletedEncounts > 0 then
+                maybeSessionId
+                    |> Maybe.map
+                        (\sessionId ->
+                            [ Pages.Page.PregnancyOutcomePage sessionId
+                                |> UserPage
+                                |> App.Model.SetActivePage
+                                |> onClick
+                            ]
+                        )
+                    |> Maybe.withDefault []
+
+            else
+                []
+    in
+    (label :: encounterTypeSpecificButtons) ++ recordPregannacyOutcomeSection |> div []
+
+
+viewPrenatalActionsForNurse :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> PersonId
+    -> ModelIndexedDb
+    -> Maybe IndividualEncounterParticipantId
+    -> List (Html App.Model.Msg)
+viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId =
+    let
         -- Resolve active prenatal encounter for person. There should not be more than one.
         -- We count the number of completed encounters, so that we know if to
         -- allow 'Pregnancy Outcome' action.
@@ -202,69 +272,71 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db prenat
             isJust maybeSessionId && not firstEncounterInProcess
 
         createFirstEncounterButton =
-            if isChw then
-                viewButton language
-                    []
-                    (Translate.PrenatalFirstEncounter Backend.PrenatalEncounter.Model.ChwFirstEncounter)
-                    firstVisitButtonDisabled
-
-            else
-                viewButton language
-                    firstVisitAction
-                    (Translate.IndividualEncounterFirstVisit Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
-                    firstVisitButtonDisabled
+            viewButton language
+                firstVisitAction
+                (Translate.IndividualEncounterFirstVisit Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
+                firstVisitButtonDisabled
 
         createSubsequentEncounterButton =
             viewButton language
                 subsequentVisitAction
                 (Translate.IndividualEncounterFirstVisit Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
                 (not firstVisitButtonDisabled || encounterWasCompletedToday)
+    in
+    [ createFirstEncounterButton
+    , createSubsequentEncounterButton
+    ]
+
+
+viewPrenatalActionsForChw :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> PersonId
+    -> ModelIndexedDb
+    -> Maybe IndividualEncounterParticipantId
+    -> List (Html App.Model.Msg)
+viewPrenatalActionsForChw language currentDate selectedHealthCenter id db maybeSessionId =
+    let
+        navigateToEncounterAction id_ =
+            [ Pages.Page.PrenatalEncounterPage id_
+                |> UserPage
+                |> App.Model.SetActivePage
+                |> onClick
+            ]
+
+        createFirstEncounterButton =
+            viewButton language
+                []
+                (Translate.PrenatalFirstEncounter Backend.PrenatalEncounter.Model.ChwFirstEncounter)
+                False
+
+        createSubsequentEncounterButton =
+            False
 
         createSecondEncounterButton =
             viewButton language
                 []
                 (Translate.PrenatalFirstEncounter Backend.PrenatalEncounter.Model.ChwSecondEncounter)
-                (not firstVisitButtonDisabled || encounterWasCompletedToday)
+                False
 
         createThirdEncounterButton =
             viewButton language
                 []
                 (Translate.PrenatalFirstEncounter Backend.PrenatalEncounter.Model.ChwThirdEncounter)
-                (not firstVisitButtonDisabled || encounterWasCompletedToday)
+                False
 
         createPostpartumEncounterButton =
             viewButton language
                 []
                 (Translate.PrenatalFirstEncounter Backend.PrenatalEncounter.Model.ChwPostpartumEncounter)
-                (not firstVisitButtonDisabled || encounterWasCompletedToday)
-
-        recordPrenatalOutcomeButton =
-            viewButton language
-                navigateToPregnancyOutcomeAction
-                Translate.RecordPregnancyOutcome
-                (List.isEmpty navigateToPregnancyOutcomeAction)
+                False
     in
-    if isChw then
-        div []
-            [ p [ class "label-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter ]
-            , createFirstEncounterButton
-            , createSecondEncounterButton
-            , createThirdEncounterButton
-            , createPostpartumEncounterButton
-            , div [ class "separator" ] []
-            , p [ class "label-pregnancy-concluded" ] [ text <| translate language Translate.PregnancyConcludedLabel ]
-            , recordPrenatalOutcomeButton
-            ]
-
-    else
-        div []
-            [ p [ class "label-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter ]
-            , createFirstEncounterButton
-            , createSubsequentEncounterButton
-            , div [ class "separator" ] []
-            , p [ class "label-pregnancy-concluded" ] [ text <| translate language Translate.PregnancyConcludedLabel ]
-            , recordPrenatalOutcomeButton
-            ]
+    [ createFirstEncounterButton
+    , createSecondEncounterButton
+    , createThirdEncounterButton
+    , createPostpartumEncounterButton
+    ]
 
 
 viewButton : Language -> List (Attribute App.Model.Msg) -> TranslationId -> Bool -> Html App.Model.Msg
