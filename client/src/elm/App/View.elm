@@ -129,20 +129,19 @@ viewLanguageSwitcherAndVersion : Model -> Html Msg
 viewLanguageSwitcherAndVersion model =
     let
         devicePageShortcut =
-            case RemoteData.toMaybe model.configuration of
-                Just configuration ->
-                    if not configuration.config.debug then
-                        emptyNode
-
-                    else
-                        span
-                            [ onClick <| SetActivePage DevicePage
-                            , class "sync-icon"
-                            ]
-                            [ i [ class "icon undo" ] [] ]
-
-                Nothing ->
+            case model.activePage of
+                UserPage (SessionPage _ (NextStepsPage _ _)) ->
+                    -- We do not show the shortcut on Next steps page
+                    -- to prevent navigating outside of that page,
+                    -- before all tasks are completed.
                     emptyNode
+
+                _ ->
+                    span
+                        [ onClick <| SetActivePage DevicePage
+                        , class "sync-icon"
+                        ]
+                        [ i [ class "icon undo" ] [] ]
     in
     div
         [ class "ui language-switcher" ]

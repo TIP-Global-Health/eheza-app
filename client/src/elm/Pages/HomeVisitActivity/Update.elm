@@ -40,7 +40,7 @@ update currentDate id db msg model =
                     model.feedingForm
 
                 updatedForm =
-                    { form | supplementType = Just value }
+                    { form | supplementType = Just value, sachetsPerDay = Nothing, eatenWithWater = Nothing }
             in
             ( { model | feedingForm = updatedForm }
             , Cmd.none

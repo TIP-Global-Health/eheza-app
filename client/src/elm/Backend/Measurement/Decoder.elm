@@ -1116,7 +1116,7 @@ decodeFollowUpValue : Decoder FollowUpValue
 decodeFollowUpValue =
     succeed FollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
-        |> required "nutrition_assesment" (decodeEverySet decodeNutritionAssesment)
+        |> custom decodeNutritionAssesment
 
 
 decodeAcuteIllnessFollowUp : Decoder AcuteIllnessFollowUp
@@ -2479,8 +2479,15 @@ decodeReasonForNotProvidingHealthEducation =
             )
 
 
-decodeNutritionAssesment : Decoder NutritionAssesment
+decodeNutritionAssesment : Decoder (EverySet NutritionAssesment)
 decodeNutritionAssesment =
+    map2 postProcessNutritionAssesment
+        (field "nutrition_assesment" (decodeEverySet decodeNutritionAssesmentFromString))
+        (field "nutrition_signs" (decodeEverySet decodeChildNutritionSign))
+
+
+decodeNutritionAssesmentFromString : Decoder NutritionAssesment
+decodeNutritionAssesmentFromString =
     string
         |> andThen
             (\s ->
@@ -2488,3 +2495,22 @@ decodeNutritionAssesment =
                     |> Maybe.map succeed
                     |> Maybe.withDefault (s ++ " is not a recognized NutritionAssesment" |> fail)
             )
+
+
+postProcessNutritionAssesment : EverySet NutritionAssesment -> EverySet ChildNutritionSign -> EverySet NutritionAssesment
+postProcessNutritionAssesment assesmentFromString nutritionSign =
+    assesmentFromString
+        |> EverySet.toList
+        |> List.head
+        |> Maybe.map
+            (\assesment ->
+                case assesment of
+                    AssesmentMalnutritionSigns _ ->
+                        EverySet.toList nutritionSign
+                            |> AssesmentMalnutritionSigns
+                            |> EverySet.singleton
+
+                    _ ->
+                        assesmentFromString
+            )
+        |> Maybe.withDefault assesmentFromString
