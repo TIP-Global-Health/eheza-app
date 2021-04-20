@@ -1521,6 +1521,7 @@ encodeNutritionHygieneValue : NutritionHygieneValue -> List ( String, Value )
 encodeNutritionHygieneValue value =
     [ ( "nutrition_hygiene_signs", encodeEverySet encodeNutritionHygieneSign value.signs )
     , ( "main_water_source", encodeMainWaterSource value.mainWaterSource )
+    , ( "water_preparation_option", encodeWaterPreparationOption value.waterPreparationOption )
     , ( "deleted", bool False )
     , ( "type", string "nutrition_hygiene" )
     ]
@@ -1564,6 +1565,26 @@ encodeMainWaterSource type_ =
 
             BottledWater ->
                 "bottled-water"
+
+
+encodeWaterPreparationOption : WaterPreparationOption -> Value
+encodeWaterPreparationOption type_ =
+    string <|
+        case type_ of
+            Boiled ->
+                "boiled"
+
+            PurificationSolution ->
+                "purification-solution"
+
+            Filtered ->
+                "filtered"
+
+            Bottled ->
+                "bottled"
+
+            NoWaterPreparationOption ->
+                "none"
 
 
 encodeNutritionFoodSecurity : NutritionFoodSecurity -> List ( String, Value )
@@ -1651,6 +1672,9 @@ encodeNutritionCaringOption option =
 
             CaredByNeighbor ->
                 "neighbor"
+
+            CaredByHouseHelper ->
+                "house-helper"
 
             CaredByDaycare ->
                 "daycare"

@@ -17,6 +17,7 @@ type Msg
     | SaveHygiene PersonId (Maybe ( NutritionHygieneId, NutritionHygiene ))
     | SetFoodSecurityBoolInput (Bool -> NutritionFoodSecurityForm -> NutritionFoodSecurityForm) Bool
     | SetMainIncomeSource MainIncomeSource
+    | SetWaterPreparationOption WaterPreparationOption
     | SaveFoodSecurity PersonId (Maybe ( NutritionFoodSecurityId, NutritionFoodSecurity ))
     | SetParentsAliveAndHealthy Bool
     | SetChildClean Bool
@@ -77,6 +78,7 @@ type alias NutritionHygieneForm =
     , washHandsBeforeFeeding : Maybe Bool
     , foodCovered : Maybe Bool
     , mainWaterSource : Maybe MainWaterSource
+    , waterPreparationOption : Maybe WaterPreparationOption
     }
 
 
@@ -86,6 +88,7 @@ emptyNutritionHygieneForm =
     , washHandsBeforeFeeding = Nothing
     , foodCovered = Nothing
     , mainWaterSource = Nothing
+    , waterPreparationOption = Nothing
     }
 
 
