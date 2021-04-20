@@ -6,7 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (emptyIndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..), emptyPrenatalEncounter)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -17,7 +17,6 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalParticipant.Model exposing (..)
 import Pages.PrenatalParticipant.Utils exposing (isPregnancyActive)
-import Pages.Utils exposing (viewButton)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
@@ -144,7 +143,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db prenat
                     |> Maybe.map
                         -- If prenatal session exists, create new encounter for it.
                         (\sessionId ->
-                            [ PrenatalEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
+                            [ emptyPrenatalEncounter sessionId currentDate NurseEncounter (Just selectedHealthCenter)
                                 |> Backend.Model.PostPrenatalEncounter
                                 |> App.Model.MsgIndexedDb
                                 |> onClick
@@ -165,7 +164,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db prenat
                     (maybeSessionId
                         |> Maybe.map
                             (\sessionId ->
-                                [ PrenatalEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
+                                [ emptyPrenatalEncounter sessionId currentDate NurseEncounter (Just selectedHealthCenter)
                                     |> Backend.Model.PostPrenatalEncounter
                                     |> App.Model.MsgIndexedDb
                                     |> onClick
@@ -293,3 +292,19 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db prenat
                 , div [ class "icon-back" ] []
                 ]
             ]
+
+
+viewButton : Language -> List (Attribute App.Model.Msg) -> TranslationId -> Bool -> Html App.Model.Msg
+viewButton language action lablelTransId disabled =
+    let
+        attributes =
+            [ class "ui primary button"
+            , classList [ ( "disabled", disabled ) ]
+            ]
+                ++ action
+    in
+    div attributes
+        [ div [ class "button-label" ]
+            [ text <| translate language lablelTransId ]
+        , div [ class "icon-back" ] []
+        ]

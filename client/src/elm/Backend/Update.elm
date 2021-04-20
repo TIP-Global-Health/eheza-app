@@ -13,7 +13,7 @@ import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Fetch
 import Backend.HomeVisitActivity.Model
-import Backend.HomeVisitEncounter.Model
+import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.HomeVisitEncounter.Update
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Update
@@ -21,13 +21,13 @@ import Backend.Measurement.Model exposing (ChildMeasurements, HistoricalMeasurem
 import Backend.Measurement.Utils exposing (mapChildMeasurementsAtOfflineSession, mapMeasurementData, splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
 import Backend.NutritionActivity.Model
-import Backend.NutritionEncounter.Model
+import Backend.NutritionEncounter.Model exposing (emptyNutritionEncounter)
 import Backend.NutritionEncounter.Update
 import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
-import Backend.PrenatalEncounter.Model
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..), emptyPrenatalEncounter)
 import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (RelatedBy(..))
@@ -1731,19 +1731,19 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                                     ]
 
                                 AntenatalEncounter ->
-                                    [ Backend.PrenatalEncounter.Model.PrenatalEncounter sessionId currentDate Nothing healthCenterId
+                                    [ emptyPrenatalEncounter sessionId currentDate NurseEncounter healthCenterId
                                         |> Backend.Model.PostPrenatalEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
 
                                 NutritionEncounter ->
-                                    [ Backend.NutritionEncounter.Model.emptyNutritionEncounter sessionId currentDate healthCenterId
+                                    [ emptyNutritionEncounter sessionId currentDate healthCenterId
                                         |> Backend.Model.PostNutritionEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
 
                                 HomeVisitEncounter ->
-                                    [ Backend.HomeVisitEncounter.Model.HomeVisitEncounter sessionId currentDate Nothing healthCenterId
+                                    [ emptyHomeVisitEncounter sessionId currentDate healthCenterId
                                         |> Backend.Model.PostHomeVisitEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]

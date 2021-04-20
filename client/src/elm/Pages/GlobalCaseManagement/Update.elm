@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (emptyAcuteIllnessEncounter)
 import Backend.Entities exposing (..)
-import Backend.HomeVisitEncounter.Model
+import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (emptyIndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb)
@@ -62,7 +62,7 @@ startFollowUpEncounterHomeVisit currentDate selectedHealthCenter db data =
         |> Maybe.map
             -- If home visit participant exists, create new encounter for it.
             (\sessionId ->
-                [ Backend.HomeVisitEncounter.Model.HomeVisitEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
+                [ emptyHomeVisitEncounter sessionId currentDate (Just selectedHealthCenter)
                     |> Backend.Model.PostHomeVisitEncounter
                     |> App.Model.MsgIndexedDb
                 ]

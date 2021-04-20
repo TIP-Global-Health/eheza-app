@@ -3,7 +3,7 @@ module Pages.NutritionParticipant.View exposing (view)
 import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.HomeVisitEncounter.Model
+import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (emptyIndividualEncounterParticipant, isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
@@ -239,7 +239,7 @@ viewHomeVisitAction language currentDate selectedHealthCenter id db sessions =
                         |> Maybe.map
                             -- If home visit session exists, create new encounter for it.
                             (\sessionId ->
-                                [ Backend.HomeVisitEncounter.Model.HomeVisitEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
+                                [ emptyHomeVisitEncounter sessionId currentDate (Just selectedHealthCenter)
                                     |> Backend.Model.PostHomeVisitEncounter
                                     |> App.Model.MsgIndexedDb
                                     |> onClick
