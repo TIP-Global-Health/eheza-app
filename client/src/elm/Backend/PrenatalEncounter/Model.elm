@@ -111,11 +111,3 @@ type Msg
     | HandleSavedSocialHistory (WebData ())
     | HandleSavedVitals (WebData ())
     | HandleSavedPrenatalPhoto (WebData ())
-
-
-type PrenatalEncounterType
-    = NurseEncounter
-    | ChwFirstEncounter
-    | ChwSecondEncounter
-    | ChwThirdEncounter
-    | ChwPostpartumEncounter
