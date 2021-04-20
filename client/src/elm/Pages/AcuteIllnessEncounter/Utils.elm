@@ -299,7 +299,12 @@ expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements task
             False
 
         NextStepsFollowUp ->
-            True
+            -- Whenever any other next step exists.
+            expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements NextStepsIsolation
+                || expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements NextStepsCall114
+                || expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements NextStepsContactHC
+                || expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements NextStepsMedicationDistribution
+                || expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements NextStepsSendToHC
 
 
 {-| Send patient to health center if patient is alergic to any of prescribed medications,
