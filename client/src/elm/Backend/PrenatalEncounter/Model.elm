@@ -9,6 +9,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 
 type alias PrenatalEncounter =
     { participant : IndividualEncounterParticipantId
+    , prenatalEncounterType : PrenatalEncounterType
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , shard : Maybe HealthCenterId
@@ -92,3 +93,10 @@ type Msg
     | HandleSavedSocialHistory (WebData ())
     | HandleSavedVitals (WebData ())
     | HandleSavedPrenatalPhoto (WebData ())
+
+type PrenatalEncounterType
+    = NurseEncounter
+    | ChwFirstEncounter
+    | ChwSecondEncounter
+    | ChwThirdEncounter
+    | ChwPostpartumEncounter
