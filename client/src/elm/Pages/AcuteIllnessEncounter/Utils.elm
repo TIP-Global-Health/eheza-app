@@ -250,7 +250,7 @@ resolveNextStepsTasks currentDate isFirstEncounter data =
 
     else if mandatoryActivitiesCompletedSubsequentVisit currentDate data then
         -- The order is important. Do not change.
-        [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation ]
+        [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ]
             |> List.filter (expectNextStepsTaskSubsequentEncounter currentDate data.person diagnosis data.measurements)
 
     else
@@ -665,15 +665,15 @@ activityCompleted currentDate isFirstEncounter data activity =
                         isJust measurements.healthEducation
 
                     -- Not improving, without danger signs present.
-                    [ NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation ] ->
+                    [ NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ] ->
                         isJust measurements.sendToHC && isJust measurements.followUp && isJust measurements.healthEducation
 
                     -- Not improving, with danger signs, and not instructed to send patient to health center.
-                    [ NextStepsContactHC, NextStepsFollowUp, NextStepsHealthEducation ] ->
+                    [ NextStepsContactHC, NextStepsHealthEducation, NextStepsFollowUp ] ->
                         isJust measurements.hcContact && isJust measurements.followUp && isJust measurements.healthEducation
 
                     -- Not improving, with danger signs, and instructed to send patient to health center.
-                    [ NextStepsContactHC, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation ] ->
+                    [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ] ->
                         isJust measurements.hcContact
                             && isJust measurements.sendToHC
                             && isJust measurements.followUp

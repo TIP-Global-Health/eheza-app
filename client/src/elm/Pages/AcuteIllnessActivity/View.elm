@@ -1663,10 +1663,10 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                                     |> hcContactFormWithDefault data.hcContactForm
                         in
                         if healthCenterRecommendedToCome measurements && hcContactForm.recommendations /= Just ComeToHealthCenter then
-                            [ NextStepsContactHC, NextStepsFollowUp, NextStepsHealthEducation ]
+                            [ NextStepsContactHC, NextStepsHealthEducation, NextStepsFollowUp ]
 
                         else if (not <| healthCenterRecommendedToCome measurements) && hcContactForm.recommendations == Just ComeToHealthCenter then
-                            [ NextStepsContactHC, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation ]
+                            [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ]
 
                         else
                             tasks
