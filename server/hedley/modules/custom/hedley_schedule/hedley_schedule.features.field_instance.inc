@@ -2223,7 +2223,45 @@ Used to track location where pregnancies were completed.',
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 2,
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_encounter-field_prenatal_encounter_type'.
+  $field_instances['node-prenatal_encounter-field_prenatal_encounter_type'] = array(
+    'bundle' => 'prenatal_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_prenatal_encounter_type',
+    'label' => 'Prenatal Encounter Type',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 4,
     ),
   );
 
@@ -2279,7 +2317,7 @@ Used to track location where pregnancies were completed.',
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 1,
+      'weight' => 2,
     ),
   );
 
@@ -2323,7 +2361,7 @@ Used to track location where pregnancies were completed.',
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 4,
+      'weight' => 5,
     ),
   );
 
@@ -2669,6 +2707,7 @@ Used to track outcome of pregnancies.');
   t('Outcome location');
   t('PMTCT Group');
   t('Person');
+  t('Prenatal Encounter Type');
   t('Scheduled Date');
   t('Shards');
   t('The child who is participating in PMTCT child activities.');
