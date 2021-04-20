@@ -202,95 +202,68 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db prenat
             isJust maybeSessionId && not firstEncounterInProcess
 
         createFirstEncounterButton =
+            if isChw then
+                viewButton language
+                    []
+                    (Translate.PrenatalFirstEncounter Backend.PrenatalEncounter.Model.ChwFirstEncounter)
+                    firstVisitButtonDisabled
+
+            else
+                viewButton language
+                    firstVisitAction
+                    (Translate.IndividualEncounterFirstVisit Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
+                    firstVisitButtonDisabled
+
+        createSubsequentEncounterButton =
             viewButton language
-                firstVisitAction
+                subsequentVisitAction
                 (Translate.IndividualEncounterFirstVisit Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
-                firstVisitButtonDisabled
+                (not firstVisitButtonDisabled || encounterWasCompletedToday)
+
+        createSecondEncounterButton =
+            viewButton language
+                []
+                (Translate.PrenatalFirstEncounter Backend.PrenatalEncounter.Model.ChwSecondEncounter)
+                (not firstVisitButtonDisabled || encounterWasCompletedToday)
+
+        createThirdEncounterButton =
+            viewButton language
+                []
+                (Translate.PrenatalFirstEncounter Backend.PrenatalEncounter.Model.ChwThirdEncounter)
+                (not firstVisitButtonDisabled || encounterWasCompletedToday)
+
+        createPostpartumEncounterButton =
+            viewButton language
+                []
+                (Translate.PrenatalFirstEncounter Backend.PrenatalEncounter.Model.ChwPostpartumEncounter)
+                (not firstVisitButtonDisabled || encounterWasCompletedToday)
+
+        recordPrenatalOutcomeButton =
+            viewButton language
+                navigateToPregnancyOutcomeAction
+                Translate.RecordPregnancyOutcome
+                (List.isEmpty navigateToPregnancyOutcomeAction)
     in
     if isChw then
         div []
             [ p [ class "label-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter ]
             , createFirstEncounterButton
-            , div
-                (classList
-                    [ ( "ui primary button", True )
-                    , ( "disabled", not firstVisitButtonDisabled || encounterWasCompletedToday )
-                    ]
-                    --@todo
-                    :: subsequentVisitAction
-                )
-                [ div [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterSecondVisit AntenatalEncounter ]
-                , div [ class "icon-back" ] []
-                ]
-            , div
-                (classList
-                    [ ( "ui primary button", True )
-                    , ( "disabled", not firstVisitButtonDisabled || encounterWasCompletedToday )
-                    ]
-                    :: subsequentVisitAction
-                )
-                [ div [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterThirdVisit AntenatalEncounter ]
-                , div [ class "icon-back" ] []
-                ]
-            , div
-                (classList
-                    [ ( "ui primary button", True )
-                    , ( "disabled", not firstVisitButtonDisabled || encounterWasCompletedToday )
-                    ]
-                    :: subsequentVisitAction
-                )
-                [ div [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterPostpartumVisit AntenatalEncounter ]
-                , div [ class "icon-back" ] []
-                ]
+            , createSecondEncounterButton
+            , createThirdEncounterButton
+            , createPostpartumEncounterButton
             , div [ class "separator" ] []
             , p [ class "label-pregnancy-concluded" ] [ text <| translate language Translate.PregnancyConcludedLabel ]
-            , div
-                (classList
-                    [ ( "ui primary button", True )
-                    , ( "disabled", List.isEmpty navigateToPregnancyOutcomeAction )
-                    ]
-                    :: navigateToPregnancyOutcomeAction
-                )
-                [ div [ class "button-label" ] [ text <| translate language Translate.RecordPregnancyOutcome ]
-                , div [ class "icon-back" ] []
-                ]
+            , recordPrenatalOutcomeButton
             ]
 
     else
         div []
             [ p [ class "label-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter ]
-            , div
-                (classList
-                    [ ( "ui primary button", True )
-                    , ( "disabled", firstVisitButtonDisabled )
-                    ]
-                    :: firstVisitAction
-                )
-                [ div [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterFirstVisit AntenatalEncounter ]
-                , div [ class "icon-back" ] []
-                ]
-            , div
-                (classList
-                    [ ( "ui primary button", True )
-                    , ( "disabled", not firstVisitButtonDisabled || encounterWasCompletedToday )
-                    ]
-                    :: subsequentVisitAction
-                )
-                [ div [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterSubsequentVisit AntenatalEncounter ]
-                , div [ class "icon-back" ] []
-                ]
+            , createFirstEncounterButton
+            , createSubsequentEncounterButton
             , div [ class "separator" ] []
             , p [ class "label-pregnancy-concluded" ] [ text <| translate language Translate.PregnancyConcludedLabel ]
-            , div
-                (classList
-                    [ ( "ui primary button", True )
-                    , ( "disabled", List.isEmpty navigateToPregnancyOutcomeAction )
-                    ]
-                    :: navigateToPregnancyOutcomeAction
-                )
-                [ div [ class "button-label" ] [ text <| translate language Translate.RecordPregnancyOutcome ]
-                , div [ class "icon-back" ] []
-                ]
+            , recordPrenatalOutcomeButton
             ]
 
 
