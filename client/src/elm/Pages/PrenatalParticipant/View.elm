@@ -17,7 +17,6 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalParticipant.Model exposing (..)
 import Pages.PrenatalParticipant.Utils exposing (isPregnancyActive)
-import Pages.Utils exposing (viewButton)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
@@ -293,3 +292,19 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db prenat
                 , div [ class "icon-back" ] []
                 ]
             ]
+
+
+viewButton : Language -> List (Attribute App.Model.Msg) -> TranslationId -> Bool -> Html App.Model.Msg
+viewButton language action lablelTransId disabled =
+    let
+        attributes =
+            [ class "ui primary button"
+            , classList [ ( "disabled", disabled ) ]
+            ]
+                ++ action
+    in
+    div attributes
+        [ div [ class "button-label" ]
+            [ text <| translate language lablelTransId ]
+        , div [ class "icon-back" ] []
+        ]

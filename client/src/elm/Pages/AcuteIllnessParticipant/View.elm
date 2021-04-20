@@ -18,7 +18,6 @@ import Pages.AcuteIllnessEncounter.Utils exposing (compareAcuteIllnessEncounterD
 import Pages.AcuteIllnessParticipant.Model exposing (..)
 import Pages.AcuteIllnessParticipant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewButton)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
@@ -431,6 +430,19 @@ viewActiveIllnessForOutcome language currentDate sessionId encounters diagnosis 
 viewLabel : Language -> String -> TranslationId -> Html Msg
 viewLabel language cssClass transId =
     p [ class cssClass ] [ text <| translate language transId ]
+
+
+viewButton : Language -> Msg -> TranslationId -> Bool -> Html Msg
+viewButton language action lablelTransId disabled =
+    div
+        [ class "ui primary button"
+        , classList [ ( "disabled", disabled ) ]
+        , onClick action
+        ]
+        [ div [ class "button-label" ]
+            [ text <| translate language lablelTransId ]
+        , div [ class "icon-back" ] []
+        ]
 
 
 navigateToEncounterAction : AcuteIllnessEncounterId -> Msg
