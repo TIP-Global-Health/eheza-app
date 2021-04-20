@@ -1,4 +1,4 @@
-module Backend.PrenatalEncounter.Model exposing (Model, Msg(..), PrenatalEncounter, emptyModel)
+module Backend.PrenatalEncounter.Model exposing (Model, Msg(..), PrenatalEncounter, PrenatalEncounterType(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -9,7 +9,6 @@ import RemoteData exposing (RemoteData(..), WebData)
 
 type alias PrenatalEncounter =
     { participant : IndividualEncounterParticipantId
-    , prenatalEncounterType : PrenatalEncounterType
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , shard : Maybe HealthCenterId
@@ -93,6 +92,7 @@ type Msg
     | HandleSavedSocialHistory (WebData ())
     | HandleSavedVitals (WebData ())
     | HandleSavedPrenatalPhoto (WebData ())
+
 
 type PrenatalEncounterType
     = NurseEncounter
