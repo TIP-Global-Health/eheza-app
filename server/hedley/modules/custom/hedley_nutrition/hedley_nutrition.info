@@ -56,6 +56,7 @@ features[field_instance][] = node-nutrition_follow_up-field_follow_up_options
 features[field_instance][] = node-nutrition_follow_up-field_nurse
 features[field_instance][] = node-nutrition_follow_up-field_nutrition_assesment
 features[field_instance][] = node-nutrition_follow_up-field_nutrition_encounter
+features[field_instance][] = node-nutrition_follow_up-field_nutrition_signs
 features[field_instance][] = node-nutrition_follow_up-field_person
 features[field_instance][] = node-nutrition_follow_up-field_shards
 features[field_instance][] = node-nutrition_follow_up-field_uuid
