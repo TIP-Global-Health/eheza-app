@@ -605,7 +605,7 @@ type alias BirthPlanForm =
     , caregiverAccompany : Maybe Bool
     , savedMoney : Maybe Bool
     , haveTransportation : Maybe Bool
-    , familyPlanning : Maybe FamilyPlanningSign
+    , familyPlanning : Maybe (List FamilyPlanningSign)
     }
 
 

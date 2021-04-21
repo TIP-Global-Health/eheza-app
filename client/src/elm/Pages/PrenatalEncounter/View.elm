@@ -349,6 +349,7 @@ viewMainPageContent language currentDate data model =
                                         && isJust data.measurements.obstetricHistoryStep2
                                         && isJust data.measurements.medicalHistory
                                         && isJust data.measurements.socialHistory
+                                        && isJust data.measurements.birthPlan
 
                                 else
                                     -- Subsequent antenatal encounter - only Social history task

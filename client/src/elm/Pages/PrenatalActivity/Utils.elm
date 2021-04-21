@@ -797,8 +797,20 @@ historyTasksCompletedFromTotal assembled data task =
             )
 
         BirthPlan ->
-            -- @todo
-            ( 0, 0 )
+            let
+                form =
+                    assembled.measurements.birthPlan
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> birthPlanFormWithDefault data.birthPlanForm
+            in
+            ( taskCompleted form.haveInsurance
+                + taskCompleted form.boughtClothes
+                + taskCompleted form.caregiverAccompany
+                + taskCompleted form.savedMoney
+                + taskCompleted form.haveTransportation
+                + taskCompleted form.familyPlanning
+            , 6
+            )
 
 
 examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> Bool -> ExaminationTask -> ( Int, Int )
@@ -982,7 +994,7 @@ fromBirthPlanValue saved =
     , caregiverAccompany = Maybe.map (.signs >> EverySet.member CaregiverAccompany) saved
     , savedMoney = Maybe.map (.signs >> EverySet.member SavedMoney) saved
     , haveTransportation = Maybe.map (.signs >> EverySet.member Transportation) saved
-    , familyPlanning = Maybe.map .familyPlanning saved
+    , familyPlanning = Maybe.map (.familyPlanning >> EverySet.toList) saved
     }
 
 
@@ -997,7 +1009,7 @@ birthPlanFormWithDefault form saved =
                 , caregiverAccompany = or form.caregiverAccompany (EverySet.member CaregiverAccompany value.signs |> Just)
                 , savedMoney = or form.savedMoney (EverySet.member SavedMoney value.signs |> Just)
                 , haveTransportation = or form.haveTransportation (EverySet.member Transportation value.signs |> Just)
-                , familyPlanning = or form.familyPlanning (value.familyPlanning |> Just)
+                , familyPlanning = or form.familyPlanning (value.familyPlanning |> EverySet.toList |> Just)
                 }
             )
 
@@ -1022,4 +1034,4 @@ toBirthPlanValue form =
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoBirthPlan)
     in
     Maybe.map BirthPlanValue signs
-        |> andMap form.familyPlanning
+        |> andMap (Maybe.map EverySet.fromList form.familyPlanning)
