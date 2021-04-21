@@ -704,7 +704,7 @@ type TranslationId
     | PreeclampsiaPreviousPregnancy
     | PregnancyTrimester PregnancyTrimester
     | PrenatalActivitiesTitle PrenatalActivity
-    | PrenatalFirstEncounter PrenatalEncounterType
+    | PrenatalEncounterType PrenatalEncounterType
     | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
@@ -5327,7 +5327,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ifoto"
                     }
 
-        PrenatalFirstEncounter encounterType ->
+        PrenatalEncounterType encounterType ->
             case encounterType of
                 NurseEncounter ->
                     { english = ""

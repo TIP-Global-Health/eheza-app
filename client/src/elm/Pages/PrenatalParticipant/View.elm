@@ -308,7 +308,7 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db maybeS
         createFirstEncounterButton =
             viewButton language
                 []
-                (Translate.PrenatalFirstEncounter Backend.PrenatalEncounter.Model.ChwFirstEncounter)
+                (Translate.PrenatalEncounterType Backend.PrenatalEncounter.Model.ChwFirstEncounter)
                 False
 
         createSubsequentEncounterButton =
@@ -317,19 +317,19 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db maybeS
         createSecondEncounterButton =
             viewButton language
                 []
-                (Translate.PrenatalFirstEncounter Backend.PrenatalEncounter.Model.ChwSecondEncounter)
+                (Translate.PrenatalEncounterType Backend.PrenatalEncounter.Model.ChwSecondEncounter)
                 False
 
         createThirdEncounterButton =
             viewButton language
                 []
-                (Translate.PrenatalFirstEncounter Backend.PrenatalEncounter.Model.ChwThirdEncounter)
+                (Translate.PrenatalEncounterType Backend.PrenatalEncounter.Model.ChwThirdEncounter)
                 False
 
         createPostpartumEncounterButton =
             viewButton language
                 []
-                (Translate.PrenatalFirstEncounter Backend.PrenatalEncounter.Model.ChwPostpartumEncounter)
+                (Translate.PrenatalEncounterType Backend.PrenatalEncounter.Model.ChwPostpartumEncounter)
                 False
     in
     [ createFirstEncounterButton
