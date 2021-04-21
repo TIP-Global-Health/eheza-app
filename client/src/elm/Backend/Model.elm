@@ -315,6 +315,7 @@ type Revision
     | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
     | AttendanceRevision AttendanceId Attendance
     | BreastExamRevision BreastExamId BreastExam
+    | BirthPlanRevision BirthPlanId BirthPlan
     | Call114Revision Call114Id Call114
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
     | ChildFbfRevision ChildFbfId Fbf
