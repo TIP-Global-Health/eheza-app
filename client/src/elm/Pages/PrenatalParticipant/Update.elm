@@ -16,7 +16,7 @@ update currentDate personId msg model =
             )
 
         SetActivePage page ->
-            ( model
+            ( { model | showWarningPopup = False }
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )

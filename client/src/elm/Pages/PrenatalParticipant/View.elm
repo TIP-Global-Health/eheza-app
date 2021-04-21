@@ -150,6 +150,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
                 viewModal <|
                     warningPopup language
                         currentDate
+                        navigateToPregnancyOutcomeAction
 
             else
                 emptyNode
@@ -160,8 +161,8 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
         |> div []
 
 
-warningPopup : Language -> NominalDate -> Maybe (Html Msg)
-warningPopup language currentDate =
+warningPopup : Language -> NominalDate -> List (Attribute Msg) -> Maybe (Html Msg)
+warningPopup language currentDate navigateToPregnancyOutcomeAction =
     let
         infoHeading =
             [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
@@ -187,9 +188,7 @@ warningPopup language currentDate =
                         ]
                         [ text <| translate language Translate.Yes ]
                     , button
-                        [ class "ui primary fluid button"
-                        , onClick CloseWarningPopup
-                        ]
+                        (class "ui primary fluid button" :: navigateToPregnancyOutcomeAction)
                         [ text <| translate language Translate.LabelDocumentPregnancyOutcome ]
                     ]
                 ]
