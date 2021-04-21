@@ -25,7 +25,7 @@ import Backend.Dashboard.Model exposing (DashboardStats)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantExtraData)
 import Backend.Measurement.Model exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
@@ -273,7 +273,7 @@ type MsgIndexedDb
     | PostRelationship PersonId MyRelationship (Maybe ClinicId) Initiator
     | PostPmtctParticipant Initiator PmtctParticipant
     | PostSession Session
-    | PostIndividualSession IndividualEncounterParticipant
+    | PostIndividualSession IndividualParticipantExtraData IndividualEncounterParticipant
     | PostPrenatalEncounter PrenatalEncounter
     | PostNutritionEncounter NutritionEncounter
     | PostAcuteIllnessEncounter AcuteIllnessEncounter
@@ -284,7 +284,7 @@ type MsgIndexedDb
     | HandlePostedRelationship PersonId Initiator (WebData MyRelationship)
     | HandlePostedPmtctParticipant PersonId Initiator (WebData ( PmtctParticipantId, PmtctParticipant ))
     | HandlePostedSession ClinicType (WebData SessionId)
-    | HandlePostedIndividualSession PersonId IndividualEncounterType (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
+    | HandlePostedIndividualSession PersonId IndividualEncounterType IndividualParticipantExtraData (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
     | HandlePostedPrenatalEncounter IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
     | HandlePostedNutritionEncounter IndividualEncounterParticipantId (WebData ( NutritionEncounterId, NutritionEncounter ))
     | HandlePostedAcuteIllnessEncounter IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))

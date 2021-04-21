@@ -15,7 +15,7 @@ import Backend.Fetch
 import Backend.HomeVisitActivity.Model
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.HomeVisitEncounter.Update
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantExtraData(..))
 import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model exposing (ChildMeasurements, HistoricalMeasurements, Measurements)
 import Backend.Measurement.Utils exposing (mapChildMeasurementsAtOfflineSession, mapMeasurementData, splitChildMeasurements, splitMotherMeasurements)
@@ -1710,14 +1710,14 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
             , []
             )
 
-        PostIndividualSession session ->
+        PostIndividualSession extraData session ->
             ( { model | postIndividualSession = Dict.insert session.person Loading model.postIndividualSession }
             , sw.post individualEncounterParticipantEndpoint session
-                |> toCmd (RemoteData.fromResult >> HandlePostedIndividualSession session.person session.encounterType)
+                |> toCmd (RemoteData.fromResult >> HandlePostedIndividualSession session.person session.encounterType extraData)
             , []
             )
 
-        HandlePostedIndividualSession personId encounterType data ->
+        HandlePostedIndividualSession personId encounterType extraData data ->
             let
                 -- We automatically create new encounter for newly created  session.
                 appMsgs =
@@ -1731,10 +1731,15 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                                     ]
 
                                 AntenatalEncounter ->
-                                    [ emptyPrenatalEncounter sessionId currentDate NurseEncounter healthCenterId
-                                        |> Backend.Model.PostPrenatalEncounter
-                                        |> App.Model.MsgIndexedDb
-                                    ]
+                                    case extraData of
+                                        AntenatalData prenatalEncounterType ->
+                                            [ emptyPrenatalEncounter sessionId currentDate prenatalEncounterType healthCenterId
+                                                |> Backend.Model.PostPrenatalEncounter
+                                                |> App.Model.MsgIndexedDb
+                                            ]
+
+                                        _ ->
+                                            []
 
                                 NutritionEncounter ->
                                     [ emptyNutritionEncounter sessionId currentDate healthCenterId

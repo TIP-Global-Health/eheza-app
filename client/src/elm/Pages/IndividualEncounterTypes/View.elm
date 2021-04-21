@@ -87,8 +87,8 @@ viewContent language currentDate selectedHealthCenter isChw app =
                             buttons =
                                 if isChw then
                                     [ encounterButton AcuteIllnessEncounter
-                                    , encounterButton NutritionEncounter
                                     , encounterButton AntenatalEncounter
+                                    , encounterButton NutritionEncounter
                                     ]
 
                                 else
