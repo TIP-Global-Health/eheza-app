@@ -54,6 +54,7 @@ type alias Model =
     , saveSocialHistory : WebData ()
     , saveVitals : WebData ()
     , savePrenatalPhoto : WebData ()
+    , saveBirthPlan : WebData ()
     }
 
 
@@ -75,6 +76,7 @@ emptyModel =
     , saveSocialHistory = NotAsked
     , saveVitals = NotAsked
     , savePrenatalPhoto = NotAsked
+    , saveBirthPlan = NotAsked
     }
 
 
@@ -95,6 +97,7 @@ type Msg
     | SaveSocialHistory PersonId (Maybe SocialHistoryId) SocialHistoryValue
     | SaveVitals PersonId (Maybe VitalsId) VitalsValue
     | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl
+    | SaveBirthPlan PersonId (Maybe BirthPlanId) BirthPlanValue
     | HandleClosedPrenatalEncounter (WebData ())
     | HandleSavedBreastExam (WebData ())
     | HandleSavedCorePhysicalExam (WebData ())
@@ -111,3 +114,4 @@ type Msg
     | HandleSavedSocialHistory (WebData ())
     | HandleSavedVitals (WebData ())
     | HandleSavedPrenatalPhoto (WebData ())
+    | HandleSavedBirthPlan (WebData ())
