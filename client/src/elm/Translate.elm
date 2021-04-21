@@ -4780,7 +4780,7 @@ translationSet trans =
         NutritionFeedingSignQuestion sign ->
             case sign of
                 ReceiveSupplement ->
-                    { english = "Did you receive food supplementation"
+                    { english = "Did you receive food supplement"
                     , kinyarwanda = Just "Waba warahawe inyongeramirire"
                     }
 

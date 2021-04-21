@@ -469,6 +469,20 @@ taskCompleted maybe =
         0
 
 
+taskCompletedWithException : Maybe a -> a -> Int
+taskCompletedWithException maybe exception =
+    case maybe of
+        Just value ->
+            if value == exception then
+                0
+
+            else
+                1
+
+        Nothing ->
+            0
+
+
 taskListCompleted : List (Maybe a) -> Int
 taskListCompleted list =
     if List.all isJust list then
