@@ -531,6 +531,9 @@ type TranslationId
     | IsolatedAtHome
     | KilogramShorthand
     | KilogramsPerMonth
+    | LabelOnePregnancyEpisodeOpen
+    | LabelSeenHealthcareProviderForPregnancy
+    | LabelDocumentPregnancyOutcome
     | LaboratoryTask LaboratoryTask
     | LastChecked
     | LastSuccesfulContactLabel
@@ -3720,6 +3723,21 @@ translationSet trans =
 
         KilogramsPerMonth ->
             { english = "kgs / month"
+            , kinyarwanda = Nothing
+            }
+
+        LabelOnePregnancyEpisodeOpen ->
+            { english = "There is one pregnancy episode that is open"
+            , kinyarwanda = Nothing
+            }
+
+        LabelSeenHealthcareProviderForPregnancy ->
+            { english = "Have you seen a healthcare provider for current pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        LabelDocumentPregnancyOutcome ->
+            { english = "No - document pregnancy outcome"
             , kinyarwanda = Nothing
             }
 

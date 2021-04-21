@@ -1,6 +1,5 @@
 module Pages.PrenatalParticipant.View exposing (view)
 
-import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
@@ -20,11 +19,12 @@ import Pages.PrenatalParticipant.Model exposing (..)
 import Pages.PrenatalParticipant.Utils exposing (isPregnancyActive)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate selectedHealthCenter id isChw db =
+view : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate selectedHealthCenter id isChw db model =
     let
         prenatalSessions =
             Dict.get id db.individualParticipantsByPerson
@@ -35,12 +35,12 @@ view language currentDate selectedHealthCenter id isChw db =
         [ viewHeader language id
         , div
             [ class "ui full segment" ]
-            [ viewWebData language (viewPrenatalActions language currentDate selectedHealthCenter id isChw db) identity prenatalSessions
+            [ viewWebData language (viewPrenatalActions language currentDate selectedHealthCenter id isChw db model) identity prenatalSessions
             ]
         ]
 
 
-viewHeader : Language -> PersonId -> Html App.Model.Msg
+viewHeader : Language -> PersonId -> Html Msg
 viewHeader language id =
     div
         [ class "ui basic segment head" ]
@@ -49,7 +49,7 @@ viewHeader language id =
             [ text <| translate language <| Translate.IndividualEncounterLabel AntenatalEncounter ]
         , a
             [ class "link-back"
-            , onClick <| App.Model.SetActivePage <| UserPage <| IndividualEncounterParticipantsPage AntenatalEncounter
+            , onClick <| SetActivePage <| UserPage <| IndividualEncounterParticipantsPage AntenatalEncounter
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -57,8 +57,17 @@ viewHeader language id =
         ]
 
 
-viewPrenatalActions : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
-viewPrenatalActions language currentDate selectedHealthCenter id isChw db prenatalSessions =
+viewPrenatalActions :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> PersonId
+    -> Bool
+    -> ModelIndexedDb
+    -> Model
+    -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant
+    -> Html Msg
+viewPrenatalActions language currentDate selectedHealthCenter id isChw db model prenatalSessions =
     let
         activePrgnancyData =
             prenatalSessions
@@ -90,6 +99,9 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db prenat
                     )
                 |> Maybe.withDefault []
 
+        ( nurseEncounters, chwEncounters ) =
+            List.partition (Tuple.second >> .encounterType >> (==) NurseEncounter) allEncounters
+
         completedEncounts =
             List.filter (\( _, encounter ) -> isJust encounter.endDate) allEncounters
 
@@ -105,7 +117,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db prenat
                     |> Maybe.map
                         (Pages.Page.PregnancyOutcomePage
                             >> UserPage
-                            >> App.Model.SetActivePage
+                            >> SetActivePage
                             >> onClick
                             >> List.singleton
                         )
@@ -119,22 +131,69 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db prenat
 
         encounterTypeSpecificButtons =
             if isChw then
-                allEncounters
-                    |> List.filter (Tuple.second >> .encounterType >> (/=) NurseEncounter)
-                    |> viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePrgnancyData
+                viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePrgnancyData chwEncounters
 
             else
-                allEncounters
-                    |> List.filter (Tuple.second >> .encounterType >> (==) NurseEncounter)
-                    |> viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId
+                viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId nurseEncounters
 
         recordPregannacyOutcomeSection =
             [ div [ class "separator" ] []
             , p [ class "label-pregnancy-concluded" ] [ text <| translate language Translate.PregnancyConcludedLabel ]
             , recordPrenatalOutcomeButton
             ]
+
+        showWarningPopup =
+            model.showWarningPopup && isJust maybeSessionId && List.isEmpty chwEncounters
+
+        popup =
+            if showWarningPopup then
+                viewModal <|
+                    warningPopup language
+                        currentDate
+
+            else
+                emptyNode
     in
-    (label :: encounterTypeSpecificButtons) ++ recordPregannacyOutcomeSection |> div []
+    [ label, popup ]
+        ++ encounterTypeSpecificButtons
+        ++ recordPregannacyOutcomeSection
+        |> div []
+
+
+warningPopup : Language -> NominalDate -> Maybe (Html Msg)
+warningPopup language currentDate =
+    let
+        infoHeading =
+            [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
+
+        warningHeading =
+            [ img [ src "assets/images/exclamation-red.png" ] []
+            , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
+            ]
+    in
+    Just <|
+        div [ class "ui active modal open-pregnancy-popup" ]
+            [ div [ class "content" ] <|
+                [ div [ class "popup-heading-wrapper" ] warningHeading
+                , div [ class "popup-action" ] [ text <| translate language Translate.LabelOnePregnancyEpisodeOpen ++ "." ]
+                , div [ class "popup-action" ] [ text <| translate language Translate.LabelSeenHealthcareProviderForPregnancy ++ "?" ]
+                ]
+            , div
+                [ class "actions" ]
+                [ div [ class "two ui buttons" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick CloseWarningPopup
+                        ]
+                        [ text <| translate language Translate.Yes ]
+                    , button
+                        [ class "ui primary fluid button"
+                        , onClick CloseWarningPopup
+                        ]
+                        [ text <| translate language Translate.LabelDocumentPregnancyOutcome ]
+                    ]
+                ]
+            ]
 
 
 viewPrenatalActionsForNurse :
@@ -145,7 +204,7 @@ viewPrenatalActionsForNurse :
     -> ModelIndexedDb
     -> Maybe IndividualEncounterParticipantId
     -> List ( PrenatalEncounterId, PrenatalEncounter )
-    -> List (Html App.Model.Msg)
+    -> List (Html Msg)
 viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId encounters =
     let
         activeEncounters =
@@ -229,7 +288,7 @@ viewPrenatalActionsForChw :
     -> ModelIndexedDb
     -> Maybe ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
     -> List ( PrenatalEncounterId, PrenatalEncounter )
-    -> List (Html App.Model.Msg)
+    -> List (Html Msg)
 viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePrgnancyData encounters =
     let
         maybeSessionId =
@@ -300,16 +359,6 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                             )
                     )
 
-        -- @todo: Use to present warning popup
-        pregnancyPastDue =
-            activePrgnancyData
-                |> Maybe.andThen (Tuple.second >> .eddDate)
-                |> Maybe.map
-                    (\expected ->
-                        Date.compare expected currentDate == LT
-                    )
-                |> Maybe.withDefault False
-
         createFirstEncounterButton =
             viewButton language
                 (encounterTypeButtonAction ChwFirstEncounter)
@@ -341,34 +390,34 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
     ]
 
 
-createNewSessionMsg : NominalDate -> HealthCenterId -> PersonId -> PrenatalEncounterType -> List (Attribute App.Model.Msg)
+createNewSessionMsg : NominalDate -> HealthCenterId -> PersonId -> PrenatalEncounterType -> List (Attribute Msg)
 createNewSessionMsg currentDate selectedHealthCenter personId encounterType =
     emptyIndividualEncounterParticipant currentDate personId Backend.IndividualEncounterParticipant.Model.AntenatalEncounter selectedHealthCenter
         |> Backend.Model.PostIndividualSession (Backend.IndividualEncounterParticipant.Model.AntenatalData encounterType)
-        |> App.Model.MsgIndexedDb
+        |> MsgBackend
         |> onClick
         |> List.singleton
 
 
-createNewEncounterMsg : NominalDate -> HealthCenterId -> IndividualEncounterParticipantId -> PrenatalEncounterType -> List (Attribute App.Model.Msg)
+createNewEncounterMsg : NominalDate -> HealthCenterId -> IndividualEncounterParticipantId -> PrenatalEncounterType -> List (Attribute Msg)
 createNewEncounterMsg currentDate selectedHealthCenter sessionId encounterType =
     emptyPrenatalEncounter sessionId currentDate encounterType (Just selectedHealthCenter)
         |> Backend.Model.PostPrenatalEncounter
-        |> App.Model.MsgIndexedDb
+        |> MsgBackend
         |> onClick
         |> List.singleton
 
 
-navigateToEncounterAction : PrenatalEncounterId -> List (Attribute App.Model.Msg)
+navigateToEncounterAction : PrenatalEncounterId -> List (Attribute Msg)
 navigateToEncounterAction encounterId =
     Pages.Page.PrenatalEncounterPage encounterId
         |> UserPage
-        |> App.Model.SetActivePage
+        |> SetActivePage
         |> onClick
         |> List.singleton
 
 
-viewButton : Language -> List (Attribute App.Model.Msg) -> TranslationId -> Bool -> Html App.Model.Msg
+viewButton : Language -> List (Attribute Msg) -> TranslationId -> Bool -> Html Msg
 viewButton language action lablelTransId disabled =
     let
         attributes =
