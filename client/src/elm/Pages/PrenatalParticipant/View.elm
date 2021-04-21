@@ -120,12 +120,12 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db prenat
         encounterTypeSpecificButtons =
             if isChw then
                 allEncounters
-                    |> List.filter (Tuple.second >> .encounterType >> (==) NurseEncounter)
+                    |> List.filter (Tuple.second >> .encounterType >> (/=) NurseEncounter)
                     |> viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePrgnancyData
 
             else
                 allEncounters
-                    |> List.filter (Tuple.second >> .encounterType >> (/=) NurseEncounter)
+                    |> List.filter (Tuple.second >> .encounterType >> (==) NurseEncounter)
                     |> viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId
 
         recordPregannacyOutcomeSection =
