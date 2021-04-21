@@ -3418,6 +3418,11 @@ translationSet trans =
 
         HistoryTask task ->
             case task of
+                BirthPlan ->
+                    { english = "Birth Plan"
+                    , kinyarwanda = Nothing
+                    }
+
                 Obstetric ->
                     { english = "Obstetric History"
                     , kinyarwanda = Just "Amateka y'inda zibanza (ku nda yatwise)"
