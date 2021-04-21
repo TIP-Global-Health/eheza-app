@@ -905,6 +905,43 @@ encodeObstetricHistoryStep2Value value =
     ]
 
 
+encodeBirthPlan : BirthPlan -> List ( String, Value )
+encodeBirthPlan =
+    encodePrenatalMeasurement encodeBirthPlanValue
+
+
+encodeBirthPlanValue : BirthPlanValue -> List ( String, Value )
+encodeBirthPlanValue value =
+    [ ( "birth_plan_signs", encodeEverySet encodeBirthPlanSign value.signs )
+    , ( "family_planning_signs", encodeEverySet encodeFamilyPlanningSign value.familyPlanning )
+    , ( "deleted", bool False )
+    , ( "type", string "birth_plan" )
+    ]
+
+
+encodeBirthPlanSign : BirthPlanSign -> Value
+encodeBirthPlanSign sign =
+    string <|
+        case sign of
+            Insurance ->
+                "have-insurance"
+
+            BoughtClothes ->
+                "bought-clothes-for-child"
+
+            CaregiverAccompany ->
+                "caregiver-to-accompany-you"
+
+            SavedMoney ->
+                "saved-money-for-use"
+
+            Transportation ->
+                "planned-for-transportation"
+
+            NoBirthPlan ->
+                "none"
+
+
 encodePrenatalFamilyPlanning : PrenatalFamilyPlanning -> List ( String, Value )
 encodePrenatalFamilyPlanning =
     encodePrenatalMeasurement encodePrenatalFamilyPlanningValue
