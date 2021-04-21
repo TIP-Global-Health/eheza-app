@@ -1116,7 +1116,7 @@ decodeFollowUpValue : Decoder FollowUpValue
 decodeFollowUpValue =
     succeed FollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
-        |> required "nutrition_assesment" (decodeEverySet decodeNutritionAssesment)
+        |> custom decodeNutritionAssesment
 
 
 decodeAcuteIllnessFollowUp : Decoder AcuteIllnessFollowUp
@@ -1224,6 +1224,7 @@ decodeNutritionHygieneValue =
     succeed NutritionHygieneValue
         |> required "nutrition_hygiene_signs" (decodeEverySet decodeNutritionHygieneSign)
         |> required "main_water_source" decodeMainWaterSource
+        |> required "water_preparation_option" decodeWaterPreparationOption
 
 
 decodeNutritionHygieneSign : Decoder NutritionHygieneSign
@@ -1279,6 +1280,34 @@ decodeMainWaterSource =
                         fail <|
                             sign
                                 ++ " is not a recognized MainWaterSource"
+            )
+
+
+decodeWaterPreparationOption : Decoder WaterPreparationOption
+decodeWaterPreparationOption =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "boiled" ->
+                        succeed Boiled
+
+                    "purification-solution" ->
+                        succeed PurificationSolution
+
+                    "filtered" ->
+                        succeed Filtered
+
+                    "bottled" ->
+                        succeed Bottled
+
+                    "none" ->
+                        succeed NoWaterPreparationOption
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized WaterPreparationOption"
             )
 
 
@@ -1389,6 +1418,9 @@ decodeNutritionCaringOption =
 
                     "neighbor" ->
                         succeed CaredByNeighbor
+
+                    "house-helper" ->
+                        succeed CaredByHouseHelper
 
                     "daycare" ->
                         succeed CaredByDaycare
@@ -2447,8 +2479,15 @@ decodeReasonForNotProvidingHealthEducation =
             )
 
 
-decodeNutritionAssesment : Decoder NutritionAssesment
+decodeNutritionAssesment : Decoder (EverySet NutritionAssesment)
 decodeNutritionAssesment =
+    map2 postProcessNutritionAssesment
+        (field "nutrition_assesment" (decodeEverySet decodeNutritionAssesmentFromString))
+        (field "nutrition_signs" (decodeEverySet decodeChildNutritionSign))
+
+
+decodeNutritionAssesmentFromString : Decoder NutritionAssesment
+decodeNutritionAssesmentFromString =
     string
         |> andThen
             (\s ->
@@ -2456,3 +2495,22 @@ decodeNutritionAssesment =
                     |> Maybe.map succeed
                     |> Maybe.withDefault (s ++ " is not a recognized NutritionAssesment" |> fail)
             )
+
+
+postProcessNutritionAssesment : EverySet NutritionAssesment -> EverySet ChildNutritionSign -> EverySet NutritionAssesment
+postProcessNutritionAssesment assesmentFromString nutritionSign =
+    assesmentFromString
+        |> EverySet.toList
+        |> List.head
+        |> Maybe.map
+            (\assesment ->
+                case assesment of
+                    AssesmentMalnutritionSigns _ ->
+                        EverySet.toList nutritionSign
+                            |> AssesmentMalnutritionSigns
+                            |> EverySet.singleton
+
+                    _ ->
+                        assesmentFromString
+            )
+        |> Maybe.withDefault assesmentFromString

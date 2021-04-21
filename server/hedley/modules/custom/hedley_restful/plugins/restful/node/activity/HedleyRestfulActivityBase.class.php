@@ -65,7 +65,7 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
       ];
 
       if (in_array($field_name, $this->dateFields)) {
-        $public_fields[$public_name]['process_callbacks'] = [$this, 'renderDate2'];
+        $public_fields[$public_name]['process_callbacks'] = [[$this, 'renderDate2']];
       }
     }
 

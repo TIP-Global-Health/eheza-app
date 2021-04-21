@@ -26,6 +26,7 @@ import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
 import Pages.Utils
     exposing
         ( taskCompleted
+        , taskCompletedWithException
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxSelectInput
@@ -113,33 +114,41 @@ viewFeedingContent language currentDate assembled db feedingForm =
                 |> nutritionFeedingFormWithDefault feedingForm
 
         totalTasks =
-            10 + supplementTypeActive
+            5 + receiveSupplementDerivedActive + supplementTypeDerivedActive
 
         tasksCompleted =
             taskCompleted form.receiveSupplement
-                + supplementTypeCompleted
-                + taskCompleted form.rationPresentAtHome
-                + taskCompleted form.enoughTillNextSession
-                + taskCompleted form.supplementShared
-                + taskCompleted form.sachetsPerDay
+                + receiveSupplementDerivedCompleted
+                + supplementTypeDerivedCompleted
                 + taskCompleted form.encouragedToEat
                 + taskCompleted form.refusingToEat
                 + taskCompleted form.breastfeeding
                 + taskCompleted form.cleanWaterAvailable
-                + taskCompleted form.eatenWithWater
 
-        ( supplementTypeCompleted, supplementTypeActive ) =
+        ( receiveSupplementDerivedCompleted, receiveSupplementDerivedActive ) =
             if form.receiveSupplement == Just True then
-                ( taskCompleted form.supplementType, 1 )
+                ( taskCompletedWithException form.supplementType NoNutritionSupplementType
+                    + taskCompleted form.rationPresentAtHome
+                    + taskCompleted form.enoughTillNextSession
+                    + taskCompleted form.supplementShared
+                , 4
+                )
+
+            else
+                ( 0, 0 )
+
+        ( supplementTypeDerivedCompleted, supplementTypeDerivedActive ) =
+            if form.receiveSupplement == Just True && form.supplementType == Just Rutf then
+                ( taskCompleted form.sachetsPerDay
+                    + taskCompleted form.eatenWithWater
+                , 2
+                )
 
             else
                 ( 0, 0 )
 
         disabled =
             tasksCompleted /= totalTasks
-
-        receiveSupplementUpdateFunc value form_ =
-            { form_ | receiveSupplement = Just value, supplementType = Nothing }
 
         receiveSupplementSection =
             [ viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion ReceiveSupplement
@@ -149,9 +158,9 @@ viewFeedingContent language currentDate assembled db feedingForm =
                 "receive-supplement"
                 Nothing
             ]
-                ++ derivedQuestion
+                ++ receiveSupplementDerivedQuestions
 
-        derivedQuestion =
+        receiveSupplementDerivedQuestions =
             if form.receiveSupplement == Just True then
                 [ viewQuestionLabel language Translate.WhatType
                 , viewCheckBoxSelectInput language
@@ -160,46 +169,46 @@ viewFeedingContent language currentDate assembled db feedingForm =
                     form.supplementType
                     SetNutritionSupplementType
                     Translate.NutritionSupplementType
+                , viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion RationPresentAtHome
+                , viewBoolInput language
+                    form.rationPresentAtHome
+                    (SetFeedingBoolInput rationPresentAtHomeUpdateFunc)
+                    "ration-present-at-home"
+                    Nothing
+                , viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion EnoughTillNextSession
+                , viewBoolInput language
+                    form.enoughTillNextSession
+                    (SetFeedingBoolInput enoughTillNextSessionUpdateFunc)
+                    "enough-till-next-section"
+                    Nothing
+                , viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion SupplementShared
+                , viewBoolInput language
+                    form.supplementShared
+                    (SetFeedingBoolInput supplementSharedUpdateFunc)
+                    "enough-till-next-section"
+                    (Just ( Translate.Shared, Translate.OnlySickChild ))
                 ]
 
             else
                 []
 
+        receiveSupplementUpdateFunc value form_ =
+            { form_
+                | receiveSupplement = Just value
+                , supplementType = Nothing
+                , rationPresentAtHome = Nothing
+                , enoughTillNextSession = Nothing
+                , supplementShared = Nothing
+            }
+
         rationPresentAtHomeUpdateFunc value form_ =
             { form_ | rationPresentAtHome = Just value }
-
-        rationPresentAtHomeInput =
-            [ viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion RationPresentAtHome
-            , viewBoolInput language
-                form.rationPresentAtHome
-                (SetFeedingBoolInput rationPresentAtHomeUpdateFunc)
-                "ration-present-at-home"
-                Nothing
-            ]
 
         enoughTillNextSessionUpdateFunc value form_ =
             { form_ | enoughTillNextSession = Just value }
 
-        enoughTillNextSessionInput =
-            [ viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion EnoughTillNextSession
-            , viewBoolInput language
-                form.enoughTillNextSession
-                (SetFeedingBoolInput enoughTillNextSessionUpdateFunc)
-                "enough-till-next-section"
-                Nothing
-            ]
-
         supplementSharedUpdateFunc value form_ =
             { form_ | supplementShared = Just value }
-
-        supplementSharedInput =
-            [ viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion SupplementShared
-            , viewBoolInput language
-                form.supplementShared
-                (SetFeedingBoolInput supplementSharedUpdateFunc)
-                "enough-till-next-section"
-                (Just ( Translate.Shared, Translate.OnlySickChild ))
-            ]
 
         encouragedToEatUpdateFunc value form_ =
             { form_ | encouragedToEat = Just value }
@@ -249,42 +258,45 @@ viewFeedingContent language currentDate assembled db feedingForm =
                 Nothing
             ]
 
+        ( sachetsPerDayInput, eatenWithWaterInput ) =
+            if form.receiveSupplement == Just True && form.supplementType == Just Rutf then
+                ( [ viewQuestionLabel language Translate.SachetsPerDayQuestion
+                  , sachetsPerDayHelper
+                  , option
+                        [ value ""
+                        , selected (form.sachetsPerDay == Nothing)
+                        ]
+                        [ text "" ]
+                        :: (List.repeat 20 0.5
+                                |> List.indexedMap
+                                    (\index number ->
+                                        let
+                                            s =
+                                                String.fromFloat (toFloat index * number)
+                                        in
+                                        option
+                                            [ value s
+                                            , selected (form.sachetsPerDay == Just (toFloat index * number))
+                                            ]
+                                            [ text s ]
+                                    )
+                           )
+                        |> select [ onInput SetSachetsPerDay, class "form-input select" ]
+                  ]
+                , [ viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion EatenWithWater
+                  , viewBoolInput language
+                        form.eatenWithWater
+                        (SetFeedingBoolInput eatenWithWaterUpdateFunc)
+                        "enough-till-next-section"
+                        Nothing
+                  ]
+                )
+
+            else
+                ( [], [] )
+
         eatenWithWaterUpdateFunc value form_ =
             { form_ | eatenWithWater = Just value }
-
-        eatenWithWaterInput =
-            [ viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion EatenWithWater
-            , viewBoolInput language
-                form.eatenWithWater
-                (SetFeedingBoolInput eatenWithWaterUpdateFunc)
-                "enough-till-next-section"
-                Nothing
-            ]
-
-        sachetsPerDayInput =
-            [ viewQuestionLabel language Translate.SachetsPerDayQuestion
-            , sachetsPerDayHelper
-            , option
-                [ value ""
-                , selected (form.sachetsPerDay == Nothing)
-                ]
-                [ text "" ]
-                :: (List.repeat 20 0.5
-                        |> List.indexedMap
-                            (\index number ->
-                                let
-                                    s =
-                                        String.fromFloat (toFloat index * number)
-                                in
-                                option
-                                    [ value s
-                                    , selected (form.sachetsPerDay == Just (toFloat index * number))
-                                    ]
-                                    [ text s ]
-                            )
-                   )
-                |> select [ onInput SetSachetsPerDay, class "form-input select" ]
-            ]
 
         allWeightMeasuements =
             resolveAllWeightMeasurementsForChild assembled.participant.person db
@@ -329,9 +341,6 @@ viewFeedingContent language currentDate assembled db feedingForm =
 
         content =
             receiveSupplementSection
-                ++ rationPresentAtHomeInput
-                ++ enoughTillNextSessionInput
-                ++ supplementSharedInput
                 ++ sachetsPerDayInput
                 ++ encouragedToEatInput
                 ++ refusingToEatInput
@@ -384,6 +393,7 @@ viewCaringContent language currentDate assembled db caringForm =
                 , CaredByGrandparent
                 , CaredBySibling
                 , CaredByNeighbor
+                , CaredByHouseHelper
                 , CaredByDaycare
                 ]
                 []
@@ -425,10 +435,11 @@ viewHygieneContent language currentDate assembled db hygieneForm =
                 |> nutritionHygieneFormWithDefault hygieneForm
 
         totalTasks =
-            4
+            5
 
         tasksCompleted =
             taskCompleted form.mainWaterSource
+                + taskCompleted form.waterPreparationOption
                 + taskCompleted form.soapInTheHouse
                 + taskCompleted form.washHandsBeforeFeeding
                 + taskCompleted form.foodCovered
@@ -450,6 +461,21 @@ viewHygieneContent language currentDate assembled db hygieneForm =
                 form.mainWaterSource
                 SetMainWaterSource
                 Translate.MainWaterSource
+            ]
+
+        mainWaterPreparationOptionInput =
+            [ viewQuestionLabel language Translate.MainWaterPreparationQuestion
+            , viewCheckBoxSelectInput language
+                [ Boiled
+                , PurificationSolution
+                , Filtered
+                , Bottled
+                , NoWaterPreparationOption
+                ]
+                []
+                form.waterPreparationOption
+                SetWaterPreparationOption
+                Translate.MainWaterPreparationOption
             ]
 
         soapInTheHouseUpdateFunc value form_ =
@@ -490,6 +516,7 @@ viewHygieneContent language currentDate assembled db hygieneForm =
 
         content =
             mainWaterSourceInput
+                ++ mainWaterPreparationOptionInput
                 ++ soapInTheHouseInput
                 ++ washHandsBeforeFeedingInput
                 ++ foodCoveredInput

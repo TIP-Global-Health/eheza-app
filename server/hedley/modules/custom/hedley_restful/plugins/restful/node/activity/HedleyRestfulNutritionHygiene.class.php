@@ -15,6 +15,7 @@ class HedleyRestfulNutritionHygiene extends HedleyRestfulHomeVisitActivityBase {
    */
   protected $fields = [
     'field_main_water_source',
+    'field_water_preparation_option',
   ];
 
   /**

@@ -1399,8 +1399,23 @@ encodeNutritionFollowUp =
 
 encodeFollowUpValueWithType : String -> FollowUpValue -> List ( String, Value )
 encodeFollowUpValueWithType type_ value =
+    let
+        assesment =
+            EverySet.toList value.assesment
+                |> List.head
+                |> Maybe.withDefault NoNutritionAssesment
+
+        nutritionSigns =
+            case assesment of
+                AssesmentMalnutritionSigns signs ->
+                    EverySet.fromList signs
+
+                _ ->
+                    EverySet.singleton NormalChildNutrition
+    in
     [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
     , ( "nutrition_assesment", encodeEverySet encodeNutritionAssesment value.assesment )
+    , ( "nutrition_signs", encodeEverySet encodeNutritionSign nutritionSigns )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
@@ -1521,6 +1536,7 @@ encodeNutritionHygieneValue : NutritionHygieneValue -> List ( String, Value )
 encodeNutritionHygieneValue value =
     [ ( "nutrition_hygiene_signs", encodeEverySet encodeNutritionHygieneSign value.signs )
     , ( "main_water_source", encodeMainWaterSource value.mainWaterSource )
+    , ( "water_preparation_option", encodeWaterPreparationOption value.waterPreparationOption )
     , ( "deleted", bool False )
     , ( "type", string "nutrition_hygiene" )
     ]
@@ -1564,6 +1580,26 @@ encodeMainWaterSource type_ =
 
             BottledWater ->
                 "bottled-water"
+
+
+encodeWaterPreparationOption : WaterPreparationOption -> Value
+encodeWaterPreparationOption type_ =
+    string <|
+        case type_ of
+            Boiled ->
+                "boiled"
+
+            PurificationSolution ->
+                "purification-solution"
+
+            Filtered ->
+                "filtered"
+
+            Bottled ->
+                "bottled"
+
+            NoWaterPreparationOption ->
+                "none"
 
 
 encodeNutritionFoodSecurity : NutritionFoodSecurity -> List ( String, Value )
@@ -1651,6 +1687,9 @@ encodeNutritionCaringOption option =
 
             CaredByNeighbor ->
                 "neighbor"
+
+            CaredByHouseHelper ->
+                "house-helper"
 
             CaredByDaycare ->
                 "daycare"

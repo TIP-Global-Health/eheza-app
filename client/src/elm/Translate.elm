@@ -554,7 +554,9 @@ type TranslationId
     | MainIncomeSource MainIncomeSource
     | MainIncomeSourceQuestion
     | MainWaterSource MainWaterSource
+    | MainWaterPreparationOption WaterPreparationOption
     | MainWaterSourceQuestion
+    | MainWaterPreparationQuestion
     | MakeSureYouAreConnected
     | MalariaRapidDiagnosticTest
     | MalariaRapidTestResult MalariaRapidTestResult
@@ -4012,9 +4014,41 @@ translationSet trans =
                     , kinyarwanda = Just "Amazi akorwa mu nganda (aza mu macupa)"
                     }
 
+        MainWaterPreparationOption option ->
+            case option of
+                Boiled ->
+                    { english = "Boiled"
+                    , kinyarwanda = Just "Barayateka"
+                    }
+
+                PurificationSolution ->
+                    { english = "Purification solution"
+                    , kinyarwanda = Just "Bakoresha umuti usukura amazi"
+                    }
+
+                Filtered ->
+                    { english = "Filtered"
+                    , kinyarwanda = Just "Barayayungurura"
+                    }
+
+                Bottled ->
+                    { english = "Bottled"
+                    , kinyarwanda = Just "Amazi yo mu nganda (afunze mu macupa)"
+                    }
+
+                NoWaterPreparationOption ->
+                    { english = "None of these"
+                    , kinyarwanda = Just "Nta na kimwe"
+                    }
+
         MainWaterSourceQuestion ->
             { english = "What is the household's main source of water"
             , kinyarwanda = Just "Ni hehe h'ibanze urugo ruvana amazi"
+            }
+
+        MainWaterPreparationQuestion ->
+            { english = "How is drinking water prepared"
+            , kinyarwanda = Just "Ni gute amazi yo kunywa ategurwa"
             }
 
         MakeSureYouAreConnected ->
@@ -4817,6 +4851,11 @@ translationSet trans =
                     , kinyarwanda = Just "Umuturanyi"
                     }
 
+                CaredByHouseHelper ->
+                    { english = "House helper"
+                    , kinyarwanda = Just "Umukozi wo mu rugo"
+                    }
+
                 CaredByDaycare ->
                     { english = "Daycare"
                     , kinyarwanda = Just "Irerero"
@@ -4825,7 +4864,7 @@ translationSet trans =
         NutritionFeedingSignQuestion sign ->
             case sign of
                 ReceiveSupplement ->
-                    { english = "Did you receive food supplementation"
+                    { english = "Did you receive food supplement"
                     , kinyarwanda = Just "Waba warahawe inyongeramirire"
                     }
 

@@ -40,7 +40,7 @@ update currentDate id db msg model =
                     model.feedingForm
 
                 updatedForm =
-                    { form | supplementType = Just value }
+                    { form | supplementType = Just value, sachetsPerDay = Nothing, eatenWithWater = Nothing }
             in
             ( { model | feedingForm = updatedForm }
             , Cmd.none
@@ -103,6 +103,19 @@ update currentDate id db msg model =
 
                 updatedForm =
                     { form | mainWaterSource = Just value }
+            in
+            ( { model | hygieneForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetWaterPreparationOption value ->
+            let
+                form =
+                    model.hygieneForm
+
+                updatedForm =
+                    { form | waterPreparationOption = Just value }
             in
             ( { model | hygieneForm = updatedForm }
             , Cmd.none
