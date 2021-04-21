@@ -1399,8 +1399,23 @@ encodeNutritionFollowUp =
 
 encodeFollowUpValueWithType : String -> FollowUpValue -> List ( String, Value )
 encodeFollowUpValueWithType type_ value =
+    let
+        assesment =
+            EverySet.toList value.assesment
+                |> List.head
+                |> Maybe.withDefault NoNutritionAssesment
+
+        nutritionSigns =
+            case assesment of
+                AssesmentMalnutritionSigns signs ->
+                    EverySet.fromList signs
+
+                _ ->
+                    EverySet.singleton NormalChildNutrition
+    in
     [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
     , ( "nutrition_assesment", encodeEverySet encodeNutritionAssesment value.assesment )
+    , ( "nutrition_signs", encodeEverySet encodeNutritionSign nutritionSigns )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
