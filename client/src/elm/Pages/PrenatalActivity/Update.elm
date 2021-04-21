@@ -1584,3 +1584,115 @@ update currentDate id db msg model =
               , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
               ]
             )
+
+        SetBirthPlanBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.historyData.birthPlanForm
+                    in
+                    model.historyData
+                        |> (\data -> { data | birthPlanForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetBirthPlanFamilyPlanning sign ->
+            let
+                form =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.familyPlanning
+                                >> Maybe.map (Tuple.second >> .value)
+                                >> familyPlanningFormWithDefault model.familyPlanningData.form
+                            )
+                        |> Maybe.withDefault model.familyPlanningData.form
+
+                updatedForm =
+                    case form.signs of
+                        Just signs ->
+                            if List.member sign signs then
+                                let
+                                    updatedSigns =
+                                        if List.length signs == 1 then
+                                            Nothing
+
+                                        else
+                                            signs |> List.filter ((/=) sign) |> Just
+                                in
+                                { form | signs = updatedSigns }
+
+                            else
+                                case sign of
+                                    NoFamilyPlanning ->
+                                        { form | signs = Just [ sign ] }
+
+                                    _ ->
+                                        let
+                                            updatedSigns =
+                                                case signs of
+                                                    [ NoFamilyPlanning ] ->
+                                                        Just [ sign ]
+
+                                                    _ ->
+                                                        Just (sign :: signs)
+                                        in
+                                        { form | signs = updatedSigns }
+
+                        Nothing ->
+                            { form | signs = Just [ sign ] }
+
+                updatedData =
+                    model.familyPlanningData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | familyPlanningData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveBirthPlan personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                updatedForm =
+                    model.historyData.birthPlanForm
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
+                            , BirthPlan
+                            )
+
+                appMsgs =
+                    updatedForm
+                        |> toBirthPlanValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.PrenatalEncounter.Model.SaveBirthPlan personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )

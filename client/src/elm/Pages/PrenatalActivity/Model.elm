@@ -1,5 +1,6 @@
 module Pages.PrenatalActivity.Model exposing
-    ( BreastExamForm
+    ( BirthPlanForm
+    , BreastExamForm
     , CorePhysicalExamForm
     , DangerSignsData
     , DangerSignsForm
@@ -116,6 +117,10 @@ type Msg
     | SaveDangerSigns PersonId (Maybe ( DangerSignsId, DangerSigns ))
       -- PrenatalPhotoMsgs
     | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl
+      -- BirthPlanMsgs
+    | SetBirthPlanBoolInput (Bool -> BirthPlanForm -> BirthPlanForm) Bool
+    | SetBirthPlanFamilyPlanning FamilyPlanningSign
+    | SaveBirthPlan PersonId (Maybe ( BirthPlanId, BirthPlan )) (Maybe HistoryTask)
 
 
 type alias Model =
@@ -160,6 +165,7 @@ type alias HistoryData =
     , obstetricHistoryStep : ObstetricHistoryStep
     , medicalForm : MedicalHistoryForm
     , socialForm : SocialHistoryForm
+    , birthPlanForm : BirthPlanForm
     , activeTask : HistoryTask
     }
 
@@ -171,6 +177,7 @@ emptyHistoryData =
     , obstetricHistoryStep = ObstetricHistoryFirstStep
     , medicalForm = emptyMedicalHistoryForm
     , socialForm = emptySocialHistoryForm
+    , birthPlanForm = emptyBirthPlanForm
     , activeTask = Obstetric
     }
 
@@ -239,7 +246,8 @@ type ObstetricHistoryStep
 
 
 type HistoryTask
-    = Obstetric
+    = BirthPlan
+    | Obstetric
     | Medical
     | Social
 
@@ -589,3 +597,24 @@ type alias PrenatalPhotoData =
 emptyPrenatalPhotoData : PrenatalPhotoData
 emptyPrenatalPhotoData =
     { url = Nothing }
+
+
+type alias BirthPlanForm =
+    { haveInsurance : Maybe Bool
+    , boughtClothes : Maybe Bool
+    , caregiverAccompany : Maybe Bool
+    , savedMoney : Maybe Bool
+    , haveTransportation : Maybe Bool
+    , familyPlanning : Maybe FamilyPlanningSign
+    }
+
+
+emptyBirthPlanForm : BirthPlanForm
+emptyBirthPlanForm =
+    { haveInsurance = Nothing
+    , boughtClothes = Nothing
+    , caregiverAccompany = Nothing
+    , savedMoney = Nothing
+    , haveTransportation = Nothing
+    , familyPlanning = Nothing
+    }

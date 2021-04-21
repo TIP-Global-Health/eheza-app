@@ -695,7 +695,7 @@ type alias Vitals =
 
 type alias BirthPlanValue =
     { signs : EverySet BirthPlanSign
-    , familyPlanning : EverySet FamilyPlanningSign
+    , familyPlanning : FamilyPlanningSign
     }
 
 
