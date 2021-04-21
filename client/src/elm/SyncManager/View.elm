@@ -390,6 +390,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityBreastExam identifier ->
                 viewMeasurement identifier "Breast Exam"
 
+            BackendAuthorityBirthPlan identifier ->
+                viewMeasurement identifier "Birth Plan"
+
             BackendAuthorityCall114 identifier ->
                 viewMeasurement identifier "Call 114"
 
