@@ -172,53 +172,34 @@ viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db mayb
             -- If first encounter is in process, navigate to it.
             if firstEncounterInProcess then
                 maybeActiveEncounterId
-                    |> unwrap
+                    |> Maybe.map navigateToEncounterAction
+                    |> Maybe.withDefault
                         []
-                        navigateToEncounterAction
 
             else
                 maybeSessionId
                     |> Maybe.map
                         -- If prenatal session exists, create new encounter for it.
                         (\sessionId ->
-                            [ emptyPrenatalEncounter sessionId currentDate NurseEncounter (Just selectedHealthCenter)
-                                |> Backend.Model.PostPrenatalEncounter
-                                |> App.Model.MsgIndexedDb
-                                |> onClick
-                            ]
+                            createNewEncounterMsg currentDate selectedHealthCenter sessionId NurseEncounter
                         )
                     -- If prenatal session does not exist, create it.
                     |> Maybe.withDefault
-                        [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.AntenatalEncounter selectedHealthCenter
-                            |> Backend.Model.PostIndividualSession
-                            |> App.Model.MsgIndexedDb
-                            |> onClick
-                        ]
+                        (createNewSessionMsg currentDate selectedHealthCenter id NurseEncounter)
 
         subsequentVisitAction =
             maybeActiveEncounterId
-                |> unwrap
+                -- When there's an encounter, we'll view it.
+                |> Maybe.map navigateToEncounterAction
+                |> Maybe.withDefault
                     -- When there's no encounter, we'll create new one.
                     (maybeSessionId
                         |> Maybe.map
                             (\sessionId ->
-                                [ emptyPrenatalEncounter sessionId currentDate NurseEncounter (Just selectedHealthCenter)
-                                    |> Backend.Model.PostPrenatalEncounter
-                                    |> App.Model.MsgIndexedDb
-                                    |> onClick
-                                ]
+                                createNewEncounterMsg currentDate selectedHealthCenter sessionId NurseEncounter
                             )
                         |> Maybe.withDefault []
                     )
-                    -- When there's an encounter, we'll view it.
-                    navigateToEncounterAction
-
-        navigateToEncounterAction id_ =
-            [ Pages.Page.PrenatalEncounterPage id_
-                |> UserPage
-                |> App.Model.SetActivePage
-                |> onClick
-            ]
 
         firstVisitButtonDisabled =
             isJust maybeSessionId && not firstEncounterInProcess
@@ -251,6 +232,9 @@ viewPrenatalActionsForChw :
     -> List (Html App.Model.Msg)
 viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePrgnancyData encounters =
     let
+        maybeSessionId =
+            Maybe.map Tuple.first activePrgnancyData
+
         ( maybeActiveEncounterId, lastEncounterType ) =
             encounters
                 |> List.head
@@ -269,7 +253,7 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                 |> Maybe.withDefault ( Nothing, Nothing )
 
         -- Button for certain type is active when:
-        -- 1. There's an active encounter, and it's type matched button encounter type.
+        -- 1. There's an active encounter, and it's type matches button encounter type.
         -- 2. No active encounter, and last completed encounter was of previous type.
         --   For example, second encounter is active, if last completed encounter was first encounter.
         encounterTypeButtonActive encounterType =
@@ -294,6 +278,28 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                     NurseEncounter ->
                         False
 
+        encounterTypeButtonAction encounterType =
+            maybeActiveEncounterId
+                -- If there's an active encounter, navigate to it.
+                |> Maybe.map navigateToEncounterAction
+                |> Maybe.withDefault
+                    (maybeSessionId
+                        |> Maybe.map
+                            -- If prenatal session exists, create new encounter for it.
+                            (\sessionId ->
+                                createNewEncounterMsg currentDate selectedHealthCenter sessionId encounterType
+                            )
+                        |> Maybe.withDefault
+                            -- Prenatal session does not exist, create it, if it's a first encounter.
+                            (if encounterType == ChwFirstEncounter then
+                                createNewSessionMsg currentDate selectedHealthCenter id encounterType
+
+                             else
+                                -- There must be a session, as this is not the first encounter.
+                                []
+                            )
+                    )
+
         -- @todo: Use to present warning popup
         pregnancyPastDue =
             activePrgnancyData
@@ -304,34 +310,27 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                     )
                 |> Maybe.withDefault False
 
-        navigateToEncounterAction id_ =
-            [ Pages.Page.PrenatalEncounterPage id_
-                |> UserPage
-                |> App.Model.SetActivePage
-                |> onClick
-            ]
-
         createFirstEncounterButton =
             viewButton language
-                []
+                (encounterTypeButtonAction ChwFirstEncounter)
                 (Translate.PrenatalEncounterType ChwFirstEncounter)
                 (not <| encounterTypeButtonActive ChwFirstEncounter)
 
         createSecondEncounterButton =
             viewButton language
-                []
+                (encounterTypeButtonAction ChwSecondEncounter)
                 (Translate.PrenatalEncounterType ChwSecondEncounter)
                 (not <| encounterTypeButtonActive ChwSecondEncounter)
 
         createThirdEncounterButton =
             viewButton language
-                []
+                (encounterTypeButtonAction ChwThirdEncounter)
                 (Translate.PrenatalEncounterType ChwThirdEncounter)
                 (not <| encounterTypeButtonActive ChwThirdEncounter)
 
         createPostpartumEncounterButton =
             viewButton language
-                []
+                (encounterTypeButtonAction ChwPostpartumEncounter)
                 (Translate.PrenatalEncounterType ChwPostpartumEncounter)
                 (not <| encounterTypeButtonActive ChwPostpartumEncounter)
     in
@@ -340,6 +339,33 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
     , createThirdEncounterButton
     , createPostpartumEncounterButton
     ]
+
+
+createNewSessionMsg : NominalDate -> HealthCenterId -> PersonId -> PrenatalEncounterType -> List (Attribute App.Model.Msg)
+createNewSessionMsg currentDate selectedHealthCenter personId encounterType =
+    emptyIndividualEncounterParticipant currentDate personId Backend.IndividualEncounterParticipant.Model.AntenatalEncounter selectedHealthCenter
+        |> Backend.Model.PostIndividualSession
+        |> App.Model.MsgIndexedDb
+        |> onClick
+        |> List.singleton
+
+
+createNewEncounterMsg : NominalDate -> HealthCenterId -> IndividualEncounterParticipantId -> PrenatalEncounterType -> List (Attribute App.Model.Msg)
+createNewEncounterMsg currentDate selectedHealthCenter sessionId encounterType =
+    emptyPrenatalEncounter sessionId currentDate encounterType (Just selectedHealthCenter)
+        |> Backend.Model.PostPrenatalEncounter
+        |> App.Model.MsgIndexedDb
+        |> onClick
+        |> List.singleton
+
+
+navigateToEncounterAction : PrenatalEncounterId -> List (Attribute App.Model.Msg)
+navigateToEncounterAction encounterId =
+    Pages.Page.PrenatalEncounterPage encounterId
+        |> UserPage
+        |> App.Model.SetActivePage
+        |> onClick
+        |> List.singleton
 
 
 viewButton : Language -> List (Attribute App.Model.Msg) -> TranslationId -> Bool -> Html App.Model.Msg
