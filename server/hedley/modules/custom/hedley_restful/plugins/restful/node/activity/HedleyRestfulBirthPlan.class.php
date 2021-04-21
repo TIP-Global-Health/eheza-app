@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Contains HedleyRestfulBirthPlan.
@@ -7,7 +8,6 @@
 /**
  * Class HedleyRestfulBirthPlan.
  */
-
 class HedleyRestfulBirthPlan extends HedleyRestfulPrenatalActivityBase {
 
   /**
