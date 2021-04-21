@@ -2311,7 +2311,7 @@ viewBirthPlan language currentDate assembled birthPlanForm =
             [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
             [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
             (form.familyPlanning |> Maybe.withDefault [])
-            Nothing
+            (Just NoFamilyPlanning)
             SetBirthPlanFamilyPlanning
             Translate.FamilyPlanningSignLabel
         ]

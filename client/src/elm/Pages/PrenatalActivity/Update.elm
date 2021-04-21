@@ -1607,14 +1607,14 @@ update currentDate id db msg model =
                         |> Maybe.withDefault NotAsked
                         |> RemoteData.toMaybe
                         |> Maybe.map
-                            (.familyPlanning
+                            (.birthPlan
                                 >> Maybe.map (Tuple.second >> .value)
-                                >> familyPlanningFormWithDefault model.familyPlanningData.form
+                                >> birthPlanFormWithDefault model.historyData.birthPlanForm
                             )
-                        |> Maybe.withDefault model.familyPlanningData.form
+                        |> Maybe.withDefault model.historyData.birthPlanForm
 
                 updatedForm =
-                    case form.signs of
+                    case form.familyPlanning of
                         Just signs ->
                             if List.member sign signs then
                                 let
@@ -1625,12 +1625,12 @@ update currentDate id db msg model =
                                         else
                                             signs |> List.filter ((/=) sign) |> Just
                                 in
-                                { form | signs = updatedSigns }
+                                { form | familyPlanning = updatedSigns }
 
                             else
                                 case sign of
                                     NoFamilyPlanning ->
-                                        { form | signs = Just [ sign ] }
+                                        { form | familyPlanning = Just [ sign ] }
 
                                     _ ->
                                         let
@@ -1642,16 +1642,16 @@ update currentDate id db msg model =
                                                     _ ->
                                                         Just (sign :: signs)
                                         in
-                                        { form | signs = updatedSigns }
+                                        { form | familyPlanning = updatedSigns }
 
                         Nothing ->
-                            { form | signs = Just [ sign ] }
+                            { form | familyPlanning = Just [ sign ] }
 
                 updatedData =
-                    model.familyPlanningData
-                        |> (\data -> { data | form = updatedForm })
+                    model.historyData
+                        |> (\data -> { data | birthPlanForm = updatedForm })
             in
-            ( { model | familyPlanningData = updatedData }
+            ( { model | historyData = updatedData }
             , Cmd.none
             , []
             )
