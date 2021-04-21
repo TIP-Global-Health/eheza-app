@@ -136,7 +136,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
             else
                 viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId nurseEncounters
 
-        recordPregannacyOutcomeSection =
+        recordPregnancyOutcomeSection =
             [ div [ class "separator" ] []
             , p [ class "label-pregnancy-concluded" ] [ text <| translate language Translate.PregnancyConcludedLabel ]
             , recordPrenatalOutcomeButton
@@ -156,7 +156,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
     in
     [ label, popup ]
         ++ encounterTypeSpecificButtons
-        ++ recordPregannacyOutcomeSection
+        ++ recordPregnancyOutcomeSection
         |> div []
 
 
