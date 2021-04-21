@@ -94,6 +94,11 @@ type alias BreastExamId =
 type BreastExamUuidType
     = BreastExamUuidType
 
+type alias BirthPlanId =
+    EntityUuid BirthPlanUuidType
+
+type BirthPlanUuidType
+    = BirthPlanUuidType
 
 type alias CorePhysicalExamId =
     EntityUuid CorePhysicalExamUuidType
