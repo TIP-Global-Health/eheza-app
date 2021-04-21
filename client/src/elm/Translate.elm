@@ -43,6 +43,7 @@ import Backend.Person.Model
         , ModeOfDelivery(..)
         , VaginalDelivery(..)
         )
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
@@ -521,9 +522,6 @@ type TranslationId
     | IndividualEncounterLabel IndividualEncounterType
     | IndividualEncounterSelectVisit IndividualEncounterType
     | IndividualEncounterSubsequentVisit IndividualEncounterType
-    | IndividualEncounterSecondVisit IndividualEncounterType
-    | IndividualEncounterThirdVisit IndividualEncounterType
-    | IndividualEncounterPostpartumVisit IndividualEncounterType
     | IndividualEncounterType IndividualEncounterType
     | IndividualEncounterTypes
     | InitialResultsDisplay InitialResultsDisplay
@@ -706,6 +704,7 @@ type TranslationId
     | PreeclampsiaPreviousPregnancy
     | PregnancyTrimester PregnancyTrimester
     | PrenatalActivitiesTitle PrenatalActivity
+    | PrenatalFirstEncounter PrenatalEncounterType
     | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
@@ -3644,87 +3643,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        IndividualEncounterSecondVisit encounterType ->
-            case encounterType of
-                AcuteIllnessEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
-                AntenatalEncounter ->
-                    { english = "Second Antenatal Visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                InmmunizationEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
-                NutritionEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
-                HomeVisitEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
-        IndividualEncounterThirdVisit encounterType ->
-            case encounterType of
-                AcuteIllnessEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
-                AntenatalEncounter ->
-                    { english = "Third Antenatal Visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                InmmunizationEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
-                NutritionEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
-                HomeVisitEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
-        IndividualEncounterPostpartumVisit encounterType ->
-            case encounterType of
-                AcuteIllnessEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
-                AntenatalEncounter ->
-                    { english = "Postpartum"
-                    , kinyarwanda = Nothing
-                    }
-
-                InmmunizationEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
-                NutritionEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
-                HomeVisitEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
         IndividualEncounterType encounterType ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -5407,6 +5325,33 @@ translationSet trans =
                 PrenatalPhoto ->
                     { english = "Photo"
                     , kinyarwanda = Just "Ifoto"
+                    }
+
+        PrenatalFirstEncounter encounterType ->
+            case encounterType of
+                NurseEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ChwFirstEncounter ->
+                    { english = "First Antenatal Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChwSecondEncounter ->
+                    { english = "Second Antenatal Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChwThirdEncounter ->
+                    { english = "Third Antenatal Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChwPostpartumEncounter ->
+                    { english = "Postpartum"
+                    , kinyarwanda = Nothing
                     }
 
         PrenatalPhotoHelper ->

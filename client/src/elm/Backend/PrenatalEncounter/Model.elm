@@ -1,4 +1,4 @@
-module Backend.PrenatalEncounter.Model exposing (Model, Msg(..), PrenatalEncounter, emptyModel)
+module Backend.PrenatalEncounter.Model exposing (Model, Msg(..), PrenatalEncounter, PrenatalEncounterType(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -92,3 +92,11 @@ type Msg
     | HandleSavedSocialHistory (WebData ())
     | HandleSavedVitals (WebData ())
     | HandleSavedPrenatalPhoto (WebData ())
+
+
+type PrenatalEncounterType
+    = NurseEncounter
+    | ChwFirstEncounter
+    | ChwSecondEncounter
+    | ChwThirdEncounter
+    | ChwPostpartumEncounter
