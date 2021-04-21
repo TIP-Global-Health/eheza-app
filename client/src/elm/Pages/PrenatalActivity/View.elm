@@ -2299,13 +2299,6 @@ viewBirthPlan language currentDate assembled birthPlanForm =
             (SetBirthPlanBoolInput savedMoneyFunc)
             "saved-money"
             Nothing
-        , viewQuestionLabel language Translate.TransportationPlanQuestion
-        , viewBoolInput
-            language
-            form.haveTransportation
-            (SetBirthPlanBoolInput transportationFunc)
-            "saved-money"
-            Nothing
         , viewQuestionLabel language Translate.FamilyPlanningInFutureQuestion
         , viewCheckBoxMultipleSelectInput language
             [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
@@ -2314,6 +2307,13 @@ viewBirthPlan language currentDate assembled birthPlanForm =
             (Just NoFamilyPlanning)
             SetBirthPlanFamilyPlanning
             Translate.FamilyPlanningSignLabel
+        , viewQuestionLabel language Translate.TransportationPlanQuestion
+        , viewBoolInput
+            language
+            form.haveTransportation
+            (SetBirthPlanBoolInput transportationFunc)
+            "saved-money"
+            Nothing
         ]
 
 
