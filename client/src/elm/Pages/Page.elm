@@ -47,7 +47,7 @@ import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Initiator)
-import Backend.PrenatalEncounter.Model exposing (RecordPreganancyInitiator)
+import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator, RecordPreganancyInitiator)
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 
 
@@ -124,7 +124,7 @@ the login page instead.
 type UserPage
     = ClinicalPage -- shows a list of clinical options, allows you to choose one
     | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
-    | ClinicalProgressReportPage PrenatalEncounterId
+    | ClinicalProgressReportPage ClinicalProgressReportInitiator PrenatalEncounterId
     | DashboardPage DashboardPage -- Dashboard with visual summary of the data
     | GlobalCaseManagementPage -- page where info about needed follow ups is displayed.
     | DemographicsReportPage PrenatalEncounterId

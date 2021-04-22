@@ -7,7 +7,7 @@ import Backend.Measurement.Model exposing (ObstetricHistoryValue, PrenatalMeasur
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
+import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounter)
 import Date exposing (Interval(..))
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -438,7 +438,7 @@ viewMainPageContent language currentDate data model =
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage data.id)
+                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage InitiatorEncounterPage data.id)
                     , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage data.id)
                     ]
 

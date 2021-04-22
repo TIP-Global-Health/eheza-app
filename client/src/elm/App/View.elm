@@ -290,8 +290,8 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPageClinics)
                             |> flexPageWrapper model
 
-                    ClinicalProgressReportPage prenatalEncounterId ->
-                        Pages.ClinicalProgressReport.View.view model.language currentDate prenatalEncounterId model.indexedDb
+                    ClinicalProgressReportPage initiator prenatalEncounterId ->
+                        Pages.ClinicalProgressReport.View.view model.language currentDate prenatalEncounterId initiator model.indexedDb
                             |> flexPageWrapper model
 
                     CreatePersonPage relation initiator ->

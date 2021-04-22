@@ -27,7 +27,7 @@ import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..), emptyPrenatalEncounter)
+import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounterPostCreateDestination(..), PrenatalEncounterType(..), emptyPrenatalEncounter)
 import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (RelatedBy(..))
@@ -1734,7 +1734,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                                     case extraData of
                                         AntenatalData prenatalEncounterType ->
                                             [ emptyPrenatalEncounter sessionId currentDate prenatalEncounterType healthCenterId
-                                                |> Backend.Model.PostPrenatalEncounter
+                                                |> Backend.Model.PostPrenatalEncounter DestinationEncounterPage
                                                 |> App.Model.MsgIndexedDb
                                             ]
 
@@ -1764,22 +1764,28 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
             , appMsgs
             )
 
-        PostPrenatalEncounter prenatalEncounter ->
+        PostPrenatalEncounter postCreateDestination prenatalEncounter ->
             ( { model | postPrenatalEncounter = Dict.insert prenatalEncounter.participant Loading model.postPrenatalEncounter }
             , sw.post prenatalEncounterEndpoint prenatalEncounter
-                |> toCmd (RemoteData.fromResult >> HandlePostedPrenatalEncounter prenatalEncounter.participant)
+                |> toCmd (RemoteData.fromResult >> HandlePostedPrenatalEncounter prenatalEncounter.participant postCreateDestination)
             , []
             )
 
-        HandlePostedPrenatalEncounter participantId data ->
+        HandlePostedPrenatalEncounter participantId postCreateDestination data ->
             ( { model | postPrenatalEncounter = Dict.insert participantId data model.postPrenatalEncounter }
             , Cmd.none
             , RemoteData.map
                 (\( prenatalEncounterId, _ ) ->
-                    [ App.Model.SetActivePage <|
-                        UserPage <|
-                            Pages.Page.PrenatalEncounterPage prenatalEncounterId
-                    ]
+                    let
+                        destinationPage =
+                            case postCreateDestination of
+                                DestinationEncounterPage ->
+                                    UserPage <| Pages.Page.PrenatalEncounterPage prenatalEncounterId
+
+                                DestinationClinicalProgressReportPage ->
+                                    UserPage <| ClinicalProgressReportPage (InitiatorNewEncounter prenatalEncounterId) prenatalEncounterId
+                    in
+                    [ App.Model.SetActivePage destinationPage ]
                 )
                 data
                 |> RemoteData.withDefault []

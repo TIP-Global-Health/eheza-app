@@ -778,6 +778,7 @@ type TranslationId
     | ResultOfContactingRecommendedSite RecommendationSite
     | Retry
     | ReviewCaseWith144Respondent
+    | Reviewed
     | RhNegative
     | RiskFactorAlert RiskFactor
     | RiskFactors
@@ -5984,6 +5985,11 @@ translationSet trans =
             , kinyarwanda = Just "Ongera ukore isuzuma ufatanije n’ukwitabye kuri 114"
             }
 
+        Reviewed ->
+            { english = "Reviewed"
+            , kinyarwanda = Nothing
+            }
+
         RhNegative ->
             { english = "RH Negative"
             , kinyarwanda = Just "Ubwoko bw'amaraso ni Negatifu"
@@ -7073,7 +7079,7 @@ translateActivePage page =
                     , kinyarwanda = Just "Itsinda"
                     }
 
-                ClinicalProgressReportPage _ ->
+                ClinicalProgressReportPage _ _ ->
                     { english = "Clinical Progress Report"
                     , kinyarwanda = Just "Erekana raporo yibyavuye mu isuzuma"
                     }

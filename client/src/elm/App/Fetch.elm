@@ -107,7 +107,7 @@ fetch model =
                     model.villageId
                     |> Maybe.withDefault []
 
-            UserPage (ClinicalProgressReportPage prenatalEncounterId) ->
+            UserPage (ClinicalProgressReportPage _ prenatalEncounterId) ->
                 Pages.ClinicalProgressReport.Fetch.fetch prenatalEncounterId model.indexedDb
                     |> List.map MsgIndexedDb
 

@@ -39,6 +39,16 @@ type RecordPreganancyInitiator
     | InitiatorWarningPopup
 
 
+type ClinicalProgressReportInitiator
+    = InitiatorEncounterPage
+    | InitiatorNewEncounter PrenatalEncounterId
+
+
+type PrenatalEncounterPostCreateDestination
+    = DestinationEncounterPage
+    | DestinationClinicalProgressReportPage
+
+
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress
 to peform the updates indicated by the `Msg` type below.
 -}

@@ -5,7 +5,14 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (emptyIndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..), RecordPreganancyInitiator(..), emptyPrenatalEncounter)
+import Backend.PrenatalEncounter.Model
+    exposing
+        ( PrenatalEncounter
+        , PrenatalEncounterPostCreateDestination(..)
+        , PrenatalEncounterType(..)
+        , RecordPreganancyInitiator(..)
+        , emptyPrenatalEncounter
+        )
 import Date
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -132,9 +139,12 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
         label =
             p [ class "label-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter ]
 
+        hasNurseEncounter =
+            not <| List.isEmpty nurseEncounters
+
         encounterTypeSpecificButtons =
             if isChw then
-                viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePrgnancyData chwEncounters
+                viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePrgnancyData chwEncounters hasNurseEncounter
 
             else
                 viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId nurseEncounters
@@ -242,7 +252,7 @@ viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db mayb
                     |> Maybe.map
                         -- If prenatal session exists, create new encounter for it.
                         (\sessionId ->
-                            createNewEncounterMsg currentDate selectedHealthCenter sessionId NurseEncounter
+                            createNewEncounterMsg currentDate selectedHealthCenter sessionId NurseEncounter DestinationEncounterPage
                         )
                     -- If prenatal session does not exist, create it.
                     |> Maybe.withDefault
@@ -257,7 +267,7 @@ viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db mayb
                     (maybeSessionId
                         |> Maybe.map
                             (\sessionId ->
-                                createNewEncounterMsg currentDate selectedHealthCenter sessionId NurseEncounter
+                                createNewEncounterMsg currentDate selectedHealthCenter sessionId NurseEncounter DestinationEncounterPage
                             )
                         |> Maybe.withDefault []
                     )
@@ -290,8 +300,9 @@ viewPrenatalActionsForChw :
     -> ModelIndexedDb
     -> Maybe ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
     -> List ( PrenatalEncounterId, PrenatalEncounter )
+    -> Bool
     -> List (Html Msg)
-viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePrgnancyData encounters =
+viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePrgnancyData encounters hasNurseEncounter =
     let
         maybeSessionId =
             Maybe.map Tuple.first activePrgnancyData
@@ -348,7 +359,15 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                         |> Maybe.map
                             -- If prenatal session exists, create new encounter for it.
                             (\sessionId ->
-                                createNewEncounterMsg currentDate selectedHealthCenter sessionId encounterType
+                                let
+                                    postCreateDestination =
+                                        if hasNurseEncounter then
+                                            DestinationClinicalProgressReportPage
+
+                                        else
+                                            DestinationEncounterPage
+                                in
+                                createNewEncounterMsg currentDate selectedHealthCenter sessionId encounterType postCreateDestination
                             )
                         |> Maybe.withDefault
                             -- Prenatal session does not exist, create it, if it's a first encounter.
@@ -401,10 +420,10 @@ createNewSessionMsg currentDate selectedHealthCenter personId encounterType =
         |> List.singleton
 
 
-createNewEncounterMsg : NominalDate -> HealthCenterId -> IndividualEncounterParticipantId -> PrenatalEncounterType -> List (Attribute Msg)
-createNewEncounterMsg currentDate selectedHealthCenter sessionId encounterType =
+createNewEncounterMsg : NominalDate -> HealthCenterId -> IndividualEncounterParticipantId -> PrenatalEncounterType -> PrenatalEncounterPostCreateDestination -> List (Attribute Msg)
+createNewEncounterMsg currentDate selectedHealthCenter sessionId encounterType postCreateDestination =
     emptyPrenatalEncounter sessionId currentDate encounterType (Just selectedHealthCenter)
-        |> Backend.Model.PostPrenatalEncounter
+        |> Backend.Model.PostPrenatalEncounter postCreateDestination
         |> MsgBackend
         |> onClick
         |> List.singleton
