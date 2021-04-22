@@ -1,7 +1,7 @@
 module Pages.PrenatalEncounter.Utils exposing
     ( calculateEDD
     , calculateEDDandEGADays
-    , expectPrenatalActivity
+    , expectActivity
     , generateAssembledData
     , generateEDDandEGA
     , generateEGAWeeksDaysLabel
@@ -23,12 +23,12 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PrenatalActivity.Model exposing (..)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
-import Backend.PrenatalActivity.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
 
@@ -235,8 +235,8 @@ generateAssembledData id db =
         |> RemoteData.andMap (Success globalObstetricHistory)
 
 
-expectPrenatalActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool
-expectPrenatalActivity currentDate data activity =
+expectActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool
+expectActivity currentDate data activity =
     let
         isFirstEncounter =
             List.isEmpty data.previousMeasurementsWithDates

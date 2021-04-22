@@ -335,7 +335,7 @@ viewMainPageContent language currentDate data model =
 
         ( completedActivities, pendingActivities ) =
             getAllActivities isFirstEncounter
-                |> List.filter (expectPrenatalActivity currentDate data)
+                |> List.filter (expectActivity currentDate data)
                 |> List.partition
                     (\activity ->
                         case activity of
