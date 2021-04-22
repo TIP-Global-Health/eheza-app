@@ -7212,7 +7212,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                PregnancyOutcomePage _ ->
+                PregnancyOutcomePage _ _ ->
                     { english = "Pregnancy Outcome"
                     , kinyarwanda = Nothing
                     }

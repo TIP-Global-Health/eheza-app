@@ -34,6 +34,11 @@ type PrenatalEncounterType
     | ChwPostpartumEncounter
 
 
+type RecordPreganancyInitiator
+    = InitiatorParticipantPage
+    | InitiatorWarningPopup
+
+
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress
 to peform the updates indicated by the `Msg` type below.
 -}

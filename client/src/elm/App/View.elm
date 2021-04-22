@@ -437,13 +437,13 @@ viewUserPage page deviceName model configured =
                         Pages.IndividualEncounterTypes.View.view model.language currentDate healthCenterId isChw model
                             |> flexPageWrapper model
 
-                    PregnancyOutcomePage id ->
+                    PregnancyOutcomePage initiator id ->
                         let
                             page_ =
                                 Dict.get id loggedInModel.pregnancyOutcomePages
                                     |> Maybe.withDefault Pages.PregnancyOutcome.Model.emptyModel
                         in
-                        Pages.PregnancyOutcome.View.view model.language currentDate id model.indexedDb page_
+                        Pages.PregnancyOutcome.View.view model.language currentDate id initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePregnancyOutcome id)
                             |> flexPageWrapper model
 

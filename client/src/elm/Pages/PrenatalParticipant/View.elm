@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (emptyIndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..), emptyPrenatalEncounter)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..), RecordPreganancyInitiator(..), emptyPrenatalEncounter)
 import Date
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -107,15 +107,18 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
 
         recordPrenatalOutcomeButton =
             viewButton language
-                navigateToPregnancyOutcomeAction
+                navigateToPregnancyOutcomeActionForButton
                 Translate.RecordPregnancyOutcome
-                (List.isEmpty navigateToPregnancyOutcomeAction)
+                (List.isEmpty navigateToPregnancyOutcomeActionForButton)
 
-        navigateToPregnancyOutcomeAction =
+        navigateToPregnancyOutcomeActionForButton =
+            navigateToPregnancyOutcomeAction InitiatorParticipantPage
+
+        navigateToPregnancyOutcomeAction destinationPage =
             if List.length completedEncounts > 0 then
                 maybeSessionId
                     |> Maybe.map
-                        (Pages.Page.PregnancyOutcomePage
+                        (Pages.Page.PregnancyOutcomePage destinationPage
                             >> UserPage
                             >> SetActivePage
                             >> onClick
@@ -150,7 +153,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
                 viewModal <|
                     warningPopup language
                         currentDate
-                        navigateToPregnancyOutcomeAction
+                        (navigateToPregnancyOutcomeAction InitiatorWarningPopup)
 
             else
                 emptyNode
