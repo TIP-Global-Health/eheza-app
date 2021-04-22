@@ -1180,7 +1180,8 @@ input::placeholder {
     }
   }
 
-  &.diagnosis-popup {
+  &.diagnosis-popup,
+  &.open-pregnancy-popup {
     border-top: 15px solid $color-red-alert;
     margin-left: -300px;
     width: 600px;
@@ -1232,6 +1233,23 @@ input::placeholder {
         padding: 0 4rem;
         text-align: center;
         text-transform: uppercase;
+      }
+    }
+
+    &.open-pregnancy-popup {
+
+      .popup-heading-wrapper {
+        margin-bottom: 50px;
+      }
+
+      .popup-action {
+        font-weight: bold;
+        padding: 0 15px;
+      }
+
+      .ui.fluid.button:last-child {
+        padding: 15px 5px;
+        line-height: 30px;
       }
     }
 

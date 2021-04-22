@@ -534,6 +534,9 @@ type TranslationId
     | IsolatedAtHome
     | KilogramShorthand
     | KilogramsPerMonth
+    | LabelOnePregnancyEpisodeOpen
+    | LabelSeenHealthcareProviderForPregnancy
+    | LabelDocumentPregnancyOutcome
     | LaboratoryTask LaboratoryTask
     | LastChecked
     | LastSuccesfulContactLabel
@@ -707,7 +710,7 @@ type TranslationId
     | PreeclampsiaPreviousPregnancy
     | PregnancyTrimester PregnancyTrimester
     | PrenatalActivitiesTitle PrenatalActivity
-    | PrenatalFirstEncounter PrenatalEncounterType
+    | PrenatalEncounterType PrenatalEncounterType
     | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
@@ -778,6 +781,7 @@ type TranslationId
     | ResultOfContactingRecommendedSite RecommendationSite
     | Retry
     | ReviewCaseWith144Respondent
+    | Reviewed
     | RhNegative
     | RiskFactorAlert RiskFactor
     | RiskFactors
@@ -3748,6 +3752,21 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        LabelOnePregnancyEpisodeOpen ->
+            { english = "There is one pregnancy episode that is open"
+            , kinyarwanda = Nothing
+            }
+
+        LabelSeenHealthcareProviderForPregnancy ->
+            { english = "Have you seen a healthcare provider for current pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        LabelDocumentPregnancyOutcome ->
+            { english = "No - document pregnancy outcome"
+            , kinyarwanda = Nothing
+            }
+
         LaboratoryTask task ->
             case task of
                 LaboratoryMalariaTesting ->
@@ -5352,7 +5371,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ifoto"
                     }
 
-        PrenatalFirstEncounter encounterType ->
+        PrenatalEncounterType encounterType ->
             case encounterType of
                 NurseEncounter ->
                     { english = ""
@@ -5989,6 +6008,11 @@ translationSet trans =
         ReviewCaseWith144Respondent ->
             { english = "Review case with 114 Respondent"
             , kinyarwanda = Just "Ongera ukore isuzuma ufatanije n’ukwitabye kuri 114"
+            }
+
+        Reviewed ->
+            { english = "Reviewed"
+            , kinyarwanda = Nothing
             }
 
         RhNegative ->
@@ -7090,7 +7114,7 @@ translateActivePage page =
                     , kinyarwanda = Just "Itsinda"
                     }
 
-                ClinicalProgressReportPage _ ->
+                ClinicalProgressReportPage _ _ ->
                     { english = "Clinical Progress Report"
                     , kinyarwanda = Just "Erekana raporo yibyavuye mu isuzuma"
                     }
@@ -7229,7 +7253,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                PregnancyOutcomePage _ ->
+                PregnancyOutcomePage _ _ ->
                     { english = "Pregnancy Outcome"
                     , kinyarwanda = Nothing
                     }

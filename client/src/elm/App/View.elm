@@ -56,6 +56,7 @@ import Pages.PrenatalActivity.Model
 import Pages.PrenatalActivity.View
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.View
+import Pages.PrenatalParticipant.Model
 import Pages.PrenatalParticipant.View
 import Pages.Relationship.Model
 import Pages.Relationship.View
@@ -289,8 +290,8 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPageClinics)
                             |> flexPageWrapper model
 
-                    ClinicalProgressReportPage prenatalEncounterId ->
-                        Pages.ClinicalProgressReport.View.view model.language currentDate prenatalEncounterId model.indexedDb
+                    ClinicalProgressReportPage initiator prenatalEncounterId ->
+                        Pages.ClinicalProgressReport.View.view model.language currentDate prenatalEncounterId initiator model.indexedDb
                             |> flexPageWrapper model
 
                     CreatePersonPage relation initiator ->
@@ -341,7 +342,13 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     PrenatalParticipantPage id ->
-                        Pages.PrenatalParticipant.View.view model.language currentDate healthCenterId id isChw model.indexedDb
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.prenatalParticipantPages
+                                    |> Maybe.withDefault Pages.PrenatalParticipant.Model.emptyModel
+                        in
+                        Pages.PrenatalParticipant.View.view model.language currentDate healthCenterId id isChw model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPagePrenatalParticipant id)
                             |> flexPageWrapper model
 
                     NutritionParticipantPage id ->
@@ -430,13 +437,13 @@ viewUserPage page deviceName model configured =
                         Pages.IndividualEncounterTypes.View.view model.language currentDate healthCenterId isChw model
                             |> flexPageWrapper model
 
-                    PregnancyOutcomePage id ->
+                    PregnancyOutcomePage initiator id ->
                         let
                             page_ =
                                 Dict.get id loggedInModel.pregnancyOutcomePages
                                     |> Maybe.withDefault Pages.PregnancyOutcome.Model.emptyModel
                         in
-                        Pages.PregnancyOutcome.View.view model.language currentDate id model.indexedDb page_
+                        Pages.PregnancyOutcome.View.view model.language currentDate id initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePregnancyOutcome id)
                             |> flexPageWrapper model
 

@@ -7,7 +7,7 @@ import Backend.Measurement.Model exposing (PrenatalMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
+import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounter)
 import Date exposing (Interval(..))
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
@@ -52,17 +52,20 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Html Msg
-view language currentDate id db =
+view : Language -> NominalDate -> PrenatalEncounterId -> ClinicalProgressReportInitiator -> ModelIndexedDb -> Html Msg
+view language currentDate id initiator db =
     let
+        allowBackAction =
+            initiator == InitiatorEncounterPage
+
         data =
             generateAssembledData id db
 
         header =
-            viewHeader language id Translate.ClinicalProgressReport
+            viewHeader language id Translate.ClinicalProgressReport allowBackAction
 
         content =
-            viewWebData language (viewContent language currentDate) identity data
+            viewWebData language (viewContent language currentDate initiator) identity data
     in
     div [ class "page-clinical-progress-report" ] <|
         [ header
@@ -70,11 +73,25 @@ view language currentDate id db =
         ]
 
 
-viewContent : Language -> NominalDate -> AssembledData -> Html Msg
-viewContent language currentDate data =
+viewContent : Language -> NominalDate -> ClinicalProgressReportInitiator -> AssembledData -> Html Msg
+viewContent language currentDate initiator data =
     let
         firstEncounterMeasurements =
             getFirstEncounterMeasurements data
+
+        actions =
+            case initiator of
+                InitiatorEncounterPage ->
+                    emptyNode
+
+                InitiatorNewEncounter encounterId ->
+                    div [ class "actions" ]
+                        [ button
+                            [ class "ui fluid primary button"
+                            , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage encounterId
+                            ]
+                            [ text <| translate language Translate.Reviewed ]
+                        ]
     in
     div [ class "ui unstackable items" ]
         [ viewHeaderPane language currentDate data
@@ -82,6 +99,7 @@ viewContent language currentDate data =
         , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements
         , viewObstetricalDiagnosisPane language currentDate firstEncounterMeasurements data
         , viewPatientProgressPane language currentDate data
+        , actions
         ]
 
 

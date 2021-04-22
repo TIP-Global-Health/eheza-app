@@ -59,6 +59,7 @@ import Pages.PrenatalActivity.Model
 import Pages.PrenatalActivity.Update
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.Update
+import Pages.PrenatalParticipant.Model
 import Pages.PrenatalParticipant.Update
 import Pages.Relationship.Model
 import Pages.Relationship.Update
@@ -293,10 +294,13 @@ update msg model =
 
                         MsgPagePrenatalParticipant id subMsg ->
                             let
-                                ( subCmd, appMsgs ) =
-                                    Pages.PrenatalParticipant.Update.update currentDate id subMsg
+                                ( subModel, subCmd, appMsgs ) =
+                                    data.prenatalParticipantPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.PrenatalParticipant.Model.emptyModel
+                                        |> Pages.PrenatalParticipant.Update.update currentDate id subMsg
                             in
-                            ( data
+                            ( { data | prenatalParticipantPages = Dict.insert id subModel data.prenatalParticipantPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalParticipant id) subCmd
                             , appMsgs
                             )
