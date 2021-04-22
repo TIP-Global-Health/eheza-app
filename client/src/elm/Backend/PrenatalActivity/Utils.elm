@@ -61,6 +61,24 @@ encodeActivityAsString activity =
         PrenatalPhoto ->
             "photo"
 
+        Laboratory ->
+            "laboratory"
+
+        HealthEducation ->
+            "health-education"
+
+        AppointmentConfirmation ->
+            "appointment-confirmation"
+
+        BirthPlan ->
+            "birth-plan"
+
+        FollowUp ->
+            "follow-up"
+
+        NextSteps ->
+            "next-steps"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -87,6 +105,24 @@ decodeActivityFromString s =
 
         "photo" ->
             Just PrenatalPhoto
+
+        "laboratory" ->
+            Just Laboratory
+
+        "health-education" ->
+            Just HealthEducation
+
+        "appointment-confirmation" ->
+            Just AppointmentConfirmation
+
+        "birth-plan" ->
+            Just BirthPlan
+
+        "follow-up" ->
+            Just FollowUp
+
+        "next-steps" ->
+            Just NextSteps
 
         _ ->
             Nothing

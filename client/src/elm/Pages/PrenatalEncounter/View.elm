@@ -7,6 +7,15 @@ import Backend.Measurement.Model exposing (ObstetricHistoryValue, PrenatalMeasur
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.PrenatalActivity.Model exposing (..)
+import Backend.PrenatalActivity.Utils
+    exposing
+        ( generateHighRiskAlertData
+        , generateHighSeverityAlertData
+        , generateRecurringHighSeverityAlertData
+        , getActivityIcon
+        , getAllActivities
+        )
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounter)
 import Date exposing (Interval(..))
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
@@ -18,15 +27,6 @@ import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (..)
-import Backend.PrenatalActivity.Model exposing (..)
-import Backend.PrenatalActivity.Utils
-    exposing
-        ( generateHighRiskAlertData
-        , generateHighSeverityAlertData
-        , generateRecurringHighSeverityAlertData
-        , getActivityIcon
-        , getAllActivities
-        )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -377,6 +377,30 @@ viewMainPageContent language currentDate data model =
 
                             PrenatalPhoto ->
                                 isJust data.measurements.prenatalPhoto
+
+                            Laboratory ->
+                                -- @todo
+                                False
+
+                            HealthEducation ->
+                                -- @todo
+                                False
+
+                            AppointmentConfirmation ->
+                                -- @todo
+                                False
+
+                            BirthPlan ->
+                                -- @todo
+                                False
+
+                            FollowUp ->
+                                -- @todo
+                                False
+
+                            NextSteps ->
+                                -- @todo
+                                False
                     )
 
         pendingTabTitle =

@@ -7,6 +7,7 @@ import Backend.Measurement.Encoder exposing (socialHistoryHivTestingResultToStri
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
@@ -41,7 +42,6 @@ import Pages.Utils
         , viewPreviousMeasurement
         , viewQuestionLabel
         )
-import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate)
@@ -110,6 +110,30 @@ viewActivity language currentDate activity data model =
 
         PrenatalPhoto ->
             viewPrenatalPhotoContent language currentDate data model.prenatalPhotoData
+
+        Laboratory ->
+            --@todo
+            []
+
+        Backend.PrenatalActivity.Model.HealthEducation ->
+            --@todo
+            []
+
+        AppointmentConfirmation ->
+            --@todo
+            []
+
+        BirthPlan ->
+            --@todo
+            []
+
+        FollowUp ->
+            --@todo
+            []
+
+        NextSteps ->
+            --@todo
+            []
 
 
 viewPregnancyDatingContent : Language -> NominalDate -> AssembledData -> PregnancyDatingData -> List (Html Msg)

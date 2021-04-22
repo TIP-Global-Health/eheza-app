@@ -29,6 +29,12 @@ type PrenatalActivity
     | PatientProvisions
     | PregnancyDating
     | PrenatalPhoto
+    | Laboratory
+    | HealthEducation
+    | AppointmentConfirmation
+    | BirthPlan
+    | FollowUp
+    | NextSteps
 
 
 type RiskFactor

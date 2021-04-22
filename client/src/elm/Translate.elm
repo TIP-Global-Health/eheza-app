@@ -5346,6 +5346,36 @@ translationSet trans =
                     , kinyarwanda = Just "Ifoto"
                     }
 
+                Laboratory ->
+                    { english = "Laboratory"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalActivity.Model.HealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Nothing
+                    }
+
+                AppointmentConfirmation ->
+                    { english = "AppointmentConfirmation"
+                    , kinyarwanda = Nothing
+                    }
+
+                BirthPlan ->
+                    { english = "Birth Plan"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalActivity.Model.FollowUp ->
+                    { english = "Chw Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalActivity.Model.NextSteps ->
+                    { english = "Next Steps"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalEncounterType encounterType ->
             case encounterType of
                 NurseEncounter ->
