@@ -25,7 +25,7 @@ general utilities, see `Translate.Model` and `Translate.Utils`.
 -}
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
-import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
@@ -42,6 +42,17 @@ import Backend.Person.Model
         , MaritalStatus(..)
         , ModeOfDelivery(..)
         , VaginalDelivery(..)
+        )
+import Backend.PrenatalActivity.Model
+    exposing
+        ( HighRiskFactor(..)
+        , HighSeverityAlert(..)
+        , MedicalDiagnosis(..)
+        , ObstetricalDiagnosis(..)
+        , PregnancyTrimester(..)
+        , PrenatalActivity(..)
+        , RecurringHighSeverityAlert(..)
+        , RiskFactor(..)
         )
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
@@ -79,17 +90,6 @@ import Pages.PrenatalActivity.Model
         , HistoryTask(..)
         , LmpRange(..)
         , PatientProvisionsTask(..)
-        )
-import PrenatalActivity.Model
-    exposing
-        ( HighRiskFactor(..)
-        , HighSeverityAlert(..)
-        , MedicalDiagnosis(..)
-        , ObstetricalDiagnosis(..)
-        , PregnancyTrimester(..)
-        , PrenatalActivity(..)
-        , RecurringHighSeverityAlert(..)
-        , RiskFactor(..)
         )
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -3373,12 +3373,12 @@ translationSet trans =
 
         HighRiskFactor factor ->
             case factor of
-                PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
+                Backend.PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
                     { english = "Patient experienced convulsions in previous delivery and became unconscious after delivery"
                     , kinyarwanda = Nothing
                     }
 
-                PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
+                Backend.PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
                     { english = "Patient experienced convulsions in previous delivery"
                     , kinyarwanda = Nothing
                     }
@@ -3390,27 +3390,27 @@ translationSet trans =
 
         HighSeverityAlert alert ->
             case alert of
-                PrenatalActivity.Model.BodyTemperature ->
+                Backend.PrenatalActivity.Model.BodyTemperature ->
                     { english = "Body Temperature"
                     , kinyarwanda = Just "Ubushyuhe bw'umubiri"
                     }
 
-                PrenatalActivity.Model.FetalHeartRate ->
+                Backend.PrenatalActivity.Model.FetalHeartRate ->
                     { english = "No fetal heart rate noted"
                     , kinyarwanda = Just "Umutima w'umwana ntutera"
                     }
 
-                PrenatalActivity.Model.FetalMovement ->
+                Backend.PrenatalActivity.Model.FetalMovement ->
                     { english = "No fetal movement noted"
                     , kinyarwanda = Just "Umwana ntakina mu nda"
                     }
 
-                PrenatalActivity.Model.HeartRate ->
+                Backend.PrenatalActivity.Model.HeartRate ->
                     { english = "Heart Rate"
                     , kinyarwanda = Nothing
                     }
 
-                PrenatalActivity.Model.RespiratoryRate ->
+                Backend.PrenatalActivity.Model.RespiratoryRate ->
                     { english = "Respiratory Rate"
                     , kinyarwanda = Just "Inshuro ahumeka"
                     }
@@ -5321,7 +5321,7 @@ translationSet trans =
                     , kinyarwanda = Just "Gusuzuma"
                     }
 
-                PrenatalActivity.Model.FamilyPlanning ->
+                Backend.PrenatalActivity.Model.FamilyPlanning ->
                     { english = "Family Planning"
                     , kinyarwanda = Just "Kuboneza Urubyaro"
                     }
@@ -5731,7 +5731,7 @@ translationSet trans =
 
         RecurringHighSeverityAlert alert ->
             case alert of
-                PrenatalActivity.Model.BloodPressure ->
+                Backend.PrenatalActivity.Model.BloodPressure ->
                     { english = "Blood Pressure"
                     , kinyarwanda = Just "Umuvuduko w'amaraso"
                     }

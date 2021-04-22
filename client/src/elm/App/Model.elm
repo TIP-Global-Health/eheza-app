@@ -1,6 +1,6 @@
 module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, Model, Msg(..), MsgLoggedIn(..), StorageQuota, SubModelReturn, Version, emptyLoggedInModel, emptyModel)
 
-import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
@@ -39,7 +39,7 @@ import Pages.PrenatalEncounter.Model
 import Pages.PrenatalParticipant.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
-import PrenatalActivity.Model exposing (PrenatalActivity)
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import ServiceWorker.Model

@@ -18,8 +18,8 @@ import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (..)
-import PrenatalActivity.Model exposing (..)
-import PrenatalActivity.Utils
+import Backend.PrenatalActivity.Model exposing (..)
+import Backend.PrenatalActivity.Utils
     exposing
         ( generateHighRiskAlertData
         , generateHighSeverityAlertData

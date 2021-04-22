@@ -41,14 +41,14 @@ choices about what to show the user, rather than the details).
 -}
 
 import Activity.Model exposing (Activity(..))
-import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Initiator)
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator, RecordPreganancyInitiator)
-import PrenatalActivity.Model exposing (PrenatalActivity(..))
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 
 
 {-| What does the user want to see?

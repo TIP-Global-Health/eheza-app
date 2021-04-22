@@ -1,4 +1,4 @@
-module PrenatalActivity.Model exposing
+module Backend.PrenatalActivity.Model exposing
     ( HighRiskFactor(..)
     , HighSeverityAlert(..)
     , MedicalDiagnosis(..)

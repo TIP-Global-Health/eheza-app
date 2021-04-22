@@ -23,7 +23,7 @@ import Pages.PrenatalActivity.Utils exposing (calculateBmi)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.Utils exposing (viewPhotoThumbFromPhotoUrl)
-import PrenatalActivity.Model
+import Backend.PrenatalActivity.Model
     exposing
         ( PregnancyTrimester(..)
         , allMedicalDiagnosis
@@ -31,7 +31,7 @@ import PrenatalActivity.Model
         , allRiskFactors
         , allTrimesters
         )
-import PrenatalActivity.Utils
+import Backend.PrenatalActivity.Utils
     exposing
         ( generateMedicalDiagnosisAlertData
         , generateObstetricalDiagnosisAlertData

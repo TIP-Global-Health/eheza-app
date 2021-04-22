@@ -41,7 +41,7 @@ import Pages.Utils
         , viewPreviousMeasurement
         , viewQuestionLabel
         )
-import PrenatalActivity.Model exposing (PrenatalActivity(..))
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate)

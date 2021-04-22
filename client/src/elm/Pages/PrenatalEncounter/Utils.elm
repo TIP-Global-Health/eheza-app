@@ -28,7 +28,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
-import PrenatalActivity.Model exposing (..)
+import Backend.PrenatalActivity.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
 

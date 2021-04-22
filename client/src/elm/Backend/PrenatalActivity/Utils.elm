@@ -1,4 +1,4 @@
-module PrenatalActivity.Utils exposing
+module Backend.PrenatalActivity.Utils exposing
     ( decodeActivityFromString
     , defaultActivity
     , encodeActivityAsString
@@ -24,13 +24,13 @@ expected (and not completed).
 -}
 
 import Backend.Measurement.Model exposing (HeightInCm(..), MuacInCm(..), PrenatalMeasurements, PreviousDeliverySign(..), WeightInKg(..))
+import Backend.PrenatalActivity.Model exposing (..)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust)
 import Pages.PrenatalActivity.Utils exposing (calculateBmi)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (getLastEncounterMeasurements, getLastEncounterMeasurementsWithDate)
-import PrenatalActivity.Model exposing (..)
 import Translate exposing (Language, TranslationId, translate)
 
 
@@ -123,7 +123,7 @@ generateHighRiskAlertData language measurements factor =
             translate language (Translate.HighRiskFactor factor_)
     in
     case factor of
-        PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
+        Backend.PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
             measurements.obstetricHistoryStep2
                 |> Maybe.andThen
                     (\measurement ->
@@ -138,7 +138,7 @@ generateHighRiskAlertData language measurements factor =
                             Nothing
                     )
 
-        PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
+        Backend.PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
             measurements.obstetricHistoryStep2
                 |> Maybe.andThen
                     (\measurement ->
