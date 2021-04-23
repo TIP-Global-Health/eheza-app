@@ -3,7 +3,7 @@ module Pages.PrenatalActivity.View exposing (view, viewConditionalAlert)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Encoder exposing (socialHistoryHivTestingResultToString)
+import Backend.Measurement.Encoder exposing (pregnancyTestResultAsString, socialHistoryHivTestingResultToString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
@@ -110,6 +110,9 @@ viewActivity language currentDate activity data model =
 
         PrenatalPhoto ->
             viewPrenatalPhotoContent language currentDate data model.prenatalPhotoData
+
+        PrenatalLaboratory ->
+            viewLaboratoryContent language currentDate data model.laboratoryData
 
 
 viewPregnancyDatingContent : Language -> NominalDate -> AssembledData -> PregnancyDatingData -> List (Html Msg)
@@ -2213,6 +2216,94 @@ viewResourcesForm language currentDate assembled form =
             (SetResourcesBoolInput receivedMosquitoNetUpdateFunc)
             "mosquito-net"
             Nothing
+        ]
+
+
+viewLaboratoryContent : Language -> NominalDate -> AssembledData -> LaboratoryData -> List (Html Msg)
+viewLaboratoryContent language currentDate assembled data =
+    let
+        tasks =
+            [ LaboratoryPregnancyTesting ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, laboratoryTasksCompletedFromTotal currentDate assembled.measurements data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Dict.get data.activeTask tasksCompletedFromTotalDict
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case data.activeTask of
+                LaboratoryPregnancyTesting ->
+                    let
+                        pregnancyTestForm =
+                            assembled.measurements.pregnancyTest
+                                |> Maybe.map (Tuple.second >> .value)
+                                |> pregnancyTestingFormWithDefault data.pregnancyTestingForm
+                    in
+                    viewPregnancyTestingForm language currentDate assembled pregnancyTestForm
+
+        actions =
+            let
+                saveMsg =
+                    case data.activeTask of
+                        LaboratoryPregnancyTesting ->
+                            SavePregnancyTesting assembled.participant.person assembled.measurements.pregnancyTest
+            in
+            div [ class "actions" ]
+                [ button
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                    , onClick saveMsg
+                    ]
+                    [ text <| translate language Translate.Save ]
+                ]
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]
+
+
+viewPregnancyTestingForm : Language -> NominalDate -> AssembledData -> PregnancyTestingForm -> Html Msg
+viewPregnancyTestingForm language currentDate assembled form =
+    let
+        emptyOption =
+            if isNothing form.pregnancyTestResult then
+                option
+                    [ value ""
+                    , selected (form.pregnancyTestResult == Nothing)
+                    ]
+                    [ text "" ]
+
+            else
+                emptyNode
+
+        resultInput =
+            emptyOption
+                :: ([ PregnancyTestPositive, PregnancyTestNegative, PregnancyTestIndeterminate, PregnancyTestUnableToConduct ]
+                        |> List.map
+                            (\result ->
+                                option
+                                    [ value (pregnancyTestResultAsString result)
+                                    , selected (form.pregnancyTestResult == Just result)
+                                    ]
+                                    [ text <| translate language <| Translate.PregnancyTestingResult result ]
+                            )
+                   )
+                |> select [ onInput SetPregnancyTestResult, class "form-input urine-pregnancy-test" ]
+    in
+    div [ class "ui form laboratory" ] <|
+        [ viewLabel language Translate.PregnancyUrineTest
+        , resultInput
         ]
 
 

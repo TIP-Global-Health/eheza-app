@@ -1586,7 +1586,7 @@ update currentDate id db msg model =
               ]
             )
 
-        SetActiveLaboratoryTask task ->
+        SetActivePrenatalLaboratoryTask task ->
             let
                 updatedData =
                     model.laboratoryData

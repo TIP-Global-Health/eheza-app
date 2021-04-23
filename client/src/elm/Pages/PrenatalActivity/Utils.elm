@@ -2,6 +2,7 @@ module Pages.PrenatalActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
+import Backend.Person.Model exposing (Person)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
@@ -982,6 +983,21 @@ patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestio
                         |> resourceFormWithDefault data.resourcesForm
             in
             ( taskCompleted form.receivedMosquitoNet
+            , 1
+            )
+
+
+laboratoryTasksCompletedFromTotal : NominalDate -> PrenatalMeasurements -> LaboratoryData -> PrenatalLaboratoryTask -> ( Int, Int )
+laboratoryTasksCompletedFromTotal currentDate measurements data task =
+    case task of
+        LaboratoryPregnancyTesting ->
+            let
+                form =
+                    measurements.pregnancyTest
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> pregnancyTestingFormWithDefault data.pregnancyTestingForm
+            in
+            ( taskCompleted form.pregnancyTestResult
             , 1
             )
 

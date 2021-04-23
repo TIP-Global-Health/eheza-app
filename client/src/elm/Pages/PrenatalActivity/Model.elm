@@ -25,6 +25,7 @@ module Pages.PrenatalActivity.Model exposing
     , PregnancyDatingData
     , PregnancyDatingForm
     , PregnancyTestingForm
+    , PrenatalLaboratoryTask(..)
     , PrenatalPhotoData
     , ResourcesForm
     , SocialHistoryForm
@@ -119,7 +120,7 @@ type Msg
       -- PrenatalPhotoMsgs
     | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl
       -- LABORATORYMsgs
-    | SetActiveLaboratoryTask LaboratoryTask
+    | SetActivePrenatalLaboratoryTask PrenatalLaboratoryTask
     | SetPregnancyTestResult String
     | SavePregnancyTesting PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
 
@@ -206,7 +207,7 @@ emptyExaminationData =
 
 type alias LaboratoryData =
     { pregnancyTestingForm : PregnancyTestingForm
-    , activeTask : LaboratoryTask
+    , activeTask : PrenatalLaboratoryTask
     }
 
 
@@ -217,7 +218,7 @@ emptyLaboratoryData =
     }
 
 
-type LaboratoryTask
+type PrenatalLaboratoryTask
     = LaboratoryPregnancyTesting
 
 

@@ -29,6 +29,7 @@ type PrenatalActivity
     | PatientProvisions
     | PregnancyDating
     | PrenatalPhoto
+    | PrenatalLaboratory
 
 
 type RiskFactor
