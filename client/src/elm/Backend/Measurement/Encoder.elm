@@ -147,20 +147,24 @@ encodePregnancyTestingValue value =
 
 
 encodePregnancyTestResult : PregnancyTestResult -> Value
-encodePregnancyTestResult result =
-    string <|
-        case result of
-            PregnancyTestPositive ->
-                "positive"
+encodePregnancyTestResult =
+    pregnancyTestResultAsString >> string
 
-            PregnancyTestNegative ->
-                "negative"
 
-            PregnancyTestIndeterminate ->
-                "indeterminate"
+pregnancyTestResultAsString : PregnancyTestResult -> String
+pregnancyTestResultAsString sign =
+    case sign of
+        PregnancyTestPositive ->
+            "positive"
 
-            PregnancyTestUnableToConduct ->
-                "unable-to-conduct"
+        PregnancyTestNegative ->
+            "negative"
+
+        PregnancyTestIndeterminate ->
+            "indeterminate"
+
+        PregnancyTestUnableToConduct ->
+            "unable-to-conduct"
 
 
 encodeNutrition : ChildNutrition -> List ( String, Value )

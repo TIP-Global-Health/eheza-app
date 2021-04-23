@@ -116,6 +116,10 @@ type Msg
     | SaveDangerSigns PersonId (Maybe ( DangerSignsId, DangerSigns ))
       -- PrenatalPhotoMsgs
     | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl
+      -- LABORATORYMsgs
+    | SetActiveLaboratoryTask LaboratoryTask
+    | SetPregnancyTestResult String
+    | SavePregnancyTesting PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
 
 
 type alias Model =
@@ -126,6 +130,7 @@ type alias Model =
     , patientProvisionsData : PatientProvisionsData
     , dangerSignsData : DangerSignsData
     , prenatalPhotoData : PrenatalPhotoData
+    , laboratoryData : LaboratoryData
     , showAlertsDialog : Bool
     }
 
@@ -139,6 +144,7 @@ emptyModel =
     , patientProvisionsData = emptyPatientProvisionsData
     , dangerSignsData = emptyDangerSignsData
     , prenatalPhotoData = emptyPrenatalPhotoData
+    , laboratoryData = emptyLaboratoryData
     , showAlertsDialog = False
     }
 
@@ -194,6 +200,23 @@ emptyExaminationData =
     , breastExamForm = emptyBreastExamForm
     , activeTask = Vitals
     }
+
+
+type alias LaboratoryData =
+    { pregnancyTestingForm : PregnancyTestingForm
+    , activeTask : LaboratoryTask
+    }
+
+
+emptyLaboratoryData : LaboratoryData
+emptyLaboratoryData =
+    { pregnancyTestingForm = PregnancyTestingForm Nothing
+    , activeTask = LaboratoryPregnancyTesting
+    }
+
+
+type LaboratoryTask
+    = LaboratoryPregnancyTesting
 
 
 type alias FamilyPlanningData =
@@ -589,3 +612,8 @@ type alias PrenatalPhotoData =
 emptyPrenatalPhotoData : PrenatalPhotoData
 emptyPrenatalPhotoData =
     { url = Nothing }
+
+
+type alias PregnancyTestingForm =
+    { pregnancyTestResult : Maybe PregnancyTestResult
+    }
