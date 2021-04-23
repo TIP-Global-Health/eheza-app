@@ -133,6 +133,36 @@ encodePrenatalPhotoUrl (PhotoUrl url) =
     ]
 
 
+encodePregnancyTesting : PregnancyTest -> List ( String, Value )
+encodePregnancyTesting =
+    encodePrenatalMeasurement encodePregnancyTestingValue
+
+
+encodePregnancyTestingValue : PregnancyTestResult -> List ( String, Value )
+encodePregnancyTestingValue value =
+    [ ( "urine_pregnancy_test", encodePregnancyTestResult value )
+    , ( "deleted", bool False )
+    , ( "type", string "pregnancy_testing" )
+    ]
+
+
+encodePregnancyTestResult : PregnancyTestResult -> Value
+encodePregnancyTestResult result =
+    string <|
+        case result of
+            PregnancyTestPositive ->
+                "positive"
+
+            PregnancyTestNegative ->
+                "negative"
+
+            PregnancyTestIndeterminate ->
+                "indeterminate"
+
+            PregnancyTestUnableToConduct ->
+                "unable-to-conduct"
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement encodeNutritionValue

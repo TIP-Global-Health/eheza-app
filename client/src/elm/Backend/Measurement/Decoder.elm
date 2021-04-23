@@ -182,39 +182,34 @@ decodePrenatalPhoto =
 
 decodePregnancyTesting : Decoder PregnancyTest
 decodePregnancyTesting =
-    decodePregnancyUrineTestResult
+    decodePregnancyTestResult
         |> field "urine_pregnancy_test"
         |> decodePrenatalMeasurement
 
 
-decodePregnancyUrineTestResult : Decoder PregnancyTestResult
-decodePregnancyUrineTestResult =
+decodePregnancyTestResult : Decoder PregnancyTestResult
+decodePregnancyTestResult =
     string
         |> andThen
             (\result ->
-                pregnancyTestResultFromString result
-                    |> Maybe.map succeed
-                    |> Maybe.withDefault (result ++ " is not a recognized PregnancyTestResult" |> fail)
+                case result of
+                    "positive" ->
+                        succeed PregnancyTestPositive
+
+                    "negative" ->
+                        succeed PregnancyTestNegative
+
+                    "indeterminate" ->
+                        succeed PregnancyTestIndeterminate
+
+                    "unable-to-conduct" ->
+                        succeed PregnancyTestUnableToConduct
+
+                    _ ->
+                        fail <|
+                            result
+                                ++ " is not a recognized CaringOption"
             )
-
-
-pregnancyTestResultFromString : String -> Maybe PregnancyTestResult
-pregnancyTestResultFromString result =
-    case result of
-        "positive" ->
-            Just PregnancyTestPositive
-
-        "negative" ->
-            Just PregnancyTestNegative
-
-        "indeterminate" ->
-            Just PregnancyTestIndeterminate
-
-        "unable-to-conduct" ->
-            Just PregnancyTestUnableToConduct
-
-        _ ->
-            Nothing
 
 
 decodeHeight : Decoder Height
