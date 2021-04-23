@@ -618,6 +618,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePhoto
                             BackendAuthorityPhoto
 
+                    "pregnancy_testing" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePregnancyTesting
+                            BackendAuthorityPregnancyTesting
+
                     "prenatal_photo" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalPhoto

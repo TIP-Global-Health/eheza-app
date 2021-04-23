@@ -104,6 +104,7 @@ type BackendAuthorityEntity
     | BackendAuthorityParticipantConsent (BackendEntity ParticipantConsent)
     | BackendAuthorityPerson (BackendEntity Person)
     | BackendAuthorityPhoto (BackendEntity Photo)
+    | BackendAuthorityPregnancyTesting (BackendEntity PregnancyTest)
     | BackendAuthorityPrenatalPhoto (BackendEntity PrenatalPhoto)
     | BackendAuthorityPmtctParticipant (BackendEntity PmtctParticipant)
     | BackendAuthorityPrenatalFamilyPlanning (BackendEntity PrenatalFamilyPlanning)
