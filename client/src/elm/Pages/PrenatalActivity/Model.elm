@@ -9,6 +9,7 @@ module Pages.PrenatalActivity.Model exposing
     , FamilyPlanningForm
     , HistoryData
     , HistoryTask(..)
+    , LaboratoryData
     , LmpRange(..)
     , MedicalHistoryForm
     , MedicationForm
@@ -23,6 +24,7 @@ module Pages.PrenatalActivity.Model exposing
     , PatientProvisionsTask(..)
     , PregnancyDatingData
     , PregnancyDatingForm
+    , PregnancyTestingForm
     , PrenatalPhotoData
     , ResourcesForm
     , SocialHistoryForm

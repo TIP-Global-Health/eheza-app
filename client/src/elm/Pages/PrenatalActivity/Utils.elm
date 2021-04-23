@@ -636,6 +636,40 @@ toVitalsValue form =
         |> andMap form.bodyTemperature
 
 
+fromPregnancyTestingValue : Maybe PregnancyTestResult -> PregnancyTestingForm
+fromPregnancyTestingValue saved =
+    { pregnancyTestResult = saved }
+
+
+pregnancyTestingFormWithDefault : PregnancyTestingForm -> Maybe PregnancyTestResult -> PregnancyTestingForm
+pregnancyTestingFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    formWithDefault =
+                        fromPregnancyTestingValue saved
+                in
+                { pregnancyTestResult = or form.pregnancyTestResult formWithDefault.pregnancyTestResult
+                }
+            )
+
+
+toPregnancyTestingValueWithDefault : Maybe PregnancyTestResult -> PregnancyTestingForm -> Maybe PregnancyTestResult
+toPregnancyTestingValueWithDefault saved form =
+    pregnancyTestingFormWithDefault form saved
+        |> (\form_ ->
+                form_
+           )
+        |> toPregnancyTestingValue
+
+
+toPregnancyTestingValue : PregnancyTestingForm -> Maybe PregnancyTestResult
+toPregnancyTestingValue form =
+    form.pregnancyTestResult
+
+
 calculateBmi : Maybe Float -> Maybe Float -> Maybe Float
 calculateBmi maybeHeight maybeWeight =
     Maybe.map2 (\height weight -> weight / ((height / 100) ^ 2)) maybeHeight maybeWeight
