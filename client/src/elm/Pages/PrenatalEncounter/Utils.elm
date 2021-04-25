@@ -73,11 +73,11 @@ expectActivity currentDate data activity =
             case activity of
                 PregnancyDating ->
                     -- Do not show, if patient already visited health center.
-                    not <| isFirstEncounter data
+                    isFirstEncounter data
 
                 Laboratory ->
                     -- Do not show, if patient already visited health center.
-                    not <| isFirstEncounter data
+                    isFirstEncounter data
 
                 DangerSigns ->
                     True
