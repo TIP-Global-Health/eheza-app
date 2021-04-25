@@ -346,33 +346,33 @@ getMotherHeightMeasurement measurements =
 
 
 resolveGlobalLmpDate : PrenatalMeasurements -> List PrenatalMeasurements -> Maybe NominalDate
-resolveGlobalLmpDate measurements previousMeasurements =
+resolveGlobalLmpDate measurements nursePreviousMeasurements =
     -- When there are no previous measurements, we try to resolve
     -- from current encounter.
-    if List.isEmpty previousMeasurements then
+    if List.isEmpty nursePreviousMeasurements then
         getLmpMeasurement measurements
 
     else
         -- When there are previous measurements, we know that Lmp date
         -- will be located at head of the list, becuase previous measurements
         -- are sorted by encounter date, and Lmp date is a mandatory measurement.
-        previousMeasurements
+        nursePreviousMeasurements
             |> List.head
             |> Maybe.andThen getLmpMeasurement
 
 
 resolveGlobalObstetricHistory : PrenatalMeasurements -> List PrenatalMeasurements -> Maybe ObstetricHistoryValue
-resolveGlobalObstetricHistory measurements previousMeasurements =
+resolveGlobalObstetricHistory measurements nursePreviousMeasurements =
     -- When there are no previous measurements, we try to resolve
     -- from current encounter.
-    if List.isEmpty previousMeasurements then
+    if List.isEmpty nursePreviousMeasurements then
         getObstetricHistory measurements
 
     else
         -- When there are previous measurements, we know that Lmp Obstetric history
         -- will be located at head of the list, becuase previous measurements
         -- are sorted by encounter date, and Obstetric history date is a mandatory measurement.
-        previousMeasurements
+        nursePreviousMeasurements
             |> List.head
             |> Maybe.andThen getObstetricHistory
 
@@ -441,7 +441,7 @@ generateAssembledData id db =
                             |> Maybe.withDefault NotAsked
                     )
 
-        ( previousMeasurementsWithDates, chwPreviousMeasurementsWithDates ) =
+        ( nursePreviousMeasurementsWithDates, chwPreviousMeasurementsWithDates ) =
             encounter
                 |> RemoteData.toMaybe
                 |> Maybe.map
@@ -450,17 +450,17 @@ generateAssembledData id db =
                     )
                 |> Maybe.withDefault ( [], [] )
 
-        previousMeasurements =
-            List.map Tuple.second previousMeasurementsWithDates
+        nursePreviousMeasurements =
+            List.map Tuple.second nursePreviousMeasurementsWithDates
 
         globalLmpDate =
             measurements
-                |> RemoteData.map (\measurements_ -> resolveGlobalLmpDate measurements_ previousMeasurements)
+                |> RemoteData.map (\measurements_ -> resolveGlobalLmpDate measurements_ nursePreviousMeasurements)
                 |> RemoteData.withDefault Nothing
 
         globalObstetricHistory =
             measurements
-                |> RemoteData.map (\measurements_ -> resolveGlobalObstetricHistory measurements_ previousMeasurements)
+                |> RemoteData.map (\measurements_ -> resolveGlobalObstetricHistory measurements_ nursePreviousMeasurements)
                 |> RemoteData.withDefault Nothing
     in
     RemoteData.map AssembledData (Success id)
@@ -468,7 +468,7 @@ generateAssembledData id db =
         |> RemoteData.andMap participant
         |> RemoteData.andMap person
         |> RemoteData.andMap measurements
-        |> RemoteData.andMap (Success previousMeasurementsWithDates)
+        |> RemoteData.andMap (Success nursePreviousMeasurementsWithDates)
         |> RemoteData.andMap (Success chwPreviousMeasurementsWithDates)
         |> RemoteData.andMap (Success globalLmpDate)
         |> RemoteData.andMap (Success globalObstetricHistory)
@@ -484,8 +484,8 @@ expectPrenatalPhoto currentDate data =
             --  3. Week 28, or more.
             [ [ (>) 13 ], [ (>) 28, (<=) 13 ], [ (<=) 28 ] ]
 
-        previousMeasurements =
-            List.map Tuple.second data.previousMeasurementsWithDates
+        nursePreviousMeasurements =
+            List.map Tuple.second data.nursePreviousMeasurementsWithDates
     in
     data.globalLmpDate
         |> Maybe.map
@@ -507,7 +507,7 @@ expectPrenatalPhoto currentDate data =
                         (\conditions ->
                             -- There should be no encounters that are  within dates range,
                             -- that got a photo measurement.
-                            data.previousMeasurementsWithDates
+                            data.nursePreviousMeasurementsWithDates
                                 |> List.filterMap
                                     (\( encounterDate, measurements ) ->
                                         let
@@ -536,7 +536,7 @@ expectPrenatalPhoto currentDate data =
 
 shouldShowPatientProvisionsResourcesTask : AssembledData -> Bool
 shouldShowPatientProvisionsResourcesTask assembled =
-    assembled.previousMeasurementsWithDates
+    assembled.nursePreviousMeasurementsWithDates
         |> List.filter
             (\( _, measurements ) ->
                 measurements.resource
@@ -548,12 +548,12 @@ shouldShowPatientProvisionsResourcesTask assembled =
 
 isFirstEncounter : AssembledData -> Bool
 isFirstEncounter assembled =
-    List.isEmpty assembled.previousMeasurementsWithDates
+    List.isEmpty assembled.nursePreviousMeasurementsWithDates
 
 
 getFirstEncounterMeasurements : AssembledData -> PrenatalMeasurements
 getFirstEncounterMeasurements data =
-    case data.previousMeasurementsWithDates of
+    case data.nursePreviousMeasurementsWithDates of
         [] ->
             data.measurements
 
@@ -563,7 +563,7 @@ getFirstEncounterMeasurements data =
 
 getLastEncounterMeasurementsWithDate : NominalDate -> AssembledData -> ( NominalDate, PrenatalMeasurements )
 getLastEncounterMeasurementsWithDate currentDate data =
-    case List.reverse data.previousMeasurementsWithDates of
+    case List.reverse data.nursePreviousMeasurementsWithDates of
         [] ->
             ( currentDate, data.measurements )
 

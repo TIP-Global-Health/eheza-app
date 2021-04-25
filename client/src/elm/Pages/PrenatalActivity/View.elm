@@ -314,7 +314,7 @@ viewHistoryContent language currentDate assembled data_ =
                                 |> socialHistoryFormWithDefault data.socialForm
 
                         showCounselingQuestion =
-                            assembled.previousMeasurementsWithDates
+                            assembled.nursePreviousMeasurementsWithDates
                                 |> List.filter
                                     (\( _, measurements ) ->
                                         measurements.socialHistory
@@ -324,7 +324,7 @@ viewHistoryContent language currentDate assembled data_ =
                                 |> List.isEmpty
 
                         showTestingQuestions =
-                            assembled.previousMeasurementsWithDates
+                            assembled.nursePreviousMeasurementsWithDates
                                 |> List.filter
                                     (\( _, measurements ) ->
                                         measurements.socialHistory
@@ -539,7 +539,7 @@ viewExaminationContent language currentDate assembled data =
 
                         form =
                             if hideHeightInput then
-                                assembled.previousMeasurementsWithDates
+                                assembled.nursePreviousMeasurementsWithDates
                                     |> List.head
                                     |> Maybe.andThen (Tuple.second >> getMotherHeightMeasurement)
                                     |> Maybe.map (\(HeightInCm height) -> { form_ | height = Just height })
@@ -624,7 +624,7 @@ viewExaminationContent language currentDate assembled data =
 
                                 maybeHeight =
                                     if passHeight then
-                                        assembled.previousMeasurementsWithDates
+                                        assembled.nursePreviousMeasurementsWithDates
                                             |> List.head
                                             |> Maybe.andThen (Tuple.second >> getMotherHeightMeasurement)
                                             |> Maybe.map (\(HeightInCm height) -> height)
@@ -738,7 +738,7 @@ viewPatientProvisionsContent language currentDate assembled data =
                             False
 
                         else
-                            assembled.previousMeasurementsWithDates
+                            assembled.nursePreviousMeasurementsWithDates
                                 |> List.filter
                                     (\( _, measurements ) ->
                                         measurements.medication

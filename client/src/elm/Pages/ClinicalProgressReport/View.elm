@@ -229,7 +229,7 @@ viewPatientProgressPane : Language -> NominalDate -> AssembledData -> Html Msg
 viewPatientProgressPane language currentDate data =
     let
         allMeasurementsWithDates =
-            data.previousMeasurementsWithDates
+            data.nursePreviousMeasurementsWithDates
                 ++ [ ( currentDate, data.measurements ) ]
 
         allMeasurements =

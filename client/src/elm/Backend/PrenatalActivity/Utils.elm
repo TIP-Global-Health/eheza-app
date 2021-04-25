@@ -371,7 +371,7 @@ generateRecurringHighSeverityAlertData language currentDate data alert =
                             )
             in
             (( currentDate, data.measurements )
-                :: data.previousMeasurementsWithDates
+                :: data.nursePreviousMeasurementsWithDates
             )
                 |> List.filterMap resolveAlert
 
@@ -1129,7 +1129,7 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
             let
                 lowBloodPressureOccasions =
                     (( currentDate, data.measurements )
-                        :: data.previousMeasurementsWithDates
+                        :: data.nursePreviousMeasurementsWithDates
                     )
                         |> List.filterMap
                             (\( _, measurements ) ->
@@ -1166,7 +1166,7 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
                 let
                     highBloodPressureOccasions =
                         (( currentDate, data.measurements )
-                            :: data.previousMeasurementsWithDates
+                            :: data.nursePreviousMeasurementsWithDates
                         )
                             |> List.filterMap
                                 (\( _, measurements ) ->

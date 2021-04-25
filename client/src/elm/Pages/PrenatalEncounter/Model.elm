@@ -21,7 +21,7 @@ type alias AssembledData =
     , participant : IndividualEncounterParticipant
     , person : Person
     , measurements : PrenatalMeasurements
-    , previousMeasurementsWithDates : List ( NominalDate, PrenatalMeasurements )
+    , nursePreviousMeasurementsWithDates : List ( NominalDate, PrenatalMeasurements )
     , chwPreviousMeasurementsWithDates : List ( NominalDate, PrenatalMeasurements )
     , globalLmpDate : Maybe NominalDate
     , globalObstetricHistory : Maybe ObstetricHistoryValue

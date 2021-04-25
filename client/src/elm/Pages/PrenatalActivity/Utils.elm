@@ -25,7 +25,7 @@ toEverySet presentValue absentValue present =
 
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
 resolvePreviousValue assembled measurementFunc valueFunc =
-    assembled.previousMeasurementsWithDates
+    assembled.nursePreviousMeasurementsWithDates
         |> List.filterMap
             (\( _, measurements ) ->
                 measurementFunc measurements
@@ -737,7 +737,7 @@ historyTasksCompletedFromTotal assembled data task =
                         |> socialHistoryFormWithDefault data.socialForm
 
                 showCounselingQuestion =
-                    assembled.previousMeasurementsWithDates
+                    assembled.nursePreviousMeasurementsWithDates
                         |> List.filter
                             (\( _, measurements ) ->
                                 measurements.socialHistory
@@ -754,7 +754,7 @@ historyTasksCompletedFromTotal assembled data task =
                         []
 
                 showTestingQuestions =
-                    assembled.previousMeasurementsWithDates
+                    assembled.nursePreviousMeasurementsWithDates
                         |> List.filter
                             (\( _, measurements ) ->
                                 measurements.socialHistory
@@ -830,7 +830,7 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
 
                 form =
                     if hideHeightInput then
-                        assembled.previousMeasurementsWithDates
+                        assembled.nursePreviousMeasurementsWithDates
                             |> List.head
                             |> Maybe.andThen (Tuple.second >> getMotherHeightMeasurement)
                             |> Maybe.map (\(HeightInCm height) -> { form_ | height = Just height })
