@@ -9,7 +9,6 @@ module Backend.PrenatalActivity.Utils exposing
     , generateRecurringHighSeverityAlertData
     , generateRiskFactorAlertData
     , getActivityIcon
-    , getAllActivities
     , getEncounterTrimesterData
     )
 
@@ -135,15 +134,6 @@ defaultActivity =
 getActivityIcon : PrenatalActivity -> String
 getActivityIcon activity =
     encodeActivityAsString activity
-
-
-getAllActivities : Bool -> List PrenatalActivity
-getAllActivities isFirstEncounter =
-    if isFirstEncounter then
-        [ PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, DangerSigns, PrenatalPhoto ]
-
-    else
-        [ DangerSigns, PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, PrenatalPhoto ]
 
 
 generateHighRiskAlertData : Language -> PrenatalMeasurements -> HighRiskFactor -> Maybe String
