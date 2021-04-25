@@ -119,19 +119,15 @@ viewActivity language currentDate activity data model =
             --@todo
             []
 
-        AppointmentConfirmation ->
-            --@todo
-            []
-
         BirthPlan ->
             --@todo
             []
 
-        FollowUp ->
+        NextSteps ->
             --@todo
             []
 
-        NextSteps ->
+        PregnancyOutcome ->
             --@todo
             []
 

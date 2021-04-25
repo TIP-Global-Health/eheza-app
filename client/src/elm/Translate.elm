@@ -51,6 +51,7 @@ import Backend.PrenatalActivity.Model
         , ObstetricalDiagnosis(..)
         , PregnancyTrimester(..)
         , PrenatalActivity(..)
+        , PrenatalNextStepsTask(..)
         , RecurringHighSeverityAlert(..)
         , RiskFactor(..)
         )
@@ -708,6 +709,7 @@ type TranslationId
     | PregnancyTrimester PregnancyTrimester
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounterType PrenatalEncounterType
+    | PrenatalNextStepsTask PrenatalNextStepsTask
     | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
@@ -5356,23 +5358,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                AppointmentConfirmation ->
-                    { english = "AppointmentConfirmation"
-                    , kinyarwanda = Nothing
-                    }
-
                 BirthPlan ->
                     { english = "Birth Plan"
                     , kinyarwanda = Nothing
                     }
 
-                Backend.PrenatalActivity.Model.FollowUp ->
-                    { english = "Chw Follow Up"
+                Backend.PrenatalActivity.Model.NextSteps ->
+                    { english = "Next Steps"
                     , kinyarwanda = Nothing
                     }
 
-                Backend.PrenatalActivity.Model.NextSteps ->
-                    { english = "Next Steps"
+                Backend.PrenatalActivity.Model.PregnancyOutcome ->
+                    { english = "Pregnancy Outcome"
                     , kinyarwanda = Nothing
                     }
 
@@ -5400,6 +5397,33 @@ translationSet trans =
 
                 ChwPostpartumEncounter ->
                     { english = "Postpartum"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalNextStepsTask task ->
+            case task of
+                AppointmentConfirmation ->
+                    { english = "Appointment Confirmation"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalActivity.Model.FollowUp ->
+                    { english = "Chw Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalActivity.Model.SendToHC ->
+                    { english = "Send to Health Center"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalActivity.Model.TaskHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Nothing
+                    }
+
+                NewbornEnrollment ->
+                    { english = "Newborn Enrollment"
                     , kinyarwanda = Nothing
                     }
 

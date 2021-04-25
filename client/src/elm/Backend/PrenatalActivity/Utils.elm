@@ -67,17 +67,14 @@ encodeActivityAsString activity =
         HealthEducation ->
             "health-education"
 
-        AppointmentConfirmation ->
-            "appointment-confirmation"
-
         BirthPlan ->
             "birth-plan"
 
-        FollowUp ->
-            "follow-up"
-
         NextSteps ->
             "next-steps"
+
+        PregnancyOutcome ->
+            "pregnancy-outcome"
 
 
 {-| The inverse of encodeActivityTypeAsString
@@ -112,14 +109,8 @@ decodeActivityFromString s =
         "health-education" ->
             Just HealthEducation
 
-        "appointment-confirmation" ->
-            Just AppointmentConfirmation
-
         "birth-plan" ->
             Just BirthPlan
-
-        "follow-up" ->
-            Just FollowUp
 
         "next-steps" ->
             Just NextSteps

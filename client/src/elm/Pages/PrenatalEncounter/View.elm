@@ -386,19 +386,15 @@ viewMainPageContent language currentDate data model =
                                 -- @todo
                                 False
 
-                            AppointmentConfirmation ->
-                                -- @todo
-                                False
-
                             BirthPlan ->
                                 -- @todo
                                 False
 
-                            FollowUp ->
+                            NextSteps ->
                                 -- @todo
                                 False
 
-                            NextSteps ->
+                            PregnancyOutcome ->
                                 -- @todo
                                 False
                     )
