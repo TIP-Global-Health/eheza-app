@@ -1,4 +1,4 @@
-module Backend.PrenatalEncounter.Model exposing (Model, Msg(..), PrenatalEncounter, PrenatalEncounterType(..), emptyModel)
+module Backend.PrenatalEncounter.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -11,8 +11,42 @@ type alias PrenatalEncounter =
     { participant : IndividualEncounterParticipantId
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , encounterType : PrenatalEncounterType
     , shard : Maybe HealthCenterId
     }
+
+
+emptyPrenatalEncounter : IndividualEncounterParticipantId -> NominalDate -> PrenatalEncounterType -> Maybe HealthCenterId -> PrenatalEncounter
+emptyPrenatalEncounter participant startDate encounterType shard =
+    { participant = participant
+    , startDate = startDate
+    , endDate = Nothing
+    , encounterType = encounterType
+    , shard = shard
+    }
+
+
+type PrenatalEncounterType
+    = NurseEncounter
+    | ChwFirstEncounter
+    | ChwSecondEncounter
+    | ChwThirdEncounter
+    | ChwPostpartumEncounter
+
+
+type RecordPreganancyInitiator
+    = InitiatorParticipantPage
+    | InitiatorWarningPopup
+
+
+type ClinicalProgressReportInitiator
+    = InitiatorEncounterPage
+    | InitiatorNewEncounter PrenatalEncounterId
+
+
+type PrenatalEncounterPostCreateDestination
+    = DestinationEncounterPage
+    | DestinationClinicalProgressReportPage
 
 
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress
@@ -92,11 +126,3 @@ type Msg
     | HandleSavedSocialHistory (WebData ())
     | HandleSavedVitals (WebData ())
     | HandleSavedPrenatalPhoto (WebData ())
-
-
-type PrenatalEncounterType
-    = NurseEncounter
-    | ChwFirstEncounter
-    | ChwSecondEncounter
-    | ChwThirdEncounter
-    | ChwPostpartumEncounter

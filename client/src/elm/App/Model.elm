@@ -189,6 +189,7 @@ type alias LoggedInModel =
     , nurse : ( NurseId, Nurse )
 
     -- A set of pages for every "open" editable session.
+    , prenatalParticipantPages : Dict PersonId Pages.PrenatalParticipant.Model.Model
     , prenatalEncounterPages : Dict PrenatalEncounterId Pages.PrenatalEncounter.Model.Model
     , prenatalActivityPages : Dict ( PrenatalEncounterId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
     , pregnancyOutcomePages : Dict IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Model
@@ -216,6 +217,7 @@ emptyLoggedInModel villageId nurse =
     , clinicsPage = Pages.Clinics.Model.emptyModel
     , relationshipPages = Dict.empty
     , nurse = nurse
+    , prenatalParticipantPages = Dict.empty
     , prenatalEncounterPages = Dict.empty
     , prenatalActivityPages = Dict.empty
     , pregnancyOutcomePages = Dict.empty

@@ -1,4 +1,4 @@
-module Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter, Model, Msg(..), emptyModel)
+module Backend.HomeVisitEncounter.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -12,6 +12,15 @@ type alias HomeVisitEncounter =
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , shard : Maybe HealthCenterId
+    }
+
+
+emptyHomeVisitEncounter : IndividualEncounterParticipantId -> NominalDate -> Maybe HealthCenterId -> HomeVisitEncounter
+emptyHomeVisitEncounter participant startDate shard =
+    { participant = participant
+    , startDate = startDate
+    , endDate = Nothing
+    , shard = shard
     }
 
 

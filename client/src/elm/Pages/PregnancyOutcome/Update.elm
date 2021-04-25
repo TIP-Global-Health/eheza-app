@@ -20,7 +20,7 @@ update currentDate id msg model =
         NoOp ->
             noChange
 
-        SavePregnancyOutcome ->
+        SavePregnancyOutcome destinationPage ->
             Maybe.map3
                 (\dateConcluded outcome isFacilityDelivery ->
                     ( model
@@ -28,7 +28,7 @@ update currentDate id msg model =
                     , [ Backend.IndividualEncounterParticipant.Model.ClosePrenatalSession dateConcluded outcome isFacilityDelivery
                             |> Backend.Model.MsgIndividualSession id
                             |> App.Model.MsgIndexedDb
-                      , App.Model.SetActivePage PinCodePage
+                      , App.Model.SetActivePage destinationPage
                       ]
                     )
                 )

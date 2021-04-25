@@ -13,21 +13,21 @@ import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Fetch
 import Backend.HomeVisitActivity.Model
-import Backend.HomeVisitEncounter.Model
+import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.HomeVisitEncounter.Update
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantExtraData(..))
 import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model exposing (ChildMeasurements, HistoricalMeasurements, Measurements)
 import Backend.Measurement.Utils exposing (mapChildMeasurementsAtOfflineSession, mapMeasurementData, splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
 import Backend.NutritionActivity.Model
-import Backend.NutritionEncounter.Model
+import Backend.NutritionEncounter.Model exposing (emptyNutritionEncounter)
 import Backend.NutritionEncounter.Update
 import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
-import Backend.PrenatalEncounter.Model
+import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounterPostCreateDestination(..), PrenatalEncounterType(..), emptyPrenatalEncounter)
 import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (RelatedBy(..))
@@ -1710,14 +1710,14 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
             , []
             )
 
-        PostIndividualSession session ->
+        PostIndividualSession extraData session ->
             ( { model | postIndividualSession = Dict.insert session.person Loading model.postIndividualSession }
             , sw.post individualEncounterParticipantEndpoint session
-                |> toCmd (RemoteData.fromResult >> HandlePostedIndividualSession session.person session.encounterType)
+                |> toCmd (RemoteData.fromResult >> HandlePostedIndividualSession session.person session.encounterType extraData)
             , []
             )
 
-        HandlePostedIndividualSession personId encounterType data ->
+        HandlePostedIndividualSession personId encounterType extraData data ->
             let
                 -- We automatically create new encounter for newly created  session.
                 appMsgs =
@@ -1731,19 +1731,24 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                                     ]
 
                                 AntenatalEncounter ->
-                                    [ Backend.PrenatalEncounter.Model.PrenatalEncounter sessionId currentDate Nothing healthCenterId
-                                        |> Backend.Model.PostPrenatalEncounter
-                                        |> App.Model.MsgIndexedDb
-                                    ]
+                                    case extraData of
+                                        AntenatalData prenatalEncounterType ->
+                                            [ emptyPrenatalEncounter sessionId currentDate prenatalEncounterType healthCenterId
+                                                |> Backend.Model.PostPrenatalEncounter DestinationEncounterPage
+                                                |> App.Model.MsgIndexedDb
+                                            ]
+
+                                        _ ->
+                                            []
 
                                 NutritionEncounter ->
-                                    [ Backend.NutritionEncounter.Model.emptyNutritionEncounter sessionId currentDate healthCenterId
+                                    [ emptyNutritionEncounter sessionId currentDate healthCenterId
                                         |> Backend.Model.PostNutritionEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
 
                                 HomeVisitEncounter ->
-                                    [ Backend.HomeVisitEncounter.Model.HomeVisitEncounter sessionId currentDate Nothing healthCenterId
+                                    [ emptyHomeVisitEncounter sessionId currentDate healthCenterId
                                         |> Backend.Model.PostHomeVisitEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
@@ -1759,22 +1764,28 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
             , appMsgs
             )
 
-        PostPrenatalEncounter prenatalEncounter ->
+        PostPrenatalEncounter postCreateDestination prenatalEncounter ->
             ( { model | postPrenatalEncounter = Dict.insert prenatalEncounter.participant Loading model.postPrenatalEncounter }
             , sw.post prenatalEncounterEndpoint prenatalEncounter
-                |> toCmd (RemoteData.fromResult >> HandlePostedPrenatalEncounter prenatalEncounter.participant)
+                |> toCmd (RemoteData.fromResult >> HandlePostedPrenatalEncounter prenatalEncounter.participant postCreateDestination)
             , []
             )
 
-        HandlePostedPrenatalEncounter participantId data ->
+        HandlePostedPrenatalEncounter participantId postCreateDestination data ->
             ( { model | postPrenatalEncounter = Dict.insert participantId data model.postPrenatalEncounter }
             , Cmd.none
             , RemoteData.map
                 (\( prenatalEncounterId, _ ) ->
-                    [ App.Model.SetActivePage <|
-                        UserPage <|
-                            Pages.Page.PrenatalEncounterPage prenatalEncounterId
-                    ]
+                    let
+                        destinationPage =
+                            case postCreateDestination of
+                                DestinationEncounterPage ->
+                                    UserPage <| Pages.Page.PrenatalEncounterPage prenatalEncounterId
+
+                                DestinationClinicalProgressReportPage ->
+                                    UserPage <| ClinicalProgressReportPage (InitiatorNewEncounter prenatalEncounterId) prenatalEncounterId
+                    in
+                    [ App.Model.SetActivePage destinationPage ]
                 )
                 data
                 |> RemoteData.withDefault []

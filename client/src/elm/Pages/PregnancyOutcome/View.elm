@@ -6,6 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Encoder exposing (pregnancyOutcomeToString)
 import Backend.IndividualEncounterParticipant.Model exposing (PregnancyOutcome(..), allPregnancyOutcome)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PrenatalEncounter.Model exposing (RecordPreganancyInitiator(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import Gizra.Html exposing (emptyNode)
@@ -24,8 +25,8 @@ import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> IndividualEncounterParticipantId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id db model =
+view : Language -> NominalDate -> IndividualEncounterParticipantId -> RecordPreganancyInitiator -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id initiator db model =
     let
         lastEncounterId =
             Dict.get id db.prenatalEncountersByParticipant
@@ -42,12 +43,18 @@ view language currentDate id db model =
                         generateAssembledData encounterId db
                     )
                 |> Maybe.withDefault NotAsked
+    in
+    viewWebData language (viewHeaderAndContent language currentDate id initiator model) identity data
 
+
+viewHeaderAndContent : Language -> NominalDate -> IndividualEncounterParticipantId -> RecordPreganancyInitiator -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id initiator model data =
+    let
         header =
-            viewWebData language (viewHeader language) identity data
+            viewHeader language data
 
         content =
-            viewWebData language (viewContent language currentDate model) identity data
+            viewContent language currentDate initiator model data
     in
     div
         [ class "page-outcome pregnancy" ]
@@ -72,15 +79,15 @@ viewHeader language data =
         ]
 
 
-viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
-viewContent language currentDate model data =
+viewContent : Language -> NominalDate -> RecordPreganancyInitiator -> Model -> AssembledData -> Html Msg
+viewContent language currentDate initiator model data =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate data Nothing
-            ++ viewPregnancyOutcome language currentDate data model
+            ++ viewPregnancyOutcome language currentDate initiator data model
 
 
-viewPregnancyOutcome : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
-viewPregnancyOutcome language currentDate data model =
+viewPregnancyOutcome : Language -> NominalDate -> RecordPreganancyInitiator -> AssembledData -> Model -> List (Html Msg)
+viewPregnancyOutcome language currentDate initiator data model =
     let
         pregnancyOutcomeInput =
             option
@@ -117,6 +124,14 @@ viewPregnancyOutcome language currentDate data model =
 
         tasksCompleted =
             taskCompleted model.pregnancyConcludedDate + taskCompleted model.pregnancyOutcome + taskCompleted model.isFacilityDelivery
+
+        destinationPage =
+            case initiator of
+                InitiatorParticipantPage ->
+                    PinCodePage
+
+                InitiatorWarningPopup ->
+                    UserPage <| PrenatalParticipantPage data.participant.person
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -139,7 +154,7 @@ viewPregnancyOutcome language currentDate data model =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick SavePregnancyOutcome
+                , onClick <| SavePregnancyOutcome destinationPage
                 ]
                 [ text <| translate language Translate.Save ]
             ]

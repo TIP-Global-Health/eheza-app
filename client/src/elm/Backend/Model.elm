@@ -25,14 +25,14 @@ import Backend.Dashboard.Model exposing (DashboardStats)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantExtraData)
 import Backend.Measurement.Model exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Initiator, Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterPostCreateDestination)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.Village.Model exposing (Village)
@@ -273,8 +273,8 @@ type MsgIndexedDb
     | PostRelationship PersonId MyRelationship (Maybe ClinicId) Initiator
     | PostPmtctParticipant Initiator PmtctParticipant
     | PostSession Session
-    | PostIndividualSession IndividualEncounterParticipant
-    | PostPrenatalEncounter PrenatalEncounter
+    | PostIndividualSession IndividualParticipantExtraData IndividualEncounterParticipant
+    | PostPrenatalEncounter PrenatalEncounterPostCreateDestination PrenatalEncounter
     | PostNutritionEncounter NutritionEncounter
     | PostAcuteIllnessEncounter AcuteIllnessEncounter
     | PostHomeVisitEncounter HomeVisitEncounter
@@ -284,8 +284,8 @@ type MsgIndexedDb
     | HandlePostedRelationship PersonId Initiator (WebData MyRelationship)
     | HandlePostedPmtctParticipant PersonId Initiator (WebData ( PmtctParticipantId, PmtctParticipant ))
     | HandlePostedSession ClinicType (WebData SessionId)
-    | HandlePostedIndividualSession PersonId IndividualEncounterType (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
-    | HandlePostedPrenatalEncounter IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
+    | HandlePostedIndividualSession PersonId IndividualEncounterType IndividualParticipantExtraData (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
+    | HandlePostedPrenatalEncounter IndividualEncounterParticipantId PrenatalEncounterPostCreateDestination (WebData ( PrenatalEncounterId, PrenatalEncounter ))
     | HandlePostedNutritionEncounter IndividualEncounterParticipantId (WebData ( NutritionEncounterId, NutritionEncounter ))
     | HandlePostedAcuteIllnessEncounter IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))
     | HandlePostedHomeVisitEncounter IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))

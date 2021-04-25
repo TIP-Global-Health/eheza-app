@@ -1,6 +1,7 @@
 module Backend.IndividualEncounterParticipant.Model exposing (..)
 
 import Backend.Entities exposing (..)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import Date exposing (Date)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -18,6 +19,11 @@ type alias IndividualEncounterParticipant =
     , deleted : Bool
     , shard : Maybe HealthCenterId
     }
+
+
+type IndividualParticipantExtraData
+    = AntenatalData PrenatalEncounterType
+    | NoIndividualParticipantExtraData
 
 
 type alias Model =

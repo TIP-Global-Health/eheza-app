@@ -161,7 +161,7 @@ viewManageIllnessesContent language currentDate selectedHealthCenter id db activ
 
         startIllnessAction =
             emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter selectedHealthCenter
-                |> Backend.Model.PostIndividualSession
+                |> Backend.Model.PostIndividualSession Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
                 |> MsgBackend
 
         createIllnessNavigateToEncounterSection =
@@ -258,7 +258,7 @@ viewManageParticipantsContent language currentDate selectedHealthCenter id db ac
 
         startIllnessAction =
             emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter selectedHealthCenter
-                |> Backend.Model.PostIndividualSession
+                |> Backend.Model.PostIndividualSession Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
                 |> MsgBackend
 
         createIllnessNavigateToEncounterButton =
