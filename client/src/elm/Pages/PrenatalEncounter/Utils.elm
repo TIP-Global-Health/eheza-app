@@ -19,7 +19,7 @@ getAllActivities : AssembledData -> List PrenatalActivity
 getAllActivities data =
     case data.encounter.encounterType of
         NurseEncounter ->
-            if List.isEmpty data.previousMeasurementsWithDates then
+            if isFirstEncounter data then
                 [ PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, DangerSigns, PrenatalPhoto ]
 
             else
@@ -45,7 +45,7 @@ expectActivity currentDate data activity =
             case activity of
                 PregnancyDating ->
                     -- Only show on first encounter
-                    List.isEmpty data.previousMeasurementsWithDates
+                    isFirstEncounter data
 
                 History ->
                     True
@@ -73,44 +73,59 @@ expectActivity currentDate data activity =
             case activity of
                 PregnancyDating ->
                     -- Do not show, if patient already visited health center.
-                    not <| List.isEmpty data.previousMeasurementsWithDates
+                    not <| isFirstEncounter data
 
                 Laboratory ->
                     -- Do not show, if patient already visited health center.
-                    not <| List.isEmpty data.previousMeasurementsWithDates
+                    not <| isFirstEncounter data
 
                 DangerSigns ->
                     True
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    -- @todo: show if no danger signs.
-                    True
+                    noDangerSigns data.measurements
 
                 NextSteps ->
-                    -- @todo: show after mandatory activities are completed.
-                    True
+                    let
+                        commonMandatoryActivitiesCompleted =
+                            (not <| expectActivity currentDate data PregnancyDating || activityCompleted currentDate data PregnancyDating)
+                                && (not <| expectActivity currentDate data Laboratory || activityCompleted currentDate data Laboratory)
+                                && activityCompleted currentDate data DangerSigns
+                    in
+                    if dangerSignsPresent data.measurements then
+                        commonMandatoryActivitiesCompleted
+
+                    else
+                        commonMandatoryActivitiesCompleted
+                            && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
 
                 -- Unique nurse activities.
                 _ ->
                     False
 
-        -- [ PregnancyDating, Laboratory, DangerSigns, Backend.PrenatalActivity.Model.HealthEducation, NextSteps ]
         ChwSecondEncounter ->
             case activity of
                 DangerSigns ->
                     True
 
                 BirthPlan ->
-                    -- @todo: show if no danger signs.
-                    True
+                    noDangerSigns data.measurements
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    -- @todo: show if no danger signs.
-                    True
+                    noDangerSigns data.measurements
 
                 NextSteps ->
-                    -- @todo: show after mandatory activities are completed.
-                    True
+                    let
+                        commonMandatoryActivitiesCompleted =
+                            activityCompleted currentDate data DangerSigns
+                    in
+                    if dangerSignsPresent data.measurements then
+                        commonMandatoryActivitiesCompleted
+
+                    else
+                        commonMandatoryActivitiesCompleted
+                            && activityCompleted currentDate data BirthPlan
+                            && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
 
                 -- Unique nurse activities.
                 _ ->
@@ -122,12 +137,19 @@ expectActivity currentDate data activity =
                     True
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    -- @todo: show if no danger signs.
-                    True
+                    noDangerSigns data.measurements
 
                 NextSteps ->
-                    -- @todo: show after mandatory activities are completed.
-                    True
+                    let
+                        commonMandatoryActivitiesCompleted =
+                            activityCompleted currentDate data DangerSigns
+                    in
+                    if dangerSignsPresent data.measurements then
+                        commonMandatoryActivitiesCompleted
+
+                    else
+                        commonMandatoryActivitiesCompleted
+                            && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
 
                 -- Unique nurse activities.
                 _ ->
@@ -142,12 +164,35 @@ expectActivity currentDate data activity =
                     True
 
                 NextSteps ->
-                    -- @todo: show after mandatory activities are completed.
-                    True
+                    activityCompleted currentDate data PregnancyOutcome
+                        && activityCompleted currentDate data DangerSigns
 
                 -- Unique nurse activities.
                 _ ->
                     False
+
+
+noDangerSigns : PrenatalMeasurements -> Bool
+noDangerSigns measurements =
+    let
+        signs =
+            measurements.dangerSigns
+                |> Maybe.map (Tuple.second >> .value >> EverySet.toList)
+    in
+    case signs of
+        Just [ NoDangerSign ] ->
+            True
+
+        Just [] ->
+            True
+
+        _ ->
+            False
+
+
+dangerSignsPresent : PrenatalMeasurements -> Bool
+dangerSignsPresent measurements =
+    isJust measurements.dangerSigns && not (noDangerSigns measurements)
 
 
 activityCompleted : NominalDate -> AssembledData -> PrenatalActivity -> Bool
@@ -157,7 +202,7 @@ activityCompleted currentDate data activity =
             isJust data.measurements.lastMenstrualPeriod
 
         History ->
-            if List.isEmpty data.previousMeasurementsWithDates then
+            if isFirstEncounter data then
                 -- First antenatal encounter - all tasks should be completed
                 isJust data.measurements.obstetricHistory
                     && isJust data.measurements.obstetricHistoryStep2
@@ -347,6 +392,7 @@ generatePreviousMeasurements currentEncounterId participantId db =
                         -- We do not want to get data of current encounter.
                         id /= currentEncounterId
                     )
+                >> List.sortWith (\( _, e1 ) ( _, e2 ) -> Gizra.NominalDate.compare e1.startDate e2.startDate)
                 >> (\previousEncounters ->
                         let
                             ( nurseEncounters, chwEncounters ) =
@@ -359,14 +405,9 @@ generatePreviousMeasurements currentEncounterId participantId db =
 
                                     _ ->
                                         Nothing
-
-                            sortAsc =
-                                \( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date1 date2
                         in
                         ( List.filterMap getEncounterMeasurements nurseEncounters
-                            |> List.sortWith sortAsc
                         , List.filterMap getEncounterMeasurements chwEncounters
-                            |> List.sortWith sortAsc
                         )
                    )
             )
@@ -505,8 +546,8 @@ shouldShowPatientProvisionsResourcesTask assembled =
         |> List.isEmpty
 
 
-isFirstPrenatalEncounter : AssembledData -> Bool
-isFirstPrenatalEncounter assembled =
+isFirstEncounter : AssembledData -> Bool
+isFirstEncounter assembled =
     List.isEmpty assembled.previousMeasurementsWithDates
 
 
