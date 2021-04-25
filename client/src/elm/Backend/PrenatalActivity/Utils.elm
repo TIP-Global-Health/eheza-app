@@ -115,6 +115,9 @@ decodeActivityFromString s =
         "next-steps" ->
             Just NextSteps
 
+        "pregnancy-outcome" ->
+            Just PregnancyOutcome
+
         _ ->
             Nothing
 
