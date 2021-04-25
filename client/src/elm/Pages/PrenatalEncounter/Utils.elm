@@ -9,7 +9,7 @@ import Backend.PrenatalEncounter.Model exposing (..)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust, orElse, unwrap)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
@@ -345,20 +345,20 @@ getMotherHeightMeasurement measurements =
         |> Maybe.map (Tuple.second >> .value >> .height)
 
 
-resolveGlobalLmpDate : PrenatalMeasurements -> List PrenatalMeasurements -> Maybe NominalDate
-resolveGlobalLmpDate measurements nursePreviousMeasurements =
-    -- When there are no previous measurements, we try to resolve
-    -- from current encounter.
-    if List.isEmpty nursePreviousMeasurements then
-        getLmpMeasurement measurements
-
-    else
-        -- When there are previous measurements, we know that Lmp date
+resolveGlobalLmpDate : PrenatalMeasurements -> List PrenatalMeasurements -> List PrenatalMeasurements -> Maybe NominalDate
+resolveGlobalLmpDate measurements nursePreviousMeasurements chwPreviousMeasurements =
+    let
+        -- When measurements list is not empty, we know that Lmp date
         -- will be located at head of the list, becuase previous measurements
-        -- are sorted by encounter date, and Lmp date is a mandatory measurement.
-        nursePreviousMeasurements
-            |> List.head
-            |> Maybe.andThen getLmpMeasurement
+        -- are sorted ASC by encounter date, and Lmp date is a mandatory
+        -- measurement at first encounter.
+        getLmpMeasurementFromList measurementsList =
+            List.head measurementsList
+                |> Maybe.andThen getLmpMeasurement
+    in
+    getLmpMeasurementFromList nursePreviousMeasurements
+        |> orElse (getLmpMeasurementFromList chwPreviousMeasurements)
+        |> orElse (getLmpMeasurement measurements)
 
 
 resolveGlobalObstetricHistory : PrenatalMeasurements -> List PrenatalMeasurements -> Maybe ObstetricHistoryValue
@@ -453,9 +453,12 @@ generateAssembledData id db =
         nursePreviousMeasurements =
             List.map Tuple.second nursePreviousMeasurementsWithDates
 
+        chwPreviousMeasurements =
+            List.map Tuple.second chwPreviousMeasurementsWithDates
+
         globalLmpDate =
             measurements
-                |> RemoteData.map (\measurements_ -> resolveGlobalLmpDate measurements_ nursePreviousMeasurements)
+                |> RemoteData.map (\measurements_ -> resolveGlobalLmpDate measurements_ nursePreviousMeasurements chwPreviousMeasurements)
                 |> RemoteData.withDefault Nothing
 
         globalObstetricHistory =
