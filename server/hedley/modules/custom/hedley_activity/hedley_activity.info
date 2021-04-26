@@ -322,7 +322,6 @@ features[field_instance][] = node-photo-field_photo
 features[field_instance][] = node-photo-field_session
 features[field_instance][] = node-photo-field_shards
 features[field_instance][] = node-photo-field_uuid
-features[field_instance][] = node-pregnancy_testing-body
 features[field_instance][] = node-pregnancy_testing-field_date_measured
 features[field_instance][] = node-pregnancy_testing-field_nurse
 features[field_instance][] = node-pregnancy_testing-field_person
