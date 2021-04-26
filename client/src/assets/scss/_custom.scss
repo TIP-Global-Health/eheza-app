@@ -482,6 +482,11 @@ h3.ui.header {
   background-size: 92px 92px;
 }
 
+.icon-task-birth-plan {
+  background-image: url(#{$img-path}icon-birth-plan-white.svg);
+  background-size: 122px 122px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {
@@ -1692,20 +1697,6 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-socialhistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
-  }
-}
-
-.icon-birth-plan {
-  .active &:after {
-    background-image: url(#{$img-path}icon-birth-plan-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-birth-plan-white.svg), url(#{$img-path}icon-completed-circle.svg);
-  }
-
-  &:after {
-    background-image: url(#{$img-path}icon-birth-plan-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 

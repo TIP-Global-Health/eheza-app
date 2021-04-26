@@ -1591,12 +1591,12 @@ update currentDate id db msg model =
                 updatedData =
                     let
                         updatedForm =
-                            formUpdateFunc value model.historyData.birthPlanForm
+                            formUpdateFunc value model.birthPlanData.form
                     in
-                    model.historyData
-                        |> (\data -> { data | birthPlanForm = updatedForm })
+                    model.birthPlanData
+                        |> (\data -> { data | form = updatedForm })
             in
-            ( { model | historyData = updatedData }
+            ( { model | birthPlanData = updatedData }
             , Cmd.none
             , []
             )
@@ -1610,9 +1610,9 @@ update currentDate id db msg model =
                         |> Maybe.map
                             (.birthPlan
                                 >> Maybe.map (Tuple.second >> .value)
-                                >> birthPlanFormWithDefault model.historyData.birthPlanForm
+                                >> birthPlanFormWithDefault model.birthPlanData.form
                             )
-                        |> Maybe.withDefault model.historyData.birthPlanForm
+                        |> Maybe.withDefault model.birthPlanData.form
 
                 updatedForm =
                     case form.familyPlanning of
@@ -1649,10 +1649,10 @@ update currentDate id db msg model =
                             { form | familyPlanning = Just [ sign ] }
 
                 updatedData =
-                    model.historyData
-                        |> (\data -> { data | birthPlanForm = updatedForm })
+                    model.birthPlanData
+                        |> (\data -> { data | form = updatedForm })
             in
-            ( { model | historyData = updatedData }
+            ( { model | birthPlanData = updatedData }
             , Cmd.none
             , []
             )
@@ -1665,11 +1665,11 @@ update currentDate id db msg model =
                 updatedData =
                     let
                         updatedForm =
-                            model.laboratoryData.pregnancyTestingForm
+                            model.laboratoryData.form
                                 |> (\form -> { form | pregnancyTestResult = result })
                     in
                     model.laboratoryData
-                        |> (\data -> { data | pregnancyTestingForm = updatedForm })
+                        |> (\data -> { data | form = updatedForm })
             in
             ( { model | laboratoryData = updatedData }
             , Cmd.none
@@ -1685,7 +1685,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 appMsgs =
-                    model.historyData.birthPlanForm
+                    model.birthPlanData.form
                         |> toBirthPlanValueWithDefault measurement
                         |> unwrap
                             []
@@ -1711,7 +1711,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 appMsgs =
-                    model.laboratoryData.pregnancyTestingForm
+                    model.laboratoryData.form
                         |> toPregnancyTestingValueWithDefault measurement
                         |> unwrap
                             []

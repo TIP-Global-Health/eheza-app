@@ -832,24 +832,6 @@ historyTasksCompletedFromTotal assembled data task =
             )
 
 
-
--- BirthPlan ->
---     let
---         form =
---             assembled.measurements.birthPlan
---                 |> Maybe.map (Tuple.second >> .value)
---                 |> birthPlanFormWithDefault data.birthPlanForm
---     in
---     ( taskCompleted form.haveInsurance
---         + taskCompleted form.boughtClothes
---         + taskCompleted form.caregiverAccompany
---         + taskCompleted form.savedMoney
---         + taskCompleted form.haveTransportation
---         + taskCompleted form.familyPlanning
---     , 6
---     )
-
-
 examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> Bool -> ExaminationTask -> ( Int, Int )
 examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
     case task of

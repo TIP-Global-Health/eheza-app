@@ -1,41 +1,4 @@
-module Pages.PrenatalActivity.Model exposing
-    ( BirthPlanForm
-    , BreastExamForm
-    , CorePhysicalExamForm
-    , DangerSignsData
-    , DangerSignsForm
-    , ExaminationData
-    , ExaminationTask(..)
-    , FamilyPlanningData
-    , FamilyPlanningForm
-    , HistoryData
-    , HistoryTask(..)
-    , LaboratoryData
-    , LmpRange(..)
-    , MedicalHistoryForm
-    , MedicationForm
-    , Model
-    , Msg(..)
-    , NutritionAssessmentForm
-    , ObstetricFormFirstStep
-    , ObstetricFormSecondStep
-    , ObstetricHistoryStep(..)
-    , ObstetricalExamForm
-    , PatientProvisionsData
-    , PatientProvisionsTask(..)
-    , PregnancyDatingData
-    , PregnancyDatingForm
-    , PregnancyTestingForm
-    , PrenatalPhotoData
-    , ResourcesForm
-    , SocialHistoryForm
-    , VitalsForm
-    , decodeLmpRange
-    , emptyModel
-    , emptyObstetricFormFirstStep
-    , emptyObstetricFormSecondStep
-    , encodeLmpRange
-    )
+module Pages.PrenatalActivity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -136,6 +99,7 @@ type alias Model =
     , patientProvisionsData : PatientProvisionsData
     , dangerSignsData : DangerSignsData
     , prenatalPhotoData : PrenatalPhotoData
+    , birthPlanData : BirthPlanData
     , laboratoryData : LaboratoryData
     , showAlertsDialog : Bool
     }
@@ -150,6 +114,7 @@ emptyModel =
     , patientProvisionsData = emptyPatientProvisionsData
     , dangerSignsData = emptyDangerSignsData
     , prenatalPhotoData = emptyPrenatalPhotoData
+    , birthPlanData = emptyBirthPlanData
     , laboratoryData = emptyLaboratoryData
     , showAlertsDialog = False
     }
@@ -172,7 +137,6 @@ type alias HistoryData =
     , obstetricHistoryStep : ObstetricHistoryStep
     , medicalForm : MedicalHistoryForm
     , socialForm : SocialHistoryForm
-    , birthPlanForm : BirthPlanForm
     , activeTask : HistoryTask
     }
 
@@ -184,7 +148,6 @@ emptyHistoryData =
     , obstetricHistoryStep = ObstetricHistoryFirstStep
     , medicalForm = emptyMedicalHistoryForm
     , socialForm = emptySocialHistoryForm
-    , birthPlanForm = emptyBirthPlanForm
     , activeTask = Obstetric
     }
 
@@ -211,13 +174,13 @@ emptyExaminationData =
 
 
 type alias LaboratoryData =
-    { pregnancyTestingForm : PregnancyTestingForm
+    { form : PregnancyTestingForm
     }
 
 
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
-    { pregnancyTestingForm = PregnancyTestingForm Nothing
+    { form = PregnancyTestingForm Nothing
     }
 
 
@@ -614,6 +577,16 @@ type alias PrenatalPhotoData =
 emptyPrenatalPhotoData : PrenatalPhotoData
 emptyPrenatalPhotoData =
     { url = Nothing }
+
+
+type alias BirthPlanData =
+    { form : BirthPlanForm
+    }
+
+
+emptyBirthPlanData : BirthPlanData
+emptyBirthPlanData =
+    BirthPlanData emptyBirthPlanForm
 
 
 type alias BirthPlanForm =

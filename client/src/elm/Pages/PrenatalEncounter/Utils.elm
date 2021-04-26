@@ -245,8 +245,7 @@ activityCompleted currentDate data activity =
             False
 
         BirthPlan ->
-            -- @todo
-            False
+            isJust data.measurements.birthPlan
 
         NextSteps ->
             -- @todo
