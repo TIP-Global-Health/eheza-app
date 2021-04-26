@@ -398,6 +398,12 @@ breastExamEndpoint =
         |> withValueEncoder (object << encodeBreastExam)
 
 
+birthPlanEndpoint : ReadWriteEndPoint Error BirthPlanId BirthPlan BirthPlan ()
+birthPlanEndpoint =
+    swEndpoint "nodes/birth_plan" decodeBirthPlan
+        |> withValueEncoder (object << encodeBirthPlan)
+
+
 corePhysicalExamEndpoint : ReadWriteEndPoint Error CorePhysicalExamId CorePhysicalExam CorePhysicalExam ()
 corePhysicalExamEndpoint =
     swEndpoint "nodes/core_physical_exam" decodeCorePhysicalExam

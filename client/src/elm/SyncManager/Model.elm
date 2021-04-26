@@ -56,6 +56,7 @@ type BackendAuthorityEntity
     | BackendAuthorityAcuteIllnessVitals (BackendEntity AcuteIllnessVitals)
     | BackendAuthorityAttendance (BackendEntity Attendance)
     | BackendAuthorityBreastExam (BackendEntity BreastExam)
+    | BackendAuthorityBirthPlan (BackendEntity BirthPlan)
     | BackendAuthorityChildFbf (BackendEntity Fbf)
     | BackendAuthorityCall114 (BackendEntity Call114)
     | BackendAuthorityClinic (BackendEntity Clinic)

@@ -831,6 +831,22 @@ historyTasksCompletedFromTotal assembled data task =
             , List.length boolInputs + List.length listInputs
             )
 
+        BirthPlan ->
+            let
+                form =
+                    assembled.measurements.birthPlan
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> birthPlanFormWithDefault data.birthPlanForm
+            in
+            ( taskCompleted form.haveInsurance
+                + taskCompleted form.boughtClothes
+                + taskCompleted form.caregiverAccompany
+                + taskCompleted form.savedMoney
+                + taskCompleted form.haveTransportation
+                + taskCompleted form.familyPlanning
+            , 6
+            )
+
 
 examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> Bool -> ExaminationTask -> ( Int, Int )
 examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
@@ -1019,3 +1035,53 @@ socialHistoryHivTestingResultFromString result =
 
         _ ->
             Nothing
+
+
+fromBirthPlanValue : Maybe BirthPlanValue -> BirthPlanForm
+fromBirthPlanValue saved =
+    { haveInsurance = Maybe.map (.signs >> EverySet.member Insurance) saved
+    , boughtClothes = Maybe.map (.signs >> EverySet.member BoughtClothes) saved
+    , caregiverAccompany = Maybe.map (.signs >> EverySet.member CaregiverAccompany) saved
+    , savedMoney = Maybe.map (.signs >> EverySet.member SavedMoney) saved
+    , haveTransportation = Maybe.map (.signs >> EverySet.member Transportation) saved
+    , familyPlanning = Maybe.map (.familyPlanning >> EverySet.toList) saved
+    }
+
+
+birthPlanFormWithDefault : BirthPlanForm -> Maybe BirthPlanValue -> BirthPlanForm
+birthPlanFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { haveInsurance = or form.haveInsurance (EverySet.member Insurance value.signs |> Just)
+                , boughtClothes = or form.boughtClothes (EverySet.member BoughtClothes value.signs |> Just)
+                , caregiverAccompany = or form.caregiverAccompany (EverySet.member CaregiverAccompany value.signs |> Just)
+                , savedMoney = or form.savedMoney (EverySet.member SavedMoney value.signs |> Just)
+                , haveTransportation = or form.haveTransportation (EverySet.member Transportation value.signs |> Just)
+                , familyPlanning = or form.familyPlanning (value.familyPlanning |> EverySet.toList |> Just)
+                }
+            )
+
+
+toBirthPlanValueWithDefault : Maybe BirthPlanValue -> BirthPlanForm -> Maybe BirthPlanValue
+toBirthPlanValueWithDefault saved form =
+    birthPlanFormWithDefault form saved
+        |> toBirthPlanValue
+
+
+toBirthPlanValue : BirthPlanForm -> Maybe BirthPlanValue
+toBirthPlanValue form =
+    let
+        signs =
+            [ ifNullableTrue Insurance form.haveInsurance
+            , ifNullableTrue BoughtClothes form.boughtClothes
+            , ifNullableTrue CaregiverAccompany form.caregiverAccompany
+            , ifNullableTrue SavedMoney form.savedMoney
+            , ifNullableTrue Transportation form.haveTransportation
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoBirthPlan)
+    in
+    Maybe.map BirthPlanValue signs
+        |> andMap (Maybe.map EverySet.fromList form.familyPlanning)

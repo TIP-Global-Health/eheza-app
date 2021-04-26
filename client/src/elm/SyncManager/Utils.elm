@@ -395,6 +395,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityBreastExam identifier ->
             getIdentifier identifier "breast_exam"
 
+        BackendAuthorityBirthPlan identifier ->
+            getIdentifier identifier "birth_plan"
+
         BackendAuthorityCall114 identifier ->
             getIdentifier identifier "call_114"
 
@@ -815,6 +818,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityBreastExam identifier ->
             encode Backend.Measurement.Encoder.encodeBreastExam identifier
 
+        BackendAuthorityBirthPlan identifier ->
+            encode Backend.Measurement.Encoder.encodeBirthPlan identifier
+
         BackendAuthorityCall114 identifier ->
             encode Backend.Measurement.Encoder.encodeCall114 identifier
 
@@ -1197,6 +1203,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityBreastExam identifier ->
             BreastExamRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityBirthPlan identifier ->
+            BirthPlanRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityCall114 identifier ->
             Call114Revision (toEntityUuid identifier.uuid) identifier.entity

@@ -209,7 +209,7 @@ viewHistoryContent language currentDate assembled data_ =
 
         ( tasks, data ) =
             if firstEnconter then
-                ( [ Obstetric, Medical, Social ], data_ )
+                ( [ Obstetric, Medical, Social, BirthPlan ], data_ )
 
             else
                 ( [ Social ], { data_ | activeTask = Social } )
@@ -226,6 +226,9 @@ viewHistoryContent language currentDate assembled data_ =
 
                         Social ->
                             ( "social", isJust assembled.measurements.socialHistory )
+
+                        BirthPlan ->
+                            ( "birth-plan", isJust assembled.measurements.birthPlan )
 
                 isActive =
                     task == data.activeTask
@@ -326,6 +329,15 @@ viewHistoryContent language currentDate assembled data_ =
                     in
                     viewSocialForm language currentDate showCounselingQuestion showTestingQuestions socialForm
 
+                BirthPlan ->
+                    let
+                        birthPlanForm =
+                            assembled.measurements.birthPlan
+                                |> Maybe.map (Tuple.second >> .value)
+                                |> birthPlanFormWithDefault data.birthPlanForm
+                    in
+                    viewBirthPlan language currentDate assembled birthPlanForm
+
         getNextTask currentTask =
             if not firstEnconter then
                 Nothing
@@ -348,7 +360,12 @@ viewHistoryContent language currentDate assembled data_ =
                             |> List.head
 
                     Social ->
-                        [ Obstetric, Medical ]
+                        [ Medical, BirthPlan ]
+                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                            |> List.head
+
+                    BirthPlan ->
+                        [ Social, Medical ]
                             |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                             |> List.head
 
@@ -415,6 +432,20 @@ viewHistoryContent language currentDate assembled data_ =
                                         SaveSocialHistory
                                             assembled.participant.person
                                             assembled.measurements.socialHistory
+                                            nextTask
+                                    ]
+                                    [ text <| translate language Translate.Save ]
+                              ]
+                            , ""
+                            )
+
+                        BirthPlan ->
+                            ( [ button
+                                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                    , onClick <|
+                                        SaveBirthPlan
+                                            assembled.participant.person
+                                            assembled.measurements.birthPlan
                                             nextTask
                                     ]
                                     [ text <| translate language Translate.Save ]
@@ -2215,6 +2246,76 @@ viewResourcesForm language currentDate assembled form =
             form.receivedMosquitoNet
             (SetResourcesBoolInput receivedMosquitoNetUpdateFunc)
             "mosquito-net"
+            Nothing
+        ]
+
+
+viewBirthPlan : Language -> NominalDate -> AssembledData -> BirthPlanForm -> Html Msg
+viewBirthPlan language currentDate assembled birthPlanForm =
+    let
+        form =
+            assembled.measurements.birthPlan
+                |> Maybe.map (Tuple.second >> .value)
+                |> birthPlanFormWithDefault birthPlanForm
+
+        healthInsuranceFunc value form_ =
+            { form_ | haveInsurance = Just value }
+
+        boughtClothesFunc value form_ =
+            { form_ | boughtClothes = Just value }
+
+        caregiverAccompanyFunc value form_ =
+            { form_ | caregiverAccompany = Just value }
+
+        savedMoneyFunc value form_ =
+            { form_ | savedMoney = Just value }
+
+        transportationFunc value form_ =
+            { form_ | haveTransportation = Just value }
+    in
+    div [ class "form birth-plan" ]
+        [ viewQuestionLabel language Translate.HealthInsuranceQuestion
+        , viewBoolInput
+            language
+            form.haveInsurance
+            (SetBirthPlanBoolInput healthInsuranceFunc)
+            "insurance"
+            Nothing
+        , viewQuestionLabel language Translate.BoughtClothesQuestion
+        , viewBoolInput
+            language
+            form.boughtClothes
+            (SetBirthPlanBoolInput boughtClothesFunc)
+            "clothes"
+            Nothing
+        , viewQuestionLabel language Translate.CaregiverAccompanyQuestion
+        , viewBoolInput
+            language
+            form.caregiverAccompany
+            (SetBirthPlanBoolInput caregiverAccompanyFunc)
+            "caregiver-accompany"
+            Nothing
+        , viewQuestionLabel language Translate.SavedMoneyQuestion
+        , viewBoolInput
+            language
+            form.savedMoney
+            (SetBirthPlanBoolInput savedMoneyFunc)
+            "saved-money"
+            Nothing
+        , viewQuestionLabel language Translate.FamilyPlanningInFutureQuestion
+        , viewCheckBoxMultipleSelectInput language
+            [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
+            [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
+            (form.familyPlanning |> Maybe.withDefault [])
+            (Just NoFamilyPlanning)
+            SetBirthPlanFamilyPlanning
+            Translate.FamilyPlanningSignLabel
+        , viewQuestionLabel language Translate.TransportationPlanQuestion
+        , viewBoolInput
+            language
+            form.haveTransportation
+            (SetBirthPlanBoolInput transportationFunc)
+            "saved-money"
             Nothing
         ]
 

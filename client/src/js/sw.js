@@ -45,6 +45,7 @@ var tableForType = {
     acute_illness_vitals: 'shards',
     attendance: 'shards',
     breast_exam: 'shards',
+    birth_plan: 'shards',
     call_114: 'shards',
     catchment_area: 'nodes',
     child_fbf: 'shards',

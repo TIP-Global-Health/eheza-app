@@ -27,6 +27,14 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'birth_plan' => array(
+      'name' => t('Birth Plan'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'breast_exam' => array(
       'name' => t('Breast Exam'),
       'base' => 'node_content',

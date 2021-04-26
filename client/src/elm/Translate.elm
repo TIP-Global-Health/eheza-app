@@ -316,6 +316,7 @@ type TranslationId
     | BMIHelper
     | BodyTemperature
     | Born
+    | BoughtClothesQuestion
     | BowedLegs
     | BpmUnit Int
     | BpmUnitLabel
@@ -329,6 +330,7 @@ type TranslationId
     | Called114Question
     | Cancel
     | CardiacDisease
+    | CaregiverAccompanyQuestion
     | CaregiverName
     | CaregiverNationalId
     | CaseManagement
@@ -494,6 +496,7 @@ type TranslationId
     | HealthCenter
     | HealthCenterDetermined
     | HealthEducationProvidedQuestion
+    | HealthInsuranceQuestion
     | Heart
     | HeartMurmur
     | HeartCPESign HeartCPESign
@@ -791,6 +794,7 @@ type TranslationId
     | Save
     | SaveAndNext
     | SaveAndRecordOutcome
+    | SavedMoneyQuestion
     | SaveError
     | Search
     | SearchByName
@@ -887,6 +891,7 @@ type TranslationId
     | Training
     | TrainingGroupEncounterCreateSuccessMessage
     | TrainingGroupEncounterDeleteSuccessMessage
+    | TransportationPlanQuestion
     | TraveledToCOVID19CountryQuestion
     | TravelHistory
     | TrySyncing
@@ -1945,6 +1950,11 @@ translationSet trans =
             , kinyarwanda = Just "Kuvuka/ itariki y'amavuko"
             }
 
+        BoughtClothesQuestion ->
+            { english = "Have you bought clothes and other essential items for the child"
+            , kinyarwanda = Nothing
+            }
+
         BowedLegs ->
             { english = "Bowed Legs"
             , kinyarwanda = Just "Amaguru atameze neza (yagize imitego)"
@@ -2023,6 +2033,11 @@ translationSet trans =
         CardiacDisease ->
             { english = "Cardiac Disease"
             , kinyarwanda = Just "Indwara z'umutima"
+            }
+
+        CaregiverAccompanyQuestion ->
+            { english = "Do you have a caregiver to accompany you to the health center when you give birth"
+            , kinyarwanda = Nothing
             }
 
         CaregiverName ->
@@ -3328,6 +3343,11 @@ translationSet trans =
             , kinyarwanda = Just "Watanze ikiganiro ku buzima (Cyangwa ubujyanama bw'ibanze)"
             }
 
+        HealthInsuranceQuestion ->
+            { english = "Do you have health insurance"
+            , kinyarwanda = Nothing
+            }
+
         Heart ->
             { english = "Heart"
             , kinyarwanda = Just "Umutima"
@@ -3439,6 +3459,11 @@ translationSet trans =
                 Social ->
                     { english = "Partner Information"
                     , kinyarwanda = Just "Amakuru y'uwo bashakanye (umugabo)"
+                    }
+
+                BirthPlan ->
+                    { english = "Birth Plan"
+                    , kinyarwanda = Nothing
                     }
 
         HIV ->
@@ -6156,6 +6181,11 @@ translationSet trans =
             , kinyarwanda = Just "Bika & Andika iherezo ry'uburwayi"
             }
 
+        SavedMoneyQuestion ->
+            { english = "Have you saved money for use at the health center while you give birth"
+            , kinyarwanda = Nothing
+            }
+
         SaveError ->
             { english = "Save Error"
             , kinyarwanda = Just "Kubika error (ikosa mu kubika)"
@@ -6825,6 +6855,11 @@ translationSet trans =
 
         TrainingGroupEncounterDeleteSuccessMessage ->
             { english = "Training encounters were deleted."
+            , kinyarwanda = Nothing
+            }
+
+        TransportationPlanQuestion ->
+            { english = "Have you planned for transportation to and from the health center to give birth"
             , kinyarwanda = Nothing
             }
 

@@ -50,6 +50,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'acute_illness_vitals' => 'acute-illness-vitals',
   'attendance' => 'attendances',
   'breast_exam' => 'breast-exams',
+  'birth_plan' => 'birth-plan',
   'call_114' => 'call-114s',
   'child_fbf' => 'child-fbfs',
   'contributing_factors' => 'contributing-factors',
