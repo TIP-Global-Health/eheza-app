@@ -82,6 +82,35 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_boolean',
   );
 
+  // Exported field_base: 'field_birth_plan_signs'.
+  $field_bases['field_birth_plan_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_birth_plan_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'have-insurance' => 'Have insurance',
+        'bought-clothes-for-child' => 'Bought clothes for the child',
+        'caregiver-to-accompany-you' => 'Caregiver to accompany you',
+        'saved-money-for-use' => 'Saved money for use',
+        'planned-for-transportation' => 'Planned for transportation',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_bmi'.
   $field_bases['field_bmi'] = array(
     'active' => 1,
@@ -1433,6 +1462,33 @@ function hedley_activity_field_default_field_bases() {
     'settings' => array(),
     'translatable' => 0,
     'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_urine_pregnancy_test'.
+  $field_bases['field_urine_pregnancy_test'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_urine_pregnancy_test',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'positive' => 'Positive',
+        'negative' => 'Negative',
+        'indeterminate' => 'Indeterminate',
+        'unable-to-conduct' => 'Unable to conduct',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_weight'.

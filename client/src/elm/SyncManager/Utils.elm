@@ -395,6 +395,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityBreastExam identifier ->
             getIdentifier identifier "breast_exam"
 
+        BackendAuthorityBirthPlan identifier ->
+            getIdentifier identifier "birth_plan"
+
         BackendAuthorityCall114 identifier ->
             getIdentifier identifier "call_114"
 
@@ -538,6 +541,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityPhoto identifier ->
             getIdentifier identifier "photo"
+
+        BackendAuthorityPregnancyTesting identifier ->
+            getIdentifier identifier "pregnancy_testing"
 
         BackendAuthorityPrenatalPhoto identifier ->
             getIdentifier identifier "prenatal_photo"
@@ -812,6 +818,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityBreastExam identifier ->
             encode Backend.Measurement.Encoder.encodeBreastExam identifier
 
+        BackendAuthorityBirthPlan identifier ->
+            encode Backend.Measurement.Encoder.encodeBirthPlan identifier
+
         BackendAuthorityCall114 identifier ->
             encode Backend.Measurement.Encoder.encodeCall114 identifier
 
@@ -955,6 +964,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityPhoto identifier ->
             encode Backend.Measurement.Encoder.encodePhoto identifier
+
+        BackendAuthorityPregnancyTesting identifier ->
+            encode Backend.Measurement.Encoder.encodePregnancyTesting identifier
 
         BackendAuthorityPrenatalPhoto identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalPhoto identifier
@@ -1192,6 +1204,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityBreastExam identifier ->
             BreastExamRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityBirthPlan identifier ->
+            BirthPlanRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityCall114 identifier ->
             Call114Revision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1335,6 +1350,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityPhoto identifier ->
             PhotoRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPregnancyTesting identifier ->
+            PregnancyTestingRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalPhoto identifier ->
             PrenatalPhotoRevision (toEntityUuid identifier.uuid) identifier.entity

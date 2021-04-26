@@ -315,6 +315,7 @@ type Revision
     | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
     | AttendanceRevision AttendanceId Attendance
     | BreastExamRevision BreastExamId BreastExam
+    | BirthPlanRevision BirthPlanId BirthPlan
     | Call114Revision Call114Id Call114
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
     | ChildFbfRevision ChildFbfId Fbf
@@ -370,6 +371,7 @@ type Revision
     | PersonRevision PersonId Person
     | PhotoRevision PhotoId Photo
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
+    | PregnancyTestingRevision PregnancyTestId PregnancyTest
     | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter

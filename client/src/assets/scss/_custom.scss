@@ -1695,6 +1695,20 @@ input::placeholder {
   }
 }
 
+.icon-birth-plan {
+  .active &:after {
+    background-image: url(#{$img-path}icon-birth-plan-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-birth-plan-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-birth-plan-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
 .icon-vitals {
   .active &:after {
     background-image: url(#{$img-path}icon-vitals-white.svg), url(#{$img-path}icon-selected-circle.svg);

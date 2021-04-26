@@ -3,7 +3,7 @@ module Pages.PrenatalActivity.View exposing (view, viewConditionalAlert)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Encoder exposing (socialHistoryHivTestingResultToString)
+import Backend.Measurement.Encoder exposing (pregnancyTestResultAsString, socialHistoryHivTestingResultToString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
@@ -112,8 +112,7 @@ viewActivity language currentDate activity data model =
             viewPrenatalPhotoContent language currentDate data model.prenatalPhotoData
 
         Laboratory ->
-            --@todo
-            []
+            viewLaboratoryContent language currentDate data model.laboratoryData
 
         Backend.PrenatalActivity.Model.HealthEducation ->
             --@todo
@@ -226,7 +225,7 @@ viewHistoryContent language currentDate assembled data_ =
 
         ( tasks, data ) =
             if firstEnconter then
-                ( [ Obstetric, Medical, Social ], data_ )
+                ( [ Obstetric, Medical, Social, BirthPlan ], data_ )
 
             else
                 ( [ Social ], { data_ | activeTask = Social } )
@@ -243,6 +242,9 @@ viewHistoryContent language currentDate assembled data_ =
 
                         Social ->
                             ( "social", isJust assembled.measurements.socialHistory )
+
+                        BirthPlan ->
+                            ( "birth-plan", isJust assembled.measurements.birthPlan )
 
                 isActive =
                     task == data.activeTask
@@ -343,6 +345,15 @@ viewHistoryContent language currentDate assembled data_ =
                     in
                     viewSocialForm language currentDate showCounselingQuestion showTestingQuestions socialForm
 
+                BirthPlan ->
+                    let
+                        birthPlanForm =
+                            assembled.measurements.birthPlan
+                                |> Maybe.map (Tuple.second >> .value)
+                                |> birthPlanFormWithDefault data.birthPlanForm
+                    in
+                    viewBirthPlan language currentDate assembled birthPlanForm
+
         getNextTask currentTask =
             if not firstEnconter then
                 Nothing
@@ -365,7 +376,12 @@ viewHistoryContent language currentDate assembled data_ =
                             |> List.head
 
                     Social ->
-                        [ Obstetric, Medical ]
+                        [ Medical, BirthPlan ]
+                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                            |> List.head
+
+                    BirthPlan ->
+                        [ Social, Medical ]
                             |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                             |> List.head
 
@@ -432,6 +448,20 @@ viewHistoryContent language currentDate assembled data_ =
                                         SaveSocialHistory
                                             assembled.participant.person
                                             assembled.measurements.socialHistory
+                                            nextTask
+                                    ]
+                                    [ text <| translate language Translate.Save ]
+                              ]
+                            , ""
+                            )
+
+                        BirthPlan ->
+                            ( [ button
+                                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                    , onClick <|
+                                        SaveBirthPlan
+                                            assembled.participant.person
+                                            assembled.measurements.birthPlan
                                             nextTask
                                     ]
                                     [ text <| translate language Translate.Save ]
@@ -2236,8 +2266,132 @@ viewResourcesForm language currentDate assembled form =
         ]
 
 
+viewBirthPlan : Language -> NominalDate -> AssembledData -> BirthPlanForm -> Html Msg
+viewBirthPlan language currentDate assembled birthPlanForm =
+    let
+        form =
+            assembled.measurements.birthPlan
+                |> Maybe.map (Tuple.second >> .value)
+                |> birthPlanFormWithDefault birthPlanForm
 
--- Components
+        healthInsuranceFunc value form_ =
+            { form_ | haveInsurance = Just value }
+
+        boughtClothesFunc value form_ =
+            { form_ | boughtClothes = Just value }
+
+        caregiverAccompanyFunc value form_ =
+            { form_ | caregiverAccompany = Just value }
+
+        savedMoneyFunc value form_ =
+            { form_ | savedMoney = Just value }
+
+        transportationFunc value form_ =
+            { form_ | haveTransportation = Just value }
+    in
+    div [ class "form birth-plan" ]
+        [ viewQuestionLabel language Translate.HealthInsuranceQuestion
+        , viewBoolInput
+            language
+            form.haveInsurance
+            (SetBirthPlanBoolInput healthInsuranceFunc)
+            "insurance"
+            Nothing
+        , viewQuestionLabel language Translate.BoughtClothesQuestion
+        , viewBoolInput
+            language
+            form.boughtClothes
+            (SetBirthPlanBoolInput boughtClothesFunc)
+            "clothes"
+            Nothing
+        , viewQuestionLabel language Translate.CaregiverAccompanyQuestion
+        , viewBoolInput
+            language
+            form.caregiverAccompany
+            (SetBirthPlanBoolInput caregiverAccompanyFunc)
+            "caregiver-accompany"
+            Nothing
+        , viewQuestionLabel language Translate.SavedMoneyQuestion
+        , viewBoolInput
+            language
+            form.savedMoney
+            (SetBirthPlanBoolInput savedMoneyFunc)
+            "saved-money"
+            Nothing
+        , viewQuestionLabel language Translate.FamilyPlanningInFutureQuestion
+        , viewCheckBoxMultipleSelectInput language
+            [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
+            [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
+            (form.familyPlanning |> Maybe.withDefault [])
+            (Just NoFamilyPlanning)
+            SetBirthPlanFamilyPlanning
+            Translate.FamilyPlanningSignLabel
+        , viewQuestionLabel language Translate.TransportationPlanQuestion
+        , viewBoolInput
+            language
+            form.haveTransportation
+            (SetBirthPlanBoolInput transportationFunc)
+            "saved-money"
+            Nothing
+        ]
+
+
+viewLaboratoryContent : Language -> NominalDate -> AssembledData -> LaboratoryData -> List (Html Msg)
+viewLaboratoryContent language currentDate assembled data =
+    let
+        form =
+            assembled.measurements.pregnancyTest
+                |> Maybe.map (Tuple.second >> .value)
+                |> pregnancyTestingFormWithDefault data.pregnancyTestingForm
+
+        totalTasks =
+            1
+
+        tasksCompleted =
+            taskCompleted form.pregnancyTestResult
+
+        emptyOption =
+            if isNothing form.pregnancyTestResult then
+                option
+                    [ value ""
+                    , selected (form.pregnancyTestResult == Nothing)
+                    ]
+                    [ text "" ]
+
+            else
+                emptyNode
+
+        resultInput =
+            emptyOption
+                :: ([ PregnancyTestPositive, PregnancyTestNegative, PregnancyTestIndeterminate, PregnancyTestUnableToConduct ]
+                        |> List.map
+                            (\result ->
+                                option
+                                    [ value (pregnancyTestResultAsString result)
+                                    , selected (form.pregnancyTestResult == Just result)
+                                    ]
+                                    [ text <| translate language <| Translate.PregnancyTestingResult result ]
+                            )
+                   )
+                |> select [ onInput SetPregnancyTestResult, class "form-input select" ]
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form laboratory pregnancy-testing" ] <|
+                [ viewLabel language Translate.PregnancyUrineTest
+                , resultInput
+                ]
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SavePregnancyTesting assembled.participant.person assembled.measurements.pregnancyTest
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
 
 
 viewRedAlertForSelect : List a -> List a -> Html any

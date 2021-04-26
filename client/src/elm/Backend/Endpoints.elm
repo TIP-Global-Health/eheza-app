@@ -331,6 +331,12 @@ pmtctParticipantEndpoint =
         |> withParamsEncoder encodePmtctParticipantParams
 
 
+pregnancyTestingEndpoint : ReadWriteEndPoint Error PregnancyTestId PregnancyTest PregnancyTest ()
+pregnancyTestingEndpoint =
+    swEndpoint "nodes/pregnancy_testing" decodePregnancyTesting
+        |> withValueEncoder (object << encodePregnancyTesting)
+
+
 prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId PrenatalEncounter PrenatalEncounter (Maybe IndividualEncounterParticipantId)
 prenatalEncounterEndpoint =
     swEndpoint "nodes/prenatal_encounter" decodePrenatalEncounter
@@ -390,6 +396,12 @@ breastExamEndpoint : ReadWriteEndPoint Error BreastExamId BreastExam BreastExam 
 breastExamEndpoint =
     swEndpoint "nodes/breast_exam" decodeBreastExam
         |> withValueEncoder (object << encodeBreastExam)
+
+
+birthPlanEndpoint : ReadWriteEndPoint Error BirthPlanId BirthPlan BirthPlan ()
+birthPlanEndpoint =
+    swEndpoint "nodes/birth_plan" decodeBirthPlan
+        |> withValueEncoder (object << encodeBirthPlan)
 
 
 corePhysicalExamEndpoint : ReadWriteEndPoint Error CorePhysicalExamId CorePhysicalExam CorePhysicalExam ()

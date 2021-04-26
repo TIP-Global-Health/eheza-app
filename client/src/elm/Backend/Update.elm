@@ -1963,6 +1963,14 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        BirthPlanRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | birthPlan = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         Call114Revision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
@@ -2412,6 +2420,14 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
                 (\measurements -> { measurements | photos = Dict.insert uuid data measurements.photos })
                 model
             , True
+            )
+
+        PregnancyTestingRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | pregnancyTest = Just ( uuid, data ) })
+                model
+            , recalc
             )
 
         PmtctParticipantRevision uuid data ->

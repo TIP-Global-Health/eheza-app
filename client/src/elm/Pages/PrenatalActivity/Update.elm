@@ -4,6 +4,7 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
+import Backend.Measurement.Decoder exposing (pregnancyTestResultFromString)
 import Backend.Measurement.Model
     exposing
         ( AbdomenCPESign(..)
@@ -1583,4 +1584,172 @@ update currentDate id db msg model =
                     |> App.Model.MsgIndexedDb
               , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
               ]
+            )
+
+        SetBirthPlanBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.historyData.birthPlanForm
+                    in
+                    model.historyData
+                        |> (\data -> { data | birthPlanForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetActivePrenatalLaboratoryTask task ->
+            let
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | activeTask = task })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetBirthPlanFamilyPlanning sign ->
+            let
+                form =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.birthPlan
+                                >> Maybe.map (Tuple.second >> .value)
+                                >> birthPlanFormWithDefault model.historyData.birthPlanForm
+                            )
+                        |> Maybe.withDefault model.historyData.birthPlanForm
+
+                updatedForm =
+                    case form.familyPlanning of
+                        Just signs ->
+                            if List.member sign signs then
+                                let
+                                    updatedSigns =
+                                        if List.length signs == 1 then
+                                            Nothing
+
+                                        else
+                                            signs |> List.filter ((/=) sign) |> Just
+                                in
+                                { form | familyPlanning = updatedSigns }
+
+                            else
+                                case sign of
+                                    NoFamilyPlanning ->
+                                        { form | familyPlanning = Just [ sign ] }
+
+                                    _ ->
+                                        let
+                                            updatedSigns =
+                                                case signs of
+                                                    [ NoFamilyPlanning ] ->
+                                                        Just [ sign ]
+
+                                                    _ ->
+                                                        Just (sign :: signs)
+                                        in
+                                        { form | familyPlanning = updatedSigns }
+
+                        Nothing ->
+                            { form | familyPlanning = Just [ sign ] }
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | birthPlanForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPregnancyTestResult value ->
+            let
+                result =
+                    pregnancyTestResultFromString value
+
+                updatedData =
+                    let
+                        updatedForm =
+                            model.laboratoryData.pregnancyTestingForm
+                                |> (\form -> { form | pregnancyTestResult = result })
+                    in
+                    model.laboratoryData
+                        |> (\data -> { data | pregnancyTestingForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveBirthPlan personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                updatedForm =
+                    model.historyData.birthPlanForm
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
+                            , BirthPlan
+                            )
+
+                appMsgs =
+                    updatedForm
+                        |> toBirthPlanValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.PrenatalEncounter.Model.SaveBirthPlan personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
+        SavePregnancyTesting personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.laboratoryData.pregnancyTestingForm
+                        |> toPregnancyTestingValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SavePregnancyTesting personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
             )

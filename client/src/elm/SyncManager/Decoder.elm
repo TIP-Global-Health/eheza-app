@@ -393,6 +393,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeBreastExam
                             BackendAuthorityBreastExam
 
+                    "birth_plan" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeBirthPlan
+                            BackendAuthorityBirthPlan
+
                     "clinic" ->
                         doDecode
                             Backend.Clinic.Decoder.decodeClinic
@@ -617,6 +622,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodePhoto
                             BackendAuthorityPhoto
+
+                    "pregnancy_testing" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePregnancyTesting
+                            BackendAuthorityPregnancyTesting
 
                     "prenatal_photo" ->
                         doDecode

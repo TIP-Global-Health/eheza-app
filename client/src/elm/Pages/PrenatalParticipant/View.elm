@@ -284,7 +284,7 @@ viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db mayb
         createSubsequentEncounterButton =
             viewButton language
                 subsequentVisitAction
-                (Translate.IndividualEncounterFirstVisit Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
+                (Translate.IndividualEncounterSubsequentVisit Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
                 (not firstVisitButtonDisabled || encounterWasCompletedToday)
     in
     [ createFirstEncounterButton

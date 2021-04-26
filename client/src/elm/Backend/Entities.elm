@@ -95,6 +95,14 @@ type BreastExamUuidType
     = BreastExamUuidType
 
 
+type alias BirthPlanId =
+    EntityUuid BirthPlanUuidType
+
+
+type BirthPlanUuidType
+    = BirthPlanUuidType
+
+
 type alias CorePhysicalExamId =
     EntityUuid CorePhysicalExamUuidType
 
@@ -733,3 +741,11 @@ type alias AcuteIllnessFollowUpId =
 
 type AcuteIllnessFollowUpIdUuidType
     = AcuteIllnessFollowUpIdUuidType
+
+
+type alias PregnancyTestId =
+    EntityUuid PregnancyTestUuidType
+
+
+type PregnancyTestUuidType
+    = PregnancyTestUuidType

@@ -57,6 +57,9 @@ decodeRevision =
                     "breast_exam" ->
                         decodeWithUuid BreastExamRevision decodeBreastExam
 
+                    "birth_plan" ->
+                        decodeWithUuid BirthPlanRevision decodeBirthPlan
+
                     "call_114" ->
                         decodeWithUuid Call114Revision decodeCall114
 
@@ -215,6 +218,9 @@ decodeRevision =
 
                     "photo" ->
                         decodeWithUuid PhotoRevision decodePhoto
+
+                    "pregnancy_testing" ->
+                        decodeWithUuid PregnancyTestingRevision decodePregnancyTesting
 
                     "pmtct_participant" ->
                         decodeWithUuid PmtctParticipantRevision decodePmtctParticipant

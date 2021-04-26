@@ -133,6 +133,40 @@ encodePrenatalPhotoUrl (PhotoUrl url) =
     ]
 
 
+encodePregnancyTesting : PregnancyTest -> List ( String, Value )
+encodePregnancyTesting =
+    encodePrenatalMeasurement encodePregnancyTestingValue
+
+
+encodePregnancyTestingValue : PregnancyTestResult -> List ( String, Value )
+encodePregnancyTestingValue value =
+    [ ( "urine_pregnancy_test", encodePregnancyTestResult value )
+    , ( "deleted", bool False )
+    , ( "type", string "pregnancy_testing" )
+    ]
+
+
+encodePregnancyTestResult : PregnancyTestResult -> Value
+encodePregnancyTestResult =
+    pregnancyTestResultAsString >> string
+
+
+pregnancyTestResultAsString : PregnancyTestResult -> String
+pregnancyTestResultAsString sign =
+    case sign of
+        PregnancyTestPositive ->
+            "positive"
+
+        PregnancyTestNegative ->
+            "negative"
+
+        PregnancyTestIndeterminate ->
+            "indeterminate"
+
+        PregnancyTestUnableToConduct ->
+            "unable-to-conduct"
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement encodeNutritionValue
@@ -903,6 +937,43 @@ encodeObstetricHistoryStep2Value value =
     , ( "deleted", bool False )
     , ( "type", string "obstetric_history_step2" )
     ]
+
+
+encodeBirthPlan : BirthPlan -> List ( String, Value )
+encodeBirthPlan =
+    encodePrenatalMeasurement encodeBirthPlanValue
+
+
+encodeBirthPlanValue : BirthPlanValue -> List ( String, Value )
+encodeBirthPlanValue value =
+    [ ( "birth_plan_signs", encodeEverySet encodeBirthPlanSign value.signs )
+    , ( "family_planning_signs", encodeEverySet encodeFamilyPlanningSign value.familyPlanning )
+    , ( "deleted", bool False )
+    , ( "type", string "birth_plan" )
+    ]
+
+
+encodeBirthPlanSign : BirthPlanSign -> Value
+encodeBirthPlanSign sign =
+    string <|
+        case sign of
+            Insurance ->
+                "have-insurance"
+
+            BoughtClothes ->
+                "bought-clothes-for-child"
+
+            CaregiverAccompany ->
+                "caregiver-to-accompany-you"
+
+            SavedMoney ->
+                "saved-money-for-use"
+
+            Transportation ->
+                "planned-for-transportation"
+
+            NoBirthPlan ->
+                "none"
 
 
 encodePrenatalFamilyPlanning : PrenatalFamilyPlanning -> List ( String, Value )

@@ -102,6 +102,8 @@ decodePrenatalMeasurements =
         |> optional "social_history" (decodeHead decodeSocialHistory) Nothing
         |> optional "vitals" (decodeHead decodeVitals) Nothing
         |> optional "prenatal_photo" (decodeHead decodePrenatalPhoto) Nothing
+        |> optional "birth_plan" (decodeHead decodeBirthPlan) Nothing
+        |> optional "pregnancy_testing" (decodeHead decodePregnancyTesting) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -177,6 +179,43 @@ decodePrenatalPhoto =
     field "photo" (decodeStringWithDefault "")
         |> map PhotoUrl
         |> decodePrenatalMeasurement
+
+
+decodePregnancyTesting : Decoder PregnancyTest
+decodePregnancyTesting =
+    decodePregnancyUrineTestResult
+        |> field "urine_pregnancy_test"
+        |> decodePrenatalMeasurement
+
+
+decodePregnancyUrineTestResult : Decoder PregnancyTestResult
+decodePregnancyUrineTestResult =
+    string
+        |> andThen
+            (\result ->
+                pregnancyTestResultFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized PregnancyTestResult" |> fail)
+            )
+
+
+pregnancyTestResultFromString : String -> Maybe PregnancyTestResult
+pregnancyTestResultFromString result =
+    case result of
+        "positive" ->
+            Just PregnancyTestPositive
+
+        "negative" ->
+            Just PregnancyTestNegative
+
+        "indeterminate" ->
+            Just PregnancyTestIndeterminate
+
+        "unable-to-conduct" ->
+            Just PregnancyTestUnableToConduct
+
+        _ ->
+            Nothing
 
 
 decodeHeight : Decoder Height
@@ -1049,6 +1088,49 @@ decodeObstetricHistoryStep2 =
         |> required "previous_delivery_period" (decodeEverySet decodePreviousDeliveryPeriod)
         |> required "obstetric_history" (decodeEverySet decodeObstetricHistorySign)
         |> decodePrenatalMeasurement
+
+
+decodeBirthPlan : Decoder BirthPlan
+decodeBirthPlan =
+    decodePrenatalMeasurement decodeBirthPlanValue
+
+
+decodeBirthPlanValue : Decoder BirthPlanValue
+decodeBirthPlanValue =
+    succeed BirthPlanValue
+        |> required "birth_plan_signs" (decodeEverySet decodeBirthPlanSign)
+        |> required "family_planning_signs" (decodeEverySet decodeFamilyPlanningSign)
+
+
+decodeBirthPlanSign : Decoder BirthPlanSign
+decodeBirthPlanSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "have-insurance" ->
+                        succeed Insurance
+
+                    "bought-clothes-for-child" ->
+                        succeed BoughtClothes
+
+                    "caregiver-to-accompany-you" ->
+                        succeed CaregiverAccompany
+
+                    "saved-money-for-use" ->
+                        succeed SavedMoney
+
+                    "planned-for-transportation" ->
+                        succeed Transportation
+
+                    "none" ->
+                        succeed NoBirthPlan
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized BirthPlanSign"
+            )
 
 
 decodeNutritionMuac : Decoder NutritionMuac

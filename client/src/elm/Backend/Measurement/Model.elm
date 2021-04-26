@@ -693,6 +693,36 @@ type alias Vitals =
     PrenatalMeasurement VitalsValue
 
 
+type alias BirthPlanValue =
+    { signs : EverySet BirthPlanSign
+    , familyPlanning : EverySet FamilyPlanningSign
+    }
+
+
+type alias BirthPlan =
+    PrenatalMeasurement BirthPlanValue
+
+
+type BirthPlanSign
+    = Insurance
+    | BoughtClothes
+    | CaregiverAccompany
+    | SavedMoney
+    | Transportation
+    | NoBirthPlan
+
+
+type alias PregnancyTest =
+    PrenatalMeasurement PregnancyTestResult
+
+
+type PregnancyTestResult
+    = PregnancyTestPositive
+    | PregnancyTestNegative
+    | PregnancyTestIndeterminate
+    | PregnancyTestUnableToConduct
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -1206,6 +1236,8 @@ type alias PrenatalMeasurements =
     , socialHistory : Maybe ( SocialHistoryId, SocialHistory )
     , vitals : Maybe ( VitalsId, Vitals )
     , prenatalPhoto : Maybe ( PrenatalPhotoId, PrenatalPhoto )
+    , birthPlan : Maybe ( BirthPlanId, BirthPlan )
+    , pregnancyTest : Maybe ( PregnancyTestId, PregnancyTest )
     }
 
 
