@@ -231,6 +231,9 @@ decodeRevision =
                     "prenatal_family_planning" ->
                         decodeWithUuid PrenatalFamilyPlanningRevision decodePrenatalFamilyPlanning
 
+                    "prenatal_health_education" ->
+                        decodeWithUuid PrenatalHealthEducationRevision decodePrenatalHealthEducation
+
                     "prenatal_nutrition" ->
                         decodeWithUuid PrenatalNutritionRevision decodePrenatalNutrition
 
