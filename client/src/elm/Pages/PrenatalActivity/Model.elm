@@ -644,7 +644,8 @@ emptyBirthPlanForm =
     , haveTransportation = Nothing
     , familyPlanning = Nothing
     }
-    
+
+
 type alias PregnancyTestingForm =
     { pregnancyTestResult : Maybe PregnancyTestResult
     }

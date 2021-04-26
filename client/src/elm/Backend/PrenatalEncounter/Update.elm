@@ -192,8 +192,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
         HandleSavedBirthPlan data ->
             ( { model | savePrenatalPhoto = data }
             , Cmd.none
-            )            
-            
+            )
+
         SavePregnancyTesting personId valueId value ->
             ( { model | savePregnancyTesting = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value pregnancyTestingEndpoint HandleSavedPregnancyTesting

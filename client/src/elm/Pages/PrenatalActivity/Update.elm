@@ -1611,7 +1611,6 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
-                       
 
         SetBirthPlanFamilyPlanning sign ->
             let
@@ -1728,7 +1727,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-            
+
         SavePregnancyTesting personId saved ->
             let
                 measurementId =

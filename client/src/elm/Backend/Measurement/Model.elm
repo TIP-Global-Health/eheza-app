@@ -710,7 +710,8 @@ type BirthPlanSign
     | SavedMoney
     | Transportation
     | NoBirthPlan
-    
+
+
 type alias PregnancyTest =
     PrenatalMeasurement PregnancyTestResult
 
