@@ -156,7 +156,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
             ]
 
         showWarningPopup =
-            model.showWarningPopup && isJust maybeSessionId && List.isEmpty chwEncounters
+            isChw && model.showWarningPopup && isJust maybeSessionId && List.isEmpty chwEncounters
 
         popup =
             if showWarningPopup then
