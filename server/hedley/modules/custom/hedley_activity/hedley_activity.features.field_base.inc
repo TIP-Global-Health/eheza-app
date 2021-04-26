@@ -1229,6 +1229,38 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
+  // Exported field_base: 'field_prenatal_health_education'.
+  $field_bases['field_prenatal_health_education'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_prenatal_health_education',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'expectations' => 'Expectations',
+        'visits-review' => 'Visits review',
+        'warning-signs' => 'Warning signs',
+        'hemorrhaging' => 'Hemorrhaging',
+        'family-planning' => 'Family planning',
+        'breastfeeding' => 'Breastfeeding',
+        'immunization' => 'Immunization',
+        'hygiene' => 'Hygiene',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_preterm_pregnancy'.
   $field_bases['field_preterm_pregnancy'] = array(
     'active' => 1,

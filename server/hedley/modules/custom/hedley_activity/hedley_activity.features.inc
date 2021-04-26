@@ -259,6 +259,14 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'prenatal_health_education' => array(
+      'name' => t('Prenatal Health Education'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'prenatal_nutrition' => array(
       'name' => t('Prenatal Nutrition'),
       'base' => 'node_content',
