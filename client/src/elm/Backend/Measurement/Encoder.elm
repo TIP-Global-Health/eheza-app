@@ -167,6 +167,51 @@ pregnancyTestResultAsString sign =
             "unable-to-conduct"
 
 
+encodePrenatalHealthEducation : PrenatalHealthEducation -> List ( String, Value )
+encodePrenatalHealthEducation =
+    encodePrenatalMeasurement encodePrenatalHealthEducationValue
+
+
+encodePrenatalHealthEducationValue : EverySet PrenatalHealthEducationSign -> List ( String, Value )
+encodePrenatalHealthEducationValue signs =
+    [ ( "prenatal_health_education", encodeEverySet encodePrenatalHealthEducationSign signs )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_health_education" )
+    ]
+
+
+encodePrenatalHealthEducationSign : PrenatalHealthEducationSign -> Value
+encodePrenatalHealthEducationSign sign =
+    string <|
+        case sign of
+            EducationExpecations ->
+                "expectations"
+
+            EducationVisitsReview ->
+                "visits-review"
+
+            EducationWarningSigns ->
+                "warning-signs"
+
+            EducationHemorrhaging ->
+                "hemorrhaging"
+
+            EducationFamilyPlanning ->
+                "family-planning"
+
+            EducationBreastfeeding ->
+                "breastfeeding"
+
+            EducationImmunization ->
+                "immunization"
+
+            EducationHygiene ->
+                "hygiene"
+
+            NoPrenatalHealthEducationSigns ->
+                "none"
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement encodeNutritionValue

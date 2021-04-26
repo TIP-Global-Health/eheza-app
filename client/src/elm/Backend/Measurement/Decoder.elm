@@ -104,6 +104,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_photo" (decodeHead decodePrenatalPhoto) Nothing
         |> optional "birth_plan" (decodeHead decodeBirthPlan) Nothing
         |> optional "pregnancy_testing" (decodeHead decodePregnancyTesting) Nothing
+        |> optional "prenatal_health_education" (decodeHead decodePrenatalHealthEducation) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -183,13 +184,13 @@ decodePrenatalPhoto =
 
 decodePregnancyTesting : Decoder PregnancyTest
 decodePregnancyTesting =
-    decodePregnancyUrineTestResult
+    decodePregnancyTestResult
         |> field "urine_pregnancy_test"
         |> decodePrenatalMeasurement
 
 
-decodePregnancyUrineTestResult : Decoder PregnancyTestResult
-decodePregnancyUrineTestResult =
+decodePregnancyTestResult : Decoder PregnancyTestResult
+decodePregnancyTestResult =
     string
         |> andThen
             (\result ->
@@ -216,6 +217,51 @@ pregnancyTestResultFromString result =
 
         _ ->
             Nothing
+
+
+decodePrenatalHealthEducation : Decoder PrenatalHealthEducation
+decodePrenatalHealthEducation =
+    decodeEverySet decodePrenatalHealthEducationSign
+        |> field "prenatal_health_education"
+        |> decodePrenatalMeasurement
+
+
+decodePrenatalHealthEducationSign : Decoder PrenatalHealthEducationSign
+decodePrenatalHealthEducationSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "expectations" ->
+                        succeed EducationExpecations
+
+                    "visits-review" ->
+                        succeed EducationVisitsReview
+
+                    "warning-signs" ->
+                        succeed EducationWarningSigns
+
+                    "hemorrhaging" ->
+                        succeed EducationHemorrhaging
+
+                    "family-planning" ->
+                        succeed EducationFamilyPlanning
+
+                    "breastfeeding" ->
+                        succeed EducationBreastfeeding
+
+                    "immunization" ->
+                        succeed EducationImmunization
+
+                    "hygiene" ->
+                        succeed EducationHygiene
+
+                    "none" ->
+                        succeed NoPrenatalHealthEducationSigns
+
+                    _ ->
+                        sign ++ " is not a recognized PrenatalHealthEducationSign" |> fail
+            )
 
 
 decodeHeight : Decoder Height
