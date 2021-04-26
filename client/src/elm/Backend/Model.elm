@@ -370,6 +370,7 @@ type Revision
     | PersonRevision PersonId Person
     | PhotoRevision PhotoId Photo
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
+    | PregnancyTestingRevision PregnancyTestId PregnancyTest
     | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter

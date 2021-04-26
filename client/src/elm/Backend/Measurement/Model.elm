@@ -693,6 +693,17 @@ type alias Vitals =
     PrenatalMeasurement VitalsValue
 
 
+type alias PregnancyTest =
+    PrenatalMeasurement PregnancyTestResult
+
+
+type PregnancyTestResult
+    = PregnancyTestPositive
+    | PregnancyTestNegative
+    | PregnancyTestIndeterminate
+    | PregnancyTestUnableToConduct
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -1206,6 +1217,7 @@ type alias PrenatalMeasurements =
     , socialHistory : Maybe ( SocialHistoryId, SocialHistory )
     , vitals : Maybe ( VitalsId, Vitals )
     , prenatalPhoto : Maybe ( PrenatalPhotoId, PrenatalPhoto )
+    , pregnancyTest : Maybe ( PregnancyTestId, PregnancyTest )
     }
 
 

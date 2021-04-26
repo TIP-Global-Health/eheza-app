@@ -61,6 +61,9 @@ encodeActivityAsString activity =
         PrenatalPhoto ->
             "photo"
 
+        PrenatalLaboratory ->
+            "laboratory"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -88,6 +91,9 @@ decodeActivityFromString s =
         "photo" ->
             Just PrenatalPhoto
 
+        "laboratory" ->
+            Just PrenatalLaboratory
+
         _ ->
             Nothing
 
@@ -110,7 +116,7 @@ getActivityIcon activity =
 getAllActivities : Bool -> List PrenatalActivity
 getAllActivities isFirstEncounter =
     if isFirstEncounter then
-        [ PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, DangerSigns, PrenatalPhoto ]
+        [ PregnancyDating, PrenatalLaboratory, History, Examination, FamilyPlanning, PatientProvisions, DangerSigns, PrenatalPhoto ]
 
     else
         [ DangerSigns, PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, PrenatalPhoto ]

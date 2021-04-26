@@ -733,3 +733,11 @@ type alias AcuteIllnessFollowUpId =
 
 type AcuteIllnessFollowUpIdUuidType
     = AcuteIllnessFollowUpIdUuidType
+
+
+type alias PregnancyTestId =
+    EntityUuid PregnancyTestUuidType
+
+
+type PregnancyTestUuidType
+    = PregnancyTestUuidType

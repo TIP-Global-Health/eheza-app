@@ -2,6 +2,7 @@ module Pages.PrenatalActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
+import Backend.Person.Model exposing (Person)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
@@ -636,6 +637,40 @@ toVitalsValue form =
         |> andMap form.bodyTemperature
 
 
+fromPregnancyTestingValue : Maybe PregnancyTestResult -> PregnancyTestingForm
+fromPregnancyTestingValue saved =
+    { pregnancyTestResult = saved }
+
+
+pregnancyTestingFormWithDefault : PregnancyTestingForm -> Maybe PregnancyTestResult -> PregnancyTestingForm
+pregnancyTestingFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    formWithDefault =
+                        fromPregnancyTestingValue saved
+                in
+                { pregnancyTestResult = or form.pregnancyTestResult formWithDefault.pregnancyTestResult
+                }
+            )
+
+
+toPregnancyTestingValueWithDefault : Maybe PregnancyTestResult -> PregnancyTestingForm -> Maybe PregnancyTestResult
+toPregnancyTestingValueWithDefault saved form =
+    pregnancyTestingFormWithDefault form saved
+        |> (\form_ ->
+                form_
+           )
+        |> toPregnancyTestingValue
+
+
+toPregnancyTestingValue : PregnancyTestingForm -> Maybe PregnancyTestResult
+toPregnancyTestingValue form =
+    form.pregnancyTestResult
+
+
 calculateBmi : Maybe Float -> Maybe Float -> Maybe Float
 calculateBmi maybeHeight maybeWeight =
     Maybe.map2 (\height weight -> weight / ((height / 100) ^ 2)) maybeHeight maybeWeight
@@ -948,6 +983,21 @@ patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestio
                         |> resourceFormWithDefault data.resourcesForm
             in
             ( taskCompleted form.receivedMosquitoNet
+            , 1
+            )
+
+
+laboratoryTasksCompletedFromTotal : NominalDate -> PrenatalMeasurements -> LaboratoryData -> PrenatalLaboratoryTask -> ( Int, Int )
+laboratoryTasksCompletedFromTotal currentDate measurements data task =
+    case task of
+        LaboratoryPregnancyTesting ->
+            let
+                form =
+                    measurements.pregnancyTest
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> pregnancyTestingFormWithDefault data.pregnancyTestingForm
+            in
+            ( taskCompleted form.pregnancyTestResult
             , 1
             )
 
