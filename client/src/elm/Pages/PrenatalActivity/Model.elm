@@ -26,7 +26,6 @@ module Pages.PrenatalActivity.Model exposing
     , PregnancyDatingData
     , PregnancyDatingForm
     , PregnancyTestingForm
-    , PrenatalLaboratoryTask(..)
     , PrenatalPhotoData
     , ResourcesForm
     , SocialHistoryForm
@@ -123,9 +122,8 @@ type Msg
       -- BirthPlanMsgs
     | SetBirthPlanBoolInput (Bool -> BirthPlanForm -> BirthPlanForm) Bool
     | SetBirthPlanFamilyPlanning FamilyPlanningSign
-    | SaveBirthPlan PersonId (Maybe ( BirthPlanId, BirthPlan )) (Maybe HistoryTask)
+    | SaveBirthPlan PersonId (Maybe ( BirthPlanId, BirthPlan ))
       -- LABORATORYMsgs
-    | SetActivePrenatalLaboratoryTask PrenatalLaboratoryTask
     | SetPregnancyTestResult String
     | SavePregnancyTesting PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
 
@@ -214,19 +212,13 @@ emptyExaminationData =
 
 type alias LaboratoryData =
     { pregnancyTestingForm : PregnancyTestingForm
-    , activeTask : PrenatalLaboratoryTask
     }
 
 
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { pregnancyTestingForm = PregnancyTestingForm Nothing
-    , activeTask = LaboratoryPregnancyTesting
     }
-
-
-type PrenatalLaboratoryTask
-    = LaboratoryPregnancyTesting
 
 
 type alias FamilyPlanningData =
@@ -272,8 +264,7 @@ type ObstetricHistoryStep
 
 
 type HistoryTask
-    = BirthPlan
-    | Obstetric
+    = Obstetric
     | Medical
     | Social
 

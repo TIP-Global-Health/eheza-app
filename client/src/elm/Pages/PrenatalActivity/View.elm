@@ -225,7 +225,7 @@ viewHistoryContent language currentDate assembled data_ =
 
         ( tasks, data ) =
             if firstEnconter then
-                ( [ Obstetric, Medical, Social, BirthPlan ], data_ )
+                ( [ Obstetric, Medical, Social ], data_ )
 
             else
                 ( [ Social ], { data_ | activeTask = Social } )
@@ -243,9 +243,8 @@ viewHistoryContent language currentDate assembled data_ =
                         Social ->
                             ( "social", isJust assembled.measurements.socialHistory )
 
-                        BirthPlan ->
-                            ( "birth-plan", isJust assembled.measurements.birthPlan )
-
+                -- BirthPlan ->
+                --     ( "birth-plan", isJust assembled.measurements.birthPlan )
                 isActive =
                     task == data.activeTask
 
@@ -345,15 +344,14 @@ viewHistoryContent language currentDate assembled data_ =
                     in
                     viewSocialForm language currentDate showCounselingQuestion showTestingQuestions socialForm
 
-                BirthPlan ->
-                    let
-                        birthPlanForm =
-                            assembled.measurements.birthPlan
-                                |> Maybe.map (Tuple.second >> .value)
-                                |> birthPlanFormWithDefault data.birthPlanForm
-                    in
-                    viewBirthPlan language currentDate assembled birthPlanForm
-
+        -- BirthPlan ->
+        --     let
+        --         birthPlanForm =
+        --             assembled.measurements.birthPlan
+        --                 |> Maybe.map (Tuple.second >> .value)
+        --                 |> birthPlanFormWithDefault data.birthPlanForm
+        --     in
+        --     viewBirthPlan language currentDate assembled birthPlanForm
         getNextTask currentTask =
             if not firstEnconter then
                 Nothing
@@ -376,12 +374,7 @@ viewHistoryContent language currentDate assembled data_ =
                             |> List.head
 
                     Social ->
-                        [ Medical, BirthPlan ]
-                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                            |> List.head
-
-                    BirthPlan ->
-                        [ Social, Medical ]
+                        [ Obstetric, Medical ]
                             |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                             |> List.head
 
@@ -448,20 +441,6 @@ viewHistoryContent language currentDate assembled data_ =
                                         SaveSocialHistory
                                             assembled.participant.person
                                             assembled.measurements.socialHistory
-                                            nextTask
-                                    ]
-                                    [ text <| translate language Translate.Save ]
-                              ]
-                            , ""
-                            )
-
-                        BirthPlan ->
-                            ( [ button
-                                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                    , onClick <|
-                                        SaveBirthPlan
-                                            assembled.participant.person
-                                            assembled.measurements.birthPlan
                                             nextTask
                                     ]
                                     [ text <| translate language Translate.Save ]

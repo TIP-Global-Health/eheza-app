@@ -831,21 +831,23 @@ historyTasksCompletedFromTotal assembled data task =
             , List.length boolInputs + List.length listInputs
             )
 
-        BirthPlan ->
-            let
-                form =
-                    assembled.measurements.birthPlan
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> birthPlanFormWithDefault data.birthPlanForm
-            in
-            ( taskCompleted form.haveInsurance
-                + taskCompleted form.boughtClothes
-                + taskCompleted form.caregiverAccompany
-                + taskCompleted form.savedMoney
-                + taskCompleted form.haveTransportation
-                + taskCompleted form.familyPlanning
-            , 6
-            )
+
+
+-- BirthPlan ->
+--     let
+--         form =
+--             assembled.measurements.birthPlan
+--                 |> Maybe.map (Tuple.second >> .value)
+--                 |> birthPlanFormWithDefault data.birthPlanForm
+--     in
+--     ( taskCompleted form.haveInsurance
+--         + taskCompleted form.boughtClothes
+--         + taskCompleted form.caregiverAccompany
+--         + taskCompleted form.savedMoney
+--         + taskCompleted form.haveTransportation
+--         + taskCompleted form.familyPlanning
+--     , 6
+--     )
 
 
 examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> Bool -> ExaminationTask -> ( Int, Int )
@@ -999,21 +1001,6 @@ patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestio
                         |> resourceFormWithDefault data.resourcesForm
             in
             ( taskCompleted form.receivedMosquitoNet
-            , 1
-            )
-
-
-laboratoryTasksCompletedFromTotal : NominalDate -> PrenatalMeasurements -> LaboratoryData -> PrenatalLaboratoryTask -> ( Int, Int )
-laboratoryTasksCompletedFromTotal currentDate measurements data task =
-    case task of
-        LaboratoryPregnancyTesting ->
-            let
-                form =
-                    measurements.pregnancyTest
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> pregnancyTestingFormWithDefault data.pregnancyTestingForm
-            in
-            ( taskCompleted form.pregnancyTestResult
             , 1
             )
 

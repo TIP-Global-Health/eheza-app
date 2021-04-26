@@ -238,8 +238,7 @@ activityCompleted currentDate data activity =
             isJust data.measurements.prenatalPhoto
 
         Laboratory ->
-            -- @todo
-            False
+            isJust data.measurements.pregnancyTest
 
         Backend.PrenatalActivity.Model.HealthEducation ->
             -- @todo
