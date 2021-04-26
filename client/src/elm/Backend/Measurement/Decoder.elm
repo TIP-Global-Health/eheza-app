@@ -103,6 +103,7 @@ decodePrenatalMeasurements =
         |> optional "vitals" (decodeHead decodeVitals) Nothing
         |> optional "prenatal_photo" (decodeHead decodePrenatalPhoto) Nothing
         |> optional "birth_plan" (decodeHead decodeBirthPlan) Nothing
+        |> optional "pregnancy_testing" (decodeHead decodePregnancyTesting) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -178,6 +179,43 @@ decodePrenatalPhoto =
     field "photo" (decodeStringWithDefault "")
         |> map PhotoUrl
         |> decodePrenatalMeasurement
+
+
+decodePregnancyTesting : Decoder PregnancyTest
+decodePregnancyTesting =
+    decodePregnancyUrineTestResult
+        |> field "urine_pregnancy_test"
+        |> decodePrenatalMeasurement
+
+
+decodePregnancyUrineTestResult : Decoder PregnancyTestResult
+decodePregnancyUrineTestResult =
+    string
+        |> andThen
+            (\result ->
+                pregnancyTestResultFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized PregnancyTestResult" |> fail)
+            )
+
+
+pregnancyTestResultFromString : String -> Maybe PregnancyTestResult
+pregnancyTestResultFromString result =
+    case result of
+        "positive" ->
+            Just PregnancyTestPositive
+
+        "negative" ->
+            Just PregnancyTestNegative
+
+        "indeterminate" ->
+            Just PregnancyTestIndeterminate
+
+        "unable-to-conduct" ->
+            Just PregnancyTestUnableToConduct
+
+        _ ->
+            Nothing
 
 
 decodeHeight : Decoder Height

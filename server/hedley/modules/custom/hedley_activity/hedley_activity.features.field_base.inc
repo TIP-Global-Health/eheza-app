@@ -1464,6 +1464,33 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_urine_pregnancy_test'.
+  $field_bases['field_urine_pregnancy_test'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_urine_pregnancy_test',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'positive' => 'Positive',
+        'negative' => 'Negative',
+        'indeterminate' => 'Indeterminate',
+        'unable-to-conduct' => 'Unable to conduct',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_weight'.
   $field_bases['field_weight'] = array(
     'active' => 1,

@@ -3,7 +3,7 @@ module Pages.PrenatalActivity.View exposing (view, viewConditionalAlert)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Encoder exposing (socialHistoryHivTestingResultToString)
+import Backend.Measurement.Encoder exposing (pregnancyTestResultAsString, socialHistoryHivTestingResultToString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
@@ -110,6 +110,9 @@ viewActivity language currentDate activity data model =
 
         PrenatalPhoto ->
             viewPrenatalPhotoContent language currentDate data model.prenatalPhotoData
+
+        PrenatalLaboratory ->
+            viewLaboratoryContent language currentDate data model.laboratoryData
 
 
 viewPregnancyDatingContent : Language -> NominalDate -> AssembledData -> PregnancyDatingData -> List (Html Msg)
@@ -2317,8 +2320,62 @@ viewBirthPlan language currentDate assembled birthPlanForm =
         ]
 
 
+viewLaboratoryContent : Language -> NominalDate -> AssembledData -> LaboratoryData -> List (Html Msg)
+viewLaboratoryContent language currentDate assembled data =
+    let
+        form =
+            assembled.measurements.pregnancyTest
+                |> Maybe.map (Tuple.second >> .value)
+                |> pregnancyTestingFormWithDefault data.pregnancyTestingForm
 
--- Components
+        totalTasks =
+            1
+
+        tasksCompleted =
+            taskCompleted form.pregnancyTestResult
+
+        emptyOption =
+            if isNothing form.pregnancyTestResult then
+                option
+                    [ value ""
+                    , selected (form.pregnancyTestResult == Nothing)
+                    ]
+                    [ text "" ]
+
+            else
+                emptyNode
+
+        resultInput =
+            emptyOption
+                :: ([ PregnancyTestPositive, PregnancyTestNegative, PregnancyTestIndeterminate, PregnancyTestUnableToConduct ]
+                        |> List.map
+                            (\result ->
+                                option
+                                    [ value (pregnancyTestResultAsString result)
+                                    , selected (form.pregnancyTestResult == Just result)
+                                    ]
+                                    [ text <| translate language <| Translate.PregnancyTestingResult result ]
+                            )
+                   )
+                |> select [ onInput SetPregnancyTestResult, class "form-input select" ]
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form laboratory pregnancy-testing" ] <|
+                [ viewLabel language Translate.PregnancyUrineTest
+                , resultInput
+                ]
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SavePregnancyTesting assembled.participant.person assembled.measurements.pregnancyTest
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
 
 
 viewRedAlertForSelect : List a -> List a -> Html any

@@ -4,6 +4,7 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
+import Backend.Measurement.Decoder exposing (pregnancyTestResultFromString)
 import Backend.Measurement.Model
     exposing
         ( AbdomenCPESign(..)
@@ -1600,6 +1601,18 @@ update currentDate id db msg model =
             , []
             )
 
+        SetActivePrenatalLaboratoryTask task ->
+            let
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | activeTask = task })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+                       
+
         SetBirthPlanFamilyPlanning sign ->
             let
                 form =
@@ -1656,6 +1669,25 @@ update currentDate id db msg model =
             , []
             )
 
+        SetPregnancyTestResult value ->
+            let
+                result =
+                    pregnancyTestResultFromString value
+
+                updatedData =
+                    let
+                        updatedForm =
+                            model.laboratoryData.pregnancyTestingForm
+                                |> (\form -> { form | pregnancyTestResult = result })
+                    in
+                    model.laboratoryData
+                        |> (\data -> { data | pregnancyTestingForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveBirthPlan personId saved nextTask_ ->
             let
                 measurementId =
@@ -1693,6 +1725,32 @@ update currentDate id db msg model =
                         |> (\data -> { data | activeTask = nextTask })
             in
             ( { model | historyData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+            
+        SavePregnancyTesting personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.laboratoryData.pregnancyTestingForm
+                        |> toPregnancyTestingValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SavePregnancyTesting personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                ]
+                            )
+            in
+            ( model
             , Cmd.none
             , appMsgs
             )

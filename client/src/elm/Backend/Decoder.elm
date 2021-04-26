@@ -219,6 +219,9 @@ decodeRevision =
                     "photo" ->
                         decodeWithUuid PhotoRevision decodePhoto
 
+                    "pregnancy_testing" ->
+                        decodeWithUuid PregnancyTestingRevision decodePregnancyTesting
+
                     "pmtct_participant" ->
                         decodeWithUuid PmtctParticipantRevision decodePmtctParticipant
 

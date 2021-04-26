@@ -378,6 +378,9 @@ viewMainPageContent language currentDate data model =
 
                             PrenatalPhoto ->
                                 isJust data.measurements.prenatalPhoto
+
+                            PrenatalLaboratory ->
+                                isJust data.measurements.pregnancyTest
                     )
 
         pendingTabTitle =

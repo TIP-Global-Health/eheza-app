@@ -297,6 +297,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create pregnancy_testing content'.
+  $permissions['create pregnancy_testing content'] = array(
+    'name' => 'create pregnancy_testing content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create prenatal_family_planning content'.
   $permissions['create prenatal_family_planning content'] = array(
     'name' => 'create prenatal_family_planning content',
@@ -620,6 +630,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any pregnancy_testing content'.
+  $permissions['delete any pregnancy_testing content'] = array(
+    'name' => 'delete any pregnancy_testing content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any prenatal_family_planning content'.
   $permissions['delete any prenatal_family_planning content'] = array(
     'name' => 'delete any prenatal_family_planning content',
@@ -929,6 +948,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own photo content'.
   $permissions['delete own photo content'] = array(
     'name' => 'delete own photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own pregnancy_testing content'.
+  $permissions['delete own pregnancy_testing content'] = array(
+    'name' => 'delete own pregnancy_testing content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -1279,6 +1307,16 @@ function hedley_activity_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any pregnancy_testing content'.
+  $permissions['edit any pregnancy_testing content'] = array(
+    'name' => 'edit any pregnancy_testing content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1636,6 +1674,16 @@ function hedley_activity_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own pregnancy_testing content'.
+  $permissions['edit own pregnancy_testing content'] = array(
+    'name' => 'edit own pregnancy_testing content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',

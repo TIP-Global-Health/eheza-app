@@ -79,6 +79,7 @@ import Pages.PrenatalActivity.Model
         , HistoryTask(..)
         , LmpRange(..)
         , PatientProvisionsTask(..)
+        , PrenatalLaboratoryTask(..)
         )
 import PrenatalActivity.Model
     exposing
@@ -708,9 +709,12 @@ type TranslationId
     | PleaseSync
     | PositiveLabel
     | PreeclampsiaPreviousPregnancy
+    | PregnancyTestingResult PregnancyTestResult
     | PregnancyTrimester PregnancyTrimester
+    | PregnancyUrineTest
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounterType PrenatalEncounterType
+    | PrenatalLaboratoryTask PrenatalLaboratoryTask
     | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
@@ -5317,6 +5321,28 @@ translationSet trans =
             , kinyarwanda = Just "Ubushize yagize ibimenyetso bibanziriza guhinda umushyitsi"
             }
 
+        PregnancyTestingResult result ->
+            case result of
+                PregnancyTestPositive ->
+                    { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                PregnancyTestNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                PregnancyTestIndeterminate ->
+                    { english = "Indeterminate"
+                    , kinyarwanda = Nothing
+                    }
+
+                PregnancyTestUnableToConduct ->
+                    { english = "Unable to conduct test"
+                    , kinyarwanda = Nothing
+                    }
+
         PregnancyTrimester trimester ->
             case trimester of
                 FirstTrimester ->
@@ -5333,6 +5359,11 @@ translationSet trans =
                     { english = "Third Trimester"
                     , kinyarwanda = Just "Igihembwe cya gatatu"
                     }
+
+        PregnancyUrineTest ->
+            { english = "Urine Pregnancy Test"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalActivitiesTitle activity ->
             case activity of
@@ -5371,6 +5402,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ifoto"
                     }
 
+                PrenatalLaboratory ->
+                    { english = "Laboratory"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalEncounterType encounterType ->
             case encounterType of
                 NurseEncounter ->
@@ -5395,6 +5431,13 @@ translationSet trans =
 
                 ChwPostpartumEncounter ->
                     { english = "Postpartum"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratoryTask task ->
+            case task of
+                LaboratoryPregnancyTesting ->
+                    { english = "Urine Pregnancy Test"
                     , kinyarwanda = Nothing
                     }
 

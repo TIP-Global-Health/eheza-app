@@ -542,6 +542,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPhoto identifier ->
             getIdentifier identifier "photo"
 
+        BackendAuthorityPregnancyTesting identifier ->
+            getIdentifier identifier "pregnancy_testing"
+
         BackendAuthorityPrenatalPhoto identifier ->
             getIdentifier identifier "prenatal_photo"
 
@@ -962,6 +965,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPhoto identifier ->
             encode Backend.Measurement.Encoder.encodePhoto identifier
 
+        BackendAuthorityPregnancyTesting identifier ->
+            encode Backend.Measurement.Encoder.encodePregnancyTesting identifier
+
         BackendAuthorityPrenatalPhoto identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalPhoto identifier
 
@@ -1344,6 +1350,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityPhoto identifier ->
             PhotoRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPregnancyTesting identifier ->
+            PregnancyTestingRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalPhoto identifier ->
             PrenatalPhotoRevision (toEntityUuid identifier.uuid) identifier.entity

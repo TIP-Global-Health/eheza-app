@@ -710,6 +710,16 @@ type BirthPlanSign
     | SavedMoney
     | Transportation
     | NoBirthPlan
+    
+type alias PregnancyTest =
+    PrenatalMeasurement PregnancyTestResult
+
+
+type PregnancyTestResult
+    = PregnancyTestPositive
+    | PregnancyTestNegative
+    | PregnancyTestIndeterminate
+    | PregnancyTestUnableToConduct
 
 
 
@@ -1226,6 +1236,7 @@ type alias PrenatalMeasurements =
     , vitals : Maybe ( VitalsId, Vitals )
     , prenatalPhoto : Maybe ( PrenatalPhotoId, PrenatalPhoto )
     , birthPlan : Maybe ( BirthPlanId, BirthPlan )
+    , pregnancyTest : Maybe ( PregnancyTestId, PregnancyTest )
     }
 
 

@@ -2422,6 +2422,14 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             , True
             )
 
+        PregnancyTestingRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | pregnancyTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PmtctParticipantRevision uuid data ->
             ( { model
                 | expectedSessions =
