@@ -449,7 +449,7 @@ function hedley_activity_strongarm() {
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_pregnancy_testing';
-  $strongarm->value = '';
+  $strongarm->value = '[node:content-type] - [node:field-person:title] - [node:field-date-measured:custom:Y-m-d] ';
   $export['auto_entitylabel_pattern_node_pregnancy_testing'] = $strongarm;
 
   $strongarm = new stdClass();

@@ -2256,7 +2256,7 @@ viewLaboratoryContent language currentDate assembled data =
                                     [ text <| translate language <| Translate.PregnancyTestingResult result ]
                             )
                    )
-                |> select [ onInput SetPregnancyTestResult, class "form-input urine-pregnancy-test" ]
+                |> select [ onInput SetPregnancyTestResult, class "form-input select" ]
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
