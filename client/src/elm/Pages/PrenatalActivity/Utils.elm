@@ -26,7 +26,7 @@ toEverySet presentValue absentValue present =
 
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
 resolvePreviousValue assembled measurementFunc valueFunc =
-    assembled.previousMeasurementsWithDates
+    assembled.nursePreviousMeasurementsWithDates
         |> List.filterMap
             (\( _, measurements ) ->
                 measurementFunc measurements
@@ -772,7 +772,7 @@ historyTasksCompletedFromTotal assembled data task =
                         |> socialHistoryFormWithDefault data.socialForm
 
                 showCounselingQuestion =
-                    assembled.previousMeasurementsWithDates
+                    assembled.nursePreviousMeasurementsWithDates
                         |> List.filter
                             (\( _, measurements ) ->
                                 measurements.socialHistory
@@ -789,7 +789,7 @@ historyTasksCompletedFromTotal assembled data task =
                         []
 
                 showTestingQuestions =
-                    assembled.previousMeasurementsWithDates
+                    assembled.nursePreviousMeasurementsWithDates
                         |> List.filter
                             (\( _, measurements ) ->
                                 measurements.socialHistory
@@ -831,22 +831,6 @@ historyTasksCompletedFromTotal assembled data task =
             , List.length boolInputs + List.length listInputs
             )
 
-        BirthPlan ->
-            let
-                form =
-                    assembled.measurements.birthPlan
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> birthPlanFormWithDefault data.birthPlanForm
-            in
-            ( taskCompleted form.haveInsurance
-                + taskCompleted form.boughtClothes
-                + taskCompleted form.caregiverAccompany
-                + taskCompleted form.savedMoney
-                + taskCompleted form.haveTransportation
-                + taskCompleted form.familyPlanning
-            , 6
-            )
-
 
 examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> Bool -> ExaminationTask -> ( Int, Int )
 examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
@@ -881,7 +865,7 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
 
                 form =
                     if hideHeightInput then
-                        assembled.previousMeasurementsWithDates
+                        assembled.nursePreviousMeasurementsWithDates
                             |> List.head
                             |> Maybe.andThen (Tuple.second >> getMotherHeightMeasurement)
                             |> Maybe.map (\(HeightInCm height) -> { form_ | height = Just height })
@@ -999,21 +983,6 @@ patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestio
                         |> resourceFormWithDefault data.resourcesForm
             in
             ( taskCompleted form.receivedMosquitoNet
-            , 1
-            )
-
-
-laboratoryTasksCompletedFromTotal : NominalDate -> PrenatalMeasurements -> LaboratoryData -> PrenatalLaboratoryTask -> ( Int, Int )
-laboratoryTasksCompletedFromTotal currentDate measurements data task =
-    case task of
-        LaboratoryPregnancyTesting ->
-            let
-                form =
-                    measurements.pregnancyTest
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> pregnancyTestingFormWithDefault data.pregnancyTestingForm
-            in
-            ( taskCompleted form.pregnancyTestResult
             , 1
             )
 

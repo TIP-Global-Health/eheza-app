@@ -2,8 +2,8 @@ module Pages.Router exposing (activePageByUrl, pageToFragment)
 
 import Activity.Model exposing (Activity)
 import Activity.Utils
-import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
-import AcuteIllnessActivity.Utils
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import Backend.AcuteIllnessActivity.Utils
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.HomeVisitActivity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
@@ -12,11 +12,11 @@ import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionActivity.Utils
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (initiatorFromUrlFragmemt, initiatorToUrlFragmemt)
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity)
+import Backend.PrenatalActivity.Utils
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), RecordPreganancyInitiator(..))
 import Backend.PrenatalEncounter.Utils exposing (..)
 import Pages.Page exposing (..)
-import PrenatalActivity.Model exposing (PrenatalActivity)
-import PrenatalActivity.Utils
 import Restful.Endpoint exposing (EntityUuid, fromEntityUuid, toEntityUuid)
 import Url
 import Url.Parser as Parser exposing ((</>), Parser, custom, int, map, oneOf, s, string, top)
@@ -187,7 +187,7 @@ pageToFragment current =
                     Just <| "prenatal-encounter/" ++ fromEntityUuid id
 
                 PrenatalActivityPage id activity ->
-                    Just <| "prenatal-activity/" ++ fromEntityUuid id ++ "/" ++ PrenatalActivity.Utils.encodeActivityAsString activity
+                    Just <| "prenatal-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.PrenatalActivity.Utils.encodeActivityAsString activity
 
                 IndividualEncounterTypesPage ->
                     Just "individual-encounter-types/"
@@ -208,7 +208,7 @@ pageToFragment current =
                     Just <| "acute-illness-encounter/" ++ fromEntityUuid id
 
                 AcuteIllnessActivityPage id activity ->
-                    Just <| "acute-illness-activity/" ++ fromEntityUuid id ++ "/" ++ AcuteIllnessActivity.Utils.encodeActivityAsString activity
+                    Just <| "acute-illness-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.AcuteIllnessActivity.Utils.encodeActivityAsString activity
 
                 AcuteIllnessProgressReportPage id ->
                     Just <| "acute-illness-progress-report/" ++ fromEntityUuid id
@@ -303,7 +303,7 @@ parseActivity =
 
 parsePrenatalActivity : Parser (PrenatalActivity -> c) c
 parsePrenatalActivity =
-    custom "PrenatalActivity" PrenatalActivity.Utils.decodeActivityFromString
+    custom "PrenatalActivity" Backend.PrenatalActivity.Utils.decodeActivityFromString
 
 
 parseNutritionActivity : Parser (NutritionActivity -> c) c
@@ -313,7 +313,7 @@ parseNutritionActivity =
 
 parseAcuteIllnessActivity : Parser (AcuteIllnessActivity -> c) c
 parseAcuteIllnessActivity =
-    custom "AcuteIllnessActivity" AcuteIllnessActivity.Utils.decodeActivityFromString
+    custom "AcuteIllnessActivity" Backend.AcuteIllnessActivity.Utils.decodeActivityFromString
 
 
 parseHomeVisitActivity : Parser (HomeVisitActivity -> c) c

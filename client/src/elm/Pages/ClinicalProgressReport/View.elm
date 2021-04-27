@@ -7,6 +7,21 @@ import Backend.Measurement.Model exposing (PrenatalMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
+import Backend.PrenatalActivity.Model
+    exposing
+        ( PregnancyTrimester(..)
+        , allMedicalDiagnosis
+        , allObstetricalDiagnosis
+        , allRiskFactors
+        , allTrimesters
+        )
+import Backend.PrenatalActivity.Utils
+    exposing
+        ( generateMedicalDiagnosisAlertData
+        , generateObstetricalDiagnosisAlertData
+        , generateRiskFactorAlertData
+        , getEncounterTrimesterData
+        )
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounter)
 import Date exposing (Interval(..))
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -23,21 +38,6 @@ import Pages.PrenatalActivity.Utils exposing (calculateBmi)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.Utils exposing (viewPhotoThumbFromPhotoUrl)
-import PrenatalActivity.Model
-    exposing
-        ( PregnancyTrimester(..)
-        , allMedicalDiagnosis
-        , allObstetricalDiagnosis
-        , allRiskFactors
-        , allTrimesters
-        )
-import PrenatalActivity.Utils
-    exposing
-        ( generateMedicalDiagnosisAlertData
-        , generateObstetricalDiagnosisAlertData
-        , generateRiskFactorAlertData
-        , getEncounterTrimesterData
-        )
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate)
@@ -229,7 +229,7 @@ viewPatientProgressPane : Language -> NominalDate -> AssembledData -> Html Msg
 viewPatientProgressPane language currentDate data =
     let
         allMeasurementsWithDates =
-            data.previousMeasurementsWithDates
+            data.nursePreviousMeasurementsWithDates
                 ++ [ ( currentDate, data.measurements ) ]
 
         allMeasurements =

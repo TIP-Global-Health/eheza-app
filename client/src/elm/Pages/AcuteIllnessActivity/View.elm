@@ -7,8 +7,8 @@ module Pages.AcuteIllnessActivity.View exposing
     , viewTabletsPrescription
     )
 
-import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)

@@ -25,7 +25,7 @@ general utilities, see `Translate.Model` and `Translate.Utils`.
 -}
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
-import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
@@ -42,6 +42,18 @@ import Backend.Person.Model
         , MaritalStatus(..)
         , ModeOfDelivery(..)
         , VaginalDelivery(..)
+        )
+import Backend.PrenatalActivity.Model
+    exposing
+        ( HighRiskFactor(..)
+        , HighSeverityAlert(..)
+        , MedicalDiagnosis(..)
+        , ObstetricalDiagnosis(..)
+        , PregnancyTrimester(..)
+        , PrenatalActivity(..)
+        , PrenatalNextStepsTask(..)
+        , RecurringHighSeverityAlert(..)
+        , RiskFactor(..)
         )
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
@@ -79,18 +91,6 @@ import Pages.PrenatalActivity.Model
         , HistoryTask(..)
         , LmpRange(..)
         , PatientProvisionsTask(..)
-        , PrenatalLaboratoryTask(..)
-        )
-import PrenatalActivity.Model
-    exposing
-        ( HighRiskFactor(..)
-        , HighSeverityAlert(..)
-        , MedicalDiagnosis(..)
-        , ObstetricalDiagnosis(..)
-        , PregnancyTrimester(..)
-        , PrenatalActivity(..)
-        , RecurringHighSeverityAlert(..)
-        , RiskFactor(..)
         )
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -714,7 +714,7 @@ type TranslationId
     | PregnancyUrineTest
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounterType PrenatalEncounterType
-    | PrenatalLaboratoryTask PrenatalLaboratoryTask
+    | PrenatalNextStepsTask PrenatalNextStepsTask
     | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
@@ -3397,12 +3397,12 @@ translationSet trans =
 
         HighRiskFactor factor ->
             case factor of
-                PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
+                Backend.PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
                     { english = "Patient experienced convulsions in previous delivery and became unconscious after delivery"
                     , kinyarwanda = Nothing
                     }
 
-                PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
+                Backend.PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
                     { english = "Patient experienced convulsions in previous delivery"
                     , kinyarwanda = Nothing
                     }
@@ -3414,27 +3414,27 @@ translationSet trans =
 
         HighSeverityAlert alert ->
             case alert of
-                PrenatalActivity.Model.BodyTemperature ->
+                Backend.PrenatalActivity.Model.BodyTemperature ->
                     { english = "Body Temperature"
                     , kinyarwanda = Just "Ubushyuhe bw'umubiri"
                     }
 
-                PrenatalActivity.Model.FetalHeartRate ->
+                Backend.PrenatalActivity.Model.FetalHeartRate ->
                     { english = "No fetal heart rate noted"
                     , kinyarwanda = Just "Umutima w'umwana ntutera"
                     }
 
-                PrenatalActivity.Model.FetalMovement ->
+                Backend.PrenatalActivity.Model.FetalMovement ->
                     { english = "No fetal movement noted"
                     , kinyarwanda = Just "Umwana ntakina mu nda"
                     }
 
-                PrenatalActivity.Model.HeartRate ->
+                Backend.PrenatalActivity.Model.HeartRate ->
                     { english = "Heart Rate"
                     , kinyarwanda = Nothing
                     }
 
-                PrenatalActivity.Model.RespiratoryRate ->
+                Backend.PrenatalActivity.Model.RespiratoryRate ->
                     { english = "Respiratory Rate"
                     , kinyarwanda = Just "Inshuro ahumeka"
                     }
@@ -3459,11 +3459,6 @@ translationSet trans =
                 Social ->
                     { english = "Partner Information"
                     , kinyarwanda = Just "Amakuru y'uwo bashakanye (umugabo)"
-                    }
-
-                BirthPlan ->
-                    { english = "Birth Plan"
-                    , kinyarwanda = Nothing
                     }
 
         HIV ->
@@ -5377,7 +5372,7 @@ translationSet trans =
                     , kinyarwanda = Just "Gusuzuma"
                     }
 
-                PrenatalActivity.Model.FamilyPlanning ->
+                Backend.PrenatalActivity.Model.FamilyPlanning ->
                     { english = "Family Planning"
                     , kinyarwanda = Just "Kuboneza Urubyaro"
                     }
@@ -5402,8 +5397,28 @@ translationSet trans =
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                PrenatalLaboratory ->
+                Laboratory ->
                     { english = "Laboratory"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalActivity.Model.HealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Nothing
+                    }
+
+                BirthPlan ->
+                    { english = "Birth Plan"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalActivity.Model.NextSteps ->
+                    { english = "Next Steps"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalActivity.Model.PregnancyOutcome ->
+                    { english = "Pregnancy Outcome"
                     , kinyarwanda = Nothing
                     }
 
@@ -5434,10 +5449,30 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        PrenatalLaboratoryTask task ->
+        PrenatalNextStepsTask task ->
             case task of
-                LaboratoryPregnancyTesting ->
-                    { english = "Urine Pregnancy Test"
+                AppointmentConfirmation ->
+                    { english = "Appointment Confirmation"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalActivity.Model.FollowUp ->
+                    { english = "Chw Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalActivity.Model.SendToHC ->
+                    { english = "Send to Health Center"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalActivity.Model.TaskHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Nothing
+                    }
+
+                NewbornEnrollment ->
+                    { english = "Newborn Enrollment"
                     , kinyarwanda = Nothing
                     }
 
@@ -5799,7 +5834,7 @@ translationSet trans =
 
         RecurringHighSeverityAlert alert ->
             case alert of
-                PrenatalActivity.Model.BloodPressure ->
+                Backend.PrenatalActivity.Model.BloodPressure ->
                     { english = "Blood Pressure"
                     , kinyarwanda = Just "Umuvuduko w'amaraso"
                     }

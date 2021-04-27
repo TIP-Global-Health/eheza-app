@@ -1,42 +1,4 @@
-module Pages.PrenatalActivity.Model exposing
-    ( BirthPlanForm
-    , BreastExamForm
-    , CorePhysicalExamForm
-    , DangerSignsData
-    , DangerSignsForm
-    , ExaminationData
-    , ExaminationTask(..)
-    , FamilyPlanningData
-    , FamilyPlanningForm
-    , HistoryData
-    , HistoryTask(..)
-    , LaboratoryData
-    , LmpRange(..)
-    , MedicalHistoryForm
-    , MedicationForm
-    , Model
-    , Msg(..)
-    , NutritionAssessmentForm
-    , ObstetricFormFirstStep
-    , ObstetricFormSecondStep
-    , ObstetricHistoryStep(..)
-    , ObstetricalExamForm
-    , PatientProvisionsData
-    , PatientProvisionsTask(..)
-    , PregnancyDatingData
-    , PregnancyDatingForm
-    , PregnancyTestingForm
-    , PrenatalLaboratoryTask(..)
-    , PrenatalPhotoData
-    , ResourcesForm
-    , SocialHistoryForm
-    , VitalsForm
-    , decodeLmpRange
-    , emptyModel
-    , emptyObstetricFormFirstStep
-    , emptyObstetricFormSecondStep
-    , encodeLmpRange
-    )
+module Pages.PrenatalActivity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -123,9 +85,8 @@ type Msg
       -- BirthPlanMsgs
     | SetBirthPlanBoolInput (Bool -> BirthPlanForm -> BirthPlanForm) Bool
     | SetBirthPlanFamilyPlanning FamilyPlanningSign
-    | SaveBirthPlan PersonId (Maybe ( BirthPlanId, BirthPlan )) (Maybe HistoryTask)
+    | SaveBirthPlan PersonId (Maybe ( BirthPlanId, BirthPlan ))
       -- LABORATORYMsgs
-    | SetActivePrenatalLaboratoryTask PrenatalLaboratoryTask
     | SetPregnancyTestResult String
     | SavePregnancyTesting PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
 
@@ -138,6 +99,7 @@ type alias Model =
     , patientProvisionsData : PatientProvisionsData
     , dangerSignsData : DangerSignsData
     , prenatalPhotoData : PrenatalPhotoData
+    , birthPlanData : BirthPlanData
     , laboratoryData : LaboratoryData
     , showAlertsDialog : Bool
     }
@@ -152,6 +114,7 @@ emptyModel =
     , patientProvisionsData = emptyPatientProvisionsData
     , dangerSignsData = emptyDangerSignsData
     , prenatalPhotoData = emptyPrenatalPhotoData
+    , birthPlanData = emptyBirthPlanData
     , laboratoryData = emptyLaboratoryData
     , showAlertsDialog = False
     }
@@ -174,7 +137,6 @@ type alias HistoryData =
     , obstetricHistoryStep : ObstetricHistoryStep
     , medicalForm : MedicalHistoryForm
     , socialForm : SocialHistoryForm
-    , birthPlanForm : BirthPlanForm
     , activeTask : HistoryTask
     }
 
@@ -186,7 +148,6 @@ emptyHistoryData =
     , obstetricHistoryStep = ObstetricHistoryFirstStep
     , medicalForm = emptyMedicalHistoryForm
     , socialForm = emptySocialHistoryForm
-    , birthPlanForm = emptyBirthPlanForm
     , activeTask = Obstetric
     }
 
@@ -213,20 +174,14 @@ emptyExaminationData =
 
 
 type alias LaboratoryData =
-    { pregnancyTestingForm : PregnancyTestingForm
-    , activeTask : PrenatalLaboratoryTask
+    { form : PregnancyTestingForm
     }
 
 
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
-    { pregnancyTestingForm = PregnancyTestingForm Nothing
-    , activeTask = LaboratoryPregnancyTesting
+    { form = PregnancyTestingForm Nothing
     }
-
-
-type PrenatalLaboratoryTask
-    = LaboratoryPregnancyTesting
 
 
 type alias FamilyPlanningData =
@@ -272,8 +227,7 @@ type ObstetricHistoryStep
 
 
 type HistoryTask
-    = BirthPlan
-    | Obstetric
+    = Obstetric
     | Medical
     | Social
 
@@ -623,6 +577,16 @@ type alias PrenatalPhotoData =
 emptyPrenatalPhotoData : PrenatalPhotoData
 emptyPrenatalPhotoData =
     { url = Nothing }
+
+
+type alias BirthPlanData =
+    { form : BirthPlanForm
+    }
+
+
+emptyBirthPlanData : BirthPlanData
+emptyBirthPlanData =
+    BirthPlanData emptyBirthPlanForm
 
 
 type alias BirthPlanForm =

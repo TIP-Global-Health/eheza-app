@@ -156,7 +156,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
             ]
 
         showWarningPopup =
-            model.showWarningPopup && isJust maybeSessionId && List.isEmpty chwEncounters
+            isChw && model.showWarningPopup && isJust maybeSessionId && List.isEmpty chwEncounters
 
         popup =
             if showWarningPopup then
@@ -307,7 +307,7 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
         maybeSessionId =
             Maybe.map Tuple.first activePrgnancyData
 
-        ( maybeActiveEncounterId, lastEncounterType ) =
+        ( maybeActiveEncounterId, lastEncounterType, encounterWasCompletedToday ) =
             encounters
                 |> List.head
                 |> Maybe.map
@@ -320,9 +320,9 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                                 else
                                     Just encounterId
                         in
-                        ( activeEncounterId, Just encounter.encounterType )
+                        ( activeEncounterId, Just encounter.encounterType, encounter.endDate == Just currentDate )
                     )
-                |> Maybe.withDefault ( Nothing, Nothing )
+                |> Maybe.withDefault ( Nothing, Nothing, False )
 
         -- Button for certain type is active when:
         -- 1. There's an active encounter, and it's type matches button encounter type.
@@ -338,13 +338,13 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                         isNothing lastEncounterType
 
                     ChwSecondEncounter ->
-                        lastEncounterType == Just ChwFirstEncounter
+                        lastEncounterType == Just ChwFirstEncounter && not encounterWasCompletedToday
 
                     ChwThirdEncounter ->
-                        lastEncounterType == Just ChwSecondEncounter
+                        lastEncounterType == Just ChwSecondEncounter && not encounterWasCompletedToday
 
                     ChwPostpartumEncounter ->
-                        lastEncounterType == Just ChwThirdEncounter
+                        lastEncounterType == Just ChwThirdEncounter && not encounterWasCompletedToday
 
                     -- We shoould never get here, as we deal only with CHW encounters.
                     NurseEncounter ->

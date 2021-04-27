@@ -1591,23 +1591,12 @@ update currentDate id db msg model =
                 updatedData =
                     let
                         updatedForm =
-                            formUpdateFunc value model.historyData.birthPlanForm
+                            formUpdateFunc value model.birthPlanData.form
                     in
-                    model.historyData
-                        |> (\data -> { data | birthPlanForm = updatedForm })
+                    model.birthPlanData
+                        |> (\data -> { data | form = updatedForm })
             in
-            ( { model | historyData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetActivePrenatalLaboratoryTask task ->
-            let
-                updatedData =
-                    model.laboratoryData
-                        |> (\data -> { data | activeTask = task })
-            in
-            ( { model | laboratoryData = updatedData }
+            ( { model | birthPlanData = updatedData }
             , Cmd.none
             , []
             )
@@ -1621,9 +1610,9 @@ update currentDate id db msg model =
                         |> Maybe.map
                             (.birthPlan
                                 >> Maybe.map (Tuple.second >> .value)
-                                >> birthPlanFormWithDefault model.historyData.birthPlanForm
+                                >> birthPlanFormWithDefault model.birthPlanData.form
                             )
-                        |> Maybe.withDefault model.historyData.birthPlanForm
+                        |> Maybe.withDefault model.birthPlanData.form
 
                 updatedForm =
                     case form.familyPlanning of
@@ -1660,10 +1649,10 @@ update currentDate id db msg model =
                             { form | familyPlanning = Just [ sign ] }
 
                 updatedData =
-                    model.historyData
-                        |> (\data -> { data | birthPlanForm = updatedForm })
+                    model.birthPlanData
+                        |> (\data -> { data | form = updatedForm })
             in
-            ( { model | historyData = updatedData }
+            ( { model | birthPlanData = updatedData }
             , Cmd.none
             , []
             )
@@ -1676,18 +1665,18 @@ update currentDate id db msg model =
                 updatedData =
                     let
                         updatedForm =
-                            model.laboratoryData.pregnancyTestingForm
+                            model.laboratoryData.form
                                 |> (\form -> { form | pregnancyTestResult = result })
                     in
                     model.laboratoryData
-                        |> (\data -> { data | pregnancyTestingForm = updatedForm })
+                        |> (\data -> { data | form = updatedForm })
             in
             ( { model | laboratoryData = updatedData }
             , Cmd.none
             , []
             )
 
-        SaveBirthPlan personId saved nextTask_ ->
+        SaveBirthPlan personId saved ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1695,35 +1684,20 @@ update currentDate id db msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
-                updatedForm =
-                    model.historyData.birthPlanForm
-
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
-                            , BirthPlan
-                            )
-
                 appMsgs =
-                    updatedForm
+                    model.birthPlanData.form
                         |> toBirthPlanValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->
-                                (Backend.PrenatalEncounter.Model.SaveBirthPlan personId measurementId value
+                                [ Backend.PrenatalEncounter.Model.SaveBirthPlan personId measurementId value
                                     |> Backend.Model.MsgPrenatalEncounter id
                                     |> App.Model.MsgIndexedDb
-                                )
-                                    :: backToActivitiesMsg
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                ]
                             )
-
-                updatedData =
-                    model.historyData
-                        |> (\data -> { data | activeTask = nextTask })
             in
-            ( { model | historyData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
@@ -1737,7 +1711,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 appMsgs =
-                    model.laboratoryData.pregnancyTestingForm
+                    model.laboratoryData.form
                         |> toPregnancyTestingValueWithDefault measurement
                         |> unwrap
                             []

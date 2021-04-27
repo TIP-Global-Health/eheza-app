@@ -1,4 +1,4 @@
-module AcuteIllnessActivity.Utils exposing (decodeActivityFromString, defaultActivity, encodeActivityAsString, getActivityIcon, getAllActivities)
+module Backend.AcuteIllnessActivity.Utils exposing (decodeActivityFromString, defaultActivity, encodeActivityAsString, getActivityIcon, getAllActivities)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -10,8 +10,8 @@ expected (and not completed).
 
 -}
 
-import AcuteIllnessActivity.Model exposing (..)
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessActivity.Model exposing (..)
 import Translate exposing (Language, translate)
 
 

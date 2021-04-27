@@ -1,8 +1,8 @@
 module Pages.AcuteIllnessEncounter.View exposing (splitActivities, view, viewEndEncounterButton, viewPersonDetailsWithAlert, warningPopup)
 
-import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
-import AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import Backend.AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))

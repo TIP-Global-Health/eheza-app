@@ -7,6 +7,14 @@ import Backend.Measurement.Model exposing (ObstetricHistoryValue, PrenatalMeasur
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.PrenatalActivity.Model exposing (..)
+import Backend.PrenatalActivity.Utils
+    exposing
+        ( generateHighRiskAlertData
+        , generateHighSeverityAlertData
+        , generateRecurringHighSeverityAlertData
+        , getActivityIcon
+        )
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounter)
 import Date exposing (Interval(..))
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
@@ -18,15 +26,6 @@ import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (..)
-import PrenatalActivity.Model exposing (..)
-import PrenatalActivity.Utils
-    exposing
-        ( generateHighRiskAlertData
-        , generateHighSeverityAlertData
-        , generateRecurringHighSeverityAlertData
-        , getActivityIcon
-        , getAllActivities
-        )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -330,58 +329,10 @@ viewMeasurements language currentDate lmpDate obstetricHistory =
 viewMainPageContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
 viewMainPageContent language currentDate data model =
     let
-        isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
-
         ( completedActivities, pendingActivities ) =
-            getAllActivities isFirstEncounter
-                |> List.filter (expectPrenatalActivity currentDate data)
-                |> List.partition
-                    (\activity ->
-                        case activity of
-                            PregnancyDating ->
-                                isJust data.measurements.lastMenstrualPeriod
-
-                            History ->
-                                if List.isEmpty data.previousMeasurementsWithDates then
-                                    -- First antenatal encounter - all tasks should be completed
-                                    isJust data.measurements.obstetricHistory
-                                        && isJust data.measurements.obstetricHistoryStep2
-                                        && isJust data.measurements.medicalHistory
-                                        && isJust data.measurements.socialHistory
-                                        && isJust data.measurements.birthPlan
-
-                                else
-                                    -- Subsequent antenatal encounter - only Social history task
-                                    -- needs to be completed.
-                                    isJust data.measurements.socialHistory
-
-                            Examination ->
-                                isJust data.measurements.vitals
-                                    && isJust data.measurements.nutrition
-                                    && isJust data.measurements.corePhysicalExam
-                                    && isJust data.measurements.obstetricalExam
-                                    && isJust data.measurements.breastExam
-
-                            FamilyPlanning ->
-                                isJust data.measurements.familyPlanning
-
-                            PatientProvisions ->
-                                if shouldShowPatientProvisionsResourcesTask data then
-                                    isJust data.measurements.medication && isJust data.measurements.resource
-
-                                else
-                                    isJust data.measurements.medication
-
-                            DangerSigns ->
-                                isJust data.measurements.dangerSigns
-
-                            PrenatalPhoto ->
-                                isJust data.measurements.prenatalPhoto
-
-                            PrenatalLaboratory ->
-                                isJust data.measurements.pregnancyTest
-                    )
+            getAllActivities data
+                |> List.filter (expectActivity currentDate data)
+                |> List.partition (activityCompleted currentDate data)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities

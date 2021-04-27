@@ -2,9 +2,9 @@ module Backend.Update exposing (updateIndexedDb)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), SummaryByActivity, SummaryByParticipant)
 import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
-import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import App.Model
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), emptyAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Update
 import Backend.Clinic.Model exposing (ClinicType(..))
