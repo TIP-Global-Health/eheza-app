@@ -265,6 +265,7 @@ resolveNextStepsTasks currentDate data =
             []
 
         _ ->
+            -- The order is important. Do not change.
             [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrollment ]
                 |> List.filter (expectNextStepsTasks currentDate data)
 
@@ -291,10 +292,10 @@ expectNextStepsTasks currentDate data task =
             dangerSigns
 
         NextStepsHealthEducation ->
-            data.encounter.encounterType == ChwPostpartumEncounter
+            data.encounter.encounterType == ChwPostpartumEncounter && not dangerSigns
 
         NextStepsNewbornEnrollment ->
-            data.encounter.encounterType == ChwPostpartumEncounter
+            data.encounter.encounterType == ChwPostpartumEncounter && not dangerSigns
 
 
 calculateEDD : NominalDate -> NominalDate
