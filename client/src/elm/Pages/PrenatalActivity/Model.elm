@@ -125,6 +125,14 @@ emptyModel =
     }
 
 
+type NextStepsTask
+    = NextStepsAppointmentConfirmation
+    | NextStepsFollowUp
+    | NextStepsSendToHC
+    | NextStepsHealthEducation
+    | NextStepsNewbornEnrollment
+
+
 
 -- DATA
 
