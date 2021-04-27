@@ -178,7 +178,7 @@ noDangerSigns measurements =
     let
         signs =
             measurements.dangerSigns
-                |> Maybe.map (Tuple.second >> .value >> EverySet.toList)
+                |> Maybe.map (Tuple.second >> .value >> .signs >> EverySet.toList)
     in
     case signs of
         Just [ NoDangerSign ] ->

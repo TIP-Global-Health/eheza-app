@@ -638,14 +638,15 @@ emptyResourcesForm =
 
 
 type alias DangerSignsForm =
-    -- Should be EverySet
     { signs : Maybe (List DangerSign)
+    , postpartumMother : Maybe (List PostpartumMotherDangerSign)
+    , postpartumChild : Maybe (List PostpartumChildDangerSign)
     }
 
 
 emptyDangerSignsForm : DangerSignsForm
 emptyDangerSignsForm =
-    DangerSignsForm Nothing
+    DangerSignsForm Nothing Nothing Nothing
 
 
 type alias BirthPlanForm =

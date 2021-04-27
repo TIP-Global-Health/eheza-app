@@ -106,7 +106,7 @@ type Msg
     | HandleSavedBreastExam (WebData ())
     | SaveCorePhysicalExam PersonId (Maybe CorePhysicalExamId) CorePhysicalExamValue
     | HandleSavedCorePhysicalExam (WebData ())
-    | SaveDangerSigns PersonId (Maybe DangerSignsId) (EverySet DangerSign)
+    | SaveDangerSigns PersonId (Maybe DangerSignsId) DangerSignsValue
     | HandleSavedDangerSigns (WebData ())
     | SaveLastMenstrualPeriod PersonId (Maybe LastMenstrualPeriodId) LastMenstrualPeriodValue
     | HandleSavedLastMenstrualPeriod (WebData ())
