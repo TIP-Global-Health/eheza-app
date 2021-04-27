@@ -739,6 +739,8 @@ type PrenatalHealthEducationSign
     | NoPrenatalHealthEducationSigns
 
 
+type alias PrenatalFollowUp =
+    PrenatalMeasurement (EverySet FollowUpOption)
 
 -- ACUTE ILLNESS MEASUREMENTS
 
