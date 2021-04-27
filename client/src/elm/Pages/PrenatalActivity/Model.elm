@@ -89,6 +89,9 @@ type Msg
       -- LABORATORYMsgs
     | SetPregnancyTestResult String
     | SavePregnancyTesting PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
+      -- HealtEducationMsgs
+    | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
+    | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation ))
 
 
 type alias Model =
@@ -101,6 +104,7 @@ type alias Model =
     , prenatalPhotoData : PrenatalPhotoData
     , birthPlanData : BirthPlanData
     , laboratoryData : LaboratoryData
+    , healthEducationData : HealthEducationData
     , showAlertsDialog : Bool
     }
 
@@ -116,8 +120,13 @@ emptyModel =
     , prenatalPhotoData = emptyPrenatalPhotoData
     , birthPlanData = emptyBirthPlanData
     , laboratoryData = emptyLaboratoryData
+    , healthEducationData = emptyHealthEducationData
     , showAlertsDialog = False
     }
+
+
+
+-- DATA
 
 
 type alias PregnancyDatingData =
@@ -173,17 +182,6 @@ emptyExaminationData =
     }
 
 
-type alias LaboratoryData =
-    { form : PregnancyTestingForm
-    }
-
-
-emptyLaboratoryData : LaboratoryData
-emptyLaboratoryData =
-    { form = PregnancyTestingForm Nothing
-    }
-
-
 type alias FamilyPlanningData =
     { form : FamilyPlanningForm
     }
@@ -219,6 +217,50 @@ emptyDangerSignsData : DangerSignsData
 emptyDangerSignsData =
     { form = emptyDangerSignsForm
     }
+
+
+type alias PrenatalPhotoData =
+    { url : Maybe PhotoUrl }
+
+
+emptyPrenatalPhotoData : PrenatalPhotoData
+emptyPrenatalPhotoData =
+    { url = Nothing }
+
+
+type alias BirthPlanData =
+    { form : BirthPlanForm
+    }
+
+
+emptyBirthPlanData : BirthPlanData
+emptyBirthPlanData =
+    BirthPlanData emptyBirthPlanForm
+
+
+type alias LaboratoryData =
+    { form : PregnancyTestingForm
+    }
+
+
+emptyLaboratoryData : LaboratoryData
+emptyLaboratoryData =
+    { form = PregnancyTestingForm Nothing
+    }
+
+
+type alias HealthEducationData =
+    { form : HealthEducationForm
+    }
+
+
+emptyHealthEducationData : HealthEducationData
+emptyHealthEducationData =
+    HealthEducationData emptyHealthEducationForm
+
+
+
+-- FORMS
 
 
 type ObstetricHistoryStep
@@ -570,25 +612,6 @@ emptyDangerSignsForm =
     DangerSignsForm Nothing
 
 
-type alias PrenatalPhotoData =
-    { url : Maybe PhotoUrl }
-
-
-emptyPrenatalPhotoData : PrenatalPhotoData
-emptyPrenatalPhotoData =
-    { url = Nothing }
-
-
-type alias BirthPlanData =
-    { form : BirthPlanForm
-    }
-
-
-emptyBirthPlanData : BirthPlanData
-emptyBirthPlanData =
-    BirthPlanData emptyBirthPlanForm
-
-
 type alias BirthPlanForm =
     { haveInsurance : Maybe Bool
     , boughtClothes : Maybe Bool
@@ -612,4 +635,29 @@ emptyBirthPlanForm =
 
 type alias PregnancyTestingForm =
     { pregnancyTestResult : Maybe PregnancyTestResult
+    }
+
+
+type alias HealthEducationForm =
+    { expecations : Maybe Bool
+    , visitsReview : Maybe Bool
+    , warningSigns : Maybe Bool
+    , hemorrhaging : Maybe Bool
+    , familyPlanning : Maybe Bool
+    , breastfeeding : Maybe Bool
+    , immunization : Maybe Bool
+    , hygiene : Maybe Bool
+    }
+
+
+emptyHealthEducationForm : HealthEducationForm
+emptyHealthEducationForm =
+    { expecations = Nothing
+    , visitsReview = Nothing
+    , warningSigns = Nothing
+    , hemorrhaging = Nothing
+    , familyPlanning = Nothing
+    , breastfeeding = Nothing
+    , immunization = Nothing
+    , hygiene = Nothing
     }

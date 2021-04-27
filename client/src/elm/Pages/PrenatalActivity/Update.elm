@@ -1727,3 +1727,44 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetHealthEducationBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.healthEducationData.form
+                    in
+                    model.healthEducationData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | healthEducationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHealthEducation personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.healthEducationData.form
+                        |> toHealthEducationValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveHealthEducation personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
