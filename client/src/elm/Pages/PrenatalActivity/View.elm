@@ -18,7 +18,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
-import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -1153,11 +1152,6 @@ viewLaboratoryContent language currentDate assembled data =
 viewHealthEducationContent : Language -> NominalDate -> AssembledData -> HealthEducationData -> List (Html Msg)
 viewHealthEducationContent language currentDate assembled data =
     let
-        form =
-            assembled.measurements.healthEducation
-                |> Maybe.map (Tuple.second >> .value)
-                |> healthEducationFormWithDefault data.form
-
         totalTasks =
             List.length tasks
 
@@ -1165,210 +1159,14 @@ viewHealthEducationContent language currentDate assembled data =
             List.map taskCompleted tasks
                 |> List.sum
 
-        -- If Health education was not completed at previous encounter,
-        -- it's inputs are added to next encounter.
         ( inputs, tasks ) =
-            let
-                ( inputsFromFirst, tasksFromFirst ) =
-                    if healthEducationCompletedAtEncounter ChwFirstEncounter then
-                        ( [], [] )
-
-                    else
-                        ( firstEnconterInputs, firstEnconterTasks )
-
-                ( inputsFromSecond, tasksFromSecond ) =
-                    if healthEducationCompletedAtEncounter ChwSecondEncounter then
-                        ( [], [] )
-
-                    else
-                        ( secondEnconterInputs, secondEnconterTasks )
-
-                ( inputsFromThird, tasksFromThird ) =
-                    if healthEducationCompletedAtEncounter ChwThirdEncounter then
-                        ( [], [] )
-
-                    else
-                        ( thirdEnconterInputs, thirdEnconterTasks )
-            in
-            case assembled.encounter.encounterType of
-                ChwFirstEncounter ->
-                    ( inputsFromFirst, tasksFromFirst )
-
-                ChwSecondEncounter ->
-                    ( inputsFromFirst ++ inputsFromSecond, tasksFromFirst ++ tasksFromSecond )
-
-                ChwThirdEncounter ->
-                    ( inputsFromFirst ++ inputsFromSecond ++ inputsFromThird, tasksFromFirst ++ tasksFromSecond ++ tasksFromThird )
-
-                ChwPostpartumEncounter ->
-                    ( inputsFromFirst ++ inputsFromSecond ++ inputsFromThird ++ postpartumEnconterInputs
-                    , tasksFromFirst ++ tasksFromSecond ++ tasksFromThird ++ postpartumEnconterTasks
-                    )
-
-                -- We should never get here, as health
-                -- education is presented only for CHW.
-                NurseEncounter ->
-                    ( [], [] )
-
-        healthEducationCompletedAtEncounter encounterType =
-            let
-                encounterSequenceNumber =
-                    case encounterType of
-                        ChwFirstEncounter ->
-                            0
-
-                        ChwSecondEncounter ->
-                            1
-
-                        ChwThirdEncounter ->
-                            2
-
-                        ChwPostpartumEncounter ->
-                            3
-
-                        -- We should never get here, as health
-                        -- education is presented only for CHW.
-                        NurseEncounter ->
-                            -1
-            in
-            assembled.chwPreviousMeasurementsWithDates
-                |> List.Extra.getAt encounterSequenceNumber
-                |> Maybe.andThen (Tuple.second >> .healthEducation)
-                |> isJust
-
-        firstEnconterInputs =
-            [ expectationsInput, visitsReviewInput, warningSignsInput ]
-
-        firstEnconterTasks =
-            [ form.expectations, form.visitsReview, form.warningSigns ]
-
-        secondEnconterInputs =
-            [ hemorrhagingInput ]
-
-        secondEnconterTasks =
-            [ form.hemorrhaging ]
-
-        thirdEnconterInputs =
-            [ familyPlanningInput, breastfeedingInput ]
-
-        thirdEnconterTasks =
-            [ form.familyPlanning, form.breastfeeding ]
-
-        postpartumEnconterInputs =
-            [ immunizationInput, hygieneInput ]
-
-        postpartumEnconterTasks =
-            [ form.immunization, form.hygiene ]
-
-        expectationsUpdateFunc value form_ =
-            { form_ | expectations = Just value }
-
-        expectationsInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationExpectations
-            , viewBoolInput
-                language
-                form.expectations
-                (SetHealthEducationBoolInput expectationsUpdateFunc)
-                "expectations"
-                Nothing
-            ]
-
-        visitsReviewUpdateFunc value form_ =
-            { form_ | visitsReview = Just value }
-
-        visitsReviewInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationVisitsReview
-            , viewBoolInput
-                language
-                form.visitsReview
-                (SetHealthEducationBoolInput visitsReviewUpdateFunc)
-                "visits-review"
-                Nothing
-            ]
-
-        warningSignsUpdateFunc value form_ =
-            { form_ | warningSigns = Just value }
-
-        warningSignsInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationWarningSigns
-            , viewBoolInput
-                language
-                form.warningSigns
-                (SetHealthEducationBoolInput warningSignsUpdateFunc)
-                "warning-signs"
-                Nothing
-            ]
-
-        hemorrhagingUpdateFunc value form_ =
-            { form_ | hemorrhaging = Just value }
-
-        hemorrhagingInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationHemorrhaging
-            , viewBoolInput
-                language
-                form.hemorrhaging
-                (SetHealthEducationBoolInput hemorrhagingUpdateFunc)
-                "hemorrhaging"
-                Nothing
-            ]
-
-        familyPlanningUpdateFunc value form_ =
-            { form_ | familyPlanning = Just value }
-
-        familyPlanningInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationFamilyPlanning
-            , viewBoolInput
-                language
-                form.familyPlanning
-                (SetHealthEducationBoolInput familyPlanningUpdateFunc)
-                "family-planning"
-                Nothing
-            ]
-
-        breastfeedingUpdateFunc value form_ =
-            { form_ | breastfeeding = Just value }
-
-        breastfeedingInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationBreastfeeding
-            , viewBoolInput
-                language
-                form.breastfeeding
-                (SetHealthEducationBoolInput breastfeedingUpdateFunc)
-                "breastfeeding"
-                Nothing
-            ]
-
-        immunizationUpdateFunc value form_ =
-            { form_ | immunization = Just value }
-
-        immunizationInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationImmunization
-            , viewBoolInput
-                language
-                form.immunization
-                (SetHealthEducationBoolInput immunizationUpdateFunc)
-                "immunization"
-                Nothing
-            ]
-
-        hygieneUpdateFunc value form_ =
-            { form_ | hygiene = Just value }
-
-        hygieneInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationHygiene
-            , viewBoolInput
-                language
-                form.hygiene
-                (SetHealthEducationBoolInput hygieneUpdateFunc)
-                "hygiene"
-                Nothing
-            ]
+            healthEducationFormInputsAndTasks language assembled data.form
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form health-education" ] <|
-                List.concat inputs
+            [ div [ class "ui form health-education" ]
+                inputs
             ]
         , div [ class "actions" ]
             [ button
@@ -1459,7 +1257,7 @@ viewNextStepsContent language currentDate assembled data =
             tasks
                 |> List.map
                     (\task ->
-                        ( task, nextStepsTasksCompletedFromTotal measurements data task )
+                        ( task, nextStepsTasksCompletedFromTotal language assembled data task )
                     )
                 |> Dict.fromList
 
@@ -1483,11 +1281,10 @@ viewNextStepsContent language currentDate assembled data =
                     emptyNode
 
                 Just NextStepsHealthEducation ->
-                    -- measurements.healthEducation
-                    --     |> Maybe.map (Tuple.second >> .value)
-                    --     |> healthEducationFormWithDefault data.healthEducationForm
-                    --     |> viewHealthEducationForm language currentDate diagnosis
-                    emptyNode
+                    measurements.healthEducation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> healthEducationFormWithDefault data.healthEducationForm
+                        |> viewHealthEducationForm language currentDate assembled
 
                 Just NextStepsNewbornEnrollment ->
                     -- @todo
@@ -2792,218 +2589,13 @@ viewResourcesForm language currentDate assembled form =
 
 
 viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
-viewHealthEducationForm language currentDate assembled form_ =
-    emptyNode
-
-
-healthEducationFormInputsAndTasks : Language -> NominalDate -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
-healthEducationFormInputsAndTasks language currentDate assembled healthEducationForm =
+viewHealthEducationForm language currentDate assembled form =
     let
-        form =
-            assembled.measurements.healthEducation
-                |> Maybe.map (Tuple.second >> .value)
-                |> healthEducationFormWithDefault healthEducationForm
-
-        -- If Health education was not completed at previous encounter,
-        -- its inputs are added to next encounter.
-        ( inputs, tasks ) =
-            let
-                ( inputsFromFirst, tasksFromFirst ) =
-                    if healthEducationCompletedAtEncounter ChwFirstEncounter then
-                        ( [], [] )
-
-                    else
-                        ( firstEnconterInputs, firstEnconterTasks )
-
-                ( inputsFromSecond, tasksFromSecond ) =
-                    if healthEducationCompletedAtEncounter ChwSecondEncounter then
-                        ( [], [] )
-
-                    else
-                        ( secondEnconterInputs, secondEnconterTasks )
-
-                ( inputsFromThird, tasksFromThird ) =
-                    if healthEducationCompletedAtEncounter ChwThirdEncounter then
-                        ( [], [] )
-
-                    else
-                        ( thirdEnconterInputs, thirdEnconterTasks )
-            in
-            case assembled.encounter.encounterType of
-                ChwFirstEncounter ->
-                    ( inputsFromFirst, tasksFromFirst )
-
-                ChwSecondEncounter ->
-                    ( inputsFromFirst ++ inputsFromSecond, tasksFromFirst ++ tasksFromSecond )
-
-                ChwThirdEncounter ->
-                    ( inputsFromFirst ++ inputsFromSecond ++ inputsFromThird, tasksFromFirst ++ tasksFromSecond ++ tasksFromThird )
-
-                ChwPostpartumEncounter ->
-                    ( inputsFromFirst ++ inputsFromSecond ++ inputsFromThird ++ postpartumEnconterInputs
-                    , tasksFromFirst ++ tasksFromSecond ++ tasksFromThird ++ postpartumEnconterTasks
-                    )
-
-                -- We should never get here, as health
-                -- education is presented only for CHW.
-                NurseEncounter ->
-                    ( [], [] )
-
-        healthEducationCompletedAtEncounter encounterType =
-            let
-                encounterSequenceNumber =
-                    case encounterType of
-                        ChwFirstEncounter ->
-                            0
-
-                        ChwSecondEncounter ->
-                            1
-
-                        ChwThirdEncounter ->
-                            2
-
-                        ChwPostpartumEncounter ->
-                            3
-
-                        -- We should never get here, as health
-                        -- education is presented only for CHW.
-                        NurseEncounter ->
-                            -1
-            in
-            assembled.chwPreviousMeasurementsWithDates
-                |> List.Extra.getAt encounterSequenceNumber
-                |> Maybe.andThen (Tuple.second >> .healthEducation)
-                |> isJust
-
-        firstEnconterInputs =
-            [ expectationsInput, visitsReviewInput, warningSignsInput ]
-
-        firstEnconterTasks =
-            [ form.expectations, form.visitsReview, form.warningSigns ]
-
-        secondEnconterInputs =
-            [ hemorrhagingInput ]
-
-        secondEnconterTasks =
-            [ form.hemorrhaging ]
-
-        thirdEnconterInputs =
-            [ familyPlanningInput, breastfeedingInput ]
-
-        thirdEnconterTasks =
-            [ form.familyPlanning, form.breastfeeding ]
-
-        postpartumEnconterInputs =
-            [ immunizationInput, hygieneInput ]
-
-        postpartumEnconterTasks =
-            [ form.immunization, form.hygiene ]
-
-        expectationsUpdateFunc value form_ =
-            { form_ | expectations = Just value }
-
-        expectationsInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationExpectations
-            , viewBoolInput
-                language
-                form.expectations
-                (SetHealthEducationBoolInput expectationsUpdateFunc)
-                "expectations"
-                Nothing
-            ]
-
-        visitsReviewUpdateFunc value form_ =
-            { form_ | visitsReview = Just value }
-
-        visitsReviewInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationVisitsReview
-            , viewBoolInput
-                language
-                form.visitsReview
-                (SetHealthEducationBoolInput visitsReviewUpdateFunc)
-                "visits-review"
-                Nothing
-            ]
-
-        warningSignsUpdateFunc value form_ =
-            { form_ | warningSigns = Just value }
-
-        warningSignsInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationWarningSigns
-            , viewBoolInput
-                language
-                form.warningSigns
-                (SetHealthEducationBoolInput warningSignsUpdateFunc)
-                "warning-signs"
-                Nothing
-            ]
-
-        hemorrhagingUpdateFunc value form_ =
-            { form_ | hemorrhaging = Just value }
-
-        hemorrhagingInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationHemorrhaging
-            , viewBoolInput
-                language
-                form.hemorrhaging
-                (SetHealthEducationBoolInput hemorrhagingUpdateFunc)
-                "hemorrhaging"
-                Nothing
-            ]
-
-        familyPlanningUpdateFunc value form_ =
-            { form_ | familyPlanning = Just value }
-
-        familyPlanningInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationFamilyPlanning
-            , viewBoolInput
-                language
-                form.familyPlanning
-                (SetHealthEducationBoolInput familyPlanningUpdateFunc)
-                "family-planning"
-                Nothing
-            ]
-
-        breastfeedingUpdateFunc value form_ =
-            { form_ | breastfeeding = Just value }
-
-        breastfeedingInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationBreastfeeding
-            , viewBoolInput
-                language
-                form.breastfeeding
-                (SetHealthEducationBoolInput breastfeedingUpdateFunc)
-                "breastfeeding"
-                Nothing
-            ]
-
-        immunizationUpdateFunc value form_ =
-            { form_ | immunization = Just value }
-
-        immunizationInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationImmunization
-            , viewBoolInput
-                language
-                form.immunization
-                (SetHealthEducationBoolInput immunizationUpdateFunc)
-                "immunization"
-                Nothing
-            ]
-
-        hygieneUpdateFunc value form_ =
-            { form_ | hygiene = Just value }
-
-        hygieneInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationHygiene
-            , viewBoolInput
-                language
-                form.hygiene
-                (SetHealthEducationBoolInput hygieneUpdateFunc)
-                "hygiene"
-                Nothing
-            ]
+        ( inputs, _ ) =
+            healthEducationFormInputsAndTasks language assembled form
     in
-    ( List.concat inputs, tasks )
+    div [ class "ui form health-education" ]
+        inputs
 
 
 
