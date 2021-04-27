@@ -11,6 +11,36 @@
 function hedley_activity_user_default_permissions() {
   $permissions = array();
 
+  // Exported permission: 'create anc_follow_up content'.
+  $permissions['create anc_follow_up content'] = array(
+    'name' => 'create anc_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create anc_send_to_hc content'.
+  $permissions['create anc_send_to_hc content'] = array(
+    'name' => 'create anc_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create appointment_confirmation content'.
+  $permissions['create appointment_confirmation content'] = array(
+    'name' => 'create appointment_confirmation content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create attendance content'.
   $permissions['create attendance content'] = array(
     'name' => 'create attendance content',
@@ -388,6 +418,33 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any anc_follow_up content'.
+  $permissions['delete any anc_follow_up content'] = array(
+    'name' => 'delete any anc_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any anc_send_to_hc content'.
+  $permissions['delete any anc_send_to_hc content'] = array(
+    'name' => 'delete any anc_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any appointment_confirmation content'.
+  $permissions['delete any appointment_confirmation content'] = array(
+    'name' => 'delete any appointment_confirmation content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any attendance content'.
   $permissions['delete any attendance content'] = array(
     'name' => 'delete any attendance content',
@@ -715,6 +772,33 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete any weight content'.
   $permissions['delete any weight content'] = array(
     'name' => 'delete any weight content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own anc_follow_up content'.
+  $permissions['delete own anc_follow_up content'] = array(
+    'name' => 'delete own anc_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own anc_send_to_hc content'.
+  $permissions['delete own anc_send_to_hc content'] = array(
+    'name' => 'delete own anc_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own appointment_confirmation content'.
+  $permissions['delete own appointment_confirmation content'] = array(
+    'name' => 'delete own appointment_confirmation content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -1050,6 +1134,36 @@ function hedley_activity_user_default_permissions() {
     'name' => 'delete own weight content',
     'roles' => array(
       'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any anc_follow_up content'.
+  $permissions['edit any anc_follow_up content'] = array(
+    'name' => 'edit any anc_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any anc_send_to_hc content'.
+  $permissions['edit any anc_send_to_hc content'] = array(
+    'name' => 'edit any anc_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any appointment_confirmation content'.
+  $permissions['edit any appointment_confirmation content'] = array(
+    'name' => 'edit any appointment_confirmation content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -1426,6 +1540,36 @@ function hedley_activity_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own anc_follow_up content'.
+  $permissions['edit own anc_follow_up content'] = array(
+    'name' => 'edit own anc_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own anc_send_to_hc content'.
+  $permissions['edit own anc_send_to_hc content'] = array(
+    'name' => 'edit own anc_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own appointment_confirmation content'.
+  $permissions['edit own appointment_confirmation content'] = array(
+    'name' => 'edit own appointment_confirmation content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',

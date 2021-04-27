@@ -19,6 +19,30 @@ function hedley_activity_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function hedley_activity_node_info() {
   $items = array(
+    'anc_follow_up' => array(
+      'name' => t('Anc follow up'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'anc_send_to_hc' => array(
+      'name' => t('Anc Send to HC'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'appointment_confirmation' => array(
+      'name' => t('Appointment Confirmation'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'attendance' => array(
       'name' => t('Attendance'),
       'base' => 'node_content',
