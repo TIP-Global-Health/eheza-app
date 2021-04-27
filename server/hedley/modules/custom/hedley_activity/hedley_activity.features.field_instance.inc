@@ -2468,6 +2468,80 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-danger_signs-field_postpartum_child'.
+  $field_instances['node-danger_signs-field_postpartum_child'] = array(
+    'bundle' => 'danger_signs',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_postpartum_child',
+    'label' => 'Postpartum child',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 10,
+    ),
+  );
+
+  // Exported field_instance: 'node-danger_signs-field_postpartum_mother'.
+  $field_instances['node-danger_signs-field_postpartum_mother'] = array(
+    'bundle' => 'danger_signs',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_postpartum_mother',
+    'label' => 'Postpartum mother',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
+    ),
+  );
+
   // Exported field_instance: 'node-danger_signs-field_prenatal_encounter'.
   $field_instances['node-danger_signs-field_prenatal_encounter'] = array(
     'bundle' => 'danger_signs',
@@ -13946,6 +14020,8 @@ function hedley_activity_field_default_field_instances() {
   t('Partner HIV Testing');
   t('Person');
   t('Photo');
+  t('Postpartum child');
+  t('Postpartum mother');
   t('PreTerm Pregnancy');
   t('Prenatal Encounter');
   t('Prenatal Health Education');

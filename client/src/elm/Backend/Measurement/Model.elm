@@ -507,27 +507,6 @@ type alias DangerSignsValue =
     }
 
 
-
--- Postpartum mother:
---   uterine-bleeding|Uterine Bleeding
---   fever|Fever
---   migraine|Migraine
---   paralysis|Paralysis
---   abdominal-pain|Acute Abdominal Pain
---   laboured-breathing|Laboured Breathing
---   none|None of these
---
---
--- Postpartum child:
---   inability-to-suckle|Inability to Suckle
---   paralysis|Paralysis
---   laboured-breathing|Laboured Breathing
---   abnormal-temperature|Abnormal Temperature
---   inactive-or-no-movement|Inactive or No Movement
---   body-turned-yellow|Body Turned Yellow
---   none|None of these
-
-
 type PostpartumMotherDangerSign
     = PostpartumMotheUterineBleeding
     | PostpartumMotheFever
