@@ -364,43 +364,6 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-anc_send_to_hc-field_anc_send_to_hc'.
-  $field_instances['node-anc_send_to_hc-field_anc_send_to_hc'] = array(
-    'bundle' => 'anc_send_to_hc',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 1,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_anc_send_to_hc',
-    'label' => 'ANC send to HC',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_buttons',
-      'weight' => -3,
-    ),
-  );
-
   // Exported field_instance: 'node-anc_send_to_hc-field_date_measured'.
   $field_instances['node-anc_send_to_hc-field_date_measured'] = array(
     'bundle' => 'anc_send_to_hc',
@@ -623,6 +586,43 @@ function hedley_activity_field_default_field_instances() {
       'settings' => array(),
       'type' => 'options_select',
       'weight' => 11,
+    ),
+  );
+
+  // Exported field_instance: 'node-anc_send_to_hc-field_send_to_hc'.
+  $field_instances['node-anc_send_to_hc-field_send_to_hc'] = array(
+    'bundle' => 'anc_send_to_hc',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_send_to_hc',
+    'label' => 'Send to HC',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 13,
     ),
   );
 
@@ -14962,7 +14962,6 @@ function hedley_activity_field_default_field_instances() {
 
   // Translatables
   // Included for use with string extractors like potx.
-  t('ANC send to HC');
   t('Abdomen');
   t('Abortions');
   t('Appointment Confirmation');
