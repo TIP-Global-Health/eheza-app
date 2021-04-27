@@ -1043,14 +1043,66 @@ toBirthPlanValue : BirthPlanForm -> Maybe BirthPlanValue
 toBirthPlanValue form =
     let
         signs =
-            [ ifNullableTrue Insurance form.haveInsurance
-            , ifNullableTrue BoughtClothes form.boughtClothes
-            , ifNullableTrue CaregiverAccompany form.caregiverAccompany
-            , ifNullableTrue SavedMoney form.savedMoney
-            , ifNullableTrue Transportation form.haveTransportation
+            [ Maybe.map (ifTrue Insurance) form.haveInsurance
+            , Maybe.map (ifTrue BoughtClothes) form.boughtClothes
+            , Maybe.map (ifTrue CaregiverAccompany) form.caregiverAccompany
+            , Maybe.map (ifTrue SavedMoney) form.savedMoney
+            , Maybe.map (ifTrue Transportation) form.haveTransportation
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoBirthPlan)
     in
     Maybe.map BirthPlanValue signs
         |> andMap (Maybe.map EverySet.fromList form.familyPlanning)
+
+
+fromHealthEducationValue : Maybe (EverySet PrenatalHealthEducationSign) -> HealthEducationForm
+fromHealthEducationValue saved =
+    { expectations = Maybe.map (EverySet.member EducationExpectations) saved
+    , visitsReview = Maybe.map (EverySet.member EducationVisitsReview) saved
+    , warningSigns = Maybe.map (EverySet.member EducationWarningSigns) saved
+    , hemorrhaging = Maybe.map (EverySet.member EducationHemorrhaging) saved
+    , familyPlanning = Maybe.map (EverySet.member EducationFamilyPlanning) saved
+    , breastfeeding = Maybe.map (EverySet.member EducationBreastfeeding) saved
+    , immunization = Maybe.map (EverySet.member EducationImmunization) saved
+    , hygiene = Maybe.map (EverySet.member EducationHygiene) saved
+    }
+
+
+healthEducationFormWithDefault : HealthEducationForm -> Maybe (EverySet PrenatalHealthEducationSign) -> HealthEducationForm
+healthEducationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\signs ->
+                { expectations = or form.expectations (EverySet.member EducationExpectations signs |> Just)
+                , visitsReview = or form.visitsReview (EverySet.member EducationVisitsReview signs |> Just)
+                , warningSigns = or form.warningSigns (EverySet.member EducationWarningSigns signs |> Just)
+                , hemorrhaging = or form.hemorrhaging (EverySet.member EducationHemorrhaging signs |> Just)
+                , familyPlanning = or form.familyPlanning (EverySet.member EducationFamilyPlanning signs |> Just)
+                , breastfeeding = or form.breastfeeding (EverySet.member EducationBreastfeeding signs |> Just)
+                , immunization = or form.immunization (EverySet.member EducationImmunization signs |> Just)
+                , hygiene = or form.hygiene (EverySet.member EducationHygiene signs |> Just)
+                }
+            )
+
+
+toHealthEducationValueWithDefault : Maybe (EverySet PrenatalHealthEducationSign) -> HealthEducationForm -> Maybe (EverySet PrenatalHealthEducationSign)
+toHealthEducationValueWithDefault saved form =
+    healthEducationFormWithDefault form saved
+        |> toHealthEducationValue
+
+
+toHealthEducationValue : HealthEducationForm -> Maybe (EverySet PrenatalHealthEducationSign)
+toHealthEducationValue form =
+    [ ifNullableTrue EducationExpectations form.expectations
+    , ifNullableTrue EducationVisitsReview form.visitsReview
+    , ifNullableTrue EducationWarningSigns form.warningSigns
+    , ifNullableTrue EducationHemorrhaging form.hemorrhaging
+    , ifNullableTrue EducationFamilyPlanning form.familyPlanning
+    , ifNullableTrue EducationBreastfeeding form.breastfeeding
+    , ifNullableTrue EducationImmunization form.immunization
+    , ifNullableTrue EducationHygiene form.hygiene
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)

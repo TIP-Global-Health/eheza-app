@@ -91,7 +91,7 @@ type Msg
     | SavePregnancyTesting PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
       -- HealtEducationMsgs
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
-    | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation ))
+    | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation ))
 
 
 type alias Model =
@@ -639,7 +639,7 @@ type alias PregnancyTestingForm =
 
 
 type alias HealthEducationForm =
-    { expecations : Maybe Bool
+    { expectations : Maybe Bool
     , visitsReview : Maybe Bool
     , warningSigns : Maybe Bool
     , hemorrhaging : Maybe Bool
@@ -652,7 +652,7 @@ type alias HealthEducationForm =
 
 emptyHealthEducationForm : HealthEducationForm
 emptyHealthEducationForm =
-    { expecations = Nothing
+    { expectations = Nothing
     , visitsReview = Nothing
     , warningSigns = Nothing
     , hemorrhaging = Nothing

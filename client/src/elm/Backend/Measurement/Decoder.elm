@@ -233,7 +233,7 @@ decodePrenatalHealthEducationSign =
             (\sign ->
                 case sign of
                     "expectations" ->
-                        succeed EducationExpecations
+                        succeed EducationExpectations
 
                     "visits-review" ->
                         succeed EducationVisitsReview

@@ -184,7 +184,7 @@ encodePrenatalHealthEducationSign : PrenatalHealthEducationSign -> Value
 encodePrenatalHealthEducationSign sign =
     string <|
         case sign of
-            EducationExpecations ->
+            EducationExpectations ->
                 "expectations"
 
             EducationVisitsReview ->

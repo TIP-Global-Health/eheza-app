@@ -728,7 +728,7 @@ type alias PrenatalHealthEducation =
 
 
 type PrenatalHealthEducationSign
-    = EducationExpecations
+    = EducationExpectations
     | EducationVisitsReview
     | EducationWarningSigns
     | EducationHemorrhaging
