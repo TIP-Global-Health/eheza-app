@@ -297,6 +297,7 @@ type TranslationId
     | And
     | AndSentence
     | AppName
+    | AppointmentConfirmation
     | AreYouSure
     | Assessment
     | Asthma
@@ -1848,6 +1849,11 @@ translationSet trans =
         AppName ->
             { english = "E-Heza System"
             , kinyarwanda = Just "E-heza sisiteme"
+            }
+
+        AppointmentConfirmation ->
+            { english = "Appointment Confirmation"
+            , kinyarwanda = Nothing
             }
 
         All ->

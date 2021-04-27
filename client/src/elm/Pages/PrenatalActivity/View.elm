@@ -25,7 +25,7 @@ import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
-import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
+import Pages.PrenatalEncounter.View exposing (generateActivityLabel, viewMotherAndMeasurements)
 import Pages.Utils
     exposing
         ( isTaskCompleted
@@ -53,30 +53,25 @@ view language currentDate id activity db model =
     let
         data =
             generateAssembledData id db
-
-        content =
-            viewWebData language (viewContent language currentDate activity model) identity data
     in
+    viewWebData language (viewHeaderAndContent language currentDate id activity model) identity data
+
+
+viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> PrenatalActivity -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id activity model data =
     div [ class "page-activity prenatal" ] <|
-        [ viewHeader language id activity
-        , content
+        [ viewHeader language id activity data
+        , viewContent language currentDate activity model data
         ]
 
 
-viewContent : Language -> NominalDate -> PrenatalActivity -> Model -> AssembledData -> Html Msg
-viewContent language currentDate activity model data =
-    div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewActivity language currentDate activity data model
-
-
-viewHeader : Language -> PrenatalEncounterId -> PrenatalActivity -> Html Msg
-viewHeader language id activity =
+viewHeader : Language -> PrenatalEncounterId -> PrenatalActivity -> AssembledData -> Html Msg
+viewHeader language id activity data =
     div
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language <| Translate.PrenatalActivitiesTitle activity ]
+            [ text <| translate language <| generateActivityLabel activity data ]
         , a
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage id
@@ -85,6 +80,13 @@ viewHeader language id activity =
             , span [] []
             ]
         ]
+
+
+viewContent : Language -> NominalDate -> PrenatalActivity -> Model -> AssembledData -> Html Msg
+viewContent language currentDate activity model data =
+    div [ class "ui unstackable items" ] <|
+        viewMotherAndMeasurements language currentDate data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
+            ++ viewActivity language currentDate activity data model
 
 
 viewActivity : Language -> NominalDate -> PrenatalActivity -> AssembledData -> Model -> List (Html Msg)
