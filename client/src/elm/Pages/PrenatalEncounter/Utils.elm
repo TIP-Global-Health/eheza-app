@@ -248,8 +248,37 @@ activityCompleted currentDate data activity =
             isJust data.measurements.birthPlan
 
         NextSteps ->
-            -- @todo
-            False
+            let
+                nextStepsTasks =
+                    resolveNextStepsTasks currentDate data
+            in
+            case nextStepsTasks of
+                [ NextStepsAppointmentConfirmation, NextStepsFollowUp ] ->
+                    --@todo
+                    -- isJust data.measurements.appointmentConfirmation && isJust data.measurements.followUp
+                    False
+
+                [ NextStepsSendToHC, NextStepsFollowUp ] ->
+                    --@todo
+                    -- isJust data.measurements.sendToHC && isJust data.measurements.followUp
+                    False
+
+                [ NextStepsHealthEducation, NextStepsNewbornEnrollment ] ->
+                    --@todo
+                    -- && isJust data.measurements.newbornEnrollment
+                    False
+                        && isJust data.measurements.healthEducation
+
+                [ NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrollment ] ->
+                    --@todo
+                    -- && isJust data.measurements.sendToHC
+                    --  && isJust data.measurements.followUp
+                    -- && isJust data.measurements.newbornEnrollment
+                    False
+                        && isJust data.measurements.healthEducation
+
+                _ ->
+                    False
 
         PregnancyOutcome ->
             -- @todo
