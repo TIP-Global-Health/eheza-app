@@ -203,3 +203,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | savePregnancyTesting = data }
             , Cmd.none
             )
+
+        SaveHealthEducation personId valueId value ->
+            ( { model | saveHealthEducation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalHealthEducationEndpoint HandleSavedHealthEducation
+            )
+
+        HandleSavedHealthEducation data ->
+            ( { model | saveHealthEducation = data }
+            , Cmd.none
+            )
