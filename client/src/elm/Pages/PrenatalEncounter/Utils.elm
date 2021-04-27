@@ -10,6 +10,7 @@ import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust, orElse, unwrap)
+import Pages.PrenatalActivity.Model exposing (NextStepsTask(..))
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
@@ -253,6 +254,47 @@ activityCompleted currentDate data activity =
         PregnancyOutcome ->
             -- @todo
             False
+
+
+resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
+resolveNextStepsTasks currentDate data =
+    case data.encounter.encounterType of
+        -- We should never get here, as Next Steps
+        -- displayed only for CHW.
+        NurseEncounter ->
+            []
+
+        _ ->
+            [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrollment ]
+                |> List.filter (expectNextStepsTasks currentDate data)
+
+
+expectNextStepsTasks : NominalDate -> AssembledData -> NextStepsTask -> Bool
+expectNextStepsTasks currentDate data task =
+    let
+        dangerSigns =
+            dangerSignsPresent data.measurements
+    in
+    case task of
+        NextStepsAppointmentConfirmation ->
+            not dangerSigns && data.encounter.encounterType /= ChwPostpartumEncounter
+
+        NextStepsFollowUp ->
+            case data.encounter.encounterType of
+                ChwPostpartumEncounter ->
+                    dangerSigns
+
+                _ ->
+                    True
+
+        NextStepsSendToHC ->
+            dangerSigns
+
+        NextStepsHealthEducation ->
+            data.encounter.encounterType == ChwPostpartumEncounter
+
+        NextStepsNewbornEnrollment ->
+            data.encounter.encounterType == ChwPostpartumEncounter
 
 
 calculateEDD : NominalDate -> NominalDate
