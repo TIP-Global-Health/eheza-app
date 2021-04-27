@@ -1381,6 +1381,180 @@ viewHealthEducationContent language currentDate assembled data =
     ]
 
 
+viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
+viewNextStepsContent language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            resolveNextStepsTasks currentDate assembled
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        NextStepsAppointmentConfirmation ->
+                            -- @todo
+                            ( ""
+                            , -- isJust measurements.appointmentConfirmation
+                              False
+                            )
+
+                        NextStepsFollowUp ->
+                            ( "next-steps-follow-up"
+                            , -- @todo
+                              -- isJust measurements.followUp
+                              False
+                            )
+
+                        NextStepsSendToHC ->
+                            ( "next-steps-send-to-hc"
+                            , -- @todo
+                              -- isJust measurements.sendToHC
+                              False
+                            )
+
+                        NextStepsHealthEducation ->
+                            ( "next-steps-health-education"
+                            , isJust measurements.healthEducation
+                            )
+
+                        NextStepsNewbornEnrollment ->
+                            -- @todo
+                            ( ""
+                            , -- isJust measurements.appointmentConfirmation
+                              False
+                            )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveNextStepsTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ a attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.PrenatalNextStepsTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, nextStepsTasksCompletedFromTotal measurements data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just NextStepsAppointmentConfirmation ->
+                    -- @todo
+                    emptyNode
+
+                Just NextStepsFollowUp ->
+                    -- @todo
+                    emptyNode
+
+                Just NextStepsSendToHC ->
+                    -- @todo
+                    emptyNode
+
+                Just NextStepsHealthEducation ->
+                    -- measurements.healthEducation
+                    --     |> Maybe.map (Tuple.second >> .value)
+                    --     |> healthEducationFormWithDefault data.healthEducationForm
+                    --     |> viewHealthEducationForm language currentDate diagnosis
+                    emptyNode
+
+                Just NextStepsNewbornEnrollment ->
+                    -- @todo
+                    emptyNode
+
+                Nothing ->
+                    emptyNode
+
+        nextTask =
+            tasks
+                |> List.filter
+                    (\task ->
+                        (Just task /= activeTask)
+                            && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                    )
+                |> List.head
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                case task of
+                                    NextStepsAppointmentConfirmation ->
+                                        -- @todo
+                                        NoOp
+
+                                    NextStepsFollowUp ->
+                                        -- @todo
+                                        NoOp
+
+                                    NextStepsSendToHC ->
+                                        -- @todo
+                                        NoOp
+
+                                    NextStepsHealthEducation ->
+                                        SaveHealthEducationSubActivity personId measurements.healthEducation nextTask
+
+                                    NextStepsNewbornEnrollment ->
+                                        -- @todo
+                                        NoOp
+                        in
+                        div [ class "actions next-steps" ]
+                            [ button
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                , onClick saveMsg
+                                ]
+                                [ text <| translate language Translate.Save ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui three column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]
+
+
 
 -- Forms
 

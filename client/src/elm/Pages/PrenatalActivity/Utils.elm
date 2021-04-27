@@ -12,6 +12,50 @@ import Pages.PrenatalEncounter.Utils exposing (getMotherHeightMeasurement)
 import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskCompleted, taskListCompleted, valueConsideringIsDirtyField)
 
 
+nextStepsTasksCompletedFromTotal :
+    PrenatalMeasurements
+    -> NextStepsData
+    -> NextStepsTask
+    -> ( Int, Int )
+nextStepsTasksCompletedFromTotal measurements data task =
+    case task of
+        NextStepsAppointmentConfirmation ->
+            -- @todo
+            ( 0
+            , 1
+            )
+
+        NextStepsFollowUp ->
+            -- @todo
+            ( 0
+            , 1
+            )
+
+        NextStepsSendToHC ->
+            -- @todo
+            ( 0
+            , 1
+            )
+
+        NextStepsHealthEducation ->
+            let
+                form =
+                    measurements.healthEducation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> healthEducationFormWithDefault data.healthEducationForm
+            in
+            -- @todo
+            ( 0
+            , 1
+            )
+
+        NextStepsNewbornEnrollment ->
+            -- @todo
+            ( 0
+            , 1
+            )
+
+
 {-| This is a convenience for cases where the form values ought to be redefined
 to allow multiple values. So, it should go away eventually.
 -}

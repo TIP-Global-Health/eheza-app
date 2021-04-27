@@ -51,7 +51,6 @@ import Backend.PrenatalActivity.Model
         , ObstetricalDiagnosis(..)
         , PregnancyTrimester(..)
         , PrenatalActivity(..)
-        , PrenatalNextStepsTask(..)
         , RecurringHighSeverityAlert(..)
         , RiskFactor(..)
         )
@@ -715,7 +714,7 @@ type TranslationId
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
-    | PrenatalNextStepsTask PrenatalNextStepsTask
+    | PrenatalNextStepsTask Pages.PrenatalActivity.Model.NextStepsTask
     | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
@@ -5499,27 +5498,27 @@ translationSet trans =
 
         PrenatalNextStepsTask task ->
             case task of
-                AppointmentConfirmation ->
+                Pages.PrenatalActivity.Model.NextStepsAppointmentConfirmation ->
                     { english = "Appointment Confirmation"
                     , kinyarwanda = Nothing
                     }
 
-                Backend.PrenatalActivity.Model.FollowUp ->
+                Pages.PrenatalActivity.Model.NextStepsFollowUp ->
                     { english = "Chw Follow Up"
                     , kinyarwanda = Nothing
                     }
 
-                Backend.PrenatalActivity.Model.SendToHC ->
+                Pages.PrenatalActivity.Model.NextStepsSendToHC ->
                     { english = "Send to Health Center"
                     , kinyarwanda = Nothing
                     }
 
-                Backend.PrenatalActivity.Model.TaskHealthEducation ->
+                Pages.PrenatalActivity.Model.NextStepsHealthEducation ->
                     { english = "Health Education"
                     , kinyarwanda = Nothing
                     }
 
-                NewbornEnrollment ->
+                Pages.PrenatalActivity.Model.NextStepsNewbornEnrollment ->
                     { english = "Newborn Enrollment"
                     , kinyarwanda = Nothing
                     }

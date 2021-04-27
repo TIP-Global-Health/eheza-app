@@ -3,12 +3,13 @@ module Pages.PrenatalActivity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
-import Measurement.Model exposing (DropZoneFile)
+import Measurement.Model exposing (DropZoneFile, SendToHCForm, emptySendToHCForm)
 import Pages.Page exposing (Page)
 
 
 type Msg
-    = DropZoneComplete DropZoneFile
+    = NoOp
+    | DropZoneComplete DropZoneFile
     | SetActivePage Page
     | SetAlertsDialogState Bool
       -- PregnancyDatingMsgs
@@ -92,6 +93,9 @@ type Msg
       -- HealtEducationMsgs
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation ))
+      -- NextStepsMsgs
+    | SetActiveNextStepsTask NextStepsTask
+    | SaveHealthEducationSubActivity PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -105,6 +109,7 @@ type alias Model =
     , birthPlanData : BirthPlanData
     , laboratoryData : LaboratoryData
     , healthEducationData : HealthEducationData
+    , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     }
 
@@ -121,6 +126,7 @@ emptyModel =
     , birthPlanData = emptyBirthPlanData
     , laboratoryData = emptyLaboratoryData
     , healthEducationData = emptyHealthEducationData
+    , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     }
 
@@ -265,6 +271,27 @@ type alias HealthEducationData =
 emptyHealthEducationData : HealthEducationData
 emptyHealthEducationData =
     HealthEducationData emptyHealthEducationForm
+
+
+type alias NextStepsData =
+    { appointmentConfirmationForm : AppointmentConfirmationForm
+    , followUpForm : FollowUpForm
+    , sendToHCForm : SendToHCForm
+    , healthEducationForm : HealthEducationForm
+    , newbornEnrollmentForm : NewbornEnrollmentForm
+    , activeTask : Maybe NextStepsTask
+    }
+
+
+emptyNextStepsData : NextStepsData
+emptyNextStepsData =
+    { appointmentConfirmationForm = emptyAppointmentConfirmationForm
+    , followUpForm = emptyFollowUpForm
+    , sendToHCForm = emptySendToHCForm
+    , healthEducationForm = emptyHealthEducationForm
+    , newbornEnrollmentForm = emptyNewbornEnrollmentForm
+    , activeTask = Nothing
+    }
 
 
 
@@ -646,6 +673,25 @@ type alias PregnancyTestingForm =
     }
 
 
+type alias AppointmentConfirmationForm =
+    {}
+
+
+emptyAppointmentConfirmationForm : AppointmentConfirmationForm
+emptyAppointmentConfirmationForm =
+    {}
+
+
+type alias FollowUpForm =
+    { option : Maybe FollowUpOption
+    }
+
+
+emptyFollowUpForm : FollowUpForm
+emptyFollowUpForm =
+    FollowUpForm Nothing
+
+
 type alias HealthEducationForm =
     { expectations : Maybe Bool
     , visitsReview : Maybe Bool
@@ -669,3 +715,12 @@ emptyHealthEducationForm =
     , immunization = Nothing
     , hygiene = Nothing
     }
+
+
+type alias NewbornEnrollmentForm =
+    {}
+
+
+emptyNewbornEnrollmentForm : NewbornEnrollmentForm
+emptyNewbornEnrollmentForm =
+    {}
