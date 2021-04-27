@@ -708,6 +708,8 @@ type TranslationId
     | PleaseSelectGroup
     | PleaseSync
     | PositiveLabel
+    | PostpartumChildDangerSign PostpartumChildDangerSign
+    | PostpartumMotherDangerSign PostpartumMotherDangerSign
     | PreeclampsiaPreviousPregnancy
     | PregnancyTestingResult PregnancyTestResult
     | PregnancyTrimester PregnancyTrimester
@@ -806,7 +808,9 @@ type TranslationId
     | Sector
     | SelectAntenatalVisit
     | SelectAllSigns
+    | SelectPostpartumChildDangerSigns
     | SelectDangerSigns
+    | SelectPostpartumMotherDangerSigns
     | SelectedProgram
     | SelectedVillage
     | SelectEncounterType
@@ -5317,6 +5321,80 @@ translationSet trans =
             , kinyarwanda = Just "Afite ubwandu"
             }
 
+        PostpartumChildDangerSign sign ->
+            case sign of
+                PostpartumChildInabilityToSuckle ->
+                    { english = "Inability to Suckl"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumChildParalysis ->
+                    { english = "Paralysis"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumChildLabouredBreathing ->
+                    { english = "Laboured or Rapid Breathing"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumChildAbnormalTemperature ->
+                    { english = "High (Fever) or Low Temperature"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumChildInactiveNoMovement ->
+                    { english = "Inactive or No Movement"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumChildBodyTurnedYellow ->
+                    { english = "Whole Body Has Turned Yellow"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPostpartumChildDangerSigns ->
+                    { english = "None of these"
+                    , kinyarwanda = Nothing
+                    }
+
+        PostpartumMotherDangerSign sign ->
+            case sign of
+                PostpartumMotheUterineBleeding ->
+                    { english = "Excessive Uterinal Bleeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumMotherFever ->
+                    { english = "Gigh Temperature / Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumMotherMigraine ->
+                    { english = "Migraine"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumMotherParalysis ->
+                    { english = "Paralysis"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumMotherAcuteAbdominalPain ->
+                    { english = "Acute Abdominal Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumMotherLabouredBreathing ->
+                    { english = "Laboured Breathing"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPostpartumMotherDangerSigns ->
+                    { english = "None of these"
+                    , kinyarwanda = Nothing
+                    }
+
         PreeclampsiaPreviousPregnancy ->
             { english = "Preeclampsia in previous pregnancy "
             , kinyarwanda = Just "Ubushize yagize ibimenyetso bibanziriza guhinda umushyitsi"
@@ -6324,9 +6402,19 @@ translationSet trans =
             , kinyarwanda = Just "Hitamo ibimenyetso by'imirire byose bishoboka umwana afite"
             }
 
+        SelectPostpartumChildDangerSigns ->
+            { english = "Please select one or more of the danger signs the child is experiencing"
+            , kinyarwanda = Nothing
+            }
+
         SelectDangerSigns ->
             { english = "Please select one or more of the danger signs the patient is experiencing"
             , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umubyeyi yaba afite"
+            }
+
+        SelectPostpartumMotherDangerSigns ->
+            { english = "Please select one or more of the danger signs the mother is experiencing"
+            , kinyarwanda = Nothing
             }
 
         SelectedProgram ->

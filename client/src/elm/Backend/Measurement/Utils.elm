@@ -395,19 +395,19 @@ postpartumMotherDangerSignToString sign =
         PostpartumMotheUterineBleeding ->
             "uterine-bleeding"
 
-        PostpartumMotheFever ->
+        PostpartumMotherFever ->
             "fever"
 
-        PostpartumMotheMigraine ->
+        PostpartumMotherMigraine ->
             "migraine"
 
-        PostpartumMotheParalysis ->
+        PostpartumMotherParalysis ->
             "paralysis"
 
-        PostpartumMotheAcuteAbdominalPain ->
+        PostpartumMotherAcuteAbdominalPain ->
             "abdominal-pain"
 
-        PostpartumMotheLabouredBreathing ->
+        PostpartumMotherLabouredBreathing ->
             "laboured-breathing"
 
         NoPostpartumMotherDangerSigns ->
@@ -421,19 +421,19 @@ postpartumMotherDangerSignFromString sign =
             Just PostpartumMotheUterineBleeding
 
         "fever" ->
-            Just PostpartumMotheFever
+            Just PostpartumMotherFever
 
         "migraine" ->
-            Just PostpartumMotheMigraine
+            Just PostpartumMotherMigraine
 
         "paralysis" ->
-            Just PostpartumMotheParalysis
+            Just PostpartumMotherParalysis
 
         "abdominal-pain" ->
-            Just PostpartumMotheAcuteAbdominalPain
+            Just PostpartumMotherAcuteAbdominalPain
 
         "laboured-breathing" ->
-            Just PostpartumMotheLabouredBreathing
+            Just PostpartumMotherLabouredBreathing
 
         "none" ->
             Just NoPostpartumMotherDangerSigns

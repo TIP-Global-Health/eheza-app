@@ -887,25 +887,48 @@ viewDangerSignsContent language currentDate assembled data =
                 |> Maybe.map (Tuple.second >> .value)
                 |> dangerSignsFormWithDefault data.form
 
-        totalTasks =
-            1
+        ( inputs, tasksCompleted, totalTasks ) =
+            case assembled.encounter.encounterType of
+                ChwPostpartumEncounter ->
+                    ( [ viewLabel language Translate.SelectPostpartumMotherDangerSigns
+                      , viewCheckBoxMultipleSelectInput language
+                            [ PostpartumMotheUterineBleeding, PostpartumMotherFever, PostpartumMotherMigraine ]
+                            [ PostpartumMotherParalysis, PostpartumMotherAcuteAbdominalPain, PostpartumMotherLabouredBreathing ]
+                            (form.postpartumMother |> Maybe.withDefault [])
+                            (Just NoPostpartumMotherDangerSigns)
+                            SetPostpartumMotherDangerSign
+                            Translate.PostpartumMotherDangerSign
+                      , viewLabel language Translate.SelectPostpartumChildDangerSigns
+                      , viewCheckBoxMultipleSelectInput language
+                            [ PostpartumChildInabilityToSuckle, PostpartumChildParalysis, PostpartumChildLabouredBreathing ]
+                            [ PostpartumChildAbnormalTemperature, PostpartumChildInactiveNoMovement, PostpartumChildBodyTurnedYellow ]
+                            (form.postpartumChild |> Maybe.withDefault [])
+                            (Just NoPostpartumChildDangerSigns)
+                            SetPostpartumChildDangerSign
+                            Translate.PostpartumChildDangerSign
+                      ]
+                    , taskCompleted form.postpartumMother + taskCompleted form.postpartumChild
+                    , 2
+                    )
 
-        tasksCompleted =
-            taskCompleted form.signs
+                _ ->
+                    ( [ viewLabel language Translate.SelectDangerSigns
+                      , viewCheckBoxMultipleSelectInput language
+                            [ VaginalBleeding, HeadacheBlurredVision, Convulsions, AbdominalPain ]
+                            [ DifficultyBreathing, Fever, ExtremeWeakness ]
+                            (form.signs |> Maybe.withDefault [])
+                            (Just NoDangerSign)
+                            SetDangerSign
+                            Translate.DangerSign
+                      ]
+                    , taskCompleted form.signs
+                    , 1
+                    )
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form danger-signs" ]
-                [ viewLabel language Translate.SelectDangerSigns
-                , viewCheckBoxMultipleSelectInput language
-                    [ VaginalBleeding, HeadacheBlurredVision, Convulsions, AbdominalPain ]
-                    [ DifficultyBreathing, Fever, ExtremeWeakness ]
-                    (form.signs |> Maybe.withDefault [])
-                    (Just NoDangerSign)
-                    SetDangerSign
-                    Translate.DangerSign
-                ]
+            [ div [ class "ui form danger-signs" ] inputs
             ]
         , div [ class "actions" ]
             [ button

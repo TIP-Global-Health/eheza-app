@@ -81,6 +81,8 @@ type Msg
     | SaveResources PersonId (Maybe ( ResourceId, Resource )) (Maybe PatientProvisionsTask)
       -- DangerSignsMsgs
     | SetDangerSign DangerSign
+    | SetPostpartumMotherDangerSign PostpartumMotherDangerSign
+    | SetPostpartumChildDangerSign PostpartumChildDangerSign
     | SaveDangerSigns PersonId (Maybe ( DangerSignsId, DangerSigns ))
       -- PrenatalPhotoMsgs
     | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl

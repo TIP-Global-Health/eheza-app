@@ -84,7 +84,7 @@ expectActivity currentDate data activity =
                     True
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    noDangerSigns data.measurements
+                    noDangerSigns data
 
                 NextSteps ->
                     let
@@ -93,7 +93,7 @@ expectActivity currentDate data activity =
                                 && (not <| expectActivity currentDate data Laboratory || activityCompleted currentDate data Laboratory)
                                 && activityCompleted currentDate data DangerSigns
                     in
-                    if dangerSignsPresent data.measurements then
+                    if dangerSignsPresent data then
                         commonMandatoryActivitiesCompleted
 
                     else
@@ -110,17 +110,17 @@ expectActivity currentDate data activity =
                     True
 
                 BirthPlan ->
-                    noDangerSigns data.measurements
+                    noDangerSigns data
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    noDangerSigns data.measurements
+                    noDangerSigns data
 
                 NextSteps ->
                     let
                         commonMandatoryActivitiesCompleted =
                             activityCompleted currentDate data DangerSigns
                     in
-                    if dangerSignsPresent data.measurements then
+                    if dangerSignsPresent data then
                         commonMandatoryActivitiesCompleted
 
                     else
@@ -138,14 +138,14 @@ expectActivity currentDate data activity =
                     True
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    noDangerSigns data.measurements
+                    noDangerSigns data
 
                 NextSteps ->
                     let
                         commonMandatoryActivitiesCompleted =
                             activityCompleted currentDate data DangerSigns
                     in
-                    if dangerSignsPresent data.measurements then
+                    if dangerSignsPresent data then
                         commonMandatoryActivitiesCompleted
 
                     else
@@ -173,27 +173,38 @@ expectActivity currentDate data activity =
                     False
 
 
-noDangerSigns : PrenatalMeasurements -> Bool
-noDangerSigns measurements =
+noDangerSigns : AssembledData -> Bool
+noDangerSigns data =
     let
-        signs =
-            measurements.dangerSigns
-                |> Maybe.map (Tuple.second >> .value >> .signs >> EverySet.toList)
-    in
-    case signs of
-        Just [ NoDangerSign ] ->
-            True
+        getDangerSignsType getFunc =
+            data.measurements.dangerSigns
+                |> Maybe.map (Tuple.second >> .value >> getFunc >> EverySet.toList)
+                |> Maybe.withDefault []
 
-        Just [] ->
-            True
+        dangerSignsEmpty emptySign signsList =
+            List.isEmpty signsList || signsList == [ emptySign ]
+    in
+    case data.encounter.encounterType of
+        ChwPostpartumEncounter ->
+            let
+                motherSignsEmpty =
+                    getDangerSignsType .postpartumMother
+                        |> dangerSignsEmpty NoPostpartumMotherDangerSigns
+
+                childSignsEmpty =
+                    getDangerSignsType .postpartumChild
+                        |> dangerSignsEmpty NoPostpartumChildDangerSigns
+            in
+            motherSignsEmpty && childSignsEmpty
 
         _ ->
-            False
+            getDangerSignsType .signs
+                |> dangerSignsEmpty NoDangerSign
 
 
-dangerSignsPresent : PrenatalMeasurements -> Bool
-dangerSignsPresent measurements =
-    isJust measurements.dangerSigns && not (noDangerSigns measurements)
+dangerSignsPresent : AssembledData -> Bool
+dangerSignsPresent data =
+    isJust data.measurements.dangerSigns && not (noDangerSigns data)
 
 
 activityCompleted : NominalDate -> AssembledData -> PrenatalActivity -> Bool
@@ -303,7 +314,7 @@ expectNextStepsTasks : NominalDate -> AssembledData -> NextStepsTask -> Bool
 expectNextStepsTasks currentDate data task =
     let
         dangerSigns =
-            dangerSignsPresent data.measurements
+            dangerSignsPresent data
     in
     case task of
         NextStepsAppointmentConfirmation ->

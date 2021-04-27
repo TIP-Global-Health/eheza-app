@@ -509,11 +509,11 @@ type alias DangerSignsValue =
 
 type PostpartumMotherDangerSign
     = PostpartumMotheUterineBleeding
-    | PostpartumMotheFever
-    | PostpartumMotheMigraine
-    | PostpartumMotheParalysis
-    | PostpartumMotheAcuteAbdominalPain
-    | PostpartumMotheLabouredBreathing
+    | PostpartumMotherFever
+    | PostpartumMotherMigraine
+    | PostpartumMotherParalysis
+    | PostpartumMotherAcuteAbdominalPain
+    | PostpartumMotherLabouredBreathing
     | NoPostpartumMotherDangerSigns
 
 
