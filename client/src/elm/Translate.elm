@@ -5504,7 +5504,7 @@ translationSet trans =
                     }
 
                 Pages.PrenatalActivity.Model.NextStepsFollowUp ->
-                    { english = "Chw Follow Up"
+                    { english = "CHW Follow Up"
                     , kinyarwanda = Nothing
                     }
 

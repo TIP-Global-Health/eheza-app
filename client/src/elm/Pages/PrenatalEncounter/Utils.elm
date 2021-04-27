@@ -292,10 +292,10 @@ expectNextStepsTasks currentDate data task =
             dangerSigns
 
         NextStepsHealthEducation ->
-            data.encounter.encounterType == ChwPostpartumEncounter && not dangerSigns
+            data.encounter.encounterType == ChwPostpartumEncounter
 
         NextStepsNewbornEnrollment ->
-            data.encounter.encounterType == ChwPostpartumEncounter && not dangerSigns
+            data.encounter.encounterType == ChwPostpartumEncounter
 
 
 calculateEDD : NominalDate -> NominalDate

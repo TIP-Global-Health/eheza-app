@@ -121,8 +121,7 @@ viewActivity language currentDate activity data model =
             viewBirthPlanContent language currentDate data model.birthPlanData
 
         NextSteps ->
-            --@todo
-            []
+            viewNextStepsContent language currentDate data model.nextStepsData
 
         PregnancyOutcome ->
             --@todo
@@ -1339,7 +1338,7 @@ viewNextStepsContent language currentDate assembled data =
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
-        [ div [ class "ui three column grid" ] <|
+        [ div [ class "ui four column grid" ] <|
             List.map viewTask tasks
         ]
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
