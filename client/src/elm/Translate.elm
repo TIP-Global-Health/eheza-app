@@ -714,6 +714,7 @@ type TranslationId
     | PregnancyUrineTest
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounterType PrenatalEncounterType
+    | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
     | PrenatalNextStepsTask PrenatalNextStepsTask
     | PrenatalPhotoHelper
     | PreTerm
@@ -5446,6 +5447,53 @@ translationSet trans =
 
                 ChwPostpartumEncounter ->
                     { english = "Postpartum"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalHealthEducationQuestion sign ->
+            case sign of
+                EducationExpectations ->
+                    { english = "Have you provided health education and anticipatory guidance on what to expect during the pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationVisitsReview ->
+                    { english = "Have you reviewed anticipated visits by the CHW and to the health center with the mother"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationWarningSigns ->
+                    { english = "Have you provided health education and anticipatory guidance on pregnancy warning signs"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationHemorrhaging ->
+                    { english = "Have you provided education on post-partum hemorrhaging"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationFamilyPlanning ->
+                    { english = "Have you provided education on family planning"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationBreastfeeding ->
+                    { english = "Have you provided education on breast feeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationImmunization ->
+                    { english = "Have you provided education on immunization"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationHygiene ->
+                    { english = "Have you provided education on hygiene"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPrenatalHealthEducationSigns ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
