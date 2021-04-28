@@ -314,14 +314,14 @@ warningPopup language currentDate dangerSigns =
                             [ p [] [ text <| translate language Translate.DangerSignsLabel ++ ": " ++ signs ]
                             , p [] [ text <| translate language Translate.DangerSignsHelper ]
                             ]
-                        , div
-                            [ class "actions" ]
-                            [ button
-                                [ class "ui primary fluid button"
-                                , onClick <| SetWarningPopupState Nothing
-                                ]
-                                [ text <| translate language Translate.Continue ]
+                        ]
+                    , div
+                        [ class "actions" ]
+                        [ button
+                            [ class "ui primary fluid button"
+                            , onClick <| SetWarningPopupState Nothing
                             ]
+                            [ text <| translate language Translate.Continue ]
                         ]
                     ]
             )
