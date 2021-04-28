@@ -5366,7 +5366,7 @@ translationSet trans =
                     }
 
                 PostpartumMotherFever ->
-                    { english = "Gigh Temperature / Fever"
+                    { english = "High Temperature / Fever"
                     , kinyarwanda = Nothing
                     }
 
