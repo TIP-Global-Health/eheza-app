@@ -742,6 +742,32 @@ type PrenatalHealthEducationSign
 type alias PrenatalFollowUp =
     PrenatalMeasurement (EverySet FollowUpOption)
 
+
+type alias PrenatalSendToHCValue =
+    { signs : EverySet SendToHCSign
+    , accompanyToHC : EverySet PrenatalAccompanyToHC
+    , reasonForNotSendingToHC : ReasonForNotSendingToHC
+    }
+
+
+type alias PrenatalSendToHC =
+    PrenatalMeasurement PrenatalSendToHCValue
+
+
+type PrenatalAccompanyToHC
+    = AccompanyToHC
+
+
+type alias PrenatalAppointmentConfirmationValue =
+    { date : NominalDate
+    }
+
+
+type alias PrenatalAppointmentConfirmation =
+    PrenatalMeasurement PrenatalAppointmentConfirmation
+
+
+
 -- ACUTE ILLNESS MEASUREMENTS
 
 

@@ -758,20 +758,26 @@ type alias PrenatalHealthEducationId =
 type PrenatalHealthEducationUuidType
     = PrenatalHealthEducationUuidType
 
+
 type alias PrenatalFollowUpId =
     PrenatalFollowUpUuidType
+
 
 type PrenatalFollowUpUuidType
     = PrenatalFollowUpUuidType
 
+
 type alias PrenatalSendToHcId =
     PrenatalSendToHcUuidType
+
 
 type PrenatalSendToHcUuidType
     = PrenatalSendToHcUuidType
 
+
 type alias PrenatalAppointmentConfirmationId =
     PrenatalAppointmentConfirmationUuidType
+
 
 type PrenatalAppointmentConfirmationUuidType
     = PrenatalAppointmentConfirmationUuidType
