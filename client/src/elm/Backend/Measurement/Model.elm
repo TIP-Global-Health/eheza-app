@@ -753,7 +753,7 @@ type alias PrenatalSendToHC =
     PrenatalMeasurement PrenatalSendToHCValue
 
 
-type PrenatalSendToHCSigns
+type PrenatalSendToHCSign
     = PrenatalHandReferrerForm
     | PrenatalReferToHealthCenter
     | PrenatalAccompanyToHC

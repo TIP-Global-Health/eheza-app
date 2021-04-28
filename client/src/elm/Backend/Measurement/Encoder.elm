@@ -212,6 +212,59 @@ encodePrenatalHealthEducationSign sign =
                 "none"
 
 
+encodePrenatalFollowUp : PrenatalFollowUp -> List ( String, Value )
+encodePrenatalFollowUp =
+    encodePrenatalMeasurement encodePrenatalFollowUpValue
+
+
+encodePrenatalFollowUpValue : EverySet FollowUpOption -> List ( String, Value )
+encodePrenatalFollowUpValue value =
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_follow_up" )
+    ]
+
+encodePrenatalSendToHC : PrenatalSendToHC -> List ( String, Value )
+encodePrenatalSendToHC =
+    encodePrenatalMeasurement (encodePrenatalSendToHCValueWithType "nutrition_send_to_hc")
+
+encodePrenatalSendToHCValueWithType : String -> PrenatalSendToHCValue -> List ( String, Value )
+encodePrenatalSendToHCValueWithType type_ value =
+    [ ( "send_to_hc", encodeEverySet encondeSendToHCSign value.signs )
+    , ( "reason_not_sent_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+
+encodePrenatalSendToHcSign : PrenatalSendToHCSign -> Value
+encodePrenatalSendToHcSign sign =
+    string <|
+        case sign of
+            PrenatalHandReferrerForm ->
+                "referral-form"
+
+            PrenatalReferToHealthCenter ->
+                "refer-to-hc"
+
+            PrenatalAccompanyToHC ->
+                "accompany-to-hc"
+
+            NoPrenatalSendToHCSigns ->
+                "none"
+
+
+encodeAppointmentConfirmation : PrenatalAppointmentConfirmation -> List ( String, Value )
+encodeAppointmentConfirmation =
+    encodePrenatalMeasurement encodeAppointmentConfirmationValue
+
+
+encodeAppointmentConfirmationValue : PrenatalAppointmentConfirmationValue -> List ( String, Value )
+encodeAppointmentConfirmationValue value =
+    [ ( "appointment_confirmation", Gizra.NominalDate.encodeYYYYMMDD value.date )
+    , ( "deleted", bool False )
+    , ( "type", string "appointment_confirmation" )
+    ]
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement encodeNutritionValue

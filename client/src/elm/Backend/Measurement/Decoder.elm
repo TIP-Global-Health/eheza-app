@@ -290,7 +290,7 @@ decodePrenatalSendToHcValue =
         |> optional "reason_not_sent_to_hc" decodeReasonForNotSendingToHC NoReasonForNotSendingToHC
 
 
-decodePrenatalSendToHCSign : Decoder PrenatalSendToHCSigns
+decodePrenatalSendToHCSign : Decoder PrenatalSendToHCSign
 decodePrenatalSendToHCSign =
     string
         |> andThen
