@@ -25,7 +25,7 @@ import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
-import Pages.PrenatalEncounter.View exposing (generateActivityLabel, viewMotherAndMeasurements)
+import Pages.PrenatalEncounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Utils
     exposing
         ( isTaskCompleted
@@ -67,11 +67,22 @@ viewHeaderAndContent language currentDate id activity model data =
 
 viewHeader : Language -> PrenatalEncounterId -> PrenatalActivity -> AssembledData -> Html Msg
 viewHeader language id activity data =
+    let
+        ( label_, icon ) =
+            generateActivityData activity data
+
+        label =
+            if icon == "send-to-hc" then
+                Translate.ScheduleFollowUp
+
+            else
+                label_
+    in
     div
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language <| generateActivityLabel activity data ]
+            [ text <| translate language label ]
         , a
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage id

@@ -1,4 +1,4 @@
-module Pages.PrenatalEncounter.View exposing (generateActivityLabel, view, viewMotherAndMeasurements, viewPersonDetails)
+module Pages.PrenatalEncounter.View exposing (generateActivityData, view, viewMotherAndMeasurements, viewPersonDetails)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
@@ -388,14 +388,18 @@ viewMainPageContent language currentDate data model =
                 ]
 
         viewCard activity =
+            let
+                ( label, icon ) =
+                    generateActivityData activity data
+            in
             div [ class "card" ]
                 [ div
                     [ class "image"
                     , onClick <| SetActivePage <| UserPage <| PrenatalActivityPage data.id activity
                     ]
-                    [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
+                    [ span [ class <| "icon-task icon-task-" ++ icon ] [] ]
                 , div [ class "content" ]
-                    [ p [] [ text <| String.toUpper <| translate language <| generateActivityLabel activity data ] ]
+                    [ p [] [ text <| String.toUpper <| translate language label ] ]
                 ]
 
         ( selectedActivities, emptySectionMessage ) =
@@ -477,15 +481,15 @@ viewMainPageContent language currentDate data model =
     ]
 
 
-generateActivityLabel : PrenatalActivity -> AssembledData -> TranslationId
-generateActivityLabel activity data =
+generateActivityData : PrenatalActivity -> AssembledData -> ( TranslationId, String )
+generateActivityData activity data =
     case activity of
         NextSteps ->
             if noDangerSigns data && data.encounter.encounterType /= ChwPostpartumEncounter then
-                Translate.AppointmentConfirmation
+                ( Translate.AppointmentConfirmation, "send-to-hc" )
 
             else
-                Translate.PrenatalActivitiesTitle NextSteps
+                ( Translate.PrenatalActivitiesTitle NextSteps, getActivityIcon activity )
 
         _ ->
-            Translate.PrenatalActivitiesTitle activity
+            ( Translate.PrenatalActivitiesTitle activity, getActivityIcon activity )

@@ -801,6 +801,7 @@ type TranslationId
     | SaveAndRecordOutcome
     | SavedMoneyQuestion
     | SaveError
+    | ScheduleFollowUp
     | Search
     | SearchByName
     | SearchExistingParticipants
@@ -6367,6 +6368,11 @@ translationSet trans =
         SaveError ->
             { english = "Save Error"
             , kinyarwanda = Just "Kubika error (ikosa mu kubika)"
+            }
+
+        ScheduleFollowUp ->
+            { english = "Schedule Follow Up"
+            , kinyarwanda = Nothing
             }
 
         Search ->
