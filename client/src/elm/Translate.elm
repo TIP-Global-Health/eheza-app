@@ -5336,7 +5336,7 @@ translationSet trans =
         PostpartumChildDangerSign sign ->
             case sign of
                 PostpartumChildInabilityToSuckle ->
-                    { english = "Inability to Suckl"
+                    { english = "Inability to Suck"
                     , kinyarwanda = Nothing
                     }
 
