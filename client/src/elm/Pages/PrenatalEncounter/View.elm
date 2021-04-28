@@ -486,7 +486,7 @@ generateActivityData activity data =
     case activity of
         NextSteps ->
             if noDangerSigns data && data.encounter.encounterType /= ChwPostpartumEncounter then
-                ( Translate.AppointmentConfirmation, "send-to-hc" )
+                ( Translate.AppointmentConfirmation, "appointment-confirmation" )
 
             else
                 ( Translate.PrenatalActivitiesTitle NextSteps, getActivityIcon activity )

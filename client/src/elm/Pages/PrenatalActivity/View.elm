@@ -72,7 +72,7 @@ viewHeader language id activity data =
             generateActivityData activity data
 
         label =
-            if icon == "send-to-hc" then
+            if icon == "appointment-confirmation" then
                 Translate.ScheduleFollowUp
 
             else
