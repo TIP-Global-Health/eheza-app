@@ -84,7 +84,8 @@ expectActivity currentDate data activity =
                     True
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    noDangerSigns data
+                    activityCompleted currentDate data DangerSigns
+                        && noDangerSigns data
 
                 NextSteps ->
                     mandatoryActivitiesForNextStepsCompleted currentDate data
@@ -99,10 +100,12 @@ expectActivity currentDate data activity =
                     True
 
                 BirthPlan ->
-                    noDangerSigns data
+                    activityCompleted currentDate data DangerSigns
+                        && noDangerSigns data
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    noDangerSigns data
+                    activityCompleted currentDate data DangerSigns
+                        && noDangerSigns data
 
                 NextSteps ->
                     mandatoryActivitiesForNextStepsCompleted currentDate data
@@ -117,7 +120,8 @@ expectActivity currentDate data activity =
                     True
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    noDangerSigns data
+                    activityCompleted currentDate data DangerSigns
+                        && noDangerSigns data
 
                 NextSteps ->
                     mandatoryActivitiesForNextStepsCompleted currentDate data
@@ -152,8 +156,8 @@ mandatoryActivitiesForNextStepsCompleted currentDate data =
         ChwFirstEncounter ->
             let
                 commonMandatoryActivitiesCompleted =
-                    (not <| expectActivity currentDate data PregnancyDating || activityCompleted currentDate data PregnancyDating)
-                        && (not <| expectActivity currentDate data Laboratory || activityCompleted currentDate data Laboratory)
+                    ((not <| expectActivity currentDate data PregnancyDating) || activityCompleted currentDate data PregnancyDating)
+                        && ((not <| expectActivity currentDate data Laboratory) || activityCompleted currentDate data Laboratory)
                         && activityCompleted currentDate data DangerSigns
             in
             if dangerSignsPresent data then
