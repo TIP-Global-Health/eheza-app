@@ -15,7 +15,13 @@ import Backend.PrenatalActivity.Utils
         , generateRecurringHighSeverityAlertData
         , getActivityIcon
         )
-import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounter, PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Model
+    exposing
+        ( ClinicalProgressReportInitiator(..)
+        , PrenatalEncounter
+        , PrenatalEncounterType(..)
+        , RecordPreganancyInitiator(..)
+        )
 import Date exposing (Interval(..))
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -393,11 +399,19 @@ viewMainPageContent language currentDate data model =
             let
                 ( label, icon ) =
                     generateActivityData activity data
+
+                destinationPage =
+                    case activity of
+                        PregnancyOutcome ->
+                            UserPage <| PregnancyOutcomePage InitiatorPostpartumEncounter data.encounter.participant
+
+                        _ ->
+                            UserPage <| PrenatalActivityPage data.id activity
             in
             div [ class "card" ]
                 [ div
                     [ class "image"
-                    , onClick <| SetActivePage <| UserPage <| PrenatalActivityPage data.id activity
+                    , onClick <| SetActivePage destinationPage
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ icon ] [] ]
                 , div [ class "content" ]
