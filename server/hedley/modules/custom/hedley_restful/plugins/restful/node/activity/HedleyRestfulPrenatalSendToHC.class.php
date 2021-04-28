@@ -14,7 +14,7 @@ class HedleyRestfulPrenatalSendToHC extends HedleyRestfulPrenatalActivityBase {
    * {@inheritdoc}
    */
   protected $multiFields = [
-    'field_anc_send_to_hc',
+    'field_send_to_hc',
   ];
 
   /**

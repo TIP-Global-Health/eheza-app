@@ -11,26 +11,6 @@
 function hedley_activity_user_default_permissions() {
   $permissions = array();
 
-  // Exported permission: 'create anc_follow_up content'.
-  $permissions['create anc_follow_up content'] = array(
-    'name' => 'create anc_follow_up content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'create anc_send_to_hc content'.
-  $permissions['create anc_send_to_hc content'] = array(
-    'name' => 'create anc_send_to_hc content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'create appointment_confirmation content'.
   $permissions['create appointment_confirmation content'] = array(
     'name' => 'create appointment_confirmation content',
@@ -347,6 +327,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create prenatal_follow_up content'.
+  $permissions['create prenatal_follow_up content'] = array(
+    'name' => 'create prenatal_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create prenatal_health_education content'.
   $permissions['create prenatal_health_education content'] = array(
     'name' => 'create prenatal_health_education content',
@@ -370,6 +360,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'create prenatal_photo content'.
   $permissions['create prenatal_photo content'] = array(
     'name' => 'create prenatal_photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create prenatal_send_to_hc content'.
+  $permissions['create prenatal_send_to_hc content'] = array(
+    'name' => 'create prenatal_send_to_hc content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -414,24 +414,6 @@ function hedley_activity_user_default_permissions() {
       'administrator' => 'administrator',
       'nurse' => 'nurse',
       'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'delete any anc_follow_up content'.
-  $permissions['delete any anc_follow_up content'] = array(
-    'name' => 'delete any anc_follow_up content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'delete any anc_send_to_hc content'.
-  $permissions['delete any anc_send_to_hc content'] = array(
-    'name' => 'delete any anc_send_to_hc content',
-    'roles' => array(
-      'administrator' => 'administrator',
     ),
     'module' => 'node',
   );
@@ -715,6 +697,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any prenatal_follow_up content'.
+  $permissions['delete any prenatal_follow_up content'] = array(
+    'name' => 'delete any prenatal_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any prenatal_health_education content'.
   $permissions['delete any prenatal_health_education content'] = array(
     'name' => 'delete any prenatal_health_education content',
@@ -736,6 +727,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete any prenatal_photo content'.
   $permissions['delete any prenatal_photo content'] = array(
     'name' => 'delete any prenatal_photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any prenatal_send_to_hc content'.
+  $permissions['delete any prenatal_send_to_hc content'] = array(
+    'name' => 'delete any prenatal_send_to_hc content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -772,24 +772,6 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete any weight content'.
   $permissions['delete any weight content'] = array(
     'name' => 'delete any weight content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'delete own anc_follow_up content'.
-  $permissions['delete own anc_follow_up content'] = array(
-    'name' => 'delete own anc_follow_up content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'delete own anc_send_to_hc content'.
-  $permissions['delete own anc_send_to_hc content'] = array(
-    'name' => 'delete own anc_send_to_hc content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -1075,6 +1057,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own prenatal_follow_up content'.
+  $permissions['delete own prenatal_follow_up content'] = array(
+    'name' => 'delete own prenatal_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own prenatal_health_education content'.
   $permissions['delete own prenatal_health_education content'] = array(
     'name' => 'delete own prenatal_health_education content',
@@ -1096,6 +1087,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own prenatal_photo content'.
   $permissions['delete own prenatal_photo content'] = array(
     'name' => 'delete own prenatal_photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own prenatal_send_to_hc content'.
+  $permissions['delete own prenatal_send_to_hc content'] = array(
+    'name' => 'delete own prenatal_send_to_hc content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -1134,26 +1134,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'delete own weight content',
     'roles' => array(
       'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'edit any anc_follow_up content'.
-  $permissions['edit any anc_follow_up content'] = array(
-    'name' => 'edit any anc_follow_up content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'edit any anc_send_to_hc content'.
-  $permissions['edit any anc_send_to_hc content'] = array(
-    'name' => 'edit any anc_send_to_hc content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -1474,6 +1454,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any prenatal_follow_up content'.
+  $permissions['edit any prenatal_follow_up content'] = array(
+    'name' => 'edit any prenatal_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any prenatal_health_education content'.
   $permissions['edit any prenatal_health_education content'] = array(
     'name' => 'edit any prenatal_health_education content',
@@ -1497,6 +1487,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit any prenatal_photo content'.
   $permissions['edit any prenatal_photo content'] = array(
     'name' => 'edit any prenatal_photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any prenatal_send_to_hc content'.
+  $permissions['edit any prenatal_send_to_hc content'] = array(
+    'name' => 'edit any prenatal_send_to_hc content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -1540,26 +1540,6 @@ function hedley_activity_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'edit own anc_follow_up content'.
-  $permissions['edit own anc_follow_up content'] = array(
-    'name' => 'edit own anc_follow_up content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'edit own anc_send_to_hc content'.
-  $permissions['edit own anc_send_to_hc content'] = array(
-    'name' => 'edit own anc_send_to_hc content',
-    'roles' => array(
-      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1881,6 +1861,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit own prenatal_follow_up content'.
+  $permissions['edit own prenatal_follow_up content'] = array(
+    'name' => 'edit own prenatal_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own prenatal_health_education content'.
   $permissions['edit own prenatal_health_education content'] = array(
     'name' => 'edit own prenatal_health_education content',
@@ -1904,6 +1894,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit own prenatal_photo content'.
   $permissions['edit own prenatal_photo content'] = array(
     'name' => 'edit own prenatal_photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own prenatal_send_to_hc content'.
+  $permissions['edit own prenatal_send_to_hc content'] = array(
+    'name' => 'edit own prenatal_send_to_hc content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
