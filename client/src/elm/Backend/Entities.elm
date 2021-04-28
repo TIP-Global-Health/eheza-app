@@ -760,7 +760,7 @@ type PrenatalHealthEducationUuidType
 
 
 type alias PrenatalFollowUpId =
-    PrenatalFollowUpUuidType
+    EntityUuid PrenatalFollowUpUuidType
 
 
 type PrenatalFollowUpUuidType
@@ -768,7 +768,7 @@ type PrenatalFollowUpUuidType
 
 
 type alias PrenatalSendToHcId =
-    PrenatalSendToHcUuidType
+    EntityUuid PrenatalSendToHcUuidType
 
 
 type PrenatalSendToHcUuidType
@@ -776,7 +776,7 @@ type PrenatalSendToHcUuidType
 
 
 type alias PrenatalAppointmentConfirmationId =
-    PrenatalAppointmentConfirmationUuidType
+    EntityUuid PrenatalAppointmentConfirmationUuidType
 
 
 type PrenatalAppointmentConfirmationUuidType

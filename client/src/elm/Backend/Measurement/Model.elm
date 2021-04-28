@@ -744,8 +744,7 @@ type alias PrenatalFollowUp =
 
 
 type alias PrenatalSendToHCValue =
-    { signs : EverySet SendToHCSign
-    , accompanyToHC : EverySet PrenatalAccompanyToHC
+    { signs : EverySet PrenatalSendToHCSigns
     , reasonForNotSendingToHC : ReasonForNotSendingToHC
     }
 
@@ -754,8 +753,11 @@ type alias PrenatalSendToHC =
     PrenatalMeasurement PrenatalSendToHCValue
 
 
-type PrenatalAccompanyToHC
-    = AccompanyToHC
+type PrenatalSendToHCSigns
+    = PrenatalHandReferrerForm
+    | PrenatalReferToHealthCenter
+    | PrenatalAccompanyToHC
+    | NoPrenatalSendToHCSigns
 
 
 type alias PrenatalAppointmentConfirmationValue =
@@ -1283,6 +1285,9 @@ type alias PrenatalMeasurements =
     , birthPlan : Maybe ( BirthPlanId, BirthPlan )
     , pregnancyTest : Maybe ( PregnancyTestId, PregnancyTest )
     , healthEducation : Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )
+    , followUp : Maybe ( PrenatalFollowUpId, PrenatalFollowUp )
+    , sendToHC : Maybe ( PrenatalSendToHcId, PrenatalSendToHC )
+    , appointmentConfirmation : Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )
     }
 
 

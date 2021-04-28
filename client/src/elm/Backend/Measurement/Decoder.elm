@@ -105,6 +105,9 @@ decodePrenatalMeasurements =
         |> optional "birth_plan" (decodeHead decodeBirthPlan) Nothing
         |> optional "pregnancy_testing" (decodeHead decodePregnancyTesting) Nothing
         |> optional "prenatal_health_education" (decodeHead decodePrenatalHealthEducation) Nothing
+        |> optional "prenatal_follow_up" (decodeHead decodePrenatalFollowUp) Nothing
+        |> optional "prenatal_send_to_hc" (decodeHead decodePrenatalSendToHc) Nothing
+        |> optional "appointment_confirmation" (decodeHead decodeAppointmentConfirmation) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -262,6 +265,61 @@ decodePrenatalHealthEducationSign =
                     _ ->
                         sign ++ " is not a recognized PrenatalHealthEducationSign" |> fail
             )
+
+
+decodePrenatalFollowUp : Decoder PrenatalFollowUp
+decodePrenatalFollowUp =
+    decodePrenatalMeasurement decodePrenatalFollowUpValue
+
+
+decodePrenatalFollowUpValue : Decoder (EverySet FollowUpOption)
+decodePrenatalFollowUpValue =
+    decodeEverySet decodeFollowUpOption
+        |> field "follow_up_options"
+
+
+decodePrenatalSendToHc : Decoder PrenatalSendToHC
+decodePrenatalSendToHc =
+    decodePrenatalMeasurement decodePrenatalSendToHcValue
+
+
+decodePrenatalSendToHcValue : Decoder PrenatalSendToHCValue
+decodePrenatalSendToHcValue =
+    succeed PrenatalSendToHCValue
+        |> required "send_to_hc" (decodeEverySet decodePrenatalSendToHCSign)
+        |> optional "reason_not_sent_to_hc" decodeReasonForNotSendingToHC NoReasonForNotSendingToHC
+
+
+decodePrenatalSendToHCSign : Decoder PrenatalSendToHCSigns
+decodePrenatalSendToHCSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "referral-form" ->
+                        succeed PrenatalHandReferrerForm
+
+                    "refer-to-hc" ->
+                        succeed PrenatalReferToHealthCenter
+
+                    "accompany-to-hc" ->
+                        succeed PrenatalAccompanyToHC
+
+                    "none" ->
+                        succeed NoPrenatalSendToHCSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized PrenatalSendToHCSign"
+            )
+
+
+decodeAppointmentConfirmation : Decoder PrenatalAppointmentConfirmation
+decodeAppointmentConfirmation =
+    succeed LastMenstrualPeriodValue
+        |> required "appointment_confirmation" Gizra.NominalDate.decodeYYYYMMDD
+        |> decodePrenatalMeasurement
 
 
 decodeHeight : Decoder Height
