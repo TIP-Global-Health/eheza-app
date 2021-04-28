@@ -1947,6 +1947,14 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        AppointmentConfirmationRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | appointmentConfirmation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         AttendanceRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
@@ -2477,6 +2485,14 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        PrenatalFollowUpRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalNutritionRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
@@ -2489,6 +2505,14 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | prenatalPhoto = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalSendToHCRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | sendToHC = Just ( uuid, data ) })
                 model
             , recalc
             )

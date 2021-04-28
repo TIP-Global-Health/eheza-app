@@ -224,9 +224,11 @@ encodePrenatalFollowUpValue value =
     , ( "type", string "prenatal_follow_up" )
     ]
 
+
 encodePrenatalSendToHC : PrenatalSendToHC -> List ( String, Value )
 encodePrenatalSendToHC =
     encodePrenatalMeasurement (encodePrenatalSendToHCValueWithType "nutrition_send_to_hc")
+
 
 encodePrenatalSendToHCValueWithType : String -> PrenatalSendToHCValue -> List ( String, Value )
 encodePrenatalSendToHCValueWithType type_ value =
@@ -235,6 +237,7 @@ encodePrenatalSendToHCValueWithType type_ value =
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
+
 
 encodePrenatalSendToHcSign : PrenatalSendToHCSign -> Value
 encodePrenatalSendToHcSign sign =
@@ -264,6 +267,7 @@ encodeAppointmentConfirmationValue value =
     , ( "deleted", bool False )
     , ( "type", string "appointment_confirmation" )
     ]
+
 
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
