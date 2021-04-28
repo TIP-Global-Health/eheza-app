@@ -39,7 +39,7 @@ type alias AssembledData =
 
 type Msg
     = CloseEncounter PrenatalEncounterId
-    | CloseWarningPopup
+    | SetWarningPopupState (Maybe String)
     | SetActivePage Page
     | SetAlertsDialogState Bool
     | SetSelectedTab Tab

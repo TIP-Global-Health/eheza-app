@@ -318,7 +318,7 @@ warningPopup language currentDate dangerSigns =
                             [ class "actions" ]
                             [ button
                                 [ class "ui primary fluid button"
-                                , onClick CloseWarningPopup
+                                , onClick <| SetWarningPopupState Nothing
                                 ]
                                 [ text <| translate language Translate.Continue ]
                             ]
