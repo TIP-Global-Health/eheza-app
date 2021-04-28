@@ -400,6 +400,8 @@ type TranslationId
     | DashboardLabel
     | CurrentlyPregnant
     | DangerSign DangerSign
+    | DangerSignsLabel
+    | DangerSignsHelper
     | DangerSignsTask DangerSignsTask
     | DateOfLastAssessment
     | DatePregnancyConcluded
@@ -2575,6 +2577,16 @@ translationSet trans =
                     { english = "None of these"
                     , kinyarwanda = Just "Nta bimenyetso/nta na kimwe"
                     }
+
+        DangerSignsLabel ->
+            { english = "Danger Signs"
+            , kinyarwanda = Just "Ibimenyetso Mpuruza"
+            }
+
+        DangerSignsHelper ->
+            { english = "Refer patient to health center immediately"
+            , kinyarwanda = Just "Ibimenyetso Mpuruza"
+            }
 
         DangerSignsTask task ->
             case task of

@@ -45,24 +45,28 @@ view language currentDate id db model =
     let
         data =
             generateAssembledData id db
+    in
+    viewWebData language (viewHeaderAndContent language currentDate id model) identity data
 
+
+viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id model data =
+    let
         header =
-            viewWebData language (viewHeader language) identity data
+            viewHeader language data
 
         content =
-            viewWebData language (viewContent language currentDate model) identity data
+            viewContent language currentDate data model
+
+        popup =
+            viewModal <|
+                warningPopup language currentDate model.warningPopupState
     in
-    div [ class "page-encounter prenatal" ] <|
+    div [ class "page-encounter prenatal" ]
         [ header
         , content
+        , popup
         ]
-
-
-viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
-viewContent language currentDate model data =
-    div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewMainPageContent language currentDate data model
 
 
 viewHeader : Language -> AssembledData -> Html Msg
@@ -80,6 +84,13 @@ viewHeader language data =
             , span [] []
             ]
         ]
+
+
+viewContent : Language -> NominalDate -> AssembledData -> Model -> Html Msg
+viewContent language currentDate data model =
+    div [ class "ui unstackable items" ] <|
+        viewMotherAndMeasurements language currentDate data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
+            ++ viewMainPageContent language currentDate data model
 
 
 viewMotherAndMeasurements : Language -> NominalDate -> AssembledData -> Maybe ( Bool, Bool -> msg ) -> List (Html msg)
@@ -288,6 +299,32 @@ alertsDialog language highRiskAlertsData highSeverityAlertsData recurringHighSev
 
     else
         Nothing
+
+
+warningPopup : Language -> NominalDate -> Maybe String -> Maybe (Html Msg)
+warningPopup language currentDate dangerSigns =
+    dangerSigns
+        |> Maybe.map
+            (\signs ->
+                div [ class "ui active modal diagnosis-popup" ]
+                    [ div [ class "content" ] <|
+                        [ div [ class "popup-heading-wrapper" ]
+                            [ div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ] ]
+                        , div [ class "popup-title" ]
+                            [ p [] [ text <| translate language Translate.DangerSignsLabel ++ ": " ++ signs ]
+                            , p [] [ text <| translate language Translate.DangerSignsHelper ]
+                            ]
+                        , div
+                            [ class "actions" ]
+                            [ button
+                                [ class "ui primary fluid button"
+                                , onClick CloseWarningPopup
+                                ]
+                                [ text <| translate language Translate.Continue ]
+                            ]
+                        ]
+                    ]
+            )
 
 
 viewMeasurements : Language -> NominalDate -> Maybe NominalDate -> Maybe ObstetricHistoryValue -> Html any
