@@ -309,7 +309,9 @@ warningPopup language currentDate dangerSigns =
                 div [ class "ui active modal diagnosis-popup" ]
                     [ div [ class "content" ] <|
                         [ div [ class "popup-heading-wrapper" ]
-                            [ div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ] ]
+                            [ img [ src "assets/images/exclamation-red.png" ] []
+                            , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
+                            ]
                         , div [ class "popup-title" ]
                             [ p [] [ text <| translate language Translate.DangerSignsLabel ++ ": " ++ signs ]
                             , p [] [ text <| translate language Translate.DangerSignsHelper ]
