@@ -358,7 +358,7 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                             (\sessionId ->
                                 let
                                     postCreateDestination =
-                                        if hasNurseEncounter then
+                                        if hasNurseEncounter && encounterType /= ChwPostpartumEncounter then
                                             DestinationClinicalProgressReportPage
 
                                         else
