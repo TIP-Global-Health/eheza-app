@@ -1444,6 +1444,7 @@ toFollowUpValue form =
 fromAppointmentConfirmationValue : Maybe PrenatalAppointmentConfirmationValue -> AppointmentConfirmationForm
 fromAppointmentConfirmationValue saved =
     { appointmentDate = Maybe.map .date saved
+    , isDateSelectorOpen = False
     }
 
 
@@ -1454,6 +1455,7 @@ appointmentConfirmationFormWithDefault form saved =
             form
             (\value ->
                 { appointmentDate = or form.appointmentDate (Just value.date)
+                , isDateSelectorOpen = form.isDateSelectorOpen
                 }
             )
 

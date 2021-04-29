@@ -20,6 +20,9 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
+import Measurement.Model exposing (SendToHCForm)
+import Measurement.Utils exposing (sendToHCFormWithDefault)
+import Measurement.View exposing (viewActionTakenLabel)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
@@ -1264,8 +1267,10 @@ viewNextStepsContent language currentDate assembled data =
         viewForm =
             case activeTask of
                 Just NextStepsAppointmentConfirmation ->
-                    -- @todo
-                    emptyNode
+                    measurements.appointmentConfirmation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> appointmentConfirmationFormWithDefault data.appointmentConfirmationForm
+                        |> viewAppointmentForm language currentDate assembled
 
                 Just NextStepsFollowUp ->
                     measurements.followUp
@@ -1274,8 +1279,15 @@ viewNextStepsContent language currentDate assembled data =
                         |> viewFollowUpForm language currentDate assembled
 
                 Just NextStepsSendToHC ->
-                    -- @todo
-                    emptyNode
+                    measurements.sendToHC
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> sendToHCFormWithDefault data.sendToHCForm
+                        |> viewSendToHCForm language
+                            currentDate
+                            SetReferToHealthCenter
+                            SetReasonForNotSendingToHC
+                            SetHandReferralForm
+                            SetAccompanyToHC
 
                 Just NextStepsHealthEducation ->
                     measurements.healthEducation
@@ -2602,6 +2614,95 @@ viewFollowUpForm language assembled currentDate form =
             form.option
             SetFollowUpOption
             Translate.FollowUpOption
+        ]
+
+
+viewSendToHCForm :
+    Language
+    -> NominalDate
+    -> (Bool -> msg)
+    -> (ReasonForNotSendingToHC -> msg)
+    -> (Bool -> msg)
+    -> (Bool -> msg)
+    -> SendToHCForm
+    -> Html msg
+viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotSendingToHCMsg setHandReferralFormMsg setAccompanyToHC form =
+    let
+        sendToHCSection =
+            let
+                sentToHealthCenter =
+                    form.referToHealthCenter
+                        |> Maybe.withDefault True
+
+                reasonForNotSendingToHCInput =
+                    if not sentToHealthCenter then
+                        [ viewQuestionLabel language Translate.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
+                            []
+                            form.reasonForNotSendingToHC
+                            setReasonForNotSendingToHCMsg
+                            Translate.ReasonForNotSendingToHC
+                        ]
+
+                    else
+                        []
+            in
+            [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
+            , viewBoolInput
+                language
+                form.referToHealthCenter
+                setReferToHealthCenterMsg
+                "refer-to-hc"
+                Nothing
+            ]
+                ++ reasonForNotSendingToHCInput
+    in
+    div [ class "ui form send-to-hc" ] <|
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ]
+            [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
+            , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
+            ]
+        ]
+            ++ sendToHCSection
+            ++ [ viewQuestionLabel language Translate.HandedReferralFormQuestion
+               , viewBoolInput
+                    language
+                    form.handReferralForm
+                    setHandReferralFormMsg
+                    "hand-referral-form"
+                    Nothing
+               ]
+            ++ [ viewQuestionLabel language Translate.AccompanyToHCQuestion
+               , viewBoolInput
+                    language
+                    form.accompanyToHealthCenter
+                    setAccompanyToHC
+                    "accompany-to-hc"
+                    Nothing
+               ]
+
+
+viewAppointmentForm : Language -> NominalDate -> AssembledData -> AppointmentConfirmationForm -> Html Msg
+viewAppointmentForm language currentDate assembled form =
+    let
+        today =
+            currentDate
+
+        appointmentDateInput =
+            DateSelector.SelectorDropdown.view
+                AppointmentToggleDateSelector
+                SetAppointmentConfirmation
+                form.isDateSelectorOpen
+                (Date.add Days -365 today)
+                today
+                form.appointmentDate
+    in
+    div [ class "ui form appointment-confirmation" ]
+        [ viewQuestionLabel language Translate.LmpRangeHeader
+        , div [ class "form-input date" ]
+            [ appointmentDateInput ]
         ]
 
 

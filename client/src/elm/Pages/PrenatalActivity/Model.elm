@@ -104,6 +104,7 @@ type Msg
     | SetAccompanyToHC Bool
     | SetReasonForNotSendingToHC ReasonForNotSendingToHC
     | SaveSendToHC PersonId (Maybe ( PrenatalSendToHcId, PrenatalSendToHC )) (Maybe NextStepsTask)
+    | AppointmentToggleDateSelector
     | SetAppointmentConfirmation Date
     | SaveAppointmentConfirmation PersonId (Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )) (Maybe NextStepsTask)
 
@@ -685,12 +686,13 @@ type alias PregnancyTestingForm =
 
 type alias AppointmentConfirmationForm =
     { appointmentDate : Maybe Date
+    , isDateSelectorOpen : Bool
     }
 
 
 emptyAppointmentConfirmationForm : AppointmentConfirmationForm
 emptyAppointmentConfirmationForm =
-    AppointmentConfirmationForm Nothing
+    AppointmentConfirmationForm Nothing False
 
 
 type alias FollowUpForm =

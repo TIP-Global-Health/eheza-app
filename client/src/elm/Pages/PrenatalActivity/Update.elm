@@ -1986,6 +1986,22 @@ update currentDate id db msg model =
             , appMsgs
             )
 
+        AppointmentToggleDateSelector ->
+                    let
+                        updatedForm =
+                            model.nextStepsData.appointmentConfirmationForm
+                                |> (\form -> { form | isDateSelectorOpen = not form.isDateSelectorOpen })
+
+                        updatedData =
+                            model.nextStepsData
+                                |> (\data -> { data | appointmentConfirmationForm = updatedForm })
+                    in
+                    ( { model | nextStepsData = updatedData }
+                    , Cmd.none
+                    , []
+                    )
+
+
         SetAppointmentConfirmation value ->
             let
                 updatedForm =

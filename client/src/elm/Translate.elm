@@ -243,6 +243,7 @@ type TranslationId
     | Abnormal
     | Abortions
     | AccompaniedByPartner
+    | AccompanyToHCQuestion
     | AccessDenied
     | ActionsTaken
     | ActionsToTake
@@ -993,6 +994,11 @@ translationSet trans =
         AccompaniedByPartner ->
             { english = "Was the patient accompanied by partner during the assessment"
             , kinyarwanda = Just "Umubyeyi yaherekejwe n'umugabo we mu gihe yaje kwipimisha?"
+            }
+
+        AccompanyToHCQuestion ->
+            { english = "Will you accompany the patient to the health center"
+            , kinyarwanda = Nothing
             }
 
         AccessDenied ->
