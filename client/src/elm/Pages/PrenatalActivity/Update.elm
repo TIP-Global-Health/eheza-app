@@ -2018,7 +2018,7 @@ update currentDate id db msg model =
 
                 appMsgs =
                     model.nextStepsData.appointmentConfirmationForm
-                        |> toappointmentConfirmationValueWithDefault measurement
+                        |> toAppointmentConfirmationValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->
