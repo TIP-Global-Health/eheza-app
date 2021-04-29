@@ -254,14 +254,10 @@ activityCompleted currentDate data activity =
             in
             case nextStepsTasks of
                 [ NextStepsAppointmentConfirmation, NextStepsFollowUp ] ->
-                    --@todo
-                    -- isJust data.measurements.appointmentConfirmation && isJust data.measurements.followUp
-                    False
+                    isJust data.measurements.appointmentConfirmation && isJust data.measurements.followUp
 
                 [ NextStepsSendToHC, NextStepsFollowUp ] ->
-                    --@todo
-                    -- isJust data.measurements.sendToHC && isJust data.measurements.followUp
-                    False
+                    isJust data.measurements.sendToHC && isJust data.measurements.followUp
 
                 [ NextStepsHealthEducation, NextStepsNewbornEnrollment ] ->
                     --@todo
@@ -271,11 +267,11 @@ activityCompleted currentDate data activity =
 
                 [ NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrollment ] ->
                     --@todo
-                    -- && isJust data.measurements.sendToHC
-                    --  && isJust data.measurements.followUp
                     -- && isJust data.measurements.newbornEnrollment
                     False
                         && isJust data.measurements.healthEducation
+                        && isJust data.measurements.sendToHC
+                        && isJust data.measurements.followUp
 
                 _ ->
                     False

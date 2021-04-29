@@ -317,7 +317,7 @@ decodePrenatalSendToHCSign =
 
 decodeAppointmentConfirmation : Decoder PrenatalAppointmentConfirmation
 decodeAppointmentConfirmation =
-    succeed LastMenstrualPeriodValue
+    succeed PrenatalAppointmentConfirmationValue
         |> required "appointment_confirmation" Gizra.NominalDate.decodeYYYYMMDD
         |> decodePrenatalMeasurement
 

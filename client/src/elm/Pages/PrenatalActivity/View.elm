@@ -1203,24 +1203,18 @@ viewNextStepsContent language currentDate assembled data =
                 ( iconClass, isCompleted ) =
                     case task of
                         NextStepsAppointmentConfirmation ->
-                            -- @todo
-                            ( ""
-                            , -- isJust measurements.appointmentConfirmation
-                              False
+                            ( "next-steps-appointment-confirmation"
+                            , isJust measurements.appointmentConfirmation
                             )
 
                         NextStepsFollowUp ->
                             ( "next-steps-follow-up"
-                            , -- @todo
-                              -- isJust measurements.followUp
-                              False
+                            , isJust measurements.followUp
                             )
 
                         NextStepsSendToHC ->
                             ( "next-steps-send-to-hc"
-                            , -- @todo
-                              -- isJust measurements.sendToHC
-                              False
+                            , isJust measurements.sendToHC
                             )
 
                         NextStepsHealthEducation ->
@@ -1274,8 +1268,10 @@ viewNextStepsContent language currentDate assembled data =
                     emptyNode
 
                 Just NextStepsFollowUp ->
-                    -- @todo
-                    emptyNode
+                    measurements.followUp
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> followUpFormWithDefault data.followUpForm
+                        |> viewFollowUpForm language currentDate assembled
 
                 Just NextStepsSendToHC ->
                     -- @todo
@@ -1311,16 +1307,13 @@ viewNextStepsContent language currentDate assembled data =
                             saveMsg =
                                 case task of
                                     NextStepsAppointmentConfirmation ->
-                                        -- @todo
-                                        NoOp
+                                        SaveAppointmentConfirmation personId measurements.appointmentConfirmation nextTask
 
                                     NextStepsFollowUp ->
-                                        -- @todo
-                                        NoOp
+                                        SaveFollowUp personId measurements.followUp nextTask
 
                                     NextStepsSendToHC ->
-                                        -- @todo
-                                        NoOp
+                                        SaveSendToHC personId measurements.sendToHC nextTask
 
                                     NextStepsHealthEducation ->
                                         SaveHealthEducationSubActivity personId measurements.healthEducation nextTask
@@ -2597,6 +2590,19 @@ viewHealthEducationForm language currentDate assembled form =
     in
     div [ class "ui form health-education" ]
         inputs
+
+
+viewFollowUpForm : Language -> NominalDate -> AssembledData -> FollowUpForm -> Html Msg
+viewFollowUpForm language assembled currentDate form =
+    div [ class "ui form follow-up" ]
+        [ viewLabel language Translate.FollowUpLabel
+        , viewCheckBoxSelectInput language
+            [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
+            []
+            form.option
+            SetFollowUpOption
+            Translate.FollowUpOption
+        ]
 
 
 

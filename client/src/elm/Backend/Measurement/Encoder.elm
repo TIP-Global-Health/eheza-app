@@ -232,7 +232,7 @@ encodePrenatalSendToHC =
 
 encodePrenatalSendToHCValueWithType : String -> PrenatalSendToHCValue -> List ( String, Value )
 encodePrenatalSendToHCValueWithType type_ value =
-    [ ( "send_to_hc", encodeEverySet encondeSendToHCSign value.signs )
+    [ ( "send_to_hc", encodeEverySet encodePrenatalSendToHcSign value.signs )
     , ( "reason_not_sent_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
     , ( "deleted", bool False )
     , ( "type", string type_ )
