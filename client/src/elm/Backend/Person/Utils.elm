@@ -4,6 +4,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), Initiator(..), ParticipantDirectoryOperation(..), Person)
 import Date
 import Gizra.NominalDate exposing (NominalDate, diffMonths, diffYears)
+import List.Extra
 import Maybe.Extra exposing (isJust)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
@@ -129,6 +130,9 @@ initiatorToUrlFragmemt initiator =
         GroupEncounterOrigin sessionId ->
             "session-" ++ fromEntityUuid sessionId
 
+        PrenatalNextStepsActivity encounterId ->
+            "prenatal-next-steps-" ++ fromEntityUuid encounterId
+
 
 initiatorFromUrlFragmemt : String -> Maybe Initiator
 initiatorFromUrlFragmemt s =
@@ -155,15 +159,14 @@ initiatorFromUrlFragmemt s =
             in
             case List.head split of
                 Just "session" ->
-                    if List.length split > 1 then
-                        -- Remove the "session-" prefix.
-                        String.dropLeft 8 s
-                            |> toEntityUuid
-                            |> GroupEncounterOrigin
-                            |> Just
+                    -- Second element is the UUID of the session.
+                    List.Extra.getAt 1 split
+                        |> Maybe.map (toEntityUuid >> GroupEncounterOrigin)
 
-                    else
-                        Nothing
+                Just "prenatal-next-steps" ->
+                    -- Second element is the UUID of the encounter.
+                    List.Extra.getAt 1 split
+                        |> Maybe.map (toEntityUuid >> PrenatalNextStepsActivity)
 
                 _ ->
                     Nothing

@@ -31,6 +31,7 @@ import Backend.Person.Model
         )
 import Backend.Person.Utils exposing (defaultIconForPerson, expectedAgeByPerson, graduatingAgeInMonth, isAdult, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
+import Backend.PrenatalActivity.Model
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (getVillageById)
@@ -399,6 +400,10 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                                         viewGoToRelationshipPageArrow
                                 )
                             |> Maybe.withDefault emptyNode
+
+                    PrenatalNextStepsActivity _ ->
+                        -- We do not allow this actions when registering newborn child.
+                        emptyNode
                 )
 
         content =
@@ -625,6 +630,14 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     , expectedGender = ExpectMaleOrFemale
                     , birthDateSelectorFrom = birthDateSelectorFrom
                     , birthDateSelectorTo = birthDateSelectorTo
+                    }
+
+                PrenatalNextStepsActivity encounterId ->
+                    { goBackPage = UserPage (PrenatalActivityPage encounterId Backend.PrenatalActivity.Model.NextSteps)
+                    , expectedAge = ExpectChild
+                    , expectedGender = ExpectMaleOrFemale
+                    , birthDateSelectorFrom = Date.add Years -3 today
+                    , birthDateSelectorTo = today
                     }
 
         header =

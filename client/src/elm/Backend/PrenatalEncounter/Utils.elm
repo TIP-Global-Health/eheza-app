@@ -1,6 +1,7 @@
 module Backend.PrenatalEncounter.Utils exposing (..)
 
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), RecordPreganancyInitiator(..))
+import List.Extra
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
 
@@ -56,15 +57,9 @@ progressReportInitiatorFromUrlFragmemt s =
             in
             case List.head split of
                 Just "encounter" ->
-                    if List.length split > 1 then
-                        -- Remove the "session-" prefix.
-                        String.dropLeft 10 s
-                            |> toEntityUuid
-                            |> InitiatorNewEncounter
-                            |> Just
-
-                    else
-                        Nothing
+                    -- Second element is the UUID of the session.
+                    List.Extra.getAt 1 split
+                        |> Maybe.map (toEntityUuid >> InitiatorNewEncounter)
 
                 _ ->
                     Nothing

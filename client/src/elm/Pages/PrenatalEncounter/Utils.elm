@@ -338,8 +338,7 @@ activityCompleted currentDate data activity =
                     --@todo
                     -- && isJust data.measurements.sendToHC
                     --  && isJust data.measurements.followUp
-                    -- && isJust data.measurements.newbornEnrolment
-                    False
+                    isJust data.participant.newborn
                         && isJust data.measurements.healthEducation
 
                 _ ->

@@ -27,6 +27,7 @@ import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
+import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounterPostCreateDestination(..), PrenatalEncounterType(..), emptyPrenatalEncounter)
 import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
@@ -1671,6 +1672,9 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId isChw active
 
                                                     Nothing ->
                                                         PersonPage personId initiator
+
+                                            PrenatalNextStepsActivity encounterId ->
+                                                PrenatalActivityPage encounterId Backend.PrenatalActivity.Model.NextSteps
                                 in
                                 [ Pages.Person.Model.ResetCreateForm
                                     |> App.Model.MsgPageCreatePerson
