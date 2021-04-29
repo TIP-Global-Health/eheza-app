@@ -54,6 +54,11 @@ class HedleyRestfulIndividualParticipants extends HedleyRestfulSyncBase {
       'property' => 'field_outcome_location',
     ];
 
+    $public_fields['newborn'] = [
+      'property' => 'field_newborn',
+      'sub_property' => 'field_uuid',
+    ];
+
     $public_fields['deleted'] = [
       'property' => 'field_deleted',
     ];
