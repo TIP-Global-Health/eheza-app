@@ -283,9 +283,8 @@ nextStepsTasksCompletedFromTotal language assembled data task =
             )
 
         NextStepsNewbornEnrollment ->
-            -- @todo
             ( 0
-            , 1
+            , 0
             )
 
 

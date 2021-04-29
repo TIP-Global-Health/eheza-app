@@ -1263,8 +1263,7 @@ viewNextStepsContent language currentDate assembled data =
                             )
 
                         NextStepsNewbornEnrollment ->
-                            -- @todo
-                            ( ""
+                            ( "next-steps-newborn-enrollment"
                             , -- isJust measurements.appointmentConfirmation
                               False
                             )
