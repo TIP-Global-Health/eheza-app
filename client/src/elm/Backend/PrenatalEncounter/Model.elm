@@ -72,6 +72,9 @@ type alias Model =
     , saveBirthPlan : WebData ()
     , savePregnancyTesting : WebData ()
     , saveHealthEducation : WebData ()
+    , saveFollowUp : WebData ()
+    , saveSendToHC : WebData ()
+    , saveAppointmentConfirmation : WebData ()
     }
 
 
@@ -96,6 +99,9 @@ emptyModel =
     , saveBirthPlan = NotAsked
     , savePregnancyTesting = NotAsked
     , saveHealthEducation = NotAsked
+    , saveFollowUp = NotAsked
+    , saveSendToHC = NotAsked
+    , saveAppointmentConfirmation = NotAsked
     }
 
 
@@ -138,3 +144,9 @@ type Msg
     | HandleSavedPregnancyTesting (WebData ())
     | SaveHealthEducation PersonId (Maybe PrenatalHealthEducationId) (EverySet PrenatalHealthEducationSign)
     | HandleSavedHealthEducation (WebData ())
+    | SaveFollowUp PersonId (Maybe PrenatalFollowUpId) (EverySet FollowUpOption)
+    | HandleSavedFollowup (WebData ())
+    | SaveSendToHC PersonId (Maybe PrenatalSendToHcId) PrenatalSendToHCValue
+    | HandleSavedSendToHC (WebData ())
+    | SaveAppointmentConfirmation PersonId (Maybe PrenatalAppointmentConfirmationId) PrenatalAppointmentConfirmationValue
+    | HandleSavedAppointmentConfirmation (WebData ())
