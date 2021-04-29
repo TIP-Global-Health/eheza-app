@@ -744,7 +744,7 @@ type alias PrenatalFollowUp =
 
 
 type alias PrenatalSendToHCValue =
-    { signs : EverySet PrenatalSendToHCSigns
+    { signs : EverySet PrenatalSendToHCSign
     , reasonForNotSendingToHC : ReasonForNotSendingToHC
     }
 
@@ -766,7 +766,7 @@ type alias PrenatalAppointmentConfirmationValue =
 
 
 type alias PrenatalAppointmentConfirmation =
-    PrenatalMeasurement PrenatalAppointmentConfirmation
+    PrenatalMeasurement PrenatalAppointmentConfirmationValue
 
 
 

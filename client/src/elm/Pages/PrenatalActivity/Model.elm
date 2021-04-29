@@ -96,6 +96,15 @@ type Msg
       -- NextStepsMsgs
     | SetActiveNextStepsTask NextStepsTask
     | SaveHealthEducationSubActivity PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )) (Maybe NextStepsTask)
+    | SetFollowUpOption FollowUpOption
+    | SaveFollowUp PersonId (Maybe ( PrenatalFollowUpId, PrenatalFollowUp )) (Maybe NextStepsTask)
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | SetAccompanyToHC Bool
+    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHcId, PrenatalSendToHC )) (Maybe NextStepsTask)
+    | SetAppointmentConfirmation Date
+    | SaveAppointmentConfirmation PersonId (Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -276,7 +285,7 @@ emptyHealthEducationData =
 type alias NextStepsData =
     { appointmentConfirmationForm : AppointmentConfirmationForm
     , followUpForm : FollowUpForm
-    , sendToHCForm : SendToHCForm
+    , sendToHCForm : SendToHcForm
     , healthEducationForm : HealthEducationForm
     , newbornEnrollmentForm : NewbornEnrollmentForm
     , activeTask : Maybe NextStepsTask
@@ -287,7 +296,7 @@ emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { appointmentConfirmationForm = emptyAppointmentConfirmationForm
     , followUpForm = emptyFollowUpForm
-    , sendToHCForm = emptySendToHCForm
+    , sendToHCForm = emptySendToHcForm
     , healthEducationForm = emptyHealthEducationForm
     , newbornEnrollmentForm = emptyNewbornEnrollmentForm
     , activeTask = Nothing
@@ -674,12 +683,13 @@ type alias PregnancyTestingForm =
 
 
 type alias AppointmentConfirmationForm =
-    {}
+    { appointmentDate : Maybe Date
+    }
 
 
 emptyAppointmentConfirmationForm : AppointmentConfirmationForm
 emptyAppointmentConfirmationForm =
-    {}
+    AppointmentConfirmationForm Nothing
 
 
 type alias FollowUpForm =
@@ -690,6 +700,19 @@ type alias FollowUpForm =
 emptyFollowUpForm : FollowUpForm
 emptyFollowUpForm =
     FollowUpForm Nothing
+
+
+type alias SendToHcForm =
+    { handReferralForm : Maybe Bool
+    , referToHealthCenter : Maybe Bool
+    , accompanyToHealthCenter : Maybe Bool
+    , reasonForNotSendingToHC : Maybe ReasonForNotSendingToHC
+    }
+
+
+emptySendToHcForm : SendToHcForm
+emptySendToHcForm =
+    SendToHcForm Nothing Nothing Nothing Nothing
 
 
 type alias HealthEducationForm =
