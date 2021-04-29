@@ -1673,7 +1673,7 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId isChw active
                                                     Nothing ->
                                                         PersonPage personId initiator
 
-                                            PrenatalNextStepsActivity encounterId ->
+                                            PrenatalNextStepsActivityOrigin encounterId ->
                                                 PrenatalActivityPage encounterId Backend.PrenatalActivity.Model.NextSteps
                                 in
                                 [ Pages.Person.Model.ResetCreateForm

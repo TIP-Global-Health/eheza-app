@@ -1270,14 +1270,35 @@ viewNextStepsContent language currentDate assembled data =
                 isActive =
                     activeTask == Just task
 
-                attributes =
-                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
-                        :: (if isActive then
+                navigationAction =
+                    case task of
+                        NextStepsNewbornEnrolment ->
+                            if isNothing assembled.participant.newborn then
+                                [ onClick <|
+                                    SetActivePage <|
+                                        UserPage <|
+                                            CreatePersonPage (Just assembled.participant.person) <|
+                                                Backend.Person.Model.PrenatalNextStepsActivityOrigin assembled.id
+                                ]
+
+                            else
+                                -- Newborn is already enrolled.
+                                []
+
+                        _ ->
+                            if isActive then
                                 []
 
                             else
                                 [ onClick <| SetActiveNextStepsTask task ]
-                           )
+
+                attributes =
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                        :: navigationAction
             in
             div [ class "column" ]
                 [ div attributes

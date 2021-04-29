@@ -82,7 +82,7 @@ viewHeader initiator relation title =
                         |> Maybe.map (\personId -> UserPage (PersonPage personId initiator))
                         |> Maybe.withDefault (UserPage (SessionPage sessionId AttendancePage))
 
-                PrenatalNextStepsActivity encounterId ->
+                PrenatalNextStepsActivityOrigin encounterId ->
                     UserPage (PrenatalActivityPage encounterId Backend.PrenatalActivity.Model.NextSteps)
     in
     div

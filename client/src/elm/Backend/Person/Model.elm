@@ -153,7 +153,7 @@ type Initiator
     = ParticipantDirectoryOrigin
     | IndividualEncounterOrigin IndividualEncounterType
     | GroupEncounterOrigin SessionId
-    | PrenatalNextStepsActivity PrenatalEncounterId
+    | PrenatalNextStepsActivityOrigin PrenatalEncounterId
 
 
 type ParticipantDirectoryOperation

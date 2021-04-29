@@ -4,7 +4,6 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), Initiator(..), ParticipantDirectoryOperation(..), Person)
 import Date
 import Gizra.NominalDate exposing (NominalDate, diffMonths, diffYears)
-import List.Extra
 import Maybe.Extra exposing (isJust)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
@@ -130,7 +129,7 @@ initiatorToUrlFragmemt initiator =
         GroupEncounterOrigin sessionId ->
             "session-" ++ fromEntityUuid sessionId
 
-        PrenatalNextStepsActivity encounterId ->
+        PrenatalNextStepsActivityOrigin encounterId ->
             "prenatal-next-steps-" ++ fromEntityUuid encounterId
 
 
@@ -153,23 +152,20 @@ initiatorFromUrlFragmemt s =
             IndividualEncounterOrigin NutritionEncounter |> Just
 
         _ ->
-            let
-                split =
-                    String.split "-" s
-            in
-            case List.head split of
-                Just "session" ->
-                    -- Second element is the UUID of the session.
-                    List.Extra.getAt 1 split
-                        |> Maybe.map (toEntityUuid >> GroupEncounterOrigin)
+            if String.startsWith "session" s then
+                String.dropLeft (String.length "session-") s
+                    |> toEntityUuid
+                    |> GroupEncounterOrigin
+                    |> Just
 
-                Just "prenatal-next-steps" ->
-                    -- Second element is the UUID of the encounter.
-                    List.Extra.getAt 1 split
-                        |> Maybe.map (toEntityUuid >> PrenatalNextStepsActivity)
+            else if String.startsWith "prenatal-next-steps" s then
+                String.dropLeft (String.length "prenatal-next-steps-") s
+                    |> toEntityUuid
+                    |> PrenatalNextStepsActivityOrigin
+                    |> Just
 
-                _ ->
-                    Nothing
+            else
+                Nothing
 
 
 graduatingAgeInMonth : Int
