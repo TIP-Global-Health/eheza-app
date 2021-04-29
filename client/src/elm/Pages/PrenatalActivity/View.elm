@@ -1262,8 +1262,8 @@ viewNextStepsContent language currentDate assembled data =
                             , isJust measurements.healthEducation
                             )
 
-                        NextStepsNewbornEnrollment ->
-                            ( "next-steps-newborn-enrollment"
+                        NextStepsNewbornEnrolment ->
+                            ( "next-steps-newborn-enrolment"
                             , -- isJust measurements.appointmentConfirmation
                               False
                             )
@@ -1320,7 +1320,7 @@ viewNextStepsContent language currentDate assembled data =
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate assembled
 
-                Just NextStepsNewbornEnrollment ->
+                Just NextStepsNewbornEnrolment ->
                     -- @todo
                     emptyNode
 
@@ -1358,7 +1358,7 @@ viewNextStepsContent language currentDate assembled data =
                                     NextStepsHealthEducation ->
                                         SaveHealthEducationSubActivity personId measurements.healthEducation nextTask
 
-                                    NextStepsNewbornEnrollment ->
+                                    NextStepsNewbornEnrolment ->
                                         -- @todo
                                         NoOp
                         in

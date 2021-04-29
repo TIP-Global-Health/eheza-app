@@ -282,7 +282,7 @@ nextStepsTasksCompletedFromTotal language assembled data task =
             , List.length tasks
             )
 
-        NextStepsNewbornEnrollment ->
+        NextStepsNewbornEnrolment ->
             ( 0
             , 0
             )

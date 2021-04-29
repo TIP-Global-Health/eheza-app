@@ -328,17 +328,17 @@ activityCompleted currentDate data activity =
                     -- isJust data.measurements.sendToHC && isJust data.measurements.followUp
                     False
 
-                [ NextStepsHealthEducation, NextStepsNewbornEnrollment ] ->
+                [ NextStepsHealthEducation, NextStepsNewbornEnrolment ] ->
                     --@todo
-                    -- && isJust data.measurements.newbornEnrollment
+                    -- && isJust data.measurements.newbornEnrolment
                     False
                         && isJust data.measurements.healthEducation
 
-                [ NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrollment ] ->
+                [ NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ] ->
                     --@todo
                     -- && isJust data.measurements.sendToHC
                     --  && isJust data.measurements.followUp
-                    -- && isJust data.measurements.newbornEnrollment
+                    -- && isJust data.measurements.newbornEnrolment
                     False
                         && isJust data.measurements.healthEducation
 
@@ -359,7 +359,7 @@ resolveNextStepsTasks currentDate data =
 
         _ ->
             -- The order is important. Do not change.
-            [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrollment ]
+            [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ]
                 |> List.filter (expectNextStepsTasks currentDate data)
 
 
@@ -387,7 +387,7 @@ expectNextStepsTasks currentDate data task =
         NextStepsHealthEducation ->
             data.encounter.encounterType == ChwPostpartumEncounter
 
-        NextStepsNewbornEnrollment ->
+        NextStepsNewbornEnrolment ->
             data.encounter.encounterType == ChwPostpartumEncounter
 
 

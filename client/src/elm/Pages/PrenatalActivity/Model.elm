@@ -139,7 +139,7 @@ type NextStepsTask
     | NextStepsFollowUp
     | NextStepsSendToHC
     | NextStepsHealthEducation
-    | NextStepsNewbornEnrollment
+    | NextStepsNewbornEnrolment
 
 
 
@@ -281,7 +281,7 @@ type alias NextStepsData =
     , followUpForm : FollowUpForm
     , sendToHCForm : SendToHCForm
     , healthEducationForm : HealthEducationForm
-    , newbornEnrollmentForm : NewbornEnrollmentForm
+    , newbornEnrolmentForm : NewbornEnrolmentForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -292,7 +292,7 @@ emptyNextStepsData =
     , followUpForm = emptyFollowUpForm
     , sendToHCForm = emptySendToHCForm
     , healthEducationForm = emptyHealthEducationForm
-    , newbornEnrollmentForm = emptyNewbornEnrollmentForm
+    , newbornEnrolmentForm = emptyNewbornEnrolmentForm
     , activeTask = Nothing
     }
 
@@ -721,10 +721,10 @@ emptyHealthEducationForm =
     }
 
 
-type alias NewbornEnrollmentForm =
+type alias NewbornEnrolmentForm =
     {}
 
 
-emptyNewbornEnrollmentForm : NewbornEnrollmentForm
-emptyNewbornEnrollmentForm =
+emptyNewbornEnrolmentForm : NewbornEnrolmentForm
+emptyNewbornEnrolmentForm =
     {}
