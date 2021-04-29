@@ -80,6 +80,7 @@ class HedleyRestfulIndividualParticipants extends HedleyRestfulSyncBase {
       'field_date_concluded',
       'field_outcome',
       'field_outcome_location',
+      'field_newborn',
       'field_deleted',
     ];
 
@@ -89,8 +90,11 @@ class HedleyRestfulIndividualParticipants extends HedleyRestfulSyncBase {
 
     hedley_restful_join_field_to_query($query, 'node', 'field_expected', FALSE, NULL, NULL, TRUE);
 
-    // Get the UUIDs of the Person.
+    // Get the UUID of the Person.
     hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_person.field_person_target_id", 'uuid_person');
+
+    // Get the UUID of the Newborn.
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_newborn.field_newborn_target_id", 'uuid_newborn');
   }
 
   /**
@@ -116,6 +120,9 @@ class HedleyRestfulIndividualParticipants extends HedleyRestfulSyncBase {
 
       $date = explode(' ', $item->date_concluded);
       $item->date_concluded = !empty($date[0]) ? $date[0] : NULL;
+
+      $item->newborn = $item->uuid_newborn;
+      unset($item->uuid_newborn);
 
       unset($item->label);
     }
