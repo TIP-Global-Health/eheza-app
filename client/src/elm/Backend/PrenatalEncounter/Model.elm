@@ -146,7 +146,7 @@ type Msg
     | HandleSavedHealthEducation (WebData ())
     | SaveFollowUp PersonId (Maybe PrenatalFollowUpId) (EverySet FollowUpOption)
     | HandleSavedFollowup (WebData ())
-    | SaveSendToHC PersonId (Maybe PrenatalSendToHcId) PrenatalSendToHCValue
+    | SaveSendToHC PersonId (Maybe PrenatalSendToHcId) SendToHCValue
     | HandleSavedSendToHC (WebData ())
     | SaveAppointmentConfirmation PersonId (Maybe PrenatalAppointmentConfirmationId) PrenatalAppointmentConfirmationValue
     | HandleSavedAppointmentConfirmation (WebData ())

@@ -286,7 +286,7 @@ emptyHealthEducationData =
 type alias NextStepsData =
     { appointmentConfirmationForm : AppointmentConfirmationForm
     , followUpForm : FollowUpForm
-    , sendToHCForm : SendToHcForm
+    , sendToHCForm : SendToHCForm
     , healthEducationForm : HealthEducationForm
     , newbornEnrollmentForm : NewbornEnrollmentForm
     , activeTask : Maybe NextStepsTask
@@ -297,7 +297,7 @@ emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { appointmentConfirmationForm = emptyAppointmentConfirmationForm
     , followUpForm = emptyFollowUpForm
-    , sendToHCForm = emptySendToHcForm
+    , sendToHCForm = emptySendToHCForm
     , healthEducationForm = emptyHealthEducationForm
     , newbornEnrollmentForm = emptyNewbornEnrollmentForm
     , activeTask = Nothing
@@ -701,19 +701,6 @@ type alias FollowUpForm =
 emptyFollowUpForm : FollowUpForm
 emptyFollowUpForm =
     FollowUpForm Nothing
-
-
-type alias SendToHcForm =
-    { handReferralForm : Maybe Bool
-    , referToHealthCenter : Maybe Bool
-    , accompanyToHealthCenter : Maybe Bool
-    , reasonForNotSendingToHC : Maybe ReasonForNotSendingToHC
-    }
-
-
-emptySendToHcForm : SendToHcForm
-emptySendToHcForm =
-    SendToHcForm Nothing Nothing Nothing Nothing
 
 
 type alias HealthEducationForm =

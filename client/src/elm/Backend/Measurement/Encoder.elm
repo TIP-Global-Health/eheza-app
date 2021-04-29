@@ -227,33 +227,7 @@ encodePrenatalFollowUpValue value =
 
 encodePrenatalSendToHC : PrenatalSendToHC -> List ( String, Value )
 encodePrenatalSendToHC =
-    encodePrenatalMeasurement (encodePrenatalSendToHCValueWithType "nutrition_send_to_hc")
-
-
-encodePrenatalSendToHCValueWithType : String -> PrenatalSendToHCValue -> List ( String, Value )
-encodePrenatalSendToHCValueWithType type_ value =
-    [ ( "send_to_hc", encodeEverySet encodePrenatalSendToHcSign value.signs )
-    , ( "reason_not_sent_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
-    , ( "deleted", bool False )
-    , ( "type", string type_ )
-    ]
-
-
-encodePrenatalSendToHcSign : PrenatalSendToHCSign -> Value
-encodePrenatalSendToHcSign sign =
-    string <|
-        case sign of
-            PrenatalHandReferrerForm ->
-                "referral-form"
-
-            PrenatalReferToHealthCenter ->
-                "refer-to-hc"
-
-            PrenatalAccompanyToHC ->
-                "accompany-to-hc"
-
-            NoPrenatalSendToHCSigns ->
-                "none"
+    encodePrenatalMeasurement (encodeSendToHCValueWithType "prenatal_send_to_hc")
 
 
 encodeAppointmentConfirmation : PrenatalAppointmentConfirmation -> List ( String, Value )
@@ -1497,6 +1471,9 @@ encondeSendToHCSign sign =
 
             ReferToHealthCenter ->
                 "refer-to-hc"
+
+            PrenatalAccompanyToHC ->
+                "accompany-to-hc"
 
             NoSendToHCSigns ->
                 "none"

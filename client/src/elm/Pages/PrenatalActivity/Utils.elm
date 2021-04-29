@@ -9,6 +9,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import Measurement.Utils exposing (sendToHCFormWithDefault)
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (getMotherHeightMeasurement)
@@ -1438,55 +1439,6 @@ toFollowUpValueWithDefault saved form =
 toFollowUpValue : FollowUpForm -> Maybe (EverySet FollowUpOption)
 toFollowUpValue form =
     Maybe.map (List.singleton >> EverySet.fromList) form.option
-
-
-fromSendToHCValue : Maybe PrenatalSendToHCValue -> SendToHcForm
-fromSendToHCValue saved =
-    { handReferralForm = Maybe.map (.signs >> EverySet.member PrenatalHandReferrerForm) saved
-    , referToHealthCenter = Maybe.map (.signs >> EverySet.member PrenatalReferToHealthCenter) saved
-    , accompanyToHealthCenter = Maybe.map (.signs >> EverySet.member PrenatalAccompanyToHC) saved
-    , reasonForNotSendingToHC = Maybe.map .reasonForNotSendingToHC saved
-    }
-
-
-sendToHCFormWithDefault : SendToHcForm -> Maybe PrenatalSendToHCValue -> SendToHcForm
-sendToHCFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { handReferralForm = or form.handReferralForm (EverySet.member PrenatalHandReferrerForm value.signs |> Just)
-                , referToHealthCenter = or form.referToHealthCenter (EverySet.member PrenatalReferToHealthCenter value.signs |> Just)
-                , accompanyToHealthCenter = or form.accompanyToHealthCenter (EverySet.member PrenatalAccompanyToHC value.signs |> Just)
-                , reasonForNotSendingToHC = or form.reasonForNotSendingToHC (value.reasonForNotSendingToHC |> Just)
-                }
-            )
-
-
-toSendToHCValueWithDefault : Maybe PrenatalSendToHCValue -> SendToHcForm -> Maybe PrenatalSendToHCValue
-toSendToHCValueWithDefault saved form =
-    sendToHCFormWithDefault form saved
-        |> toSendToHCValue
-
-
-toSendToHCValue : SendToHcForm -> Maybe PrenatalSendToHCValue
-toSendToHCValue form =
-    let
-        signs =
-            [ Maybe.map (ifTrue PrenatalHandReferrerForm) form.handReferralForm
-            , Maybe.map (ifTrue PrenatalReferToHealthCenter) form.referToHealthCenter
-            , Maybe.map (ifTrue PrenatalAccompanyToHC) form.accompanyToHealthCenter
-            ]
-                |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalSendToHCSigns)
-
-        reasonForNotSendingToHC =
-            form.reasonForNotSendingToHC
-                |> Maybe.withDefault NoReasonForNotSendingToHC
-                |> Just
-    in
-    Maybe.map PrenatalSendToHCValue signs
-        |> andMap reasonForNotSendingToHC
 
 
 fromAppointmentConfirmationValue : Maybe PrenatalAppointmentConfirmationValue -> AppointmentConfirmationForm

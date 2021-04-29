@@ -280,39 +280,7 @@ decodePrenatalFollowUpValue =
 
 decodePrenatalSendToHc : Decoder PrenatalSendToHC
 decodePrenatalSendToHc =
-    decodePrenatalMeasurement decodePrenatalSendToHcValue
-
-
-decodePrenatalSendToHcValue : Decoder PrenatalSendToHCValue
-decodePrenatalSendToHcValue =
-    succeed PrenatalSendToHCValue
-        |> required "send_to_hc" (decodeEverySet decodePrenatalSendToHCSign)
-        |> optional "reason_not_sent_to_hc" decodeReasonForNotSendingToHC NoReasonForNotSendingToHC
-
-
-decodePrenatalSendToHCSign : Decoder PrenatalSendToHCSign
-decodePrenatalSendToHCSign =
-    string
-        |> andThen
-            (\sign ->
-                case sign of
-                    "referral-form" ->
-                        succeed PrenatalHandReferrerForm
-
-                    "refer-to-hc" ->
-                        succeed PrenatalReferToHealthCenter
-
-                    "accompany-to-hc" ->
-                        succeed PrenatalAccompanyToHC
-
-                    "none" ->
-                        succeed NoPrenatalSendToHCSigns
-
-                    _ ->
-                        fail <|
-                            sign
-                                ++ " is not a recognized PrenatalSendToHCSign"
-            )
+    decodePrenatalMeasurement decodeSendToHCValue
 
 
 decodeAppointmentConfirmation : Decoder PrenatalAppointmentConfirmation
@@ -1909,6 +1877,9 @@ decodeSendToHCSign =
 
                     "refer-to-hc" ->
                         succeed ReferToHealthCenter
+
+                    "accompany-to-hc" ->
+                        succeed PrenatalAccompanyToHC
 
                     "none" ->
                         succeed NoSendToHCSigns
