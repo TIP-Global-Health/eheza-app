@@ -6,7 +6,7 @@
  */
 
 $plugin = array(
-  'label' => t('Anc Send to HC'),
+  'label' => t('Prenatal Send to HC'),
   'resource' => 'prenatal-send-to-hc',
   'name' => 'prenatal-send-to-hc',
   'entity_type' => 'node',
