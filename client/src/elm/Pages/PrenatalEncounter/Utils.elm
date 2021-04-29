@@ -89,8 +89,8 @@ expectActivity currentDate data activity =
                 NextSteps ->
                     let
                         commonMandatoryActivitiesCompleted =
-                            (not <| expectActivity currentDate data PregnancyDating || activityCompleted currentDate data PregnancyDating)
-                                && (not <| expectActivity currentDate data Laboratory || activityCompleted currentDate data Laboratory)
+                            ((not <| expectActivity currentDate data PregnancyDating) || activityCompleted currentDate data PregnancyDating)
+                                && ((not <| expectActivity currentDate data Laboratory) || activityCompleted currentDate data Laboratory)
                                 && activityCompleted currentDate data DangerSigns
                     in
                     if dangerSignsPresent data.measurements then
