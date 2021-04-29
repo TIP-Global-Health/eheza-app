@@ -51,6 +51,9 @@ decodeRevision =
                     "acute_illness_vitals" ->
                         decodeWithUuid AcuteIllnessVitalsRevision decodeAcuteIllnessVitals
 
+                    "appointment_confirmation" ->
+                        decodeWithUuid AppointmentConfirmationRevision decodeAppointmentConfirmation
+
                     "attendance" ->
                         decodeWithUuid AttendanceRevision decodeAttendance
 
