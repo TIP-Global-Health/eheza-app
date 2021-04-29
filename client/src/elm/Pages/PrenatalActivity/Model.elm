@@ -8,7 +8,8 @@ import Pages.Page exposing (Page)
 
 
 type Msg
-    = NoOp
+    = -- @todo: Remove when not in use anymore
+      NoOp
     | DropZoneComplete DropZoneFile
     | SetActivePage Page
     | SetAlertsDialogState Bool
