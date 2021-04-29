@@ -389,6 +389,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityAcuteIllnessVitals identifier ->
             getIdentifier identifier "acute_illness_vitals"
 
+        BackendAuthorityAppointmentConfirmation identifier ->
+            getIdentifier identifier "appointment_confirmation"
+
         BackendAuthorityAttendance identifier ->
             getIdentifier identifier "attendance"
 
@@ -556,6 +559,12 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityPrenatalHealthEducation identifier ->
             getIdentifier identifier "prenatal_health_education"
+
+        BackendAuthorityPrenatalFollowUp identifier ->
+            getIdentifier identifier "prenatal_follow_up"
+
+        BackendAuthorityPrenatalSendToHC identifier ->
+            getIdentifier identifier "prenatal_send_to _hc"
 
         BackendAuthorityPrenatalNutrition identifier ->
             getIdentifier identifier "prenatal_nutrition"
@@ -815,6 +824,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityAcuteIllnessVitals identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteIllnessVitals identifier
 
+        BackendAuthorityAppointmentConfirmation identifier ->
+            encode Backend.Measurement.Encoder.encodeAppointmentConfirmation identifier
+
         BackendAuthorityAttendance identifier ->
             encode Backend.Measurement.Encoder.encodeAttendance identifier
 
@@ -982,6 +994,12 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityPrenatalHealthEducation identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalHealthEducation identifier
+
+        BackendAuthorityPrenatalFollowUp identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalFollowUp identifier
+
+        BackendAuthorityPrenatalSendToHC identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalSendToHC identifier
 
         BackendAuthorityPrenatalNutrition identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalNutrition identifier
@@ -1204,6 +1222,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityAcuteIllnessVitals identifier ->
             AcuteIllnessVitalsRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityAppointmentConfirmation identifier ->
+            AppointmentConfirmationRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityAttendance identifier ->
             AttendanceRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1371,6 +1392,12 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityPrenatalHealthEducation identifier ->
             PrenatalHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalFollowUp identifier ->
+            PrenatalFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalSendToHC identifier ->
+            PrenatalSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalNutrition identifier ->
             PrenatalNutritionRevision (toEntityUuid identifier.uuid) identifier.entity

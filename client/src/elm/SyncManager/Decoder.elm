@@ -373,6 +373,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeAcuteIllnessVitals
                             BackendAuthorityAcuteIllnessVitals
 
+                    "appointment_confirmation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAppointmentConfirmation
+                            BackendAuthorityAppointmentConfirmation
+
                     "attendance" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeAttendance
@@ -652,6 +657,16 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalNutrition
                             BackendAuthorityPrenatalNutrition
+
+                    "prenatal_follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalFollowUp
+                            BackendAuthorityPrenatalFollowUp
+
+                    "prenatal_send_to_hc" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalSendToHc
+                            BackendAuthorityPrenatalSendToHC
 
                     "prenatal_encounter" ->
                         doDecode
