@@ -13,8 +13,8 @@ recordPreganancyInitiatorToUrlFragmemt initiator =
         InitiatorWarningPopup ->
             "warning-popup"
 
-        InitiatorPostpartumEncounter ->
-            "postpartum-encounter"
+        InitiatorPostpartumEncounter encounterId ->
+            "postpartum-encounter-" ++ fromEntityUuid encounterId
 
 
 recordPreganancyInitiatorFromUrlFragmemt : String -> Maybe RecordPreganancyInitiator
@@ -26,11 +26,15 @@ recordPreganancyInitiatorFromUrlFragmemt s =
         "warning-popup" ->
             Just InitiatorWarningPopup
 
-        "postpartum-encounter" ->
-            Just InitiatorPostpartumEncounter
-
         _ ->
-            Nothing
+            if String.startsWith "postpartum-encounter" s then
+                String.dropLeft (String.length "postpartum-encounter-") s
+                    |> toEntityUuid
+                    |> InitiatorPostpartumEncounter
+                    |> Just
+
+            else
+                Nothing
 
 
 progressReportInitiatorToUrlFragmemt : ClinicalProgressReportInitiator -> String

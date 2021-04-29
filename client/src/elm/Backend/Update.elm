@@ -1489,9 +1489,6 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
 
         PostRelationship personId myRelationship addGroup initiator ->
             let
-                _ =
-                    Debug.log "myRelationship" myRelationship
-
                 normalized =
                     toRelationship personId myRelationship healthCenterId
 
@@ -1626,10 +1623,30 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
                     data
                         |> RemoteData.map
                             (\relationship ->
-                                [ Pages.Relationship.Model.Reset initiator
-                                    |> App.Model.MsgPageRelationship personId relationship.relatedTo
-                                    |> App.Model.MsgLoggedIn
-                                ]
+                                let
+                                    resetFormMsg =
+                                        Pages.Relationship.Model.Reset initiator
+                                            |> App.Model.MsgPageRelationship personId relationship.relatedTo
+                                            |> App.Model.MsgLoggedIn
+                                in
+                                case initiator of
+                                    -- We do not use the form in this scenario,
+                                    -- therefore, no need to reset it.
+                                    PrenatalNextStepsActivityOrigin _ ->
+                                        []
+
+                                    -- When at session context, we navigate to session Attendance page.
+                                    -- At that page, we should see newly created attendance.
+                                    GroupEncounterOrigin sessionId ->
+                                        [ resetFormMsg
+                                        , App.Model.SetActivePage <| UserPage <| SessionPage sessionId AttendancePage
+                                        ]
+
+                                    -- For other cases, we navigate to the page of main person.
+                                    _ ->
+                                        [ resetFormMsg
+                                        , App.Model.SetActivePage <| UserPage <| PersonPage personId initiator
+                                        ]
                             )
                         |> RemoteData.withDefault []
             in

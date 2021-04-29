@@ -37,7 +37,7 @@ type PrenatalEncounterType
 type RecordPreganancyInitiator
     = InitiatorParticipantPage
     | InitiatorWarningPopup
-    | InitiatorPostpartumEncounter
+    | InitiatorPostpartumEncounter PrenatalEncounterId
 
 
 type ClinicalProgressReportInitiator

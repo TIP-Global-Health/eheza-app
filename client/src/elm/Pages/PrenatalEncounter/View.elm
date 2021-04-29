@@ -407,7 +407,7 @@ viewMainPageContent language currentDate data model =
                                 [ onClick <|
                                     SetActivePage <|
                                         UserPage <|
-                                            PregnancyOutcomePage InitiatorPostpartumEncounter data.encounter.participant
+                                            PregnancyOutcomePage (InitiatorPostpartumEncounter data.id) data.encounter.participant
                                 ]
 
                             else
