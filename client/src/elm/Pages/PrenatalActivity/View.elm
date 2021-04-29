@@ -266,7 +266,7 @@ viewHistoryContent language currentDate assembled data_ =
                            )
             in
             div [ class "column" ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.HistoryTask task)
                     ]
@@ -519,7 +519,7 @@ viewExaminationContent language currentDate assembled data =
                            )
             in
             div [ class <| "column " ++ iconClass ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.ExaminationTask task)
                     ]
@@ -800,7 +800,7 @@ viewPatientProvisionsContent language currentDate assembled data =
                            )
             in
             div [ class "column" ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.PatientProvisionsTask task)
                     ]
@@ -1264,8 +1264,7 @@ viewNextStepsContent language currentDate assembled data =
 
                         NextStepsNewbornEnrolment ->
                             ( "next-steps-newborn-enrolment"
-                            , -- isJust measurements.appointmentConfirmation
-                              False
+                            , isJust assembled.participant.newborn
                             )
 
                 isActive =
@@ -1281,7 +1280,7 @@ viewNextStepsContent language currentDate assembled data =
                            )
             in
             div [ class "column" ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.PrenatalNextStepsTask task)
                     ]
@@ -1321,7 +1320,7 @@ viewNextStepsContent language currentDate assembled data =
                         |> viewHealthEducationForm language currentDate assembled
 
                 Just NextStepsNewbornEnrolment ->
-                    -- @todo
+                    -- There's no form, as we redirect to Create Person page.
                     emptyNode
 
                 Nothing ->
@@ -1359,7 +1358,7 @@ viewNextStepsContent language currentDate assembled data =
                                         SaveHealthEducationSubActivity personId measurements.healthEducation nextTask
 
                                     NextStepsNewbornEnrolment ->
-                                        -- @todo
+                                        -- There's no action, as there's no form.
                                         NoOp
                         in
                         div [ class "actions next-steps" ]
