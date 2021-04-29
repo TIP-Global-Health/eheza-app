@@ -36,6 +36,7 @@ type alias Model =
     { closePrenatalSession : WebData ()
     , closeAcuteIllnessSession : WebData ()
     , setEddDate : WebData ()
+    , setNewborn : WebData ()
     }
 
 
@@ -46,6 +47,8 @@ type Msg
     | HandleClosedAcuteIllnessSession (WebData ())
     | SetEddDate NominalDate
     | HandleSetEddDate (WebData ())
+    | SetNewborn PersonId
+    | HandleSetNewborn (WebData ())
 
 
 emptyModel : Model
@@ -53,6 +56,7 @@ emptyModel =
     { closePrenatalSession = NotAsked
     , closeAcuteIllnessSession = NotAsked
     , setEddDate = NotAsked
+    , setNewborn = NotAsked
     }
 
 
