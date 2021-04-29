@@ -28,7 +28,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (..)
@@ -400,19 +400,29 @@ viewMainPageContent language currentDate data model =
                 ( label, icon ) =
                     generateActivityData activity data
 
-                destinationPage =
+                navigationAction =
                     case activity of
                         PregnancyOutcome ->
-                            UserPage <| PregnancyOutcomePage InitiatorPostpartumEncounter data.encounter.participant
+                            if isNothing data.participant.endDate then
+                                [ onClick <|
+                                    SetActivePage <|
+                                        UserPage <|
+                                            PregnancyOutcomePage InitiatorPostpartumEncounter data.encounter.participant
+                                ]
+
+                            else
+                                -- Pregnancy outcome is already recorded.
+                                []
 
                         _ ->
-                            UserPage <| PrenatalActivityPage data.id activity
+                            [ onClick <|
+                                SetActivePage <|
+                                    UserPage <|
+                                        PrenatalActivityPage data.id activity
+                            ]
             in
             div [ class "card" ]
-                [ div
-                    [ class "image"
-                    , onClick <| SetActivePage destinationPage
-                    ]
+                [ div (class "image" :: navigationAction)
                     [ span [ class <| "icon-task icon-task-" ++ icon ] [] ]
                 , div [ class "content" ]
                     [ p [] [ text <| String.toUpper <| translate language label ] ]
