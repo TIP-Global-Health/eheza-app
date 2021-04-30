@@ -16,4 +16,5 @@ class HedleyRestfulPrenatalFollowUp extends HedleyRestfulPrenatalActivityBase {
   protected $multiFields = [
     'field_follow_up_options',
   ];
+
 }
