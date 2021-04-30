@@ -299,6 +299,7 @@ type TranslationId
     | AndSentence
     | AppName
     | AppointmentConfirmation
+    | AppointmentConfirmationInstrunction
     | AreYouSure
     | Assessment
     | Asthma
@@ -1859,6 +1860,11 @@ translationSet trans =
 
         AppointmentConfirmation ->
             { english = "Appointment Confirmation"
+            , kinyarwanda = Nothing
+            }
+
+        AppointmentConfirmationInstrunction ->
+            { english = "The patient should visit the health center on the following date"
             , kinyarwanda = Nothing
             }
 

@@ -445,7 +445,7 @@ generateActivityLabel activity data =
     case activity of
         NextSteps ->
             if noDangerSigns data.measurements && data.encounter.encounterType /= ChwPostpartumEncounter then
-                Translate.AppointmentConfirmation
+                Translate.PrenatalActivitiesTitle NextSteps
 
             else
                 Translate.PrenatalActivitiesTitle NextSteps

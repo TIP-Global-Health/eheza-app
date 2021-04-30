@@ -1206,7 +1206,7 @@ viewNextStepsContent language currentDate assembled data =
                 ( iconClass, isCompleted ) =
                     case task of
                         NextStepsAppointmentConfirmation ->
-                            ( "next-steps-appointment-confirmation"
+                            ( "next-steps-send-to-hc"
                             , isJust measurements.appointmentConfirmation
                             )
 
@@ -2695,12 +2695,14 @@ viewAppointmentForm language currentDate assembled form =
                 AppointmentToggleDateSelector
                 SetAppointmentConfirmation
                 form.isDateSelectorOpen
-                (Date.add Days -365 today)
                 today
+                (Date.add Months 9 today)
                 form.appointmentDate
     in
-    div [ class "ui form appointment-confirmation" ]
-        [ viewQuestionLabel language Translate.LmpRangeHeader
+    div [ class "full content" ]
+        [ div [ class "ui form appointment-confirmation" ]
+            [ text <| translate language Translate.AppointmentConfirmationInstrunction ++ ":" ]
+        , br [] []
         , div [ class "form-input date" ]
             [ appointmentDateInput ]
         ]

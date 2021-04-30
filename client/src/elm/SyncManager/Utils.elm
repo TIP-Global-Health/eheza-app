@@ -564,7 +564,7 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
             getIdentifier identifier "prenatal_follow_up"
 
         BackendAuthorityPrenatalSendToHC identifier ->
-            getIdentifier identifier "prenatal_send_to _hc"
+            getIdentifier identifier "prenatal_send_to_hc"
 
         BackendAuthorityPrenatalNutrition identifier ->
             getIdentifier identifier "prenatal_nutrition"

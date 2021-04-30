@@ -1920,7 +1920,7 @@ update currentDate id db msg model =
                     model.nextStepsData.sendToHCForm
 
                 updatedForm =
-                    { form | handReferralForm = Just value }
+                    { form | accompanyToHealthCenter = Just value }
 
                 updatedData =
                     model.nextStepsData
@@ -1987,20 +1987,19 @@ update currentDate id db msg model =
             )
 
         AppointmentToggleDateSelector ->
-                    let
-                        updatedForm =
-                            model.nextStepsData.appointmentConfirmationForm
-                                |> (\form -> { form | isDateSelectorOpen = not form.isDateSelectorOpen })
+            let
+                updatedForm =
+                    model.nextStepsData.appointmentConfirmationForm
+                        |> (\form -> { form | isDateSelectorOpen = not form.isDateSelectorOpen })
 
-                        updatedData =
-                            model.nextStepsData
-                                |> (\data -> { data | appointmentConfirmationForm = updatedForm })
-                    in
-                    ( { model | nextStepsData = updatedData }
-                    , Cmd.none
-                    , []
-                    )
-
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | appointmentConfirmationForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SetAppointmentConfirmation value ->
             let
