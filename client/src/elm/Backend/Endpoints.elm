@@ -702,3 +702,9 @@ acuteIllnessFollowUpEndpoint : ReadWriteEndPoint Error AcuteIllnessFollowUpId Ac
 acuteIllnessFollowUpEndpoint =
     swEndpoint "nodes/acute_illness_follow_up" decodeAcuteIllnessFollowUp
         |> withValueEncoder (object << encodeAcuteIllnessFollowUp)
+
+
+prenatalHealthEducationEndpoint : ReadWriteEndPoint Error PrenatalHealthEducationId PrenatalHealthEducation PrenatalHealthEducation ()
+prenatalHealthEducationEndpoint =
+    swEndpoint "nodes/prenatal_health_education" decodePrenatalHealthEducation
+        |> withValueEncoder (object << encodePrenatalHealthEducation)

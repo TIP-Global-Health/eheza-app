@@ -51,7 +51,6 @@ import Backend.PrenatalActivity.Model
         , ObstetricalDiagnosis(..)
         , PregnancyTrimester(..)
         , PrenatalActivity(..)
-        , PrenatalNextStepsTask(..)
         , RecurringHighSeverityAlert(..)
         , RiskFactor(..)
         )
@@ -298,6 +297,7 @@ type TranslationId
     | And
     | AndSentence
     | AppName
+    | AppointmentConfirmation
     | AreYouSure
     | Assessment
     | Asthma
@@ -714,7 +714,8 @@ type TranslationId
     | PregnancyUrineTest
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounterType PrenatalEncounterType
-    | PrenatalNextStepsTask PrenatalNextStepsTask
+    | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
+    | PrenatalNextStepsTask Pages.PrenatalActivity.Model.NextStepsTask
     | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
@@ -1848,6 +1849,11 @@ translationSet trans =
         AppName ->
             { english = "E-Heza System"
             , kinyarwanda = Just "E-heza sisiteme"
+            }
+
+        AppointmentConfirmation ->
+            { english = "Appointment Confirmation"
+            , kinyarwanda = Nothing
             }
 
         All ->
@@ -5449,29 +5455,76 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PrenatalHealthEducationQuestion sign ->
+            case sign of
+                EducationExpectations ->
+                    { english = "Have you provided health education and anticipatory guidance on what to expect during the pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationVisitsReview ->
+                    { english = "Have you reviewed anticipated visits by the CHW and to the health center with the mother"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationWarningSigns ->
+                    { english = "Have you provided health education and anticipatory guidance on pregnancy warning signs"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationHemorrhaging ->
+                    { english = "Have you provided education on post-partum hemorrhaging"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationFamilyPlanning ->
+                    { english = "Have you provided education on family planning"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationBreastfeeding ->
+                    { english = "Have you provided education on breast feeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationImmunization ->
+                    { english = "Have you provided education on immunization"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationHygiene ->
+                    { english = "Have you provided education on hygiene"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPrenatalHealthEducationSigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalNextStepsTask task ->
             case task of
-                AppointmentConfirmation ->
+                Pages.PrenatalActivity.Model.NextStepsAppointmentConfirmation ->
                     { english = "Appointment Confirmation"
                     , kinyarwanda = Nothing
                     }
 
-                Backend.PrenatalActivity.Model.FollowUp ->
-                    { english = "Chw Follow Up"
+                Pages.PrenatalActivity.Model.NextStepsFollowUp ->
+                    { english = "CHW Follow Up"
                     , kinyarwanda = Nothing
                     }
 
-                Backend.PrenatalActivity.Model.SendToHC ->
+                Pages.PrenatalActivity.Model.NextStepsSendToHC ->
                     { english = "Send to Health Center"
                     , kinyarwanda = Nothing
                     }
 
-                Backend.PrenatalActivity.Model.TaskHealthEducation ->
+                Pages.PrenatalActivity.Model.NextStepsHealthEducation ->
                     { english = "Health Education"
                     , kinyarwanda = Nothing
                     }
 
-                NewbornEnrollment ->
+                Pages.PrenatalActivity.Model.NextStepsNewbornEnrollment ->
                     { english = "Newborn Enrollment"
                     , kinyarwanda = Nothing
                     }

@@ -100,6 +100,7 @@ var tableForType = {
     person: 'shards',
     photo: 'shards',
     pregnancy_testing: 'shards',
+    prenatal_health_education: 'shards',
     prenatal_photo: 'shards',
     pmtct_participant: 'shards',
     prenatal_family_planning: 'shards',

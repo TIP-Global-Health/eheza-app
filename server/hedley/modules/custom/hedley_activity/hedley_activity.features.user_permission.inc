@@ -317,6 +317,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create prenatal_health_education content'.
+  $permissions['create prenatal_health_education content'] = array(
+    'name' => 'create prenatal_health_education content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create prenatal_nutrition content'.
   $permissions['create prenatal_nutrition content'] = array(
     'name' => 'create prenatal_nutrition content',
@@ -648,6 +658,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any prenatal_health_education content'.
+  $permissions['delete any prenatal_health_education content'] = array(
+    'name' => 'delete any prenatal_health_education content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any prenatal_nutrition content'.
   $permissions['delete any prenatal_nutrition content'] = array(
     'name' => 'delete any prenatal_nutrition content',
@@ -966,6 +985,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own prenatal_family_planning content'.
   $permissions['delete own prenatal_family_planning content'] = array(
     'name' => 'delete own prenatal_family_planning content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own prenatal_health_education content'.
+  $permissions['delete own prenatal_health_education content'] = array(
+    'name' => 'delete own prenatal_health_education content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -1325,6 +1353,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit any prenatal_family_planning content'.
   $permissions['edit any prenatal_family_planning content'] = array(
     'name' => 'edit any prenatal_family_planning content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any prenatal_health_education content'.
+  $permissions['edit any prenatal_health_education content'] = array(
+    'name' => 'edit any prenatal_health_education content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -1692,6 +1730,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit own prenatal_family_planning content'.
   $permissions['edit own prenatal_family_planning content'] = array(
     'name' => 'edit own prenatal_family_planning content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own prenatal_health_education content'.
+  $permissions['edit own prenatal_health_education content'] = array(
+    'name' => 'edit own prenatal_health_education content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

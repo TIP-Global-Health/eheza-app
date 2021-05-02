@@ -542,17 +542,20 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPhoto identifier ->
             getIdentifier identifier "photo"
 
+        BackendAuthorityPmtctParticipant identifier ->
+            getIdentifier identifier "pmtct_participant"
+
         BackendAuthorityPregnancyTesting identifier ->
             getIdentifier identifier "pregnancy_testing"
 
         BackendAuthorityPrenatalPhoto identifier ->
             getIdentifier identifier "prenatal_photo"
 
-        BackendAuthorityPmtctParticipant identifier ->
-            getIdentifier identifier "pmtct_participant"
-
         BackendAuthorityPrenatalFamilyPlanning identifier ->
             getIdentifier identifier "prenatal_family_planning"
+
+        BackendAuthorityPrenatalHealthEducation identifier ->
+            getIdentifier identifier "prenatal_health_education"
 
         BackendAuthorityPrenatalNutrition identifier ->
             getIdentifier identifier "prenatal_nutrition"
@@ -965,17 +968,20 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPhoto identifier ->
             encode Backend.Measurement.Encoder.encodePhoto identifier
 
+        BackendAuthorityPmtctParticipant identifier ->
+            encode Backend.PmtctParticipant.Encoder.encodePmtctParticipant identifier
+
         BackendAuthorityPregnancyTesting identifier ->
             encode Backend.Measurement.Encoder.encodePregnancyTesting identifier
 
         BackendAuthorityPrenatalPhoto identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalPhoto identifier
 
-        BackendAuthorityPmtctParticipant identifier ->
-            encode Backend.PmtctParticipant.Encoder.encodePmtctParticipant identifier
-
         BackendAuthorityPrenatalFamilyPlanning identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalFamilyPlanning identifier
+
+        BackendAuthorityPrenatalHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalHealthEducation identifier
 
         BackendAuthorityPrenatalNutrition identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalNutrition identifier
@@ -1351,17 +1357,20 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityPhoto identifier ->
             PhotoRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityPmtctParticipant identifier ->
+            PmtctParticipantRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityPregnancyTesting identifier ->
             PregnancyTestingRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalPhoto identifier ->
             PrenatalPhotoRevision (toEntityUuid identifier.uuid) identifier.entity
 
-        BackendAuthorityPmtctParticipant identifier ->
-            PmtctParticipantRevision (toEntityUuid identifier.uuid) identifier.entity
-
         BackendAuthorityPrenatalFamilyPlanning identifier ->
             PrenatalFamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalHealthEducation identifier ->
+            PrenatalHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalNutrition identifier ->
             PrenatalNutritionRevision (toEntityUuid identifier.uuid) identifier.entity

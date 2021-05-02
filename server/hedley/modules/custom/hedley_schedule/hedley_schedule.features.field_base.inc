@@ -397,7 +397,7 @@ function hedley_schedule_field_default_field_bases() {
         'chw-1' => 'Chw 1',
         'chw-2' => 'Chw 2',
         'chw-3' => 'Chw 3',
-        'postpartum' => 'Postpartum',
+        'chw-postpartum' => 'Chw postpartum',
       ),
       'allowed_values_function' => '',
     ),

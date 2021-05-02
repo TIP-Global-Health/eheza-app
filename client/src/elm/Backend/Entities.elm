@@ -749,3 +749,11 @@ type alias PregnancyTestId =
 
 type PregnancyTestUuidType
     = PregnancyTestUuidType
+
+
+type alias PrenatalHealthEducationId =
+    EntityUuid PrenatalHealthEducationUuidType
+
+
+type PrenatalHealthEducationUuidType
+    = PrenatalHealthEducationUuidType

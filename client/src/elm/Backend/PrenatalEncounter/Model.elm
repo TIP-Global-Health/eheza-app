@@ -71,6 +71,7 @@ type alias Model =
     , savePrenatalPhoto : WebData ()
     , saveBirthPlan : WebData ()
     , savePregnancyTesting : WebData ()
+    , saveHealthEducation : WebData ()
     }
 
 
@@ -94,43 +95,46 @@ emptyModel =
     , savePrenatalPhoto = NotAsked
     , saveBirthPlan = NotAsked
     , savePregnancyTesting = NotAsked
+    , saveHealthEducation = NotAsked
     }
 
 
 type Msg
     = ClosePrenatalEncounter
-    | SaveBreastExam PersonId (Maybe BreastExamId) BreastExamValue
-    | SaveCorePhysicalExam PersonId (Maybe CorePhysicalExamId) CorePhysicalExamValue
-    | SaveDangerSigns PersonId (Maybe DangerSignsId) (EverySet DangerSign)
-    | SaveLastMenstrualPeriod PersonId (Maybe LastMenstrualPeriodId) LastMenstrualPeriodValue
-    | SaveMedicalHistory PersonId (Maybe MedicalHistoryId) (EverySet MedicalHistorySign)
-    | SaveMedication PersonId (Maybe MedicationId) (EverySet MedicationSign)
-    | SaveObstetricalExam PersonId (Maybe ObstetricalExamId) ObstetricalExamValue
-    | SaveObstetricHistory PersonId (Maybe ObstetricHistoryId) ObstetricHistoryValue
-    | SaveObstetricHistoryStep2 PersonId (Maybe ObstetricHistoryStep2Id) ObstetricHistoryStep2Value
-    | SaveFamilyPlanning PersonId (Maybe PrenatalFamilyPlanningId) (EverySet FamilyPlanningSign)
-    | SaveNutrition PersonId (Maybe PrenatalNutritionId) PrenatalNutritionValue
-    | SaveResource PersonId (Maybe ResourceId) (EverySet ResourceSign)
-    | SaveSocialHistory PersonId (Maybe SocialHistoryId) SocialHistoryValue
-    | SaveVitals PersonId (Maybe VitalsId) VitalsValue
-    | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl
-    | SaveBirthPlan PersonId (Maybe BirthPlanId) BirthPlanValue
-    | SavePregnancyTesting PersonId (Maybe PregnancyTestId) PregnancyTestResult
     | HandleClosedPrenatalEncounter (WebData ())
+    | SaveBreastExam PersonId (Maybe BreastExamId) BreastExamValue
     | HandleSavedBreastExam (WebData ())
+    | SaveCorePhysicalExam PersonId (Maybe CorePhysicalExamId) CorePhysicalExamValue
     | HandleSavedCorePhysicalExam (WebData ())
+    | SaveDangerSigns PersonId (Maybe DangerSignsId) (EverySet DangerSign)
     | HandleSavedDangerSigns (WebData ())
+    | SaveLastMenstrualPeriod PersonId (Maybe LastMenstrualPeriodId) LastMenstrualPeriodValue
     | HandleSavedLastMenstrualPeriod (WebData ())
+    | SaveMedicalHistory PersonId (Maybe MedicalHistoryId) (EverySet MedicalHistorySign)
     | HandleSavedMedicalHistory (WebData ())
+    | SaveMedication PersonId (Maybe MedicationId) (EverySet MedicationSign)
     | HandleSavedMedication (WebData ())
+    | SaveObstetricalExam PersonId (Maybe ObstetricalExamId) ObstetricalExamValue
     | HandleSavedObstetricalExam (WebData ())
+    | SaveObstetricHistory PersonId (Maybe ObstetricHistoryId) ObstetricHistoryValue
     | HandleSavedObstetricHistory (WebData ())
+    | SaveObstetricHistoryStep2 PersonId (Maybe ObstetricHistoryStep2Id) ObstetricHistoryStep2Value
     | HandleSavedObstetricHistoryStep2 (WebData ())
+    | SaveFamilyPlanning PersonId (Maybe PrenatalFamilyPlanningId) (EverySet FamilyPlanningSign)
     | HandleSavedFamilyPlanning (WebData ())
+    | SaveNutrition PersonId (Maybe PrenatalNutritionId) PrenatalNutritionValue
     | HandleSavedNutrition (WebData ())
+    | SaveResource PersonId (Maybe ResourceId) (EverySet ResourceSign)
     | HandleSavedResource (WebData ())
+    | SaveSocialHistory PersonId (Maybe SocialHistoryId) SocialHistoryValue
     | HandleSavedSocialHistory (WebData ())
+    | SaveVitals PersonId (Maybe VitalsId) VitalsValue
     | HandleSavedVitals (WebData ())
+    | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl
     | HandleSavedPrenatalPhoto (WebData ())
+    | SaveBirthPlan PersonId (Maybe BirthPlanId) BirthPlanValue
     | HandleSavedBirthPlan (WebData ())
+    | SavePregnancyTesting PersonId (Maybe PregnancyTestId) PregnancyTestResult
     | HandleSavedPregnancyTesting (WebData ())
+    | SaveHealthEducation PersonId (Maybe PrenatalHealthEducationId) (EverySet PrenatalHealthEducationSign)
+    | HandleSavedHealthEducation (WebData ())

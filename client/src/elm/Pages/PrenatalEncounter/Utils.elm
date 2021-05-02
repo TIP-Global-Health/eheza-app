@@ -10,6 +10,7 @@ import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust, orElse, unwrap)
+import Pages.PrenatalActivity.Model exposing (NextStepsTask(..))
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
@@ -241,19 +242,89 @@ activityCompleted currentDate data activity =
             isJust data.measurements.pregnancyTest
 
         Backend.PrenatalActivity.Model.HealthEducation ->
-            -- @todo
-            False
+            isJust data.measurements.healthEducation
 
         BirthPlan ->
             isJust data.measurements.birthPlan
 
         NextSteps ->
-            -- @todo
-            False
+            let
+                nextStepsTasks =
+                    resolveNextStepsTasks currentDate data
+            in
+            case nextStepsTasks of
+                [ NextStepsAppointmentConfirmation, NextStepsFollowUp ] ->
+                    --@todo
+                    -- isJust data.measurements.appointmentConfirmation && isJust data.measurements.followUp
+                    False
+
+                [ NextStepsSendToHC, NextStepsFollowUp ] ->
+                    --@todo
+                    -- isJust data.measurements.sendToHC && isJust data.measurements.followUp
+                    False
+
+                [ NextStepsHealthEducation, NextStepsNewbornEnrollment ] ->
+                    --@todo
+                    -- && isJust data.measurements.newbornEnrollment
+                    False
+                        && isJust data.measurements.healthEducation
+
+                [ NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrollment ] ->
+                    --@todo
+                    -- && isJust data.measurements.sendToHC
+                    --  && isJust data.measurements.followUp
+                    -- && isJust data.measurements.newbornEnrollment
+                    False
+                        && isJust data.measurements.healthEducation
+
+                _ ->
+                    False
 
         PregnancyOutcome ->
             -- @todo
             False
+
+
+resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
+resolveNextStepsTasks currentDate data =
+    case data.encounter.encounterType of
+        -- We should never get here, as Next Steps
+        -- displayed only for CHW.
+        NurseEncounter ->
+            []
+
+        _ ->
+            -- The order is important. Do not change.
+            [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrollment ]
+                |> List.filter (expectNextStepsTasks currentDate data)
+
+
+expectNextStepsTasks : NominalDate -> AssembledData -> NextStepsTask -> Bool
+expectNextStepsTasks currentDate data task =
+    let
+        dangerSigns =
+            dangerSignsPresent data.measurements
+    in
+    case task of
+        NextStepsAppointmentConfirmation ->
+            not dangerSigns && data.encounter.encounterType /= ChwPostpartumEncounter
+
+        NextStepsFollowUp ->
+            case data.encounter.encounterType of
+                ChwPostpartumEncounter ->
+                    dangerSigns
+
+                _ ->
+                    True
+
+        NextStepsSendToHC ->
+            dangerSigns
+
+        NextStepsHealthEducation ->
+            data.encounter.encounterType == ChwPostpartumEncounter
+
+        NextStepsNewbornEnrollment ->
+            data.encounter.encounterType == ChwPostpartumEncounter
 
 
 calculateEDD : NominalDate -> NominalDate

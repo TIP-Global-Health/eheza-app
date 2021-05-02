@@ -8,7 +8,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
@@ -25,7 +25,7 @@ import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
-import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
+import Pages.PrenatalEncounter.View exposing (generateActivityLabel, viewMotherAndMeasurements)
 import Pages.Utils
     exposing
         ( isTaskCompleted
@@ -53,30 +53,25 @@ view language currentDate id activity db model =
     let
         data =
             generateAssembledData id db
-
-        content =
-            viewWebData language (viewContent language currentDate activity model) identity data
     in
+    viewWebData language (viewHeaderAndContent language currentDate id activity model) identity data
+
+
+viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> PrenatalActivity -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id activity model data =
     div [ class "page-activity prenatal" ] <|
-        [ viewHeader language id activity
-        , content
+        [ viewHeader language id activity data
+        , viewContent language currentDate activity model data
         ]
 
 
-viewContent : Language -> NominalDate -> PrenatalActivity -> Model -> AssembledData -> Html Msg
-viewContent language currentDate activity model data =
-    div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewActivity language currentDate activity data model
-
-
-viewHeader : Language -> PrenatalEncounterId -> PrenatalActivity -> Html Msg
-viewHeader language id activity =
+viewHeader : Language -> PrenatalEncounterId -> PrenatalActivity -> AssembledData -> Html Msg
+viewHeader language id activity data =
     div
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language <| Translate.PrenatalActivitiesTitle activity ]
+            [ text <| translate language <| generateActivityLabel activity data ]
         , a
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage id
@@ -85,6 +80,13 @@ viewHeader language id activity =
             , span [] []
             ]
         ]
+
+
+viewContent : Language -> NominalDate -> PrenatalActivity -> Model -> AssembledData -> Html Msg
+viewContent language currentDate activity model data =
+    div [ class "ui unstackable items" ] <|
+        viewMotherAndMeasurements language currentDate data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
+            ++ viewActivity language currentDate activity data model
 
 
 viewActivity : Language -> NominalDate -> PrenatalActivity -> AssembledData -> Model -> List (Html Msg)
@@ -115,15 +117,13 @@ viewActivity language currentDate activity data model =
             viewLaboratoryContent language currentDate data model.laboratoryData
 
         Backend.PrenatalActivity.Model.HealthEducation ->
-            --@todo
-            []
+            viewHealthEducationContent language currentDate data model.healthEducationData
 
         BirthPlan ->
             viewBirthPlanContent language currentDate data model.birthPlanData
 
         NextSteps ->
-            --@todo
-            []
+            viewNextStepsContent language currentDate data model.nextStepsData
 
         PregnancyOutcome ->
             --@todo
@@ -1145,6 +1145,209 @@ viewLaboratoryContent language currentDate assembled data =
                 , onClick <| SavePregnancyTesting assembled.participant.person assembled.measurements.pregnancyTest
                 ]
                 [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
+
+
+viewHealthEducationContent : Language -> NominalDate -> AssembledData -> HealthEducationData -> List (Html Msg)
+viewHealthEducationContent language currentDate assembled data =
+    let
+        totalTasks =
+            List.length tasks
+
+        tasksCompleted =
+            List.map taskCompleted tasks
+                |> List.sum
+
+        ( inputs, tasks ) =
+            healthEducationFormInputsAndTasks language assembled data.form
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form health-education" ]
+                inputs
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SaveHealthEducation assembled.participant.person assembled.measurements.healthEducation
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
+
+
+viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
+viewNextStepsContent language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            resolveNextStepsTasks currentDate assembled
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        NextStepsAppointmentConfirmation ->
+                            -- @todo
+                            ( ""
+                            , -- isJust measurements.appointmentConfirmation
+                              False
+                            )
+
+                        NextStepsFollowUp ->
+                            ( "next-steps-follow-up"
+                            , -- @todo
+                              -- isJust measurements.followUp
+                              False
+                            )
+
+                        NextStepsSendToHC ->
+                            ( "next-steps-send-to-hc"
+                            , -- @todo
+                              -- isJust measurements.sendToHC
+                              False
+                            )
+
+                        NextStepsHealthEducation ->
+                            ( "next-steps-health-education"
+                            , isJust measurements.healthEducation
+                            )
+
+                        NextStepsNewbornEnrollment ->
+                            -- @todo
+                            ( ""
+                            , -- isJust measurements.appointmentConfirmation
+                              False
+                            )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveNextStepsTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ a attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.PrenatalNextStepsTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, nextStepsTasksCompletedFromTotal language assembled data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just NextStepsAppointmentConfirmation ->
+                    -- @todo
+                    emptyNode
+
+                Just NextStepsFollowUp ->
+                    -- @todo
+                    emptyNode
+
+                Just NextStepsSendToHC ->
+                    -- @todo
+                    emptyNode
+
+                Just NextStepsHealthEducation ->
+                    measurements.healthEducation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> healthEducationFormWithDefault data.healthEducationForm
+                        |> viewHealthEducationForm language currentDate assembled
+
+                Just NextStepsNewbornEnrollment ->
+                    -- @todo
+                    emptyNode
+
+                Nothing ->
+                    emptyNode
+
+        nextTask =
+            tasks
+                |> List.filter
+                    (\task ->
+                        (Just task /= activeTask)
+                            && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                    )
+                |> List.head
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                case task of
+                                    NextStepsAppointmentConfirmation ->
+                                        -- @todo
+                                        NoOp
+
+                                    NextStepsFollowUp ->
+                                        -- @todo
+                                        NoOp
+
+                                    NextStepsSendToHC ->
+                                        -- @todo
+                                        NoOp
+
+                                    NextStepsHealthEducation ->
+                                        SaveHealthEducationSubActivity personId measurements.healthEducation nextTask
+
+                                    NextStepsNewbornEnrollment ->
+                                        -- @todo
+                                        NoOp
+                        in
+                        div [ class "actions next-steps" ]
+                            [ button
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                , onClick saveMsg
+                                ]
+                                [ text <| translate language Translate.Save ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui four column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
             ]
         ]
     ]
@@ -2384,6 +2587,16 @@ viewResourcesForm language currentDate assembled form =
             "mosquito-net"
             Nothing
         ]
+
+
+viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
+viewHealthEducationForm language currentDate assembled form =
+    let
+        ( inputs, _ ) =
+            healthEducationFormInputsAndTasks language assembled form
+    in
+    div [ class "ui form health-education" ]
+        inputs
 
 
 

@@ -3,12 +3,14 @@ module Pages.PrenatalActivity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
-import Measurement.Model exposing (DropZoneFile)
+import Measurement.Model exposing (DropZoneFile, SendToHCForm, emptySendToHCForm)
 import Pages.Page exposing (Page)
 
 
 type Msg
-    = DropZoneComplete DropZoneFile
+    = -- @todo: Remove when not in use anymore
+      NoOp
+    | DropZoneComplete DropZoneFile
     | SetActivePage Page
     | SetAlertsDialogState Bool
       -- PregnancyDatingMsgs
@@ -89,6 +91,12 @@ type Msg
       -- LABORATORYMsgs
     | SetPregnancyTestResult String
     | SavePregnancyTesting PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
+      -- HealtEducationMsgs
+    | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
+    | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation ))
+      -- NextStepsMsgs
+    | SetActiveNextStepsTask NextStepsTask
+    | SaveHealthEducationSubActivity PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -101,6 +109,8 @@ type alias Model =
     , prenatalPhotoData : PrenatalPhotoData
     , birthPlanData : BirthPlanData
     , laboratoryData : LaboratoryData
+    , healthEducationData : HealthEducationData
+    , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     }
 
@@ -116,8 +126,22 @@ emptyModel =
     , prenatalPhotoData = emptyPrenatalPhotoData
     , birthPlanData = emptyBirthPlanData
     , laboratoryData = emptyLaboratoryData
+    , healthEducationData = emptyHealthEducationData
+    , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     }
+
+
+type NextStepsTask
+    = NextStepsAppointmentConfirmation
+    | NextStepsFollowUp
+    | NextStepsSendToHC
+    | NextStepsHealthEducation
+    | NextStepsNewbornEnrollment
+
+
+
+-- DATA
 
 
 type alias PregnancyDatingData =
@@ -173,17 +197,6 @@ emptyExaminationData =
     }
 
 
-type alias LaboratoryData =
-    { form : PregnancyTestingForm
-    }
-
-
-emptyLaboratoryData : LaboratoryData
-emptyLaboratoryData =
-    { form = PregnancyTestingForm Nothing
-    }
-
-
 type alias FamilyPlanningData =
     { form : FamilyPlanningForm
     }
@@ -219,6 +232,71 @@ emptyDangerSignsData : DangerSignsData
 emptyDangerSignsData =
     { form = emptyDangerSignsForm
     }
+
+
+type alias PrenatalPhotoData =
+    { url : Maybe PhotoUrl }
+
+
+emptyPrenatalPhotoData : PrenatalPhotoData
+emptyPrenatalPhotoData =
+    { url = Nothing }
+
+
+type alias BirthPlanData =
+    { form : BirthPlanForm
+    }
+
+
+emptyBirthPlanData : BirthPlanData
+emptyBirthPlanData =
+    BirthPlanData emptyBirthPlanForm
+
+
+type alias LaboratoryData =
+    { form : PregnancyTestingForm
+    }
+
+
+emptyLaboratoryData : LaboratoryData
+emptyLaboratoryData =
+    { form = PregnancyTestingForm Nothing
+    }
+
+
+type alias HealthEducationData =
+    { form : HealthEducationForm
+    }
+
+
+emptyHealthEducationData : HealthEducationData
+emptyHealthEducationData =
+    HealthEducationData emptyHealthEducationForm
+
+
+type alias NextStepsData =
+    { appointmentConfirmationForm : AppointmentConfirmationForm
+    , followUpForm : FollowUpForm
+    , sendToHCForm : SendToHCForm
+    , healthEducationForm : HealthEducationForm
+    , newbornEnrollmentForm : NewbornEnrollmentForm
+    , activeTask : Maybe NextStepsTask
+    }
+
+
+emptyNextStepsData : NextStepsData
+emptyNextStepsData =
+    { appointmentConfirmationForm = emptyAppointmentConfirmationForm
+    , followUpForm = emptyFollowUpForm
+    , sendToHCForm = emptySendToHCForm
+    , healthEducationForm = emptyHealthEducationForm
+    , newbornEnrollmentForm = emptyNewbornEnrollmentForm
+    , activeTask = Nothing
+    }
+
+
+
+-- FORMS
 
 
 type ObstetricHistoryStep
@@ -570,25 +648,6 @@ emptyDangerSignsForm =
     DangerSignsForm Nothing
 
 
-type alias PrenatalPhotoData =
-    { url : Maybe PhotoUrl }
-
-
-emptyPrenatalPhotoData : PrenatalPhotoData
-emptyPrenatalPhotoData =
-    { url = Nothing }
-
-
-type alias BirthPlanData =
-    { form : BirthPlanForm
-    }
-
-
-emptyBirthPlanData : BirthPlanData
-emptyBirthPlanData =
-    BirthPlanData emptyBirthPlanForm
-
-
 type alias BirthPlanForm =
     { haveInsurance : Maybe Bool
     , boughtClothes : Maybe Bool
@@ -613,3 +672,56 @@ emptyBirthPlanForm =
 type alias PregnancyTestingForm =
     { pregnancyTestResult : Maybe PregnancyTestResult
     }
+
+
+type alias AppointmentConfirmationForm =
+    {}
+
+
+emptyAppointmentConfirmationForm : AppointmentConfirmationForm
+emptyAppointmentConfirmationForm =
+    {}
+
+
+type alias FollowUpForm =
+    { option : Maybe FollowUpOption
+    }
+
+
+emptyFollowUpForm : FollowUpForm
+emptyFollowUpForm =
+    FollowUpForm Nothing
+
+
+type alias HealthEducationForm =
+    { expectations : Maybe Bool
+    , visitsReview : Maybe Bool
+    , warningSigns : Maybe Bool
+    , hemorrhaging : Maybe Bool
+    , familyPlanning : Maybe Bool
+    , breastfeeding : Maybe Bool
+    , immunization : Maybe Bool
+    , hygiene : Maybe Bool
+    }
+
+
+emptyHealthEducationForm : HealthEducationForm
+emptyHealthEducationForm =
+    { expectations = Nothing
+    , visitsReview = Nothing
+    , warningSigns = Nothing
+    , hemorrhaging = Nothing
+    , familyPlanning = Nothing
+    , breastfeeding = Nothing
+    , immunization = Nothing
+    , hygiene = Nothing
+    }
+
+
+type alias NewbornEnrollmentForm =
+    {}
+
+
+emptyNewbornEnrollmentForm : NewbornEnrollmentForm
+emptyNewbornEnrollmentForm =
+    {}

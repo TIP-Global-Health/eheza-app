@@ -2422,14 +2422,6 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             , True
             )
 
-        PregnancyTestingRevision uuid data ->
-            ( mapPrenatalMeasurements
-                data.encounterId
-                (\measurements -> { measurements | pregnancyTest = Just ( uuid, data ) })
-                model
-            , recalc
-            )
-
         PmtctParticipantRevision uuid data ->
             ( { model
                 | expectedSessions =
@@ -2444,6 +2436,22 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
                         |> Dict.remove data.adult
               }
             , True
+            )
+
+        PregnancyTestingRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | pregnancyTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalHealthEducationRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                model
+            , recalc
             )
 
         PrenatalEncounterRevision uuid data ->

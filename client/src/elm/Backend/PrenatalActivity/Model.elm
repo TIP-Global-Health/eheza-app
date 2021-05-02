@@ -20,14 +20,6 @@ type PrenatalActivity
     | PregnancyOutcome
 
 
-type PrenatalNextStepsTask
-    = AppointmentConfirmation
-    | FollowUp
-    | SendToHC
-    | TaskHealthEducation
-    | NewbornEnrollment
-
-
 type RiskFactor
     = FactorNumberOfCSections Int
     | FactorCSectionInPreviousDelivery

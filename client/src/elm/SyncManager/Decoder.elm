@@ -643,6 +643,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePrenatalFamilyPlanning
                             BackendAuthorityPrenatalFamilyPlanning
 
+                    "prenatal_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalHealthEducation
+                            BackendAuthorityPrenatalHealthEducation
+
                     "prenatal_nutrition" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalNutrition

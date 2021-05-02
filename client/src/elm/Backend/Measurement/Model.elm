@@ -723,6 +723,22 @@ type PregnancyTestResult
     | PregnancyTestUnableToConduct
 
 
+type alias PrenatalHealthEducation =
+    PrenatalMeasurement (EverySet PrenatalHealthEducationSign)
+
+
+type PrenatalHealthEducationSign
+    = EducationExpectations
+    | EducationVisitsReview
+    | EducationWarningSigns
+    | EducationHemorrhaging
+    | EducationFamilyPlanning
+    | EducationBreastfeeding
+    | EducationImmunization
+    | EducationHygiene
+    | NoPrenatalHealthEducationSigns
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -1238,6 +1254,7 @@ type alias PrenatalMeasurements =
     , prenatalPhoto : Maybe ( PrenatalPhotoId, PrenatalPhoto )
     , birthPlan : Maybe ( BirthPlanId, BirthPlan )
     , pregnancyTest : Maybe ( PregnancyTestId, PregnancyTest )
+    , healthEducation : Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )
     }
 
 

@@ -43,4 +43,4 @@ encodePrenatalEncounterType encounterType =
                 "chw-3"
 
             ChwPostpartumEncounter ->
-                "postpartum"
+                "chw-postpartum"

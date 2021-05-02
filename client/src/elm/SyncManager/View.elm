@@ -537,17 +537,20 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPhoto identifier ->
                 viewMeasurement identifier "Photo"
 
+            BackendAuthorityPmtctParticipant identifier ->
+                text <| "Pmtct Participant for child ID " ++ fromEntityUuid identifier.entity.child
+
             BackendAuthorityPregnancyTesting identifier ->
                 viewMeasurement identifier "Pregnancy Testing"
 
             BackendAuthorityPrenatalPhoto identifier ->
                 viewMeasurement identifier "Prenatal Photo"
 
-            BackendAuthorityPmtctParticipant identifier ->
-                text <| "Pmtct Participant for child ID " ++ fromEntityUuid identifier.entity.child
-
             BackendAuthorityPrenatalFamilyPlanning identifier ->
                 viewMeasurement identifier "Prenatal Family Planning"
+
+            BackendAuthorityPrenatalHealthEducation identifier ->
+                viewMeasurement identifier "Prenatal Health Education"
 
             BackendAuthorityPrenatalNutrition identifier ->
                 viewMeasurement identifier "Prenatal Nutrition"

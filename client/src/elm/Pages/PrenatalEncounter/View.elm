@@ -1,4 +1,4 @@
-module Pages.PrenatalEncounter.View exposing (view, viewMotherAndMeasurements, viewPersonDetails)
+module Pages.PrenatalEncounter.View exposing (generateActivityLabel, view, viewMotherAndMeasurements, viewPersonDetails)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
@@ -15,7 +15,7 @@ import Backend.PrenatalActivity.Utils
         , generateRecurringHighSeverityAlertData
         , getActivityIcon
         )
-import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounter)
+import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounter, PrenatalEncounterType(..))
 import Date exposing (Interval(..))
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -358,13 +358,7 @@ viewMainPageContent language currentDate data model =
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
                 , div [ class "content" ]
-                    [ p []
-                        [ Translate.PrenatalActivitiesTitle activity
-                            |> translate language
-                            |> String.toUpper
-                            |> text
-                        ]
-                    ]
+                    [ p [] [ text <| String.toUpper <| translate language <| generateActivityLabel activity data ] ]
                 ]
 
         ( selectedActivities, emptySectionMessage ) =
@@ -444,3 +438,17 @@ viewMainPageContent language currentDate data model =
     [ tabs
     , content
     ]
+
+
+generateActivityLabel : PrenatalActivity -> AssembledData -> TranslationId
+generateActivityLabel activity data =
+    case activity of
+        NextSteps ->
+            if noDangerSigns data.measurements && data.encounter.encounterType /= ChwPostpartumEncounter then
+                Translate.AppointmentConfirmation
+
+            else
+                Translate.PrenatalActivitiesTitle NextSteps
+
+        _ ->
+            Translate.PrenatalActivitiesTitle activity

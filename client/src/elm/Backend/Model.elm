@@ -373,6 +373,7 @@ type Revision
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
     | PregnancyTestingRevision PregnancyTestId PregnancyTest
     | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
+    | PrenatalHealthEducationRevision PrenatalHealthEducationId PrenatalHealthEducation
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
