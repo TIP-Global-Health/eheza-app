@@ -19,14 +19,6 @@ function hedley_activity_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function hedley_activity_node_info() {
   $items = array(
-    'appointment_confirmation' => array(
-      'name' => t('Appointment Confirmation'),
-      'base' => 'node_content',
-      'description' => '',
-      'has_title' => '1',
-      'title_label' => t('Title'),
-      'help' => '',
-    ),
     'attendance' => array(
       'name' => t('Attendance'),
       'base' => 'node_content',
@@ -267,14 +259,6 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
-    'prenatal_follow_up' => array(
-      'name' => t('Prenatal Follow up'),
-      'base' => 'node_content',
-      'description' => '',
-      'has_title' => '1',
-      'title_label' => t('Title'),
-      'help' => '',
-    ),
     'prenatal_health_education' => array(
       'name' => t('Prenatal Health Education'),
       'base' => 'node_content',
@@ -295,14 +279,6 @@ function hedley_activity_node_info() {
       'name' => t('Prenatal Photo'),
       'base' => 'node_content',
       'description' => t('A photo nurse takes during prenatal encounter, to monitor the progress.'),
-      'has_title' => '1',
-      'title_label' => t('Title'),
-      'help' => '',
-    ),
-    'prenatal_send_to_hc' => array(
-      'name' => t('Prenatal Send To HC'),
-      'base' => 'node_content',
-      'description' => '',
       'has_title' => '1',
       'title_label' => t('Title'),
       'help' => '',
