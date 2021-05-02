@@ -384,6 +384,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityAcuteIllnessVitals identifier ->
                 viewMeasurement identifier "Acute Illness Vitals"
 
+            BackendAuthorityAppointmentConfirmation identifier ->
+                viewMeasurement identifier "Appointment Confirmation"
+
             BackendAuthorityAttendance identifier ->
                 viewMeasurement identifier "Attendance"
 
@@ -551,6 +554,12 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityPrenatalHealthEducation identifier ->
                 viewMeasurement identifier "Prenatal Health Education"
+
+            BackendAuthorityPrenatalFollowUp identifier ->
+                viewMeasurement identifier "Prenatal Follow Up"
+
+            BackendAuthorityPrenatalSendToHC identifier ->
+                viewMeasurement identifier "Prenatal Send to HC"
 
             BackendAuthorityPrenatalNutrition identifier ->
                 viewMeasurement identifier "Prenatal Nutrition"

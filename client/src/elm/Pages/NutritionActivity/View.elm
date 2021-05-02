@@ -687,6 +687,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                             SetReferToHealthCenter
                             SetReasonForNotSendingToHC
                             SetHandReferralForm
+                            Nothing
 
                 Just NextStepsHealthEducation ->
                     measurements.healthEducation

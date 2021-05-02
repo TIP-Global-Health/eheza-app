@@ -708,3 +708,21 @@ prenatalHealthEducationEndpoint : ReadWriteEndPoint Error PrenatalHealthEducatio
 prenatalHealthEducationEndpoint =
     swEndpoint "nodes/prenatal_health_education" decodePrenatalHealthEducation
         |> withValueEncoder (object << encodePrenatalHealthEducation)
+
+
+prenatalFollowUpEndpoint : ReadWriteEndPoint Error PrenatalFollowUpId PrenatalFollowUp PrenatalFollowUp ()
+prenatalFollowUpEndpoint =
+    swEndpoint "nodes/prenatal_follow_up" decodePrenatalFollowUp
+        |> withValueEncoder (object << encodePrenatalFollowUp)
+
+
+prenatalSendToHcEndpoint : ReadWriteEndPoint Error PrenatalSendToHcId PrenatalSendToHC PrenatalSendToHC ()
+prenatalSendToHcEndpoint =
+    swEndpoint "nodes/prenatal_send_to_hc" decodePrenatalSendToHc
+        |> withValueEncoder (object << encodePrenatalSendToHC)
+
+
+appointmentConfirmationEndpoint : ReadWriteEndPoint Error PrenatalAppointmentConfirmationId PrenatalAppointmentConfirmation PrenatalAppointmentConfirmation ()
+appointmentConfirmationEndpoint =
+    swEndpoint "nodes/appointment_confirmation" decodeAppointmentConfirmation
+        |> withValueEncoder (object << encodeAppointmentConfirmation)

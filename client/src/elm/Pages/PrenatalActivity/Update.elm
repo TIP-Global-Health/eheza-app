@@ -27,6 +27,7 @@ import Backend.PrenatalEncounter.Model
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Utils exposing (toSendToHCValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
@@ -1923,6 +1924,235 @@ update currentDate id db msg model =
                             []
                             (\value ->
                                 (Backend.PrenatalEncounter.Model.SaveHealthEducation personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetFollowUpOption option ->
+            let
+                form =
+                    model.nextStepsData.followUpForm
+
+                updatedForm =
+                    { form | option = Just option }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | followUpForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveFollowUp personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], Just task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
+                            , Nothing
+                            )
+
+                appMsgs =
+                    model.nextStepsData.followUpForm
+                        |> toFollowUpValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.PrenatalEncounter.Model.SaveFollowUp personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetReferToHealthCenter value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHandReferralForm value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | handReferralForm = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetAccompanyToHC value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | accompanyToHealthCenter = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotSendingToHC value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | reasonForNotSendingToHC = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveSendToHC personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], Just task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
+                            , Nothing
+                            )
+
+                appMsgs =
+                    model.nextStepsData.sendToHCForm
+                        |> toSendToHCValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.PrenatalEncounter.Model.SaveSendToHC personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
+        AppointmentToggleDateSelector ->
+            let
+                updatedForm =
+                    model.nextStepsData.appointmentConfirmationForm
+                        |> (\form -> { form | isDateSelectorOpen = not form.isDateSelectorOpen })
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | appointmentConfirmationForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetAppointmentConfirmation value ->
+            let
+                updatedForm =
+                    model.nextStepsData.appointmentConfirmationForm
+                        |> (\form -> { form | appointmentDate = Just value })
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | appointmentConfirmationForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveAppointmentConfirmation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], Just task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
+                            , Nothing
+                            )
+
+                appMsgs =
+                    model.nextStepsData.appointmentConfirmationForm
+                        |> toAppointmentConfirmationValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.PrenatalEncounter.Model.SaveAppointmentConfirmation personId measurementId value
                                     |> Backend.Model.MsgPrenatalEncounter id
                                     |> App.Model.MsgIndexedDb
                                 )

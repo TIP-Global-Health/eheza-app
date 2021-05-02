@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * @file
+ * Code for the Hedley Prenatal feature.
+ */
+
+include_once 'hedley_prenatal.features.inc';

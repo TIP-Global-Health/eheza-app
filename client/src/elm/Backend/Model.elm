@@ -313,6 +313,7 @@ type Revision
     | AcuteIllnessNutritionRevision AcuteIllnessNutritionId AcuteIllnessNutrition
     | AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
     | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
+    | AppointmentConfirmationRevision PrenatalAppointmentConfirmationId PrenatalAppointmentConfirmation
     | AttendanceRevision AttendanceId Attendance
     | BreastExamRevision BreastExamId BreastExam
     | BirthPlanRevision BirthPlanId BirthPlan
@@ -374,6 +375,8 @@ type Revision
     | PregnancyTestingRevision PregnancyTestId PregnancyTest
     | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
     | PrenatalHealthEducationRevision PrenatalHealthEducationId PrenatalHealthEducation
+    | PrenatalFollowUpRevision PrenatalFollowUpId PrenatalFollowUp
+    | PrenatalSendToHCRevision PrenatalSendToHcId PrenatalSendToHC
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto

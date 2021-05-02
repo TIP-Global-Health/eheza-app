@@ -1390,6 +1390,14 @@ div.page-activity.home-visit {
       .checkbox-select-input {
         margin-bottom: 20px;
       }
+
+      .form.appointment-confirmation {
+        min-height: 330px;
+
+        .label {
+          margin-bottom: 30px;
+        }
+      }
     }
   }
 }

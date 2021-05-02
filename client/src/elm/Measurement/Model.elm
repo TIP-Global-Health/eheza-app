@@ -131,13 +131,14 @@ emptyHealthEducationForm =
 type alias SendToHCForm =
     { handReferralForm : Maybe Bool
     , referToHealthCenter : Maybe Bool
+    , accompanyToHealthCenter : Maybe Bool
     , reasonForNotSendingToHC : Maybe ReasonForNotSendingToHC
     }
 
 
 emptySendToHCForm : SendToHCForm
 emptySendToHCForm =
-    SendToHCForm Nothing Nothing Nothing
+    SendToHCForm Nothing Nothing Nothing Nothing
 
 
 {-| The UI for participant consent forms for a particular mother.

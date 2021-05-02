@@ -13,7 +13,7 @@ import LocalData
 import Maybe.Extra exposing (andMap, or, unwrap)
 import Measurement.Model exposing (..)
 import Pages.Session.Model
-import Pages.Utils exposing (ifEverySetEmpty, ifTrue)
+import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue)
 
 
 getInputConstraintsHeight : FloatInputConstraints
@@ -356,6 +356,7 @@ fromSendToHCValue : Maybe SendToHCValue -> SendToHCForm
 fromSendToHCValue saved =
     { handReferralForm = Maybe.map (.signs >> EverySet.member HandReferrerForm) saved
     , referToHealthCenter = Maybe.map (.signs >> EverySet.member ReferToHealthCenter) saved
+    , accompanyToHealthCenter = Maybe.map (.signs >> EverySet.member PrenatalAccompanyToHC) saved
     , reasonForNotSendingToHC = Maybe.map .reasonForNotSendingToHC saved
     }
 
@@ -368,6 +369,7 @@ sendToHCFormWithDefault form saved =
             (\value ->
                 { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
                 , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
+                , accompanyToHealthCenter = or form.accompanyToHealthCenter (EverySet.member PrenatalAccompanyToHC value.signs |> Just)
                 , reasonForNotSendingToHC = or form.reasonForNotSendingToHC (value.reasonForNotSendingToHC |> Just)
                 }
             )
@@ -385,6 +387,7 @@ toSendToHCValue form =
         signs =
             [ Maybe.map (ifTrue HandReferrerForm) form.handReferralForm
             , Maybe.map (ifTrue ReferToHealthCenter) form.referToHealthCenter
+            , ifNullableTrue PrenatalAccompanyToHC form.accompanyToHealthCenter
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)

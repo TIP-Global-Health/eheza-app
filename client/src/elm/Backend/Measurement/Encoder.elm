@@ -212,6 +212,37 @@ encodePrenatalHealthEducationSign sign =
                 "none"
 
 
+encodePrenatalFollowUp : PrenatalFollowUp -> List ( String, Value )
+encodePrenatalFollowUp =
+    encodePrenatalMeasurement encodePrenatalFollowUpValue
+
+
+encodePrenatalFollowUpValue : EverySet FollowUpOption -> List ( String, Value )
+encodePrenatalFollowUpValue value =
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_follow_up" )
+    ]
+
+
+encodePrenatalSendToHC : PrenatalSendToHC -> List ( String, Value )
+encodePrenatalSendToHC =
+    encodePrenatalMeasurement (encodeSendToHCValueWithType "prenatal_send_to_hc")
+
+
+encodeAppointmentConfirmation : PrenatalAppointmentConfirmation -> List ( String, Value )
+encodeAppointmentConfirmation =
+    encodePrenatalMeasurement encodeAppointmentConfirmationValue
+
+
+encodeAppointmentConfirmationValue : PrenatalAppointmentConfirmationValue -> List ( String, Value )
+encodeAppointmentConfirmationValue value =
+    [ ( "appointment_confirmation", Gizra.NominalDate.encodeYYYYMMDD value.date )
+    , ( "deleted", bool False )
+    , ( "type", string "appointment_confirmation" )
+    ]
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement encodeNutritionValue
@@ -1452,6 +1483,9 @@ encondeSendToHCSign sign =
 
             ReferToHealthCenter ->
                 "refer-to-hc"
+
+            PrenatalAccompanyToHC ->
+                "accompany-to-hc"
 
             NoSendToHCSigns ->
                 "none"

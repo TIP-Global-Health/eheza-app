@@ -105,6 +105,9 @@ decodePrenatalMeasurements =
         |> optional "birth_plan" (decodeHead decodeBirthPlan) Nothing
         |> optional "pregnancy_testing" (decodeHead decodePregnancyTesting) Nothing
         |> optional "prenatal_health_education" (decodeHead decodePrenatalHealthEducation) Nothing
+        |> optional "prenatal_follow_up" (decodeHead decodePrenatalFollowUp) Nothing
+        |> optional "prenatal_send_to_hc" (decodeHead decodePrenatalSendToHc) Nothing
+        |> optional "appointment_confirmation" (decodeHead decodeAppointmentConfirmation) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -262,6 +265,29 @@ decodePrenatalHealthEducationSign =
                     _ ->
                         sign ++ " is not a recognized PrenatalHealthEducationSign" |> fail
             )
+
+
+decodePrenatalFollowUp : Decoder PrenatalFollowUp
+decodePrenatalFollowUp =
+    decodePrenatalMeasurement decodePrenatalFollowUpValue
+
+
+decodePrenatalFollowUpValue : Decoder (EverySet FollowUpOption)
+decodePrenatalFollowUpValue =
+    decodeEverySet decodeFollowUpOption
+        |> field "follow_up_options"
+
+
+decodePrenatalSendToHc : Decoder PrenatalSendToHC
+decodePrenatalSendToHc =
+    decodePrenatalMeasurement decodeSendToHCValue
+
+
+decodeAppointmentConfirmation : Decoder PrenatalAppointmentConfirmation
+decodeAppointmentConfirmation =
+    succeed PrenatalAppointmentConfirmationValue
+        |> required "appointment_confirmation" Gizra.NominalDate.decodeYYYYMMDD
+        |> decodePrenatalMeasurement
 
 
 decodeHeight : Decoder Height
@@ -1875,6 +1901,9 @@ decodeSendToHCSign =
 
                     "refer-to-hc" ->
                         succeed ReferToHealthCenter
+
+                    "accompany-to-hc" ->
+                        succeed PrenatalAccompanyToHC
 
                     "none" ->
                         succeed NoSendToHCSigns

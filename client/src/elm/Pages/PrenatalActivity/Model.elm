@@ -98,6 +98,16 @@ type Msg
       -- NextStepsMsgs
     | SetActiveNextStepsTask NextStepsTask
     | SaveHealthEducationSubActivity PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )) (Maybe NextStepsTask)
+    | SetFollowUpOption FollowUpOption
+    | SaveFollowUp PersonId (Maybe ( PrenatalFollowUpId, PrenatalFollowUp )) (Maybe NextStepsTask)
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | SetAccompanyToHC Bool
+    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHcId, PrenatalSendToHC )) (Maybe NextStepsTask)
+    | AppointmentToggleDateSelector
+    | SetAppointmentConfirmation Date
+    | SaveAppointmentConfirmation PersonId (Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -677,12 +687,14 @@ type alias PregnancyTestingForm =
 
 
 type alias AppointmentConfirmationForm =
-    {}
+    { appointmentDate : Maybe Date
+    , isDateSelectorOpen : Bool
+    }
 
 
 emptyAppointmentConfirmationForm : AppointmentConfirmationForm
 emptyAppointmentConfirmationForm =
-    {}
+    AppointmentConfirmationForm Nothing False
 
 
 type alias FollowUpForm =

@@ -9,6 +9,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import Measurement.Utils exposing (sendToHCFormWithDefault)
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (getMotherHeightMeasurement)
@@ -247,21 +248,52 @@ nextStepsTasksCompletedFromTotal :
 nextStepsTasksCompletedFromTotal language assembled data task =
     case task of
         NextStepsAppointmentConfirmation ->
-            -- @todo
-            ( 0
+            let
+                form =
+                    assembled.measurements.appointmentConfirmation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> appointmentConfirmationFormWithDefault data.appointmentConfirmationForm
+            in
+            ( taskCompleted form.appointmentDate
             , 1
             )
 
         NextStepsFollowUp ->
-            -- @todo
-            ( 0
+            let
+                form =
+                    assembled.measurements.followUp
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> followUpFormWithDefault data.followUpForm
+            in
+            ( taskCompleted form.option
             , 1
             )
 
         NextStepsSendToHC ->
-            -- @todo
-            ( 0
-            , 1
+            let
+                form =
+                    assembled.measurements.sendToHC
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> sendToHCFormWithDefault data.sendToHCForm
+
+                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+                    form.referToHealthCenter
+                        |> Maybe.map
+                            (\sentToHC ->
+                                if not sentToHC then
+                                    if isJust form.reasonForNotSendingToHC then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+            in
+            ( reasonForNotSentActive + taskCompleted form.handReferralForm + taskCompleted form.accompanyToHealthCenter
+            , reasonForNotSentCompleted + 2
             )
 
         NextStepsHealthEducation ->
@@ -1402,3 +1434,60 @@ toHealthEducationValue form =
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)
+
+
+fromFollowUpValue : Maybe (EverySet FollowUpOption) -> FollowUpForm
+fromFollowUpValue saved =
+    { option = Maybe.andThen (EverySet.toList >> List.head) saved }
+
+
+followUpFormWithDefault : FollowUpForm -> Maybe (EverySet FollowUpOption) -> FollowUpForm
+followUpFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value -> { option = or form.option (EverySet.toList value |> List.head) })
+
+
+toFollowUpValueWithDefault : Maybe (EverySet FollowUpOption) -> FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValueWithDefault saved form =
+    followUpFormWithDefault form saved
+        |> toFollowUpValue
+
+
+toFollowUpValue : FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValue form =
+    Maybe.map (List.singleton >> EverySet.fromList) form.option
+
+
+fromAppointmentConfirmationValue : Maybe PrenatalAppointmentConfirmationValue -> AppointmentConfirmationForm
+fromAppointmentConfirmationValue saved =
+    { appointmentDate = Maybe.map .date saved
+    , isDateSelectorOpen = False
+    }
+
+
+appointmentConfirmationFormWithDefault : AppointmentConfirmationForm -> Maybe PrenatalAppointmentConfirmationValue -> AppointmentConfirmationForm
+appointmentConfirmationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { appointmentDate = or form.appointmentDate (Just value.date)
+                , isDateSelectorOpen = form.isDateSelectorOpen
+                }
+            )
+
+
+toAppointmentConfirmationValueWithDefault : Maybe PrenatalAppointmentConfirmationValue -> AppointmentConfirmationForm -> Maybe PrenatalAppointmentConfirmationValue
+toAppointmentConfirmationValueWithDefault saved form =
+    let
+        form_ =
+            appointmentConfirmationFormWithDefault form saved
+    in
+    toAppointmentConfirmationValue form_
+
+
+toAppointmentConfirmationValue : AppointmentConfirmationForm -> Maybe PrenatalAppointmentConfirmationValue
+toAppointmentConfirmationValue form =
+    Maybe.map PrenatalAppointmentConfirmationValue form.appointmentDate

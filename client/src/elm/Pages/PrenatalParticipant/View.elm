@@ -436,7 +436,7 @@ viewButton language action lablelTransId disabled =
     let
         attributes =
             [ class "ui primary button"
-            , classList [ ( "disabled", False ) ]
+            , classList [ ( "disabled", disabled ) ]
             ]
                 ++ action
     in

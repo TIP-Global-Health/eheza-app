@@ -766,6 +766,23 @@ type PrenatalHealthEducationSign
     | NoPrenatalHealthEducationSigns
 
 
+type alias PrenatalFollowUp =
+    PrenatalMeasurement (EverySet FollowUpOption)
+
+
+type alias PrenatalSendToHC =
+    PrenatalMeasurement SendToHCValue
+
+
+type alias PrenatalAppointmentConfirmationValue =
+    { date : NominalDate
+    }
+
+
+type alias PrenatalAppointmentConfirmation =
+    PrenatalMeasurement PrenatalAppointmentConfirmationValue
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -1038,6 +1055,7 @@ type alias SendToHCValue =
 type SendToHCSign
     = HandReferrerForm
     | ReferToHealthCenter
+    | PrenatalAccompanyToHC
     | NoSendToHCSigns
 
 
@@ -1282,6 +1300,9 @@ type alias PrenatalMeasurements =
     , birthPlan : Maybe ( BirthPlanId, BirthPlan )
     , pregnancyTest : Maybe ( PregnancyTestId, PregnancyTest )
     , healthEducation : Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )
+    , followUp : Maybe ( PrenatalFollowUpId, PrenatalFollowUp )
+    , sendToHC : Maybe ( PrenatalSendToHcId, PrenatalSendToHC )
+    , appointmentConfirmation : Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )
     }
 
 
