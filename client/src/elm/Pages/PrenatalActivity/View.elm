@@ -1270,7 +1270,7 @@ viewNextStepsContent language currentDate assembled data =
                     measurements.appointmentConfirmation
                         |> Maybe.map (Tuple.second >> .value)
                         |> appointmentConfirmationFormWithDefault data.appointmentConfirmationForm
-                        |> viewAppointmentForm language currentDate assembled
+                        |> viewAppointmentConfirmationForm language currentDate assembled
 
                 Just NextStepsFollowUp ->
                     measurements.followUp
@@ -2617,8 +2617,8 @@ viewFollowUpForm language assembled currentDate form =
         ]
 
 
-viewAppointmentForm : Language -> NominalDate -> AssembledData -> AppointmentConfirmationForm -> Html Msg
-viewAppointmentForm language currentDate assembled form =
+viewAppointmentConfirmationForm : Language -> NominalDate -> AssembledData -> AppointmentConfirmationForm -> Html Msg
+viewAppointmentConfirmationForm language currentDate assembled form =
     let
         today =
             currentDate
@@ -2632,9 +2632,8 @@ viewAppointmentForm language currentDate assembled form =
                 (Date.add Months 9 today)
                 form.appointmentDate
     in
-    div [ class "full content" ]
-        [ div [ class "ui form appointment-confirmation" ]
-            [ text <| translate language Translate.AppointmentConfirmationInstrunction ++ ":" ]
+    div [ class "form appointment-confirmation" ]
+        [ viewLabel language Translate.AppointmentConfirmationInstrunction
         , div [ class "form-input date" ]
             [ appointmentDateInput ]
         ]
