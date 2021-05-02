@@ -2069,6 +2069,20 @@ input::placeholder {
   }
 }
 
+.icon-next-steps-newborn-enrolment {
+  .active &:after {
+    background-image: url(#{$img-path}icon-newborn-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-newborn-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-newborn-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
 // Lists
 
 .ui.list {

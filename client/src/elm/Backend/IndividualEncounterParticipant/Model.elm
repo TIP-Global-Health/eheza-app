@@ -16,9 +16,15 @@ type alias IndividualEncounterParticipant =
     , dateConcluded : Maybe NominalDate
     , outcome : Maybe IndividualEncounterParticipantOutcome
     , deliveryLocation : Maybe DeliveryLocation
+    , newborn : Maybe PersonId
     , deleted : Bool
     , shard : Maybe HealthCenterId
     }
+
+
+emptyIndividualEncounterParticipant : NominalDate -> PersonId -> IndividualEncounterType -> HealthCenterId -> IndividualEncounterParticipant
+emptyIndividualEncounterParticipant currentDate personId type_ healthCenterId =
+    IndividualEncounterParticipant personId type_ currentDate Nothing Nothing Nothing Nothing Nothing Nothing False (Just healthCenterId)
 
 
 type IndividualParticipantExtraData
@@ -30,6 +36,7 @@ type alias Model =
     { closePrenatalSession : WebData ()
     , closeAcuteIllnessSession : WebData ()
     , setEddDate : WebData ()
+    , setNewborn : WebData ()
     }
 
 
@@ -40,6 +47,8 @@ type Msg
     | HandleClosedAcuteIllnessSession (WebData ())
     | SetEddDate NominalDate
     | HandleSetEddDate (WebData ())
+    | SetNewborn PersonId
+    | HandleSetNewborn (WebData ())
 
 
 emptyModel : Model
@@ -47,6 +56,7 @@ emptyModel =
     { closePrenatalSession = NotAsked
     , closeAcuteIllnessSession = NotAsked
     , setEddDate = NotAsked
+    , setNewborn = NotAsked
     }
 
 

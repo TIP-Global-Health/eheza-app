@@ -282,10 +282,9 @@ nextStepsTasksCompletedFromTotal language assembled data task =
             , List.length tasks
             )
 
-        NextStepsNewbornEnrollment ->
-            -- @todo
+        NextStepsNewbornEnrolment ->
             ( 0
-            , 1
+            , 0
             )
 
 

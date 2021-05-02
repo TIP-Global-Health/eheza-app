@@ -133,8 +133,8 @@ viewPregnancyOutcome language currentDate initiator data model =
                 InitiatorWarningPopup ->
                     UserPage <| PrenatalParticipantPage data.participant.person
 
-                InitiatorPostpartumEncounter ->
-                    UserPage <| PrenatalEncounterPage data.id
+                InitiatorPostpartumEncounter encounterId ->
+                    UserPage <| PrenatalEncounterPage encounterId
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]

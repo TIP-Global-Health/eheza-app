@@ -13,8 +13,8 @@ recordPreganancyInitiatorToUrlFragmemt initiator =
         InitiatorWarningPopup ->
             "warning-popup"
 
-        InitiatorPostpartumEncounter ->
-            "postpartum-encounter"
+        InitiatorPostpartumEncounter encounterId ->
+            "postpartum-encounter-" ++ fromEntityUuid encounterId
 
 
 recordPreganancyInitiatorFromUrlFragmemt : String -> Maybe RecordPreganancyInitiator
@@ -26,11 +26,15 @@ recordPreganancyInitiatorFromUrlFragmemt s =
         "warning-popup" ->
             Just InitiatorWarningPopup
 
-        "postpartum-encounter" ->
-            Just InitiatorPostpartumEncounter
-
         _ ->
-            Nothing
+            if String.startsWith "postpartum-encounter" s then
+                String.dropLeft (String.length "postpartum-encounter-") s
+                    |> toEntityUuid
+                    |> InitiatorPostpartumEncounter
+                    |> Just
+
+            else
+                Nothing
 
 
 progressReportInitiatorToUrlFragmemt : ClinicalProgressReportInitiator -> String
@@ -50,21 +54,11 @@ progressReportInitiatorFromUrlFragmemt s =
             Just InitiatorEncounterPage
 
         _ ->
-            let
-                split =
-                    String.split "-" s
-            in
-            case List.head split of
-                Just "encounter" ->
-                    if List.length split > 1 then
-                        -- Remove the "session-" prefix.
-                        String.dropLeft 10 s
-                            |> toEntityUuid
-                            |> InitiatorNewEncounter
-                            |> Just
+            if String.startsWith "encounter" s then
+                String.dropLeft (String.length "encounter-") s
+                    |> toEntityUuid
+                    |> InitiatorNewEncounter
+                    |> Just
 
-                    else
-                        Nothing
-
-                _ ->
-                    Nothing
+            else
+                Nothing

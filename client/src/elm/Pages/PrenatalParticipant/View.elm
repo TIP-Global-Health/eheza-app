@@ -2,8 +2,7 @@ module Pages.PrenatalParticipant.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
-import Backend.IndividualEncounterParticipant.Utils exposing (emptyIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), emptyIndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
     exposing
@@ -437,7 +436,7 @@ viewButton language action lablelTransId disabled =
     let
         attributes =
             [ class "ui primary button"
-            , classList [ ( "disabled", disabled ) ]
+            , classList [ ( "disabled", False ) ]
             ]
                 ++ action
     in

@@ -27,10 +27,11 @@ import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
+import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounterPostCreateDestination(..), PrenatalEncounterType(..), emptyPrenatalEncounter)
 import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
-import Backend.Relationship.Model exposing (RelatedBy(..))
+import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
@@ -46,6 +47,7 @@ import Backend.Utils
         , mapPrenatalMeasurements
         , sw
         )
+import Backend.Village.Utils exposing (getVillageClinicId)
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -84,8 +86,19 @@ import Translate exposing (Language, translate)
 import ZScore.Model
 
 
-updateIndexedDb : NominalDate -> Language -> ZScore.Model.Model -> Maybe NurseId -> Maybe HealthCenterId -> Bool -> Page -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb currentDate language zscores nurseId healthCenterId isChw activePage msg model =
+updateIndexedDb :
+    NominalDate
+    -> Language
+    -> ZScore.Model.Model
+    -> Maybe NurseId
+    -> Maybe HealthCenterId
+    -> Maybe VillageId
+    -> Bool
+    -> Page
+    -> MsgIndexedDb
+    -> ModelIndexedDb
+    -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
+updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -185,7 +198,7 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId isChw active
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId isChw activePage) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage) extraMsgs
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions
@@ -1602,7 +1615,7 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId isChw active
             , relationshipCmd
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId isChw activePage) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage) extraMsgs
 
         HandlePostedRelationship personId initiator data ->
             let
@@ -1610,10 +1623,30 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId isChw active
                     data
                         |> RemoteData.map
                             (\relationship ->
-                                [ Pages.Relationship.Model.Reset initiator
-                                    |> App.Model.MsgPageRelationship personId relationship.relatedTo
-                                    |> App.Model.MsgLoggedIn
-                                ]
+                                let
+                                    resetFormMsg =
+                                        Pages.Relationship.Model.Reset initiator
+                                            |> App.Model.MsgPageRelationship personId relationship.relatedTo
+                                            |> App.Model.MsgLoggedIn
+                                in
+                                case initiator of
+                                    -- We do not use the form in this scenario,
+                                    -- therefore, no need to reset it.
+                                    PrenatalNextStepsActivityOrigin _ ->
+                                        []
+
+                                    -- When at session context, we navigate to session Attendance page.
+                                    -- At that page, we should see newly created attendance.
+                                    GroupEncounterOrigin sessionId ->
+                                        [ resetFormMsg
+                                        , App.Model.SetActivePage <| UserPage <| SessionPage sessionId AttendancePage
+                                        ]
+
+                                    -- For other cases, we navigate to the page of main person.
+                                    _ ->
+                                        [ resetFormMsg
+                                        , App.Model.SetActivePage <| UserPage <| PersonPage personId initiator
+                                        ]
                             )
                         |> RemoteData.withDefault []
             in
@@ -1631,24 +1664,40 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId isChw active
 
         HandlePostedPerson relation initiator data ->
             let
-                appMsgs =
+                ( appMsgs, extraMsgs ) =
                     -- If we succeed, we reset the form, and go to the page
                     -- showing the new person.
-                    data
-                        |> RemoteData.map
+                    RemoteData.toMaybe data
+                        |> Maybe.map
                             (\personId ->
                                 let
-                                    nextPage =
-                                        case initiator of
-                                            ParticipantDirectoryOrigin ->
+                                    resetFormMsg =
+                                        Pages.Person.Model.ResetCreateForm
+                                            |> App.Model.MsgPageCreatePerson
+                                            |> App.Model.MsgLoggedIn
+
+                                    navigationMsg destination =
+                                        UserPage destination
+                                            |> App.Model.SetActivePage
+                                in
+                                case initiator of
+                                    ParticipantDirectoryOrigin ->
+                                        let
+                                            nextPage =
                                                 case relation of
                                                     Just id ->
                                                         RelationshipPage id personId initiator
 
                                                     Nothing ->
                                                         PersonPage personId initiator
+                                        in
+                                        ( [ resetFormMsg, navigationMsg nextPage ]
+                                        , []
+                                        )
 
-                                            IndividualEncounterOrigin encounterType ->
+                                    IndividualEncounterOrigin encounterType ->
+                                        let
+                                            nextPage =
                                                 case encounterType of
                                                     AcuteIllnessEncounter ->
                                                         AcuteIllnessParticipantPage personId
@@ -1663,29 +1712,67 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId isChw active
                                                         -- This will change as we add support for
                                                         -- new encounter types.
                                                         IndividualEncounterTypesPage
+                                        in
+                                        ( [ resetFormMsg, navigationMsg nextPage ]
+                                        , []
+                                        )
 
-                                            GroupEncounterOrigin sessionId ->
+                                    GroupEncounterOrigin sessionId ->
+                                        let
+                                            nextPage =
                                                 case relation of
                                                     Just id ->
                                                         RelationshipPage id personId initiator
 
                                                     Nothing ->
                                                         PersonPage personId initiator
-                                in
-                                [ Pages.Person.Model.ResetCreateForm
-                                    |> App.Model.MsgPageCreatePerson
-                                    |> App.Model.MsgLoggedIn
-                                , nextPage
-                                    |> UserPage
-                                    |> App.Model.SetActivePage
-                                ]
+                                        in
+                                        ( [ resetFormMsg, navigationMsg nextPage ]
+                                        , []
+                                        )
+
+                                    PrenatalNextStepsActivityOrigin encounterId ->
+                                        let
+                                            nextPage =
+                                                PrenatalActivityPage encounterId Backend.PrenatalActivity.Model.NextSteps
+
+                                            updateNewbornEnrolledMsg =
+                                                Dict.get encounterId model.prenatalEncounters
+                                                    |> Maybe.andThen RemoteData.toMaybe
+                                                    |> Maybe.map
+                                                        (\encounter ->
+                                                            [ Backend.IndividualEncounterParticipant.Model.SetNewborn personId
+                                                                |> MsgIndividualSession encounter.participant
+                                                            ]
+                                                        )
+                                                    |> Maybe.withDefault []
+
+                                            createRelationshipMsg =
+                                                relation
+                                                    |> Maybe.map
+                                                        (\motherId ->
+                                                            let
+                                                                villageGroupId =
+                                                                    Maybe.andThen (\id -> getVillageClinicId id model) villageId
+
+                                                                myRelationship =
+                                                                    MyRelationship personId MyChild
+                                                            in
+                                                            [ PostRelationship motherId myRelationship villageGroupId initiator ]
+                                                        )
+                                                    |> Maybe.withDefault []
+                                        in
+                                        ( [ resetFormMsg, navigationMsg nextPage ]
+                                        , updateNewbornEnrolledMsg ++ createRelationshipMsg
+                                        )
                             )
-                        |> RemoteData.withDefault []
+                        |> Maybe.withDefault ( [], [] )
             in
             ( { model | postPerson = data }
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage) extraMsgs
 
         PatchPerson personId person ->
             ( { model | postPerson = Loading }

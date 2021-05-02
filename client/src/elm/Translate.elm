@@ -5615,8 +5615,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Model.NextStepsNewbornEnrollment ->
-                    { english = "Newborn Enrollment"
+                Pages.PrenatalActivity.Model.NextStepsNewbornEnrolment ->
+                    { english = "Newborn Enrolment"
                     , kinyarwanda = Nothing
                     }
 
