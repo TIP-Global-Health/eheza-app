@@ -325,13 +325,11 @@ activityCompleted currentDate data activity =
                     isJust data.measurements.sendToHC && isJust data.measurements.followUp
 
                 [ NextStepsHealthEducation, NextStepsNewbornEnrolment ] ->
-                    --@todo
-                    -- && isJust data.measurements.newbornEnrolment
-                    False
-                        && isJust data.measurements.healthEducation
+                    isJust data.measurements.healthEducation
+                        && isJust data.participant.newborn
 
                 [ NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ] ->
-                      isJust data.measurements.sendToHC
+                    isJust data.measurements.sendToHC
                         && isJust data.measurements.followUp
                         && isJust data.measurements.healthEducation
                         && isJust data.participant.newborn
