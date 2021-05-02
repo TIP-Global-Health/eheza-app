@@ -487,6 +487,11 @@ h3.ui.header {
   background-size: 122px 122px;
 }
 
+.icon-task-appointment-confirmation {
+  background-image: url(#{$img-path}icon-health-center-white.svg);
+  background-size: 78px 78px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {

@@ -176,19 +176,13 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
 
 warningPopup : Language -> NominalDate -> List (Attribute Msg) -> Maybe (Html Msg)
 warningPopup language currentDate navigateToPregnancyOutcomeAction =
-    let
-        infoHeading =
-            [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
-
-        warningHeading =
-            [ img [ src "assets/images/exclamation-red.png" ] []
-            , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
-            ]
-    in
     Just <|
         div [ class "ui active modal open-pregnancy-popup" ]
             [ div [ class "content" ] <|
-                [ div [ class "popup-heading-wrapper" ] warningHeading
+                [ div [ class "popup-heading-wrapper" ]
+                    [ img [ src "assets/images/exclamation-red.png" ] []
+                    , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
+                    ]
                 , div [ class "popup-action" ] [ text <| translate language Translate.LabelOnePregnancyEpisodeOpen ++ "." ]
                 , div [ class "popup-action" ] [ text <| translate language Translate.LabelSeenHealthcareProviderForPregnancy ++ "?" ]
                 ]
@@ -361,7 +355,7 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                             (\sessionId ->
                                 let
                                     postCreateDestination =
-                                        if hasNurseEncounter then
+                                        if hasNurseEncounter && encounterType /= ChwPostpartumEncounter then
                                             DestinationClinicalProgressReportPage
 
                                         else

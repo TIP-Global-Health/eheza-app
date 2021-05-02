@@ -84,21 +84,11 @@ expectActivity currentDate data activity =
                     True
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    noDangerSigns data
+                    activityCompleted currentDate data DangerSigns
+                        && noDangerSigns data
 
                 NextSteps ->
-                    let
-                        commonMandatoryActivitiesCompleted =
-                            (not <| expectActivity currentDate data PregnancyDating || activityCompleted currentDate data PregnancyDating)
-                                && (not <| expectActivity currentDate data Laboratory || activityCompleted currentDate data Laboratory)
-                                && activityCompleted currentDate data DangerSigns
-                    in
-                    if dangerSignsPresent data then
-                        commonMandatoryActivitiesCompleted
-
-                    else
-                        commonMandatoryActivitiesCompleted
-                            && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+                    mandatoryActivitiesForNextStepsCompleted currentDate data
 
                 -- Unique nurse activities.
                 _ ->
@@ -110,23 +100,15 @@ expectActivity currentDate data activity =
                     True
 
                 BirthPlan ->
-                    noDangerSigns data
+                    activityCompleted currentDate data DangerSigns
+                        && noDangerSigns data
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    noDangerSigns data
+                    activityCompleted currentDate data DangerSigns
+                        && noDangerSigns data
 
                 NextSteps ->
-                    let
-                        commonMandatoryActivitiesCompleted =
-                            activityCompleted currentDate data DangerSigns
-                    in
-                    if dangerSignsPresent data then
-                        commonMandatoryActivitiesCompleted
-
-                    else
-                        commonMandatoryActivitiesCompleted
-                            && activityCompleted currentDate data BirthPlan
-                            && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+                    mandatoryActivitiesForNextStepsCompleted currentDate data
 
                 -- Unique nurse activities.
                 _ ->
@@ -138,19 +120,11 @@ expectActivity currentDate data activity =
                     True
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    noDangerSigns data
+                    activityCompleted currentDate data DangerSigns
+                        && noDangerSigns data
 
                 NextSteps ->
-                    let
-                        commonMandatoryActivitiesCompleted =
-                            activityCompleted currentDate data DangerSigns
-                    in
-                    if dangerSignsPresent data then
-                        commonMandatoryActivitiesCompleted
-
-                    else
-                        commonMandatoryActivitiesCompleted
-                            && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+                    mandatoryActivitiesForNextStepsCompleted currentDate data
 
                 -- Unique nurse activities.
                 _ ->
@@ -165,12 +139,62 @@ expectActivity currentDate data activity =
                     True
 
                 NextSteps ->
-                    activityCompleted currentDate data PregnancyOutcome
-                        && activityCompleted currentDate data DangerSigns
+                    mandatoryActivitiesForNextStepsCompleted currentDate data
 
                 -- Unique nurse activities.
                 _ ->
                     False
+
+
+mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
+mandatoryActivitiesForNextStepsCompleted currentDate data =
+    case data.encounter.encounterType of
+        NurseEncounter ->
+            -- There're no mandatory activities for nurse encounters.
+            True
+
+        ChwFirstEncounter ->
+            let
+                commonMandatoryActivitiesCompleted =
+                    ((not <| expectActivity currentDate data PregnancyDating) || activityCompleted currentDate data PregnancyDating)
+                        && ((not <| expectActivity currentDate data Laboratory) || activityCompleted currentDate data Laboratory)
+                        && activityCompleted currentDate data DangerSigns
+            in
+            if dangerSignsPresent data then
+                commonMandatoryActivitiesCompleted
+
+            else
+                commonMandatoryActivitiesCompleted
+                    && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+
+        ChwSecondEncounter ->
+            let
+                commonMandatoryActivitiesCompleted =
+                    activityCompleted currentDate data DangerSigns
+            in
+            if dangerSignsPresent data then
+                commonMandatoryActivitiesCompleted
+
+            else
+                commonMandatoryActivitiesCompleted
+                    && activityCompleted currentDate data BirthPlan
+                    && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+
+        ChwThirdEncounter ->
+            let
+                commonMandatoryActivitiesCompleted =
+                    activityCompleted currentDate data DangerSigns
+            in
+            if dangerSignsPresent data then
+                commonMandatoryActivitiesCompleted
+
+            else
+                commonMandatoryActivitiesCompleted
+                    && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+
+        ChwPostpartumEncounter ->
+            activityCompleted currentDate data PregnancyOutcome
+                && activityCompleted currentDate data DangerSigns
 
 
 noDangerSigns : AssembledData -> Bool
@@ -205,6 +229,36 @@ noDangerSigns data =
 dangerSignsPresent : AssembledData -> Bool
 dangerSignsPresent data =
     isJust data.measurements.dangerSigns && not (noDangerSigns data)
+
+
+generateDangerSignsList : Language -> AssembledData -> List String
+generateDangerSignsList language data =
+    let
+        getDangerSignsListForType getFunc translateFunc noSignsValue =
+            data.measurements.dangerSigns
+                |> Maybe.map
+                    (Tuple.second
+                        >> .value
+                        >> getFunc
+                        >> EverySet.toList
+                        >> List.filter ((/=) noSignsValue)
+                        >> List.map (translateFunc >> translate language)
+                    )
+                |> Maybe.withDefault []
+    in
+    case data.encounter.encounterType of
+        ChwPostpartumEncounter ->
+            let
+                motherSigns =
+                    getDangerSignsListForType .postpartumMother Translate.PostpartumMotherDangerSign NoPostpartumMotherDangerSigns
+
+                childSigns =
+                    getDangerSignsListForType .postpartumChild Translate.PostpartumChildDangerSign NoPostpartumChildDangerSigns
+            in
+            motherSigns ++ childSigns
+
+        _ ->
+            getDangerSignsListForType .signs Translate.DangerSign NoDangerSign
 
 
 activityCompleted : NominalDate -> AssembledData -> PrenatalActivity -> Bool

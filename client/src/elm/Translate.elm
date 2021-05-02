@@ -400,6 +400,8 @@ type TranslationId
     | DashboardLabel
     | CurrentlyPregnant
     | DangerSign DangerSign
+    | DangerSignsLabel
+    | DangerSignsHelper
     | DangerSignsTask DangerSignsTask
     | DateOfLastAssessment
     | DatePregnancyConcluded
@@ -799,6 +801,7 @@ type TranslationId
     | SaveAndRecordOutcome
     | SavedMoneyQuestion
     | SaveError
+    | ScheduleFollowUp
     | Search
     | SearchByName
     | SearchExistingParticipants
@@ -2575,6 +2578,16 @@ translationSet trans =
                     { english = "None of these"
                     , kinyarwanda = Just "Nta bimenyetso/nta na kimwe"
                     }
+
+        DangerSignsLabel ->
+            { english = "Danger Signs"
+            , kinyarwanda = Just "Ibimenyetso Mpuruza"
+            }
+
+        DangerSignsHelper ->
+            { english = "Refer patient to health center immediately"
+            , kinyarwanda = Just "Ibimenyetso Mpuruza"
+            }
 
         DangerSignsTask task ->
             case task of
@@ -5324,7 +5337,7 @@ translationSet trans =
         PostpartumChildDangerSign sign ->
             case sign of
                 PostpartumChildInabilityToSuckle ->
-                    { english = "Inability to Suckl"
+                    { english = "Inability to Suck"
                     , kinyarwanda = Nothing
                     }
 
@@ -6355,6 +6368,11 @@ translationSet trans =
         SaveError ->
             { english = "Save Error"
             , kinyarwanda = Just "Kubika error (ikosa mu kubika)"
+            }
+
+        ScheduleFollowUp ->
+            { english = "Schedule Follow Up"
+            , kinyarwanda = Nothing
             }
 
         Search ->
