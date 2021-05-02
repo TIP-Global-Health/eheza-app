@@ -1,0 +1,4 @@
+name = Hedley Prenatal
+core = 7.x
+package = Hedley
+features[features_api][] = api:2
