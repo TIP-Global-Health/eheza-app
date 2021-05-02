@@ -81,6 +81,8 @@ type Msg
     | SaveResources PersonId (Maybe ( ResourceId, Resource )) (Maybe PatientProvisionsTask)
       -- DangerSignsMsgs
     | SetDangerSign DangerSign
+    | SetPostpartumMotherDangerSign PostpartumMotherDangerSign
+    | SetPostpartumChildDangerSign PostpartumChildDangerSign
     | SaveDangerSigns PersonId (Maybe ( DangerSignsId, DangerSigns ))
       -- PrenatalPhotoMsgs
     | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl
@@ -638,14 +640,15 @@ emptyResourcesForm =
 
 
 type alias DangerSignsForm =
-    -- Should be EverySet
     { signs : Maybe (List DangerSign)
+    , postpartumMother : Maybe (List PostpartumMotherDangerSign)
+    , postpartumChild : Maybe (List PostpartumChildDangerSign)
     }
 
 
 emptyDangerSignsForm : DangerSignsForm
 emptyDangerSignsForm =
-    DangerSignsForm Nothing
+    DangerSignsForm Nothing Nothing Nothing
 
 
 type alias BirthPlanForm =

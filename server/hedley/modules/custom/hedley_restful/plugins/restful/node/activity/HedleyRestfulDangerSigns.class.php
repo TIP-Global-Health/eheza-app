@@ -15,6 +15,8 @@ class HedleyRestfulDangerSigns extends HedleyRestfulPrenatalActivityBase {
    */
   protected $multiFields = [
     'field_danger_signs',
+    'field_postpartum_mother',
+    'field_postpartum_child',
   ];
 
 }

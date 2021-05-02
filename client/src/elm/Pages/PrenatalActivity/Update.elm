@@ -17,6 +17,8 @@ import Backend.Measurement.Model
         , LungsCPESign(..)
         , NeckCPESign(..)
         , PhotoUrl(..)
+        , PostpartumChildDangerSign(..)
+        , PostpartumMotherDangerSign(..)
         , PreviousDeliveryPeriod(..)
         , SocialHistoryHivTestingResult(..)
         )
@@ -1541,6 +1543,118 @@ update currentDate id db msg model =
 
                         Nothing ->
                             { form | signs = Just [ sign ] }
+
+                updatedData =
+                    model.dangerSignsData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | dangerSignsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPostpartumMotherDangerSign sign ->
+            let
+                form =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.dangerSigns
+                                >> Maybe.map (Tuple.second >> .value)
+                                >> dangerSignsFormWithDefault model.dangerSignsData.form
+                            )
+                        |> Maybe.withDefault model.dangerSignsData.form
+
+                updatedForm =
+                    case form.postpartumMother of
+                        Just signs ->
+                            if List.member sign signs then
+                                let
+                                    updatedSigns =
+                                        if List.length signs == 1 then
+                                            Nothing
+
+                                        else
+                                            signs |> List.filter ((/=) sign) |> Just
+                                in
+                                { form | postpartumMother = updatedSigns }
+
+                            else
+                                case sign of
+                                    NoPostpartumMotherDangerSigns ->
+                                        { form | postpartumMother = Just [ sign ] }
+
+                                    _ ->
+                                        let
+                                            updatedSigns =
+                                                case signs of
+                                                    [ NoPostpartumMotherDangerSigns ] ->
+                                                        Just [ sign ]
+
+                                                    _ ->
+                                                        Just (sign :: signs)
+                                        in
+                                        { form | postpartumMother = updatedSigns }
+
+                        Nothing ->
+                            { form | postpartumMother = Just [ sign ] }
+
+                updatedData =
+                    model.dangerSignsData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | dangerSignsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPostpartumChildDangerSign sign ->
+            let
+                form =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.dangerSigns
+                                >> Maybe.map (Tuple.second >> .value)
+                                >> dangerSignsFormWithDefault model.dangerSignsData.form
+                            )
+                        |> Maybe.withDefault model.dangerSignsData.form
+
+                updatedForm =
+                    case form.postpartumChild of
+                        Just signs ->
+                            if List.member sign signs then
+                                let
+                                    updatedSigns =
+                                        if List.length signs == 1 then
+                                            Nothing
+
+                                        else
+                                            signs |> List.filter ((/=) sign) |> Just
+                                in
+                                { form | postpartumChild = updatedSigns }
+
+                            else
+                                case sign of
+                                    NoPostpartumChildDangerSigns ->
+                                        { form | postpartumChild = Just [ sign ] }
+
+                                    _ ->
+                                        let
+                                            updatedSigns =
+                                                case signs of
+                                                    [ NoPostpartumChildDangerSigns ] ->
+                                                        Just [ sign ]
+
+                                                    _ ->
+                                                        Just (sign :: signs)
+                                        in
+                                        { form | postpartumChild = updatedSigns }
+
+                        Nothing ->
+                            { form | postpartumChild = Just [ sign ] }
 
                 updatedData =
                     model.dangerSignsData
