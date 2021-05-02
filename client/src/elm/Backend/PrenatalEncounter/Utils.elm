@@ -13,6 +13,9 @@ recordPreganancyInitiatorToUrlFragmemt initiator =
         InitiatorWarningPopup ->
             "warning-popup"
 
+        InitiatorPostpartumEncounter ->
+            "postpartum-encounter"
+
 
 recordPreganancyInitiatorFromUrlFragmemt : String -> Maybe RecordPreganancyInitiator
 recordPreganancyInitiatorFromUrlFragmemt s =
@@ -22,6 +25,9 @@ recordPreganancyInitiatorFromUrlFragmemt s =
 
         "warning-popup" ->
             Just InitiatorWarningPopup
+
+        "postpartum-encounter" ->
+            Just InitiatorPostpartumEncounter
 
         _ ->
             Nothing

@@ -346,8 +346,7 @@ activityCompleted currentDate data activity =
                     False
 
         PregnancyOutcome ->
-            -- @todo
-            False
+            isJust data.participant.endDate
 
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask

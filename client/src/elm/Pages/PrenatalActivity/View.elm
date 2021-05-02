@@ -137,7 +137,7 @@ viewActivity language currentDate activity data model =
             viewNextStepsContent language currentDate data model.nextStepsData
 
         PregnancyOutcome ->
-            --@todo
+            -- When selected, we redirect to Pregannacy Outcome page.
             []
 
 

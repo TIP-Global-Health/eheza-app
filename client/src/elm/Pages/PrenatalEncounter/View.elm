@@ -15,14 +15,20 @@ import Backend.PrenatalActivity.Utils
         , generateRecurringHighSeverityAlertData
         , getActivityIcon
         )
-import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounter, PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Model
+    exposing
+        ( ClinicalProgressReportInitiator(..)
+        , PrenatalEncounter
+        , PrenatalEncounterType(..)
+        , RecordPreganancyInitiator(..)
+        )
 import Date exposing (Interval(..))
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (..)
@@ -393,12 +399,30 @@ viewMainPageContent language currentDate data model =
             let
                 ( label, icon ) =
                     generateActivityData activity data
+
+                navigationAction =
+                    case activity of
+                        PregnancyOutcome ->
+                            if isNothing data.participant.endDate then
+                                [ onClick <|
+                                    SetActivePage <|
+                                        UserPage <|
+                                            PregnancyOutcomePage InitiatorPostpartumEncounter data.encounter.participant
+                                ]
+
+                            else
+                                -- Pregnancy outcome is already recorded.
+                                []
+
+                        _ ->
+                            [ onClick <|
+                                SetActivePage <|
+                                    UserPage <|
+                                        PrenatalActivityPage data.id activity
+                            ]
             in
             div [ class "card" ]
-                [ div
-                    [ class "image"
-                    , onClick <| SetActivePage <| UserPage <| PrenatalActivityPage data.id activity
-                    ]
+                [ div (class "image" :: navigationAction)
                     [ span [ class <| "icon-task icon-task-" ++ icon ] [] ]
                 , div [ class "content" ]
                     [ p [] [ text <| String.toUpper <| translate language label ] ]
