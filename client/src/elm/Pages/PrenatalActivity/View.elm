@@ -28,7 +28,7 @@ import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
-import Pages.PrenatalEncounter.View exposing (generateActivityLabel, viewMotherAndMeasurements)
+import Pages.PrenatalEncounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Utils
     exposing
         ( isTaskCompleted
@@ -70,11 +70,22 @@ viewHeaderAndContent language currentDate id activity model data =
 
 viewHeader : Language -> PrenatalEncounterId -> PrenatalActivity -> AssembledData -> Html Msg
 viewHeader language id activity data =
+    let
+        ( label_, icon ) =
+            generateActivityData activity data
+
+        label =
+            if icon == "appointment-confirmation" then
+                Translate.ScheduleFollowUp
+
+            else
+                label_
+    in
     div
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language <| generateActivityLabel activity data ]
+            [ text <| translate language label ]
         , a
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage id
@@ -129,7 +140,7 @@ viewActivity language currentDate activity data model =
             viewNextStepsContent language currentDate data model.nextStepsData
 
         PregnancyOutcome ->
-            --@todo
+            -- When selected, we redirect to Pregannacy Outcome page.
             []
 
 
@@ -258,7 +269,7 @@ viewHistoryContent language currentDate assembled data_ =
                            )
             in
             div [ class "column" ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.HistoryTask task)
                     ]
@@ -511,7 +522,7 @@ viewExaminationContent language currentDate assembled data =
                            )
             in
             div [ class <| "column " ++ iconClass ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.ExaminationTask task)
                     ]
@@ -792,7 +803,7 @@ viewPatientProvisionsContent language currentDate assembled data =
                            )
             in
             div [ class "column" ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.PatientProvisionsTask task)
                     ]
@@ -890,25 +901,48 @@ viewDangerSignsContent language currentDate assembled data =
                 |> Maybe.map (Tuple.second >> .value)
                 |> dangerSignsFormWithDefault data.form
 
-        totalTasks =
-            1
+        ( inputs, tasksCompleted, totalTasks ) =
+            case assembled.encounter.encounterType of
+                ChwPostpartumEncounter ->
+                    ( [ viewLabel language Translate.SelectPostpartumMotherDangerSigns
+                      , viewCheckBoxMultipleSelectInput language
+                            [ PostpartumMotheUterineBleeding, PostpartumMotherFever, PostpartumMotherMigraine ]
+                            [ PostpartumMotherParalysis, PostpartumMotherAcuteAbdominalPain, PostpartumMotherLabouredBreathing ]
+                            (form.postpartumMother |> Maybe.withDefault [])
+                            (Just NoPostpartumMotherDangerSigns)
+                            SetPostpartumMotherDangerSign
+                            Translate.PostpartumMotherDangerSign
+                      , viewLabel language Translate.SelectPostpartumChildDangerSigns
+                      , viewCheckBoxMultipleSelectInput language
+                            [ PostpartumChildInabilityToSuckle, PostpartumChildParalysis, PostpartumChildLabouredBreathing ]
+                            [ PostpartumChildAbnormalTemperature, PostpartumChildInactiveNoMovement, PostpartumChildBodyTurnedYellow ]
+                            (form.postpartumChild |> Maybe.withDefault [])
+                            (Just NoPostpartumChildDangerSigns)
+                            SetPostpartumChildDangerSign
+                            Translate.PostpartumChildDangerSign
+                      ]
+                    , taskCompleted form.postpartumMother + taskCompleted form.postpartumChild
+                    , 2
+                    )
 
-        tasksCompleted =
-            taskCompleted form.signs
+                _ ->
+                    ( [ viewLabel language Translate.SelectDangerSigns
+                      , viewCheckBoxMultipleSelectInput language
+                            [ VaginalBleeding, HeadacheBlurredVision, Convulsions, AbdominalPain ]
+                            [ DifficultyBreathing, Fever, ExtremeWeakness ]
+                            (form.signs |> Maybe.withDefault [])
+                            (Just NoDangerSign)
+                            SetDangerSign
+                            Translate.DangerSign
+                      ]
+                    , taskCompleted form.signs
+                    , 1
+                    )
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form danger-signs" ]
-                [ viewLabel language Translate.SelectDangerSigns
-                , viewCheckBoxMultipleSelectInput language
-                    [ VaginalBleeding, HeadacheBlurredVision, Convulsions, AbdominalPain ]
-                    [ DifficultyBreathing, Fever, ExtremeWeakness ]
-                    (form.signs |> Maybe.withDefault [])
-                    (Just NoDangerSign)
-                    SetDangerSign
-                    Translate.DangerSign
-                ]
+            [ div [ class "ui form danger-signs" ] inputs
             ]
         , div [ class "actions" ]
             [ button
@@ -1225,27 +1259,46 @@ viewNextStepsContent language currentDate assembled data =
                             , isJust measurements.healthEducation
                             )
 
-                        NextStepsNewbornEnrollment ->
-                            -- @todo
-                            ( ""
-                            , -- isJust measurements.appointmentConfirmation
-                              False
+                        NextStepsNewbornEnrolment ->
+                            ( "next-steps-newborn-enrolment"
+                            , isJust assembled.participant.newborn
                             )
 
                 isActive =
                     activeTask == Just task
 
-                attributes =
-                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
-                        :: (if isActive then
+                navigationAction =
+                    case task of
+                        NextStepsNewbornEnrolment ->
+                            if isNothing assembled.participant.newborn then
+                                [ onClick <|
+                                    SetActivePage <|
+                                        UserPage <|
+                                            CreatePersonPage (Just assembled.participant.person) <|
+                                                Backend.Person.Model.PrenatalNextStepsActivityOrigin assembled.id
+                                ]
+
+                            else
+                                -- Newborn is already enrolled.
+                                []
+
+                        _ ->
+                            if isActive then
                                 []
 
                             else
                                 [ onClick <| SetActiveNextStepsTask task ]
-                           )
+
+                attributes =
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                        :: navigationAction
             in
             div [ class "column" ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.PrenatalNextStepsTask task)
                     ]
@@ -1295,8 +1348,8 @@ viewNextStepsContent language currentDate assembled data =
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate assembled
 
-                Just NextStepsNewbornEnrollment ->
-                    -- @todo
+                Just NextStepsNewbornEnrolment ->
+                    -- There's no form, as we redirect to Create Person page.
                     emptyNode
 
                 Nothing ->
@@ -1330,8 +1383,8 @@ viewNextStepsContent language currentDate assembled data =
                                     NextStepsHealthEducation ->
                                         SaveHealthEducationSubActivity personId measurements.healthEducation nextTask
 
-                                    NextStepsNewbornEnrollment ->
-                                        -- @todo
+                                    NextStepsNewbornEnrolment ->
+                                        -- There's no action, as there's no form.
                                         NoOp
                         in
                         div [ class "actions next-steps" ]

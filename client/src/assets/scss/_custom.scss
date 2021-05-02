@@ -452,7 +452,8 @@ h3.ui.header {
   background-size: 78px 78px;
 }
 
-.icon-task-send-to-hc {
+.icon-task-send-to-hc,
+.icon-task-appointment-confirmation {
   background-image: url(#{$img-path}icon-health-center-white.svg);
   background-size: 78px 78px;
 }
@@ -482,7 +483,8 @@ h3.ui.header {
   background-size: 92px 92px;
 }
 
-.icon-task-birth-plan {
+.icon-task-birth-plan,
+.icon-task-pregnancy-outcome {
   background-image: url(#{$img-path}icon-birth-plan-white.svg);
   background-size: 122px 122px;
 }
@@ -2064,6 +2066,20 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-follow-up-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-next-steps-newborn-enrolment {
+  .active &:after {
+    background-image: url(#{$img-path}icon-newborn-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-newborn-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-newborn-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 

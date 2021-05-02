@@ -660,7 +660,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                            )
             in
             div [ class "column" ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.NutritionNextStepsTask task)
                     ]

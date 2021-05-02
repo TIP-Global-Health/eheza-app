@@ -497,7 +497,34 @@ type DangerSign
 
 
 type alias DangerSigns =
-    PrenatalMeasurement (EverySet DangerSign)
+    PrenatalMeasurement DangerSignsValue
+
+
+type alias DangerSignsValue =
+    { signs : EverySet DangerSign
+    , postpartumMother : EverySet PostpartumMotherDangerSign
+    , postpartumChild : EverySet PostpartumChildDangerSign
+    }
+
+
+type PostpartumMotherDangerSign
+    = PostpartumMotheUterineBleeding
+    | PostpartumMotherFever
+    | PostpartumMotherMigraine
+    | PostpartumMotherParalysis
+    | PostpartumMotherAcuteAbdominalPain
+    | PostpartumMotherLabouredBreathing
+    | NoPostpartumMotherDangerSigns
+
+
+type PostpartumChildDangerSign
+    = PostpartumChildInabilityToSuckle
+    | PostpartumChildParalysis
+    | PostpartumChildLabouredBreathing
+    | PostpartumChildAbnormalTemperature
+    | PostpartumChildInactiveNoMovement
+    | PostpartumChildBodyTurnedYellow
+    | NoPostpartumChildDangerSigns
 
 
 type alias LastMenstrualPeriodValue =

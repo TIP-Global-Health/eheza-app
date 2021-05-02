@@ -27,10 +27,11 @@ import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
+import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounterPostCreateDestination(..), PrenatalEncounterType(..), emptyPrenatalEncounter)
 import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
-import Backend.Relationship.Model exposing (RelatedBy(..))
+import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
@@ -46,6 +47,7 @@ import Backend.Utils
         , mapPrenatalMeasurements
         , sw
         )
+import Backend.Village.Utils exposing (getVillageClinicId)
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -72,17 +74,31 @@ import Pages.NutritionEncounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model
 import Pages.Person.Model
+import Pages.PrenatalEncounter.Model
+import Pages.PrenatalEncounter.Utils
 import Pages.Relationship.Model
 import Pages.Session.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyBackendUrl, toCmd, toTask, withoutDecoder)
 import SyncManager.Model exposing (IndexDbQueryType(..))
 import Task
+import Translate exposing (Language, translate)
 import ZScore.Model
 
 
-updateIndexedDb : NominalDate -> ZScore.Model.Model -> Maybe NurseId -> Maybe HealthCenterId -> Bool -> Page -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg model =
+updateIndexedDb :
+    NominalDate
+    -> Language
+    -> ZScore.Model.Model
+    -> Maybe NurseId
+    -> Maybe HealthCenterId
+    -> Maybe VillageId
+    -> Bool
+    -> Page
+    -> MsgIndexedDb
+    -> ModelIndexedDb
+    -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
+updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -182,7 +198,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage) extraMsgs
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions
@@ -829,7 +845,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
 
         HandleRevisions revisions ->
             let
-                processRevisionAndDiagnose participantId encounterId =
+                processRevisionAndDiagnoseAcuteIllness participantId encounterId =
                     let
                         person =
                             Dict.get participantId model.people
@@ -847,7 +863,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                     in
                     ( newModel, extraMsgs )
 
-                processRevisionAndAssessIndividual participantId encounterId =
+                processRevisionAndAssessNutritionIndividual participantId encounterId =
                     let
                         person =
                             Dict.get participantId model.people
@@ -858,14 +874,13 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                             List.foldl (handleRevision healthCenterId) ( model, False ) revisions
 
                         extraMsgs =
-                            Maybe.map2 (generateNutritionAssessmentIndividualMsgs currentDate zscores isChw newModel)
+                            Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate zscores isChw newModel)
                                 encounterId
-                                person
                                 |> Maybe.withDefault []
                     in
                     ( newModel, extraMsgs )
 
-                processRevisionAndAssessGroup data updateFunc =
+                processRevisionAndAssessNutritionGroup data updateFunc =
                     let
                         participantId =
                             data.participantId
@@ -906,6 +921,23 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                         )
                         sessionId
                         |> Maybe.withDefault ( newModel, [] )
+
+                processRevisionAndWarnOnPrenatalDangerSigns participantId encounterId =
+                    let
+                        person =
+                            Dict.get participantId model.people
+                                |> Maybe.withDefault NotAsked
+                                |> RemoteData.toMaybe
+
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generatePrenatalDangerSignsWarningMsgs currentDate language isChw newModel)
+                                encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel, extraMsgs )
             in
             case revisions of
                 -- Special handling for a single attendance revision, which means
@@ -960,7 +992,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ SymptomsGeneralRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnose data.participantId data.encounterId
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -970,7 +1002,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ SymptomsRespiratoryRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnose data.participantId data.encounterId
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -980,7 +1012,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ SymptomsGIRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnose data.participantId data.encounterId
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -990,7 +1022,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ TravelHistoryRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnose data.participantId data.encounterId
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1000,7 +1032,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ ExposureRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnose data.participantId data.encounterId
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1010,7 +1042,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ AcuteIllnessVitalsRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnose data.participantId data.encounterId
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1020,7 +1052,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ AcuteFindingsRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnose data.participantId data.encounterId
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1030,7 +1062,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ MalariaTestingRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnose data.participantId data.encounterId
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1040,7 +1072,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ AcuteIllnessDangerSignsRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnose data.participantId data.encounterId
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1050,7 +1082,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ AcuteIllnessMuacRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnose data.participantId data.encounterId
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1060,7 +1092,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ AcuteIllnessNutritionRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnose data.participantId data.encounterId
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1070,7 +1102,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ TreatmentOngoingRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnose data.participantId data.encounterId
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1185,7 +1217,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ NutritionMuacRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssessIndividual data.participantId data.encounterId
+                            processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1195,7 +1227,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ NutritionNutritionRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssessIndividual data.participantId data.encounterId
+                            processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1205,7 +1237,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ NutritionWeightRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssessIndividual data.participantId data.encounterId
+                            processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1215,7 +1247,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ MuacRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssessGroup data (\childMeasurements -> { childMeasurements | muac = Just ( uuid, data ) })
+                            processRevisionAndAssessNutritionGroup data (\childMeasurements -> { childMeasurements | muac = Just ( uuid, data ) })
                     in
                     ( newModel
                     , Cmd.none
@@ -1225,7 +1257,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ ChildNutritionRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssessGroup data (\childMeasurements -> { childMeasurements | nutrition = Just ( uuid, data ) })
+                            processRevisionAndAssessNutritionGroup data (\childMeasurements -> { childMeasurements | nutrition = Just ( uuid, data ) })
                     in
                     ( newModel
                     , Cmd.none
@@ -1235,7 +1267,37 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                 [ WeightRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssessGroup data (\childMeasurements -> { childMeasurements | weight = Just ( uuid, data ) })
+                            processRevisionAndAssessNutritionGroup data (\childMeasurements -> { childMeasurements | weight = Just ( uuid, data ) })
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ DangerSignsRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndWarnOnPrenatalDangerSigns data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ LastMenstrualPeriodRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndWarnOnPrenatalDangerSigns data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PregnancyTestingRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndWarnOnPrenatalDangerSigns data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1553,7 +1615,7 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
             , relationshipCmd
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage) extraMsgs
 
         HandlePostedRelationship personId initiator data ->
             let
@@ -1561,10 +1623,30 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                     data
                         |> RemoteData.map
                             (\relationship ->
-                                [ Pages.Relationship.Model.Reset initiator
-                                    |> App.Model.MsgPageRelationship personId relationship.relatedTo
-                                    |> App.Model.MsgLoggedIn
-                                ]
+                                let
+                                    resetFormMsg =
+                                        Pages.Relationship.Model.Reset initiator
+                                            |> App.Model.MsgPageRelationship personId relationship.relatedTo
+                                            |> App.Model.MsgLoggedIn
+                                in
+                                case initiator of
+                                    -- We do not use the form in this scenario,
+                                    -- therefore, no need to reset it.
+                                    PrenatalNextStepsActivityOrigin _ ->
+                                        []
+
+                                    -- When at session context, we navigate to session Attendance page.
+                                    -- At that page, we should see newly created attendance.
+                                    GroupEncounterOrigin sessionId ->
+                                        [ resetFormMsg
+                                        , App.Model.SetActivePage <| UserPage <| SessionPage sessionId AttendancePage
+                                        ]
+
+                                    -- For other cases, we navigate to the page of main person.
+                                    _ ->
+                                        [ resetFormMsg
+                                        , App.Model.SetActivePage <| UserPage <| PersonPage personId initiator
+                                        ]
                             )
                         |> RemoteData.withDefault []
             in
@@ -1582,24 +1664,40 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
 
         HandlePostedPerson relation initiator data ->
             let
-                appMsgs =
+                ( appMsgs, extraMsgs ) =
                     -- If we succeed, we reset the form, and go to the page
                     -- showing the new person.
-                    data
-                        |> RemoteData.map
+                    RemoteData.toMaybe data
+                        |> Maybe.map
                             (\personId ->
                                 let
-                                    nextPage =
-                                        case initiator of
-                                            ParticipantDirectoryOrigin ->
+                                    resetFormMsg =
+                                        Pages.Person.Model.ResetCreateForm
+                                            |> App.Model.MsgPageCreatePerson
+                                            |> App.Model.MsgLoggedIn
+
+                                    navigationMsg destination =
+                                        UserPage destination
+                                            |> App.Model.SetActivePage
+                                in
+                                case initiator of
+                                    ParticipantDirectoryOrigin ->
+                                        let
+                                            nextPage =
                                                 case relation of
                                                     Just id ->
                                                         RelationshipPage id personId initiator
 
                                                     Nothing ->
                                                         PersonPage personId initiator
+                                        in
+                                        ( [ resetFormMsg, navigationMsg nextPage ]
+                                        , []
+                                        )
 
-                                            IndividualEncounterOrigin encounterType ->
+                                    IndividualEncounterOrigin encounterType ->
+                                        let
+                                            nextPage =
                                                 case encounterType of
                                                     AcuteIllnessEncounter ->
                                                         AcuteIllnessParticipantPage personId
@@ -1614,29 +1712,67 @@ updateIndexedDb currentDate zscores nurseId healthCenterId isChw activePage msg 
                                                         -- This will change as we add support for
                                                         -- new encounter types.
                                                         IndividualEncounterTypesPage
+                                        in
+                                        ( [ resetFormMsg, navigationMsg nextPage ]
+                                        , []
+                                        )
 
-                                            GroupEncounterOrigin sessionId ->
+                                    GroupEncounterOrigin sessionId ->
+                                        let
+                                            nextPage =
                                                 case relation of
                                                     Just id ->
                                                         RelationshipPage id personId initiator
 
                                                     Nothing ->
                                                         PersonPage personId initiator
-                                in
-                                [ Pages.Person.Model.ResetCreateForm
-                                    |> App.Model.MsgPageCreatePerson
-                                    |> App.Model.MsgLoggedIn
-                                , nextPage
-                                    |> UserPage
-                                    |> App.Model.SetActivePage
-                                ]
+                                        in
+                                        ( [ resetFormMsg, navigationMsg nextPage ]
+                                        , []
+                                        )
+
+                                    PrenatalNextStepsActivityOrigin encounterId ->
+                                        let
+                                            nextPage =
+                                                PrenatalActivityPage encounterId Backend.PrenatalActivity.Model.NextSteps
+
+                                            updateNewbornEnrolledMsg =
+                                                Dict.get encounterId model.prenatalEncounters
+                                                    |> Maybe.andThen RemoteData.toMaybe
+                                                    |> Maybe.map
+                                                        (\encounter ->
+                                                            [ Backend.IndividualEncounterParticipant.Model.SetNewborn personId
+                                                                |> MsgIndividualSession encounter.participant
+                                                            ]
+                                                        )
+                                                    |> Maybe.withDefault []
+
+                                            createRelationshipMsg =
+                                                relation
+                                                    |> Maybe.map
+                                                        (\motherId ->
+                                                            let
+                                                                villageGroupId =
+                                                                    Maybe.andThen (\id -> getVillageClinicId id model) villageId
+
+                                                                myRelationship =
+                                                                    MyRelationship personId MyChild
+                                                            in
+                                                            [ PostRelationship motherId myRelationship villageGroupId initiator ]
+                                                        )
+                                                    |> Maybe.withDefault []
+                                        in
+                                        ( [ resetFormMsg, navigationMsg nextPage ]
+                                        , updateNewbornEnrolledMsg ++ createRelationshipMsg
+                                        )
                             )
-                        |> RemoteData.withDefault []
+                        |> Maybe.withDefault ( [], [] )
             in
             ( { model | postPerson = data }
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage) extraMsgs
 
         PatchPerson personId person ->
             ( { model | postPerson = Loading }
@@ -2639,8 +2775,48 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             )
 
 
-generateNutritionAssessmentIndividualMsgs : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> NutritionEncounterId -> Person -> List App.Model.Msg
-generateNutritionAssessmentIndividualMsgs currentDate zscores isChw after id person =
+generatePrenatalDangerSignsWarningMsgs : NominalDate -> Language -> Bool -> ModelIndexedDb -> PrenatalEncounterId -> List App.Model.Msg
+generatePrenatalDangerSignsWarningMsgs currentDate language isChw after id =
+    if not isChw then
+        -- Assement is done only for CHW.
+        []
+
+    else
+        Maybe.map
+            (\assembledAfter ->
+                let
+                    mandatoryActivitiesCompleted =
+                        Pages.PrenatalEncounter.Utils.mandatoryActivitiesForNextStepsCompleted
+                            currentDate
+                            assembledAfter
+                in
+                if not mandatoryActivitiesCompleted then
+                    -- Assement is done only when all mandatory measurements were recorded.
+                    []
+
+                else
+                    let
+                        dangerSignsList =
+                            Pages.PrenatalEncounter.Utils.generateDangerSignsList language
+                                assembledAfter
+                    in
+                    if List.isEmpty dangerSignsList then
+                        []
+
+                    else
+                        [ String.join ", " dangerSignsList
+                            |> Just
+                            |> Pages.PrenatalEncounter.Model.SetWarningPopupState
+                            |> App.Model.MsgPagePrenatalEncounter id
+                            |> App.Model.MsgLoggedIn
+                        ]
+            )
+            (RemoteData.toMaybe <| Pages.PrenatalEncounter.Utils.generateAssembledData id after)
+            |> Maybe.withDefault []
+
+
+generateNutritionAssessmentIndividualMsgs : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> NutritionEncounterId -> List App.Model.Msg
+generateNutritionAssessmentIndividualMsgs currentDate zscores isChw after id =
     if not isChw then
         -- Assement is done only for CHW.
         []

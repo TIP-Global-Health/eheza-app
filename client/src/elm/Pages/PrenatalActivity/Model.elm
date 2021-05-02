@@ -8,8 +8,7 @@ import Pages.Page exposing (Page)
 
 
 type Msg
-    = -- @todo: Remove when not in use anymore
-      NoOp
+    = NoOp
     | DropZoneComplete DropZoneFile
     | SetActivePage Page
     | SetAlertsDialogState Bool
@@ -81,6 +80,8 @@ type Msg
     | SaveResources PersonId (Maybe ( ResourceId, Resource )) (Maybe PatientProvisionsTask)
       -- DangerSignsMsgs
     | SetDangerSign DangerSign
+    | SetPostpartumMotherDangerSign PostpartumMotherDangerSign
+    | SetPostpartumChildDangerSign PostpartumChildDangerSign
     | SaveDangerSigns PersonId (Maybe ( DangerSignsId, DangerSigns ))
       -- PrenatalPhotoMsgs
     | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl
@@ -147,7 +148,7 @@ type NextStepsTask
     | NextStepsFollowUp
     | NextStepsSendToHC
     | NextStepsHealthEducation
-    | NextStepsNewbornEnrollment
+    | NextStepsNewbornEnrolment
 
 
 
@@ -289,7 +290,7 @@ type alias NextStepsData =
     , followUpForm : FollowUpForm
     , sendToHCForm : SendToHCForm
     , healthEducationForm : HealthEducationForm
-    , newbornEnrollmentForm : NewbornEnrollmentForm
+    , newbornEnrolmentForm : NewbornEnrolmentForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -300,7 +301,7 @@ emptyNextStepsData =
     , followUpForm = emptyFollowUpForm
     , sendToHCForm = emptySendToHCForm
     , healthEducationForm = emptyHealthEducationForm
-    , newbornEnrollmentForm = emptyNewbornEnrollmentForm
+    , newbornEnrolmentForm = emptyNewbornEnrolmentForm
     , activeTask = Nothing
     }
 
@@ -648,14 +649,15 @@ emptyResourcesForm =
 
 
 type alias DangerSignsForm =
-    -- Should be EverySet
     { signs : Maybe (List DangerSign)
+    , postpartumMother : Maybe (List PostpartumMotherDangerSign)
+    , postpartumChild : Maybe (List PostpartumChildDangerSign)
     }
 
 
 emptyDangerSignsForm : DangerSignsForm
 emptyDangerSignsForm =
-    DangerSignsForm Nothing
+    DangerSignsForm Nothing Nothing Nothing
 
 
 type alias BirthPlanForm =
@@ -730,10 +732,10 @@ emptyHealthEducationForm =
     }
 
 
-type alias NewbornEnrollmentForm =
+type alias NewbornEnrolmentForm =
     {}
 
 
-emptyNewbornEnrollmentForm : NewbornEnrollmentForm
-emptyNewbornEnrollmentForm =
+emptyNewbornEnrolmentForm : NewbornEnrolmentForm
+emptyNewbornEnrolmentForm =
     {}

@@ -454,7 +454,7 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
                            )
             in
             div [ class "column" ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.SymptomsTask task)
                     ]
@@ -674,7 +674,7 @@ viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter 
                            )
             in
             div [ class "column" ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.PhysicalExamTask task)
                     ]
@@ -984,7 +984,7 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                            )
             in
             div [ class "column" ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.LaboratoryTask task)
                     ]
@@ -1127,7 +1127,7 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
                            )
             in
             div [ class "column" ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.ExposureTask task)
                     ]
@@ -1292,7 +1292,7 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
                            )
             in
             div [ class "column" ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.PriorTreatmentTask task)
                     ]
@@ -1559,7 +1559,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                            )
             in
             div [ class "column" ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.NextStepsTask task)
                     ]
@@ -2287,7 +2287,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
                            )
             in
             div [ class "column" ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.OngoingTreatmentTask task)
                     ]
@@ -2542,7 +2542,7 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
                            )
             in
             div [ class "column" ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.DangerSignsTask task)
                     ]

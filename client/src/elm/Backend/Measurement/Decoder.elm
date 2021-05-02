@@ -774,9 +774,33 @@ decodeDangerSign =
 
 decodeDangerSigns : Decoder DangerSigns
 decodeDangerSigns =
-    decodeEverySet decodeDangerSign
-        |> field "danger_signs"
+    succeed DangerSignsValue
+        |> required "danger_signs" (decodeEverySet decodeDangerSign)
+        |> optional "postpartum_mother" (decodeEverySet decodePostpartumMotherDangerSign) (EverySet.fromList [ NoPostpartumMotherDangerSigns ])
+        |> optional "postpartum_child" (decodeEverySet decodePostpartumChildDangerSign) (EverySet.fromList [ NoPostpartumChildDangerSigns ])
         |> decodePrenatalMeasurement
+
+
+decodePostpartumMotherDangerSign : Decoder PostpartumMotherDangerSign
+decodePostpartumMotherDangerSign =
+    string
+        |> andThen
+            (\s ->
+                postpartumMotherDangerSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized PostpartumMotherDangerSign" |> fail)
+            )
+
+
+decodePostpartumChildDangerSign : Decoder PostpartumChildDangerSign
+decodePostpartumChildDangerSign =
+    string
+        |> andThen
+            (\s ->
+                postpartumChildDangerSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized PostpartumChildDangerSign" |> fail)
+            )
 
 
 decodeLastMenstrualPeriod : Decoder LastMenstrualPeriod

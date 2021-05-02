@@ -129,6 +129,9 @@ initiatorToUrlFragmemt initiator =
         GroupEncounterOrigin sessionId ->
             "session-" ++ fromEntityUuid sessionId
 
+        PrenatalNextStepsActivityOrigin encounterId ->
+            "prenatal-next-steps-" ++ fromEntityUuid encounterId
+
 
 initiatorFromUrlFragmemt : String -> Maybe Initiator
 initiatorFromUrlFragmemt s =
@@ -149,24 +152,20 @@ initiatorFromUrlFragmemt s =
             IndividualEncounterOrigin NutritionEncounter |> Just
 
         _ ->
-            let
-                split =
-                    String.split "-" s
-            in
-            case List.head split of
-                Just "session" ->
-                    if List.length split > 1 then
-                        -- Remove the "session-" prefix.
-                        String.dropLeft 8 s
-                            |> toEntityUuid
-                            |> GroupEncounterOrigin
-                            |> Just
+            if String.startsWith "session" s then
+                String.dropLeft (String.length "session-") s
+                    |> toEntityUuid
+                    |> GroupEncounterOrigin
+                    |> Just
 
-                    else
-                        Nothing
+            else if String.startsWith "prenatal-next-steps" s then
+                String.dropLeft (String.length "prenatal-next-steps-") s
+                    |> toEntityUuid
+                    |> PrenatalNextStepsActivityOrigin
+                    |> Just
 
-                _ ->
-                    Nothing
+            else
+                Nothing
 
 
 graduatingAgeInMonth : Int

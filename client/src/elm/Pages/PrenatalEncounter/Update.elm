@@ -20,6 +20,9 @@ update msg model =
               ]
             )
 
+        SetWarningPopupState state ->
+            ( { model | warningPopupState = state }, Cmd.none, [] )
+
         SetActivePage page ->
             ( model
             , Cmd.none

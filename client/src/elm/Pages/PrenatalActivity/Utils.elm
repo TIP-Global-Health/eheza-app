@@ -314,10 +314,9 @@ nextStepsTasksCompletedFromTotal language assembled data task =
             , List.length tasks
             )
 
-        NextStepsNewbornEnrollment ->
-            -- @todo
+        NextStepsNewbornEnrolment ->
             ( 0
-            , 1
+            , 0
             )
 
 
@@ -431,32 +430,52 @@ toCorePhysicalExamValue form =
         |> andMap (Maybe.map EverySet.fromList form.legs)
 
 
-fromDangerSignsValue : Maybe (EverySet DangerSign) -> DangerSignsForm
+fromDangerSignsValue : Maybe DangerSignsValue -> DangerSignsForm
 fromDangerSignsValue saved =
-    { signs = Maybe.map EverySet.toList saved
+    { signs = Maybe.map (.signs >> EverySet.toList) saved
+    , postpartumMother = Maybe.map (.postpartumMother >> EverySet.toList) saved
+    , postpartumChild = Maybe.map (.postpartumChild >> EverySet.toList) saved
     }
 
 
-dangerSignsFormWithDefault : DangerSignsForm -> Maybe (EverySet DangerSign) -> DangerSignsForm
+dangerSignsFormWithDefault : DangerSignsForm -> Maybe DangerSignsValue -> DangerSignsForm
 dangerSignsFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { signs = or form.signs (EverySet.toList value |> Just)
+                { signs = or form.signs (EverySet.toList value.signs |> Just)
+                , postpartumMother = or form.postpartumMother (EverySet.toList value.postpartumMother |> Just)
+                , postpartumChild = or form.postpartumChild (EverySet.toList value.postpartumChild |> Just)
                 }
             )
 
 
-toDangerSignsValueWithDefault : Maybe (EverySet DangerSign) -> DangerSignsForm -> Maybe (EverySet DangerSign)
+toDangerSignsValueWithDefault : Maybe DangerSignsValue -> DangerSignsForm -> Maybe DangerSignsValue
 toDangerSignsValueWithDefault saved form =
     dangerSignsFormWithDefault form saved
         |> toDangerSignsValue
 
 
-toDangerSignsValue : DangerSignsForm -> Maybe (EverySet DangerSign)
+toDangerSignsValue : DangerSignsForm -> Maybe DangerSignsValue
 toDangerSignsValue form =
-    Maybe.map EverySet.fromList form.signs
+    let
+        signs =
+            form.signs
+                |> Maybe.withDefault [ NoDangerSign ]
+                |> EverySet.fromList
+
+        postpartumMother =
+            form.postpartumMother
+                |> Maybe.withDefault [ NoPostpartumMotherDangerSigns ]
+                |> EverySet.fromList
+
+        postpartumChild =
+            form.postpartumChild
+                |> Maybe.withDefault [ NoPostpartumChildDangerSigns ]
+                |> EverySet.fromList
+    in
+    Just <| DangerSignsValue signs postpartumMother postpartumChild
 
 
 fromLastMenstrualPeriodValue : Maybe LastMenstrualPeriodValue -> PregnancyDatingForm

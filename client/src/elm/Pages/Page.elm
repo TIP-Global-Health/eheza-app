@@ -165,7 +165,7 @@ type UserPage
     | AcuteIllnessProgressReportPage AcuteIllnessEncounterId -- acute illness progress report.
     | AcuteIllnessOutcomePage IndividualEncounterParticipantId -- this is where acute illness outcome is recorded.
     | HomeVisitEncounterPage HomeVisitEncounterId -- home visit activities index.
-    | HomeVisitActivityPage HomeVisitEncounterId HomeVisitActivity -- record  home visit activity.
+    | HomeVisitActivityPage HomeVisitEncounterId HomeVisitActivity -- record home visit activity.
 
 
 {-| We group together the pages that can only be viewed in the Dashboard

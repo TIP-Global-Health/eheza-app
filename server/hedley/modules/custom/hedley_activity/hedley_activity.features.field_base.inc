@@ -1194,6 +1194,66 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_postpartum_child'.
+  $field_bases['field_postpartum_child'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_postpartum_child',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'inability-to-suckle' => 'Inability to Suckle',
+        'paralysis' => 'Paralysis',
+        'laboured-breathing' => 'Laboured Breathing',
+        'abnormal-temperature' => 'Abnormal Temperature',
+        'inactive-or-no-movement' => 'Inactive or No Movement',
+        'body-turned-yellow' => 'Body Turned Yellow',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_postpartum_mother'.
+  $field_bases['field_postpartum_mother'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_postpartum_mother',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'uterine-bleeding' => 'Uterine Bleeding',
+        'fever' => 'Fever',
+        'migraine' => 'Migraine',
+        'paralysis' => 'Paralysis',
+        'abdominal-pain' => 'Acute Abdominal Pain',
+        'laboured-breathing' => 'Laboured Breathing',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_prenatal_encounter'.
   $field_bases['field_prenatal_encounter'] = array(
     'active' => 1,

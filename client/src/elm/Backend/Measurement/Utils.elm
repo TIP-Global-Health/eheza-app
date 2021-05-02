@@ -387,3 +387,109 @@ nutritionAssesmentFromString assesment =
 
         _ ->
             Nothing
+
+
+postpartumMotherDangerSignToString : PostpartumMotherDangerSign -> String
+postpartumMotherDangerSignToString sign =
+    case sign of
+        PostpartumMotheUterineBleeding ->
+            "uterine-bleeding"
+
+        PostpartumMotherFever ->
+            "fever"
+
+        PostpartumMotherMigraine ->
+            "migraine"
+
+        PostpartumMotherParalysis ->
+            "paralysis"
+
+        PostpartumMotherAcuteAbdominalPain ->
+            "abdominal-pain"
+
+        PostpartumMotherLabouredBreathing ->
+            "laboured-breathing"
+
+        NoPostpartumMotherDangerSigns ->
+            "none"
+
+
+postpartumMotherDangerSignFromString : String -> Maybe PostpartumMotherDangerSign
+postpartumMotherDangerSignFromString sign =
+    case sign of
+        "uterine-bleeding" ->
+            Just PostpartumMotheUterineBleeding
+
+        "fever" ->
+            Just PostpartumMotherFever
+
+        "migraine" ->
+            Just PostpartumMotherMigraine
+
+        "paralysis" ->
+            Just PostpartumMotherParalysis
+
+        "abdominal-pain" ->
+            Just PostpartumMotherAcuteAbdominalPain
+
+        "laboured-breathing" ->
+            Just PostpartumMotherLabouredBreathing
+
+        "none" ->
+            Just NoPostpartumMotherDangerSigns
+
+        _ ->
+            Nothing
+
+
+postpartumChildDangerSignToString : PostpartumChildDangerSign -> String
+postpartumChildDangerSignToString sign =
+    case sign of
+        PostpartumChildInabilityToSuckle ->
+            "inability-to-suckle"
+
+        PostpartumChildParalysis ->
+            "paralysis"
+
+        PostpartumChildLabouredBreathing ->
+            "laboured-breathing"
+
+        PostpartumChildAbnormalTemperature ->
+            "abnormal-temperature"
+
+        PostpartumChildInactiveNoMovement ->
+            "inactive-or-no-movement"
+
+        PostpartumChildBodyTurnedYellow ->
+            "body-turned-yellow"
+
+        NoPostpartumChildDangerSigns ->
+            "none"
+
+
+postpartumChildDangerSignFromString : String -> Maybe PostpartumChildDangerSign
+postpartumChildDangerSignFromString sign =
+    case sign of
+        "inability-to-suckle" ->
+            Just PostpartumChildInabilityToSuckle
+
+        "paralysis" ->
+            Just PostpartumChildParalysis
+
+        "laboured-breathing" ->
+            Just PostpartumChildLabouredBreathing
+
+        "abnormal-temperature" ->
+            Just PostpartumChildAbnormalTemperature
+
+        "inactive-or-no-movement" ->
+            Just PostpartumChildInactiveNoMovement
+
+        "body-turned-yellow" ->
+            Just PostpartumChildBodyTurnedYellow
+
+        "none" ->
+            Just NoPostpartumChildDangerSigns
+
+        _ ->
+            Nothing

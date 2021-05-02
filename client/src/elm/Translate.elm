@@ -402,6 +402,8 @@ type TranslationId
     | DashboardLabel
     | CurrentlyPregnant
     | DangerSign DangerSign
+    | DangerSignsLabel
+    | DangerSignsHelper
     | DangerSignsTask DangerSignsTask
     | DateOfLastAssessment
     | DatePregnancyConcluded
@@ -710,6 +712,8 @@ type TranslationId
     | PleaseSelectGroup
     | PleaseSync
     | PositiveLabel
+    | PostpartumChildDangerSign PostpartumChildDangerSign
+    | PostpartumMotherDangerSign PostpartumMotherDangerSign
     | PreeclampsiaPreviousPregnancy
     | PregnancyTestingResult PregnancyTestResult
     | PregnancyTrimester PregnancyTrimester
@@ -799,6 +803,7 @@ type TranslationId
     | SaveAndRecordOutcome
     | SavedMoneyQuestion
     | SaveError
+    | ScheduleFollowUp
     | Search
     | SearchByName
     | SearchExistingParticipants
@@ -808,7 +813,9 @@ type TranslationId
     | Sector
     | SelectAntenatalVisit
     | SelectAllSigns
+    | SelectPostpartumChildDangerSigns
     | SelectDangerSigns
+    | SelectPostpartumMotherDangerSigns
     | SelectedProgram
     | SelectedVillage
     | SelectEncounterType
@@ -2583,6 +2590,16 @@ translationSet trans =
                     { english = "None of these"
                     , kinyarwanda = Just "Nta bimenyetso/nta na kimwe"
                     }
+
+        DangerSignsLabel ->
+            { english = "Danger Signs"
+            , kinyarwanda = Just "Ibimenyetso Mpuruza"
+            }
+
+        DangerSignsHelper ->
+            { english = "Refer patient to health center immediately"
+            , kinyarwanda = Just "Ibimenyetso Mpuruza"
+            }
 
         DangerSignsTask task ->
             case task of
@@ -5329,6 +5346,80 @@ translationSet trans =
             , kinyarwanda = Just "Afite ubwandu"
             }
 
+        PostpartumChildDangerSign sign ->
+            case sign of
+                PostpartumChildInabilityToSuckle ->
+                    { english = "Inability to Suck"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumChildParalysis ->
+                    { english = "Paralysis"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumChildLabouredBreathing ->
+                    { english = "Laboured or Rapid Breathing"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumChildAbnormalTemperature ->
+                    { english = "High (Fever) or Low Temperature"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumChildInactiveNoMovement ->
+                    { english = "Inactive or No Movement"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumChildBodyTurnedYellow ->
+                    { english = "Whole Body Has Turned Yellow"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPostpartumChildDangerSigns ->
+                    { english = "None of these"
+                    , kinyarwanda = Nothing
+                    }
+
+        PostpartumMotherDangerSign sign ->
+            case sign of
+                PostpartumMotheUterineBleeding ->
+                    { english = "Excessive Uterinal Bleeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumMotherFever ->
+                    { english = "High Temperature / Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumMotherMigraine ->
+                    { english = "Migraine"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumMotherParalysis ->
+                    { english = "Paralysis"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumMotherAcuteAbdominalPain ->
+                    { english = "Acute Abdominal Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumMotherLabouredBreathing ->
+                    { english = "Laboured Breathing"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPostpartumMotherDangerSigns ->
+                    { english = "None of these"
+                    , kinyarwanda = Nothing
+                    }
+
         PreeclampsiaPreviousPregnancy ->
             { english = "Preeclampsia in previous pregnancy "
             , kinyarwanda = Just "Ubushize yagize ibimenyetso bibanziriza guhinda umushyitsi"
@@ -5536,8 +5627,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Model.NextStepsNewbornEnrollment ->
-                    { english = "Newborn Enrollment"
+                Pages.PrenatalActivity.Model.NextStepsNewbornEnrolment ->
+                    { english = "Newborn Enrolment"
                     , kinyarwanda = Nothing
                     }
 
@@ -6291,6 +6382,11 @@ translationSet trans =
             , kinyarwanda = Just "Kubika error (ikosa mu kubika)"
             }
 
+        ScheduleFollowUp ->
+            { english = "Schedule Follow Up"
+            , kinyarwanda = Nothing
+            }
+
         Search ->
             { english = "Search"
             , kinyarwanda = Nothing
@@ -6336,9 +6432,19 @@ translationSet trans =
             , kinyarwanda = Just "Hitamo ibimenyetso by'imirire byose bishoboka umwana afite"
             }
 
+        SelectPostpartumChildDangerSigns ->
+            { english = "Please select one or more of the danger signs the child is experiencing"
+            , kinyarwanda = Nothing
+            }
+
         SelectDangerSigns ->
             { english = "Please select one or more of the danger signs the patient is experiencing"
             , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umubyeyi yaba afite"
+            }
+
+        SelectPostpartumMotherDangerSigns ->
+            { english = "Please select one or more of the danger signs the mother is experiencing"
+            , kinyarwanda = Nothing
             }
 
         SelectedProgram ->

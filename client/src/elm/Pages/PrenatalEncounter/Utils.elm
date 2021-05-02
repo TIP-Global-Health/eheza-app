@@ -84,21 +84,11 @@ expectActivity currentDate data activity =
                     True
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    noDangerSigns data.measurements
+                    activityCompleted currentDate data DangerSigns
+                        && noDangerSigns data
 
                 NextSteps ->
-                    let
-                        commonMandatoryActivitiesCompleted =
-                            ((not <| expectActivity currentDate data PregnancyDating) || activityCompleted currentDate data PregnancyDating)
-                                && ((not <| expectActivity currentDate data Laboratory) || activityCompleted currentDate data Laboratory)
-                                && activityCompleted currentDate data DangerSigns
-                    in
-                    if dangerSignsPresent data.measurements then
-                        commonMandatoryActivitiesCompleted
-
-                    else
-                        commonMandatoryActivitiesCompleted
-                            && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+                    mandatoryActivitiesForNextStepsCompleted currentDate data
 
                 -- Unique nurse activities.
                 _ ->
@@ -110,23 +100,15 @@ expectActivity currentDate data activity =
                     True
 
                 BirthPlan ->
-                    noDangerSigns data.measurements
+                    activityCompleted currentDate data DangerSigns
+                        && noDangerSigns data
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    noDangerSigns data.measurements
+                    activityCompleted currentDate data DangerSigns
+                        && noDangerSigns data
 
                 NextSteps ->
-                    let
-                        commonMandatoryActivitiesCompleted =
-                            activityCompleted currentDate data DangerSigns
-                    in
-                    if dangerSignsPresent data.measurements then
-                        commonMandatoryActivitiesCompleted
-
-                    else
-                        commonMandatoryActivitiesCompleted
-                            && activityCompleted currentDate data BirthPlan
-                            && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+                    mandatoryActivitiesForNextStepsCompleted currentDate data
 
                 -- Unique nurse activities.
                 _ ->
@@ -138,19 +120,11 @@ expectActivity currentDate data activity =
                     True
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    noDangerSigns data.measurements
+                    activityCompleted currentDate data DangerSigns
+                        && noDangerSigns data
 
                 NextSteps ->
-                    let
-                        commonMandatoryActivitiesCompleted =
-                            activityCompleted currentDate data DangerSigns
-                    in
-                    if dangerSignsPresent data.measurements then
-                        commonMandatoryActivitiesCompleted
-
-                    else
-                        commonMandatoryActivitiesCompleted
-                            && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+                    mandatoryActivitiesForNextStepsCompleted currentDate data
 
                 -- Unique nurse activities.
                 _ ->
@@ -165,35 +139,126 @@ expectActivity currentDate data activity =
                     True
 
                 NextSteps ->
-                    activityCompleted currentDate data PregnancyOutcome
-                        && activityCompleted currentDate data DangerSigns
+                    mandatoryActivitiesForNextStepsCompleted currentDate data
 
                 -- Unique nurse activities.
                 _ ->
                     False
 
 
-noDangerSigns : PrenatalMeasurements -> Bool
-noDangerSigns measurements =
-    let
-        signs =
-            measurements.dangerSigns
-                |> Maybe.map (Tuple.second >> .value >> EverySet.toList)
-    in
-    case signs of
-        Just [ NoDangerSign ] ->
+mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
+mandatoryActivitiesForNextStepsCompleted currentDate data =
+    case data.encounter.encounterType of
+        NurseEncounter ->
+            -- There're no mandatory activities for nurse encounters.
             True
 
-        Just [] ->
-            True
+        ChwFirstEncounter ->
+            let
+                commonMandatoryActivitiesCompleted =
+                    ((not <| expectActivity currentDate data PregnancyDating) || activityCompleted currentDate data PregnancyDating)
+                        && ((not <| expectActivity currentDate data Laboratory) || activityCompleted currentDate data Laboratory)
+                        && activityCompleted currentDate data DangerSigns
+            in
+            if dangerSignsPresent data then
+                commonMandatoryActivitiesCompleted
+
+            else
+                commonMandatoryActivitiesCompleted
+                    && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+
+        ChwSecondEncounter ->
+            let
+                commonMandatoryActivitiesCompleted =
+                    activityCompleted currentDate data DangerSigns
+            in
+            if dangerSignsPresent data then
+                commonMandatoryActivitiesCompleted
+
+            else
+                commonMandatoryActivitiesCompleted
+                    && activityCompleted currentDate data BirthPlan
+                    && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+
+        ChwThirdEncounter ->
+            let
+                commonMandatoryActivitiesCompleted =
+                    activityCompleted currentDate data DangerSigns
+            in
+            if dangerSignsPresent data then
+                commonMandatoryActivitiesCompleted
+
+            else
+                commonMandatoryActivitiesCompleted
+                    && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+
+        ChwPostpartumEncounter ->
+            activityCompleted currentDate data PregnancyOutcome
+                && activityCompleted currentDate data DangerSigns
+
+
+noDangerSigns : AssembledData -> Bool
+noDangerSigns data =
+    let
+        getDangerSignsType getFunc =
+            data.measurements.dangerSigns
+                |> Maybe.map (Tuple.second >> .value >> getFunc >> EverySet.toList)
+                |> Maybe.withDefault []
+
+        dangerSignsEmpty emptySign signsList =
+            List.isEmpty signsList || signsList == [ emptySign ]
+    in
+    case data.encounter.encounterType of
+        ChwPostpartumEncounter ->
+            let
+                motherSignsEmpty =
+                    getDangerSignsType .postpartumMother
+                        |> dangerSignsEmpty NoPostpartumMotherDangerSigns
+
+                childSignsEmpty =
+                    getDangerSignsType .postpartumChild
+                        |> dangerSignsEmpty NoPostpartumChildDangerSigns
+            in
+            motherSignsEmpty && childSignsEmpty
 
         _ ->
-            False
+            getDangerSignsType .signs
+                |> dangerSignsEmpty NoDangerSign
 
 
-dangerSignsPresent : PrenatalMeasurements -> Bool
-dangerSignsPresent measurements =
-    isJust measurements.dangerSigns && not (noDangerSigns measurements)
+dangerSignsPresent : AssembledData -> Bool
+dangerSignsPresent data =
+    isJust data.measurements.dangerSigns && not (noDangerSigns data)
+
+
+generateDangerSignsList : Language -> AssembledData -> List String
+generateDangerSignsList language data =
+    let
+        getDangerSignsListForType getFunc translateFunc noSignsValue =
+            data.measurements.dangerSigns
+                |> Maybe.map
+                    (Tuple.second
+                        >> .value
+                        >> getFunc
+                        >> EverySet.toList
+                        >> List.filter ((/=) noSignsValue)
+                        >> List.map (translateFunc >> translate language)
+                    )
+                |> Maybe.withDefault []
+    in
+    case data.encounter.encounterType of
+        ChwPostpartumEncounter ->
+            let
+                motherSigns =
+                    getDangerSignsListForType .postpartumMother Translate.PostpartumMotherDangerSign NoPostpartumMotherDangerSigns
+
+                childSigns =
+                    getDangerSignsListForType .postpartumChild Translate.PostpartumChildDangerSign NoPostpartumChildDangerSigns
+            in
+            motherSigns ++ childSigns
+
+        _ ->
+            getDangerSignsListForType .signs Translate.DangerSign NoDangerSign
 
 
 activityCompleted : NominalDate -> AssembledData -> PrenatalActivity -> Bool
@@ -259,26 +324,23 @@ activityCompleted currentDate data activity =
                 [ NextStepsSendToHC, NextStepsFollowUp ] ->
                     isJust data.measurements.sendToHC && isJust data.measurements.followUp
 
-                [ NextStepsHealthEducation, NextStepsNewbornEnrollment ] ->
+                [ NextStepsHealthEducation, NextStepsNewbornEnrolment ] ->
                     --@todo
-                    -- && isJust data.measurements.newbornEnrollment
+                    -- && isJust data.measurements.newbornEnrolment
                     False
                         && isJust data.measurements.healthEducation
 
-                [ NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrollment ] ->
-                    --@todo
-                    -- && isJust data.measurements.newbornEnrollment
-                    False
-                        && isJust data.measurements.sendToHC
+                [ NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ] ->
+                      isJust data.measurements.sendToHC
                         && isJust data.measurements.followUp
                         && isJust data.measurements.healthEducation
+                        && isJust data.participant.newborn
 
                 _ ->
                     False
 
         PregnancyOutcome ->
-            -- @todo
-            False
+            isJust data.participant.endDate
 
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
@@ -291,7 +353,7 @@ resolveNextStepsTasks currentDate data =
 
         _ ->
             -- The order is important. Do not change.
-            [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrollment ]
+            [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ]
                 |> List.filter (expectNextStepsTasks currentDate data)
 
 
@@ -299,7 +361,7 @@ expectNextStepsTasks : NominalDate -> AssembledData -> NextStepsTask -> Bool
 expectNextStepsTasks currentDate data task =
     let
         dangerSigns =
-            dangerSignsPresent data.measurements
+            dangerSignsPresent data
     in
     case task of
         NextStepsAppointmentConfirmation ->
@@ -319,7 +381,7 @@ expectNextStepsTasks currentDate data task =
         NextStepsHealthEducation ->
             data.encounter.encounterType == ChwPostpartumEncounter
 
-        NextStepsNewbornEnrollment ->
+        NextStepsNewbornEnrolment ->
             data.encounter.encounterType == ChwPostpartumEncounter
 
 

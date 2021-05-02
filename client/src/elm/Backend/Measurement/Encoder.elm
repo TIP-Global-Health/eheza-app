@@ -677,12 +677,24 @@ encodeDangerSign sign =
                 "none"
 
 
-encodeDangerSignsValue : EverySet DangerSign -> List ( String, Value )
+encodeDangerSignsValue : DangerSignsValue -> List ( String, Value )
 encodeDangerSignsValue value =
-    [ ( "danger_signs", encodeEverySet encodeDangerSign value )
+    [ ( "danger_signs", encodeEverySet encodeDangerSign value.signs )
+    , ( "postpartum_mother", encodeEverySet encodePostpartumMotherDangerSign value.postpartumMother )
+    , ( "postpartum_child", encodeEverySet encodePostpartumChildDangerSign value.postpartumChild )
     , ( "deleted", bool False )
     , ( "type", string "danger_signs" )
     ]
+
+
+encodePostpartumMotherDangerSign : PostpartumMotherDangerSign -> Value
+encodePostpartumMotherDangerSign sign =
+    postpartumMotherDangerSignToString sign |> string
+
+
+encodePostpartumChildDangerSign : PostpartumChildDangerSign -> Value
+encodePostpartumChildDangerSign sign =
+    postpartumChildDangerSignToString sign |> string
 
 
 encodeDangerSigns : DangerSigns -> List ( String, Value )
