@@ -13,7 +13,7 @@ import LocalData
 import Maybe.Extra exposing (andMap, or, unwrap)
 import Measurement.Model exposing (..)
 import Pages.Session.Model
-import Pages.Utils exposing (ifEverySetEmpty, ifTrue)
+import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue)
 
 
 getInputConstraintsHeight : FloatInputConstraints
@@ -387,7 +387,7 @@ toSendToHCValue form =
         signs =
             [ Maybe.map (ifTrue HandReferrerForm) form.handReferralForm
             , Maybe.map (ifTrue ReferToHealthCenter) form.referToHealthCenter
-            , Maybe.map (ifTrue PrenatalAccompanyToHC) form.accompanyToHealthCenter
+            , ifNullableTrue PrenatalAccompanyToHC form.accompanyToHealthCenter
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)

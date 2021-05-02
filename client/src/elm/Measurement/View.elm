@@ -1095,6 +1095,7 @@ viewSendToHC language currentDate measurement form_ =
                 SetReferToHealthCenter
                 SetReasonForNotSendingToHC
                 SetHandReferralForm
+                Nothing
                 form
 
         ( completed, total ) =
@@ -1144,9 +1145,10 @@ viewSendToHCForm :
     -> (Bool -> msg)
     -> (ReasonForNotSendingToHC -> msg)
     -> (Bool -> msg)
+    -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotSendingToHCMsg setHandReferralFormMsg form =
+viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotSendingToHCMsg setHandReferralFormMsg setAccompanyToHCMsg form =
     let
         sendToHCSection =
             let
@@ -1177,6 +1179,31 @@ viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotS
                 Nothing
             ]
                 ++ reasonForNotSendingToHCInput
+
+        handReferralFormSection =
+            [ viewQuestionLabel language Translate.HandedReferralFormQuestion
+            , viewBoolInput
+                language
+                form.handReferralForm
+                setHandReferralFormMsg
+                "hand-referral-form"
+                Nothing
+            ]
+
+        accompanyToHCSection =
+            setAccompanyToHCMsg
+                |> Maybe.map
+                    (\msg ->
+                        [ viewQuestionLabel language Translate.AccompanyToHCQuestion
+                        , viewBoolInput
+                            language
+                            form.accompanyToHealthCenter
+                            msg
+                            "accompany-to-hc"
+                            Nothing
+                        ]
+                    )
+                |> Maybe.withDefault []
     in
     div [ class "ui form send-to-hc" ] <|
         [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
@@ -1186,14 +1213,8 @@ viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotS
             ]
         ]
             ++ sendToHCSection
-            ++ [ viewQuestionLabel language Translate.HandedReferralFormQuestion
-               , viewBoolInput
-                    language
-                    form.handReferralForm
-                    setHandReferralFormMsg
-                    "hand-referral-form"
-                    Nothing
-               ]
+            ++ handReferralFormSection
+            ++ accompanyToHCSection
 
 
 viewActionTakenLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any

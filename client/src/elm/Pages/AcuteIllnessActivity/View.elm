@@ -1608,7 +1608,12 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                     measurements.sendToHC
                         |> Maybe.map (Tuple.second >> .value)
                         |> sendToHCFormWithDefault data.sendToHCForm
-                        |> viewSendToHCForm language currentDate SetReferToHealthCenter SetReasonForNotSendingToHC SetHandReferralForm
+                        |> viewSendToHCForm language
+                            currentDate
+                            SetReferToHealthCenter
+                            SetReasonForNotSendingToHC
+                            SetHandReferralForm
+                            Nothing
 
                 Just NextStepsHealthEducation ->
                     measurements.healthEducation

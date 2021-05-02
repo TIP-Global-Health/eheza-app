@@ -22,7 +22,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (SendToHCForm)
 import Measurement.Utils exposing (sendToHCFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel)
+import Measurement.View exposing (viewActionTakenLabel, viewSendToHCForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
@@ -1287,7 +1287,7 @@ viewNextStepsContent language currentDate assembled data =
                             SetReferToHealthCenter
                             SetReasonForNotSendingToHC
                             SetHandReferralForm
-                            SetAccompanyToHC
+                            (Just SetAccompanyToHC)
 
                 Just NextStepsHealthEducation ->
                     measurements.healthEducation
@@ -2617,73 +2617,6 @@ viewFollowUpForm language assembled currentDate form =
         ]
 
 
-viewSendToHCForm :
-    Language
-    -> NominalDate
-    -> (Bool -> msg)
-    -> (ReasonForNotSendingToHC -> msg)
-    -> (Bool -> msg)
-    -> (Bool -> msg)
-    -> SendToHCForm
-    -> Html msg
-viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotSendingToHCMsg setHandReferralFormMsg setAccompanyToHC form =
-    let
-        sendToHCSection =
-            let
-                sentToHealthCenter =
-                    form.referToHealthCenter
-                        |> Maybe.withDefault True
-
-                reasonForNotSendingToHCInput =
-                    if not sentToHealthCenter then
-                        [ viewQuestionLabel language Translate.WhyNot
-                        , viewCheckBoxSelectInput language
-                            [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
-                            []
-                            form.reasonForNotSendingToHC
-                            setReasonForNotSendingToHCMsg
-                            Translate.ReasonForNotSendingToHC
-                        ]
-
-                    else
-                        []
-            in
-            [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
-            , viewBoolInput
-                language
-                form.referToHealthCenter
-                setReferToHealthCenterMsg
-                "refer-to-hc"
-                Nothing
-            ]
-                ++ reasonForNotSendingToHCInput
-    in
-    div [ class "ui form send-to-hc" ] <|
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
-            , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
-            ]
-        ]
-            ++ sendToHCSection
-            ++ [ viewQuestionLabel language Translate.HandedReferralFormQuestion
-               , viewBoolInput
-                    language
-                    form.handReferralForm
-                    setHandReferralFormMsg
-                    "hand-referral-form"
-                    Nothing
-               ]
-            ++ [ viewQuestionLabel language Translate.AccompanyToHCQuestion
-               , viewBoolInput
-                    language
-                    form.accompanyToHealthCenter
-                    setAccompanyToHC
-                    "accompany-to-hc"
-                    Nothing
-               ]
-
-
 viewAppointmentForm : Language -> NominalDate -> AssembledData -> AppointmentConfirmationForm -> Html Msg
 viewAppointmentForm language currentDate assembled form =
     let
@@ -2702,7 +2635,6 @@ viewAppointmentForm language currentDate assembled form =
     div [ class "full content" ]
         [ div [ class "ui form appointment-confirmation" ]
             [ text <| translate language Translate.AppointmentConfirmationInstrunction ++ ":" ]
-        , br [] []
         , div [ class "form-input date" ]
             [ appointmentDateInput ]
         ]
