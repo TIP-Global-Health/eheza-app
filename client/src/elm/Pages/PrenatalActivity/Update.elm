@@ -1911,7 +1911,7 @@ update currentDate id db msg model =
         SetActiveNextStepsTask task ->
             let
                 updatedData =
-                    -- Do not set Newborn Enrollment as active task,
+                    -- Do not set Newborn Enrolment as active task,
                     -- since it does not have a form to view.
                     -- Clicking on it redirects to Registartion page.
                     if task == NextStepsNewbornEnrolment then

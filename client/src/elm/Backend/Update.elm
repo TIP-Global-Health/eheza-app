@@ -1737,7 +1737,7 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
                                             nextPage =
                                                 PrenatalActivityPage encounterId Backend.PrenatalActivity.Model.NextSteps
 
-                                            updateNewbornEnrolledMsg =
+                                            updateNewbornEnroledMsg =
                                                 Dict.get encounterId model.prenatalEncounters
                                                     |> Maybe.andThen RemoteData.toMaybe
                                                     |> Maybe.map
@@ -1764,7 +1764,7 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
                                                     |> Maybe.withDefault []
                                         in
                                         ( [ resetFormMsg, navigationMsg nextPage ]
-                                        , updateNewbornEnrolledMsg ++ createRelationshipMsg
+                                        , updateNewbornEnroledMsg ++ createRelationshipMsg
                                         )
                             )
                         |> Maybe.withDefault ( [], [] )

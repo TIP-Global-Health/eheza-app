@@ -323,7 +323,7 @@ nextStepsTasksCompletedFromTotal language assembled data task =
             )
 
         NextStepsNewbornEnrolment ->
-            ( 0
+            ( taskCompleted assembled.participant.newborn
             , 1
             )
 

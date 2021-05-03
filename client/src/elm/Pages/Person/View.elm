@@ -538,6 +538,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     , expectedGender = ExpectMaleOrFemale
                     , birthDateSelectorFrom = birthDateSelectorFrom
                     , birthDateSelectorTo = birthDateSelectorTo
+                    , title = Translate.People
                     }
 
                 IndividualEncounterOrigin encounterType ->
@@ -552,6 +553,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , expectedGender = ExpectMaleOrFemale
                             , birthDateSelectorFrom = Date.add Years -90 today
                             , birthDateSelectorTo = today
+                            , title = Translate.People
                             }
 
                         AntenatalEncounter ->
@@ -560,6 +562,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , expectedGender = ExpectFemale
                             , birthDateSelectorFrom = Date.add Years -45 today
                             , birthDateSelectorTo = Date.add Years -13 today
+                            , title = Translate.People
                             }
 
                         NutritionEncounter ->
@@ -568,6 +571,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , expectedGender = ExpectMaleOrFemale
                             , birthDateSelectorFrom = Date.add Years -5 today
                             , birthDateSelectorTo = today
+                            , title = Translate.People
                             }
 
                         -- This will be redefined after we add support for more
@@ -578,6 +582,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , expectedGender = ExpectMaleOrFemale
                             , birthDateSelectorFrom = Date.add Years -60 today
                             , birthDateSelectorTo = today
+                            , title = Translate.People
                             }
 
                 GroupEncounterOrigin sessionId ->
@@ -630,6 +635,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     , expectedGender = ExpectMaleOrFemale
                     , birthDateSelectorFrom = birthDateSelectorFrom
                     , birthDateSelectorTo = birthDateSelectorTo
+                    , title = Translate.People
                     }
 
                 PrenatalNextStepsActivityOrigin encounterId ->
@@ -638,13 +644,14 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     , expectedGender = ExpectMaleOrFemale
                     , birthDateSelectorFrom = Date.add Years -3 today
                     , birthDateSelectorTo = today
+                    , title = Translate.EnrolNewborn
                     }
 
         header =
             div [ class "ui basic segment head" ]
                 [ h1
                     [ class "ui header" ]
-                    [ text <| translate language Translate.People ]
+                    [ text <| translate language originBasedSettings.title ]
                 , a
                     [ class "link-back"
                     , onClick <| SetActivePage originBasedSettings.goBackPage

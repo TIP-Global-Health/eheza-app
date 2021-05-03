@@ -446,6 +446,7 @@ type TranslationId
     | EndEncounter
     | EndEncounterQuestion
     | EndGroupEncounter
+    | EnrolNewborn
     | EnterAmountDistributed
     | EnterPairingCode
     | ErrorCheckLocalConfig
@@ -2896,6 +2897,11 @@ translationSet trans =
         EndGroupEncounter ->
             { english = "End Group Encounter"
             , kinyarwanda = Just "Gusoza igikorwa"
+            }
+
+        EnrolNewborn ->
+            { english = "Enrol Newborn"
+            , kinyarwanda = Nothing
             }
 
         EnterAmountDistributed ->
