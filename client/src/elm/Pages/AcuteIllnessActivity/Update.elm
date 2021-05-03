@@ -936,29 +936,11 @@ update currentDate id db msg model =
                         |> Maybe.withDefault model.nextStepsData.isolationForm
 
                 updatedForm =
-                    case form.reasonsForNotIsolating of
-                        Just reasons ->
-                            case reasons of
-                                [ IsolationReasonNotApplicable ] ->
-                                    { form | reasonsForNotIsolating = [ reason ] |> Just }
-
-                                _ ->
-                                    if List.member reason reasons then
-                                        let
-                                            updated =
-                                                if List.length reasons == 1 then
-                                                    Nothing
-
-                                                else
-                                                    reasons |> List.filter ((/=) reason) |> Just
-                                        in
-                                        { form | reasonsForNotIsolating = updated }
-
-                                    else
-                                        { form | reasonsForNotIsolating = reason :: reasons |> Just }
-
-                        Nothing ->
-                            { form | reasonsForNotIsolating = Just [ reason ] }
+                    setMultiSelectInputValue .reasonsForNotIsolating
+                        (\reasons -> { form | reasonsForNotIsolating = reasons })
+                        IsolationReasonNotApplicable
+                        reason
+                        form
 
                 updatedData =
                     model.nextStepsData
@@ -1541,38 +1523,11 @@ update currentDate id db msg model =
                     treatmentReviewForm
 
                 updatedForm =
-                    case form.adverseEvents of
-                        Just events ->
-                            if List.member event events then
-                                let
-                                    updatedEvents =
-                                        if List.length events == 1 then
-                                            Nothing
-
-                                        else
-                                            events |> List.filter ((/=) event) |> Just
-                                in
-                                { form | adverseEvents = updatedEvents, adverseEventsDirty = True }
-
-                            else
-                                case event of
-                                    NoAdverseEvent ->
-                                        { form | adverseEvents = Just [ event ], adverseEventsDirty = True }
-
-                                    _ ->
-                                        let
-                                            updatedEvents =
-                                                case events of
-                                                    [ NoAdverseEvent ] ->
-                                                        Just [ event ]
-
-                                                    _ ->
-                                                        Just (event :: events)
-                                        in
-                                        { form | adverseEvents = updatedEvents, adverseEventsDirty = True }
-
-                        Nothing ->
-                            { form | adverseEvents = Just [ event ], adverseEventsDirty = True }
+                    setMultiSelectInputValue .adverseEvents
+                        (\events -> { form | adverseEvents = events, adverseEventsDirty = True })
+                        NoAdverseEvent
+                        event
+                        form
 
                 updatedData =
                     model.ongoingTreatmentData
