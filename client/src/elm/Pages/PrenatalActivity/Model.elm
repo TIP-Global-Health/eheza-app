@@ -12,6 +12,7 @@ type Msg
     | DropZoneComplete DropZoneFile
     | SetActivePage Page
     | SetAlertsDialogState Bool
+    | SetWarningPopupState (Maybe String)
       -- PregnancyDatingMsgs
     | ToggleDateSelector
     | SetLmpDate Date
@@ -123,6 +124,7 @@ type alias Model =
     , healthEducationData : HealthEducationData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
+    , warningPopupState : Maybe String
     }
 
 
@@ -140,6 +142,7 @@ emptyModel =
     , healthEducationData = emptyHealthEducationData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
+    , warningPopupState = Nothing
     }
 
 

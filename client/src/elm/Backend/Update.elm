@@ -74,6 +74,7 @@ import Pages.NutritionEncounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model
 import Pages.Person.Model
+import Pages.PrenatalActivity.Model
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.Utils
 import Pages.Relationship.Model
@@ -2804,10 +2805,14 @@ generatePrenatalDangerSignsWarningMsgs currentDate language isChw after id =
                         []
 
                     else
-                        [ String.join ", " dangerSignsList
+                        [ -- Navigate to NextSteps activty page.
+                          PrenatalActivityPage id Backend.PrenatalActivity.Model.NextSteps
+                            |> UserPage
+                            |> App.Model.SetActivePage
+                        , String.join ", " dangerSignsList
                             |> Just
-                            |> Pages.PrenatalEncounter.Model.SetWarningPopupState
-                            |> App.Model.MsgPagePrenatalEncounter id
+                            |> Pages.PrenatalActivity.Model.SetWarningPopupState
+                            |> App.Model.MsgPagePrenatalActivity id Backend.PrenatalActivity.Model.NextSteps
                             |> App.Model.MsgLoggedIn
                         ]
             )

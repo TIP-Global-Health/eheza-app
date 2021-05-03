@@ -78,6 +78,9 @@ update currentDate id db msg model =
         SetAlertsDialogState isOpen ->
             ( { model | showAlertsDialog = isOpen }, Cmd.none, [] )
 
+        SetWarningPopupState state ->
+            ( { model | warningPopupState = state }, Cmd.none, [] )
+
         ToggleDateSelector ->
             let
                 updatedForm =

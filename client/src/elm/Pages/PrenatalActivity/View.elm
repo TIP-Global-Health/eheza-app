@@ -48,6 +48,7 @@ import Pages.Utils
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -65,6 +66,8 @@ viewHeaderAndContent language currentDate id activity model data =
     div [ class "page-activity prenatal" ] <|
         [ viewHeader language id activity data
         , viewContent language currentDate activity model data
+        , viewModal <|
+            warningPopup language currentDate model.warningPopupState
         ]
 
 
@@ -101,6 +104,34 @@ viewContent language currentDate activity model data =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
             ++ viewActivity language currentDate activity data model
+
+
+warningPopup : Language -> NominalDate -> Maybe String -> Maybe (Html Msg)
+warningPopup language currentDate dangerSigns =
+    dangerSigns
+        |> Maybe.map
+            (\signs ->
+                div [ class "ui active modal diagnosis-popup" ]
+                    [ div [ class "content" ] <|
+                        [ div [ class "popup-heading-wrapper" ]
+                            [ img [ src "assets/images/exclamation-red.png" ] []
+                            , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
+                            ]
+                        , div [ class "popup-title" ]
+                            [ p [] [ text <| translate language Translate.DangerSignsLabel ++ ": " ++ signs ]
+                            , p [] [ text <| translate language Translate.DangerSignsHelper ]
+                            ]
+                        ]
+                    , div
+                        [ class "actions" ]
+                        [ button
+                            [ class "ui primary fluid button"
+                            , onClick <| SetWarningPopupState Nothing
+                            ]
+                            [ text <| translate language Translate.Continue ]
+                        ]
+                    ]
+            )
 
 
 viewActivity : Language -> NominalDate -> PrenatalActivity -> AssembledData -> Model -> List (Html Msg)
