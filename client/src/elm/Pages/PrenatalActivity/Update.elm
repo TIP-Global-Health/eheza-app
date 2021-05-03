@@ -33,7 +33,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (calculateEDD)
-import Pages.Utils exposing (tasksBarId)
+import Pages.Utils exposing (setMultiSelectInputValue, tasksBarId)
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
 
@@ -1331,38 +1331,11 @@ update currentDate id db msg model =
                         |> Maybe.withDefault model.familyPlanningData.form
 
                 updatedForm =
-                    case form.signs of
-                        Just signs ->
-                            if List.member sign signs then
-                                let
-                                    updatedSigns =
-                                        if List.length signs == 1 then
-                                            Nothing
-
-                                        else
-                                            signs |> List.filter ((/=) sign) |> Just
-                                in
-                                { form | signs = updatedSigns }
-
-                            else
-                                case sign of
-                                    NoFamilyPlanning ->
-                                        { form | signs = Just [ sign ] }
-
-                                    _ ->
-                                        let
-                                            updatedSigns =
-                                                case signs of
-                                                    [ NoFamilyPlanning ] ->
-                                                        Just [ sign ]
-
-                                                    _ ->
-                                                        Just (sign :: signs)
-                                        in
-                                        { form | signs = updatedSigns }
-
-                        Nothing ->
-                            { form | signs = Just [ sign ] }
+                    setMultiSelectInputValue .signs
+                        (\signs -> { form | signs = signs })
+                        NoFamilyPlanning
+                        sign
+                        form
 
                 updatedData =
                     model.familyPlanningData
@@ -1530,38 +1503,11 @@ update currentDate id db msg model =
                         |> Maybe.withDefault model.dangerSignsData.form
 
                 updatedForm =
-                    case form.signs of
-                        Just signs ->
-                            if List.member sign signs then
-                                let
-                                    updatedSigns =
-                                        if List.length signs == 1 then
-                                            Nothing
-
-                                        else
-                                            signs |> List.filter ((/=) sign) |> Just
-                                in
-                                { form | signs = updatedSigns }
-
-                            else
-                                case sign of
-                                    NoDangerSign ->
-                                        { form | signs = Just [ sign ] }
-
-                                    _ ->
-                                        let
-                                            updatedSigns =
-                                                case signs of
-                                                    [ NoDangerSign ] ->
-                                                        Just [ sign ]
-
-                                                    _ ->
-                                                        Just (sign :: signs)
-                                        in
-                                        { form | signs = updatedSigns }
-
-                        Nothing ->
-                            { form | signs = Just [ sign ] }
+                    setMultiSelectInputValue .signs
+                        (\signs -> { form | signs = signs })
+                        NoDangerSign
+                        sign
+                        form
 
                 updatedData =
                     model.dangerSignsData
@@ -1586,38 +1532,11 @@ update currentDate id db msg model =
                         |> Maybe.withDefault model.dangerSignsData.form
 
                 updatedForm =
-                    case form.postpartumMother of
-                        Just signs ->
-                            if List.member sign signs then
-                                let
-                                    updatedSigns =
-                                        if List.length signs == 1 then
-                                            Nothing
-
-                                        else
-                                            signs |> List.filter ((/=) sign) |> Just
-                                in
-                                { form | postpartumMother = updatedSigns }
-
-                            else
-                                case sign of
-                                    NoPostpartumMotherDangerSigns ->
-                                        { form | postpartumMother = Just [ sign ] }
-
-                                    _ ->
-                                        let
-                                            updatedSigns =
-                                                case signs of
-                                                    [ NoPostpartumMotherDangerSigns ] ->
-                                                        Just [ sign ]
-
-                                                    _ ->
-                                                        Just (sign :: signs)
-                                        in
-                                        { form | postpartumMother = updatedSigns }
-
-                        Nothing ->
-                            { form | postpartumMother = Just [ sign ] }
+                    setMultiSelectInputValue .postpartumMother
+                        (\signs -> { form | postpartumMother = signs })
+                        NoPostpartumMotherDangerSigns
+                        sign
+                        form
 
                 updatedData =
                     model.dangerSignsData
@@ -1642,38 +1561,11 @@ update currentDate id db msg model =
                         |> Maybe.withDefault model.dangerSignsData.form
 
                 updatedForm =
-                    case form.postpartumChild of
-                        Just signs ->
-                            if List.member sign signs then
-                                let
-                                    updatedSigns =
-                                        if List.length signs == 1 then
-                                            Nothing
-
-                                        else
-                                            signs |> List.filter ((/=) sign) |> Just
-                                in
-                                { form | postpartumChild = updatedSigns }
-
-                            else
-                                case sign of
-                                    NoPostpartumChildDangerSigns ->
-                                        { form | postpartumChild = Just [ sign ] }
-
-                                    _ ->
-                                        let
-                                            updatedSigns =
-                                                case signs of
-                                                    [ NoPostpartumChildDangerSigns ] ->
-                                                        Just [ sign ]
-
-                                                    _ ->
-                                                        Just (sign :: signs)
-                                        in
-                                        { form | postpartumChild = updatedSigns }
-
-                        Nothing ->
-                            { form | postpartumChild = Just [ sign ] }
+                    setMultiSelectInputValue .postpartumChild
+                        (\signs -> { form | postpartumChild = signs })
+                        NoPostpartumChildDangerSigns
+                        sign
+                        form
 
                 updatedData =
                     model.dangerSignsData
@@ -1754,38 +1646,11 @@ update currentDate id db msg model =
                         |> Maybe.withDefault model.birthPlanData.form
 
                 updatedForm =
-                    case form.familyPlanning of
-                        Just signs ->
-                            if List.member sign signs then
-                                let
-                                    updatedSigns =
-                                        if List.length signs == 1 then
-                                            Nothing
-
-                                        else
-                                            signs |> List.filter ((/=) sign) |> Just
-                                in
-                                { form | familyPlanning = updatedSigns }
-
-                            else
-                                case sign of
-                                    NoFamilyPlanning ->
-                                        { form | familyPlanning = Just [ sign ] }
-
-                                    _ ->
-                                        let
-                                            updatedSigns =
-                                                case signs of
-                                                    [ NoFamilyPlanning ] ->
-                                                        Just [ sign ]
-
-                                                    _ ->
-                                                        Just (sign :: signs)
-                                        in
-                                        { form | familyPlanning = updatedSigns }
-
-                        Nothing ->
-                            { form | familyPlanning = Just [ sign ] }
+                    setMultiSelectInputValue .familyPlanning
+                        (\signs -> { form | familyPlanning = signs })
+                        NoFamilyPlanning
+                        sign
+                        form
 
                 updatedData =
                     model.birthPlanData
