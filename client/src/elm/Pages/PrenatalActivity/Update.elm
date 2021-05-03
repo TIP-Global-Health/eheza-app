@@ -51,6 +51,20 @@ update currentDate id db msg model =
                         >> corePhysicalExamFormWithDefault model.examinationData.corePhysicalExamForm
                     )
                 |> Maybe.withDefault model.examinationData.corePhysicalExamForm
+
+        --navigationMsgsByNextStep : (t -> msg) -> UserPage -> Maybe t -> ( List App.Model.Msg, List msg )
+        navigationMsgsByNextStep setActiveTaskMsg encounterPage nextTask =
+            nextTask
+                |> Maybe.map
+                    (\task ->
+                        ( []
+                        , [ setActiveTaskMsg task ]
+                        )
+                    )
+                |> Maybe.withDefault
+                    ( [ App.Model.SetActivePage <| UserPage encounterPage ]
+                    , []
+                    )
     in
     case msg of
         NoOp ->
@@ -1898,7 +1912,7 @@ update currentDate id db msg model =
             let
                 updatedData =
                     -- Do not set Newborn Enrollment as active task,
-                    -- since it doe not have a form to view.
+                    -- since it does not have a form to view.
                     -- Clicking on it redirects to Registartion page.
                     if task == NextStepsNewbornEnrolment then
                         model.nextStepsData
@@ -2161,18 +2175,3 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) setActiveTaskMsg
-
-
-navigationMsgsByNextStep : (t -> msg) -> UserPage -> Maybe t -> ( List App.Model.Msg, List msg )
-navigationMsgsByNextStep setActiveTaskMsg encounterPage nextTask =
-    nextTask
-        |> Maybe.map
-            (\task ->
-                ( []
-                , [ setActiveTaskMsg task ]
-                )
-            )
-        |> Maybe.withDefault
-            ( [ App.Model.SetActivePage <| UserPage encounterPage ]
-            , []
-            )
