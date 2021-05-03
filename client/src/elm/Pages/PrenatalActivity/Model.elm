@@ -98,6 +98,7 @@ type Msg
     | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation ))
       -- NextStepsMsgs
     | SetActiveNextStepsTask NextStepsTask
+    | SetHealthEducationSubActivityBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SaveHealthEducationSubActivity PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )) (Maybe NextStepsTask)
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId (Maybe ( PrenatalFollowUpId, PrenatalFollowUp )) (Maybe NextStepsTask)

@@ -109,12 +109,20 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
         expectationsUpdateFunc value form_ =
             { form_ | expectations = Just value }
 
+        setBoolInputMsg =
+            case assembled.encounter.encounterType of
+                ChwPostpartumEncounter ->
+                    SetHealthEducationSubActivityBoolInput
+
+                _ ->
+                    SetHealthEducationBoolInput
+
         expectationsInput =
             [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationExpectations
             , viewBoolInput
                 language
                 form.expectations
-                (SetHealthEducationBoolInput expectationsUpdateFunc)
+                (setBoolInputMsg expectationsUpdateFunc)
                 "expectations"
                 Nothing
             ]
@@ -127,7 +135,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             , viewBoolInput
                 language
                 form.visitsReview
-                (SetHealthEducationBoolInput visitsReviewUpdateFunc)
+                (setBoolInputMsg visitsReviewUpdateFunc)
                 "visits-review"
                 Nothing
             ]
@@ -140,7 +148,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             , viewBoolInput
                 language
                 form.warningSigns
-                (SetHealthEducationBoolInput warningSignsUpdateFunc)
+                (setBoolInputMsg warningSignsUpdateFunc)
                 "warning-signs"
                 Nothing
             ]
@@ -153,7 +161,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             , viewBoolInput
                 language
                 form.hemorrhaging
-                (SetHealthEducationBoolInput hemorrhagingUpdateFunc)
+                (setBoolInputMsg hemorrhagingUpdateFunc)
                 "hemorrhaging"
                 Nothing
             ]
@@ -166,7 +174,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             , viewBoolInput
                 language
                 form.familyPlanning
-                (SetHealthEducationBoolInput familyPlanningUpdateFunc)
+                (setBoolInputMsg familyPlanningUpdateFunc)
                 "family-planning"
                 Nothing
             ]
@@ -179,7 +187,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             , viewBoolInput
                 language
                 form.breastfeeding
-                (SetHealthEducationBoolInput breastfeedingUpdateFunc)
+                (setBoolInputMsg breastfeedingUpdateFunc)
                 "breastfeeding"
                 Nothing
             ]
@@ -192,7 +200,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             , viewBoolInput
                 language
                 form.immunization
-                (SetHealthEducationBoolInput immunizationUpdateFunc)
+                (setBoolInputMsg immunizationUpdateFunc)
                 "immunization"
                 Nothing
             ]
@@ -205,7 +213,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             , viewBoolInput
                 language
                 form.hygiene
-                (SetHealthEducationBoolInput hygieneUpdateFunc)
+                (setBoolInputMsg hygieneUpdateFunc)
                 "hygiene"
                 Nothing
             ]
@@ -316,7 +324,7 @@ nextStepsTasksCompletedFromTotal language assembled data task =
 
         NextStepsNewbornEnrolment ->
             ( 0
-            , 0
+            , 1
             )
 
 

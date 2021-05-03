@@ -26,6 +26,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
+import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils exposing (toSendToHCValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -1896,8 +1897,30 @@ update currentDate id db msg model =
         SetActiveNextStepsTask task ->
             let
                 updatedData =
+                    -- Do not set Newborn Enrollment as active task,
+                    -- since it doe not have a form to view.
+                    -- Clicking on it redirects to Registartion page.
+                    if task == NextStepsNewbornEnrolment then
+                        model.nextStepsData
+
+                    else
+                        model.nextStepsData
+                            |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHealthEducationSubActivityBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.nextStepsData.healthEducationForm
+                    in
                     model.nextStepsData
-                        |> (\data -> { data | activeTask = Just task })
+                        |> (\data -> { data | healthEducationForm = updatedForm })
             in
             ( { model | nextStepsData = updatedData }
             , Cmd.none
@@ -1912,13 +1935,8 @@ update currentDate id db msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], Just task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
-                            , Nothing
-                            )
+                ( backToActivitiesMsg, setActiveTaskMsg ) =
+                    navigationMsgsByNextStep SetActiveNextStepsTask (PrenatalEncounterPage id) nextTask_
 
                 appMsgs =
                     model.nextStepsData.healthEducationForm
@@ -1932,15 +1950,12 @@ update currentDate id db msg model =
                                 )
                                     :: backToActivitiesMsg
                             )
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | activeTask = nextTask })
             in
-            ( { model | nextStepsData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update currentDate id db) setActiveTaskMsg
 
         SetFollowUpOption option ->
             let
@@ -1967,13 +1982,8 @@ update currentDate id db msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], Just task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
-                            , Nothing
-                            )
+                ( backToActivitiesMsg, setActiveTaskMsg ) =
+                    navigationMsgsByNextStep SetActiveNextStepsTask (PrenatalEncounterPage id) nextTask_
 
                 appMsgs =
                     model.nextStepsData.followUpForm
@@ -1987,15 +1997,12 @@ update currentDate id db msg model =
                                 )
                                     :: backToActivitiesMsg
                             )
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | activeTask = nextTask })
             in
-            ( { model | nextStepsData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update currentDate id db) setActiveTaskMsg
 
         SetReferToHealthCenter value ->
             let
@@ -2073,13 +2080,8 @@ update currentDate id db msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], Just task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
-                            , Nothing
-                            )
+                ( backToActivitiesMsg, setActiveTaskMsg ) =
+                    navigationMsgsByNextStep SetActiveNextStepsTask (PrenatalEncounterPage id) nextTask_
 
                 appMsgs =
                     model.nextStepsData.sendToHCForm
@@ -2093,15 +2095,12 @@ update currentDate id db msg model =
                                 )
                                     :: backToActivitiesMsg
                             )
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | activeTask = nextTask })
             in
-            ( { model | nextStepsData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update currentDate id db) setActiveTaskMsg
 
         AppointmentToggleDateSelector ->
             let
@@ -2141,13 +2140,8 @@ update currentDate id db msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], Just task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
-                            , Nothing
-                            )
+                ( backToActivitiesMsg, setActiveTaskMsg ) =
+                    navigationMsgsByNextStep SetActiveNextStepsTask (PrenatalEncounterPage id) nextTask_
 
                 appMsgs =
                     model.nextStepsData.appointmentConfirmationForm
@@ -2161,12 +2155,24 @@ update currentDate id db msg model =
                                 )
                                     :: backToActivitiesMsg
                             )
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | activeTask = nextTask })
             in
-            ( { model | nextStepsData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) setActiveTaskMsg
+
+
+navigationMsgsByNextStep : (t -> msg) -> UserPage -> Maybe t -> ( List App.Model.Msg, List msg )
+navigationMsgsByNextStep setActiveTaskMsg encounterPage nextTask =
+    nextTask
+        |> Maybe.map
+            (\task ->
+                ( []
+                , [ setActiveTaskMsg task ]
+                )
+            )
+        |> Maybe.withDefault
+            ( [ App.Model.SetActivePage <| UserPage encounterPage ]
+            , []
             )
