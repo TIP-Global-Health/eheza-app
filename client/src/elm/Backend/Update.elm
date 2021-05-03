@@ -81,7 +81,7 @@ import Pages.Relationship.Model
 import Pages.Session.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyBackendUrl, toCmd, toTask, withoutDecoder)
-import SyncManager.Model exposing (IndexDbQueryType(..))
+import SyncManager.Model
 import Task
 import Translate exposing (Language, translate)
 import ZScore.Model
@@ -96,10 +96,11 @@ updateIndexedDb :
     -> Maybe VillageId
     -> Bool
     -> Page
+    -> SyncManager.Model.Model
     -> MsgIndexedDb
     -> ModelIndexedDb
     -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage msg model =
+updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage syncManager msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -199,7 +200,7 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions
@@ -846,99 +847,126 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
 
         HandleRevisions revisions ->
             let
+                downloadingContent =
+                    case syncManager.syncStatus of
+                        SyncManager.Model.SyncDownloadGeneral _ ->
+                            True
+
+                        SyncManager.Model.SyncDownloadAuthority _ ->
+                            True
+
+                        _ ->
+                            False
+
                 processRevisionAndDiagnoseAcuteIllness participantId encounterId =
-                    let
-                        person =
-                            Dict.get participantId model.people
-                                |> Maybe.withDefault NotAsked
-                                |> RemoteData.toMaybe
+                    if downloadingContent then
+                        ( model, [] )
 
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                    else
+                        let
+                            person =
+                                Dict.get participantId model.people
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.toMaybe
 
-                        extraMsgs =
-                            Maybe.map2 (generateSuspectedDiagnosisMsgs currentDate model newModel)
-                                encounterId
-                                person
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel, extraMsgs )
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map2 (generateSuspectedDiagnosisMsgs currentDate model newModel)
+                                    encounterId
+                                    person
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
 
                 processRevisionAndAssessNutritionIndividual participantId encounterId =
-                    let
-                        person =
-                            Dict.get participantId model.people
-                                |> Maybe.withDefault NotAsked
-                                |> RemoteData.toMaybe
+                    if downloadingContent then
+                        ( model, [] )
 
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                    else
+                        let
+                            person =
+                                Dict.get participantId model.people
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.toMaybe
 
-                        extraMsgs =
-                            Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate zscores isChw newModel)
-                                encounterId
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel, extraMsgs )
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate zscores isChw newModel)
+                                    encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
 
                 processRevisionAndAssessNutritionGroup data updateFunc =
-                    let
-                        participantId =
-                            data.participantId
+                    if downloadingContent then
+                        ( model, [] )
 
-                        sessionId =
-                            data.encounterId
+                    else
+                        let
+                            participantId =
+                                data.participantId
 
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision healthCenterId) ( model, True ) revisions
-                    in
-                    Maybe.map
-                        (\sessionId_ ->
-                            let
-                                editableSessions =
-                                    -- The `andThen` is so that we only recalculate
-                                    -- the editable session if we already have a
-                                    -- success.
-                                    Dict.map
-                                        (\id session ->
-                                            RemoteData.andThen (\_ -> makeEditableSession id newModel) session
-                                        )
-                                        newModel.editableSessions
+                            sessionId =
+                                data.encounterId
 
-                                withRecalc =
-                                    { newModel | editableSessions = editableSessions }
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision healthCenterId) ( model, True ) revisions
+                        in
+                        Maybe.map
+                            (\sessionId_ ->
+                                let
+                                    editableSessions =
+                                        -- The `andThen` is so that we only recalculate
+                                        -- the editable session if we already have a
+                                        -- success.
+                                        Dict.map
+                                            (\id session ->
+                                                RemoteData.andThen (\_ -> makeEditableSession id newModel) session
+                                            )
+                                            newModel.editableSessions
 
-                                extraMsgs =
-                                    -- Important: we pass model here, because we want to be examining the state before
-                                    -- current editable session was set for recalculation with makeEditableSession.
-                                    -- The reason for this is that at makeEditableSession, all measuerements are set to
-                                    -- be refetched, and we are not able to determine if mandatory activities are completed
-                                    -- or not.
-                                    -- Therefore, we will be examining the 'before' state, taking into consideration
-                                    -- that triggering activity is completed.
-                                    generateNutritionAssessmentGroupMsgs currentDate zscores isChw participantId sessionId_ activePage updateFunc newModel
-                            in
-                            ( withRecalc, extraMsgs )
-                        )
-                        sessionId
-                        |> Maybe.withDefault ( newModel, [] )
+                                    withRecalc =
+                                        { newModel | editableSessions = editableSessions }
+
+                                    extraMsgs =
+                                        -- Important: we pass model here, because we want to be examining the state before
+                                        -- current editable session was set for recalculation with makeEditableSession.
+                                        -- The reason for this is that at makeEditableSession, all measuerements are set to
+                                        -- be refetched, and we are not able to determine if mandatory activities are completed
+                                        -- or not.
+                                        -- Therefore, we will be examining the 'before' state, taking into consideration
+                                        -- that triggering activity is completed.
+                                        generateNutritionAssessmentGroupMsgs currentDate zscores isChw participantId sessionId_ activePage updateFunc newModel
+                                in
+                                ( withRecalc, extraMsgs )
+                            )
+                            sessionId
+                            |> Maybe.withDefault ( newModel, [] )
 
                 processRevisionAndWarnOnPrenatalDangerSigns participantId encounterId =
-                    let
-                        person =
-                            Dict.get participantId model.people
-                                |> Maybe.withDefault NotAsked
-                                |> RemoteData.toMaybe
+                    if downloadingContent then
+                        ( model, [] )
 
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                    else
+                        let
+                            person =
+                                Dict.get participantId model.people
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.toMaybe
 
-                        extraMsgs =
-                            Maybe.map (generatePrenatalDangerSignsWarningMsgs currentDate language isChw newModel)
-                                encounterId
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel, extraMsgs )
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generatePrenatalDangerSignsWarningMsgs currentDate language isChw newModel)
+                                    encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
             in
             case revisions of
                 -- Special handling for a single attendance revision, which means
@@ -1616,7 +1644,7 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
             , relationshipCmd
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
 
         HandlePostedRelationship personId initiator data ->
             let
@@ -1773,7 +1801,7 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
 
         PatchPerson personId person ->
             ( { model | postPerson = Loading }
