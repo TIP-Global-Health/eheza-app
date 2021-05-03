@@ -1383,6 +1383,8 @@ div.page-activity.home-visit {
 
     .full.content {
 
+      @include next-steps;
+
       .helper {
         margin-bottom: 20px;
       }
