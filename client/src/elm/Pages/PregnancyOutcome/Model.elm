@@ -16,7 +16,9 @@ type alias Model =
 
 type Msg
     = NoOp
-    | SavePregnancyOutcome
+      -- Page is the destination page where nurse / chw
+      -- is forwarded after form is saved.
+    | SavePregnancyOutcome Page
     | SetActivePage Page
     | SetDeliveryLocation Bool
     | SetPregnancyConcludedDate Date

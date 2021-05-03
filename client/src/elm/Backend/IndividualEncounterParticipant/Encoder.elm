@@ -30,6 +30,7 @@ encodeIndividualEncounterParticipant data =
     , ( "date_concluded", maybe encodeYYYYMMDD data.dateConcluded )
     , ( "outcome", maybe encodeIndividualEncounterParticipantOutcome data.outcome )
     , ( "outcome_location", maybe encodeDeliveryLocation data.deliveryLocation )
+    , ( "newborn", maybe encodeEntityUuid data.newborn )
     , ( "deleted", bool data.deleted )
     , ( "type", string "individual_participant" )
     ]

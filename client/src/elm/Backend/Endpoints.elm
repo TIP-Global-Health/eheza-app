@@ -331,6 +331,12 @@ pmtctParticipantEndpoint =
         |> withParamsEncoder encodePmtctParticipantParams
 
 
+pregnancyTestingEndpoint : ReadWriteEndPoint Error PregnancyTestId PregnancyTest PregnancyTest ()
+pregnancyTestingEndpoint =
+    swEndpoint "nodes/pregnancy_testing" decodePregnancyTesting
+        |> withValueEncoder (object << encodePregnancyTesting)
+
+
 prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId PrenatalEncounter PrenatalEncounter (Maybe IndividualEncounterParticipantId)
 prenatalEncounterEndpoint =
     swEndpoint "nodes/prenatal_encounter" decodePrenatalEncounter
@@ -390,6 +396,12 @@ breastExamEndpoint : ReadWriteEndPoint Error BreastExamId BreastExam BreastExam 
 breastExamEndpoint =
     swEndpoint "nodes/breast_exam" decodeBreastExam
         |> withValueEncoder (object << encodeBreastExam)
+
+
+birthPlanEndpoint : ReadWriteEndPoint Error BirthPlanId BirthPlan BirthPlan ()
+birthPlanEndpoint =
+    swEndpoint "nodes/birth_plan" decodeBirthPlan
+        |> withValueEncoder (object << encodeBirthPlan)
 
 
 corePhysicalExamEndpoint : ReadWriteEndPoint Error CorePhysicalExamId CorePhysicalExam CorePhysicalExam ()
@@ -690,3 +702,27 @@ acuteIllnessFollowUpEndpoint : ReadWriteEndPoint Error AcuteIllnessFollowUpId Ac
 acuteIllnessFollowUpEndpoint =
     swEndpoint "nodes/acute_illness_follow_up" decodeAcuteIllnessFollowUp
         |> withValueEncoder (object << encodeAcuteIllnessFollowUp)
+
+
+prenatalHealthEducationEndpoint : ReadWriteEndPoint Error PrenatalHealthEducationId PrenatalHealthEducation PrenatalHealthEducation ()
+prenatalHealthEducationEndpoint =
+    swEndpoint "nodes/prenatal_health_education" decodePrenatalHealthEducation
+        |> withValueEncoder (object << encodePrenatalHealthEducation)
+
+
+prenatalFollowUpEndpoint : ReadWriteEndPoint Error PrenatalFollowUpId PrenatalFollowUp PrenatalFollowUp ()
+prenatalFollowUpEndpoint =
+    swEndpoint "nodes/prenatal_follow_up" decodePrenatalFollowUp
+        |> withValueEncoder (object << encodePrenatalFollowUp)
+
+
+prenatalSendToHcEndpoint : ReadWriteEndPoint Error PrenatalSendToHcId PrenatalSendToHC PrenatalSendToHC ()
+prenatalSendToHcEndpoint =
+    swEndpoint "nodes/prenatal_send_to_hc" decodePrenatalSendToHc
+        |> withValueEncoder (object << encodePrenatalSendToHC)
+
+
+appointmentConfirmationEndpoint : ReadWriteEndPoint Error PrenatalAppointmentConfirmationId PrenatalAppointmentConfirmation PrenatalAppointmentConfirmation ()
+appointmentConfirmationEndpoint =
+    swEndpoint "nodes/appointment_confirmation" decodeAppointmentConfirmation
+        |> withValueEncoder (object << encodeAppointmentConfirmation)

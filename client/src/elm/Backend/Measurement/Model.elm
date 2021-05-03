@@ -497,7 +497,34 @@ type DangerSign
 
 
 type alias DangerSigns =
-    PrenatalMeasurement (EverySet DangerSign)
+    PrenatalMeasurement DangerSignsValue
+
+
+type alias DangerSignsValue =
+    { signs : EverySet DangerSign
+    , postpartumMother : EverySet PostpartumMotherDangerSign
+    , postpartumChild : EverySet PostpartumChildDangerSign
+    }
+
+
+type PostpartumMotherDangerSign
+    = PostpartumMotheUterineBleeding
+    | PostpartumMotherFever
+    | PostpartumMotherMigraine
+    | PostpartumMotherParalysis
+    | PostpartumMotherAcuteAbdominalPain
+    | PostpartumMotherLabouredBreathing
+    | NoPostpartumMotherDangerSigns
+
+
+type PostpartumChildDangerSign
+    = PostpartumChildInabilityToSuckle
+    | PostpartumChildParalysis
+    | PostpartumChildLabouredBreathing
+    | PostpartumChildAbnormalTemperature
+    | PostpartumChildInactiveNoMovement
+    | PostpartumChildBodyTurnedYellow
+    | NoPostpartumChildDangerSigns
 
 
 type alias LastMenstrualPeriodValue =
@@ -691,6 +718,69 @@ type alias VitalsValue =
 
 type alias Vitals =
     PrenatalMeasurement VitalsValue
+
+
+type alias BirthPlanValue =
+    { signs : EverySet BirthPlanSign
+    , familyPlanning : EverySet FamilyPlanningSign
+    }
+
+
+type alias BirthPlan =
+    PrenatalMeasurement BirthPlanValue
+
+
+type BirthPlanSign
+    = Insurance
+    | BoughtClothes
+    | CaregiverAccompany
+    | SavedMoney
+    | Transportation
+    | NoBirthPlan
+
+
+type alias PregnancyTest =
+    PrenatalMeasurement PregnancyTestResult
+
+
+type PregnancyTestResult
+    = PregnancyTestPositive
+    | PregnancyTestNegative
+    | PregnancyTestIndeterminate
+    | PregnancyTestUnableToConduct
+
+
+type alias PrenatalHealthEducation =
+    PrenatalMeasurement (EverySet PrenatalHealthEducationSign)
+
+
+type PrenatalHealthEducationSign
+    = EducationExpectations
+    | EducationVisitsReview
+    | EducationWarningSigns
+    | EducationHemorrhaging
+    | EducationFamilyPlanning
+    | EducationBreastfeeding
+    | EducationImmunization
+    | EducationHygiene
+    | NoPrenatalHealthEducationSigns
+
+
+type alias PrenatalFollowUp =
+    PrenatalMeasurement (EverySet FollowUpOption)
+
+
+type alias PrenatalSendToHC =
+    PrenatalMeasurement SendToHCValue
+
+
+type alias PrenatalAppointmentConfirmationValue =
+    { date : NominalDate
+    }
+
+
+type alias PrenatalAppointmentConfirmation =
+    PrenatalMeasurement PrenatalAppointmentConfirmationValue
 
 
 
@@ -965,6 +1055,7 @@ type alias SendToHCValue =
 type SendToHCSign
     = HandReferrerForm
     | ReferToHealthCenter
+    | PrenatalAccompanyToHC
     | NoSendToHCSigns
 
 
@@ -1206,6 +1297,12 @@ type alias PrenatalMeasurements =
     , socialHistory : Maybe ( SocialHistoryId, SocialHistory )
     , vitals : Maybe ( VitalsId, Vitals )
     , prenatalPhoto : Maybe ( PrenatalPhotoId, PrenatalPhoto )
+    , birthPlan : Maybe ( BirthPlanId, BirthPlan )
+    , pregnancyTest : Maybe ( PregnancyTestId, PregnancyTest )
+    , healthEducation : Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )
+    , followUp : Maybe ( PrenatalFollowUpId, PrenatalFollowUp )
+    , sendToHC : Maybe ( PrenatalSendToHcId, PrenatalSendToHC )
+    , appointmentConfirmation : Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )
     }
 
 

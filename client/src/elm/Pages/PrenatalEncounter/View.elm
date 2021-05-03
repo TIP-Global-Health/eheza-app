@@ -1,4 +1,4 @@
-module Pages.PrenatalEncounter.View exposing (view, viewMotherAndMeasurements, viewPersonDetails)
+module Pages.PrenatalEncounter.View exposing (generateActivityData, view, viewMotherAndMeasurements, viewPersonDetails)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
@@ -7,26 +7,31 @@ import Backend.Measurement.Model exposing (ObstetricHistoryValue, PrenatalMeasur
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
+import Backend.PrenatalActivity.Model exposing (..)
+import Backend.PrenatalActivity.Utils
+    exposing
+        ( generateHighRiskAlertData
+        , generateHighSeverityAlertData
+        , generateRecurringHighSeverityAlertData
+        , getActivityIcon
+        )
+import Backend.PrenatalEncounter.Model
+    exposing
+        ( ClinicalProgressReportInitiator(..)
+        , PrenatalEncounter
+        , PrenatalEncounterType(..)
+        , RecordPreganancyInitiator(..)
+        )
 import Date exposing (Interval(..))
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (..)
-import PrenatalActivity.Model exposing (..)
-import PrenatalActivity.Utils
-    exposing
-        ( generateHighRiskAlertData
-        , generateHighSeverityAlertData
-        , generateRecurringHighSeverityAlertData
-        , getActivityIcon
-        , getAllActivities
-        )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -46,24 +51,23 @@ view language currentDate id db model =
     let
         data =
             generateAssembledData id db
+    in
+    viewWebData language (viewHeaderAndContent language currentDate id model) identity data
 
+
+viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id model data =
+    let
         header =
-            viewWebData language (viewHeader language) identity data
+            viewHeader language data
 
         content =
-            viewWebData language (viewContent language currentDate model) identity data
+            viewContent language currentDate data model
     in
-    div [ class "page-encounter prenatal" ] <|
+    div [ class "page-encounter prenatal" ]
         [ header
         , content
         ]
-
-
-viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
-viewContent language currentDate model data =
-    div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewMainPageContent language currentDate data model
 
 
 viewHeader : Language -> AssembledData -> Html Msg
@@ -81,6 +85,13 @@ viewHeader language data =
             , span [] []
             ]
         ]
+
+
+viewContent : Language -> NominalDate -> AssembledData -> Model -> Html Msg
+viewContent language currentDate data model =
+    div [ class "ui unstackable items" ] <|
+        viewMotherAndMeasurements language currentDate data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
+            ++ viewMainPageContent language currentDate data model
 
 
 viewMotherAndMeasurements : Language -> NominalDate -> AssembledData -> Maybe ( Bool, Bool -> msg ) -> List (Html msg)
@@ -330,54 +341,10 @@ viewMeasurements language currentDate lmpDate obstetricHistory =
 viewMainPageContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
 viewMainPageContent language currentDate data model =
     let
-        isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
-
         ( completedActivities, pendingActivities ) =
-            getAllActivities isFirstEncounter
-                |> List.filter (expectPrenatalActivity currentDate data)
-                |> List.partition
-                    (\activity ->
-                        case activity of
-                            PregnancyDating ->
-                                isJust data.measurements.lastMenstrualPeriod
-
-                            History ->
-                                if List.isEmpty data.previousMeasurementsWithDates then
-                                    -- First antenatal encounter - all tasks should be completed
-                                    isJust data.measurements.obstetricHistory
-                                        && isJust data.measurements.obstetricHistoryStep2
-                                        && isJust data.measurements.medicalHistory
-                                        && isJust data.measurements.socialHistory
-
-                                else
-                                    -- Subsequent antenatal encounter - only Social history task
-                                    -- needs to be completed.
-                                    isJust data.measurements.socialHistory
-
-                            Examination ->
-                                isJust data.measurements.vitals
-                                    && isJust data.measurements.nutrition
-                                    && isJust data.measurements.corePhysicalExam
-                                    && isJust data.measurements.obstetricalExam
-                                    && isJust data.measurements.breastExam
-
-                            FamilyPlanning ->
-                                isJust data.measurements.familyPlanning
-
-                            PatientProvisions ->
-                                if shouldShowPatientProvisionsResourcesTask data then
-                                    isJust data.measurements.medication && isJust data.measurements.resource
-
-                                else
-                                    isJust data.measurements.medication
-
-                            DangerSigns ->
-                                isJust data.measurements.dangerSigns
-
-                            PrenatalPhoto ->
-                                isJust data.measurements.prenatalPhoto
-                    )
+            getAllActivities data
+                |> List.filter (expectActivity currentDate data)
+                |> List.partition (activityCompleted currentDate data)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -396,20 +363,36 @@ viewMainPageContent language currentDate data model =
                 ]
 
         viewCard activity =
+            let
+                ( label, icon ) =
+                    generateActivityData activity data
+
+                navigationAction =
+                    case activity of
+                        PregnancyOutcome ->
+                            if isNothing data.participant.endDate then
+                                [ onClick <|
+                                    SetActivePage <|
+                                        UserPage <|
+                                            PregnancyOutcomePage (InitiatorPostpartumEncounter data.id) data.encounter.participant
+                                ]
+
+                            else
+                                -- Pregnancy outcome is already recorded.
+                                []
+
+                        _ ->
+                            [ onClick <|
+                                SetActivePage <|
+                                    UserPage <|
+                                        PrenatalActivityPage data.id activity
+                            ]
+            in
             div [ class "card" ]
-                [ div
-                    [ class "image"
-                    , onClick <| SetActivePage <| UserPage <| PrenatalActivityPage data.id activity
-                    ]
-                    [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
+                [ div (class "image" :: navigationAction)
+                    [ span [ class <| "icon-task icon-task-" ++ icon ] [] ]
                 , div [ class "content" ]
-                    [ p []
-                        [ Translate.PrenatalActivitiesTitle activity
-                            |> translate language
-                            |> String.toUpper
-                            |> text
-                        ]
-                    ]
+                    [ p [] [ text <| String.toUpper <| translate language label ] ]
                 ]
 
         ( selectedActivities, emptySectionMessage ) =
@@ -438,7 +421,7 @@ viewMainPageContent language currentDate data model =
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage data.id)
+                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage InitiatorEncounterPage data.id)
                     , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage data.id)
                     ]
 
@@ -489,3 +472,17 @@ viewMainPageContent language currentDate data model =
     [ tabs
     , content
     ]
+
+
+generateActivityData : PrenatalActivity -> AssembledData -> ( TranslationId, String )
+generateActivityData activity data =
+    case activity of
+        NextSteps ->
+            if noDangerSigns data && data.encounter.encounterType /= ChwPostpartumEncounter then
+                ( Translate.AppointmentConfirmation, "appointment-confirmation" )
+
+            else
+                ( Translate.PrenatalActivitiesTitle NextSteps, getActivityIcon activity )
+
+        _ ->
+            ( Translate.PrenatalActivitiesTitle activity, getActivityIcon activity )

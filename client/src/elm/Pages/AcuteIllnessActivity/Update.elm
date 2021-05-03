@@ -33,7 +33,7 @@ import Measurement.Utils exposing (toHealthEducationValueWithDefault, toSendToHC
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (ifEverySetEmpty)
+import Pages.Utils exposing (ifEverySetEmpty, setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
 
@@ -390,38 +390,11 @@ update currentDate id db msg model =
                     acuteFindingsForm
 
                 updatedForm =
-                    case form.signsGeneral of
-                        Just signs ->
-                            if List.member sign signs then
-                                let
-                                    updatedSigns =
-                                        if List.length signs == 1 then
-                                            Nothing
-
-                                        else
-                                            signs |> List.filter ((/=) sign) |> Just
-                                in
-                                { form | signsGeneral = updatedSigns }
-
-                            else
-                                case sign of
-                                    NoAcuteFindingsGeneralSigns ->
-                                        { form | signsGeneral = Just [ sign ] }
-
-                                    _ ->
-                                        let
-                                            updatedSigns =
-                                                case signs of
-                                                    [ NoAcuteFindingsGeneralSigns ] ->
-                                                        Just [ sign ]
-
-                                                    _ ->
-                                                        Just (sign :: signs)
-                                        in
-                                        { form | signsGeneral = updatedSigns }
-
-                        Nothing ->
-                            { form | signsGeneral = Just [ sign ] }
+                    setMultiSelectInputValue .signsGeneral
+                        (\signs -> { form | signsGeneral = signs })
+                        NoAcuteFindingsGeneralSigns
+                        sign
+                        form
 
                 updatedData =
                     model.physicalExamData
@@ -438,38 +411,11 @@ update currentDate id db msg model =
                     acuteFindingsForm
 
                 updatedForm =
-                    case form.signsRespiratory of
-                        Just signs ->
-                            if List.member sign signs then
-                                let
-                                    updatedSigns =
-                                        if List.length signs == 1 then
-                                            Nothing
-
-                                        else
-                                            signs |> List.filter ((/=) sign) |> Just
-                                in
-                                { form | signsRespiratory = updatedSigns }
-
-                            else
-                                case sign of
-                                    NoAcuteFindingsRespiratorySigns ->
-                                        { form | signsRespiratory = Just [ sign ] }
-
-                                    _ ->
-                                        let
-                                            updatedSigns =
-                                                case signs of
-                                                    [ NoAcuteFindingsRespiratorySigns ] ->
-                                                        Just [ sign ]
-
-                                                    _ ->
-                                                        Just (sign :: signs)
-                                        in
-                                        { form | signsRespiratory = updatedSigns }
-
-                        Nothing ->
-                            { form | signsRespiratory = Just [ sign ] }
+                    setMultiSelectInputValue .signsRespiratory
+                        (\signs -> { form | signsRespiratory = signs })
+                        NoAcuteFindingsRespiratorySigns
+                        sign
+                        form
 
                 updatedData =
                     model.physicalExamData
@@ -617,38 +563,11 @@ update currentDate id db msg model =
                     nutritionForm
 
                 updatedForm =
-                    case form.signs of
-                        Just signs ->
-                            if List.member sign signs then
-                                let
-                                    updatedSigns =
-                                        if List.length signs == 1 then
-                                            Nothing
-
-                                        else
-                                            signs |> List.filter ((/=) sign) |> Just
-                                in
-                                { form | signs = updatedSigns }
-
-                            else
-                                case sign of
-                                    NormalChildNutrition ->
-                                        { form | signs = Just [ sign ] }
-
-                                    _ ->
-                                        let
-                                            updatedSigns =
-                                                case signs of
-                                                    [ NormalChildNutrition ] ->
-                                                        Just [ sign ]
-
-                                                    _ ->
-                                                        Just (sign :: signs)
-                                        in
-                                        { form | signs = updatedSigns }
-
-                        Nothing ->
-                            { form | signs = Just [ sign ] }
+                    setMultiSelectInputValue .signs
+                        (\signs -> { form | signs = signs })
+                        NormalChildNutrition
+                        sign
+                        form
 
                 updatedData =
                     model.physicalExamData
@@ -1017,29 +936,11 @@ update currentDate id db msg model =
                         |> Maybe.withDefault model.nextStepsData.isolationForm
 
                 updatedForm =
-                    case form.reasonsForNotIsolating of
-                        Just reasons ->
-                            case reasons of
-                                [ IsolationReasonNotApplicable ] ->
-                                    { form | reasonsForNotIsolating = [ reason ] |> Just }
-
-                                _ ->
-                                    if List.member reason reasons then
-                                        let
-                                            updated =
-                                                if List.length reasons == 1 then
-                                                    Nothing
-
-                                                else
-                                                    reasons |> List.filter ((/=) reason) |> Just
-                                        in
-                                        { form | reasonsForNotIsolating = updated }
-
-                                    else
-                                        { form | reasonsForNotIsolating = reason :: reasons |> Just }
-
-                        Nothing ->
-                            { form | reasonsForNotIsolating = Just [ reason ] }
+                    setMultiSelectInputValue .reasonsForNotIsolating
+                        (\reasons -> { form | reasonsForNotIsolating = reasons })
+                        IsolationReasonNotApplicable
+                        reason
+                        form
 
                 updatedData =
                     model.nextStepsData
@@ -1622,38 +1523,11 @@ update currentDate id db msg model =
                     treatmentReviewForm
 
                 updatedForm =
-                    case form.adverseEvents of
-                        Just events ->
-                            if List.member event events then
-                                let
-                                    updatedEvents =
-                                        if List.length events == 1 then
-                                            Nothing
-
-                                        else
-                                            events |> List.filter ((/=) event) |> Just
-                                in
-                                { form | adverseEvents = updatedEvents, adverseEventsDirty = True }
-
-                            else
-                                case event of
-                                    NoAdverseEvent ->
-                                        { form | adverseEvents = Just [ event ], adverseEventsDirty = True }
-
-                                    _ ->
-                                        let
-                                            updatedEvents =
-                                                case events of
-                                                    [ NoAdverseEvent ] ->
-                                                        Just [ event ]
-
-                                                    _ ->
-                                                        Just (event :: events)
-                                        in
-                                        { form | adverseEvents = updatedEvents, adverseEventsDirty = True }
-
-                        Nothing ->
-                            { form | adverseEvents = Just [ event ], adverseEventsDirty = True }
+                    setMultiSelectInputValue .adverseEvents
+                        (\events -> { form | adverseEvents = events, adverseEventsDirty = True })
+                        NoAdverseEvent
+                        event
+                        form
 
                 updatedData =
                     model.ongoingTreatmentData
@@ -1724,38 +1598,11 @@ update currentDate id db msg model =
                     reviewDangerSignsForm
 
                 updatedForm =
-                    case form.symptoms of
-                        Just signs ->
-                            if List.member sign signs then
-                                let
-                                    updatedSigns =
-                                        if List.length signs == 1 then
-                                            Nothing
-
-                                        else
-                                            signs |> List.filter ((/=) sign) |> Just
-                                in
-                                { form | symptoms = updatedSigns }
-
-                            else
-                                case sign of
-                                    NoAcuteIllnessDangerSign ->
-                                        { form | symptoms = Just [ sign ] }
-
-                                    _ ->
-                                        let
-                                            updatedSigns =
-                                                case signs of
-                                                    [ NoAcuteIllnessDangerSign ] ->
-                                                        Just [ sign ]
-
-                                                    _ ->
-                                                        Just (sign :: signs)
-                                        in
-                                        { form | symptoms = updatedSigns }
-
-                        Nothing ->
-                            { form | symptoms = Just [ sign ] }
+                    setMultiSelectInputValue .symptoms
+                        (\signs -> { form | symptoms = signs })
+                        NoAcuteIllnessDangerSign
+                        sign
+                        form
 
                 updatedData =
                     model.dangerSignsData

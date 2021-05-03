@@ -433,6 +433,39 @@ viewCheckBoxValueInputNone language data setMsg translateFunc noneSign =
         ]
 
 
+setMultiSelectInputValue : (f -> Maybe (List s)) -> (Maybe (List s) -> f) -> s -> s -> f -> f
+setMultiSelectInputValue getSignsFunc setSignsFunc noValueIndicator value form =
+    case getSignsFunc form of
+        Just signs ->
+            if List.member value signs then
+                let
+                    updatedSigns =
+                        if List.length signs == 1 then
+                            Nothing
+
+                        else
+                            signs |> List.filter ((/=) value) |> Just
+                in
+                setSignsFunc updatedSigns
+
+            else if value == noValueIndicator then
+                setSignsFunc (Just [ value ])
+
+            else
+                let
+                    updatedSigns =
+                        if signs == [ noValueIndicator ] then
+                            Just [ value ]
+
+                        else
+                            Just (value :: signs)
+                in
+                setSignsFunc updatedSigns
+
+        Nothing ->
+            setSignsFunc (Just [ value ])
+
+
 viewEndEncounterDialog : Language -> TranslationId -> TranslationId -> msg -> msg -> Html msg
 viewEndEncounterDialog language heading message confirmAction cancelAction =
     div [ class "ui tiny active modal" ]

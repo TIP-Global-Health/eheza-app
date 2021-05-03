@@ -13,6 +13,7 @@ import Measurement.Utils exposing (contributingFactorsFormWithDefault, followUpF
 import Pages.NextSteps.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Session.Model
+import Pages.Utils exposing (setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
 
 
@@ -147,38 +148,11 @@ update childId activity msg model =
                     model.contributingFactorsForm
 
                 updatedForm =
-                    case form.signs of
-                        Just signs ->
-                            if List.member sign signs then
-                                let
-                                    updatedSigns =
-                                        if List.length signs == 1 then
-                                            Nothing
-
-                                        else
-                                            signs |> List.filter ((/=) sign) |> Just
-                                in
-                                { form | signs = updatedSigns }
-
-                            else
-                                case sign of
-                                    NoContributingFactorsSign ->
-                                        { form | signs = Just [ sign ] }
-
-                                    _ ->
-                                        let
-                                            updatedSigns =
-                                                case signs of
-                                                    [ NoContributingFactorsSign ] ->
-                                                        Just [ sign ]
-
-                                                    _ ->
-                                                        Just (sign :: signs)
-                                        in
-                                        { form | signs = updatedSigns }
-
-                        Nothing ->
-                            { form | signs = Just [ sign ] }
+                    setMultiSelectInputValue .signs
+                        (\signs -> { form | signs = signs })
+                        NoContributingFactorsSign
+                        sign
+                        form
             in
             ( { model | contributingFactorsForm = updatedForm }
             , Cmd.none

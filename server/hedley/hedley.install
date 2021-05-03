@@ -605,3 +605,10 @@ function hedley_update_7028() {
 function hedley_update_7029() {
   module_enable(['hedley_nutrition']);
 }
+
+/**
+ * Enable the Hedley Prenatal module.
+ */
+function hedley_update_7030() {
+  module_enable(['hedley_prenatal']);
+}

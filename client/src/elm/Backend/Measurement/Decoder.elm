@@ -102,6 +102,12 @@ decodePrenatalMeasurements =
         |> optional "social_history" (decodeHead decodeSocialHistory) Nothing
         |> optional "vitals" (decodeHead decodeVitals) Nothing
         |> optional "prenatal_photo" (decodeHead decodePrenatalPhoto) Nothing
+        |> optional "birth_plan" (decodeHead decodeBirthPlan) Nothing
+        |> optional "pregnancy_testing" (decodeHead decodePregnancyTesting) Nothing
+        |> optional "prenatal_health_education" (decodeHead decodePrenatalHealthEducation) Nothing
+        |> optional "prenatal_follow_up" (decodeHead decodePrenatalFollowUp) Nothing
+        |> optional "prenatal_send_to_hc" (decodeHead decodePrenatalSendToHc) Nothing
+        |> optional "appointment_confirmation" (decodeHead decodeAppointmentConfirmation) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -176,6 +182,111 @@ decodePrenatalPhoto : Decoder PrenatalPhoto
 decodePrenatalPhoto =
     field "photo" (decodeStringWithDefault "")
         |> map PhotoUrl
+        |> decodePrenatalMeasurement
+
+
+decodePregnancyTesting : Decoder PregnancyTest
+decodePregnancyTesting =
+    decodePregnancyTestResult
+        |> field "urine_pregnancy_test"
+        |> decodePrenatalMeasurement
+
+
+decodePregnancyTestResult : Decoder PregnancyTestResult
+decodePregnancyTestResult =
+    string
+        |> andThen
+            (\result ->
+                pregnancyTestResultFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized PregnancyTestResult" |> fail)
+            )
+
+
+pregnancyTestResultFromString : String -> Maybe PregnancyTestResult
+pregnancyTestResultFromString result =
+    case result of
+        "positive" ->
+            Just PregnancyTestPositive
+
+        "negative" ->
+            Just PregnancyTestNegative
+
+        "indeterminate" ->
+            Just PregnancyTestIndeterminate
+
+        "unable-to-conduct" ->
+            Just PregnancyTestUnableToConduct
+
+        _ ->
+            Nothing
+
+
+decodePrenatalHealthEducation : Decoder PrenatalHealthEducation
+decodePrenatalHealthEducation =
+    decodeEverySet decodePrenatalHealthEducationSign
+        |> field "prenatal_health_education"
+        |> decodePrenatalMeasurement
+
+
+decodePrenatalHealthEducationSign : Decoder PrenatalHealthEducationSign
+decodePrenatalHealthEducationSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "expectations" ->
+                        succeed EducationExpectations
+
+                    "visits-review" ->
+                        succeed EducationVisitsReview
+
+                    "warning-signs" ->
+                        succeed EducationWarningSigns
+
+                    "hemorrhaging" ->
+                        succeed EducationHemorrhaging
+
+                    "family-planning" ->
+                        succeed EducationFamilyPlanning
+
+                    "breastfeeding" ->
+                        succeed EducationBreastfeeding
+
+                    "immunization" ->
+                        succeed EducationImmunization
+
+                    "hygiene" ->
+                        succeed EducationHygiene
+
+                    "none" ->
+                        succeed NoPrenatalHealthEducationSigns
+
+                    _ ->
+                        sign ++ " is not a recognized PrenatalHealthEducationSign" |> fail
+            )
+
+
+decodePrenatalFollowUp : Decoder PrenatalFollowUp
+decodePrenatalFollowUp =
+    decodePrenatalMeasurement decodePrenatalFollowUpValue
+
+
+decodePrenatalFollowUpValue : Decoder (EverySet FollowUpOption)
+decodePrenatalFollowUpValue =
+    decodeEverySet decodeFollowUpOption
+        |> field "follow_up_options"
+
+
+decodePrenatalSendToHc : Decoder PrenatalSendToHC
+decodePrenatalSendToHc =
+    decodePrenatalMeasurement decodeSendToHCValue
+
+
+decodeAppointmentConfirmation : Decoder PrenatalAppointmentConfirmation
+decodeAppointmentConfirmation =
+    succeed PrenatalAppointmentConfirmationValue
+        |> required "appointment_confirmation" Gizra.NominalDate.decodeYYYYMMDD
         |> decodePrenatalMeasurement
 
 
@@ -663,9 +774,33 @@ decodeDangerSign =
 
 decodeDangerSigns : Decoder DangerSigns
 decodeDangerSigns =
-    decodeEverySet decodeDangerSign
-        |> field "danger_signs"
+    succeed DangerSignsValue
+        |> required "danger_signs" (decodeEverySet decodeDangerSign)
+        |> optional "postpartum_mother" (decodeEverySet decodePostpartumMotherDangerSign) (EverySet.fromList [ NoPostpartumMotherDangerSigns ])
+        |> optional "postpartum_child" (decodeEverySet decodePostpartumChildDangerSign) (EverySet.fromList [ NoPostpartumChildDangerSigns ])
         |> decodePrenatalMeasurement
+
+
+decodePostpartumMotherDangerSign : Decoder PostpartumMotherDangerSign
+decodePostpartumMotherDangerSign =
+    string
+        |> andThen
+            (\s ->
+                postpartumMotherDangerSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized PostpartumMotherDangerSign" |> fail)
+            )
+
+
+decodePostpartumChildDangerSign : Decoder PostpartumChildDangerSign
+decodePostpartumChildDangerSign =
+    string
+        |> andThen
+            (\s ->
+                postpartumChildDangerSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized PostpartumChildDangerSign" |> fail)
+            )
 
 
 decodeLastMenstrualPeriod : Decoder LastMenstrualPeriod
@@ -1049,6 +1184,49 @@ decodeObstetricHistoryStep2 =
         |> required "previous_delivery_period" (decodeEverySet decodePreviousDeliveryPeriod)
         |> required "obstetric_history" (decodeEverySet decodeObstetricHistorySign)
         |> decodePrenatalMeasurement
+
+
+decodeBirthPlan : Decoder BirthPlan
+decodeBirthPlan =
+    decodePrenatalMeasurement decodeBirthPlanValue
+
+
+decodeBirthPlanValue : Decoder BirthPlanValue
+decodeBirthPlanValue =
+    succeed BirthPlanValue
+        |> required "birth_plan_signs" (decodeEverySet decodeBirthPlanSign)
+        |> required "family_planning_signs" (decodeEverySet decodeFamilyPlanningSign)
+
+
+decodeBirthPlanSign : Decoder BirthPlanSign
+decodeBirthPlanSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "have-insurance" ->
+                        succeed Insurance
+
+                    "bought-clothes-for-child" ->
+                        succeed BoughtClothes
+
+                    "caregiver-to-accompany-you" ->
+                        succeed CaregiverAccompany
+
+                    "saved-money-for-use" ->
+                        succeed SavedMoney
+
+                    "planned-for-transportation" ->
+                        succeed Transportation
+
+                    "none" ->
+                        succeed NoBirthPlan
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized BirthPlanSign"
+            )
 
 
 decodeNutritionMuac : Decoder NutritionMuac
@@ -1723,6 +1901,9 @@ decodeSendToHCSign =
 
                     "refer-to-hc" ->
                         succeed ReferToHealthCenter
+
+                    "accompany-to-hc" ->
+                        succeed PrenatalAccompanyToHC
 
                     "none" ->
                         succeed NoSendToHCSigns

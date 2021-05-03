@@ -3,9 +3,9 @@ module Pages.NutritionParticipant.View exposing (view)
 import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.HomeVisitEncounter.Model
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
-import Backend.IndividualEncounterParticipant.Utils exposing (emptyIndividualEncounterParticipant, isDailyEncounterActive)
+import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), emptyIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
@@ -151,7 +151,7 @@ viewNutritionAction language currentDate selectedHealthCenter id db sessions =
                         -- If nutrition session does not exist, create it.
                         |> Maybe.withDefault
                             [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.NutritionEncounter selectedHealthCenter
-                                |> Backend.Model.PostIndividualSession
+                                |> Backend.Model.PostIndividualSession Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
                                 |> App.Model.MsgIndexedDb
                                 |> onClick
                             ]
@@ -239,7 +239,7 @@ viewHomeVisitAction language currentDate selectedHealthCenter id db sessions =
                         |> Maybe.map
                             -- If home visit session exists, create new encounter for it.
                             (\sessionId ->
-                                [ Backend.HomeVisitEncounter.Model.HomeVisitEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
+                                [ emptyHomeVisitEncounter sessionId currentDate (Just selectedHealthCenter)
                                     |> Backend.Model.PostHomeVisitEncounter
                                     |> App.Model.MsgIndexedDb
                                     |> onClick
@@ -248,7 +248,7 @@ viewHomeVisitAction language currentDate selectedHealthCenter id db sessions =
                         -- If home visit session does not exist, create it.
                         |> Maybe.withDefault
                             [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter selectedHealthCenter
-                                |> Backend.Model.PostIndividualSession
+                                |> Backend.Model.PostIndividualSession Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
                                 |> App.Model.MsgIndexedDb
                                 |> onClick
                             ]

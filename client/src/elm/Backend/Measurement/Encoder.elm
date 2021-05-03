@@ -133,6 +133,116 @@ encodePrenatalPhotoUrl (PhotoUrl url) =
     ]
 
 
+encodePregnancyTesting : PregnancyTest -> List ( String, Value )
+encodePregnancyTesting =
+    encodePrenatalMeasurement encodePregnancyTestingValue
+
+
+encodePregnancyTestingValue : PregnancyTestResult -> List ( String, Value )
+encodePregnancyTestingValue value =
+    [ ( "urine_pregnancy_test", encodePregnancyTestResult value )
+    , ( "deleted", bool False )
+    , ( "type", string "pregnancy_testing" )
+    ]
+
+
+encodePregnancyTestResult : PregnancyTestResult -> Value
+encodePregnancyTestResult =
+    pregnancyTestResultAsString >> string
+
+
+pregnancyTestResultAsString : PregnancyTestResult -> String
+pregnancyTestResultAsString sign =
+    case sign of
+        PregnancyTestPositive ->
+            "positive"
+
+        PregnancyTestNegative ->
+            "negative"
+
+        PregnancyTestIndeterminate ->
+            "indeterminate"
+
+        PregnancyTestUnableToConduct ->
+            "unable-to-conduct"
+
+
+encodePrenatalHealthEducation : PrenatalHealthEducation -> List ( String, Value )
+encodePrenatalHealthEducation =
+    encodePrenatalMeasurement encodePrenatalHealthEducationValue
+
+
+encodePrenatalHealthEducationValue : EverySet PrenatalHealthEducationSign -> List ( String, Value )
+encodePrenatalHealthEducationValue signs =
+    [ ( "prenatal_health_education", encodeEverySet encodePrenatalHealthEducationSign signs )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_health_education" )
+    ]
+
+
+encodePrenatalHealthEducationSign : PrenatalHealthEducationSign -> Value
+encodePrenatalHealthEducationSign sign =
+    string <|
+        case sign of
+            EducationExpectations ->
+                "expectations"
+
+            EducationVisitsReview ->
+                "visits-review"
+
+            EducationWarningSigns ->
+                "warning-signs"
+
+            EducationHemorrhaging ->
+                "hemorrhaging"
+
+            EducationFamilyPlanning ->
+                "family-planning"
+
+            EducationBreastfeeding ->
+                "breastfeeding"
+
+            EducationImmunization ->
+                "immunization"
+
+            EducationHygiene ->
+                "hygiene"
+
+            NoPrenatalHealthEducationSigns ->
+                "none"
+
+
+encodePrenatalFollowUp : PrenatalFollowUp -> List ( String, Value )
+encodePrenatalFollowUp =
+    encodePrenatalMeasurement encodePrenatalFollowUpValue
+
+
+encodePrenatalFollowUpValue : EverySet FollowUpOption -> List ( String, Value )
+encodePrenatalFollowUpValue value =
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_follow_up" )
+    ]
+
+
+encodePrenatalSendToHC : PrenatalSendToHC -> List ( String, Value )
+encodePrenatalSendToHC =
+    encodePrenatalMeasurement (encodeSendToHCValueWithType "prenatal_send_to_hc")
+
+
+encodeAppointmentConfirmation : PrenatalAppointmentConfirmation -> List ( String, Value )
+encodeAppointmentConfirmation =
+    encodePrenatalMeasurement encodeAppointmentConfirmationValue
+
+
+encodeAppointmentConfirmationValue : PrenatalAppointmentConfirmationValue -> List ( String, Value )
+encodeAppointmentConfirmationValue value =
+    [ ( "appointment_confirmation", Gizra.NominalDate.encodeYYYYMMDD value.date )
+    , ( "deleted", bool False )
+    , ( "type", string "appointment_confirmation" )
+    ]
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement encodeNutritionValue
@@ -567,12 +677,24 @@ encodeDangerSign sign =
                 "none"
 
 
-encodeDangerSignsValue : EverySet DangerSign -> List ( String, Value )
+encodeDangerSignsValue : DangerSignsValue -> List ( String, Value )
 encodeDangerSignsValue value =
-    [ ( "danger_signs", encodeEverySet encodeDangerSign value )
+    [ ( "danger_signs", encodeEverySet encodeDangerSign value.signs )
+    , ( "postpartum_mother", encodeEverySet encodePostpartumMotherDangerSign value.postpartumMother )
+    , ( "postpartum_child", encodeEverySet encodePostpartumChildDangerSign value.postpartumChild )
     , ( "deleted", bool False )
     , ( "type", string "danger_signs" )
     ]
+
+
+encodePostpartumMotherDangerSign : PostpartumMotherDangerSign -> Value
+encodePostpartumMotherDangerSign sign =
+    postpartumMotherDangerSignToString sign |> string
+
+
+encodePostpartumChildDangerSign : PostpartumChildDangerSign -> Value
+encodePostpartumChildDangerSign sign =
+    postpartumChildDangerSignToString sign |> string
 
 
 encodeDangerSigns : DangerSigns -> List ( String, Value )
@@ -903,6 +1025,43 @@ encodeObstetricHistoryStep2Value value =
     , ( "deleted", bool False )
     , ( "type", string "obstetric_history_step2" )
     ]
+
+
+encodeBirthPlan : BirthPlan -> List ( String, Value )
+encodeBirthPlan =
+    encodePrenatalMeasurement encodeBirthPlanValue
+
+
+encodeBirthPlanValue : BirthPlanValue -> List ( String, Value )
+encodeBirthPlanValue value =
+    [ ( "birth_plan_signs", encodeEverySet encodeBirthPlanSign value.signs )
+    , ( "family_planning_signs", encodeEverySet encodeFamilyPlanningSign value.familyPlanning )
+    , ( "deleted", bool False )
+    , ( "type", string "birth_plan" )
+    ]
+
+
+encodeBirthPlanSign : BirthPlanSign -> Value
+encodeBirthPlanSign sign =
+    string <|
+        case sign of
+            Insurance ->
+                "have-insurance"
+
+            BoughtClothes ->
+                "bought-clothes-for-child"
+
+            CaregiverAccompany ->
+                "caregiver-to-accompany-you"
+
+            SavedMoney ->
+                "saved-money-for-use"
+
+            Transportation ->
+                "planned-for-transportation"
+
+            NoBirthPlan ->
+                "none"
 
 
 encodePrenatalFamilyPlanning : PrenatalFamilyPlanning -> List ( String, Value )
@@ -1324,6 +1483,9 @@ encondeSendToHCSign sign =
 
             ReferToHealthCenter ->
                 "refer-to-hc"
+
+            PrenatalAccompanyToHC ->
+                "accompany-to-hc"
 
             NoSendToHCSigns ->
                 "none"

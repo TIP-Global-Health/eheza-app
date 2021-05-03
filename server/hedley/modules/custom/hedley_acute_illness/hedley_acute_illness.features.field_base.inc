@@ -940,6 +940,7 @@ function hedley_acute_illness_field_default_field_bases() {
       'allowed_values' => array(
         'refer-to-hc' => 'Refer to HC',
         'referral-form' => 'Referral form',
+        'accompany-to-hc' => 'Accompany to HC',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',

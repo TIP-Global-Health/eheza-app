@@ -2,13 +2,330 @@ module Pages.PrenatalActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
+import Backend.Person.Model exposing (Person)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
+import Html exposing (Html)
+import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import Measurement.Utils exposing (sendToHCFormWithDefault)
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (getMotherHeightMeasurement)
-import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskCompleted, taskListCompleted, valueConsideringIsDirtyField)
+import Pages.Utils
+    exposing
+        ( ifEverySetEmpty
+        , ifNullableTrue
+        , ifTrue
+        , taskCompleted
+        , taskListCompleted
+        , valueConsideringIsDirtyField
+        , viewBoolInput
+        , viewQuestionLabel
+        )
+import Translate exposing (Language)
+
+
+healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasks language assembled healthEducationForm =
+    let
+        form =
+            assembled.measurements.healthEducation
+                |> Maybe.map (Tuple.second >> .value)
+                |> healthEducationFormWithDefault healthEducationForm
+
+        ( inputsFromFirst, tasksFromFirst ) =
+            if healthEducationCompletedAtEncounter ChwFirstEncounter then
+                ( [], [] )
+
+            else
+                ( firstEnconterInputs, firstEnconterTasks )
+
+        ( inputsFromSecond, tasksFromSecond ) =
+            if healthEducationCompletedAtEncounter ChwSecondEncounter then
+                ( [], [] )
+
+            else
+                ( secondEnconterInputs, secondEnconterTasks )
+
+        ( inputsFromThird, tasksFromThird ) =
+            if healthEducationCompletedAtEncounter ChwThirdEncounter then
+                ( [], [] )
+
+            else
+                ( thirdEnconterInputs, thirdEnconterTasks )
+
+        healthEducationCompletedAtEncounter encounterType =
+            let
+                encounterSequenceNumber =
+                    case encounterType of
+                        ChwFirstEncounter ->
+                            0
+
+                        ChwSecondEncounter ->
+                            1
+
+                        ChwThirdEncounter ->
+                            2
+
+                        ChwPostpartumEncounter ->
+                            3
+
+                        -- We should never get here, as health
+                        -- education is presented only for CHW.
+                        NurseEncounter ->
+                            -1
+            in
+            assembled.chwPreviousMeasurementsWithDates
+                |> List.Extra.getAt encounterSequenceNumber
+                |> Maybe.andThen (Tuple.second >> .healthEducation)
+                |> isJust
+
+        firstEnconterInputs =
+            [ expectationsInput, visitsReviewInput, warningSignsInput ]
+
+        firstEnconterTasks =
+            [ form.expectations, form.visitsReview, form.warningSigns ]
+
+        secondEnconterInputs =
+            [ hemorrhagingInput ]
+
+        secondEnconterTasks =
+            [ form.hemorrhaging ]
+
+        thirdEnconterInputs =
+            [ familyPlanningInput, breastfeedingInput ]
+
+        thirdEnconterTasks =
+            [ form.familyPlanning, form.breastfeeding ]
+
+        postpartumEnconterInputs =
+            [ immunizationInput, hygieneInput ]
+
+        postpartumEnconterTasks =
+            [ form.immunization, form.hygiene ]
+
+        expectationsUpdateFunc value form_ =
+            { form_ | expectations = Just value }
+
+        setBoolInputMsg =
+            case assembled.encounter.encounterType of
+                ChwPostpartumEncounter ->
+                    SetHealthEducationSubActivityBoolInput
+
+                _ ->
+                    SetHealthEducationBoolInput
+
+        expectationsInput =
+            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationExpectations
+            , viewBoolInput
+                language
+                form.expectations
+                (setBoolInputMsg expectationsUpdateFunc)
+                "expectations"
+                Nothing
+            ]
+
+        visitsReviewUpdateFunc value form_ =
+            { form_ | visitsReview = Just value }
+
+        visitsReviewInput =
+            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationVisitsReview
+            , viewBoolInput
+                language
+                form.visitsReview
+                (setBoolInputMsg visitsReviewUpdateFunc)
+                "visits-review"
+                Nothing
+            ]
+
+        warningSignsUpdateFunc value form_ =
+            { form_ | warningSigns = Just value }
+
+        warningSignsInput =
+            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationWarningSigns
+            , viewBoolInput
+                language
+                form.warningSigns
+                (setBoolInputMsg warningSignsUpdateFunc)
+                "warning-signs"
+                Nothing
+            ]
+
+        hemorrhagingUpdateFunc value form_ =
+            { form_ | hemorrhaging = Just value }
+
+        hemorrhagingInput =
+            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationHemorrhaging
+            , viewBoolInput
+                language
+                form.hemorrhaging
+                (setBoolInputMsg hemorrhagingUpdateFunc)
+                "hemorrhaging"
+                Nothing
+            ]
+
+        familyPlanningUpdateFunc value form_ =
+            { form_ | familyPlanning = Just value }
+
+        familyPlanningInput =
+            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationFamilyPlanning
+            , viewBoolInput
+                language
+                form.familyPlanning
+                (setBoolInputMsg familyPlanningUpdateFunc)
+                "family-planning"
+                Nothing
+            ]
+
+        breastfeedingUpdateFunc value form_ =
+            { form_ | breastfeeding = Just value }
+
+        breastfeedingInput =
+            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationBreastfeeding
+            , viewBoolInput
+                language
+                form.breastfeeding
+                (setBoolInputMsg breastfeedingUpdateFunc)
+                "breastfeeding"
+                Nothing
+            ]
+
+        immunizationUpdateFunc value form_ =
+            { form_ | immunization = Just value }
+
+        immunizationInput =
+            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationImmunization
+            , viewBoolInput
+                language
+                form.immunization
+                (setBoolInputMsg immunizationUpdateFunc)
+                "immunization"
+                Nothing
+            ]
+
+        hygieneUpdateFunc value form_ =
+            { form_ | hygiene = Just value }
+
+        hygieneInput =
+            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationHygiene
+            , viewBoolInput
+                language
+                form.hygiene
+                (setBoolInputMsg hygieneUpdateFunc)
+                "hygiene"
+                Nothing
+            ]
+    in
+    -- If Health education was not completed at previous encounter,
+    -- its inputs are added to next encounter.
+    case assembled.encounter.encounterType of
+        ChwFirstEncounter ->
+            ( List.concat inputsFromFirst
+            , tasksFromFirst
+            )
+
+        ChwSecondEncounter ->
+            ( List.concat <| inputsFromFirst ++ inputsFromSecond
+            , tasksFromFirst ++ tasksFromSecond
+            )
+
+        ChwThirdEncounter ->
+            ( List.concat <| inputsFromFirst ++ inputsFromSecond ++ inputsFromThird
+            , tasksFromFirst ++ tasksFromSecond ++ tasksFromThird
+            )
+
+        ChwPostpartumEncounter ->
+            ( List.concat <| inputsFromFirst ++ inputsFromSecond ++ inputsFromThird ++ postpartumEnconterInputs
+            , tasksFromFirst ++ tasksFromSecond ++ tasksFromThird ++ postpartumEnconterTasks
+            )
+
+        -- We should never get here, as health
+        -- education is presented only for CHW.
+        NurseEncounter ->
+            ( [], [] )
+
+
+nextStepsTasksCompletedFromTotal :
+    Language
+    -> AssembledData
+    -> NextStepsData
+    -> NextStepsTask
+    -> ( Int, Int )
+nextStepsTasksCompletedFromTotal language assembled data task =
+    case task of
+        NextStepsAppointmentConfirmation ->
+            let
+                form =
+                    assembled.measurements.appointmentConfirmation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> appointmentConfirmationFormWithDefault data.appointmentConfirmationForm
+            in
+            ( taskCompleted form.appointmentDate
+            , 1
+            )
+
+        NextStepsFollowUp ->
+            let
+                form =
+                    assembled.measurements.followUp
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> followUpFormWithDefault data.followUpForm
+            in
+            ( taskCompleted form.option
+            , 1
+            )
+
+        NextStepsSendToHC ->
+            let
+                form =
+                    assembled.measurements.sendToHC
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> sendToHCFormWithDefault data.sendToHCForm
+
+                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+                    form.referToHealthCenter
+                        |> Maybe.map
+                            (\sentToHC ->
+                                if not sentToHC then
+                                    if isJust form.reasonForNotSendingToHC then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+            in
+            ( reasonForNotSentActive + taskCompleted form.handReferralForm + taskCompleted form.accompanyToHealthCenter
+            , reasonForNotSentCompleted + 2
+            )
+
+        NextStepsHealthEducation ->
+            let
+                form =
+                    assembled.measurements.healthEducation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> healthEducationFormWithDefault data.healthEducationForm
+
+                tasksCompleted =
+                    List.map taskCompleted tasks
+                        |> List.sum
+
+                ( _, tasks ) =
+                    healthEducationFormInputsAndTasks language assembled data.healthEducationForm
+            in
+            ( tasksCompleted
+            , List.length tasks
+            )
+
+        NextStepsNewbornEnrolment ->
+            ( taskCompleted assembled.participant.newborn
+            , 1
+            )
 
 
 {-| This is a convenience for cases where the form values ought to be redefined
@@ -25,7 +342,7 @@ toEverySet presentValue absentValue present =
 
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
 resolvePreviousValue assembled measurementFunc valueFunc =
-    assembled.previousMeasurementsWithDates
+    assembled.nursePreviousMeasurementsWithDates
         |> List.filterMap
             (\( _, measurements ) ->
                 measurementFunc measurements
@@ -121,32 +438,52 @@ toCorePhysicalExamValue form =
         |> andMap (Maybe.map EverySet.fromList form.legs)
 
 
-fromDangerSignsValue : Maybe (EverySet DangerSign) -> DangerSignsForm
+fromDangerSignsValue : Maybe DangerSignsValue -> DangerSignsForm
 fromDangerSignsValue saved =
-    { signs = Maybe.map EverySet.toList saved
+    { signs = Maybe.map (.signs >> EverySet.toList) saved
+    , postpartumMother = Maybe.map (.postpartumMother >> EverySet.toList) saved
+    , postpartumChild = Maybe.map (.postpartumChild >> EverySet.toList) saved
     }
 
 
-dangerSignsFormWithDefault : DangerSignsForm -> Maybe (EverySet DangerSign) -> DangerSignsForm
+dangerSignsFormWithDefault : DangerSignsForm -> Maybe DangerSignsValue -> DangerSignsForm
 dangerSignsFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { signs = or form.signs (EverySet.toList value |> Just)
+                { signs = or form.signs (EverySet.toList value.signs |> Just)
+                , postpartumMother = or form.postpartumMother (EverySet.toList value.postpartumMother |> Just)
+                , postpartumChild = or form.postpartumChild (EverySet.toList value.postpartumChild |> Just)
                 }
             )
 
 
-toDangerSignsValueWithDefault : Maybe (EverySet DangerSign) -> DangerSignsForm -> Maybe (EverySet DangerSign)
+toDangerSignsValueWithDefault : Maybe DangerSignsValue -> DangerSignsForm -> Maybe DangerSignsValue
 toDangerSignsValueWithDefault saved form =
     dangerSignsFormWithDefault form saved
         |> toDangerSignsValue
 
 
-toDangerSignsValue : DangerSignsForm -> Maybe (EverySet DangerSign)
+toDangerSignsValue : DangerSignsForm -> Maybe DangerSignsValue
 toDangerSignsValue form =
-    Maybe.map EverySet.fromList form.signs
+    let
+        signs =
+            form.signs
+                |> Maybe.withDefault [ NoDangerSign ]
+                |> EverySet.fromList
+
+        postpartumMother =
+            form.postpartumMother
+                |> Maybe.withDefault [ NoPostpartumMotherDangerSigns ]
+                |> EverySet.fromList
+
+        postpartumChild =
+            form.postpartumChild
+                |> Maybe.withDefault [ NoPostpartumChildDangerSigns ]
+                |> EverySet.fromList
+    in
+    Just <| DangerSignsValue signs postpartumMother postpartumChild
 
 
 fromLastMenstrualPeriodValue : Maybe LastMenstrualPeriodValue -> PregnancyDatingForm
@@ -636,6 +973,40 @@ toVitalsValue form =
         |> andMap form.bodyTemperature
 
 
+fromPregnancyTestingValue : Maybe PregnancyTestResult -> PregnancyTestingForm
+fromPregnancyTestingValue saved =
+    { pregnancyTestResult = saved }
+
+
+pregnancyTestingFormWithDefault : PregnancyTestingForm -> Maybe PregnancyTestResult -> PregnancyTestingForm
+pregnancyTestingFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    formWithDefault =
+                        fromPregnancyTestingValue saved
+                in
+                { pregnancyTestResult = or form.pregnancyTestResult formWithDefault.pregnancyTestResult
+                }
+            )
+
+
+toPregnancyTestingValueWithDefault : Maybe PregnancyTestResult -> PregnancyTestingForm -> Maybe PregnancyTestResult
+toPregnancyTestingValueWithDefault saved form =
+    pregnancyTestingFormWithDefault form saved
+        |> (\form_ ->
+                form_
+           )
+        |> toPregnancyTestingValue
+
+
+toPregnancyTestingValue : PregnancyTestingForm -> Maybe PregnancyTestResult
+toPregnancyTestingValue form =
+    form.pregnancyTestResult
+
+
 calculateBmi : Maybe Float -> Maybe Float -> Maybe Float
 calculateBmi maybeHeight maybeWeight =
     Maybe.map2 (\height weight -> weight / ((height / 100) ^ 2)) maybeHeight maybeWeight
@@ -737,7 +1108,7 @@ historyTasksCompletedFromTotal assembled data task =
                         |> socialHistoryFormWithDefault data.socialForm
 
                 showCounselingQuestion =
-                    assembled.previousMeasurementsWithDates
+                    assembled.nursePreviousMeasurementsWithDates
                         |> List.filter
                             (\( _, measurements ) ->
                                 measurements.socialHistory
@@ -754,7 +1125,7 @@ historyTasksCompletedFromTotal assembled data task =
                         []
 
                 showTestingQuestions =
-                    assembled.previousMeasurementsWithDates
+                    assembled.nursePreviousMeasurementsWithDates
                         |> List.filter
                             (\( _, measurements ) ->
                                 measurements.socialHistory
@@ -830,7 +1201,7 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
 
                 form =
                     if hideHeightInput then
-                        assembled.previousMeasurementsWithDates
+                        assembled.nursePreviousMeasurementsWithDates
                             |> List.head
                             |> Maybe.andThen (Tuple.second >> getMotherHeightMeasurement)
                             |> Maybe.map (\(HeightInCm height) -> { form_ | height = Just height })
@@ -969,3 +1340,162 @@ socialHistoryHivTestingResultFromString result =
 
         _ ->
             Nothing
+
+
+fromBirthPlanValue : Maybe BirthPlanValue -> BirthPlanForm
+fromBirthPlanValue saved =
+    { haveInsurance = Maybe.map (.signs >> EverySet.member Insurance) saved
+    , boughtClothes = Maybe.map (.signs >> EverySet.member BoughtClothes) saved
+    , caregiverAccompany = Maybe.map (.signs >> EverySet.member CaregiverAccompany) saved
+    , savedMoney = Maybe.map (.signs >> EverySet.member SavedMoney) saved
+    , haveTransportation = Maybe.map (.signs >> EverySet.member Transportation) saved
+    , familyPlanning = Maybe.map (.familyPlanning >> EverySet.toList) saved
+    }
+
+
+birthPlanFormWithDefault : BirthPlanForm -> Maybe BirthPlanValue -> BirthPlanForm
+birthPlanFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { haveInsurance = or form.haveInsurance (EverySet.member Insurance value.signs |> Just)
+                , boughtClothes = or form.boughtClothes (EverySet.member BoughtClothes value.signs |> Just)
+                , caregiverAccompany = or form.caregiverAccompany (EverySet.member CaregiverAccompany value.signs |> Just)
+                , savedMoney = or form.savedMoney (EverySet.member SavedMoney value.signs |> Just)
+                , haveTransportation = or form.haveTransportation (EverySet.member Transportation value.signs |> Just)
+                , familyPlanning = or form.familyPlanning (value.familyPlanning |> EverySet.toList |> Just)
+                }
+            )
+
+
+toBirthPlanValueWithDefault : Maybe BirthPlanValue -> BirthPlanForm -> Maybe BirthPlanValue
+toBirthPlanValueWithDefault saved form =
+    birthPlanFormWithDefault form saved
+        |> toBirthPlanValue
+
+
+toBirthPlanValue : BirthPlanForm -> Maybe BirthPlanValue
+toBirthPlanValue form =
+    let
+        signs =
+            [ Maybe.map (ifTrue Insurance) form.haveInsurance
+            , Maybe.map (ifTrue BoughtClothes) form.boughtClothes
+            , Maybe.map (ifTrue CaregiverAccompany) form.caregiverAccompany
+            , Maybe.map (ifTrue SavedMoney) form.savedMoney
+            , Maybe.map (ifTrue Transportation) form.haveTransportation
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoBirthPlan)
+    in
+    Maybe.map BirthPlanValue signs
+        |> andMap (Maybe.map EverySet.fromList form.familyPlanning)
+
+
+fromHealthEducationValue : Maybe (EverySet PrenatalHealthEducationSign) -> HealthEducationForm
+fromHealthEducationValue saved =
+    { expectations = Maybe.map (EverySet.member EducationExpectations) saved
+    , visitsReview = Maybe.map (EverySet.member EducationVisitsReview) saved
+    , warningSigns = Maybe.map (EverySet.member EducationWarningSigns) saved
+    , hemorrhaging = Maybe.map (EverySet.member EducationHemorrhaging) saved
+    , familyPlanning = Maybe.map (EverySet.member EducationFamilyPlanning) saved
+    , breastfeeding = Maybe.map (EverySet.member EducationBreastfeeding) saved
+    , immunization = Maybe.map (EverySet.member EducationImmunization) saved
+    , hygiene = Maybe.map (EverySet.member EducationHygiene) saved
+    }
+
+
+healthEducationFormWithDefault : HealthEducationForm -> Maybe (EverySet PrenatalHealthEducationSign) -> HealthEducationForm
+healthEducationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\signs ->
+                { expectations = or form.expectations (EverySet.member EducationExpectations signs |> Just)
+                , visitsReview = or form.visitsReview (EverySet.member EducationVisitsReview signs |> Just)
+                , warningSigns = or form.warningSigns (EverySet.member EducationWarningSigns signs |> Just)
+                , hemorrhaging = or form.hemorrhaging (EverySet.member EducationHemorrhaging signs |> Just)
+                , familyPlanning = or form.familyPlanning (EverySet.member EducationFamilyPlanning signs |> Just)
+                , breastfeeding = or form.breastfeeding (EverySet.member EducationBreastfeeding signs |> Just)
+                , immunization = or form.immunization (EverySet.member EducationImmunization signs |> Just)
+                , hygiene = or form.hygiene (EverySet.member EducationHygiene signs |> Just)
+                }
+            )
+
+
+toHealthEducationValueWithDefault : Maybe (EverySet PrenatalHealthEducationSign) -> HealthEducationForm -> Maybe (EverySet PrenatalHealthEducationSign)
+toHealthEducationValueWithDefault saved form =
+    healthEducationFormWithDefault form saved
+        |> toHealthEducationValue
+
+
+toHealthEducationValue : HealthEducationForm -> Maybe (EverySet PrenatalHealthEducationSign)
+toHealthEducationValue form =
+    [ ifNullableTrue EducationExpectations form.expectations
+    , ifNullableTrue EducationVisitsReview form.visitsReview
+    , ifNullableTrue EducationWarningSigns form.warningSigns
+    , ifNullableTrue EducationHemorrhaging form.hemorrhaging
+    , ifNullableTrue EducationFamilyPlanning form.familyPlanning
+    , ifNullableTrue EducationBreastfeeding form.breastfeeding
+    , ifNullableTrue EducationImmunization form.immunization
+    , ifNullableTrue EducationHygiene form.hygiene
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)
+
+
+fromFollowUpValue : Maybe (EverySet FollowUpOption) -> FollowUpForm
+fromFollowUpValue saved =
+    { option = Maybe.andThen (EverySet.toList >> List.head) saved }
+
+
+followUpFormWithDefault : FollowUpForm -> Maybe (EverySet FollowUpOption) -> FollowUpForm
+followUpFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value -> { option = or form.option (EverySet.toList value |> List.head) })
+
+
+toFollowUpValueWithDefault : Maybe (EverySet FollowUpOption) -> FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValueWithDefault saved form =
+    followUpFormWithDefault form saved
+        |> toFollowUpValue
+
+
+toFollowUpValue : FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValue form =
+    Maybe.map (List.singleton >> EverySet.fromList) form.option
+
+
+fromAppointmentConfirmationValue : Maybe PrenatalAppointmentConfirmationValue -> AppointmentConfirmationForm
+fromAppointmentConfirmationValue saved =
+    { appointmentDate = Maybe.map .date saved
+    , isDateSelectorOpen = False
+    }
+
+
+appointmentConfirmationFormWithDefault : AppointmentConfirmationForm -> Maybe PrenatalAppointmentConfirmationValue -> AppointmentConfirmationForm
+appointmentConfirmationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { appointmentDate = or form.appointmentDate (Just value.date)
+                , isDateSelectorOpen = form.isDateSelectorOpen
+                }
+            )
+
+
+toAppointmentConfirmationValueWithDefault : Maybe PrenatalAppointmentConfirmationValue -> AppointmentConfirmationForm -> Maybe PrenatalAppointmentConfirmationValue
+toAppointmentConfirmationValueWithDefault saved form =
+    let
+        form_ =
+            appointmentConfirmationFormWithDefault form saved
+    in
+    toAppointmentConfirmationValue form_
+
+
+toAppointmentConfirmationValue : AppointmentConfirmationForm -> Maybe PrenatalAppointmentConfirmationValue
+toAppointmentConfirmationValue form =
+    Maybe.map PrenatalAppointmentConfirmationValue form.appointmentDate

@@ -1,4 +1,4 @@
-module Backend.PrenatalEncounter.Model exposing (Model, Msg(..), PrenatalEncounter, emptyModel)
+module Backend.PrenatalEncounter.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -11,8 +11,43 @@ type alias PrenatalEncounter =
     { participant : IndividualEncounterParticipantId
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , encounterType : PrenatalEncounterType
     , shard : Maybe HealthCenterId
     }
+
+
+emptyPrenatalEncounter : IndividualEncounterParticipantId -> NominalDate -> PrenatalEncounterType -> Maybe HealthCenterId -> PrenatalEncounter
+emptyPrenatalEncounter participant startDate encounterType shard =
+    { participant = participant
+    , startDate = startDate
+    , endDate = Nothing
+    , encounterType = encounterType
+    , shard = shard
+    }
+
+
+type PrenatalEncounterType
+    = NurseEncounter
+    | ChwFirstEncounter
+    | ChwSecondEncounter
+    | ChwThirdEncounter
+    | ChwPostpartumEncounter
+
+
+type RecordPreganancyInitiator
+    = InitiatorParticipantPage
+    | InitiatorWarningPopup
+    | InitiatorPostpartumEncounter PrenatalEncounterId
+
+
+type ClinicalProgressReportInitiator
+    = InitiatorEncounterPage
+    | InitiatorNewEncounter PrenatalEncounterId
+
+
+type PrenatalEncounterPostCreateDestination
+    = DestinationEncounterPage
+    | DestinationClinicalProgressReportPage
 
 
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress
@@ -35,6 +70,12 @@ type alias Model =
     , saveSocialHistory : WebData ()
     , saveVitals : WebData ()
     , savePrenatalPhoto : WebData ()
+    , saveBirthPlan : WebData ()
+    , savePregnancyTesting : WebData ()
+    , saveHealthEducation : WebData ()
+    , saveFollowUp : WebData ()
+    , saveSendToHC : WebData ()
+    , saveAppointmentConfirmation : WebData ()
     }
 
 
@@ -56,39 +97,57 @@ emptyModel =
     , saveSocialHistory = NotAsked
     , saveVitals = NotAsked
     , savePrenatalPhoto = NotAsked
+    , saveBirthPlan = NotAsked
+    , savePregnancyTesting = NotAsked
+    , saveHealthEducation = NotAsked
+    , saveFollowUp = NotAsked
+    , saveSendToHC = NotAsked
+    , saveAppointmentConfirmation = NotAsked
     }
 
 
 type Msg
     = ClosePrenatalEncounter
-    | SaveBreastExam PersonId (Maybe BreastExamId) BreastExamValue
-    | SaveCorePhysicalExam PersonId (Maybe CorePhysicalExamId) CorePhysicalExamValue
-    | SaveDangerSigns PersonId (Maybe DangerSignsId) (EverySet DangerSign)
-    | SaveLastMenstrualPeriod PersonId (Maybe LastMenstrualPeriodId) LastMenstrualPeriodValue
-    | SaveMedicalHistory PersonId (Maybe MedicalHistoryId) (EverySet MedicalHistorySign)
-    | SaveMedication PersonId (Maybe MedicationId) (EverySet MedicationSign)
-    | SaveObstetricalExam PersonId (Maybe ObstetricalExamId) ObstetricalExamValue
-    | SaveObstetricHistory PersonId (Maybe ObstetricHistoryId) ObstetricHistoryValue
-    | SaveObstetricHistoryStep2 PersonId (Maybe ObstetricHistoryStep2Id) ObstetricHistoryStep2Value
-    | SaveFamilyPlanning PersonId (Maybe PrenatalFamilyPlanningId) (EverySet FamilyPlanningSign)
-    | SaveNutrition PersonId (Maybe PrenatalNutritionId) PrenatalNutritionValue
-    | SaveResource PersonId (Maybe ResourceId) (EverySet ResourceSign)
-    | SaveSocialHistory PersonId (Maybe SocialHistoryId) SocialHistoryValue
-    | SaveVitals PersonId (Maybe VitalsId) VitalsValue
-    | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl
     | HandleClosedPrenatalEncounter (WebData ())
+    | SaveBreastExam PersonId (Maybe BreastExamId) BreastExamValue
     | HandleSavedBreastExam (WebData ())
+    | SaveCorePhysicalExam PersonId (Maybe CorePhysicalExamId) CorePhysicalExamValue
     | HandleSavedCorePhysicalExam (WebData ())
+    | SaveDangerSigns PersonId (Maybe DangerSignsId) DangerSignsValue
     | HandleSavedDangerSigns (WebData ())
+    | SaveLastMenstrualPeriod PersonId (Maybe LastMenstrualPeriodId) LastMenstrualPeriodValue
     | HandleSavedLastMenstrualPeriod (WebData ())
+    | SaveMedicalHistory PersonId (Maybe MedicalHistoryId) (EverySet MedicalHistorySign)
     | HandleSavedMedicalHistory (WebData ())
+    | SaveMedication PersonId (Maybe MedicationId) (EverySet MedicationSign)
     | HandleSavedMedication (WebData ())
+    | SaveObstetricalExam PersonId (Maybe ObstetricalExamId) ObstetricalExamValue
     | HandleSavedObstetricalExam (WebData ())
+    | SaveObstetricHistory PersonId (Maybe ObstetricHistoryId) ObstetricHistoryValue
     | HandleSavedObstetricHistory (WebData ())
+    | SaveObstetricHistoryStep2 PersonId (Maybe ObstetricHistoryStep2Id) ObstetricHistoryStep2Value
     | HandleSavedObstetricHistoryStep2 (WebData ())
+    | SaveFamilyPlanning PersonId (Maybe PrenatalFamilyPlanningId) (EverySet FamilyPlanningSign)
     | HandleSavedFamilyPlanning (WebData ())
+    | SaveNutrition PersonId (Maybe PrenatalNutritionId) PrenatalNutritionValue
     | HandleSavedNutrition (WebData ())
+    | SaveResource PersonId (Maybe ResourceId) (EverySet ResourceSign)
     | HandleSavedResource (WebData ())
+    | SaveSocialHistory PersonId (Maybe SocialHistoryId) SocialHistoryValue
     | HandleSavedSocialHistory (WebData ())
+    | SaveVitals PersonId (Maybe VitalsId) VitalsValue
     | HandleSavedVitals (WebData ())
+    | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl
     | HandleSavedPrenatalPhoto (WebData ())
+    | SaveBirthPlan PersonId (Maybe BirthPlanId) BirthPlanValue
+    | HandleSavedBirthPlan (WebData ())
+    | SavePregnancyTesting PersonId (Maybe PregnancyTestId) PregnancyTestResult
+    | HandleSavedPregnancyTesting (WebData ())
+    | SaveHealthEducation PersonId (Maybe PrenatalHealthEducationId) (EverySet PrenatalHealthEducationSign)
+    | HandleSavedHealthEducation (WebData ())
+    | SaveFollowUp PersonId (Maybe PrenatalFollowUpId) (EverySet FollowUpOption)
+    | HandleSavedFollowup (WebData ())
+    | SaveSendToHC PersonId (Maybe PrenatalSendToHcId) SendToHCValue
+    | HandleSavedSendToHC (WebData ())
+    | SaveAppointmentConfirmation PersonId (Maybe PrenatalAppointmentConfirmationId) PrenatalAppointmentConfirmationValue
+    | HandleSavedAppointmentConfirmation (WebData ())

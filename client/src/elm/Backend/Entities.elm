@@ -95,6 +95,14 @@ type BreastExamUuidType
     = BreastExamUuidType
 
 
+type alias BirthPlanId =
+    EntityUuid BirthPlanUuidType
+
+
+type BirthPlanUuidType
+    = BirthPlanUuidType
+
+
 type alias CorePhysicalExamId =
     EntityUuid CorePhysicalExamUuidType
 
@@ -733,3 +741,43 @@ type alias AcuteIllnessFollowUpId =
 
 type AcuteIllnessFollowUpIdUuidType
     = AcuteIllnessFollowUpIdUuidType
+
+
+type alias PregnancyTestId =
+    EntityUuid PregnancyTestUuidType
+
+
+type PregnancyTestUuidType
+    = PregnancyTestUuidType
+
+
+type alias PrenatalHealthEducationId =
+    EntityUuid PrenatalHealthEducationUuidType
+
+
+type PrenatalHealthEducationUuidType
+    = PrenatalHealthEducationUuidType
+
+
+type alias PrenatalFollowUpId =
+    EntityUuid PrenatalFollowUpUuidType
+
+
+type PrenatalFollowUpUuidType
+    = PrenatalFollowUpUuidType
+
+
+type alias PrenatalSendToHcId =
+    EntityUuid PrenatalSendToHcUuidType
+
+
+type PrenatalSendToHcUuidType
+    = PrenatalSendToHcUuidType
+
+
+type alias PrenatalAppointmentConfirmationId =
+    EntityUuid PrenatalAppointmentConfirmationUuidType
+
+
+type PrenatalAppointmentConfirmationUuidType
+    = PrenatalAppointmentConfirmationUuidType

@@ -15,6 +15,7 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
+import Pages.Utils exposing (setMultiSelectInputValue)
 
 
 {-| The strategy used here, for the moment, is that the `model` tracks the UI,
@@ -226,38 +227,11 @@ updateChild msg model =
                     model.contributingFactorsForm
 
                 updatedForm =
-                    case form.signs of
-                        Just signs ->
-                            if List.member sign signs then
-                                let
-                                    updatedSigns =
-                                        if List.length signs == 1 then
-                                            Nothing
-
-                                        else
-                                            signs |> List.filter ((/=) sign) |> Just
-                                in
-                                { form | signs = updatedSigns }
-
-                            else
-                                case sign of
-                                    NoContributingFactorsSign ->
-                                        { form | signs = Just [ sign ] }
-
-                                    _ ->
-                                        let
-                                            updatedSigns =
-                                                case signs of
-                                                    [ NoContributingFactorsSign ] ->
-                                                        Just [ sign ]
-
-                                                    _ ->
-                                                        Just (sign :: signs)
-                                        in
-                                        { form | signs = updatedSigns }
-
-                        Nothing ->
-                            { form | signs = Just [ sign ] }
+                    setMultiSelectInputValue .signs
+                        (\signs -> { form | signs = signs })
+                        NoContributingFactorsSign
+                        sign
+                        form
             in
             ( { model | contributingFactorsForm = updatedForm }
             , Cmd.none

@@ -373,6 +373,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeAcuteIllnessVitals
                             BackendAuthorityAcuteIllnessVitals
 
+                    "appointment_confirmation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAppointmentConfirmation
+                            BackendAuthorityAppointmentConfirmation
+
                     "attendance" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeAttendance
@@ -392,6 +397,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeBreastExam
                             BackendAuthorityBreastExam
+
+                    "birth_plan" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeBirthPlan
+                            BackendAuthorityBirthPlan
 
                     "clinic" ->
                         doDecode
@@ -618,6 +628,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePhoto
                             BackendAuthorityPhoto
 
+                    "pregnancy_testing" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePregnancyTesting
+                            BackendAuthorityPregnancyTesting
+
                     "prenatal_photo" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalPhoto
@@ -633,10 +648,25 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePrenatalFamilyPlanning
                             BackendAuthorityPrenatalFamilyPlanning
 
+                    "prenatal_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalHealthEducation
+                            BackendAuthorityPrenatalHealthEducation
+
                     "prenatal_nutrition" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalNutrition
                             BackendAuthorityPrenatalNutrition
+
+                    "prenatal_follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalFollowUp
+                            BackendAuthorityPrenatalFollowUp
+
+                    "prenatal_send_to_hc" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalSendToHc
+                            BackendAuthorityPrenatalSendToHC
 
                     "prenatal_encounter" ->
                         doDecode

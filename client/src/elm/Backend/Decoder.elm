@@ -51,11 +51,17 @@ decodeRevision =
                     "acute_illness_vitals" ->
                         decodeWithUuid AcuteIllnessVitalsRevision decodeAcuteIllnessVitals
 
+                    "appointment_confirmation" ->
+                        decodeWithUuid AppointmentConfirmationRevision decodeAppointmentConfirmation
+
                     "attendance" ->
                         decodeWithUuid AttendanceRevision decodeAttendance
 
                     "breast_exam" ->
                         decodeWithUuid BreastExamRevision decodeBreastExam
+
+                    "birth_plan" ->
+                        decodeWithUuid BirthPlanRevision decodeBirthPlan
 
                     "call_114" ->
                         decodeWithUuid Call114Revision decodeCall114
@@ -216,6 +222,9 @@ decodeRevision =
                     "photo" ->
                         decodeWithUuid PhotoRevision decodePhoto
 
+                    "pregnancy_testing" ->
+                        decodeWithUuid PregnancyTestingRevision decodePregnancyTesting
+
                     "pmtct_participant" ->
                         decodeWithUuid PmtctParticipantRevision decodePmtctParticipant
 
@@ -225,11 +234,20 @@ decodeRevision =
                     "prenatal_family_planning" ->
                         decodeWithUuid PrenatalFamilyPlanningRevision decodePrenatalFamilyPlanning
 
+                    "prenatal_health_education" ->
+                        decodeWithUuid PrenatalHealthEducationRevision decodePrenatalHealthEducation
+
+                    "prenatal_follow_up" ->
+                        decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
+
                     "prenatal_nutrition" ->
                         decodeWithUuid PrenatalNutritionRevision decodePrenatalNutrition
 
                     "prenatal_photo" ->
                         decodeWithUuid PrenatalPhotoRevision decodePrenatalPhoto
+
+                    "prenatal_send_to_hc" ->
+                        decodeWithUuid PrenatalSendToHCRevision decodePrenatalSendToHc
 
                     "relationship" ->
                         decodeWithUuid RelationshipRevision decodeRelationship

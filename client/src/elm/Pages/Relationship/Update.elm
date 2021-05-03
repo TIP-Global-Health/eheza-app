@@ -33,21 +33,9 @@ update id1 id2 msg model =
             )
 
         Reset initiator ->
-            let
-                nextPage =
-                    case initiator of
-                        -- When at session context, we navigate to session Attendance page.
-                        -- At that page, we should see newly created attendance.
-                        GroupEncounterOrigin sessionId ->
-                            UserPage (SessionPage sessionId AttendancePage)
-
-                        -- For other cases, we navigate to the page of main person.
-                        _ ->
-                            UserPage (PersonPage id1 initiator)
-            in
             ( emptyModel
             , Cmd.none
-            , [ App.Model.SetActivePage nextPage ]
+            , []
             )
 
         Save maybeRelatedBy assignToGroup initiator ->

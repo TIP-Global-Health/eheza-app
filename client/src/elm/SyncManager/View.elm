@@ -384,11 +384,17 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityAcuteIllnessVitals identifier ->
                 viewMeasurement identifier "Acute Illness Vitals"
 
+            BackendAuthorityAppointmentConfirmation identifier ->
+                viewMeasurement identifier "Appointment Confirmation"
+
             BackendAuthorityAttendance identifier ->
                 viewMeasurement identifier "Attendance"
 
             BackendAuthorityBreastExam identifier ->
                 viewMeasurement identifier "Breast Exam"
+
+            BackendAuthorityBirthPlan identifier ->
+                viewMeasurement identifier "Birth Plan"
 
             BackendAuthorityCall114 identifier ->
                 viewMeasurement identifier "Call 114"
@@ -534,14 +540,26 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPhoto identifier ->
                 viewMeasurement identifier "Photo"
 
-            BackendAuthorityPrenatalPhoto identifier ->
-                viewMeasurement identifier "Prenatal Photo"
-
             BackendAuthorityPmtctParticipant identifier ->
                 text <| "Pmtct Participant for child ID " ++ fromEntityUuid identifier.entity.child
 
+            BackendAuthorityPregnancyTesting identifier ->
+                viewMeasurement identifier "Pregnancy Testing"
+
+            BackendAuthorityPrenatalPhoto identifier ->
+                viewMeasurement identifier "Prenatal Photo"
+
             BackendAuthorityPrenatalFamilyPlanning identifier ->
                 viewMeasurement identifier "Prenatal Family Planning"
+
+            BackendAuthorityPrenatalHealthEducation identifier ->
+                viewMeasurement identifier "Prenatal Health Education"
+
+            BackendAuthorityPrenatalFollowUp identifier ->
+                viewMeasurement identifier "Prenatal Follow Up"
+
+            BackendAuthorityPrenatalSendToHC identifier ->
+                viewMeasurement identifier "Prenatal Send to HC"
 
             BackendAuthorityPrenatalNutrition identifier ->
                 viewMeasurement identifier "Prenatal Nutrition"

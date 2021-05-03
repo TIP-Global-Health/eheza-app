@@ -10,6 +10,7 @@ import Backend.Model
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Initiator(..))
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.Session.Utils exposing (getSession)
 import Backend.Update
 import Browser
@@ -59,13 +60,13 @@ import Pages.PrenatalActivity.Model
 import Pages.PrenatalActivity.Update
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.Update
+import Pages.PrenatalParticipant.Model
 import Pages.PrenatalParticipant.Update
 import Pages.Relationship.Model
 import Pages.Relationship.Update
 import Pages.Router exposing (activePageByUrl, pageToFragment)
 import Pages.Session.Model
 import Pages.Session.Update
-import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
 import ServiceWorker.Model
@@ -210,7 +211,17 @@ update msg model =
                         |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
 
                 ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateIndexedDb currentDate model.zscores nurseId model.healthCenterId isChw model.activePage subMsg model.indexedDb
+                    Backend.Update.updateIndexedDb currentDate
+                        model.language
+                        model.zscores
+                        nurseId
+                        model.healthCenterId
+                        model.villageId
+                        isChw
+                        model.activePage
+                        model.syncManager
+                        subMsg
+                        model.indexedDb
 
                 -- Most revisions are handled at the IndexedDB level, but there
                 -- is at least one we need to catch here.
@@ -293,10 +304,13 @@ update msg model =
 
                         MsgPagePrenatalParticipant id subMsg ->
                             let
-                                ( subCmd, appMsgs ) =
-                                    Pages.PrenatalParticipant.Update.update currentDate id subMsg
+                                ( subModel, subCmd, appMsgs ) =
+                                    data.prenatalParticipantPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.PrenatalParticipant.Model.emptyModel
+                                        |> Pages.PrenatalParticipant.Update.update currentDate id subMsg
                             in
-                            ( data
+                            ( { data | prenatalParticipantPages = Dict.insert id subModel data.prenatalParticipantPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalParticipant id) subCmd
                             , appMsgs
                             )

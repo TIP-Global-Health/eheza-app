@@ -1031,6 +1031,7 @@ div.page-activity.home-visit {
       &.select {
         background: $color-white;
         border: 2px solid $color-light-gray;
+        color: $color-text;
         padding: 5px;
         width: 50%;
       }
@@ -1375,11 +1376,14 @@ div.page-activity.nutrition {
   }
 }
 
+div.page-activity.prenatal,
 div.page-activity.home-visit {
 
   .ui.full.segment {
 
     .full.content {
+
+      @include next-steps;
 
       .helper {
         margin-bottom: 20px;
@@ -1387,6 +1391,14 @@ div.page-activity.home-visit {
 
       .checkbox-select-input {
         margin-bottom: 20px;
+      }
+
+      .form.appointment-confirmation {
+        min-height: 330px;
+
+        .label {
+          margin-bottom: 30px;
+        }
       }
     }
   }

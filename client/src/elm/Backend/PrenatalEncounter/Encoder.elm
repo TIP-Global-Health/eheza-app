@@ -19,7 +19,28 @@ encodePrenatalEncounter session =
             ]
       )
     , ( "individual_participant", encodeEntityUuid session.participant )
+    , ( "prenatal_encounter_type", encodePrenatalEncounterType session.encounterType )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_encounter" )
     ]
         ++ encodeIfExists "shard" session.shard encodeEntityUuid
+
+
+encodePrenatalEncounterType : PrenatalEncounterType -> Value
+encodePrenatalEncounterType encounterType =
+    string <|
+        case encounterType of
+            NurseEncounter ->
+                "nurse"
+
+            ChwFirstEncounter ->
+                "chw-1"
+
+            ChwSecondEncounter ->
+                "chw-2"
+
+            ChwThirdEncounter ->
+                "chw-3"
+
+            ChwPostpartumEncounter ->
+                "chw-postpartum"

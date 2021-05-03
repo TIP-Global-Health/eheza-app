@@ -41,13 +41,14 @@ choices about what to show the user, rather than the details).
 -}
 
 import Activity.Model exposing (Activity(..))
-import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Initiator)
-import PrenatalActivity.Model exposing (PrenatalActivity(..))
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
+import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator, RecordPreganancyInitiator)
 
 
 {-| What does the user want to see?
@@ -123,7 +124,7 @@ the login page instead.
 type UserPage
     = ClinicalPage -- shows a list of clinical options, allows you to choose one
     | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
-    | ClinicalProgressReportPage PrenatalEncounterId
+    | ClinicalProgressReportPage ClinicalProgressReportInitiator PrenatalEncounterId
     | DashboardPage DashboardPage -- Dashboard with visual summary of the data
     | GlobalCaseManagementPage -- page where info about needed follow ups is displayed.
     | DemographicsReportPage PrenatalEncounterId
@@ -153,7 +154,7 @@ type UserPage
     | PrenatalEncounterPage PrenatalEncounterId -- prenatal activities index
     | PrenatalActivityPage PrenatalEncounterId PrenatalActivity -- record prenatal activity
     | IndividualEncounterTypesPage -- this is where we select the type of encounter we're interested in.
-    | PregnancyOutcomePage IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
+    | PregnancyOutcomePage RecordPreganancyInitiator IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
     | NutritionParticipantPage PersonId
     | NutritionEncounterPage NutritionEncounterId -- nutrition activities index.
     | NutritionActivityPage NutritionEncounterId NutritionActivity -- record nutrition activity.
@@ -164,7 +165,7 @@ type UserPage
     | AcuteIllnessProgressReportPage AcuteIllnessEncounterId -- acute illness progress report.
     | AcuteIllnessOutcomePage IndividualEncounterParticipantId -- this is where acute illness outcome is recorded.
     | HomeVisitEncounterPage HomeVisitEncounterId -- home visit activities index.
-    | HomeVisitActivityPage HomeVisitEncounterId HomeVisitActivity -- record  home visit activity.
+    | HomeVisitActivityPage HomeVisitEncounterId HomeVisitActivity -- record home visit activity.
 
 
 {-| We group together the pages that can only be viewed in the Dashboard

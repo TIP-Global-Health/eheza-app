@@ -74,3 +74,20 @@ update participantId maybeParticipant currentDate msg model =
             ( { model | setEddDate = data }
             , Cmd.none
             )
+
+        SetNewborn personId ->
+            maybeParticipant
+                |> unwrap ( model, Cmd.none )
+                    (\participant ->
+                        ( { model | setNewborn = Loading }
+                        , { participant | newborn = Just personId }
+                            |> sw.patchFull individualEncounterParticipantEndpoint participantId
+                            |> withoutDecoder
+                            |> toCmd (RemoteData.fromResult >> HandleSetNewborn)
+                        )
+                    )
+
+        HandleSetNewborn data ->
+            ( { model | setNewborn = data }
+            , Cmd.none
+            )

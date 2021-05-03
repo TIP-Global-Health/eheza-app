@@ -389,11 +389,17 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityAcuteIllnessVitals identifier ->
             getIdentifier identifier "acute_illness_vitals"
 
+        BackendAuthorityAppointmentConfirmation identifier ->
+            getIdentifier identifier "appointment_confirmation"
+
         BackendAuthorityAttendance identifier ->
             getIdentifier identifier "attendance"
 
         BackendAuthorityBreastExam identifier ->
             getIdentifier identifier "breast_exam"
+
+        BackendAuthorityBirthPlan identifier ->
+            getIdentifier identifier "birth_plan"
 
         BackendAuthorityCall114 identifier ->
             getIdentifier identifier "call_114"
@@ -539,14 +545,26 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPhoto identifier ->
             getIdentifier identifier "photo"
 
-        BackendAuthorityPrenatalPhoto identifier ->
-            getIdentifier identifier "prenatal_photo"
-
         BackendAuthorityPmtctParticipant identifier ->
             getIdentifier identifier "pmtct_participant"
 
+        BackendAuthorityPregnancyTesting identifier ->
+            getIdentifier identifier "pregnancy_testing"
+
+        BackendAuthorityPrenatalPhoto identifier ->
+            getIdentifier identifier "prenatal_photo"
+
         BackendAuthorityPrenatalFamilyPlanning identifier ->
             getIdentifier identifier "prenatal_family_planning"
+
+        BackendAuthorityPrenatalHealthEducation identifier ->
+            getIdentifier identifier "prenatal_health_education"
+
+        BackendAuthorityPrenatalFollowUp identifier ->
+            getIdentifier identifier "prenatal_follow_up"
+
+        BackendAuthorityPrenatalSendToHC identifier ->
+            getIdentifier identifier "prenatal_send_to_hc"
 
         BackendAuthorityPrenatalNutrition identifier ->
             getIdentifier identifier "prenatal_nutrition"
@@ -806,11 +824,17 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityAcuteIllnessVitals identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteIllnessVitals identifier
 
+        BackendAuthorityAppointmentConfirmation identifier ->
+            encode Backend.Measurement.Encoder.encodeAppointmentConfirmation identifier
+
         BackendAuthorityAttendance identifier ->
             encode Backend.Measurement.Encoder.encodeAttendance identifier
 
         BackendAuthorityBreastExam identifier ->
             encode Backend.Measurement.Encoder.encodeBreastExam identifier
+
+        BackendAuthorityBirthPlan identifier ->
+            encode Backend.Measurement.Encoder.encodeBirthPlan identifier
 
         BackendAuthorityCall114 identifier ->
             encode Backend.Measurement.Encoder.encodeCall114 identifier
@@ -956,14 +980,26 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPhoto identifier ->
             encode Backend.Measurement.Encoder.encodePhoto identifier
 
-        BackendAuthorityPrenatalPhoto identifier ->
-            encode Backend.Measurement.Encoder.encodePrenatalPhoto identifier
-
         BackendAuthorityPmtctParticipant identifier ->
             encode Backend.PmtctParticipant.Encoder.encodePmtctParticipant identifier
 
+        BackendAuthorityPregnancyTesting identifier ->
+            encode Backend.Measurement.Encoder.encodePregnancyTesting identifier
+
+        BackendAuthorityPrenatalPhoto identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalPhoto identifier
+
         BackendAuthorityPrenatalFamilyPlanning identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalFamilyPlanning identifier
+
+        BackendAuthorityPrenatalHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalHealthEducation identifier
+
+        BackendAuthorityPrenatalFollowUp identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalFollowUp identifier
+
+        BackendAuthorityPrenatalSendToHC identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalSendToHC identifier
 
         BackendAuthorityPrenatalNutrition identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalNutrition identifier
@@ -1186,11 +1222,17 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityAcuteIllnessVitals identifier ->
             AcuteIllnessVitalsRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityAppointmentConfirmation identifier ->
+            AppointmentConfirmationRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityAttendance identifier ->
             AttendanceRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityBreastExam identifier ->
             BreastExamRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityBirthPlan identifier ->
+            BirthPlanRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityCall114 identifier ->
             Call114Revision (toEntityUuid identifier.uuid) identifier.entity
@@ -1336,14 +1378,26 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityPhoto identifier ->
             PhotoRevision (toEntityUuid identifier.uuid) identifier.entity
 
-        BackendAuthorityPrenatalPhoto identifier ->
-            PrenatalPhotoRevision (toEntityUuid identifier.uuid) identifier.entity
-
         BackendAuthorityPmtctParticipant identifier ->
             PmtctParticipantRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityPregnancyTesting identifier ->
+            PregnancyTestingRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalPhoto identifier ->
+            PrenatalPhotoRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityPrenatalFamilyPlanning identifier ->
             PrenatalFamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalHealthEducation identifier ->
+            PrenatalHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalFollowUp identifier ->
+            PrenatalFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalSendToHC identifier ->
+            PrenatalSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalNutrition identifier ->
             PrenatalNutritionRevision (toEntityUuid identifier.uuid) identifier.entity

@@ -660,7 +660,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                            )
             in
             div [ class "column" ]
-                [ a attributes
+                [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.NutritionNextStepsTask task)
                     ]
@@ -687,6 +687,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                             SetReferToHealthCenter
                             SetReasonForNotSendingToHC
                             SetHandReferralForm
+                            Nothing
 
                 Just NextStepsHealthEducation ->
                     measurements.healthEducation

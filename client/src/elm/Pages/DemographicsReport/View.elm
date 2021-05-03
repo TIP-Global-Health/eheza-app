@@ -67,7 +67,7 @@ view language currentDate prenatalEncounterId db =
                 |> RemoteData.andMap (Success prenatalEncounterId)
 
         header =
-            viewHeader language prenatalEncounterId Translate.DemographicsReport
+            viewHeader language prenatalEncounterId Translate.DemographicsReport True
 
         content =
             viewWebData language (viewContent language currentDate db) identity data
@@ -78,15 +78,23 @@ view language currentDate prenatalEncounterId db =
         ]
 
 
-viewHeader : Language -> PrenatalEncounterId -> TranslationId -> Html Msg
-viewHeader language prenatalEncounterId label =
+viewHeader : Language -> PrenatalEncounterId -> TranslationId -> Bool -> Html Msg
+viewHeader language prenatalEncounterId label allowBackAction =
+    let
+        backIcon =
+            if allowBackAction then
+                a
+                    [ class "icon-back"
+                    , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
+                    ]
+                    []
+
+            else
+                emptyNode
+    in
     div
         [ class "ui basic segment head" ]
-        [ a
-            [ class "icon-back"
-            , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
-            ]
-            []
+        [ backIcon
         , h1 [ class "ui header" ]
             [ text <| translate language label ]
         ]

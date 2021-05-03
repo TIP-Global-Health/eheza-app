@@ -1,4 +1,4 @@
-module PrenatalActivity.Utils exposing
+module Backend.PrenatalActivity.Utils exposing
     ( decodeActivityFromString
     , defaultActivity
     , encodeActivityAsString
@@ -9,7 +9,6 @@ module PrenatalActivity.Utils exposing
     , generateRecurringHighSeverityAlertData
     , generateRiskFactorAlertData
     , getActivityIcon
-    , getAllActivities
     , getEncounterTrimesterData
     )
 
@@ -24,13 +23,13 @@ expected (and not completed).
 -}
 
 import Backend.Measurement.Model exposing (HeightInCm(..), MuacInCm(..), PrenatalMeasurements, PreviousDeliverySign(..), WeightInKg(..))
+import Backend.PrenatalActivity.Model exposing (..)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust)
 import Pages.PrenatalActivity.Utils exposing (calculateBmi)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (getLastEncounterMeasurements, getLastEncounterMeasurementsWithDate)
-import PrenatalActivity.Model exposing (..)
 import Translate exposing (Language, TranslationId, translate)
 
 
@@ -61,6 +60,21 @@ encodeActivityAsString activity =
         PrenatalPhoto ->
             "photo"
 
+        Laboratory ->
+            "laboratory"
+
+        HealthEducation ->
+            "health-education"
+
+        BirthPlan ->
+            "birth-plan"
+
+        NextSteps ->
+            "next-steps"
+
+        PregnancyOutcome ->
+            "pregnancy-outcome"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -88,6 +102,21 @@ decodeActivityFromString s =
         "photo" ->
             Just PrenatalPhoto
 
+        "laboratory" ->
+            Just Laboratory
+
+        "health-education" ->
+            Just HealthEducation
+
+        "birth-plan" ->
+            Just BirthPlan
+
+        "next-steps" ->
+            Just NextSteps
+
+        "pregnancy-outcome" ->
+            Just PregnancyOutcome
+
         _ ->
             Nothing
 
@@ -107,15 +136,6 @@ getActivityIcon activity =
     encodeActivityAsString activity
 
 
-getAllActivities : Bool -> List PrenatalActivity
-getAllActivities isFirstEncounter =
-    if isFirstEncounter then
-        [ PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, DangerSigns, PrenatalPhoto ]
-
-    else
-        [ DangerSigns, PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, PrenatalPhoto ]
-
-
 generateHighRiskAlertData : Language -> PrenatalMeasurements -> HighRiskFactor -> Maybe String
 generateHighRiskAlertData language measurements factor =
     let
@@ -123,7 +143,7 @@ generateHighRiskAlertData language measurements factor =
             translate language (Translate.HighRiskFactor factor_)
     in
     case factor of
-        PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
+        Backend.PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
             measurements.obstetricHistoryStep2
                 |> Maybe.andThen
                     (\measurement ->
@@ -138,7 +158,7 @@ generateHighRiskAlertData language measurements factor =
                             Nothing
                     )
 
-        PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
+        Backend.PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
             measurements.obstetricHistoryStep2
                 |> Maybe.andThen
                     (\measurement ->
@@ -351,7 +371,7 @@ generateRecurringHighSeverityAlertData language currentDate data alert =
                             )
             in
             (( currentDate, data.measurements )
-                :: data.previousMeasurementsWithDates
+                :: data.nursePreviousMeasurementsWithDates
             )
                 |> List.filterMap resolveAlert
 
@@ -1109,7 +1129,7 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
             let
                 lowBloodPressureOccasions =
                     (( currentDate, data.measurements )
-                        :: data.previousMeasurementsWithDates
+                        :: data.nursePreviousMeasurementsWithDates
                     )
                         |> List.filterMap
                             (\( _, measurements ) ->
@@ -1146,7 +1166,7 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
                 let
                     highBloodPressureOccasions =
                         (( currentDate, data.measurements )
-                            :: data.previousMeasurementsWithDates
+                            :: data.nursePreviousMeasurementsWithDates
                         )
                             |> List.filterMap
                                 (\( _, measurements ) ->

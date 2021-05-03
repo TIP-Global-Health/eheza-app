@@ -172,7 +172,7 @@ viewNextStepsContent language currentDate zscores childId child session db model
                                        )
                         in
                         div [ class "column" ]
-                            [ a attributes
+                            [ div attributes
                                 [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                                 , text <| translate language (Translate.NutritionNextStepsTask task)
                                 ]
@@ -197,6 +197,7 @@ viewNextStepsContent language currentDate zscores childId child session db model
                                         SetReferToHealthCenter
                                         SetReasonForNotSendingToHC
                                         SetHandReferralForm
+                                        Nothing
 
                             Just NextStepsHealthEducation ->
                                 healthEducationFormWithDefault model.healthEducationForm healthEducationValue

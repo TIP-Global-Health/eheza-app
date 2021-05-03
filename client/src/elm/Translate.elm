@@ -25,7 +25,7 @@ general utilities, see `Translate.Model` and `Translate.Utils`.
 -}
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
-import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
@@ -43,6 +43,18 @@ import Backend.Person.Model
         , ModeOfDelivery(..)
         , VaginalDelivery(..)
         )
+import Backend.PrenatalActivity.Model
+    exposing
+        ( HighRiskFactor(..)
+        , HighSeverityAlert(..)
+        , MedicalDiagnosis(..)
+        , ObstetricalDiagnosis(..)
+        , PregnancyTrimester(..)
+        , PrenatalActivity(..)
+        , RecurringHighSeverityAlert(..)
+        , RiskFactor(..)
+        )
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
@@ -78,17 +90,6 @@ import Pages.PrenatalActivity.Model
         , HistoryTask(..)
         , LmpRange(..)
         , PatientProvisionsTask(..)
-        )
-import PrenatalActivity.Model
-    exposing
-        ( HighRiskFactor(..)
-        , HighSeverityAlert(..)
-        , MedicalDiagnosis(..)
-        , ObstetricalDiagnosis(..)
-        , PregnancyTrimester(..)
-        , PrenatalActivity(..)
-        , RecurringHighSeverityAlert(..)
-        , RiskFactor(..)
         )
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -242,6 +243,7 @@ type TranslationId
     | Abnormal
     | Abortions
     | AccompaniedByPartner
+    | AccompanyToHCQuestion
     | AccessDenied
     | ActionsTaken
     | ActionsToTake
@@ -296,6 +298,8 @@ type TranslationId
     | And
     | AndSentence
     | AppName
+    | AppointmentConfirmation
+    | AppointmentConfirmationInstrunction
     | AreYouSure
     | Assessment
     | Asthma
@@ -314,6 +318,7 @@ type TranslationId
     | BMIHelper
     | BodyTemperature
     | Born
+    | BoughtClothesQuestion
     | BowedLegs
     | BpmUnit Int
     | BpmUnitLabel
@@ -327,6 +332,7 @@ type TranslationId
     | Called114Question
     | Cancel
     | CardiacDisease
+    | CaregiverAccompanyQuestion
     | CaregiverName
     | CaregiverNationalId
     | CaseManagement
@@ -396,6 +402,8 @@ type TranslationId
     | DashboardLabel
     | CurrentlyPregnant
     | DangerSign DangerSign
+    | DangerSignsLabel
+    | DangerSignsHelper
     | DangerSignsTask DangerSignsTask
     | DateOfLastAssessment
     | DatePregnancyConcluded
@@ -438,6 +446,7 @@ type TranslationId
     | EndEncounter
     | EndEncounterQuestion
     | EndGroupEncounter
+    | EnrolNewborn
     | EnterAmountDistributed
     | EnterPairingCode
     | ErrorCheckLocalConfig
@@ -492,6 +501,7 @@ type TranslationId
     | HealthCenter
     | HealthCenterDetermined
     | HealthEducationProvidedQuestion
+    | HealthInsuranceQuestion
     | Heart
     | HeartMurmur
     | HeartCPESign HeartCPESign
@@ -530,6 +540,9 @@ type TranslationId
     | IsolatedAtHome
     | KilogramShorthand
     | KilogramsPerMonth
+    | LabelOnePregnancyEpisodeOpen
+    | LabelSeenHealthcareProviderForPregnancy
+    | LabelDocumentPregnancyOutcome
     | LaboratoryTask LaboratoryTask
     | LastChecked
     | LastSuccesfulContactLabel
@@ -700,9 +713,16 @@ type TranslationId
     | PleaseSelectGroup
     | PleaseSync
     | PositiveLabel
+    | PostpartumChildDangerSign PostpartumChildDangerSign
+    | PostpartumMotherDangerSign PostpartumMotherDangerSign
     | PreeclampsiaPreviousPregnancy
+    | PregnancyTestingResult PregnancyTestResult
     | PregnancyTrimester PregnancyTrimester
+    | PregnancyUrineTest
     | PrenatalActivitiesTitle PrenatalActivity
+    | PrenatalEncounterType PrenatalEncounterType
+    | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
+    | PrenatalNextStepsTask Pages.PrenatalActivity.Model.NextStepsTask
     | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
@@ -773,6 +793,7 @@ type TranslationId
     | ResultOfContactingRecommendedSite RecommendationSite
     | Retry
     | ReviewCaseWith144Respondent
+    | Reviewed
     | RhNegative
     | RiskFactorAlert RiskFactor
     | RiskFactors
@@ -781,7 +802,9 @@ type TranslationId
     | Save
     | SaveAndNext
     | SaveAndRecordOutcome
+    | SavedMoneyQuestion
     | SaveError
+    | ScheduleFollowUp
     | Search
     | SearchByName
     | SearchExistingParticipants
@@ -791,7 +814,9 @@ type TranslationId
     | Sector
     | SelectAntenatalVisit
     | SelectAllSigns
+    | SelectPostpartumChildDangerSigns
     | SelectDangerSigns
+    | SelectPostpartumMotherDangerSigns
     | SelectedProgram
     | SelectedVillage
     | SelectEncounterType
@@ -877,6 +902,7 @@ type TranslationId
     | Training
     | TrainingGroupEncounterCreateSuccessMessage
     | TrainingGroupEncounterDeleteSuccessMessage
+    | TransportationPlanQuestion
     | TraveledToCOVID19CountryQuestion
     | TravelHistory
     | TrySyncing
@@ -977,6 +1003,11 @@ translationSet trans =
         AccompaniedByPartner ->
             { english = "Was the patient accompanied by partner during the assessment"
             , kinyarwanda = Just "Umubyeyi yaherekejwe n'umugabo we mu gihe yaje kwipimisha?"
+            }
+
+        AccompanyToHCQuestion ->
+            { english = "Will you accompany the patient to the health center"
+            , kinyarwanda = Nothing
             }
 
         AccessDenied ->
@@ -1835,6 +1866,16 @@ translationSet trans =
             , kinyarwanda = Just "E-heza sisiteme"
             }
 
+        AppointmentConfirmation ->
+            { english = "Appointment Confirmation"
+            , kinyarwanda = Nothing
+            }
+
+        AppointmentConfirmationInstrunction ->
+            { english = "The patient should visit the health center on the following date"
+            , kinyarwanda = Nothing
+            }
+
         All ->
             { english = "All"
             , kinyarwanda = Just "Uburwayi bwose"
@@ -1935,6 +1976,11 @@ translationSet trans =
             , kinyarwanda = Just "Kuvuka/ itariki y'amavuko"
             }
 
+        BoughtClothesQuestion ->
+            { english = "Have you bought clothes and other essential items for the child"
+            , kinyarwanda = Nothing
+            }
+
         BowedLegs ->
             { english = "Bowed Legs"
             , kinyarwanda = Just "Amaguru atameze neza (yagize imitego)"
@@ -2013,6 +2059,11 @@ translationSet trans =
         CardiacDisease ->
             { english = "Cardiac Disease"
             , kinyarwanda = Just "Indwara z'umutima"
+            }
+
+        CaregiverAccompanyQuestion ->
+            { english = "Do you have a caregiver to accompany you to the health center when you give birth"
+            , kinyarwanda = Nothing
             }
 
         CaregiverName ->
@@ -2541,6 +2592,16 @@ translationSet trans =
                     , kinyarwanda = Just "Nta bimenyetso/nta na kimwe"
                     }
 
+        DangerSignsLabel ->
+            { english = "Danger Signs"
+            , kinyarwanda = Just "Ibimenyetso Mpuruza"
+            }
+
+        DangerSignsHelper ->
+            { english = "Refer patient to health center immediately"
+            , kinyarwanda = Just "Ibimenyetso Mpuruza"
+            }
+
         DangerSignsTask task ->
             case task of
                 ReviewDangerSigns ->
@@ -2836,6 +2897,11 @@ translationSet trans =
         EndGroupEncounter ->
             { english = "End Group Encounter"
             , kinyarwanda = Just "Gusoza igikorwa"
+            }
+
+        EnrolNewborn ->
+            { english = "Enrol Newborn"
+            , kinyarwanda = Nothing
             }
 
         EnterAmountDistributed ->
@@ -3318,6 +3384,11 @@ translationSet trans =
             , kinyarwanda = Just "Watanze ikiganiro ku buzima (Cyangwa ubujyanama bw'ibanze)"
             }
 
+        HealthInsuranceQuestion ->
+            { english = "Do you have health insurance"
+            , kinyarwanda = Nothing
+            }
+
         Heart ->
             { english = "Heart"
             , kinyarwanda = Just "Umutima"
@@ -3367,12 +3438,12 @@ translationSet trans =
 
         HighRiskFactor factor ->
             case factor of
-                PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
+                Backend.PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
                     { english = "Patient experienced convulsions in previous delivery and became unconscious after delivery"
                     , kinyarwanda = Nothing
                     }
 
-                PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
+                Backend.PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
                     { english = "Patient experienced convulsions in previous delivery"
                     , kinyarwanda = Nothing
                     }
@@ -3384,27 +3455,27 @@ translationSet trans =
 
         HighSeverityAlert alert ->
             case alert of
-                PrenatalActivity.Model.BodyTemperature ->
+                Backend.PrenatalActivity.Model.BodyTemperature ->
                     { english = "Body Temperature"
                     , kinyarwanda = Just "Ubushyuhe bw'umubiri"
                     }
 
-                PrenatalActivity.Model.FetalHeartRate ->
+                Backend.PrenatalActivity.Model.FetalHeartRate ->
                     { english = "No fetal heart rate noted"
                     , kinyarwanda = Just "Umutima w'umwana ntutera"
                     }
 
-                PrenatalActivity.Model.FetalMovement ->
+                Backend.PrenatalActivity.Model.FetalMovement ->
                     { english = "No fetal movement noted"
                     , kinyarwanda = Just "Umwana ntakina mu nda"
                     }
 
-                PrenatalActivity.Model.HeartRate ->
+                Backend.PrenatalActivity.Model.HeartRate ->
                     { english = "Heart Rate"
                     , kinyarwanda = Nothing
                     }
 
-                PrenatalActivity.Model.RespiratoryRate ->
+                Backend.PrenatalActivity.Model.RespiratoryRate ->
                     { english = "Respiratory Rate"
                     , kinyarwanda = Just "Inshuro ahumeka"
                     }
@@ -3718,6 +3789,21 @@ translationSet trans =
 
         KilogramsPerMonth ->
             { english = "kgs / month"
+            , kinyarwanda = Nothing
+            }
+
+        LabelOnePregnancyEpisodeOpen ->
+            { english = "There is one pregnancy episode that is open"
+            , kinyarwanda = Nothing
+            }
+
+        LabelSeenHealthcareProviderForPregnancy ->
+            { english = "Have you seen a healthcare provider for current pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        LabelDocumentPregnancyOutcome ->
+            { english = "No - document pregnancy outcome"
             , kinyarwanda = Nothing
             }
 
@@ -5266,10 +5352,106 @@ translationSet trans =
             , kinyarwanda = Just "Afite ubwandu"
             }
 
+        PostpartumChildDangerSign sign ->
+            case sign of
+                PostpartumChildInabilityToSuckle ->
+                    { english = "Inability to Suck"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumChildParalysis ->
+                    { english = "Paralysis"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumChildLabouredBreathing ->
+                    { english = "Laboured or Rapid Breathing"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumChildAbnormalTemperature ->
+                    { english = "High (Fever) or Low Temperature"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumChildInactiveNoMovement ->
+                    { english = "Inactive or No Movement"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumChildBodyTurnedYellow ->
+                    { english = "Whole Body Has Turned Yellow"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPostpartumChildDangerSigns ->
+                    { english = "None of these"
+                    , kinyarwanda = Nothing
+                    }
+
+        PostpartumMotherDangerSign sign ->
+            case sign of
+                PostpartumMotheUterineBleeding ->
+                    { english = "Excessive Uterinal Bleeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumMotherFever ->
+                    { english = "High Temperature / Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumMotherMigraine ->
+                    { english = "Migraine"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumMotherParalysis ->
+                    { english = "Paralysis"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumMotherAcuteAbdominalPain ->
+                    { english = "Acute Abdominal Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumMotherLabouredBreathing ->
+                    { english = "Laboured Breathing"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPostpartumMotherDangerSigns ->
+                    { english = "None of these"
+                    , kinyarwanda = Nothing
+                    }
+
         PreeclampsiaPreviousPregnancy ->
             { english = "Preeclampsia in previous pregnancy "
             , kinyarwanda = Just "Ubushize yagize ibimenyetso bibanziriza guhinda umushyitsi"
             }
+
+        PregnancyTestingResult result ->
+            case result of
+                PregnancyTestPositive ->
+                    { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                PregnancyTestNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                PregnancyTestIndeterminate ->
+                    { english = "Indeterminate"
+                    , kinyarwanda = Nothing
+                    }
+
+                PregnancyTestUnableToConduct ->
+                    { english = "Unable to conduct test"
+                    , kinyarwanda = Nothing
+                    }
 
         PregnancyTrimester trimester ->
             case trimester of
@@ -5288,6 +5470,11 @@ translationSet trans =
                     , kinyarwanda = Just "Igihembwe cya gatatu"
                     }
 
+        PregnancyUrineTest ->
+            { english = "Urine Pregnancy Test"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalActivitiesTitle activity ->
             case activity of
                 DangerSigns ->
@@ -5300,7 +5487,7 @@ translationSet trans =
                     , kinyarwanda = Just "Gusuzuma"
                     }
 
-                PrenatalActivity.Model.FamilyPlanning ->
+                Backend.PrenatalActivity.Model.FamilyPlanning ->
                     { english = "Family Planning"
                     , kinyarwanda = Just "Kuboneza Urubyaro"
                     }
@@ -5323,6 +5510,132 @@ translationSet trans =
                 PrenatalPhoto ->
                     { english = "Photo"
                     , kinyarwanda = Just "Ifoto"
+                    }
+
+                Laboratory ->
+                    { english = "Laboratory"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalActivity.Model.HealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Nothing
+                    }
+
+                BirthPlan ->
+                    { english = "Birth Plan"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalActivity.Model.NextSteps ->
+                    { english = "Next Steps"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalActivity.Model.PregnancyOutcome ->
+                    { english = "Pregnancy Outcome"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalEncounterType encounterType ->
+            case encounterType of
+                NurseEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ChwFirstEncounter ->
+                    { english = "First Antenatal Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChwSecondEncounter ->
+                    { english = "Second Antenatal Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChwThirdEncounter ->
+                    { english = "Third Antenatal Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChwPostpartumEncounter ->
+                    { english = "Postpartum"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalHealthEducationQuestion sign ->
+            case sign of
+                EducationExpectations ->
+                    { english = "Have you provided health education and anticipatory guidance on what to expect during the pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationVisitsReview ->
+                    { english = "Have you reviewed anticipated visits by the CHW and to the health center with the mother"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationWarningSigns ->
+                    { english = "Have you provided health education and anticipatory guidance on pregnancy warning signs"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationHemorrhaging ->
+                    { english = "Have you provided education on post-partum hemorrhaging"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationFamilyPlanning ->
+                    { english = "Have you provided education on family planning"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationBreastfeeding ->
+                    { english = "Have you provided education on breast feeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationImmunization ->
+                    { english = "Have you provided education on immunization"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationHygiene ->
+                    { english = "Have you provided education on hygiene"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPrenatalHealthEducationSigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalNextStepsTask task ->
+            case task of
+                Pages.PrenatalActivity.Model.NextStepsAppointmentConfirmation ->
+                    { english = "Appointment Confirmation"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.NextStepsFollowUp ->
+                    { english = "CHW Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.NextStepsSendToHC ->
+                    { english = "Send to Health Center"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.NextStepsHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.NextStepsNewbornEnrolment ->
+                    { english = "Newborn Enrolment"
+                    , kinyarwanda = Nothing
                     }
 
         PrenatalPhotoHelper ->
@@ -5683,7 +5996,7 @@ translationSet trans =
 
         RecurringHighSeverityAlert alert ->
             case alert of
-                PrenatalActivity.Model.BloodPressure ->
+                Backend.PrenatalActivity.Model.BloodPressure ->
                     { english = "Blood Pressure"
                     , kinyarwanda = Just "Umuvuduko w'amaraso"
                     }
@@ -5937,6 +6250,11 @@ translationSet trans =
             , kinyarwanda = Just "Ongera ukore isuzuma ufatanije n’ukwitabye kuri 114"
             }
 
+        Reviewed ->
+            { english = "Reviewed"
+            , kinyarwanda = Nothing
+            }
+
         RhNegative ->
             { english = "RH Negative"
             , kinyarwanda = Just "Ubwoko bw'amaraso ni Negatifu"
@@ -6060,9 +6378,19 @@ translationSet trans =
             , kinyarwanda = Just "Bika & Andika iherezo ry'uburwayi"
             }
 
+        SavedMoneyQuestion ->
+            { english = "Have you saved money for use at the health center while you give birth"
+            , kinyarwanda = Nothing
+            }
+
         SaveError ->
             { english = "Save Error"
             , kinyarwanda = Just "Kubika error (ikosa mu kubika)"
+            }
+
+        ScheduleFollowUp ->
+            { english = "Schedule Follow Up"
+            , kinyarwanda = Nothing
             }
 
         Search ->
@@ -6110,9 +6438,19 @@ translationSet trans =
             , kinyarwanda = Just "Hitamo ibimenyetso by'imirire byose bishoboka umwana afite"
             }
 
+        SelectPostpartumChildDangerSigns ->
+            { english = "Please select one or more of the danger signs the child is experiencing"
+            , kinyarwanda = Nothing
+            }
+
         SelectDangerSigns ->
             { english = "Please select one or more of the danger signs the patient is experiencing"
             , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umubyeyi yaba afite"
+            }
+
+        SelectPostpartumMotherDangerSigns ->
+            { english = "Please select one or more of the danger signs the mother is experiencing"
+            , kinyarwanda = Nothing
             }
 
         SelectedProgram ->
@@ -6732,6 +7070,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        TransportationPlanQuestion ->
+            { english = "Have you planned for transportation to and from the health center to give birth"
+            , kinyarwanda = Nothing
+            }
+
         TraveledToCOVID19CountryQuestion ->
             { english = "Have you traveled to any country or district in Rwanda known to have COVID-19 in the past 14 days"
             , kinyarwanda = Just "Waba waragiye mu gihugu cyangwa mu karere mu Rwanda bizwi ko hagaragayemo ubwandu bwa Covid 19 mu minsi 14 ishize"
@@ -7026,7 +7369,7 @@ translateActivePage page =
                     , kinyarwanda = Just "Itsinda"
                     }
 
-                ClinicalProgressReportPage _ ->
+                ClinicalProgressReportPage _ _ ->
                     { english = "Clinical Progress Report"
                     , kinyarwanda = Just "Erekana raporo yibyavuye mu isuzuma"
                     }
@@ -7165,7 +7508,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                PregnancyOutcomePage _ ->
+                PregnancyOutcomePage _ _ ->
                     { english = "Pregnancy Outcome"
                     , kinyarwanda = Nothing
                     }

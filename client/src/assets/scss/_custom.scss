@@ -452,7 +452,8 @@ h3.ui.header {
   background-size: 78px 78px;
 }
 
-.icon-task-send-to-hc {
+.icon-task-send-to-hc,
+.icon-task-appointment-confirmation {
   background-image: url(#{$img-path}icon-health-center-white.svg);
   background-size: 78px 78px;
 }
@@ -480,6 +481,12 @@ h3.ui.header {
 .icon-task-food-security {
   background-image: url(#{$img-path}icon-food-security-white.svg);
   background-size: 92px 92px;
+}
+
+.icon-task-birth-plan,
+.icon-task-pregnancy-outcome {
+  background-image: url(#{$img-path}icon-birth-plan-white.svg);
+  background-size: 122px 122px;
 }
 
 // Tasks horizontal scroll
@@ -1180,7 +1187,8 @@ input::placeholder {
     }
   }
 
-  &.diagnosis-popup {
+  &.diagnosis-popup,
+  &.open-pregnancy-popup {
     border-top: 15px solid $color-red-alert;
     margin-left: -300px;
     width: 600px;
@@ -1232,6 +1240,23 @@ input::placeholder {
         padding: 0 4rem;
         text-align: center;
         text-transform: uppercase;
+      }
+    }
+
+    &.open-pregnancy-popup {
+
+      .popup-heading-wrapper {
+        margin-bottom: 50px;
+      }
+
+      .popup-action {
+        font-weight: bold;
+        padding: 0 15px;
+      }
+
+      .ui.fluid.button:last-child {
+        padding: 15px 5px;
+        line-height: 30px;
       }
     }
 
@@ -2041,6 +2066,20 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-follow-up-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-next-steps-newborn-enrolment {
+  .active &:after {
+    background-image: url(#{$img-path}icon-newborn-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-newborn-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-newborn-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 

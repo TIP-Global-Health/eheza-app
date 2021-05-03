@@ -31,6 +31,7 @@ import Backend.Person.Model
         )
 import Backend.Person.Utils exposing (defaultIconForPerson, expectedAgeByPerson, graduatingAgeInMonth, isAdult, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
+import Backend.PrenatalActivity.Model
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (getVillageById)
@@ -399,6 +400,10 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                                         viewGoToRelationshipPageArrow
                                 )
                             |> Maybe.withDefault emptyNode
+
+                    PrenatalNextStepsActivityOrigin _ ->
+                        -- We do not allow this actions when registering newborn child.
+                        emptyNode
                 )
 
         content =
@@ -533,6 +538,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     , expectedGender = ExpectMaleOrFemale
                     , birthDateSelectorFrom = birthDateSelectorFrom
                     , birthDateSelectorTo = birthDateSelectorTo
+                    , title = Translate.People
                     }
 
                 IndividualEncounterOrigin encounterType ->
@@ -547,6 +553,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , expectedGender = ExpectMaleOrFemale
                             , birthDateSelectorFrom = Date.add Years -90 today
                             , birthDateSelectorTo = today
+                            , title = Translate.People
                             }
 
                         AntenatalEncounter ->
@@ -555,6 +562,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , expectedGender = ExpectFemale
                             , birthDateSelectorFrom = Date.add Years -45 today
                             , birthDateSelectorTo = Date.add Years -13 today
+                            , title = Translate.People
                             }
 
                         NutritionEncounter ->
@@ -563,6 +571,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , expectedGender = ExpectMaleOrFemale
                             , birthDateSelectorFrom = Date.add Years -5 today
                             , birthDateSelectorTo = today
+                            , title = Translate.People
                             }
 
                         -- This will be redefined after we add support for more
@@ -573,6 +582,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , expectedGender = ExpectMaleOrFemale
                             , birthDateSelectorFrom = Date.add Years -60 today
                             , birthDateSelectorTo = today
+                            , title = Translate.People
                             }
 
                 GroupEncounterOrigin sessionId ->
@@ -625,13 +635,23 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     , expectedGender = ExpectMaleOrFemale
                     , birthDateSelectorFrom = birthDateSelectorFrom
                     , birthDateSelectorTo = birthDateSelectorTo
+                    , title = Translate.People
+                    }
+
+                PrenatalNextStepsActivityOrigin encounterId ->
+                    { goBackPage = UserPage (PrenatalActivityPage encounterId Backend.PrenatalActivity.Model.NextSteps)
+                    , expectedAge = ExpectChild
+                    , expectedGender = ExpectMaleOrFemale
+                    , birthDateSelectorFrom = Date.add Years -3 today
+                    , birthDateSelectorTo = today
+                    , title = Translate.EnrolNewborn
                     }
 
         header =
             div [ class "ui basic segment head" ]
                 [ h1
                     [ class "ui header" ]
-                    [ text <| translate language Translate.People ]
+                    [ text <| translate language originBasedSettings.title ]
                 , a
                     [ class "link-back"
                     , onClick <| SetActivePage originBasedSettings.goBackPage

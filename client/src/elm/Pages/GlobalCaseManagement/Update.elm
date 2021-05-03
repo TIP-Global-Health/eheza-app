@@ -4,9 +4,8 @@ import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (emptyAcuteIllnessEncounter)
 import Backend.Entities exposing (..)
-import Backend.HomeVisitEncounter.Model
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.IndividualEncounterParticipant.Utils exposing (emptyIndividualEncounterParticipant)
+import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), emptyIndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Gizra.NominalDate exposing (NominalDate)
@@ -62,7 +61,7 @@ startFollowUpEncounterHomeVisit currentDate selectedHealthCenter db data =
         |> Maybe.map
             -- If home visit participant exists, create new encounter for it.
             (\sessionId ->
-                [ Backend.HomeVisitEncounter.Model.HomeVisitEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
+                [ emptyHomeVisitEncounter sessionId currentDate (Just selectedHealthCenter)
                     |> Backend.Model.PostHomeVisitEncounter
                     |> App.Model.MsgIndexedDb
                 ]
@@ -70,7 +69,7 @@ startFollowUpEncounterHomeVisit currentDate selectedHealthCenter db data =
         -- If not, create it.
         |> Maybe.withDefault
             [ emptyIndividualEncounterParticipant currentDate data.personId Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter selectedHealthCenter
-                |> Backend.Model.PostIndividualSession
+                |> Backend.Model.PostIndividualSession Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
                 |> App.Model.MsgIndexedDb
             ]
 

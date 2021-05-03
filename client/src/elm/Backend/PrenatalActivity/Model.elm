@@ -1,20 +1,4 @@
-module PrenatalActivity.Model exposing
-    ( HighRiskFactor(..)
-    , HighSeverityAlert(..)
-    , MedicalDiagnosis(..)
-    , ObstetricalDiagnosis(..)
-    , PregnancyTrimester(..)
-    , PrenatalActivity(..)
-    , RecurringHighSeverityAlert(..)
-    , RiskFactor(..)
-    , allHighRiskFactors
-    , allHighSeverityAlerts
-    , allMedicalDiagnosis
-    , allObstetricalDiagnosis
-    , allRecurringHighSeverityAlerts
-    , allRiskFactors
-    , allTrimesters
-    )
+module Backend.PrenatalActivity.Model exposing (..)
 
 {-| This module provides types relating to the UI for presenting
 prenatal activities.
@@ -29,6 +13,11 @@ type PrenatalActivity
     | PatientProvisions
     | PregnancyDating
     | PrenatalPhoto
+    | Laboratory
+    | HealthEducation
+    | BirthPlan
+    | NextSteps
+    | PregnancyOutcome
 
 
 type RiskFactor

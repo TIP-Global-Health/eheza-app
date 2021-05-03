@@ -15,13 +15,21 @@ type alias Model =
     }
 
 
+emptyModel : Model
+emptyModel =
+    { selectedTab = Pending
+    , showAlertsDialog = False
+    }
+
+
 type alias AssembledData =
     { id : PrenatalEncounterId
     , encounter : PrenatalEncounter
     , participant : IndividualEncounterParticipant
     , person : Person
     , measurements : PrenatalMeasurements
-    , previousMeasurementsWithDates : List ( NominalDate, PrenatalMeasurements )
+    , nursePreviousMeasurementsWithDates : List ( NominalDate, PrenatalMeasurements )
+    , chwPreviousMeasurementsWithDates : List ( NominalDate, PrenatalMeasurements )
     , globalLmpDate : Maybe NominalDate
     , globalObstetricHistory : Maybe ObstetricHistoryValue
     }
@@ -38,10 +46,3 @@ type Tab
     = Completed
     | Pending
     | Reports
-
-
-emptyModel : Model
-emptyModel =
-    { selectedTab = Pending
-    , showAlertsDialog = False
-    }

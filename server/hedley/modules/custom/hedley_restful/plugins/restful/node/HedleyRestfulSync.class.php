@@ -438,6 +438,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'last_menstrual_period',
           'date_concluded',
           'expected_date_concluded',
+          'appointment_confirmation',
         ];
 
         $data = [];
