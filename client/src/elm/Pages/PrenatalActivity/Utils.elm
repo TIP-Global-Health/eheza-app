@@ -1444,28 +1444,40 @@ toHealthEducationValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)
 
 
-fromFollowUpValue : Maybe (EverySet FollowUpOption) -> FollowUpForm
+fromFollowUpValue : Maybe PrenatalFollowUpValue -> FollowUpForm
 fromFollowUpValue saved =
-    { option = Maybe.andThen (EverySet.toList >> List.head) saved }
+    { option = Maybe.andThen (.options >> EverySet.toList >> List.head) saved
+    , assesment = Maybe.map .assesment saved
+    }
 
 
-followUpFormWithDefault : FollowUpForm -> Maybe (EverySet FollowUpOption) -> FollowUpForm
+followUpFormWithDefault : FollowUpForm -> Maybe PrenatalFollowUpValue -> FollowUpForm
 followUpFormWithDefault form saved =
     saved
         |> unwrap
             form
-            (\value -> { option = or form.option (EverySet.toList value |> List.head) })
+            (\value ->
+                { option = or form.option (EverySet.toList value.options |> List.head)
+                , assesment = or form.assesment (Just value.assesment)
+                }
+            )
 
 
-toFollowUpValueWithDefault : Maybe (EverySet FollowUpOption) -> FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValueWithDefault : Maybe PrenatalFollowUpValue -> FollowUpForm -> Maybe PrenatalFollowUpValue
 toFollowUpValueWithDefault saved form =
     followUpFormWithDefault form saved
         |> toFollowUpValue
 
 
-toFollowUpValue : FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValue : FollowUpForm -> Maybe PrenatalFollowUpValue
 toFollowUpValue form =
-    Maybe.map (List.singleton >> EverySet.fromList) form.option
+    let
+        options =
+            form.option
+                |> Maybe.map (List.singleton >> EverySet.fromList)
+    in
+    Maybe.map PrenatalFollowUpValue options
+        |> andMap form.assesment
 
 
 fromAppointmentConfirmationValue : Maybe PrenatalAppointmentConfirmationValue -> AppointmentConfirmationForm

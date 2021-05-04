@@ -703,12 +703,15 @@ emptyAppointmentConfirmationForm =
 
 type alias FollowUpForm =
     { option : Maybe FollowUpOption
+
+    -- We do not display this. Using it when saving.
+    , assesment : Maybe PrenatalAssesment
     }
 
 
 emptyFollowUpForm : FollowUpForm
 emptyFollowUpForm =
-    FollowUpForm Nothing
+    FollowUpForm Nothing Nothing
 
 
 type alias HealthEducationForm =
