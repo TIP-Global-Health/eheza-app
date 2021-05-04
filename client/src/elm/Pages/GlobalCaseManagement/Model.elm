@@ -52,7 +52,8 @@ type alias AcuteIllnessFollowUpItem =
 type alias PrenatalFollowUpItem =
     { dateMeasured : NominalDate
     , personName : String
-    , value : FollowUpValue
+    , encounterId : Maybe PrenatalEncounterId
+    , value : EverySet FollowUpOption
     }
 
 

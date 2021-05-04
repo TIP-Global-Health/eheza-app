@@ -532,7 +532,8 @@
     var followUpMeasurementsTypes = [
       'acute_illness_follow_up',
       'follow_up',
-      'nutrition_follow_up'
+      'nutrition_follow_up',
+      'prenatal_follow_up'
     ];
 
     function viewFollowUpMeasurements (shard) {
