@@ -82,6 +82,13 @@ viewContent language currentDate healthCenterId villageId isChw model db followU
         acuteIllnessFollowUpsPane =
             viewAcuteIllnessPane language currentDate acuteIllnessFollowUps db model
 
+        prenatalFollowUps =
+            generatePrenatalFollowUps db followUps
+                |> filterVillageResidents villageId Tuple.second db
+
+        _ =
+            Debug.log "prenatalFollowUps" prenatalFollowUps
+
         panes =
             [ ( AcuteIllnessEncounter, acuteIllnessFollowUpsPane ), ( NutritionEncounter, nutritionFollowUpsPane ) ]
                 |> List.filterMap
