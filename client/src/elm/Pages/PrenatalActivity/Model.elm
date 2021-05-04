@@ -101,7 +101,7 @@ type Msg
     | SetHealthEducationSubActivityBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SaveHealthEducationSubActivity PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )) (Maybe NextStepsTask)
     | SetFollowUpOption FollowUpOption
-    | SaveFollowUp PersonId (Maybe ( PrenatalFollowUpId, PrenatalFollowUp )) (Maybe NextStepsTask)
+    | SaveFollowUp PersonId PrenatalAssesment (Maybe ( PrenatalFollowUpId, PrenatalFollowUp )) (Maybe NextStepsTask)
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SetAccompanyToHC Bool

@@ -12,7 +12,7 @@ import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Utils exposing (sendToHCFormWithDefault)
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
-import Pages.PrenatalEncounter.Utils exposing (getMotherHeightMeasurement)
+import Pages.PrenatalEncounter.Utils exposing (getMotherHeightMeasurement, noDangerSigns)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -25,6 +25,15 @@ import Pages.Utils
         , viewQuestionLabel
         )
 import Translate exposing (Language)
+
+
+generatePrenatalAssesment : AssembledData -> PrenatalAssesment
+generatePrenatalAssesment assembled =
+    if noDangerSigns assembled then
+        AssesmentNormalPregnancy
+
+    else
+        AssesmentHighRiskPregnancy
 
 
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
