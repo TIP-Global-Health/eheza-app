@@ -1307,6 +1307,8 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
                 [ DangerSignsRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
+                            -- This is the only place where we ask to update assemssment, since
+                            -- only thing that affects it is the Danger signs measurement.
                             processRevisionAndAssessPrenatal data.participantId data.encounterId True
                     in
                     ( newModel
@@ -2819,36 +2821,38 @@ generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after i
                         Pages.PrenatalEncounter.Utils.mandatoryActivitiesForNextStepsCompleted
                             currentDate
                             assembledAfter
+
+                    updateAssesmentMsg =
+                        if updateAssesment then
+                            assembledAfter.measurements.followUp
+                                |> Maybe.map
+                                    (\( measurementId, measurement ) ->
+                                        let
+                                            updatedValue =
+                                                measurement.value
+                                                    |> (\value -> { value | assesment = Pages.PrenatalActivity.Utils.generatePrenatalAssesment assembledAfter })
+                                        in
+                                        Backend.PrenatalEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
+                                            |> Backend.Model.MsgPrenatalEncounter id
+                                            |> App.Model.MsgIndexedDb
+                                            |> List.singleton
+                                    )
+                                |> Maybe.withDefault []
+
+                        else
+                            []
                 in
                 if not mandatoryActivitiesCompleted then
                     -- Assement is done only when all mandatory measurements were recorded.
-                    []
+                    -- However, since there more mandatory activities when there
+                    -- no danger signs, we will try to update assement of follop anyway.
+                    updateAssesmentMsg
 
                 else
                     let
                         dangerSignsList =
                             Pages.PrenatalEncounter.Utils.generateDangerSignsList language
                                 assembledAfter
-
-                        updateAssesmentMsg =
-                            if updateAssesment then
-                                assembledAfter.measurements.followUp
-                                    |> Maybe.map
-                                        (\( measurementId, measurement ) ->
-                                            let
-                                                updatedValue =
-                                                    measurement.value
-                                                        |> (\value -> { value | assesment = Pages.PrenatalActivity.Utils.generatePrenatalAssesment assembledAfter })
-                                            in
-                                            Backend.PrenatalEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
-                                                |> Backend.Model.MsgPrenatalEncounter id
-                                                |> App.Model.MsgIndexedDb
-                                                |> List.singleton
-                                        )
-                                    |> Maybe.withDefault []
-
-                            else
-                                []
                     in
                     if List.isEmpty dangerSignsList then
                         updateAssesmentMsg
