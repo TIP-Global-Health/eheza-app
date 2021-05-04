@@ -111,13 +111,16 @@ viewStartFollowUpEncounterDialog language dialogState =
 
                             FollowUpAcuteIllness data ->
                                 ( AcuteIllnessEncounter, data.personName )
+
+                            FollowUpPrenatal data ->
+                                ( AntenatalEncounter, data.personName )
                 in
                 div [ class "ui tiny active modal" ]
                     [ div
                         [ class "content" ]
                         [ text <| translate language <| Translate.EncounterTypeFollowUpQuestion encounterType
                         , text " "
-                        , span [ class "person-name " ] [ text personName ]
+                        , span [ class "person-name" ] [ text personName ]
                         , text "?"
                         ]
                     , div

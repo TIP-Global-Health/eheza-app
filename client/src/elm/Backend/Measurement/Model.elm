@@ -1353,6 +1353,7 @@ type alias FollowUpMeasurements =
     { nutritionGroup : Dict FollowUpId FollowUp
     , nutritionIndividual : Dict NutritionFollowUpId NutritionFollowUp
     , acuteIllness : Dict AcuteIllnessFollowUpId AcuteIllnessFollowUp
+    , prenatal : Dict PrenatalFollowUpId PrenatalFollowUp
     }
 
 

@@ -49,9 +49,17 @@ type alias AcuteIllnessFollowUpItem =
     }
 
 
+type alias PrenatalFollowUpItem =
+    { dateMeasured : NominalDate
+    , personName : String
+    , value : FollowUpValue
+    }
+
+
 type FollowUpEncounterDataType
     = FollowUpNutrition FollowUpNutritionData
     | FollowUpAcuteIllness FollowUpAcuteIllnessData
+    | FollowUpPrenatal FollowUpPrenatalData
 
 
 type alias FollowUpNutritionData =
@@ -65,6 +73,12 @@ type alias FollowUpAcuteIllnessData =
     , personName : String
     , participantId : IndividualEncounterParticipantId
     , sequenceNumber : Int
+    }
+
+
+type alias FollowUpPrenatalData =
+    { personId : PersonId
+    , personName : String
     }
 
 
