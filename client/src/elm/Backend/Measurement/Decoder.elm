@@ -272,10 +272,28 @@ decodePrenatalFollowUp =
     decodePrenatalMeasurement decodePrenatalFollowUpValue
 
 
-decodePrenatalFollowUpValue : Decoder (EverySet FollowUpOption)
+decodePrenatalFollowUpValue : Decoder PrenatalFollowUpValue
 decodePrenatalFollowUpValue =
-    decodeEverySet decodeFollowUpOption
-        |> field "follow_up_options"
+    succeed PrenatalFollowUpValue
+        |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
+        |> required "prenatal_assesment" decodePrenatalAssesment
+
+
+decodePrenatalAssesment : Decoder PrenatalAssesment
+decodePrenatalAssesment =
+    string
+        |> andThen
+            (\assesment ->
+                case assesment of
+                    "normal" ->
+                        succeed AssesmentNormalPregnancy
+
+                    "high-risk" ->
+                        succeed AssesmentHighRiskPregnancy
+
+                    _ ->
+                        assesment ++ " is not a recognized PrenatalAssesment" |> fail
+            )
 
 
 decodePrenatalSendToHc : Decoder PrenatalSendToHC
