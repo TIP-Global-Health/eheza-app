@@ -75,6 +75,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model
 import Pages.Person.Model
 import Pages.PrenatalActivity.Model
+import Pages.PrenatalActivity.Utils
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.Utils
 import Pages.Relationship.Model
@@ -947,7 +948,7 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
                             sessionId
                             |> Maybe.withDefault ( newModel, [] )
 
-                processRevisionAndWarnOnPrenatalDangerSigns participantId encounterId =
+                processRevisionAndAssessPrenatal participantId encounterId updateAssesment =
                     if downloadingContent then
                         ( model, [] )
 
@@ -962,7 +963,7 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
                                 List.foldl (handleRevision healthCenterId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generatePrenatalDangerSignsWarningMsgs currentDate language isChw newModel)
+                                Maybe.map (generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -1306,7 +1307,9 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
                 [ DangerSignsRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndWarnOnPrenatalDangerSigns data.participantId data.encounterId
+                            -- This is the only place where we ask to update assemssment, since
+                            -- only thing that affects it is the Danger signs measurement.
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId True
                     in
                     ( newModel
                     , Cmd.none
@@ -1316,7 +1319,7 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
                 [ LastMenstrualPeriodRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndWarnOnPrenatalDangerSigns data.participantId data.encounterId
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
                     in
                     ( newModel
                     , Cmd.none
@@ -1326,7 +1329,7 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
                 [ PregnancyTestingRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndWarnOnPrenatalDangerSigns data.participantId data.encounterId
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
                     in
                     ( newModel
                     , Cmd.none
@@ -2804,8 +2807,8 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             )
 
 
-generatePrenatalDangerSignsWarningMsgs : NominalDate -> Language -> Bool -> ModelIndexedDb -> PrenatalEncounterId -> List App.Model.Msg
-generatePrenatalDangerSignsWarningMsgs currentDate language isChw after id =
+generatePrenatalAssesmentMsgs : NominalDate -> Language -> Bool -> Bool -> ModelIndexedDb -> PrenatalEncounterId -> List App.Model.Msg
+generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after id =
     if not isChw then
         -- Assement is done only for CHW.
         []
@@ -2818,10 +2821,32 @@ generatePrenatalDangerSignsWarningMsgs currentDate language isChw after id =
                         Pages.PrenatalEncounter.Utils.mandatoryActivitiesForNextStepsCompleted
                             currentDate
                             assembledAfter
+
+                    updateAssesmentMsg =
+                        if updateAssesment then
+                            assembledAfter.measurements.followUp
+                                |> Maybe.map
+                                    (\( measurementId, measurement ) ->
+                                        let
+                                            updatedValue =
+                                                measurement.value
+                                                    |> (\value -> { value | assesment = Pages.PrenatalActivity.Utils.generatePrenatalAssesment assembledAfter })
+                                        in
+                                        Backend.PrenatalEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
+                                            |> Backend.Model.MsgPrenatalEncounter id
+                                            |> App.Model.MsgIndexedDb
+                                            |> List.singleton
+                                    )
+                                |> Maybe.withDefault []
+
+                        else
+                            []
                 in
                 if not mandatoryActivitiesCompleted then
                     -- Assement is done only when all mandatory measurements were recorded.
-                    []
+                    -- However, since there are more mandatory activities when there are
+                    -- no danger signs, we will try to update assement of follow up anyway.
+                    updateAssesmentMsg
 
                 else
                     let
@@ -2830,19 +2855,20 @@ generatePrenatalDangerSignsWarningMsgs currentDate language isChw after id =
                                 assembledAfter
                     in
                     if List.isEmpty dangerSignsList then
-                        []
+                        updateAssesmentMsg
 
                     else
-                        [ -- Navigate to NextSteps activty page.
-                          PrenatalActivityPage id Backend.PrenatalActivity.Model.NextSteps
-                            |> UserPage
-                            |> App.Model.SetActivePage
-                        , String.join ", " dangerSignsList
-                            |> Just
-                            |> Pages.PrenatalActivity.Model.SetWarningPopupState
-                            |> App.Model.MsgPagePrenatalActivity id Backend.PrenatalActivity.Model.NextSteps
-                            |> App.Model.MsgLoggedIn
-                        ]
+                        updateAssesmentMsg
+                            ++ [ -- Navigate to NextSteps activty page.
+                                 PrenatalActivityPage id Backend.PrenatalActivity.Model.NextSteps
+                                    |> UserPage
+                                    |> App.Model.SetActivePage
+                               , String.join ", " dangerSignsList
+                                    |> Just
+                                    |> Pages.PrenatalActivity.Model.SetWarningPopupState
+                                    |> App.Model.MsgPagePrenatalActivity id Backend.PrenatalActivity.Model.NextSteps
+                                    |> App.Model.MsgLoggedIn
+                               ]
             )
             (RemoteData.toMaybe <| Pages.PrenatalEncounter.Utils.generateAssembledData id after)
             |> Maybe.withDefault []

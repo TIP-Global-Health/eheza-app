@@ -217,12 +217,24 @@ encodePrenatalFollowUp =
     encodePrenatalMeasurement encodePrenatalFollowUpValue
 
 
-encodePrenatalFollowUpValue : EverySet FollowUpOption -> List ( String, Value )
+encodePrenatalFollowUpValue : PrenatalFollowUpValue -> List ( String, Value )
 encodePrenatalFollowUpValue value =
-    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value )
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
+    , ( "prenatal_assesment", encodePrenatalAssesment value.assesment )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_follow_up" )
     ]
+
+
+encodePrenatalAssesment : PrenatalAssesment -> Value
+encodePrenatalAssesment assesment =
+    string <|
+        case assesment of
+            AssesmentNormalPregnancy ->
+                "normal"
+
+            AssesmentHighRiskPregnancy ->
+                "high-risk"
 
 
 encodePrenatalSendToHC : PrenatalSendToHC -> List ( String, Value )

@@ -101,7 +101,7 @@ type Msg
     | SetHealthEducationSubActivityBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SaveHealthEducationSubActivity PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )) (Maybe NextStepsTask)
     | SetFollowUpOption FollowUpOption
-    | SaveFollowUp PersonId (Maybe ( PrenatalFollowUpId, PrenatalFollowUp )) (Maybe NextStepsTask)
+    | SaveFollowUp PersonId PrenatalAssesment (Maybe ( PrenatalFollowUpId, PrenatalFollowUp )) (Maybe NextStepsTask)
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SetAccompanyToHC Bool
@@ -703,12 +703,15 @@ emptyAppointmentConfirmationForm =
 
 type alias FollowUpForm =
     { option : Maybe FollowUpOption
+
+    -- We do not display this. Using it when saving.
+    , assesment : Maybe PrenatalAssesment
     }
 
 
 emptyFollowUpForm : FollowUpForm
 emptyFollowUpForm =
-    FollowUpForm Nothing
+    FollowUpForm Nothing Nothing
 
 
 type alias HealthEducationForm =
