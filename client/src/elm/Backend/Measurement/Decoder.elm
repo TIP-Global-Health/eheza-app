@@ -788,7 +788,7 @@ decodePostpartumMotherDangerSign =
             (\s ->
                 postpartumMotherDangerSignFromString s
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (s ++ " is not a recognized PostpartumMotherDangerSign" |> fail)
+                    |> Maybe.withDefault (succeed NoPostpartumMotherDangerSigns)
             )
 
 
@@ -799,7 +799,7 @@ decodePostpartumChildDangerSign =
             (\s ->
                 postpartumChildDangerSignFromString s
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (s ++ " is not a recognized PostpartumChildDangerSign" |> fail)
+                    |> Maybe.withDefault (succeed NoPostpartumChildDangerSigns)
             )
 
 
