@@ -15,7 +15,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 
 allEncounterTypes : List IndividualEncounterType
 allEncounterTypes =
-    [ AcuteIllnessEncounter, NutritionEncounter ]
+    [ AcuteIllnessEncounter, AntenatalEncounter, NutritionEncounter ]
 
 
 generateNutritionFollowUps : ModelIndexedDb -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem
