@@ -273,10 +273,28 @@ decodePrenatalFollowUp =
     decodePrenatalMeasurement decodePrenatalFollowUpValue
 
 
-decodePrenatalFollowUpValue : Decoder (EverySet FollowUpOption)
+decodePrenatalFollowUpValue : Decoder PrenatalFollowUpValue
 decodePrenatalFollowUpValue =
-    decodeEverySet decodeFollowUpOption
-        |> field "follow_up_options"
+    succeed PrenatalFollowUpValue
+        |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
+        |> required "prenatal_assesment" decodePrenatalAssesment
+
+
+decodePrenatalAssesment : Decoder PrenatalAssesment
+decodePrenatalAssesment =
+    string
+        |> andThen
+            (\assesment ->
+                case assesment of
+                    "normal" ->
+                        succeed AssesmentNormalPregnancy
+
+                    "high-risk" ->
+                        succeed AssesmentHighRiskPregnancy
+
+                    _ ->
+                        assesment ++ " is not a recognized PrenatalAssesment" |> fail
+            )
 
 
 decodePrenatalSendToHc : Decoder PrenatalSendToHC
@@ -789,7 +807,7 @@ decodePostpartumMotherDangerSign =
             (\s ->
                 postpartumMotherDangerSignFromString s
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (s ++ " is not a recognized PostpartumMotherDangerSign" |> fail)
+                    |> Maybe.withDefault (succeed NoPostpartumMotherDangerSigns)
             )
 
 
@@ -800,7 +818,7 @@ decodePostpartumChildDangerSign =
             (\s ->
                 postpartumChildDangerSignFromString s
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (s ++ " is not a recognized PostpartumChildDangerSign" |> fail)
+                    |> Maybe.withDefault (succeed NoPostpartumChildDangerSigns)
             )
 
 

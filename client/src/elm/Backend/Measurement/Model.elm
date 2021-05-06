@@ -767,7 +767,18 @@ type PrenatalHealthEducationSign
 
 
 type alias PrenatalFollowUp =
-    PrenatalMeasurement (EverySet FollowUpOption)
+    PrenatalMeasurement PrenatalFollowUpValue
+
+
+type alias PrenatalFollowUpValue =
+    { options : EverySet FollowUpOption
+    , assesment : PrenatalAssesment
+    }
+
+
+type PrenatalAssesment
+    = AssesmentNormalPregnancy
+    | AssesmentHighRiskPregnancy
 
 
 type alias PrenatalSendToHC =

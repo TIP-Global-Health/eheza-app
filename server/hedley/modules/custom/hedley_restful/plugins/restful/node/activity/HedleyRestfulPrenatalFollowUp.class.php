@@ -10,6 +10,14 @@
  */
 class HedleyRestfulPrenatalFollowUp extends HedleyRestfulPrenatalActivityBase {
 
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $fields = [
+    'field_prenatal_assesment',
+  ];
+
   /**
    * {@inheritdoc}
    */

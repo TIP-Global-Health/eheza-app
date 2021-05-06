@@ -1406,7 +1406,11 @@ viewNextStepsContent language currentDate assembled data =
                                         SaveAppointmentConfirmation personId measurements.appointmentConfirmation nextTask
 
                                     NextStepsFollowUp ->
-                                        SaveFollowUp personId measurements.followUp nextTask
+                                        let
+                                            assesment =
+                                                generatePrenatalAssesment assembled
+                                        in
+                                        SaveFollowUp personId assesment measurements.followUp nextTask
 
                                     NextStepsSendToHC ->
                                         SaveSendToHC personId measurements.sendToHC nextTask

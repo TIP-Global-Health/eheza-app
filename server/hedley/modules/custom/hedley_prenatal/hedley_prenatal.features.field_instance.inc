@@ -524,6 +524,44 @@ function hedley_prenatal_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-prenatal_follow_up-field_prenatal_assesment'.
+  $field_instances['node-prenatal_follow_up-field_prenatal_assesment'] = array(
+    'bundle' => 'prenatal_follow_up',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_prenatal_assesment',
+    'label' => 'Prenatal Assesment',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 10,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-prenatal_follow_up-field_prenatal_encounter'.
   $field_instances['node-prenatal_follow_up-field_prenatal_encounter'] = array(
     'bundle' => 'prenatal_follow_up',
@@ -1006,6 +1044,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Follow up options');
   t('Nurse');
   t('Person');
+  t('Prenatal Assesment');
   t('Prenatal Encounter');
   t('Reason for Not Sending to HC');
   t('Send to HC');

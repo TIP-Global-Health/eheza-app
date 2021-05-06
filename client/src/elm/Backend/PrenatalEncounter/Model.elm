@@ -145,7 +145,7 @@ type Msg
     | HandleSavedPregnancyTesting (WebData ())
     | SaveHealthEducation PersonId (Maybe PrenatalHealthEducationId) (EverySet PrenatalHealthEducationSign)
     | HandleSavedHealthEducation (WebData ())
-    | SaveFollowUp PersonId (Maybe PrenatalFollowUpId) (EverySet FollowUpOption)
+    | SaveFollowUp PersonId (Maybe PrenatalFollowUpId) PrenatalFollowUpValue
     | HandleSavedFollowup (WebData ())
     | SaveSendToHC PersonId (Maybe PrenatalSendToHcId) SendToHCValue
     | HandleSavedSendToHC (WebData ())
