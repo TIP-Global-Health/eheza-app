@@ -2844,8 +2844,8 @@ generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after i
                 in
                 if not mandatoryActivitiesCompleted then
                     -- Assement is done only when all mandatory measurements were recorded.
-                    -- However, since there more mandatory activities when there
-                    -- no danger signs, we will try to update assement of follop anyway.
+                    -- However, since there are more mandatory activities when there are
+                    -- no danger signs, we will try to update assement of follow up anyway.
                     updateAssesmentMsg
 
                 else
