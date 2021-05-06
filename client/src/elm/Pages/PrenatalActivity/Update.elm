@@ -1682,7 +1682,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveFollowUp personId saved nextTask_ ->
+        SaveFollowUp personId assesment saved nextTask_ ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1695,6 +1695,7 @@ update currentDate id db msg model =
 
                 appMsgs =
                     model.nextStepsData.followUpForm
+                        |> (\form -> { form | assesment = Just assesment })
                         |> toFollowUpValueWithDefault measurement
                         |> unwrap
                             []
