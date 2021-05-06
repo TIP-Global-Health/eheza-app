@@ -13,7 +13,7 @@ decodePrenatalEncounter =
         |> required "individual_participant" decodeEntityUuid
         |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
         |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
-        |> required "prenatal_encounter_type" decodePrenatalEncounterTypeWithDefault
+        |> optional "prenatal_encounter_type" decodePrenatalEncounterTypeWithDefault NurseEncounter
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 
 
