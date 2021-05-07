@@ -3,7 +3,7 @@ module Pages.GlobalCaseManagement.Model exposing (..)
 import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
-import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue, NutritionAssesment)
+import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue, NutritionAssesment, PrenatalFollowUpValue)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
@@ -53,7 +53,7 @@ type alias PrenatalFollowUpItem =
     { dateMeasured : NominalDate
     , personName : String
     , encounterId : Maybe PrenatalEncounterId
-    , value : EverySet FollowUpOption
+    , value : PrenatalFollowUpValue
     }
 
 
