@@ -5541,7 +5541,7 @@ translationSet trans =
         PrenatalAssesment assesment ->
             case assesment of
                 AssesmentNormalPregnancy ->
-                    { english = "Normal"
+                    { english = "Routine Pregnancy Follow Up"
                     , kinyarwanda = Nothing
                     }
 
