@@ -518,12 +518,11 @@ viewPrenatalFollowUpEntry language currentDate ( participantId, personId ) item 
             viewDueClass dueOption
 
         assessments =
-             item.value.assesment
-
-                |>(\assessment -> p [] [ translateAssement assessment ])
+            item.value.assesment
+                |> (\assessment -> p [] [ translateAssement assessment ])
 
         translateAssement assessment =
-                text <| translate language <| Translate.PrenatalAssesment assessment
+            text <| translate language <| Translate.PrenatalAssesment assessment
 
         popupData =
             FollowUpPrenatalData personId item.personName
@@ -531,7 +530,7 @@ viewPrenatalFollowUpEntry language currentDate ( participantId, personId ) item 
     div [ class "follow-up-entry" ]
         [ div [ class "name" ] [ text item.personName ]
         , div [ class dueClass ] [ dueLabel ]
-        , div [ class "assesment" ] [assessments]
+        , div [ class "assesment" ] [ assessments ]
         , div
             [ class "icon-forward"
             , onClick <| SetDialogState <| Just <| FollowUpPrenatal popupData
