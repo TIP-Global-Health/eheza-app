@@ -720,6 +720,7 @@ type TranslationId
     | PregnancyTrimester PregnancyTrimester
     | PregnancyUrineTest
     | PrenatalActivitiesTitle PrenatalActivity
+    | PrenatalAssesment PrenatalAssesment
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
     | PrenatalNextStepsTask Pages.PrenatalActivity.Model.NextStepsTask
@@ -2838,7 +2839,7 @@ translationSet trans =
                     }
 
                 AntenatalEncounter ->
-                    { english = ""
+                    { english = "Do you want to start an assessment for"
                     , kinyarwanda = Nothing
                     }
 
@@ -5534,6 +5535,18 @@ translationSet trans =
 
                 Backend.PrenatalActivity.Model.PregnancyOutcome ->
                     { english = "Pregnancy Outcome"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalAssesment assesment ->
+            case assesment of
+                AssesmentNormalPregnancy ->
+                    { english = "Normal"
+                    , kinyarwanda = Nothing
+                    }
+
+                AssesmentHighRiskPregnancy ->
+                    { english = "High risk pregnancy"
                     , kinyarwanda = Nothing
                     }
 

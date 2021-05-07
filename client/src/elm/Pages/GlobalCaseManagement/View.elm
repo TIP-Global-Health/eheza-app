@@ -4,7 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (FollowUpMeasurements, NutritionAssesment(..))
+import Backend.Measurement.Model exposing (FollowUpMeasurements, NutritionAssesment(..), PrenatalAssesment(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
@@ -459,7 +459,7 @@ viewPrenatalFollowUpItem language currentDate db ( participantId, personId ) ite
                 |> Maybe.andThen .outcome
     in
     if isJust outcome then
-        -- Illness was concluded, so we do not need to follow up on it.
+        -- Pregnancy was concluded, so we do not need to follow up on it.
         emptyNode
 
     else
@@ -479,15 +479,11 @@ viewPrenatalFollowUpItem language currentDate db ( participantId, personId ) ite
         lastEncounterWithId
             |> Maybe.map
                 (\( encounterId, encounter ) ->
-                    -- The follow up was issued at last encounter for the illness,
-                    -- so we know we still need to follow up on that.
                     if item.encounterId == Just encounterId then
                         let
                             encounterType =
                                 allEncounters
                                     |> List.filter
-                                        -- We filters out encounters that got no diagnosis set,
-                                        -- to get most recent diagnosis made for the illness.
                                         (.encounterType >> (/=) NurseEncounter)
                                     |> List.head
                                     |> Maybe.map .encounterType
@@ -521,13 +517,21 @@ viewPrenatalFollowUpEntry language currentDate ( participantId, personId ) item 
         dueClass =
             viewDueClass dueOption
 
+        assessments =
+             item.value.assesment
+
+                |>(\assessment -> p [] [ translateAssement assessment ])
+
+        translateAssement assessment =
+                text <| translate language <| Translate.PrenatalAssesment assessment
+
         popupData =
             FollowUpPrenatalData personId item.personName
     in
     div [ class "follow-up-entry" ]
         [ div [ class "name" ] [ text item.personName ]
         , div [ class dueClass ] [ dueLabel ]
-        , div [ class "assesment" ][]
+        , div [ class "assesment" ] [assessments]
         , div
             [ class "icon-forward"
             , onClick <| SetDialogState <| Just <| FollowUpPrenatal popupData
