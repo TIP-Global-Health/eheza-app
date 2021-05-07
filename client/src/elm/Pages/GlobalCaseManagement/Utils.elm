@@ -3,7 +3,7 @@ module Pages.GlobalCaseManagement.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (FollowUpMeasurements, FollowUpOption(..), FollowUpValue)
+import Backend.Measurement.Model exposing (FollowUpMeasurements, FollowUpOption(..), FollowUpValue, PrenatalFollowUpValue)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Date
