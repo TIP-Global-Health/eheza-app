@@ -239,13 +239,6 @@ viewNutritionFollowUpEntry language currentDate personId item =
         dueOption =
             followUpDueOptionByDate currentDate item.dateMeasured item.value.options
 
-        dueLabel =
-            Translate.FollowUpDueOption dueOption
-                |> translateText language
-
-        dueClass =
-            viewDueClass dueOption
-
         assessments =
             EverySet.toList item.value.assesment
                 |> List.reverse
@@ -265,18 +258,9 @@ viewNutritionFollowUpEntry language currentDate personId item =
                     text <| translate language <| Translate.NutritionAssesment assessment
 
         popupData =
-            FollowUpNutritionData personId item.personName
+            FollowUpNutrition <| FollowUpNutritionData personId item.personName
     in
-    div [ class "follow-up-entry" ]
-        [ div [ class "name" ] [ text item.personName ]
-        , div [ class dueClass ] [ dueLabel ]
-        , div [ class "assesment" ] assessments
-        , div
-            [ class "icon-forward"
-            , onClick <| SetDialogState <| Just <| FollowUpNutrition popupData
-            ]
-            []
-        ]
+    viewFollowUpEntry language dueOption item.personName popupData assessments
 
 
 viewDueClass : FollowUpDueOption -> String
@@ -399,26 +383,13 @@ viewAcuteIllnessFollowUpEntry language currentDate ( participantId, personId ) i
         dueOption =
             followUpDueOptionByDate currentDate item.dateMeasured item.value
 
-        dueLabel =
-            Translate.FollowUpDueOption dueOption
-                |> translateText language
-
-        dueClass =
-            viewDueClass dueOption
+        assessment =
+            [ p [] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ] ]
 
         popupData =
-            FollowUpAcuteIllnessData personId item.personName participantId sequenceNumber
+            FollowUpAcuteIllness <| FollowUpAcuteIllnessData personId item.personName participantId sequenceNumber
     in
-    div [ class "follow-up-entry" ]
-        [ div [ class "name" ] [ text item.personName ]
-        , div [ class dueClass ] [ dueLabel ]
-        , div [ class "assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
-        , div
-            [ class "icon-forward"
-            , onClick <| SetDialogState <| Just <| FollowUpAcuteIllness popupData
-            ]
-            []
-        ]
+    viewFollowUpEntry language dueOption item.personName popupData assessment
 
 
 viewPrenatalPane :
@@ -518,30 +489,38 @@ viewPrenatalFollowUpEntry language currentDate ( participantId, personId ) item 
         dueOption =
             followUpDueOptionByDate currentDate item.dateMeasured item.value.options
 
+        assessment =
+            [ p [] [ text <| translate language <| Translate.PrenatalAssesment item.value.assesment ] ]
+
+        popupData =
+            FollowUpPrenatal <| FollowUpPrenatalData personId item.personName
+    in
+    viewFollowUpEntry language dueOption item.personName popupData assessment
+
+
+viewFollowUpEntry :
+    Language
+    -> FollowUpDueOption
+    -> String
+    -> FollowUpEncounterDataType
+    -> List (Html Msg)
+    -> Html Msg
+viewFollowUpEntry language dueOption personName popupData assessment =
+    let
         dueLabel =
             Translate.FollowUpDueOption dueOption
                 |> translateText language
 
         dueClass =
             viewDueClass dueOption
-
-        assessments =
-            item.value.assesment
-                |> (\assessment -> p [] [ translateAssement assessment ])
-
-        translateAssement assessment =
-            text <| translate language <| Translate.PrenatalAssesment assessment
-
-        popupData =
-            FollowUpPrenatalData personId item.personName
     in
     div [ class "follow-up-entry" ]
-        [ div [ class "name" ] [ text item.personName ]
+        [ div [ class "name" ] [ text personName ]
         , div [ class dueClass ] [ dueLabel ]
-        , div [ class "assesment" ] [ assessments ]
+        , div [ class "assesment" ] assessment
         , div
             [ class "icon-forward"
-            , onClick <| SetDialogState <| Just <| FollowUpPrenatal popupData
+            , onClick <| SetDialogState <| Just popupData
             ]
             []
         ]
