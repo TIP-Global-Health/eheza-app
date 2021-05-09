@@ -7,7 +7,6 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
-import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Utils exposing (sendToHCFormWithDefault)
 import Pages.PrenatalActivity.Model exposing (..)
@@ -66,29 +65,17 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
                 ( thirdEnconterInputs, thirdEnconterTasks )
 
         healthEducationCompletedAtEncounter encounterType =
-            let
-                encounterSequenceNumber =
-                    case encounterType of
-                        ChwFirstEncounter ->
-                            0
-
-                        ChwSecondEncounter ->
-                            1
-
-                        ChwThirdEncounter ->
-                            2
-
-                        ChwPostpartumEncounter ->
-                            3
-
-                        -- We should never get here, as health
-                        -- education is presented only for CHW.
-                        NurseEncounter ->
-                            -1
-            in
             assembled.chwPreviousMeasurementsWithDates
-                |> List.Extra.getAt encounterSequenceNumber
-                |> Maybe.andThen (Tuple.second >> .healthEducation)
+                |> List.filterMap
+                    (\( _, encounterType_, measurements ) ->
+                        if encounterType == encounterType_ then
+                            Just measurements
+
+                        else
+                            Nothing
+                    )
+                |> List.head
+                |> Maybe.andThen .healthEducation
                 |> isJust
 
         firstEnconterInputs =
@@ -227,7 +214,8 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
                 Nothing
             ]
     in
-    -- If Health education was not completed at previous encounter,
+    -- For all encounter types but postpartum, if Health
+    -- education was not completed at previous encounter,
     -- its inputs are added to next encounter.
     case assembled.encounter.encounterType of
         ChwFirstEncounter ->
@@ -246,8 +234,8 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             )
 
         ChwPostpartumEncounter ->
-            ( List.concat <| inputsFromFirst ++ inputsFromSecond ++ inputsFromThird ++ postpartumEnconterInputs
-            , tasksFromFirst ++ tasksFromSecond ++ tasksFromThird ++ postpartumEnconterTasks
+            ( List.concat postpartumEnconterInputs
+            , postpartumEnconterTasks
             )
 
         -- We should never get here, as health
