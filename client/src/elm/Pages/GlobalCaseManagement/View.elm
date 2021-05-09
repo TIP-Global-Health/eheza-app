@@ -90,9 +90,6 @@ viewContent language currentDate healthCenterId villageId isChw model db followU
         prenatalFollowUpsPane =
             viewPrenatalPane language currentDate prenatalFollowUps db model
 
-        _ =
-            Debug.log "prenatalFollowUps" prenatalFollowUps
-
         panes =
             [ ( AcuteIllnessEncounter, acuteIllnessFollowUpsPane ), ( AntenatalEncounter, prenatalFollowUpsPane ), ( NutritionEncounter, nutritionFollowUpsPane ) ]
                 |> List.filterMap
@@ -479,20 +476,31 @@ viewPrenatalFollowUpItem language currentDate db ( participantId, personId ) ite
         lastEncounterWithId
             |> Maybe.map
                 (\( encounterId, encounter ) ->
+                    -- Follow up belongs to last encounter, which indicates that
+                    -- there was not other encounter that would resolve that follow up.
                     if item.encounterId == Just encounterId then
                         let
                             encounterType =
                                 allEncounters
-                                    |> List.filter
-                                        (.encounterType >> (/=) NurseEncounter)
+                                    |> List.filter (.encounterType >> (/=) NurseEncounter)
                                     |> List.head
                                     |> Maybe.map .encounterType
                         in
                         encounterType
-                            |> Maybe.map (viewPrenatalFollowUpEntry language currentDate ( participantId, personId ) item)
+                            |> Maybe.map
+                                (\encounterType_ ->
+                                    if encounterType_ == ChwPostpartumEncounter then
+                                        -- We do not show follow ups taken at Postpartum encounetr.
+                                        emptyNode
+
+                                    else
+                                        viewPrenatalFollowUpEntry language currentDate ( participantId, personId ) item encounterType_
+                                )
                             |> Maybe.withDefault emptyNode
 
                     else
+                        -- Last encounter has not originated the follow up.
+                        -- Therefore, we know that follow up is resolved.
                         emptyNode
                 )
             |> Maybe.withDefault emptyNode
