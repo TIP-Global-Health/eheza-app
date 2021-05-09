@@ -437,6 +437,8 @@ viewPrenatalFollowUpItem language currentDate db ( participantId, personId ) ite
                     |> Maybe.andThen RemoteData.toMaybe
                     |> Maybe.map Dict.toList
                     |> Maybe.withDefault []
+                    -- Sort DESC
+                    |> List.sortWith (\( _, e1 ) ( _, e2 ) -> Date.compare e2.startDate e1.startDate)
 
             allEncounters =
                 List.map Tuple.second allEncountersWithIds
@@ -452,7 +454,8 @@ viewPrenatalFollowUpItem language currentDate db ( participantId, personId ) ite
                 (\( encounterId, encounter ) ->
                     -- Follow up belongs to last encounter, which indicates that
                     -- there was no other encounter that has resolved this follow up.
-                    if item.encounterId == Just encounterId then
+                    -- We also will not show a follow up if its encounter was performed today.
+                    if item.encounterId == Just encounterId && encounter.startDate /= currentDate then
                         let
                             encounterType =
                                 allChwEncounters

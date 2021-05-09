@@ -50,8 +50,7 @@ update currentDate healthCenterId msg db model =
                                         startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data
 
                                     FollowUpPrenatal data ->
-                                        -- @todo
-                                        []
+                                        startFollowUpEncountePrenatal currentDate selectedHealthCenter db data
                             )
                         |> Maybe.withDefault []
             in

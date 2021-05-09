@@ -2839,7 +2839,7 @@ translationSet trans =
                     }
 
                 AntenatalEncounter ->
-                    { english = "Do you want to start an assessment for"
+                    { english = "Do you want to start a Prenatal encounter for"
                     , kinyarwanda = Nothing
                     }
 
