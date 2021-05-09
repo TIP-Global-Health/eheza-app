@@ -21,6 +21,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.PrenatalEncounter.Utils exposing (generatePostCreateDestination)
 import Pages.PrenatalParticipant.Model exposing (..)
 import Pages.PrenatalParticipant.Utils exposing (isPregnancyActive)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -354,11 +355,7 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                             (\sessionId ->
                                 let
                                     postCreateDestination =
-                                        if hasNurseEncounter && encounterType /= ChwPostpartumEncounter then
-                                            DestinationClinicalProgressReportPage
-
-                                        else
-                                            DestinationEncounterPage
+                                        generatePostCreateDestination encounterType hasNurseEncounter
                                 in
                                 createNewEncounterMsg currentDate selectedHealthCenter sessionId encounterType postCreateDestination
                             )
