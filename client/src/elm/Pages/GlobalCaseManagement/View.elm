@@ -4,9 +4,10 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (FollowUpMeasurements, NutritionAssesment(..))
+import Backend.Measurement.Model exposing (FollowUpMeasurements, NutritionAssesment(..), PrenatalAssesment(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
 import EverySet
@@ -86,11 +87,11 @@ viewContent language currentDate healthCenterId villageId isChw model db followU
             generatePrenatalFollowUps db followUps
                 |> filterVillageResidents villageId Tuple.second db
 
-        _ =
-            Debug.log "prenatalFollowUps" prenatalFollowUps
+        prenatalFollowUpsPane =
+            viewPrenatalPane language currentDate prenatalFollowUps db model
 
         panes =
-            [ ( AcuteIllnessEncounter, acuteIllnessFollowUpsPane ), ( NutritionEncounter, nutritionFollowUpsPane ) ]
+            [ ( AcuteIllnessEncounter, acuteIllnessFollowUpsPane ), ( AntenatalEncounter, prenatalFollowUpsPane ), ( NutritionEncounter, nutritionFollowUpsPane ) ]
                 |> List.filterMap
                     (\( type_, pane ) ->
                         if isNothing model.encounterTypeFilter || model.encounterTypeFilter == Just type_ then
@@ -238,13 +239,6 @@ viewNutritionFollowUpEntry language currentDate personId item =
         dueOption =
             followUpDueOptionByDate currentDate item.dateMeasured item.value.options
 
-        dueLabel =
-            Translate.FollowUpDueOption dueOption
-                |> translateText language
-
-        dueClass =
-            viewDueClass dueOption
-
         assessments =
             EverySet.toList item.value.assesment
                 |> List.reverse
@@ -264,18 +258,9 @@ viewNutritionFollowUpEntry language currentDate personId item =
                     text <| translate language <| Translate.NutritionAssesment assessment
 
         popupData =
-            FollowUpNutritionData personId item.personName
+            FollowUpNutrition <| FollowUpNutritionData personId item.personName
     in
-    div [ class "follow-up-entry" ]
-        [ div [ class "name" ] [ text item.personName ]
-        , div [ class dueClass ] [ dueLabel ]
-        , div [ class "assesment" ] assessments
-        , div
-            [ class "icon-forward"
-            , onClick <| SetDialogState <| Just <| FollowUpNutrition popupData
-            ]
-            []
-        ]
+    viewFollowUpEntry language dueOption item.personName popupData assessments
 
 
 viewDueClass : FollowUpDueOption -> String
@@ -398,23 +383,144 @@ viewAcuteIllnessFollowUpEntry language currentDate ( participantId, personId ) i
         dueOption =
             followUpDueOptionByDate currentDate item.dateMeasured item.value
 
+        assessment =
+            [ p [] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ] ]
+
+        popupData =
+            FollowUpAcuteIllness <| FollowUpAcuteIllnessData personId item.personName participantId sequenceNumber
+    in
+    viewFollowUpEntry language dueOption item.personName popupData assessment
+
+
+viewPrenatalPane :
+    Language
+    -> NominalDate
+    -> Dict ( IndividualEncounterParticipantId, PersonId ) PrenatalFollowUpItem
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+viewPrenatalPane language currentDate itemsDict db model =
+    let
+        entries =
+            Dict.map (viewPrenatalFollowUpItem language currentDate db) itemsDict
+
+        content =
+            if Dict.isEmpty entries then
+                [ translateText language Translate.NoMatchesFound ]
+
+            else
+                Dict.values entries
+    in
+    div [ class "pane" ]
+        [ viewItemHeading language AntenatalEncounter
+        , div [ class "pane-content" ]
+            content
+        ]
+
+
+viewPrenatalFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> ( IndividualEncounterParticipantId, PersonId ) -> PrenatalFollowUpItem -> Html Msg
+viewPrenatalFollowUpItem language currentDate db ( participantId, personId ) item =
+    let
+        outcome =
+            Dict.get participantId db.individualParticipants
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.andThen .outcome
+    in
+    if isJust outcome then
+        -- Pregnancy was concluded, so we do not need to follow up on it.
+        emptyNode
+
+    else
+        let
+            allEncountersWithIds =
+                Dict.get participantId db.prenatalEncountersByParticipant
+                    |> Maybe.andThen RemoteData.toMaybe
+                    |> Maybe.map Dict.toList
+                    |> Maybe.withDefault []
+
+            allEncounters =
+                List.map Tuple.second allEncountersWithIds
+
+            lastEncounterWithId =
+                List.head allEncountersWithIds
+        in
+        lastEncounterWithId
+            |> Maybe.map
+                (\( encounterId, encounter ) ->
+                    -- Follow up belongs to last encounter, which indicates that
+                    -- there was not other encounter that would resolve that follow up.
+                    if item.encounterId == Just encounterId then
+                        let
+                            encounterType =
+                                allEncounters
+                                    |> List.filter (.encounterType >> (/=) NurseEncounter)
+                                    |> List.head
+                                    |> Maybe.map .encounterType
+                        in
+                        encounterType
+                            |> Maybe.map
+                                (\encounterType_ ->
+                                    if encounterType_ == ChwPostpartumEncounter then
+                                        -- We do not show follow ups taken at Postpartum encounetr.
+                                        emptyNode
+
+                                    else
+                                        viewPrenatalFollowUpEntry language currentDate ( participantId, personId ) item encounterType_
+                                )
+                            |> Maybe.withDefault emptyNode
+
+                    else
+                        -- Last encounter has not originated the follow up.
+                        -- Therefore, we know that follow up is resolved.
+                        emptyNode
+                )
+            |> Maybe.withDefault emptyNode
+
+
+viewPrenatalFollowUpEntry :
+    Language
+    -> NominalDate
+    -> ( IndividualEncounterParticipantId, PersonId )
+    -> PrenatalFollowUpItem
+    -> PrenatalEncounterType
+    -> Html Msg
+viewPrenatalFollowUpEntry language currentDate ( participantId, personId ) item encounterType =
+    let
+        dueOption =
+            followUpDueOptionByDate currentDate item.dateMeasured item.value.options
+
+        assessment =
+            [ p [] [ text <| translate language <| Translate.PrenatalAssesment item.value.assesment ] ]
+
+        popupData =
+            FollowUpPrenatal <| FollowUpPrenatalData personId item.personName
+    in
+    viewFollowUpEntry language dueOption item.personName popupData assessment
+
+
+viewFollowUpEntry :
+    Language
+    -> FollowUpDueOption
+    -> String
+    -> FollowUpEncounterDataType
+    -> List (Html Msg)
+    -> Html Msg
+viewFollowUpEntry language dueOption personName popupData assessment =
+    let
         dueLabel =
             Translate.FollowUpDueOption dueOption
                 |> translateText language
 
         dueClass =
             viewDueClass dueOption
-
-        popupData =
-            FollowUpAcuteIllnessData personId item.personName participantId sequenceNumber
     in
     div [ class "follow-up-entry" ]
-        [ div [ class "name" ] [ text item.personName ]
+        [ div [ class "name" ] [ text personName ]
         , div [ class dueClass ] [ dueLabel ]
-        , div [ class "assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
+        , div [ class "assesment" ] assessment
         , div
             [ class "icon-forward"
-            , onClick <| SetDialogState <| Just <| FollowUpAcuteIllness popupData
+            , onClick <| SetDialogState <| Just popupData
             ]
             []
         ]
