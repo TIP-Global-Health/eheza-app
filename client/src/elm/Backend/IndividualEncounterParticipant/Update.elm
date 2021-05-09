@@ -16,18 +16,10 @@ import Restful.Endpoint exposing (applyBackendUrl, toCmd, withoutDecoder)
 update : IndividualEncounterParticipantId -> Maybe IndividualEncounterParticipant -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
 update participantId maybeParticipant currentDate msg model =
     case msg of
-        ClosePrenatalSession concludedDate outcome isFacilityDelivery ->
+        ClosePrenatalSession concludedDate outcome deliveryLocation ->
             maybeParticipant
                 |> unwrap ( model, Cmd.none )
                     (\participant ->
-                        let
-                            deliveryLocation =
-                                if isFacilityDelivery then
-                                    FacilityDelivery
-
-                                else
-                                    HomeDelivery
-                        in
                         ( { model | closePrenatalSession = Loading }
                         , { participant | endDate = Just currentDate, dateConcluded = Just concludedDate, outcome = Just (Pregnancy outcome), deliveryLocation = Just deliveryLocation }
                             |> sw.patchFull individualEncounterParticipantEndpoint participantId

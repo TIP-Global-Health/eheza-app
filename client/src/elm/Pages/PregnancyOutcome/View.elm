@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Encoder exposing (pregnancyOutcomeToString)
-import Backend.IndividualEncounterParticipant.Model exposing (PregnancyOutcome(..), allPregnancyOutcome)
+import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..), IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..), allPregnancyOutcome)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model exposing (RecordPreganancyInitiator(..))
 import Date exposing (Unit(..))
@@ -14,6 +14,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Maybe.Extra
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PregnancyOutcome.Model exposing (Model, Msg(..))
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
@@ -89,10 +90,25 @@ viewContent language currentDate initiator model data =
 viewPregnancyOutcome : Language -> NominalDate -> RecordPreganancyInitiator -> AssembledData -> Model -> List (Html Msg)
 viewPregnancyOutcome language currentDate initiator data model =
     let
+        currentPregnancyOutcome =
+            case data.participant.outcome of
+                Just (Pregnancy outcome) ->
+                    Just outcome
+
+                _ ->
+                    Nothing
+
+        form =
+            { model
+                | pregnancyConcludedDate = Maybe.Extra.or model.pregnancyConcludedDate data.participant.dateConcluded
+                , pregnancyOutcome = Maybe.Extra.or model.pregnancyOutcome currentPregnancyOutcome
+                , deliveryLocation = Maybe.Extra.or model.deliveryLocation data.participant.deliveryLocation
+            }
+
         pregnancyOutcomeInput =
             option
                 [ value ""
-                , selected (model.pregnancyOutcome == Nothing)
+                , selected (form.pregnancyOutcome == Nothing)
                 ]
                 [ text "" ]
                 :: (allPregnancyOutcome
@@ -100,7 +116,7 @@ viewPregnancyOutcome language currentDate initiator data model =
                             (\outcome ->
                                 option
                                     [ value (pregnancyOutcomeToString outcome)
-                                    , selected (model.pregnancyOutcome == Just outcome)
+                                    , selected (form.pregnancyOutcome == Just outcome)
                                     ]
                                     [ text <| translate language <| Translate.PregnancyOutcome outcome ]
                             )
@@ -114,16 +130,16 @@ viewPregnancyOutcome language currentDate initiator data model =
             DateSelector.SelectorDropdown.view
                 ToggleDateSelector
                 SetPregnancyConcludedDate
-                model.isDateSelectorOpen
+                form.isDateSelectorOpen
                 (Date.add Days -92 today)
                 today
-                model.pregnancyConcludedDate
+                form.pregnancyConcludedDate
 
         totalTasks =
             3
 
         tasksCompleted =
-            taskCompleted model.pregnancyConcludedDate + taskCompleted model.pregnancyOutcome + taskCompleted model.isFacilityDelivery
+            taskCompleted form.pregnancyConcludedDate + taskCompleted form.pregnancyOutcome + taskCompleted form.deliveryLocation
 
         destinationPage =
             case initiator of
@@ -148,7 +164,7 @@ viewPregnancyOutcome language currentDate initiator data model =
                 , viewLabel language Translate.DeliveryLocation
                 , viewBoolInput
                     language
-                    model.isFacilityDelivery
+                    (Maybe.map ((==) FacilityDelivery) form.deliveryLocation)
                     SetDeliveryLocation
                     "delivery-location"
                     (Just ( Translate.Facility, Translate.Home ))

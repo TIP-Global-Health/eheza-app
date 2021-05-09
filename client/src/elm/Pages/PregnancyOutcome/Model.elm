@@ -1,7 +1,7 @@
 module Pages.PregnancyOutcome.Model exposing (Model, Msg(..), emptyModel)
 
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (PregnancyOutcome(..))
+import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, PregnancyOutcome(..))
 import Date exposing (Date)
 import Pages.Page exposing (Page)
 
@@ -9,7 +9,7 @@ import Pages.Page exposing (Page)
 type alias Model =
     { pregnancyConcludedDate : Maybe Date
     , pregnancyOutcome : Maybe PregnancyOutcome
-    , isFacilityDelivery : Maybe Bool
+    , deliveryLocation : Maybe DeliveryLocation
     , isDateSelectorOpen : Bool
     }
 
@@ -30,6 +30,6 @@ emptyModel : Model
 emptyModel =
     { pregnancyConcludedDate = Nothing
     , pregnancyOutcome = Nothing
-    , isFacilityDelivery = Nothing
+    , deliveryLocation = Nothing
     , isDateSelectorOpen = False
     }
