@@ -1605,15 +1605,8 @@ update currentDate id db msg model =
         SetActiveNextStepsTask task ->
             let
                 updatedData =
-                    -- Do not set Newborn Enrolment as active task,
-                    -- since it does not have a form to view.
-                    -- Clicking on it redirects to Registartion page.
-                    if task == NextStepsNewbornEnrolment then
-                        model.nextStepsData
-
-                    else
-                        model.nextStepsData
-                            |> (\data -> { data | activeTask = Just task })
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = Just task })
             in
             ( { model | nextStepsData = updatedData }
             , Cmd.none

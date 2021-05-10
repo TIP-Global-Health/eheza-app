@@ -1299,26 +1299,11 @@ viewNextStepsContent language currentDate assembled data =
                     activeTask == Just task
 
                 navigationAction =
-                    case task of
-                        NextStepsNewbornEnrolment ->
-                            if isNothing assembled.participant.newborn then
-                                [ onClick <|
-                                    SetActivePage <|
-                                        UserPage <|
-                                            CreatePersonPage (Just assembled.participant.person) <|
-                                                Backend.Person.Model.PrenatalNextStepsActivityOrigin assembled.id
-                                ]
+                    if isActive then
+                        []
 
-                            else
-                                -- Newborn is already enrolled.
-                                []
-
-                        _ ->
-                            if isActive then
-                                []
-
-                            else
-                                [ onClick <| SetActiveNextStepsTask task ]
+                    else
+                        [ onClick <| SetActiveNextStepsTask task ]
 
                 attributes =
                     classList
@@ -1380,8 +1365,7 @@ viewNextStepsContent language currentDate assembled data =
                         |> viewHealthEducationForm language currentDate assembled
 
                 Just NextStepsNewbornEnrolment ->
-                    -- There's no form, as we redirect to Create Person page.
-                    emptyNode
+                    viewNewbornEnrolmentForm language currentDate assembled
 
                 Nothing ->
                     emptyNode
@@ -1400,6 +1384,14 @@ viewNextStepsContent language currentDate assembled data =
                 |> Maybe.map
                     (\task ->
                         let
+                            ( label, disabled ) =
+                                case task of
+                                    NextStepsNewbornEnrolment ->
+                                        ( Translate.EnrolNewborn, tasksCompleted == totalTasks )
+
+                                    _ ->
+                                        ( Translate.Save, tasksCompleted /= totalTasks )
+
                             saveMsg =
                                 case task of
                                     NextStepsAppointmentConfirmation ->
@@ -1419,15 +1411,17 @@ viewNextStepsContent language currentDate assembled data =
                                         SaveHealthEducationSubActivity personId measurements.healthEducation nextTask
 
                                     NextStepsNewbornEnrolment ->
-                                        -- There's no action, as there's no form.
-                                        NoOp
+                                        SetActivePage <|
+                                            UserPage <|
+                                                CreatePersonPage (Just assembled.participant.person) <|
+                                                    Backend.Person.Model.PrenatalNextStepsActivityOrigin assembled.id
                         in
                         div [ class "actions next-steps" ]
                             [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
                                 , onClick saveMsg
                                 ]
-                                [ text <| translate language Translate.Save ]
+                                [ text <| translate language label ]
                             ]
                     )
                 |> Maybe.withDefault emptyNode
@@ -2724,6 +2718,13 @@ viewAppointmentConfirmationForm language currentDate assembled form =
         [ viewLabel language Translate.AppointmentConfirmationInstrunction
         , div [ class "form-input date" ]
             [ appointmentDateInput ]
+        ]
+
+
+viewNewbornEnrolmentForm : Language -> NominalDate -> AssembledData -> Html Msg
+viewNewbornEnrolmentForm language currentDate assembled =
+    div [ class "form newborn-enrolment" ]
+        [ text <| translate language <| Translate.EnrolNewbornHelper <| isJust assembled.participant.newborn
         ]
 
 
