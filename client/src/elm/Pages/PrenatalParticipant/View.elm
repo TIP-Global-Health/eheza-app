@@ -358,11 +358,26 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                             (\sessionId ->
                                 let
                                     postCreateDestination =
-                                        if hasNurseEncounter && encounterType /= ChwPostpartumEncounter then
-                                            DestinationClinicalProgressReportPage
+                                        case encounterType of
+                                            ChwFirstEncounter ->
+                                                if hasNurseEncounter then
+                                                    DestinationClinicalProgressReportPage
 
-                                        else
-                                            DestinationEncounterPage
+                                                else
+                                                    DestinationEncounterPage
+
+                                            ChwSecondEncounter ->
+                                                DestinationClinicalProgressReportPage
+
+                                            ChwThirdEncounter ->
+                                                DestinationClinicalProgressReportPage
+
+                                            ChwPostpartumEncounter ->
+                                                DestinationEncounterPage
+
+                                            -- We should never get here.
+                                            NurseEncounter ->
+                                                DestinationEncounterPage
                                 in
                                 createNewEncounterMsg currentDate selectedHealthCenter sessionId encounterType postCreateDestination
                             )
