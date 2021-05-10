@@ -97,10 +97,10 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             [ form.familyPlanning, form.breastfeeding ]
 
         postpartumEnconterInputs =
-            [ immunizationInput, hygieneInput ]
+            [ breastfeedingInput, immunizationInput, hygieneInput ]
 
         postpartumEnconterTasks =
-            [ form.immunization, form.hygiene ]
+            [ form.breastfeeding, form.immunization, form.hygiene ]
 
         expectationsUpdateFunc value form_ =
             { form_ | expectations = Just value }
