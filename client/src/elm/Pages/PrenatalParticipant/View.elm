@@ -338,7 +338,11 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                         lastEncounterType == Just ChwSecondEncounter && not encounterWasCompletedToday
 
                     ChwPostpartumEncounter ->
-                        lastEncounterType == Just ChwThirdEncounter && not encounterWasCompletedToday
+                        -- There's at least one CHW encounter.
+                        isJust lastEncounterType
+                            -- Which is not a postpartum encounter.
+                            && (lastEncounterType /= Just ChwPostpartumEncounter)
+                            && not encounterWasCompletedToday
 
                     -- We shoould never get here, as we deal only with CHW encounters.
                     NurseEncounter ->

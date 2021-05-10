@@ -447,6 +447,7 @@ type TranslationId
     | EndEncounterQuestion
     | EndGroupEncounter
     | EnrolNewborn
+    | EnrolNewbornHelper Bool
     | EnterAmountDistributed
     | EnterPairingCode
     | ErrorCheckLocalConfig
@@ -2904,6 +2905,17 @@ translationSet trans =
             { english = "Enrol Newborn"
             , kinyarwanda = Nothing
             }
+
+        EnrolNewbornHelper enrolled ->
+            if enrolled then
+                { english = "Newborn is already enrolled"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "Click on 'Enrol Newborn' button to perform enrolment"
+                , kinyarwanda = Nothing
+                }
 
         EnterAmountDistributed ->
             { english = "Enter amount distributed"

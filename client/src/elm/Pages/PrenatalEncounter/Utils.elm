@@ -534,7 +534,7 @@ generatePreviousMeasurements :
     PrenatalEncounterId
     -> IndividualEncounterParticipantId
     -> ModelIndexedDb
-    -> ( List ( NominalDate, PrenatalMeasurements ), List ( NominalDate, PrenatalMeasurements ) )
+    -> ( List ( NominalDate, PrenatalMeasurements ), List ( NominalDate, PrenatalEncounterType, PrenatalMeasurements ) )
 generatePreviousMeasurements currentEncounterId participantId db =
     Dict.get participantId db.prenatalEncountersByParticipant
         |> Maybe.andThen RemoteData.toMaybe
@@ -554,12 +554,13 @@ generatePreviousMeasurements currentEncounterId participantId db =
                             getEncounterMeasurements ( encounterId, encounter ) =
                                 case Dict.get encounterId db.prenatalMeasurements of
                                     Just (Success measurements) ->
-                                        Just ( encounter.startDate, measurements )
+                                        Just ( encounter.startDate, encounter.encounterType, measurements )
 
                                     _ ->
                                         Nothing
                         in
                         ( List.filterMap getEncounterMeasurements nurseEncounters
+                            |> List.map (\( date, _, measurements ) -> ( date, measurements ))
                         , List.filterMap getEncounterMeasurements chwEncounters
                         )
                    )
@@ -607,7 +608,7 @@ generateAssembledData id db =
             List.map Tuple.second nursePreviousMeasurementsWithDates
 
         chwPreviousMeasurements =
-            List.map Tuple.second chwPreviousMeasurementsWithDates
+            List.map (\( _, _, previousMeasurements ) -> previousMeasurements) chwPreviousMeasurementsWithDates
 
         globalLmpDate =
             measurements
