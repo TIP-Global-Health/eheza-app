@@ -161,6 +161,15 @@ followUpDueOptionByDate currentDate dateMeasured options =
 
                             TwoWeeks ->
                                 14
+
+                            OneMonth ->
+                                30
+
+                            TwoMonths ->
+                                60
+
+                            ThreeMonths ->
+                                90
                     )
                 |> Maybe.withDefault 0
 
