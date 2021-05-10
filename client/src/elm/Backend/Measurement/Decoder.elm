@@ -2007,6 +2007,15 @@ decodeFollowUpOption =
                     "2-w" ->
                         succeed TwoWeeks
 
+                    "1-m" ->
+                        succeed OneMonth
+
+                    "2-m" ->
+                        succeed TwoMonths
+
+                    "3-m" ->
+                        succeed ThreeMonths
+
                     _ ->
                         fail <|
                             sign
