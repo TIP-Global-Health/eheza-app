@@ -7,9 +7,11 @@ import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), emptyIndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PrenatalEncounter.Model exposing (emptyPrenatalEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.GlobalCaseManagement.Model exposing (..)
+import Pages.PrenatalEncounter.Utils exposing (generatePostCreateDestination)
 import RemoteData exposing (RemoteData(..))
 
 
@@ -48,8 +50,7 @@ update currentDate healthCenterId msg db model =
                                         startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data
 
                                     FollowUpPrenatal data ->
-                                        -- @todo
-                                        []
+                                        startFollowUpEncountePrenatal currentDate selectedHealthCenter db data
                             )
                         |> Maybe.withDefault []
             in
@@ -84,3 +85,16 @@ startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data =
         |> Backend.Model.PostAcuteIllnessEncounter
         |> App.Model.MsgIndexedDb
     ]
+
+
+startFollowUpEncountePrenatal : NominalDate -> HealthCenterId -> ModelIndexedDb -> FollowUpPrenatalData -> List App.Model.Msg
+startFollowUpEncountePrenatal currentDate selectedHealthCenter db data =
+    Pages.PrenatalEncounter.Utils.getSubsequentEncounterType data.encounterType
+        |> Maybe.map
+            (\newEncounterType ->
+                [ emptyPrenatalEncounter data.participantId currentDate newEncounterType (Just selectedHealthCenter)
+                    |> Backend.Model.PostPrenatalEncounter (generatePostCreateDestination data.encounterType data.hasNurseEncounter)
+                    |> App.Model.MsgIndexedDb
+                ]
+            )
+        |> Maybe.withDefault []

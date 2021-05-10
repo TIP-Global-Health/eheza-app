@@ -4,6 +4,7 @@ import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue, NutritionAssesment, PrenatalFollowUpValue)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
@@ -80,6 +81,9 @@ type alias FollowUpAcuteIllnessData =
 type alias FollowUpPrenatalData =
     { personId : PersonId
     , personName : String
+    , participantId : IndividualEncounterParticipantId
+    , encounterType : PrenatalEncounterType
+    , hasNurseEncounter : Bool
     }
 
 

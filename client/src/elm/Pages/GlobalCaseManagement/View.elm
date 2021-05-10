@@ -437,9 +437,14 @@ viewPrenatalFollowUpItem language currentDate db ( participantId, personId ) ite
                     |> Maybe.andThen RemoteData.toMaybe
                     |> Maybe.map Dict.toList
                     |> Maybe.withDefault []
+                    -- Sort DESC
+                    |> List.sortWith (\( _, e1 ) ( _, e2 ) -> Date.compare e2.startDate e1.startDate)
 
             allEncounters =
                 List.map Tuple.second allEncountersWithIds
+
+            allChwEncounters =
+                List.filter (.encounterType >> (/=) NurseEncounter) allEncounters
 
             lastEncounterWithId =
                 List.head allEncountersWithIds
@@ -448,24 +453,32 @@ viewPrenatalFollowUpItem language currentDate db ( participantId, personId ) ite
             |> Maybe.map
                 (\( encounterId, encounter ) ->
                     -- Follow up belongs to last encounter, which indicates that
-                    -- there was not other encounter that would resolve that follow up.
-                    if item.encounterId == Just encounterId then
+                    -- there was no other encounter that has resolved this follow up.
+                    -- We also will not show a follow up if its encounter was performed today.
+                    if item.encounterId == Just encounterId && encounter.startDate /= currentDate then
                         let
                             encounterType =
-                                allEncounters
-                                    |> List.filter (.encounterType >> (/=) NurseEncounter)
+                                allChwEncounters
                                     |> List.head
                                     |> Maybe.map .encounterType
+
+                            hasNurseEncounter =
+                                List.length allChwEncounters < List.length allEncounters
                         in
                         encounterType
                             |> Maybe.map
                                 (\encounterType_ ->
                                     if encounterType_ == ChwPostpartumEncounter then
-                                        -- We do not show follow ups taken at Postpartum encounetr.
+                                        -- We do not show follow ups taken at Postpartum encounter.
                                         emptyNode
 
                                     else
-                                        viewPrenatalFollowUpEntry language currentDate ( participantId, personId ) item encounterType_
+                                        viewPrenatalFollowUpEntry language
+                                            currentDate
+                                            ( participantId, personId )
+                                            item
+                                            encounterType_
+                                            hasNurseEncounter
                                 )
                             |> Maybe.withDefault emptyNode
 
@@ -483,8 +496,9 @@ viewPrenatalFollowUpEntry :
     -> ( IndividualEncounterParticipantId, PersonId )
     -> PrenatalFollowUpItem
     -> PrenatalEncounterType
+    -> Bool
     -> Html Msg
-viewPrenatalFollowUpEntry language currentDate ( participantId, personId ) item encounterType =
+viewPrenatalFollowUpEntry language currentDate ( participantId, personId ) item encounterType hasNurseEncounter =
     let
         dueOption =
             followUpDueOptionByDate currentDate item.dateMeasured item.value.options
@@ -493,7 +507,13 @@ viewPrenatalFollowUpEntry language currentDate ( participantId, personId ) item 
             [ p [] [ text <| translate language <| Translate.PrenatalAssesment item.value.assesment ] ]
 
         popupData =
-            FollowUpPrenatal <| FollowUpPrenatalData personId item.personName
+            FollowUpPrenatal <|
+                FollowUpPrenatalData
+                    personId
+                    item.personName
+                    participantId
+                    encounterType
+                    hasNurseEncounter
     in
     viewFollowUpEntry language dueOption item.personName popupData assessment
 
