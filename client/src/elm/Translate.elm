@@ -3226,6 +3226,21 @@ translationSet trans =
                     , kinyarwanda = Just "Ibyumweru 2"
                     }
 
+                OneMonths ->
+                    { english = "1 Month"
+                    , kinyarwanda = Just "Ukwezi 1"
+                    }
+
+                TwoMonths ->
+                    { english = "2 Months"
+                    , kinyarwanda = Just "Amezi 2"
+                    }
+
+                ThreeMonths ->
+                    { english = "3 Months"
+                    , kinyarwanda = Just "Amezi 3"
+                    }
+
         FollowUpDueOption option ->
             case option of
                 OverDue ->

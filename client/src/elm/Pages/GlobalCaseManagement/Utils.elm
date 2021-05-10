@@ -162,7 +162,7 @@ followUpDueOptionByDate currentDate dateMeasured options =
                             TwoWeeks ->
                                 14
 
-                            OneMonth ->
+                            OneMonths ->
                                 30
 
                             TwoMonths ->
