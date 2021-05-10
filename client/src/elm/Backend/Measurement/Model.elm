@@ -236,6 +236,9 @@ type FollowUpOption
     | ThreeDays
     | OneWeek
     | TwoWeeks
+    | OneMonth
+    | TwoMonths
+    | ThreeMonths
 
 
 
