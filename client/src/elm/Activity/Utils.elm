@@ -273,8 +273,8 @@ getAllChildActivitiesWithExclusion offlineSession exclusionList =
     in
     forAllGroupTypesMandatory
         ++ nextStepsActivities
-        ++ forAllGroupTypesOptional
         ++ forFbf
+        ++ forAllGroupTypesOptional
         |> List.filter (\activity -> not <| List.member activity exclusionList)
 
 

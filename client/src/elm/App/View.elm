@@ -352,7 +352,7 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     NutritionParticipantPage id ->
-                        Pages.NutritionParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
+                        Pages.NutritionParticipant.View.view model.language currentDate healthCenterId id isChw model.indexedDb
                             |> flexPageWrapper model
 
                     AcuteIllnessParticipantPage id ->
