@@ -83,7 +83,7 @@ expectActivity currentDate zscores child isChw data db activity =
                 |> Maybe.withDefault False
 
         NextSteps ->
-            if isChw && mandatoryActivitiesCompleted currentDate zscores child isChw data db then
+            if mandatoryActivitiesCompleted currentDate zscores child isChw data db then
                 -- Any assesment require sending to HC.
                 generateNutritionAssesment currentDate zscores db data
                     |> List.isEmpty

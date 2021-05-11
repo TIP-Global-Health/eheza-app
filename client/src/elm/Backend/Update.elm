@@ -2883,66 +2883,61 @@ generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after i
 
 generateNutritionAssessmentIndividualMsgs : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> NutritionEncounterId -> List App.Model.Msg
 generateNutritionAssessmentIndividualMsgs currentDate zscores isChw after id =
-    if not isChw then
-        -- Assement is done only for CHW.
-        []
+    Maybe.map
+        (\assembledAfter ->
+            let
+                mandatoryActivitiesCompleted =
+                    Pages.NutritionActivity.Utils.mandatoryActivitiesCompleted
+                        currentDate
+                        zscores
+                        assembledAfter.person
+                        isChw
+                        assembledAfter
+                        after
+            in
+            if not mandatoryActivitiesCompleted then
+                -- Assement is done only when all mandatory measurements were recorded.
+                []
 
-    else
-        Maybe.map
-            (\assembledAfter ->
+            else
                 let
-                    mandatoryActivitiesCompleted =
-                        Pages.NutritionActivity.Utils.mandatoryActivitiesCompleted
-                            currentDate
-                            zscores
-                            assembledAfter.person
-                            isChw
-                            assembledAfter
-                            after
+                    assesmentAfter =
+                        Pages.NutritionActivity.Utils.generateNutritionAssesment currentDate zscores after assembledAfter
+
+                    updateFollowUpAssesmentMsg =
+                        assembledAfter.measurements.followUp
+                            |> Maybe.map
+                                (\( measurementId, measurement ) ->
+                                    let
+                                        updatedValue =
+                                            measurement.value
+                                                |> (\value -> { value | assesment = nutritionAssesmentForBackend assesmentAfter })
+                                    in
+                                    Backend.NutritionEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
+                                        |> Backend.Model.MsgNutritionEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                        |> List.singleton
+                                )
+                            |> Maybe.withDefault []
                 in
-                if not mandatoryActivitiesCompleted then
-                    -- Assement is done only when all mandatory measurements were recorded.
-                    []
+                if List.isEmpty assesmentAfter then
+                    -- No assesment, so, only thing we want to update is the
+                    -- assesment field on Follow Up measurement, if it exists already.
+                    updateFollowUpAssesmentMsg
 
                 else
-                    let
-                        assesmentAfter =
-                            Pages.NutritionActivity.Utils.generateNutritionAssesment currentDate zscores after assembledAfter
+                    updateFollowUpAssesmentMsg
+                        ++ [ -- Navigate to Nutrition encounter page.
+                             App.Model.SetActivePage (UserPage (NutritionActivityPage id Backend.NutritionActivity.Model.NextSteps))
 
-                        updateFollowUpAssesmentMsg =
-                            assembledAfter.measurements.followUp
-                                |> Maybe.map
-                                    (\( measurementId, measurement ) ->
-                                        let
-                                            updatedValue =
-                                                measurement.value
-                                                    |> (\value -> { value | assesment = nutritionAssesmentForBackend assesmentAfter })
-                                        in
-                                        Backend.NutritionEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
-                                            |> Backend.Model.MsgNutritionEncounter id
-                                            |> App.Model.MsgIndexedDb
-                                            |> List.singleton
-                                    )
-                                |> Maybe.withDefault []
-                    in
-                    if List.isEmpty assesmentAfter then
-                        -- No assesment, so, only thing we want to update is the
-                        -- assesment field on Follow Up measurement, if it exists already.
-                        updateFollowUpAssesmentMsg
-
-                    else
-                        updateFollowUpAssesmentMsg
-                            ++ [ -- Navigate to Nutrition encounter page.
-                                 App.Model.SetActivePage (UserPage (NutritionActivityPage id Backend.NutritionActivity.Model.NextSteps))
-
-                               -- Show warning popup with new assesment.
-                               , Pages.NutritionActivity.Model.SetWarningPopupState assesmentAfter
-                                    |> App.Model.MsgPageNutritionActivity id Backend.NutritionActivity.Model.NextSteps
-                                    |> App.Model.MsgLoggedIn
-                               ]
-            )
-            (RemoteData.toMaybe <| Pages.NutritionEncounter.Utils.generateAssembledData id after)
-            |> Maybe.withDefault []
+                           -- Show warning popup with new assesment.
+                           , Pages.NutritionActivity.Model.SetWarningPopupState assesmentAfter
+                                |> App.Model.MsgPageNutritionActivity id Backend.NutritionActivity.Model.NextSteps
+                                |> App.Model.MsgLoggedIn
+                           ]
+        )
+        (RemoteData.toMaybe <| Pages.NutritionEncounter.Utils.generateAssembledData id after)
+        |> Maybe.withDefault []
 
 
 generateNutritionAssessmentGroupMsgs :
