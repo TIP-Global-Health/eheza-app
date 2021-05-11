@@ -2654,10 +2654,17 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             )
 
         PrenatalFollowUpRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | prenatal = Dict.insert uuid data measurements.prenatal })
+                        model
+            in
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | followUp = Just ( uuid, data ) })
-                model
+                modelWithMappedFollowUp
             , recalc
             )
 

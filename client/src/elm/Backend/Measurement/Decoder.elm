@@ -155,6 +155,7 @@ decodeFollowUpMeasurements =
         |> optional "follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeFollowUp)) Dict.empty
         |> optional "nutrition_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeNutritionFollowUp)) Dict.empty
         |> optional "acute_illness_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeAcuteIllnessFollowUp)) Dict.empty
+        |> optional "prenatal_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodePrenatalFollowUp)) Dict.empty
 
 
 decodeHomeVisitMeasurements : Decoder HomeVisitMeasurements

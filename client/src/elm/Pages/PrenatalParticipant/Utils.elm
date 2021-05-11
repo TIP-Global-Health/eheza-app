@@ -1,4 +1,4 @@
-module Pages.PrenatalParticipant.Utils exposing (isPregnancyActive)
+module Pages.PrenatalParticipant.Utils exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (..)

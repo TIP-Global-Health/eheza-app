@@ -75,11 +75,44 @@ fetch currentDate healthCenterId villageId db =
                 |> List.map Tuple.second
 
         --
-        -- People for both types of follow ups.
+        --  Prenatal follows ups calculations.
+        --
+        prenatalEncounters =
+            followUps
+                |> Maybe.map generatePrenatalEncounters
+                |> Maybe.withDefault EverySet.empty
+
+        prenatalParticipants =
+            generatePrenatalParticipants prenatalEncounters db
+
+        fetchPrenatalEncountersMsgs =
+            EverySet.toList prenatalEncounters
+                |> List.map FetchPrenatalEncounter
+
+        fetchPrenatalParticipantsMsgs =
+            EverySet.toList prenatalParticipants
+                |> List.map FetchIndividualEncounterParticipant
+
+        fetchPrenatalEncountersForParticipantMsgs =
+            EverySet.toList prenatalParticipants
+                |> List.map FetchPrenatalEncountersForParticipant
+
+        prenatalFollowUps =
+            followUps
+                |> Maybe.map (generatePrenatalFollowUps db)
+                |> Maybe.withDefault Dict.empty
+
+        peopleForPrenatal =
+            Dict.keys prenatalFollowUps
+                |> List.map Tuple.second
+
+        --
+        -- People for all types of follow ups.
         --
         people =
             peopleForNutrition
                 ++ peopleForAccuteIllness
+                ++ peopleForPrenatal
                 |> EverySet.fromList
                 |> EverySet.toList
     in
@@ -93,3 +126,6 @@ fetch currentDate healthCenterId villageId db =
         ++ fetchAcuteIllnessEncountersMsgs
         ++ fetchAcuteIllnessParticipantsMsgs
         ++ fetchAcuteIllnessEncountersForParticipantMsgs
+        ++ fetchPrenatalEncountersMsgs
+        ++ fetchPrenatalParticipantsMsgs
+        ++ fetchPrenatalEncountersForParticipantMsgs

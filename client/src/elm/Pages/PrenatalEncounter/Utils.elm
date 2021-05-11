@@ -39,6 +39,49 @@ getAllActivities data =
             [ PregnancyOutcome, DangerSigns, NextSteps ]
 
 
+getSubsequentEncounterType : PrenatalEncounterType -> Maybe PrenatalEncounterType
+getSubsequentEncounterType currentEncounterType =
+    case currentEncounterType of
+        NurseEncounter ->
+            Just NurseEncounter
+
+        ChwFirstEncounter ->
+            Just ChwSecondEncounter
+
+        ChwSecondEncounter ->
+            Just ChwThirdEncounter
+
+        ChwThirdEncounter ->
+            Just ChwPostpartumEncounter
+
+        ChwPostpartumEncounter ->
+            Nothing
+
+
+generatePostCreateDestination : PrenatalEncounterType -> Bool -> PrenatalEncounterPostCreateDestination
+generatePostCreateDestination encounterType hasNurseEncounter =
+    case encounterType of
+        ChwFirstEncounter ->
+            if hasNurseEncounter then
+                DestinationClinicalProgressReportPage
+
+            else
+                DestinationEncounterPage
+
+        ChwSecondEncounter ->
+            DestinationClinicalProgressReportPage
+
+        ChwThirdEncounter ->
+            DestinationClinicalProgressReportPage
+
+        ChwPostpartumEncounter ->
+            DestinationEncounterPage
+
+        -- We should never get here.
+        NurseEncounter ->
+            DestinationEncounterPage
+
+
 expectActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool
 expectActivity currentDate data activity =
     case data.encounter.encounterType of

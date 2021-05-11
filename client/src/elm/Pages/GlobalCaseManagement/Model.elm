@@ -3,7 +3,8 @@ module Pages.GlobalCaseManagement.Model exposing (..)
 import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
-import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue, NutritionAssesment)
+import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue, NutritionAssesment, PrenatalFollowUpValue)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
@@ -49,9 +50,18 @@ type alias AcuteIllnessFollowUpItem =
     }
 
 
+type alias PrenatalFollowUpItem =
+    { dateMeasured : NominalDate
+    , personName : String
+    , encounterId : Maybe PrenatalEncounterId
+    , value : PrenatalFollowUpValue
+    }
+
+
 type FollowUpEncounterDataType
     = FollowUpNutrition FollowUpNutritionData
     | FollowUpAcuteIllness FollowUpAcuteIllnessData
+    | FollowUpPrenatal FollowUpPrenatalData
 
 
 type alias FollowUpNutritionData =
@@ -65,6 +75,15 @@ type alias FollowUpAcuteIllnessData =
     , personName : String
     , participantId : IndividualEncounterParticipantId
     , sequenceNumber : Int
+    }
+
+
+type alias FollowUpPrenatalData =
+    { personId : PersonId
+    , personName : String
+    , participantId : IndividualEncounterParticipantId
+    , encounterType : PrenatalEncounterType
+    , hasNurseEncounter : Bool
     }
 
 

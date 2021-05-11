@@ -3,19 +3,19 @@ module Pages.GlobalCaseManagement.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (FollowUpMeasurements, FollowUpOption(..), FollowUpValue)
+import Backend.Measurement.Model exposing (FollowUpMeasurements, FollowUpOption(..), FollowUpValue, PrenatalFollowUpValue)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Pages.GlobalCaseManagement.Model exposing (..)
-import RemoteData exposing (RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
 
 
 allEncounterTypes : List IndividualEncounterType
 allEncounterTypes =
-    [ AcuteIllnessEncounter, NutritionEncounter ]
+    [ AcuteIllnessEncounter, AntenatalEncounter, NutritionEncounter ]
 
 
 generateNutritionFollowUps : ModelIndexedDb -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem
@@ -102,6 +102,56 @@ generateAcuteIllnessFollowUps db followUps =
             Dict.empty
 
 
+generatePrenatalFollowUps : ModelIndexedDb -> FollowUpMeasurements -> Dict ( IndividualEncounterParticipantId, PersonId ) PrenatalFollowUpItem
+generatePrenatalFollowUps db followUps =
+    let
+        encountersData =
+            generatePrenatalEncounters followUps
+                |> EverySet.toList
+                |> List.filterMap
+                    (\encounterId ->
+                        Dict.get encounterId db.prenatalEncounters
+                            |> Maybe.andThen RemoteData.toMaybe
+                            |> Maybe.map (\encounter -> ( encounterId, encounter.participant ))
+                    )
+                |> Dict.fromList
+    in
+    Dict.values followUps.prenatal
+        |> List.foldl
+            (\item accum ->
+                let
+                    encounterData =
+                        item.encounterId
+                            |> Maybe.andThen
+                                (\encounterId -> Dict.get encounterId encountersData)
+                in
+                encounterData
+                    |> Maybe.map
+                        (\participantId ->
+                            let
+                                personId =
+                                    item.participantId
+
+                                newItem =
+                                    PrenatalFollowUpItem item.dateMeasured "" item.encounterId item.value
+                            in
+                            Dict.get ( participantId, personId ) accum
+                                |> Maybe.map
+                                    (\member ->
+                                        if Date.compare newItem.dateMeasured member.dateMeasured == GT then
+                                            Dict.insert ( participantId, personId ) newItem accum
+
+                                        else
+                                            accum
+                                    )
+                                |> Maybe.withDefault
+                                    (Dict.insert ( participantId, personId ) newItem accum)
+                        )
+                    |> Maybe.withDefault accum
+            )
+            Dict.empty
+
+
 filterVillageResidents : VillageId -> (k -> PersonId) -> ModelIndexedDb -> Dict k { v | personName : String } -> Dict k { v | personName : String }
 filterVillageResidents villageId keyToPersonIdFunc db dict =
     Dict.toList dict
@@ -123,18 +173,47 @@ filterVillageResidents villageId keyToPersonIdFunc db dict =
 
 generateAcuteIllnessEncounters : FollowUpMeasurements -> EverySet AcuteIllnessEncounterId
 generateAcuteIllnessEncounters followUps =
-    Dict.values followUps.acuteIllness
+    generateEncountersIdsFromMeasurements .acuteIllness followUps
+
+
+generatePrenatalEncounters : FollowUpMeasurements -> EverySet PrenatalEncounterId
+generatePrenatalEncounters followUps =
+    generateEncountersIdsFromMeasurements .prenatal followUps
+
+
+generateEncountersIdsFromMeasurements :
+    (FollowUpMeasurements -> Dict measurementId { a | encounterId : Maybe encounterId })
+    -> FollowUpMeasurements
+    -> EverySet encounterId
+generateEncountersIdsFromMeasurements getMeasurementsFunc followUps =
+    getMeasurementsFunc followUps
+        |> Dict.values
         |> List.filterMap .encounterId
         |> EverySet.fromList
 
 
 generateAcuteIllnessParticipants : EverySet AcuteIllnessEncounterId -> ModelIndexedDb -> EverySet IndividualEncounterParticipantId
 generateAcuteIllnessParticipants encounters db =
+    generateParticipantsIdsByEncounters .acuteIllnessEncounters encounters db
+
+
+generatePrenatalParticipants : EverySet PrenatalEncounterId -> ModelIndexedDb -> EverySet IndividualEncounterParticipantId
+generatePrenatalParticipants encounters db =
+    generateParticipantsIdsByEncounters .prenatalEncounters encounters db
+
+
+generateParticipantsIdsByEncounters :
+    (ModelIndexedDb -> Dict encounterId (WebData { a | participant : IndividualEncounterParticipantId }))
+    -> EverySet encounterId
+    -> ModelIndexedDb
+    -> EverySet IndividualEncounterParticipantId
+generateParticipantsIdsByEncounters getEncountersFunc encounters db =
     encounters
         |> EverySet.toList
         |> List.filterMap
             (\encounterId ->
-                Dict.get encounterId db.acuteIllnessEncounters
+                getEncountersFunc db
+                    |> Dict.get encounterId
                     |> Maybe.andThen RemoteData.toMaybe
                     |> Maybe.map .participant
             )
