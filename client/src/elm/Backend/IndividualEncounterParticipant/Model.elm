@@ -41,7 +41,7 @@ type alias Model =
 
 
 type Msg
-    = ClosePrenatalSession Date PregnancyOutcome Bool
+    = ClosePrenatalSession Date PregnancyOutcome DeliveryLocation
     | HandleClosedPrenatalSession (WebData ())
     | CloseAcuteIllnessSession AcuteIllnessOutcome
     | HandleClosedAcuteIllnessSession (WebData ())

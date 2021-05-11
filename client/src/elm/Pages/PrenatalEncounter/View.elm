@@ -370,16 +370,11 @@ viewMainPageContent language currentDate data model =
                 navigationAction =
                     case activity of
                         PregnancyOutcome ->
-                            if isNothing data.participant.endDate then
-                                [ onClick <|
-                                    SetActivePage <|
-                                        UserPage <|
-                                            PregnancyOutcomePage (InitiatorPostpartumEncounter data.id) data.encounter.participant
-                                ]
-
-                            else
-                                -- Pregnancy outcome is already recorded.
-                                []
+                            [ onClick <|
+                                SetActivePage <|
+                                    UserPage <|
+                                        PregnancyOutcomePage (InitiatorPostpartumEncounter data.id) data.encounter.participant
+                            ]
 
                         _ ->
                             [ onClick <|
