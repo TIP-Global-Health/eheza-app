@@ -60,11 +60,26 @@ getSubsequentEncounterType currentEncounterType =
 
 generatePostCreateDestination : PrenatalEncounterType -> Bool -> PrenatalEncounterPostCreateDestination
 generatePostCreateDestination encounterType hasNurseEncounter =
-    if hasNurseEncounter && encounterType /= ChwPostpartumEncounter then
-        DestinationClinicalProgressReportPage
+    case encounterType of
+        ChwFirstEncounter ->
+            if hasNurseEncounter then
+                DestinationClinicalProgressReportPage
 
-    else
-        DestinationEncounterPage
+            else
+                DestinationEncounterPage
+
+        ChwSecondEncounter ->
+            DestinationClinicalProgressReportPage
+
+        ChwThirdEncounter ->
+            DestinationClinicalProgressReportPage
+
+        ChwPostpartumEncounter ->
+            DestinationEncounterPage
+
+        -- We should never get here.
+        NurseEncounter ->
+            DestinationEncounterPage
 
 
 expectActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool

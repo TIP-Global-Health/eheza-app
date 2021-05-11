@@ -2691,7 +2691,7 @@ viewFollowUpForm language assembled currentDate form =
     div [ class "ui form follow-up" ]
         [ viewLabel language Translate.FollowUpLabel
         , viewCheckBoxSelectInput language
-            [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
+            [ ThreeDays, OneMonths, TwoMonths, ThreeMonths ]
             []
             form.option
             SetFollowUpOption

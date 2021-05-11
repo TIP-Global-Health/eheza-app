@@ -1630,6 +1630,15 @@ encodeFollowUpOption option =
             TwoWeeks ->
                 "2-w"
 
+            OneMonths ->
+                "1-m"
+
+            TwoMonths ->
+                "2-m"
+
+            ThreeMonths ->
+                "3-m"
+
 
 encodeNutritionFeeding : NutritionFeeding -> List ( String, Value )
 encodeNutritionFeeding =
