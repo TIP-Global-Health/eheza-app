@@ -5586,22 +5586,22 @@ translationSet trans =
 
                 ChwFirstEncounter ->
                     { english = "First Antenatal Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusura ku nshuro ya mbere umugore utwite"
                     }
 
                 ChwSecondEncounter ->
                     { english = "Second Antenatal Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusura ku nshuro ya kabiri umugore utwite"
                     }
 
                 ChwThirdEncounter ->
                     { english = "Third Antenatal Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusura ku nshuro ya gatatu umugore utwite"
                     }
 
                 ChwPostpartumEncounter ->
                     { english = "Postpartum"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igihe cya nyuma cyo kubyara"
                     }
 
         PrenatalHealthEducationQuestion sign ->
