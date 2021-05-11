@@ -2951,114 +2951,109 @@ generateNutritionAssessmentGroupMsgs :
     -> ModelIndexedDb
     -> List App.Model.Msg
 generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId activePage updateFunc db =
-    if not isChw then
-        -- Assement is done only for CHW.
-        []
+    Dict.get sessionId db.editableSessions
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map
+            (\session ->
+                let
+                    -- We simulate session data after measurement data is performed.
+                    offlineSession =
+                        mapChildMeasurementsAtOfflineSession childId updateFunc session.offlineSession
 
-    else
-        Dict.get sessionId db.editableSessions
-            |> Maybe.andThen RemoteData.toMaybe
-            |> Maybe.map
-                (\session ->
+                    mandatoryActivitiesCompleted =
+                        Activity.Utils.mandatoryActivitiesCompleted
+                            currentDate
+                            zscores
+                            offlineSession
+                            childId
+                            isChw
+                            db
+                in
+                if not mandatoryActivitiesCompleted then
+                    []
+
+                else
                     let
-                        -- We simulate session data after measurement data is performed.
-                        offlineSession =
-                            mapChildMeasurementsAtOfflineSession childId updateFunc session.offlineSession
-
-                        mandatoryActivitiesCompleted =
-                            Activity.Utils.mandatoryActivitiesCompleted
+                        assesment =
+                            Activity.Utils.generateNutritionAssesment
                                 currentDate
                                 zscores
-                                offlineSession
                                 childId
-                                isChw
                                 db
+                                offlineSession
+
+                        updateFollowUpAssesmentMsg =
+                            getChildMeasurementData2 childId offlineSession
+                                |> LocalData.unwrap
+                                    []
+                                    (\measurements ->
+                                        let
+                                            followUp =
+                                                mapMeasurementData .followUp measurements
+                                                    |> .current
+
+                                            followUpId =
+                                                Maybe.map Tuple.first followUp
+
+                                            followUpValue =
+                                                Maybe.map (Tuple.second >> .value) followUp
+                                        in
+                                        followUpValue
+                                            |> Maybe.map
+                                                (\value ->
+                                                    let
+                                                        updatedValue =
+                                                            { value | assesment = nutritionAssesmentForBackend assesment }
+                                                    in
+                                                    Measurement.Model.SaveFollowUp followUpId updatedValue
+                                                        |> Backend.Session.Model.MeasurementOutMsgChild childId
+                                                        |> Backend.Model.MsgSession sessionId
+                                                        |> App.Model.MsgIndexedDb
+                                                        |> List.singleton
+                                                )
+                                            |> Maybe.withDefault []
+                                    )
+
+                        personByPersonMsgs =
+                            updateFollowUpAssesmentMsg
+                                ++ [ Pages.Participant.Model.SetWarningPopupState assesment
+                                        |> Pages.Session.Model.MsgChild childId
+                                        |> App.Model.MsgPageSession sessionId
+                                        |> App.Model.MsgLoggedIn
+                                   ]
+
+                        activityByActivityMsgs childActivity =
+                            updateFollowUpAssesmentMsg
+                                ++ [ App.Model.SetActivePage (UserPage (SessionPage sessionId (NextStepsPage childId (ChildActivity childActivity))))
+                                   , Pages.NextSteps.Model.SetWarningPopupState assesment
+                                        |> Pages.Session.Model.MsgNextSteps childId (ChildActivity childActivity)
+                                        |> App.Model.MsgPageSession sessionId
+                                        |> App.Model.MsgLoggedIn
+                                   ]
                     in
-                    if not mandatoryActivitiesCompleted then
-                        []
+                    if List.isEmpty assesment then
+                        -- No assesment, so, only thing we want to update is the
+                        -- assesment field on Follow Up measurement, if it exists already.
+                        updateFollowUpAssesmentMsg
 
                     else
-                        let
-                            assesment =
-                                Activity.Utils.generateNutritionAssesment
-                                    currentDate
-                                    zscores
-                                    childId
-                                    db
-                                    offlineSession
+                        case activePage of
+                            UserPage (SessionPage _ (ChildPage _)) ->
+                                personByPersonMsgs
 
-                            updateFollowUpAssesmentMsg =
-                                getChildMeasurementData2 childId offlineSession
-                                    |> LocalData.unwrap
-                                        []
-                                        (\measurements ->
-                                            let
-                                                followUp =
-                                                    mapMeasurementData .followUp measurements
-                                                        |> .current
+                            UserPage (SessionPage _ (ActivityPage (ChildActivity Muac))) ->
+                                activityByActivityMsgs Muac
 
-                                                followUpId =
-                                                    Maybe.map Tuple.first followUp
+                            UserPage (SessionPage _ (ActivityPage (ChildActivity NutritionSigns))) ->
+                                activityByActivityMsgs NutritionSigns
 
-                                                followUpValue =
-                                                    Maybe.map (Tuple.second >> .value) followUp
-                                            in
-                                            followUpValue
-                                                |> Maybe.map
-                                                    (\value ->
-                                                        let
-                                                            updatedValue =
-                                                                { value | assesment = nutritionAssesmentForBackend assesment }
-                                                        in
-                                                        Measurement.Model.SaveFollowUp followUpId updatedValue
-                                                            |> Backend.Session.Model.MeasurementOutMsgChild childId
-                                                            |> Backend.Model.MsgSession sessionId
-                                                            |> App.Model.MsgIndexedDb
-                                                            |> List.singleton
-                                                    )
-                                                |> Maybe.withDefault []
-                                        )
+                            UserPage (SessionPage _ (ActivityPage (ChildActivity Weight))) ->
+                                activityByActivityMsgs Weight
 
-                            personByPersonMsgs =
-                                updateFollowUpAssesmentMsg
-                                    ++ [ Pages.Participant.Model.SetWarningPopupState assesment
-                                            |> Pages.Session.Model.MsgChild childId
-                                            |> App.Model.MsgPageSession sessionId
-                                            |> App.Model.MsgLoggedIn
-                                       ]
-
-                            activityByActivityMsgs childActivity =
-                                updateFollowUpAssesmentMsg
-                                    ++ [ App.Model.SetActivePage (UserPage (SessionPage sessionId (NextStepsPage childId (ChildActivity childActivity))))
-                                       , Pages.NextSteps.Model.SetWarningPopupState assesment
-                                            |> Pages.Session.Model.MsgNextSteps childId (ChildActivity childActivity)
-                                            |> App.Model.MsgPageSession sessionId
-                                            |> App.Model.MsgLoggedIn
-                                       ]
-                        in
-                        if List.isEmpty assesment then
-                            -- No assesment, so, only thing we want to update is the
-                            -- assesment field on Follow Up measurement, if it exists already.
-                            updateFollowUpAssesmentMsg
-
-                        else
-                            case activePage of
-                                UserPage (SessionPage _ (ChildPage _)) ->
-                                    personByPersonMsgs
-
-                                UserPage (SessionPage _ (ActivityPage (ChildActivity Muac))) ->
-                                    activityByActivityMsgs Muac
-
-                                UserPage (SessionPage _ (ActivityPage (ChildActivity NutritionSigns))) ->
-                                    activityByActivityMsgs NutritionSigns
-
-                                UserPage (SessionPage _ (ActivityPage (ChildActivity Weight))) ->
-                                    activityByActivityMsgs Weight
-
-                                _ ->
-                                    []
-                )
-            |> Maybe.withDefault []
+                            _ ->
+                                []
+            )
+        |> Maybe.withDefault []
 
 
 generateSuspectedDiagnosisMsgs : NominalDate -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
