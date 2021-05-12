@@ -338,11 +338,17 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                         lastEncounterType == Just ChwSecondEncounter && not encounterWasCompletedToday
 
                     ChwPostpartumEncounter ->
-                        -- There's at least one CHW encounter.
-                        isJust lastEncounterType
-                            -- Which is not a postpartum encounter.
-                            && (lastEncounterType /= Just ChwPostpartumEncounter)
-                            && not encounterWasCompletedToday
+                        case lastEncounterType of
+                            Just lastEncounterType_ ->
+                                -- Last encounter is not a postpartum encounter,
+                                -- and there's no encounter that was completed today.
+                                (lastEncounterType_ /= ChwPostpartumEncounter)
+                                    && not encounterWasCompletedToday
+
+                            Nothing ->
+                                -- When there're no encounters, we allow to
+                                -- create postpartum encounter.
+                                True
 
                     -- We shoould never get here, as we deal only with CHW encounters.
                     NurseEncounter ->
@@ -364,8 +370,8 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                                 createNewEncounterMsg currentDate selectedHealthCenter sessionId encounterType postCreateDestination
                             )
                         |> Maybe.withDefault
-                            -- Prenatal session does not exist, create it, if it's a first encounter.
-                            (if encounterType == ChwFirstEncounter then
+                            -- Prenatal session does not exist. Create it, if it's a first or postpartum encounter.
+                            (if encounterType == ChwFirstEncounter || encounterType == ChwPostpartumEncounter then
                                 createNewSessionMsg currentDate selectedHealthCenter id encounterType
 
                              else
