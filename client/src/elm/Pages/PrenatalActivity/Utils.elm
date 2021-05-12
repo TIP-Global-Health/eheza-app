@@ -43,20 +43,6 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
                 |> Maybe.map (Tuple.second >> .value)
                 |> healthEducationFormWithDefault healthEducationForm
 
-        ( inputsFromFirst, tasksFromFirst ) =
-            if healthEducationCompletedAtEncounter ChwFirstEncounter then
-                ( [], [] )
-
-            else
-                ( firstEnconterInputs, firstEnconterTasks )
-
-        ( inputsFromSecond, tasksFromSecond ) =
-            if healthEducationCompletedAtEncounter ChwSecondEncounter then
-                ( [], [] )
-
-            else
-                ( secondEnconterInputs, secondEnconterTasks )
-
         healthEducationCompletedAtEncounter encounterType =
             assembled.chwPreviousMeasurementsWithDates
                 |> List.filterMap
@@ -67,9 +53,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
                         else
                             Nothing
                     )
-                |> List.head
-                |> Maybe.andThen .healthEducation
-                |> isJust
+                |> List.any (.healthEducation >> isJust)
 
         firstEnconterInputs =
             [ expectationsInput, visitsReviewInput, warningSignsInput ]
@@ -206,19 +190,42 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
                 "hygiene"
                 Nothing
             ]
+
+        ( inputsFromFirst, tasksFromFirst ) =
+            if healthEducationCompletedAtFirst || healthEducationCompletedAtSecond || healthEducationCompletedAtThird then
+                ( [], [] )
+
+            else
+                ( firstEnconterInputs, firstEnconterTasks )
+
+        ( inputsFromSecond, tasksFromSecond ) =
+            if healthEducationCompletedAtSecond || healthEducationCompletedAtThird then
+                ( [], [] )
+
+            else
+                ( secondEnconterInputs, secondEnconterTasks )
+
+        healthEducationCompletedAtFirst =
+            healthEducationCompletedAtEncounter ChwFirstEncounter
+
+        healthEducationCompletedAtSecond =
+            healthEducationCompletedAtEncounter ChwSecondEncounter
+
+        healthEducationCompletedAtThird =
+            healthEducationCompletedAtEncounter ChwThirdEncounter
     in
     -- For all encounter types but postpartum, if Health
     -- education was not completed at previous encounter,
     -- its inputs are added to next encounter.
     case assembled.encounter.encounterType of
         ChwFirstEncounter ->
-            ( List.concat inputsFromFirst
-            , tasksFromFirst
+            ( List.concat firstEnconterInputs
+            , firstEnconterTasks
             )
 
         ChwSecondEncounter ->
-            ( List.concat <| inputsFromFirst ++ inputsFromSecond
-            , tasksFromFirst ++ tasksFromSecond
+            ( List.concat <| inputsFromFirst ++ secondEnconterInputs
+            , tasksFromFirst ++ secondEnconterTasks
             )
 
         ChwThirdEncounter ->
