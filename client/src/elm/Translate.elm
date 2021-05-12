@@ -1980,7 +1980,7 @@ translationSet trans =
 
         BoughtClothesQuestion ->
             { english = "Have you bought clothes and other essential items for the child"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Waba waraguze imyenda n'ibindi bikoresho by'ibanze bikenewe ku mwana"
             }
 
         BowedLegs ->
@@ -2065,7 +2065,7 @@ translationSet trans =
 
         CaregiverAccompanyQuestion ->
             { english = "Do you have a caregiver to accompany you to the health center when you give birth"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ufite umuntu wo kuguherekeza ku kigo nderabuzima igihe ugiye kubyara"
             }
 
         CaregiverName ->
@@ -2544,7 +2544,7 @@ translationSet trans =
 
         DeliveryLocation ->
             { english = "Delivery Location"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Aho kubyarira"
             }
 
         DeliveryOutcome ->
@@ -2618,7 +2618,7 @@ translationSet trans =
 
         DatePregnancyConcluded ->
             { english = "Date Pregnancy Concluded"
-            , kinyarwanda = Just "Date Pregnancy Concluded"
+            , kinyarwanda = Just "Itariki y'iherezo ryo gutwita"
             }
 
         Day ->
@@ -2903,18 +2903,18 @@ translationSet trans =
 
         EnrolNewborn ->
             { english = "Enrol Newborn"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Andika Uruhinja"
             }
 
         EnrolNewbornHelper enrolled ->
             if enrolled then
                 { english = "Newborn is already enrolled"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Uruhinja rusanzwe rwanditse"
                 }
 
             else
                 { english = "Click on 'Enrol Newborn' button to perform enrolment"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Kanda kuri 'Andika Uruhinja' kugira ngo urwandike"
                 }
 
         EnterAmountDistributed ->
@@ -3011,7 +3011,7 @@ translationSet trans =
 
         Facility ->
             { english = "Facility"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ivuriro"
             }
 
         FamilyInformation ->
@@ -3414,7 +3414,7 @@ translationSet trans =
 
         HealthInsuranceQuestion ->
             { english = "Do you have health insurance"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ufite ubwishingizi bwo kwivuza"
             }
 
         Heart ->
@@ -3569,7 +3569,7 @@ translationSet trans =
 
         Home ->
             { english = "Home"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Mu rugo"
             }
 
         HomeVisitActivityTitle activity ->
@@ -5384,74 +5384,74 @@ translationSet trans =
             case sign of
                 PostpartumChildInabilityToSuckle ->
                     { english = "Inability to Suck"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntashobora konka"
                     }
 
                 PostpartumChildParalysis ->
                     { english = "Paralysis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igice cy'umubiri kidakora"
                     }
 
                 PostpartumChildLabouredBreathing ->
                     { english = "Laboured or Rapid Breathing"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Guhumeka bigoranye cg guhumeka vuba vuba"
                     }
 
                 PostpartumChildAbnormalTemperature ->
                     { english = "High (Fever) or Low Temperature"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igipimo cy'ubushyuhe kiri hejuru cg kiri hasi"
                     }
 
                 PostpartumChildInactiveNoMovement ->
                     { english = "Inactive or No Movement"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uruhinja ntacyo rwumva cg ntirunyeganyega"
                     }
 
                 PostpartumChildBodyTurnedYellow ->
                     { english = "Whole Body Has Turned Yellow"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubiri wose wabaye umuhondo"
                     }
 
                 NoPostpartumChildDangerSigns ->
                     { english = "None of these"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta kimenyetso na kimwe"
                     }
 
         PostpartumMotherDangerSign sign ->
             case sign of
                 PostpartumMotheUterineBleeding ->
                     { english = "Excessive Uterinal Bleeding"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi ava bikabije cyane"
                     }
 
                 PostpartumMotherFever ->
                     { english = "High Temperature / Fever"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Guhinda umuriro mwinshi/Umuriro"
                     }
 
                 PostpartumMotherMigraine ->
                     { english = "Migraine"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umutwe umurya cyane"
                     }
 
                 PostpartumMotherParalysis ->
                     { english = "Paralysis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igice cy'umubiri kidakora"
                     }
 
                 PostpartumMotherAcuteAbdominalPain ->
                     { english = "Acute Abdominal Pain"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuribwa mu nda cyane"
                     }
 
                 PostpartumMotherLabouredBreathing ->
                     { english = "Laboured Breathing"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Guhumeka bigoranye"
                     }
 
                 NoPostpartumMotherDangerSigns ->
                     { english = "None of these"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta kimenyetso na kimwe"
                     }
 
         PreeclampsiaPreviousPregnancy ->
@@ -5552,17 +5552,17 @@ translationSet trans =
 
                 BirthPlan ->
                     { english = "Birth Plan"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gutegura gahunda yo kubyara"
                     }
 
                 Backend.PrenatalActivity.Model.NextSteps ->
                     { english = "Next Steps"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibikurikiyeho"
                     }
 
                 Backend.PrenatalActivity.Model.PregnancyOutcome ->
                     { english = "Pregnancy Outcome"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Iherezo ry'inda"
                     }
 
         PrenatalAssesment assesment ->
@@ -5670,12 +5670,12 @@ translationSet trans =
 
                 Pages.PrenatalActivity.Model.NextStepsHealthEducation ->
                     { english = "Health Education"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
                 Pages.PrenatalActivity.Model.NextStepsNewbornEnrolment ->
                     { english = "Newborn Enrolment"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kwandika uruhinja"
                     }
 
         PrenatalPhotoHelper ->
@@ -5695,7 +5695,7 @@ translationSet trans =
 
         PregnancyOutcomeLabel ->
             { english = "Pregnancy Outcome"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Iherezo ry'inda"
             }
 
         PregnancyOutcome outcome ->
@@ -6420,7 +6420,7 @@ translationSet trans =
 
         SavedMoneyQuestion ->
             { english = "Have you saved money for use at the health center while you give birth"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Wazigamye amafaranga yo gukoresha ku kigo nderabuzima igihe cyo kubyara"
             }
 
         SaveError ->
@@ -6480,7 +6480,7 @@ translationSet trans =
 
         SelectPostpartumChildDangerSigns ->
             { english = "Please select one or more of the danger signs the child is experiencing"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umwana  yaba afite?"
             }
 
         SelectDangerSigns ->
@@ -6490,7 +6490,7 @@ translationSet trans =
 
         SelectPostpartumMotherDangerSigns ->
             { english = "Please select one or more of the danger signs the mother is experiencing"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umubyeyi yaba afite"
             }
 
         SelectedProgram ->
@@ -7112,7 +7112,7 @@ translationSet trans =
 
         TransportationPlanQuestion ->
             { english = "Have you planned for transportation to and from the health center to give birth"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Waba warateganije uburyo uzagera ku kigo nderabuzima ugiye kubyara ndetse n'uburyo uzavayo nyuma yo kubyara"
             }
 
         TraveledToCOVID19CountryQuestion ->
