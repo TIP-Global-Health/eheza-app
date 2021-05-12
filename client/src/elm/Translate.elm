@@ -1009,7 +1009,7 @@ translationSet trans =
 
         AccompanyToHCQuestion ->
             { english = "Will you accompany the patient to the health center"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uraherekeza umubyeyi ku kigonderabuzima"
             }
 
         AccessDenied ->
@@ -1870,12 +1870,12 @@ translationSet trans =
 
         AppointmentConfirmation ->
             { english = "Appointment Confirmation"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kwemeza itariki yo kugaruka"
             }
 
         AppointmentConfirmationInstrunction ->
             { english = "The patient should visit the health center on the following date"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubyeyi agomba kujya ku kigo nderabuzima ku itariki ikurikira"
             }
 
         All ->
@@ -3749,7 +3749,7 @@ translationSet trans =
 
                 AntenatalEncounter ->
                     { english = "Antenatal"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma ku mugore utwite"
                     }
 
                 InmmunizationEncounter ->
@@ -5463,22 +5463,22 @@ translationSet trans =
             case result of
                 PregnancyTestPositive ->
                     { english = "Positive"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Aratwite"
                     }
 
                 PregnancyTestNegative ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntago Atwite"
                     }
 
                 PregnancyTestIndeterminate ->
                     { english = "Indeterminate"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibisobanutse"
                     }
 
                 PregnancyTestUnableToConduct ->
                     { english = "Unable to conduct test"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini nticyakozwe"
                     }
 
         PregnancyTrimester trimester ->
@@ -5500,7 +5500,7 @@ translationSet trans =
 
         PregnancyUrineTest ->
             { english = "Urine Pregnancy Test"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ikizamini cy'inkari gisuzuma ko umugore atwite"
             }
 
         PrenatalActivitiesTitle activity ->
@@ -5542,12 +5542,12 @@ translationSet trans =
 
                 Laboratory ->
                     { english = "Laboratory"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibizamini"
                     }
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
                     { english = "Health Education"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
                 BirthPlan ->
@@ -5608,42 +5608,42 @@ translationSet trans =
             case sign of
                 EducationExpectations ->
                     { english = "Have you provided health education and anticipatory guidance on what to expect during the pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Watanze inyigisho z'ubuzima k'umugore utwite unamusobanurira ibishobora kumubaho"
                     }
 
                 EducationVisitsReview ->
                     { english = "Have you reviewed anticipated visits by the CHW and to the health center with the mother"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba waganiriye n'umubyeyi ibyerekeye gusurwa n'umujyanama w'ubuzima cyangwa kujya ku kigonderabuzima"
                     }
 
                 EducationWarningSigns ->
                     { english = "Have you provided health education and anticipatory guidance on pregnancy warning signs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Watanze inyigisho ku bimenyetso mpuruza k'umugore utwite nuko yakwitwara aramuste agize kimwe muribyo"
                     }
 
                 EducationHemorrhaging ->
                     { english = "Have you provided education on post-partum hemorrhaging"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Watanze inyigisho ku kimenyesto cyo kuva cyane nyuma yo kubyara"
                     }
 
                 EducationFamilyPlanning ->
                     { english = "Have you provided education on family planning"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Watanze inyigisho zijyanye no kuboneza urubyaro"
                     }
 
                 EducationBreastfeeding ->
                     { english = "Have you provided education on breast feeding"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Watanze inyigisho ku birebana no konsa"
                     }
 
                 EducationImmunization ->
                     { english = "Have you provided education on immunization"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Watanze inyigisho zijyanye na gahunda yo gukingiza"
                     }
 
                 EducationHygiene ->
                     { english = "Have you provided education on hygiene"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Watanze inyigisho ku bijyanye n'isuku"
                     }
 
                 NoPrenatalHealthEducationSigns ->
@@ -5655,17 +5655,17 @@ translationSet trans =
             case task of
                 Pages.PrenatalActivity.Model.NextStepsAppointmentConfirmation ->
                     { english = "Appointment Confirmation"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kwemeza itariki yo kugaruka"
                     }
 
                 Pages.PrenatalActivity.Model.NextStepsFollowUp ->
                     { english = "CHW Follow Up"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isura ry'umujyanama w'ubuzima"
                     }
 
                 Pages.PrenatalActivity.Model.NextStepsSendToHC ->
                     { english = "Send to Health Center"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
                 Pages.PrenatalActivity.Model.NextStepsHealthEducation ->
