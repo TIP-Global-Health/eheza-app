@@ -57,13 +57,6 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             else
                 ( secondEnconterInputs, secondEnconterTasks )
 
-        ( inputsFromThird, tasksFromThird ) =
-            if healthEducationCompletedAtEncounter ChwThirdEncounter then
-                ( [], [] )
-
-            else
-                ( thirdEnconterInputs, thirdEnconterTasks )
-
         healthEducationCompletedAtEncounter encounterType =
             assembled.chwPreviousMeasurementsWithDates
                 |> List.filterMap
@@ -229,8 +222,8 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             )
 
         ChwThirdEncounter ->
-            ( List.concat <| inputsFromFirst ++ inputsFromSecond ++ inputsFromThird
-            , tasksFromFirst ++ tasksFromSecond ++ tasksFromThird
+            ( List.concat <| inputsFromFirst ++ inputsFromSecond ++ thirdEnconterInputs
+            , tasksFromFirst ++ tasksFromSecond ++ thirdEnconterTasks
             )
 
         ChwPostpartumEncounter ->
