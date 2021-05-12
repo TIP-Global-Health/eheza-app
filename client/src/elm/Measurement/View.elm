@@ -1056,7 +1056,7 @@ viewHealthEducationForm language currentDate setProvidedEducationForDiagnosisMsg
     div [ class "ui form health-education" ] <|
         [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
         , div [ class "instructions" ]
-            [ viewHealthEducationLabel language Translate.ProvideHealthEducation "icon-open-book" Nothing
+            [ viewHealthEducationLabel language Translate.ProvideHealthEducationShort "icon-open-book" Nothing
             ]
         ]
             ++ healthEducationSection

@@ -273,8 +273,8 @@ getAllChildActivitiesWithExclusion offlineSession exclusionList =
     in
     forAllGroupTypesMandatory
         ++ nextStepsActivities
-        ++ forAllGroupTypesOptional
         ++ forFbf
+        ++ forAllGroupTypesOptional
         |> List.filter (\activity -> not <| List.member activity exclusionList)
 
 
@@ -340,8 +340,7 @@ expectChildActivity currentDate zscores offlineSession childId isChw db activity
             List.member offlineSession.session.clinicType [ Achi, Fbf ]
 
         ContributingFactors ->
-            isChw
-                && mandatoryActivitiesCompleted currentDate zscores offlineSession childId isChw db
+            mandatoryActivitiesCompleted currentDate zscores offlineSession childId isChw db
                 && (generateNutritionAssesment currentDate zscores childId db offlineSession
                         |> List.isEmpty
                         |> not

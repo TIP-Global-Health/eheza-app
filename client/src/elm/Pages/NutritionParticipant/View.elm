@@ -22,8 +22,8 @@ import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate selectedHealthCenter id db =
+view : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate selectedHealthCenter id isChw db =
     let
         sessions =
             Dict.get id db.individualParticipantsByPerson
@@ -34,7 +34,7 @@ view language currentDate selectedHealthCenter id db =
         [ viewHeader language id
         , div
             [ class "ui full segment" ]
-            [ viewWebData language (viewActions language currentDate selectedHealthCenter id db) identity sessions
+            [ viewWebData language (viewActions language currentDate selectedHealthCenter id isChw db) identity sessions
             ]
         ]
 
@@ -68,10 +68,20 @@ viewActions :
     -> NominalDate
     -> HealthCenterId
     -> PersonId
+    -> Bool
     -> ModelIndexedDb
     -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant
     -> Html App.Model.Msg
-viewActions language currentDate selectedHealthCenter id db sessions =
+viewActions language currentDate selectedHealthCenter id isChw db sessions =
+    let
+        -- Only CHW are allowed to conduct home visits.
+        homeVisitAction =
+            if isChw then
+                viewHomeVisitAction language currentDate selectedHealthCenter id db sessions
+
+            else
+                emptyNode
+    in
     div []
         [ p [ class "label-visit" ]
             [ text <|
@@ -80,7 +90,7 @@ viewActions language currentDate selectedHealthCenter id db sessions =
                         Backend.IndividualEncounterParticipant.Model.NutritionEncounter
             ]
         , viewNutritionAction language currentDate selectedHealthCenter id db sessions
-        , viewHomeVisitAction language currentDate selectedHealthCenter id db sessions
+        , homeVisitAction
         ]
 
 
