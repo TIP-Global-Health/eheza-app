@@ -335,7 +335,9 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                         lastEncounterType == Just ChwFirstEncounter && not encounterWasCompletedToday
 
                     ChwThirdEncounter ->
-                        lastEncounterType == Just ChwSecondEncounter && not encounterWasCompletedToday
+                        -- There can be multiple 'ChwThird' encounters.
+                        (lastEncounterType == Just ChwSecondEncounter || lastEncounterType == Just ChwThirdEncounter)
+                            && not encounterWasCompletedToday
 
                     ChwPostpartumEncounter ->
                         case lastEncounterType of
@@ -386,17 +388,19 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                 (Translate.PrenatalEncounterType ChwFirstEncounter)
                 (not <| encounterTypeButtonActive ChwFirstEncounter)
 
-        createSecondEncounterButton =
-            viewButton language
-                (encounterTypeButtonAction ChwSecondEncounter)
-                (Translate.PrenatalEncounterType ChwSecondEncounter)
-                (not <| encounterTypeButtonActive ChwSecondEncounter)
+        subsequentEncounterType =
+            case lastEncounterType of
+                Just ChwFirstEncounter ->
+                    ChwSecondEncounter
 
-        createThirdEncounterButton =
+                _ ->
+                    ChwThirdEncounter
+
+        createSubsequentEncounterButton =
             viewButton language
-                (encounterTypeButtonAction ChwThirdEncounter)
-                (Translate.PrenatalEncounterType ChwThirdEncounter)
-                (not <| encounterTypeButtonActive ChwThirdEncounter)
+                (encounterTypeButtonAction subsequentEncounterType)
+                (Translate.IndividualEncounterSubsequentVisit Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
+                (not <| encounterTypeButtonActive subsequentEncounterType)
 
         createPostpartumEncounterButton =
             viewButton language
@@ -405,8 +409,7 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                 (not <| encounterTypeButtonActive ChwPostpartumEncounter)
     in
     [ createFirstEncounterButton
-    , createSecondEncounterButton
-    , createThirdEncounterButton
+    , createSubsequentEncounterButton
     , createPostpartumEncounterButton
     ]
 
