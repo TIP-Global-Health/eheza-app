@@ -53,6 +53,9 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
                         else
                             Nothing
                     )
+                -- There's a posibility to have more than one
+                -- 'Third' enciunter, therefore, the check if
+                -- for ANY in list.
                 |> List.any (.healthEducation >> isJust)
 
         firstEnconterInputs =
