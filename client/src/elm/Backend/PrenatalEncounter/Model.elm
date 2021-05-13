@@ -30,7 +30,7 @@ type PrenatalEncounterType
     = NurseEncounter
     | ChwFirstEncounter
     | ChwSecondEncounter
-    | ChwThirdEncounter
+    | ChwThirdPlusEncounter
     | ChwPostpartumEncounter
 
 

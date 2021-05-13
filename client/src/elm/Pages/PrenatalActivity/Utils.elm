@@ -43,27 +43,6 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
                 |> Maybe.map (Tuple.second >> .value)
                 |> healthEducationFormWithDefault healthEducationForm
 
-        ( inputsFromFirst, tasksFromFirst ) =
-            if healthEducationCompletedAtEncounter ChwFirstEncounter then
-                ( [], [] )
-
-            else
-                ( firstEnconterInputs, firstEnconterTasks )
-
-        ( inputsFromSecond, tasksFromSecond ) =
-            if healthEducationCompletedAtEncounter ChwSecondEncounter then
-                ( [], [] )
-
-            else
-                ( secondEnconterInputs, secondEnconterTasks )
-
-        ( inputsFromThird, tasksFromThird ) =
-            if healthEducationCompletedAtEncounter ChwThirdEncounter then
-                ( [], [] )
-
-            else
-                ( thirdEnconterInputs, thirdEnconterTasks )
-
         healthEducationCompletedAtEncounter encounterType =
             assembled.chwPreviousMeasurementsWithDates
                 |> List.filterMap
@@ -74,9 +53,10 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
                         else
                             Nothing
                     )
-                |> List.head
-                |> Maybe.andThen .healthEducation
-                |> isJust
+                -- There's a posibility to have more than one
+                -- 'Third' enciunter, therefore, the check
+                -- for ANY in list.
+                |> List.any (.healthEducation >> isJust)
 
         firstEnconterInputs =
             [ expectationsInput, visitsReviewInput, warningSignsInput ]
@@ -91,10 +71,10 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             [ form.hemorrhaging ]
 
         thirdEnconterInputs =
-            [ familyPlanningInput, breastfeedingInput ]
+            [ hemorrhagingInput, familyPlanningInput, breastfeedingInput ]
 
         thirdEnconterTasks =
-            [ form.familyPlanning, form.breastfeeding ]
+            [ form.hemorrhaging, form.familyPlanning, form.breastfeeding ]
 
         postpartumEnconterInputs =
             [ breastfeedingInput, immunizationInput, hygieneInput ]
@@ -213,24 +193,42 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
                 "hygiene"
                 Nothing
             ]
+
+        ( inputsFromFirst, tasksFromFirst ) =
+            if healthEducationCompletedAtFirst || healthEducationCompletedAtSecond || healthEducationCompletedAtThird then
+                ( [], [] )
+
+            else
+                ( firstEnconterInputs, firstEnconterTasks )
+
+        healthEducationCompletedAtFirst =
+            healthEducationCompletedAtEncounter ChwFirstEncounter
+
+        healthEducationCompletedAtSecond =
+            healthEducationCompletedAtEncounter ChwSecondEncounter
+
+        healthEducationCompletedAtThird =
+            healthEducationCompletedAtEncounter ChwThirdPlusEncounter
     in
     -- For all encounter types but postpartum, if Health
     -- education was not completed at previous encounter,
     -- its inputs are added to next encounter.
     case assembled.encounter.encounterType of
         ChwFirstEncounter ->
-            ( List.concat inputsFromFirst
-            , tasksFromFirst
+            ( List.concat firstEnconterInputs
+            , firstEnconterTasks
             )
 
         ChwSecondEncounter ->
-            ( List.concat <| inputsFromFirst ++ inputsFromSecond
-            , tasksFromFirst ++ tasksFromSecond
+            ( List.concat <| inputsFromFirst ++ secondEnconterInputs
+            , tasksFromFirst ++ secondEnconterTasks
             )
 
-        ChwThirdEncounter ->
-            ( List.concat <| inputsFromFirst ++ inputsFromSecond ++ inputsFromThird
-            , tasksFromFirst ++ tasksFromSecond ++ tasksFromThird
+        ChwThirdPlusEncounter ->
+            -- Second encounter tasks reappear at third encounter anyway,
+            -- so, we do not need to add them explicitly.
+            ( List.concat <| inputsFromFirst ++ thirdEnconterInputs
+            , tasksFromFirst ++ thirdEnconterTasks
             )
 
         ChwPostpartumEncounter ->

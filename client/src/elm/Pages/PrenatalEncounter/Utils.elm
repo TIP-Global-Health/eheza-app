@@ -32,7 +32,7 @@ getAllActivities data =
         ChwSecondEncounter ->
             [ DangerSigns, BirthPlan, Backend.PrenatalActivity.Model.HealthEducation, NextSteps ]
 
-        ChwThirdEncounter ->
+        ChwThirdPlusEncounter ->
             [ DangerSigns, Backend.PrenatalActivity.Model.HealthEducation, NextSteps ]
 
         ChwPostpartumEncounter ->
@@ -49,9 +49,9 @@ getSubsequentEncounterType currentEncounterType =
             Just ChwSecondEncounter
 
         ChwSecondEncounter ->
-            Just ChwThirdEncounter
+            Just ChwThirdPlusEncounter
 
-        ChwThirdEncounter ->
+        ChwThirdPlusEncounter ->
             Just ChwPostpartumEncounter
 
         ChwPostpartumEncounter ->
@@ -71,7 +71,7 @@ generatePostCreateDestination encounterType hasNurseEncounter =
         ChwSecondEncounter ->
             DestinationClinicalProgressReportPage
 
-        ChwThirdEncounter ->
+        ChwThirdPlusEncounter ->
             DestinationClinicalProgressReportPage
 
         ChwPostpartumEncounter ->
@@ -157,7 +157,7 @@ expectActivity currentDate data activity =
                 _ ->
                     False
 
-        ChwThirdEncounter ->
+        ChwThirdPlusEncounter ->
             case activity of
                 DangerSigns ->
                     True
@@ -223,7 +223,7 @@ mandatoryActivitiesForNextStepsCompleted currentDate data =
                     && activityCompleted currentDate data BirthPlan
                     && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
 
-        ChwThirdEncounter ->
+        ChwThirdPlusEncounter ->
             let
                 commonMandatoryActivitiesCompleted =
                     activityCompleted currentDate data DangerSigns

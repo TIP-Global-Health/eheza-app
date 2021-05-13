@@ -5595,7 +5595,7 @@ translationSet trans =
                     , kinyarwanda = Just "Gusura ku nshuro ya kabiri umugore utwite"
                     }
 
-                ChwThirdEncounter ->
+                ChwThirdPlusEncounter ->
                     { english = "Third Antenatal Visit"
                     , kinyarwanda = Just "Gusura ku nshuro ya gatatu umugore utwite"
                     }

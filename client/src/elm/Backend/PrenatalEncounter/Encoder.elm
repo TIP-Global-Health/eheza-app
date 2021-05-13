@@ -39,7 +39,7 @@ encodePrenatalEncounterType encounterType =
             ChwSecondEncounter ->
                 "chw-2"
 
-            ChwThirdEncounter ->
+            ChwThirdPlusEncounter ->
                 "chw-3"
 
             ChwPostpartumEncounter ->
