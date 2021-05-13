@@ -5595,7 +5595,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                ChwThirdEncounter ->
+                ChwThirdPlusEncounter ->
                     { english = "Third Antenatal Visit"
                     , kinyarwanda = Nothing
                     }

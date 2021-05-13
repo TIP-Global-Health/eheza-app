@@ -54,7 +54,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
                             Nothing
                     )
                 -- There's a posibility to have more than one
-                -- 'Third' enciunter, therefore, the check if
+                -- 'Third' enciunter, therefore, the check
                 -- for ANY in list.
                 |> List.any (.healthEducation >> isJust)
 
@@ -215,7 +215,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             healthEducationCompletedAtEncounter ChwSecondEncounter
 
         healthEducationCompletedAtThird =
-            healthEducationCompletedAtEncounter ChwThirdEncounter
+            healthEducationCompletedAtEncounter ChwThirdPlusEncounter
     in
     -- For all encounter types but postpartum, if Health
     -- education was not completed at previous encounter,
@@ -231,7 +231,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             , tasksFromFirst ++ secondEnconterTasks
             )
 
-        ChwThirdEncounter ->
+        ChwThirdPlusEncounter ->
             ( List.concat <| inputsFromFirst ++ inputsFromSecond ++ thirdEnconterInputs
             , tasksFromFirst ++ tasksFromSecond ++ thirdEnconterTasks
             )

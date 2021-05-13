@@ -41,7 +41,7 @@ decodePrenatalEncounterType =
                         succeed ChwSecondEncounter
 
                     "chw-3" ->
-                        succeed ChwThirdEncounter
+                        succeed ChwThirdPlusEncounter
 
                     "chw-postpartum" ->
                         succeed ChwPostpartumEncounter

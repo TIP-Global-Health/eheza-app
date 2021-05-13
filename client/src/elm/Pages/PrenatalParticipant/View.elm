@@ -334,9 +334,9 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                     ChwSecondEncounter ->
                         lastEncounterType == Just ChwFirstEncounter && not encounterWasCompletedToday
 
-                    ChwThirdEncounter ->
+                    ChwThirdPlusEncounter ->
                         -- There can be multiple 'ChwThird' encounters.
-                        (lastEncounterType == Just ChwSecondEncounter || lastEncounterType == Just ChwThirdEncounter)
+                        (lastEncounterType == Just ChwSecondEncounter || lastEncounterType == Just ChwThirdPlusEncounter)
                             && not encounterWasCompletedToday
 
                     ChwPostpartumEncounter ->
@@ -394,7 +394,7 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                     ChwSecondEncounter
 
                 _ ->
-                    ChwThirdEncounter
+                    ChwThirdPlusEncounter
 
         createSubsequentEncounterButton =
             viewButton language
