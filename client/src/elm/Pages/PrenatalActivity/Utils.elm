@@ -71,10 +71,10 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             [ form.hemorrhaging ]
 
         thirdEnconterInputs =
-            [ familyPlanningInput, breastfeedingInput ]
+            [ hemorrhagingInput, familyPlanningInput, breastfeedingInput ]
 
         thirdEnconterTasks =
-            [ form.familyPlanning, form.breastfeeding ]
+            [ form.hemorrhaging, form.familyPlanning, form.breastfeeding ]
 
         postpartumEnconterInputs =
             [ breastfeedingInput, immunizationInput, hygieneInput ]
@@ -201,13 +201,6 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             else
                 ( firstEnconterInputs, firstEnconterTasks )
 
-        ( inputsFromSecond, tasksFromSecond ) =
-            if healthEducationCompletedAtSecond || healthEducationCompletedAtThird then
-                ( [], [] )
-
-            else
-                ( secondEnconterInputs, secondEnconterTasks )
-
         healthEducationCompletedAtFirst =
             healthEducationCompletedAtEncounter ChwFirstEncounter
 
@@ -232,8 +225,10 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             )
 
         ChwThirdPlusEncounter ->
-            ( List.concat <| inputsFromFirst ++ inputsFromSecond ++ thirdEnconterInputs
-            , tasksFromFirst ++ tasksFromSecond ++ thirdEnconterTasks
+            -- Second encounter tasks reappear at third encounter anyway,
+            -- so, we do not need to add them explicitly.
+            ( List.concat <| inputsFromFirst ++ thirdEnconterInputs
+            , tasksFromFirst ++ thirdEnconterTasks
             )
 
         ChwPostpartumEncounter ->
