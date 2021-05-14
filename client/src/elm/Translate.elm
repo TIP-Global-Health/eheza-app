@@ -5633,12 +5633,12 @@ translationSet trans =
                     }
 
                 EducationBreastfeeding ->
-                    { english = "Have you provided education on breast feeding"
+                    { english = "Have you provided education on breastfeeding"
                     , kinyarwanda = Just "Watanze inyigisho ku birebana no konsa"
                     }
 
                 EducationImmunization ->
-                    { english = "Have you provided education on immunization"
+                    { english = "Have you provided education on immunizations"
                     , kinyarwanda = Just "Watanze inyigisho zijyanye na gahunda yo gukingiza"
                     }
 
