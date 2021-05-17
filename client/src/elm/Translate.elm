@@ -3083,6 +3083,11 @@ translationSet trans =
                     , kinyarwanda = Just "Nta buryo bwo kuboneza urubyaro akoresha"
                     }
 
+                NoFamilyPlanningInFuture ->
+                     { english = "None of these"
+                                         , kinyarwanda = Just "Nta buryo bwo kuboneza urubyaro azakoresha"
+                                         }
+
                 OralContraceptives ->
                     { english = "Oral contraceptives"
                     , kinyarwanda = Just "Ibinini"
@@ -6304,7 +6309,7 @@ translationSet trans =
 
         Reviewed ->
             { english = "Reviewed"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Byarebwe"
             }
 
         RhNegative ->

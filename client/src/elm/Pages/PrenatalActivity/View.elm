@@ -745,7 +745,7 @@ viewFamilyPlanningContent language currentDate assembled data =
                     [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
                     [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
                     (form.signs |> Maybe.withDefault [])
-                    (Just NoFamilyPlanning)
+                    (Just NoFamilyPlanningInFuture)
                     SetFamilyPlanningSign
                     Translate.FamilyPlanningSignLabel
                 ]
@@ -1137,7 +1137,7 @@ viewBirthPlanContent language currentDate assembled data =
                     [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
                     [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
                     (form.familyPlanning |> Maybe.withDefault [])
-                    (Just NoFamilyPlanning)
+                    (Just NoFamilyPlanningInFuture)
                     SetBirthPlanFamilyPlanning
                     Translate.FamilyPlanningSignLabel
                 , viewQuestionLabel language Translate.TransportationPlanQuestion
