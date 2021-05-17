@@ -5574,7 +5574,7 @@ translationSet trans =
                     }
 
                 AssesmentHighRiskPregnancy ->
-                    { english = "High risk pregnancy"
+                    { english = "High Risk Pregnancy"
                     , kinyarwanda = Nothing
                     }
 
