@@ -479,6 +479,7 @@ type TranslationId
     | FiveVisits
     | ForIllustrativePurposesOnly
     | FollowUpLabel
+    | FollowUpAncLabel
     | FollowUpOption FollowUpOption
     | FollowUpDueOption FollowUpDueOption
     | FormError (ErrorValue ValidationError)
@@ -3216,6 +3217,11 @@ translationSet trans =
         FollowUpLabel ->
             { english = "Follow up with the patient in"
             , kinyarwanda = Just "Gukurikirana umurwayi mu"
+            }
+
+        FollowUpAncLabel ->
+            { english = "Follow up with the mother in"
+            , kinyarwanda = Just "Gukurikirana umubyeyi mu"
             }
 
         FollowUpOption option ->
