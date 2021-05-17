@@ -5570,12 +5570,12 @@ translationSet trans =
             case assesment of
                 AssesmentNormalPregnancy ->
                     { english = "Routine Pregnancy Follow Up"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gukurikirana Umubyeyi Utwite Bisanzwe"
                     }
 
                 AssesmentHighRiskPregnancy ->
                     { english = "High Risk Pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Inda Ibangamiwe n'ibibazo Bikomeye"
                     }
 
         PrenatalEncounterType encounterType ->
