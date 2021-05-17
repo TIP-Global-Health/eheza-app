@@ -2546,7 +2546,7 @@ translationSet trans =
 
         DeliveryLocation ->
             { english = "Delivery Location"
-            , kinyarwanda = Just "Aho kubyarira"
+            , kinyarwanda = Just "Aho yabyariye"
             }
 
         DeliveryOutcome ->
