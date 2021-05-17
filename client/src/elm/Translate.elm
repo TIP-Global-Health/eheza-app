@@ -2815,7 +2815,7 @@ translationSet trans =
 
                 AntenatalEncounter ->
                     { english = "Antenatal Care"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma ku mugore utwite"
                     }
 
                 HomeVisitEncounter ->
@@ -2869,7 +2869,7 @@ translationSet trans =
 
                 AntenatalEncounter ->
                     { english = "Antenatal Care Follow Up"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gukurikirana umugore utwite"
                     }
 
                 HomeVisitEncounter ->
