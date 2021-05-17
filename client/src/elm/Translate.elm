@@ -3084,9 +3084,9 @@ translationSet trans =
                     }
 
                 NoFamilyPlanningInFuture ->
-                     { english = "None of these"
-                                         , kinyarwanda = Just "Nta buryo bwo kuboneza urubyaro azakoresha"
-                                         }
+                    { english = "None of these"
+                    , kinyarwanda = Just "Nta buryo bwo kuboneza urubyaro azakoresha"
+                    }
 
                 OralContraceptives ->
                     { english = "Oral contraceptives"
