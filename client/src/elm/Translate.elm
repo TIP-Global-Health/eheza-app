@@ -480,6 +480,7 @@ type TranslationId
     | FiveVisits
     | ForIllustrativePurposesOnly
     | FollowUpLabel
+    | FollowUpWithMotherLabel
     | FollowUpOption FollowUpOption
     | FollowUpDueOption FollowUpDueOption
     | FormError (ErrorValue ValidationError)
@@ -2552,7 +2553,7 @@ translationSet trans =
 
         DeliveryLocation ->
             { english = "Delivery Location"
-            , kinyarwanda = Just "Aho kubyarira"
+            , kinyarwanda = Just "Aho yabyariye"
             }
 
         DeliveryOutcome ->
@@ -2910,7 +2911,7 @@ translationSet trans =
             }
 
         EnrolNewborn ->
-            { english = "Enrol Newborn"
+            { english = "Enroll Newborn"
             , kinyarwanda = Just "Andika Uruhinja"
             }
 
@@ -2921,7 +2922,7 @@ translationSet trans =
                 }
 
             else
-                { english = "Click on 'Enrol Newborn' button to perform enrolment"
+                { english = "Click on 'Enroll Newborn' button to perform enrollment"
                 , kinyarwanda = Just "Kanda kuri 'Andika Uruhinja' kugira ngo urwandike"
                 }
 
@@ -3086,7 +3087,7 @@ translationSet trans =
 
                 NoFamilyPlanning ->
                     { english = "None of these"
-                    , kinyarwanda = Just "Nta buryo bwo kuboneza urubyaro akoresha"
+                    , kinyarwanda = Just "Nta buryo bwo kuboneza urubyaro yahisemo"
                     }
 
                 OralContraceptives ->
@@ -3223,6 +3224,11 @@ translationSet trans =
         FollowUpLabel ->
             { english = "Follow up with the patient in"
             , kinyarwanda = Just "Gukurikirana umurwayi mu"
+            }
+
+        FollowUpWithMotherLabel ->
+            { english = "Follow up with the mother in"
+            , kinyarwanda = Just "Gukurikirana umubyeyi mu"
             }
 
         FollowUpOption option ->
@@ -5692,7 +5698,7 @@ translationSet trans =
                     }
 
                 Pages.PrenatalActivity.Model.NextStepsNewbornEnrolment ->
-                    { english = "Newborn Enrolment"
+                    { english = "Newborn Enrollment"
                     , kinyarwanda = Just "Kwandika uruhinja"
                     }
 
@@ -6315,7 +6321,7 @@ translationSet trans =
 
         Reviewed ->
             { english = "Reviewed"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Byarebwe"
             }
 
         RhNegative ->

@@ -2689,7 +2689,7 @@ viewHealthEducationForm language currentDate assembled form =
 viewFollowUpForm : Language -> NominalDate -> AssembledData -> FollowUpForm -> Html Msg
 viewFollowUpForm language assembled currentDate form =
     div [ class "ui form follow-up" ]
-        [ viewLabel language Translate.FollowUpLabel
+        [ viewLabel language Translate.FollowUpWithMotherLabel
         , viewCheckBoxSelectInput language
             [ ThreeDays, OneMonths, TwoMonths, ThreeMonths ]
             []
