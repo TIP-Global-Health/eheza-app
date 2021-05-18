@@ -745,7 +745,7 @@ viewFamilyPlanningContent language currentDate assembled data =
                     [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
                     [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
                     (form.signs |> Maybe.withDefault [])
-                    (Just NoFamilyPlanningInFuture)
+                    (Just NoFamilyPlanning)
                     SetFamilyPlanningSign
                     Translate.FamilyPlanningSignLabel
                 ]
@@ -1137,7 +1137,7 @@ viewBirthPlanContent language currentDate assembled data =
                     [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
                     [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
                     (form.familyPlanning |> Maybe.withDefault [])
-                    (Just NoFamilyPlanningInFuture)
+                    (Just NoFamilyPlanning)
                     SetBirthPlanFamilyPlanning
                     Translate.FamilyPlanningSignLabel
                 , viewQuestionLabel language Translate.TransportationPlanQuestion
@@ -2689,7 +2689,7 @@ viewHealthEducationForm language currentDate assembled form =
 viewFollowUpForm : Language -> NominalDate -> AssembledData -> FollowUpForm -> Html Msg
 viewFollowUpForm language assembled currentDate form =
     div [ class "ui form follow-up" ]
-        [ viewLabel language Translate.FollowUpAncLabel
+        [ viewLabel language Translate.FollowUpWithMotherLabel
         , viewCheckBoxSelectInput language
             [ ThreeDays, OneMonths, TwoMonths, ThreeMonths ]
             []

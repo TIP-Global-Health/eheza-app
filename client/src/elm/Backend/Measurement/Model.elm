@@ -117,7 +117,6 @@ type FamilyPlanningSign
     | IUD
     | LactationAmenorrhea
     | NoFamilyPlanning
-    | NoFamilyPlanningInFuture
     | OralContraceptives
     | Spermicide
     | TubalLigatures
