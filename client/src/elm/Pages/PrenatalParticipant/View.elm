@@ -302,20 +302,22 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
         maybeSessionId =
             Maybe.map Tuple.first activePrgnancyData
 
-        maybeActiveEncounterId =
-            encounters
-                |> List.filter (Tuple.second >> isDailyEncounterActive currentDate)
-                |> List.head
-                |> Maybe.map Tuple.first
-
-        ( lastEncounterType, encounterWasCompletedToday ) =
+        ( maybeActiveEncounterId, lastEncounterType, encounterWasCompletedToday ) =
             encounters
                 |> List.head
                 |> Maybe.map
-                    (\( _, encounter ) ->
-                        ( Just encounter.encounterType, encounter.endDate == Just currentDate )
+                    (\( encounterId, encounter ) ->
+                        let
+                            activeEncounterId =
+                                if isJust encounter.endDate || encounter.startDate /= currentDate then
+                                    Nothing
+
+                                else
+                                    Just encounterId
+                        in
+                        ( activeEncounterId, Just encounter.encounterType, encounter.endDate == Just currentDate )
                     )
-                |> Maybe.withDefault ( Nothing, False )
+                |> Maybe.withDefault ( Nothing, Nothing, False )
 
         -- Button for certain type is active when:
         -- 1. There's an active encounter, and it's type matches button encounter type.
@@ -387,19 +389,28 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                 (Translate.PrenatalEncounterType ChwFirstEncounter)
                 (not <| encounterTypeButtonActive ChwFirstEncounter)
 
-        subsequentEncounterType =
-            case lastEncounterType of
-                Just ChwFirstEncounter ->
-                    ChwSecondEncounter
-
-                _ ->
-                    ChwThirdPlusEncounter
-
         createSubsequentEncounterButton =
             viewButton language
                 (encounterTypeButtonAction subsequentEncounterType)
                 (Translate.IndividualEncounterSubsequentVisit Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
                 (not <| encounterTypeButtonActive subsequentEncounterType)
+
+        -- Used for subsequent encounter button, which is responsible
+        -- to start / navigate to second or third encounters.
+        subsequentEncounterType =
+            case lastEncounterType of
+                Just ChwFirstEncounter ->
+                    ChwSecondEncounter
+
+                Just ChwSecondEncounter ->
+                    if isJust maybeActiveEncounterId then
+                        ChwSecondEncounter
+
+                    else
+                        ChwThirdPlusEncounter
+
+                _ ->
+                    ChwThirdPlusEncounter
 
         createPostpartumEncounterButton =
             viewButton language

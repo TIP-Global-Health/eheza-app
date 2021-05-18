@@ -140,15 +140,13 @@ viewStartFollowUpEncounterDialog language dataType =
                     ( AntenatalEncounter, data.personName )
     in
     div [ class "ui tiny active modal" ]
-        [ div
-            [ class "content" ]
+        [ div [ class "content" ]
             [ text <| translate language <| Translate.EncounterTypeFollowUpQuestion encounterType
             , text " "
             , span [ class "person-name" ] [ text personName ]
             , text "?"
             ]
-        , div
-            [ class "actions" ]
+        , div [ class "actions" ]
             [ div [ class "two ui buttons" ]
                 [ button
                     [ class "ui primary fluid button"
@@ -168,15 +166,13 @@ viewStartFollowUpEncounterDialog language dataType =
 viewPrenatalEncounterFollowUpNotAvailableDialog : Language -> FollowUpPrenatalData -> Html Msg
 viewPrenatalEncounterFollowUpNotAvailableDialog language data =
     div [ class "ui tiny active modal" ]
-        [ div
-            [ class "content" ]
+        [ div [ class "content" ]
             [ text <| translate language Translate.CannotStartEncounterLabel
             , text " "
             , span [ class "person-name" ] [ text data.personName ]
             , text "."
             ]
-        , div
-            [ class "actions" ]
+        , div [ class "actions" ]
             [ div [ class "two ui buttons" ]
                 [ button
                     [ class "ui primary fluid button"

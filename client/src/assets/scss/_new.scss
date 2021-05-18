@@ -809,6 +809,18 @@ div.page-encounter.acute-illness {
     }
 }
 
+// Prenatal Encounter page
+div.page-encounter.prenatal {
+
+  .overlay .content {
+    font-size: 28px;
+
+    .person-name {
+      color: $color-primary;
+    }
+  }
+}
+
 // Acute Illness Activity page
 div.page-activity.acute-illness {
 

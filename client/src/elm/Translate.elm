@@ -699,6 +699,7 @@ type TranslationId
     | PatientProgress
     | PatientInformation
     | PatientIsolatedQuestion
+    | PatientNotYetSeenAtHCLabel
     | PatientProvisionsTask PatientProvisionsTask
     | People
     | PersistentStorage Bool
@@ -5280,6 +5281,11 @@ translationSet trans =
         PatientIsolatedQuestion ->
             { english = "Have you isolated the patient"
             , kinyarwanda = Just "Washyize umurwayi mu kato"
+            }
+
+        PatientNotYetSeenAtHCLabel ->
+            { english = " has not yet been seen at the health center for this pregnancy"
+            , kinyarwanda = Nothing
             }
 
         PatientProvisionsTask task ->

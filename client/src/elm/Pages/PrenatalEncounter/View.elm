@@ -67,6 +67,8 @@ viewHeaderAndContent language currentDate id isChw model data =
     div [ class "page-encounter prenatal" ]
         [ header
         , content
+        , viewModal <|
+            viewChwWarningPopup language data model
         ]
 
 
@@ -92,6 +94,32 @@ viewContent language currentDate isChw data model =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate isChw data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
             ++ viewMainPageContent language currentDate data model
+
+
+viewChwWarningPopup : Language -> AssembledData -> Model -> Maybe (Html Msg)
+viewChwWarningPopup language data model =
+    if model.showWarningForChw then
+        Just <|
+            div [ class "ui tiny active modal" ]
+                [ div [ class "content" ]
+                    [ span [ class "person-name" ] [ text data.person.name ]
+                    , text " "
+                    , text <| translate language Translate.PatientNotYetSeenAtHCLabel
+                    , text "."
+                    ]
+                , div [ class "actions" ]
+                    [ div [ class "two ui buttons" ]
+                        [ button
+                            [ class "ui primary fluid button"
+                            , onClick <| SetChwWarningVisible False
+                            ]
+                            [ text <| translate language Translate.OK ]
+                        ]
+                    ]
+                ]
+
+    else
+        Nothing
 
 
 viewMotherAndMeasurements : Language -> NominalDate -> Bool -> AssembledData -> Maybe ( Bool, Bool -> msg ) -> List (Html msg)

@@ -69,10 +69,18 @@ generatePostCreateDestination encounterType hasNurseEncounter =
                 DestinationEncounterPage
 
         ChwSecondEncounter ->
-            DestinationClinicalProgressReportPage
+            if hasNurseEncounter then
+                DestinationClinicalProgressReportPage
+
+            else
+                DestinationEncounterPageWithWarningPopup
 
         ChwThirdPlusEncounter ->
-            DestinationClinicalProgressReportPage
+            if hasNurseEncounter then
+                DestinationClinicalProgressReportPage
+
+            else
+                DestinationEncounterPageWithWarningPopup
 
         ChwPostpartumEncounter ->
             DestinationEncounterPage

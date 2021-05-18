@@ -47,6 +47,7 @@ type ClinicalProgressReportInitiator
 
 type PrenatalEncounterPostCreateDestination
     = DestinationEncounterPage
+    | DestinationEncounterPageWithWarningPopup
     | DestinationClinicalProgressReportPage
 
 
