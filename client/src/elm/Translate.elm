@@ -2815,7 +2815,7 @@ translationSet trans =
 
                 AntenatalEncounter ->
                     { english = "Antenatal Care"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma ku mugore utwite"
                     }
 
                 HomeVisitEncounter ->
@@ -2869,7 +2869,7 @@ translationSet trans =
 
                 AntenatalEncounter ->
                     { english = "Antenatal Care Follow Up"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gukurikirana umugore utwite"
                     }
 
                 HomeVisitEncounter ->
@@ -5570,12 +5570,12 @@ translationSet trans =
             case assesment of
                 AssesmentNormalPregnancy ->
                     { english = "Routine Pregnancy Follow Up"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gukurikirana Umubyeyi Utwite Bisanzwe"
                     }
 
                 AssesmentHighRiskPregnancy ->
-                    { english = "High risk pregnancy"
-                    , kinyarwanda = Nothing
+                    { english = "High Risk Pregnancy"
+                    , kinyarwanda = Just "Inda Ibangamiwe n'ibibazo Bikomeye"
                     }
 
         PrenatalEncounterType encounterType ->
