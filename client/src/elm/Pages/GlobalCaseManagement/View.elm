@@ -454,8 +454,7 @@ viewPrenatalFollowUpItem language currentDate db ( participantId, personId ) ite
                 (\( encounterId, encounter ) ->
                     -- Follow up belongs to last encounter, which indicates that
                     -- there was no other encounter that has resolved this follow up.
-                    -- We also will not show a follow up if its encounter was performed today.
-                    if item.encounterId == Just encounterId && encounter.startDate /= currentDate then
+                    if item.encounterId == Just encounterId then
                         let
                             encounterType =
                                 allChwEncounters
