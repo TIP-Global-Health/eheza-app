@@ -479,6 +479,7 @@ type TranslationId
     | FiveVisits
     | ForIllustrativePurposesOnly
     | FollowUpLabel
+    | FollowUpWithMotherLabel
     | FollowUpOption FollowUpOption
     | FollowUpDueOption FollowUpDueOption
     | FormError (ErrorValue ValidationError)
@@ -2545,7 +2546,7 @@ translationSet trans =
 
         DeliveryLocation ->
             { english = "Delivery Location"
-            , kinyarwanda = Just "Aho kubyarira"
+            , kinyarwanda = Just "Aho yabyariye"
             }
 
         DeliveryOutcome ->
@@ -3079,7 +3080,7 @@ translationSet trans =
 
                 NoFamilyPlanning ->
                     { english = "None of these"
-                    , kinyarwanda = Just "Nta buryo bwo kuboneza urubyaro akoresha"
+                    , kinyarwanda = Just "Nta buryo bwo kuboneza urubyaro yahisemo"
                     }
 
                 OralContraceptives ->
@@ -3216,6 +3217,11 @@ translationSet trans =
         FollowUpLabel ->
             { english = "Follow up with the patient in"
             , kinyarwanda = Just "Gukurikirana umurwayi mu"
+            }
+
+        FollowUpWithMotherLabel ->
+            { english = "Follow up with the mother in"
+            , kinyarwanda = Just "Gukurikirana umubyeyi mu"
             }
 
         FollowUpOption option ->
@@ -6298,7 +6304,7 @@ translationSet trans =
 
         Reviewed ->
             { english = "Reviewed"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Byarebwe"
             }
 
         RhNegative ->
