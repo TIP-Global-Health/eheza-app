@@ -331,6 +331,7 @@ type TranslationId
     | Call114
     | Called114Question
     | Cancel
+    | CannotStartEncounterLabel
     | CardiacDisease
     | CaregiverAccompanyQuestion
     | CaregiverName
@@ -2057,6 +2058,11 @@ translationSet trans =
         Cancel ->
             { english = "Cancel"
             , kinyarwanda = Just "Guhagarika"
+            }
+
+        CannotStartEncounterLabel ->
+            { english = "You cannot open a new encounter, as there's already a completed encounter today for"
+            , kinyarwanda = Nothing
             }
 
         CardiacDisease ->

@@ -85,6 +85,7 @@ type alias FollowUpPrenatalData =
     , participantId : IndividualEncounterParticipantId
     , encounterType : PrenatalEncounterType
     , hasNurseEncounter : Bool
+    , dateMeasured : NominalDate
     }
 
 

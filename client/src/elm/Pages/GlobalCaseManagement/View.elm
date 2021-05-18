@@ -59,7 +59,8 @@ view language currentDate ( healthCenterId, maybeVillageId ) isChw model db =
                     [ header
                     , content
                     , viewModal <|
-                        viewStartFollowUpEncounterDialog language
+                        viewEntryPopUp language
+                            currentDate
                             model.dialogState
                     ]
             )
@@ -106,48 +107,85 @@ viewContent language currentDate healthCenterId villageId isChw model db followU
             :: panes
 
 
-viewStartFollowUpEncounterDialog : Language -> Maybe FollowUpEncounterDataType -> Maybe (Html Msg)
-viewStartFollowUpEncounterDialog language dialogState =
+viewEntryPopUp : Language -> NominalDate -> Maybe FollowUpEncounterDataType -> Maybe (Html Msg)
+viewEntryPopUp language currentDate dialogState =
     dialogState
         |> Maybe.map
             (\dataType ->
-                let
-                    ( encounterType, personName ) =
-                        case dataType of
-                            FollowUpNutrition data ->
-                                ( HomeVisitEncounter, data.personName )
+                case dataType of
+                    FollowUpPrenatal data ->
+                        if data.dateMeasured == currentDate then
+                            viewPrenatalEncounterFollowUpNotAvailableDialog language data
 
-                            FollowUpAcuteIllness data ->
-                                ( AcuteIllnessEncounter, data.personName )
+                        else
+                            viewStartFollowUpEncounterDialog language dataType
 
-                            FollowUpPrenatal data ->
-                                ( AntenatalEncounter, data.personName )
-                in
-                div [ class "ui tiny active modal" ]
-                    [ div
-                        [ class "content" ]
-                        [ text <| translate language <| Translate.EncounterTypeFollowUpQuestion encounterType
-                        , text " "
-                        , span [ class "person-name" ] [ text personName ]
-                        , text "?"
-                        ]
-                    , div
-                        [ class "actions" ]
-                        [ div [ class "two ui buttons" ]
-                            [ button
-                                [ class "ui primary fluid button"
-                                , onClick <| StartFollowUpEncounter dataType
-                                ]
-                                [ text <| translate language Translate.Yes ]
-                            , button
-                                [ class "ui fluid button"
-                                , onClick <| SetDialogState Nothing
-                                ]
-                                [ text <| translate language Translate.No ]
-                            ]
-                        ]
-                    ]
+                    _ ->
+                        viewStartFollowUpEncounterDialog language dataType
             )
+
+
+viewStartFollowUpEncounterDialog : Language -> FollowUpEncounterDataType -> Html Msg
+viewStartFollowUpEncounterDialog language dataType =
+    let
+        ( encounterType, personName ) =
+            case dataType of
+                FollowUpNutrition data ->
+                    ( HomeVisitEncounter, data.personName )
+
+                FollowUpAcuteIllness data ->
+                    ( AcuteIllnessEncounter, data.personName )
+
+                FollowUpPrenatal data ->
+                    ( AntenatalEncounter, data.personName )
+    in
+    div [ class "ui tiny active modal" ]
+        [ div
+            [ class "content" ]
+            [ text <| translate language <| Translate.EncounterTypeFollowUpQuestion encounterType
+            , text " "
+            , span [ class "person-name" ] [ text personName ]
+            , text "?"
+            ]
+        , div
+            [ class "actions" ]
+            [ div [ class "two ui buttons" ]
+                [ button
+                    [ class "ui primary fluid button"
+                    , onClick <| StartFollowUpEncounter dataType
+                    ]
+                    [ text <| translate language Translate.Yes ]
+                , button
+                    [ class "ui fluid button"
+                    , onClick <| SetDialogState Nothing
+                    ]
+                    [ text <| translate language Translate.No ]
+                ]
+            ]
+        ]
+
+
+viewPrenatalEncounterFollowUpNotAvailableDialog : Language -> FollowUpPrenatalData -> Html Msg
+viewPrenatalEncounterFollowUpNotAvailableDialog language data =
+    div [ class "ui tiny active modal" ]
+        [ div
+            [ class "content" ]
+            [ text <| translate language Translate.CannotStartEncounterLabel
+            , text " "
+            , span [ class "person-name" ] [ text data.personName ]
+            , text "."
+            ]
+        , div
+            [ class "actions" ]
+            [ div [ class "two ui buttons" ]
+                [ button
+                    [ class "ui primary fluid button"
+                    , onClick <| SetDialogState Nothing
+                    ]
+                    [ text <| translate language Translate.Close ]
+                ]
+            ]
+        ]
 
 
 viewFilters : Language -> Model -> Html Msg
@@ -459,9 +497,7 @@ viewPrenatalFollowUpItem language currentDate db ( participantId, personId ) ite
                 (\( encounterId, encounter ) ->
                     -- Follow up belongs to last encounter, which indicates that
                     -- there was no other encounter that has resolved this follow up.
-                    -- We also will not show a follow up if its encounter was performed today,
-                    -- as we do not want to allow starting 2 encounters on same day.
-                    if item.encounterId == Just encounterId && encounter.startDate /= currentDate then
+                    if item.encounterId == Just encounterId then
                         let
                             encounterType =
                                 allChwEncounters
@@ -519,6 +555,7 @@ viewPrenatalFollowUpEntry language currentDate ( participantId, personId ) item 
                     participantId
                     encounterType
                     hasNurseEncounter
+                    item.dateMeasured
     in
     viewFollowUpEntry language dueOption item.personName popupData assessment
 
