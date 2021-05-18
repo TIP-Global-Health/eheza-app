@@ -52,8 +52,8 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> PrenatalEncounterId -> ClinicalProgressReportInitiator -> ModelIndexedDb -> Html Msg
-view language currentDate id initiator db =
+view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> ClinicalProgressReportInitiator -> ModelIndexedDb -> Html Msg
+view language currentDate id isChw initiator db =
     let
         allowBackAction =
             initiator == InitiatorEncounterPage
@@ -65,7 +65,7 @@ view language currentDate id initiator db =
             viewHeader language id Translate.ClinicalProgressReport allowBackAction
 
         content =
-            viewWebData language (viewContent language currentDate initiator) identity data
+            viewWebData language (viewContent language currentDate isChw initiator) identity data
     in
     div [ class "page-clinical-progress-report" ] <|
         [ header
@@ -73,11 +73,11 @@ view language currentDate id initiator db =
         ]
 
 
-viewContent : Language -> NominalDate -> ClinicalProgressReportInitiator -> AssembledData -> Html Msg
-viewContent language currentDate initiator data =
+viewContent : Language -> NominalDate -> Bool -> ClinicalProgressReportInitiator -> AssembledData -> Html Msg
+viewContent language currentDate isChw initiator data =
     let
         firstEncounterMeasurements =
-            getFirstEncounterMeasurements data
+            getFirstEncounterMeasurements isChw data
 
         actions =
             case initiator of
@@ -97,8 +97,8 @@ viewContent language currentDate initiator data =
         [ viewHeaderPane language currentDate data
         , viewRiskFactorsPane language currentDate firstEncounterMeasurements
         , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements
-        , viewObstetricalDiagnosisPane language currentDate firstEncounterMeasurements data
-        , viewPatientProgressPane language currentDate data
+        , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data
+        , viewPatientProgressPane language currentDate isChw data
         , actions
         ]
 
@@ -211,12 +211,12 @@ viewMedicalDiagnosisPane language currentDate measurements =
         ]
 
 
-viewObstetricalDiagnosisPane : Language -> NominalDate -> PrenatalMeasurements -> AssembledData -> Html Msg
-viewObstetricalDiagnosisPane language currentDate firstEncounterMeasurements data =
+viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
+viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data =
     let
         alerts =
             allObstetricalDiagnosis
-                |> List.filterMap (generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasurements data)
+                |> List.filterMap (generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements data)
                 |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
     in
     div [ class "obstetric-diagnosis" ]
@@ -225,12 +225,17 @@ viewObstetricalDiagnosisPane language currentDate firstEncounterMeasurements dat
         ]
 
 
-viewPatientProgressPane : Language -> NominalDate -> AssembledData -> Html Msg
-viewPatientProgressPane language currentDate data =
+viewPatientProgressPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
+viewPatientProgressPane language currentDate isChw data =
     let
         allMeasurementsWithDates =
             data.nursePreviousMeasurementsWithDates
-                ++ [ ( currentDate, data.measurements ) ]
+                ++ (if isChw then
+                        []
+
+                    else
+                        [ ( currentDate, data.measurements ) ]
+                   )
 
         allMeasurements =
             allMeasurementsWithDates

@@ -1320,6 +1320,32 @@ type alias PrenatalMeasurements =
     }
 
 
+emptyPrenatalMeasurements : PrenatalMeasurements
+emptyPrenatalMeasurements =
+    { breastExam = Nothing
+    , corePhysicalExam = Nothing
+    , dangerSigns = Nothing
+    , lastMenstrualPeriod = Nothing
+    , medicalHistory = Nothing
+    , medication = Nothing
+    , obstetricalExam = Nothing
+    , obstetricHistory = Nothing
+    , obstetricHistoryStep2 = Nothing
+    , familyPlanning = Nothing
+    , nutrition = Nothing
+    , resource = Nothing
+    , socialHistory = Nothing
+    , vitals = Nothing
+    , prenatalPhoto = Nothing
+    , birthPlan = Nothing
+    , pregnancyTest = Nothing
+    , healthEducation = Nothing
+    , followUp = Nothing
+    , sendToHC = Nothing
+    , appointmentConfirmation = Nothing
+    }
+
+
 {-| A set of Nutrition measurements that correspond to the same Nutrition encounter.
 -}
 type alias NutritionMeasurements =

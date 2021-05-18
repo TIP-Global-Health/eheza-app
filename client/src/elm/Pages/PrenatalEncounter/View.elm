@@ -46,23 +46,23 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id db model =
+view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id isChw db model =
     let
         data =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate id isChw model) identity data
 
 
-viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id model data =
+viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> Bool -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id isChw model data =
     let
         header =
             viewHeader language data
 
         content =
-            viewContent language currentDate data model
+            viewContent language currentDate isChw data model
     in
     div [ class "page-encounter prenatal" ]
         [ header
@@ -87,28 +87,28 @@ viewHeader language data =
         ]
 
 
-viewContent : Language -> NominalDate -> AssembledData -> Model -> Html Msg
-viewContent language currentDate data model =
+viewContent : Language -> NominalDate -> Bool -> AssembledData -> Model -> Html Msg
+viewContent language currentDate isChw data model =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
+        viewMotherAndMeasurements language currentDate isChw data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
             ++ viewMainPageContent language currentDate data model
 
 
-viewMotherAndMeasurements : Language -> NominalDate -> AssembledData -> Maybe ( Bool, Bool -> msg ) -> List (Html msg)
-viewMotherAndMeasurements language currentDate data alertsDialogData =
-    [ viewMotherDetails language currentDate data alertsDialogData
+viewMotherAndMeasurements : Language -> NominalDate -> Bool -> AssembledData -> Maybe ( Bool, Bool -> msg ) -> List (Html msg)
+viewMotherAndMeasurements language currentDate isChw data alertsDialogData =
+    [ viewMotherDetails language currentDate isChw data alertsDialogData
     , viewMeasurements language currentDate data.globalLmpDate data.globalObstetricHistory
     ]
 
 
-viewMotherDetails : Language -> NominalDate -> AssembledData -> Maybe ( Bool, Bool -> msg ) -> Html msg
-viewMotherDetails language currentDate data alertsDialogData =
+viewMotherDetails : Language -> NominalDate -> Bool -> AssembledData -> Maybe ( Bool, Bool -> msg ) -> Html msg
+viewMotherDetails language currentDate isChw data alertsDialogData =
     let
         mother =
             data.person
 
         firstEncounterMeasurements =
-            getFirstEncounterMeasurements data
+            getFirstEncounterMeasurements isChw data
 
         highRiskAlertsData =
             allHighRiskFactors
@@ -116,11 +116,11 @@ viewMotherDetails language currentDate data alertsDialogData =
 
         highSeverityAlertsData =
             allHighSeverityAlerts
-                |> List.filterMap (generateHighSeverityAlertData language currentDate data)
+                |> List.filterMap (generateHighSeverityAlertData language currentDate isChw data)
 
         recurringHighSeverityAlertsData =
             allRecurringHighSeverityAlerts
-                |> List.map (generateRecurringHighSeverityAlertData language currentDate data)
+                |> List.map (generateRecurringHighSeverityAlertData language currentDate isChw data)
                 |> List.filter (List.isEmpty >> not)
 
         alertsDialogSection =

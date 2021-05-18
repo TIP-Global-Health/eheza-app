@@ -723,26 +723,34 @@ isFirstEncounter assembled =
     List.isEmpty assembled.nursePreviousMeasurementsWithDates
 
 
-getFirstEncounterMeasurements : AssembledData -> PrenatalMeasurements
-getFirstEncounterMeasurements data =
+getFirstEncounterMeasurements : Bool -> AssembledData -> PrenatalMeasurements
+getFirstEncounterMeasurements isChw data =
     case data.nursePreviousMeasurementsWithDates of
         [] ->
-            data.measurements
+            if isChw then
+                emptyPrenatalMeasurements
+
+            else
+                data.measurements
 
         first :: others ->
             Tuple.second first
 
 
-getLastEncounterMeasurementsWithDate : NominalDate -> AssembledData -> ( NominalDate, PrenatalMeasurements )
-getLastEncounterMeasurementsWithDate currentDate data =
+getLastEncounterMeasurementsWithDate : NominalDate -> Bool -> AssembledData -> ( NominalDate, PrenatalMeasurements )
+getLastEncounterMeasurementsWithDate currentDate isChw data =
     case List.reverse data.nursePreviousMeasurementsWithDates of
         [] ->
-            ( currentDate, data.measurements )
+            if isChw then
+                ( currentDate, emptyPrenatalMeasurements )
+
+            else
+                ( currentDate, data.measurements )
 
         first :: others ->
             first
 
 
-getLastEncounterMeasurements : NominalDate -> AssembledData -> PrenatalMeasurements
-getLastEncounterMeasurements currentDate data =
-    getLastEncounterMeasurementsWithDate currentDate data |> Tuple.second
+getLastEncounterMeasurements : NominalDate -> Bool -> AssembledData -> PrenatalMeasurements
+getLastEncounterMeasurements currentDate isChw data =
+    getLastEncounterMeasurementsWithDate currentDate isChw data |> Tuple.second

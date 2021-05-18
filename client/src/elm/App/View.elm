@@ -291,7 +291,7 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     ClinicalProgressReportPage initiator prenatalEncounterId ->
-                        Pages.ClinicalProgressReport.View.view model.language currentDate prenatalEncounterId initiator model.indexedDb
+                        Pages.ClinicalProgressReport.View.view model.language currentDate prenatalEncounterId isChw initiator model.indexedDb
                             |> flexPageWrapper model
 
                     CreatePersonPage relation initiator ->
@@ -419,7 +419,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get id loggedInModel.prenatalEncounterPages
                                     |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
                         in
-                        Pages.PrenatalEncounter.View.view model.language currentDate id model.indexedDb page_
+                        Pages.PrenatalEncounter.View.view model.language currentDate id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalEncounter id)
                             |> flexPageWrapper model
 
@@ -429,7 +429,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get ( id, activity ) loggedInModel.prenatalActivityPages
                                     |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
                         in
-                        Pages.PrenatalActivity.View.view model.language currentDate id activity model.indexedDb page_
+                        Pages.PrenatalActivity.View.view model.language currentDate id isChw activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalActivity id activity)
                             |> flexPageWrapper model
 
@@ -443,7 +443,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get id loggedInModel.pregnancyOutcomePages
                                     |> Maybe.withDefault Pages.PregnancyOutcome.Model.emptyModel
                         in
-                        Pages.PregnancyOutcome.View.view model.language currentDate id initiator model.indexedDb page_
+                        Pages.PregnancyOutcome.View.view model.language currentDate id isChw initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePregnancyOutcome id)
                             |> flexPageWrapper model
 

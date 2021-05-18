@@ -52,20 +52,20 @@ import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> PrenatalEncounterId -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id activity db model =
+view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id isChw activity db model =
     let
         data =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id activity model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate id isChw activity model) identity data
 
 
-viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> PrenatalActivity -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id activity model data =
+viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> Bool -> PrenatalActivity -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id isChw activity model data =
     div [ class "page-activity prenatal" ] <|
         [ viewHeader language id activity data
-        , viewContent language currentDate activity model data
+        , viewContent language currentDate isChw activity model data
         , viewModal <|
             warningPopup language currentDate model.warningPopupState
         ]
@@ -99,10 +99,10 @@ viewHeader language id activity data =
         ]
 
 
-viewContent : Language -> NominalDate -> PrenatalActivity -> Model -> AssembledData -> Html Msg
-viewContent language currentDate activity model data =
+viewContent : Language -> NominalDate -> Bool -> PrenatalActivity -> Model -> AssembledData -> Html Msg
+viewContent language currentDate isChw activity model data =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
+        viewMotherAndMeasurements language currentDate isChw data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
             ++ viewActivity language currentDate activity data model
 
 
