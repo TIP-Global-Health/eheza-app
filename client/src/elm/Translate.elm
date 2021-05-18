@@ -2904,7 +2904,7 @@ translationSet trans =
             }
 
         EnrolNewborn ->
-            { english = "Enrol Newborn"
+            { english = "Enroll Newborn"
             , kinyarwanda = Just "Andika Uruhinja"
             }
 
@@ -2915,7 +2915,7 @@ translationSet trans =
                 }
 
             else
-                { english = "Click on 'Enrol Newborn' button to perform enrolment"
+                { english = "Click on 'Enroll Newborn' button to perform enrollment"
                 , kinyarwanda = Just "Kanda kuri 'Andika Uruhinja' kugira ngo urwandike"
                 }
 
@@ -5681,7 +5681,7 @@ translationSet trans =
                     }
 
                 Pages.PrenatalActivity.Model.NextStepsNewbornEnrolment ->
-                    { english = "Newborn Enrolment"
+                    { english = "Newborn Enrollment"
                     , kinyarwanda = Just "Kwandika uruhinja"
                     }
 
