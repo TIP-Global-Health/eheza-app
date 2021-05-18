@@ -3,6 +3,7 @@ module Pages.PrenatalParticipant.View exposing (view)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), emptyIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
     exposing
@@ -301,22 +302,20 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
         maybeSessionId =
             Maybe.map Tuple.first activePrgnancyData
 
-        ( maybeActiveEncounterId, lastEncounterType, encounterWasCompletedToday ) =
+        maybeActiveEncounterId =
+            encounters
+                |> List.filter (Tuple.second >> isDailyEncounterActive currentDate)
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        ( lastEncounterType, encounterWasCompletedToday ) =
             encounters
                 |> List.head
                 |> Maybe.map
-                    (\( encounterId, encounter ) ->
-                        let
-                            activeEncounterId =
-                                if isJust encounter.endDate then
-                                    Nothing
-
-                                else
-                                    Just encounterId
-                        in
-                        ( activeEncounterId, Just encounter.encounterType, encounter.endDate == Just currentDate )
+                    (\( _, encounter ) ->
+                        ( Just encounter.encounterType, encounter.endDate == Just currentDate )
                     )
-                |> Maybe.withDefault ( Nothing, Nothing, False )
+                |> Maybe.withDefault ( Nothing, False )
 
         -- Button for certain type is active when:
         -- 1. There's an active encounter, and it's type matches button encounter type.

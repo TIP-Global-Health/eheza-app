@@ -3277,6 +3277,11 @@ translationSet trans =
                     , kinyarwanda = Just "Uku kwezi"
                     }
 
+                DueNextMonth ->
+                    { english = "Next Month"
+                    , kinyarwanda = Nothing
+                    }
+
         FormError errorValue ->
             translateFormError errorValue
 

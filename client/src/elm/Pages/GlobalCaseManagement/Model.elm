@@ -27,6 +27,7 @@ type FollowUpDueOption
     = DueToday
     | DueThisWeek
     | DueThisMonth
+    | DueNextMonth
     | OverDue
 
 

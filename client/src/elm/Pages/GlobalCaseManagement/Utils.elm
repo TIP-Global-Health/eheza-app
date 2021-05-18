@@ -264,8 +264,11 @@ followUpDueOptionByDate currentDate dateMeasured options =
     else if diff < 7 then
         DueThisWeek
 
-    else
+    else if diff < 31 then
         DueThisMonth
+
+    else
+        DueNextMonth
 
 
 compareAcuteIllnessFollowUpItems : AcuteIllnessFollowUpItem -> AcuteIllnessFollowUpItem -> Order

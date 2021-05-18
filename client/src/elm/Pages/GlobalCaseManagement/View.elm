@@ -278,6 +278,9 @@ viewDueClass dueOption =
 
                 DueThisMonth ->
                     "this-month"
+
+                DueNextMonth ->
+                    "next-month"
            )
 
 
@@ -292,13 +295,15 @@ viewAcuteIllnessPane language currentDate itemsDict db model =
     let
         entries =
             Dict.map (viewAcuteIllnessFollowUpItem language currentDate db) itemsDict
+                |> Dict.values
+                |> List.filterMap identity
 
         content =
-            if Dict.isEmpty entries then
+            if List.isEmpty entries then
                 [ translateText language Translate.NoMatchesFound ]
 
             else
-                Dict.values entries
+                entries
     in
     div [ class "pane" ]
         [ viewItemHeading language AcuteIllnessEncounter
@@ -307,7 +312,7 @@ viewAcuteIllnessPane language currentDate itemsDict db model =
         ]
 
 
-viewAcuteIllnessFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> ( IndividualEncounterParticipantId, PersonId ) -> AcuteIllnessFollowUpItem -> Html Msg
+viewAcuteIllnessFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> ( IndividualEncounterParticipantId, PersonId ) -> AcuteIllnessFollowUpItem -> Maybe (Html Msg)
 viewAcuteIllnessFollowUpItem language currentDate db ( participantId, personId ) item =
     let
         outcome =
@@ -317,7 +322,7 @@ viewAcuteIllnessFollowUpItem language currentDate db ( participantId, personId )
     in
     if isJust outcome then
         -- Illness was concluded, so we do not need to follow up on it.
-        emptyNode
+        Nothing
 
     else
         let
@@ -336,7 +341,7 @@ viewAcuteIllnessFollowUpItem language currentDate db ( participantId, personId )
                 List.head allEncountersWithIds
         in
         lastEncounterWithId
-            |> Maybe.map
+            |> Maybe.andThen
                 (\( encounterId, encounter ) ->
                     -- The follow up was issued at last encounter for the illness,
                     -- so we know we still need to follow up on that.
@@ -362,12 +367,10 @@ viewAcuteIllnessFollowUpItem language currentDate db ( participantId, personId )
                         in
                         diagnosis
                             |> Maybe.map (viewAcuteIllnessFollowUpEntry language currentDate ( participantId, personId ) item encounterSequenceNumber)
-                            |> Maybe.withDefault emptyNode
 
                     else
-                        emptyNode
+                        Nothing
                 )
-            |> Maybe.withDefault emptyNode
 
 
 viewAcuteIllnessFollowUpEntry :
@@ -403,13 +406,15 @@ viewPrenatalPane language currentDate itemsDict db model =
     let
         entries =
             Dict.map (viewPrenatalFollowUpItem language currentDate db) itemsDict
+                |> Dict.values
+                |> List.filterMap identity
 
         content =
-            if Dict.isEmpty entries then
+            if List.isEmpty entries then
                 [ translateText language Translate.NoMatchesFound ]
 
             else
-                Dict.values entries
+                entries
     in
     div [ class "pane" ]
         [ viewItemHeading language AntenatalEncounter
@@ -418,7 +423,7 @@ viewPrenatalPane language currentDate itemsDict db model =
         ]
 
 
-viewPrenatalFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> ( IndividualEncounterParticipantId, PersonId ) -> PrenatalFollowUpItem -> Html Msg
+viewPrenatalFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> ( IndividualEncounterParticipantId, PersonId ) -> PrenatalFollowUpItem -> Maybe (Html Msg)
 viewPrenatalFollowUpItem language currentDate db ( participantId, personId ) item =
     let
         outcome =
@@ -428,7 +433,7 @@ viewPrenatalFollowUpItem language currentDate db ( participantId, personId ) ite
     in
     if isJust outcome then
         -- Pregnancy was concluded, so we do not need to follow up on it.
-        emptyNode
+        Nothing
 
     else
         let
@@ -450,7 +455,7 @@ viewPrenatalFollowUpItem language currentDate db ( participantId, personId ) ite
                 List.head allEncountersWithIds
         in
         lastEncounterWithId
-            |> Maybe.map
+            |> Maybe.andThen
                 (\( encounterId, encounter ) ->
                     -- Follow up belongs to last encounter, which indicates that
                     -- there was no other encounter that has resolved this follow up.
@@ -467,11 +472,11 @@ viewPrenatalFollowUpItem language currentDate db ( participantId, personId ) ite
                                 List.length allChwEncounters < List.length allEncounters
                         in
                         encounterType
-                            |> Maybe.map
+                            |> Maybe.andThen
                                 (\encounterType_ ->
                                     if encounterType_ == ChwPostpartumEncounter then
                                         -- We do not show follow ups taken at Postpartum encounter.
-                                        emptyNode
+                                        Nothing
 
                                     else
                                         viewPrenatalFollowUpEntry language
@@ -480,15 +485,14 @@ viewPrenatalFollowUpItem language currentDate db ( participantId, personId ) ite
                                             item
                                             encounterType_
                                             hasNurseEncounter
+                                            |> Just
                                 )
-                            |> Maybe.withDefault emptyNode
 
                     else
                         -- Last encounter has not originated the follow up.
                         -- Therefore, we know that follow up is resolved.
-                        emptyNode
+                        Nothing
                 )
-            |> Maybe.withDefault emptyNode
 
 
 viewPrenatalFollowUpEntry :
