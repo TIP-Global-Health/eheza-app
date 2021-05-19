@@ -174,8 +174,8 @@ generateHighRiskAlertData language measurements factor =
                     )
 
 
-generateHighSeverityAlertData : Language -> NominalDate -> AssembledData -> HighSeverityAlert -> Maybe ( String, String )
-generateHighSeverityAlertData language currentDate data alert =
+generateHighSeverityAlertData : Language -> NominalDate -> Bool -> AssembledData -> HighSeverityAlert -> Maybe ( String, String )
+generateHighSeverityAlertData language currentDate isChw data alert =
     let
         trans =
             translate language
@@ -184,7 +184,7 @@ generateHighSeverityAlertData language currentDate data alert =
             trans (Translate.HighSeverityAlert alert_)
 
         lastEncounterMeasurementsWithDate =
-            getLastEncounterMeasurementsWithDate currentDate data
+            getLastEncounterMeasurementsWithDate currentDate isChw data
     in
     case alert of
         BodyTemperature ->
@@ -336,8 +336,8 @@ generateHighSeverityAlertData language currentDate data alert =
                     )
 
 
-generateRecurringHighSeverityAlertData : Language -> NominalDate -> AssembledData -> RecurringHighSeverityAlert -> List ( String, String, String )
-generateRecurringHighSeverityAlertData language currentDate data alert =
+generateRecurringHighSeverityAlertData : Language -> NominalDate -> Bool -> AssembledData -> RecurringHighSeverityAlert -> List ( String, String, String )
+generateRecurringHighSeverityAlertData language currentDate isChw data alert =
     let
         trans =
             translate language
@@ -370,9 +370,7 @@ generateRecurringHighSeverityAlertData language currentDate data alert =
                                     Nothing
                             )
             in
-            (( currentDate, data.measurements )
-                :: data.nursePreviousMeasurementsWithDates
-            )
+            getAllNurseMeasurements currentDate isChw data
                 |> List.filterMap resolveAlert
 
 
@@ -800,14 +798,14 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
                     )
 
 
-generateObstetricalDiagnosisAlertData : Language -> NominalDate -> PrenatalMeasurements -> AssembledData -> ObstetricalDiagnosis -> Maybe String
-generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasurements data diagnosis =
+generateObstetricalDiagnosisAlertData : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> ObstetricalDiagnosis -> Maybe String
+generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements data diagnosis =
     let
         transAlert diagnosis_ =
             translate language (Translate.ObstetricalDiagnosisAlert diagnosis_)
 
         lastEncounterMeasurements =
-            getLastEncounterMeasurements currentDate data
+            getLastEncounterMeasurements currentDate isChw data
     in
     case diagnosis of
         DiagnosisRhNegative ->
@@ -1128,9 +1126,7 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
         DiagnosisHypotension ->
             let
                 lowBloodPressureOccasions =
-                    (( currentDate, data.measurements )
-                        :: data.nursePreviousMeasurementsWithDates
-                    )
+                    getAllNurseMeasurements currentDate isChw data
                         |> List.filterMap
                             (\( _, measurements ) ->
                                 measurements.vitals
@@ -1165,9 +1161,7 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
             else
                 let
                     highBloodPressureOccasions =
-                        (( currentDate, data.measurements )
-                            :: data.nursePreviousMeasurementsWithDates
-                        )
+                        getAllNurseMeasurements currentDate isChw data
                             |> List.filterMap
                                 (\( _, measurements ) ->
                                     measurements.vitals
@@ -1261,3 +1255,17 @@ getEncounterTrimesterData encounterDate maybeLmpDate =
                 else
                     ThirdTrimester
             )
+
+
+getAllNurseMeasurements : NominalDate -> Bool -> AssembledData -> List ( NominalDate, PrenatalMeasurements )
+getAllNurseMeasurements currentDate isChw data =
+    let
+        currentEncounterData =
+            if isChw then
+                []
+
+            else
+                [ ( currentDate, data.measurements ) ]
+    in
+    currentEncounterData
+        ++ data.nursePreviousMeasurementsWithDates

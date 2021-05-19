@@ -1950,10 +1950,23 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
                                 DestinationEncounterPage ->
                                     UserPage <| Pages.Page.PrenatalEncounterPage prenatalEncounterId
 
+                                DestinationEncounterPageWithWarningPopup ->
+                                    UserPage <| Pages.Page.PrenatalEncounterPage prenatalEncounterId
+
                                 DestinationClinicalProgressReportPage ->
                                     UserPage <| ClinicalProgressReportPage (InitiatorNewEncounter prenatalEncounterId) prenatalEncounterId
+
+                        setWarningDialogStateMsg =
+                            if postCreateDestination == DestinationEncounterPageWithWarningPopup then
+                                [ Pages.PrenatalEncounter.Model.SetChwWarningVisible True
+                                    |> App.Model.MsgPagePrenatalEncounter prenatalEncounterId
+                                    |> App.Model.MsgLoggedIn
+                                ]
+
+                            else
+                                []
                     in
-                    [ App.Model.SetActivePage destinationPage ]
+                    App.Model.SetActivePage destinationPage :: setWarningDialogStateMsg
                 )
                 data
                 |> RemoteData.withDefault []

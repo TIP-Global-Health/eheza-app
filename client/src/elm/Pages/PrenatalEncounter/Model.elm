@@ -12,6 +12,7 @@ import Pages.Page exposing (Page)
 type alias Model =
     { selectedTab : Tab
     , showAlertsDialog : Bool
+    , showWarningForChw : Bool
     }
 
 
@@ -19,6 +20,7 @@ emptyModel : Model
 emptyModel =
     { selectedTab = Pending
     , showAlertsDialog = False
+    , showWarningForChw = False
     }
 
 
@@ -39,6 +41,7 @@ type Msg
     = CloseEncounter PrenatalEncounterId
     | SetActivePage Page
     | SetAlertsDialogState Bool
+    | SetChwWarningVisible Bool
     | SetSelectedTab Tab
 
 

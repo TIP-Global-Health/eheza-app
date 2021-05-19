@@ -331,6 +331,7 @@ type TranslationId
     | Call114
     | Called114Question
     | Cancel
+    | CannotStartEncounterLabel
     | CardiacDisease
     | CaregiverAccompanyQuestion
     | CaregiverName
@@ -699,6 +700,7 @@ type TranslationId
     | PatientProgress
     | PatientInformation
     | PatientIsolatedQuestion
+    | PatientNotYetSeenAtHCLabel
     | PatientProvisionsTask PatientProvisionsTask
     | People
     | PersistentStorage Bool
@@ -2060,6 +2062,11 @@ translationSet trans =
             , kinyarwanda = Just "Guhagarika"
             }
 
+        CannotStartEncounterLabel ->
+            { english = "You cannot open a new encounter, as there's already a completed encounter today for"
+            , kinyarwanda = Nothing
+            }
+
         CardiacDisease ->
             { english = "Cardiac Disease"
             , kinyarwanda = Just "Indwara z'umutima"
@@ -3281,6 +3288,11 @@ translationSet trans =
                 DueThisMonth ->
                     { english = "This Month"
                     , kinyarwanda = Just "Uku kwezi"
+                    }
+
+                DueNextMonth ->
+                    { english = "Next Month"
+                    , kinyarwanda = Nothing
                     }
 
         FormError errorValue ->
@@ -5275,6 +5287,11 @@ translationSet trans =
         PatientIsolatedQuestion ->
             { english = "Have you isolated the patient"
             , kinyarwanda = Just "Washyize umurwayi mu kato"
+            }
+
+        PatientNotYetSeenAtHCLabel ->
+            { english = " has not yet been seen at the health center for this pregnancy"
+            , kinyarwanda = Nothing
             }
 
         PatientProvisionsTask task ->

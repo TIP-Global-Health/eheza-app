@@ -27,6 +27,7 @@ type FollowUpDueOption
     = DueToday
     | DueThisWeek
     | DueThisMonth
+    | DueNextMonth
     | OverDue
 
 
@@ -84,6 +85,7 @@ type alias FollowUpPrenatalData =
     , participantId : IndividualEncounterParticipantId
     , encounterType : PrenatalEncounterType
     , hasNurseEncounter : Bool
+    , dateMeasured : NominalDate
     }
 
 

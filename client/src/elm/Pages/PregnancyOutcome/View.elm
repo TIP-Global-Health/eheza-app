@@ -26,8 +26,8 @@ import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> IndividualEncounterParticipantId -> RecordPreganancyInitiator -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id initiator db model =
+view : Language -> NominalDate -> IndividualEncounterParticipantId -> Bool -> RecordPreganancyInitiator -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id isChw initiator db model =
     let
         lastEncounterId =
             Dict.get id db.prenatalEncountersByParticipant
@@ -45,17 +45,17 @@ view language currentDate id initiator db model =
                     )
                 |> Maybe.withDefault NotAsked
     in
-    viewWebData language (viewHeaderAndContent language currentDate id initiator model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate id isChw initiator model) identity data
 
 
-viewHeaderAndContent : Language -> NominalDate -> IndividualEncounterParticipantId -> RecordPreganancyInitiator -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id initiator model data =
+viewHeaderAndContent : Language -> NominalDate -> IndividualEncounterParticipantId -> Bool -> RecordPreganancyInitiator -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id isChw initiator model data =
     let
         header =
             viewHeader language data
 
         content =
-            viewContent language currentDate initiator model data
+            viewContent language currentDate isChw initiator model data
     in
     div
         [ class "page-outcome pregnancy" ]
@@ -80,10 +80,10 @@ viewHeader language data =
         ]
 
 
-viewContent : Language -> NominalDate -> RecordPreganancyInitiator -> Model -> AssembledData -> Html Msg
-viewContent language currentDate initiator model data =
+viewContent : Language -> NominalDate -> Bool -> RecordPreganancyInitiator -> Model -> AssembledData -> Html Msg
+viewContent language currentDate isChw initiator model data =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data Nothing
+        viewMotherAndMeasurements language currentDate isChw data Nothing
             ++ viewPregnancyOutcome language currentDate initiator data model
 
 

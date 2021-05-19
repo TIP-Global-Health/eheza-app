@@ -3,6 +3,7 @@ module Pages.PrenatalParticipant.View exposing (view)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), emptyIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
     exposing
@@ -308,7 +309,7 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                     (\( encounterId, encounter ) ->
                         let
                             activeEncounterId =
-                                if isJust encounter.endDate then
+                                if isJust encounter.endDate || encounter.startDate /= currentDate then
                                     Nothing
 
                                 else
@@ -388,19 +389,28 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
                 (Translate.PrenatalEncounterType ChwFirstEncounter)
                 (not <| encounterTypeButtonActive ChwFirstEncounter)
 
-        subsequentEncounterType =
-            case lastEncounterType of
-                Just ChwFirstEncounter ->
-                    ChwSecondEncounter
-
-                _ ->
-                    ChwThirdPlusEncounter
-
         createSubsequentEncounterButton =
             viewButton language
                 (encounterTypeButtonAction subsequentEncounterType)
                 (Translate.IndividualEncounterSubsequentVisit Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
                 (not <| encounterTypeButtonActive subsequentEncounterType)
+
+        -- Used for subsequent encounter button, which is responsible
+        -- to start / navigate to second or third encounters.
+        subsequentEncounterType =
+            case lastEncounterType of
+                Just ChwFirstEncounter ->
+                    ChwSecondEncounter
+
+                Just ChwSecondEncounter ->
+                    if isJust maybeActiveEncounterId then
+                        ChwSecondEncounter
+
+                    else
+                        ChwThirdPlusEncounter
+
+                _ ->
+                    ChwThirdPlusEncounter
 
         createPostpartumEncounterButton =
             viewButton language
