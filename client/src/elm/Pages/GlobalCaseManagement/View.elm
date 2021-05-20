@@ -133,8 +133,8 @@ viewStartFollowUpEncounterDialog language dataType =
                 FollowUpAcuteIllness data ->
                     ( AcuteIllnessEncounter, data.personName )
 
-                -- We should never get here, since Prenatal got it's
-                --  own dialog.
+                -- We should never get here, since Prenatal got
+                -- it's own dialog.
                 FollowUpPrenatal data ->
                     ( AntenatalEncounter, data.personName )
     in
