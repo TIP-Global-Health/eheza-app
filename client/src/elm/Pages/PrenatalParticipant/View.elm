@@ -268,7 +268,9 @@ viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db mayb
                     )
 
         firstVisitButtonDisabled =
-            isJust maybeSessionId && not firstEncounterInProcess
+            isJust maybeSessionId
+                && not (List.isEmpty encounters)
+                && not firstEncounterInProcess
 
         createFirstEncounterButton =
             viewButton language

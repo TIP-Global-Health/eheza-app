@@ -94,3 +94,4 @@ type Msg
     | SetEncounterTypeFilter (Maybe IndividualEncounterType)
     | SetDialogState (Maybe FollowUpEncounterDataType)
     | StartFollowUpEncounter FollowUpEncounterDataType
+    | StartPrenatalFollowUpEncounter IndividualEncounterParticipantId Bool PrenatalEncounterType

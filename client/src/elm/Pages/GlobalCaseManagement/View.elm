@@ -24,6 +24,7 @@ import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PageNotFound.View
+import Pages.PrenatalEncounter.Utils
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
@@ -114,11 +115,7 @@ viewEntryPopUp language currentDate dialogState =
             (\dataType ->
                 case dataType of
                     FollowUpPrenatal data ->
-                        if data.dateMeasured == currentDate then
-                            viewPrenatalEncounterFollowUpNotAvailableDialog language data
-
-                        else
-                            viewStartFollowUpEncounterDialog language dataType
+                        viewStartFollowUpPrenatalEncounterDialog language currentDate data
 
                     _ ->
                         viewStartFollowUpEncounterDialog language dataType
@@ -136,10 +133,12 @@ viewStartFollowUpEncounterDialog language dataType =
                 FollowUpAcuteIllness data ->
                     ( AcuteIllnessEncounter, data.personName )
 
+                -- We should never get here, since Prenatal got
+                -- it's own dialog.
                 FollowUpPrenatal data ->
                     ( AntenatalEncounter, data.personName )
     in
-    div [ class "ui tiny active modal" ]
+    div [ class "ui active modal" ]
         [ div [ class "content" ]
             [ text <| translate language <| Translate.EncounterTypeFollowUpQuestion encounterType
             , text " "
@@ -163,24 +162,64 @@ viewStartFollowUpEncounterDialog language dataType =
         ]
 
 
-viewPrenatalEncounterFollowUpNotAvailableDialog : Language -> FollowUpPrenatalData -> Html Msg
-viewPrenatalEncounterFollowUpNotAvailableDialog language data =
-    div [ class "ui tiny active modal" ]
-        [ div [ class "content" ]
-            [ text <| translate language Translate.CannotStartEncounterLabel
-            , text " "
-            , span [ class "person-name" ] [ text data.personName ]
-            , text "."
-            ]
-        , div [ class "actions" ]
-            [ div [ class "two ui buttons" ]
-                [ button
-                    [ class "ui primary fluid button"
-                    , onClick <| SetDialogState Nothing
-                    ]
-                    [ text <| translate language Translate.Close ]
-                ]
-            ]
+viewStartFollowUpPrenatalEncounterDialog : Language -> NominalDate -> FollowUpPrenatalData -> Html Msg
+viewStartFollowUpPrenatalEncounterDialog language currentDate data =
+    let
+        ( content, actions ) =
+            if data.dateMeasured == currentDate then
+                ( [ text <| translate language Translate.CannotStartEncounterLabel
+                  , text " "
+                  , span [ class "person-name" ] [ text data.personName ]
+                  , text "."
+                  ]
+                , [ div [ class "two ui buttons" ]
+                        [ button
+                            [ class "ui primary fluid button"
+                            , onClick <| SetDialogState Nothing
+                            ]
+                            [ text <| translate language Translate.Close ]
+                        ]
+                  ]
+                )
+
+            else
+                let
+                    subsequentEncounterButton =
+                        Pages.PrenatalEncounter.Utils.getSubsequentEncounterType data.encounterType
+                            |> Maybe.map
+                                (\subsequentEncounterType ->
+                                    button
+                                        [ class "ui primary fluid stacked button"
+                                        , onClick <| StartPrenatalFollowUpEncounter data.participantId data.hasNurseEncounter subsequentEncounterType
+                                        ]
+                                        [ text <| translate language Translate.SubsequentEncounter ]
+                                )
+                            |> Maybe.withDefault emptyNode
+                in
+                ( [ p []
+                        [ text <| translate language <| Translate.EncounterTypeFollowUpQuestion AntenatalEncounter
+                        , text " "
+                        , span [ class "person-name" ] [ text data.personName ]
+                        , text "?"
+                        ]
+                  , subsequentEncounterButton
+                  , button
+                        [ class "ui primary fluid stacked button"
+                        , onClick <| StartPrenatalFollowUpEncounter data.participantId data.hasNurseEncounter ChwPostpartumEncounter
+                        ]
+                        [ text <| translate language Translate.PostpartumEncounter ]
+                  , button
+                        [ class "ui primary fluid stacked button"
+                        , onClick <| SetDialogState Nothing
+                        ]
+                        [ text <| translate language Translate.Cancel ]
+                  ]
+                , []
+                )
+    in
+    div [ class "ui active modal prenatal-follow-up-popup" ]
+        [ div [ class "content" ] content
+        , div [ class "actions" ] actions
         ]
 
 
