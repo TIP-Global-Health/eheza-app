@@ -138,7 +138,7 @@ viewStartFollowUpEncounterDialog language dataType =
                 FollowUpPrenatal data ->
                     ( AntenatalEncounter, data.personName )
     in
-    div [ class "ui tiny active modal" ]
+    div [ class "ui active modal" ]
         [ div [ class "content" ]
             [ text <| translate language <| Translate.EncounterTypeFollowUpQuestion encounterType
             , text " "
@@ -192,7 +192,7 @@ viewStartFollowUpPrenatalEncounterDialog language currentDate data =
                                         [ class "ui primary fluid stacked button"
                                         , onClick <| StartPrenatalFollowUpEncounter data.participantId data.hasNurseEncounter subsequentEncounterType
                                         ]
-                                        [ text <| translate language Translate.Subsequent ]
+                                        [ text <| translate language Translate.SubsequentEncounter ]
                                 )
                             |> Maybe.withDefault emptyNode
                 in
@@ -207,7 +207,7 @@ viewStartFollowUpPrenatalEncounterDialog language currentDate data =
                         [ class "ui primary fluid stacked button"
                         , onClick <| StartPrenatalFollowUpEncounter data.participantId data.hasNurseEncounter ChwPostpartumEncounter
                         ]
-                        [ text <| translate language Translate.Postpartum ]
+                        [ text <| translate language Translate.PostpartumEncounter ]
                   , button
                         [ class "ui primary fluid stacked button"
                         , onClick <| SetDialogState Nothing
@@ -217,7 +217,7 @@ viewStartFollowUpPrenatalEncounterDialog language currentDate data =
                 , []
                 )
     in
-    div [ class "ui tiny active modal" ]
+    div [ class "ui active modal prenatal-follow-up-popup" ]
         [ div [ class "content" ] content
         , div [ class "actions" ] actions
         ]

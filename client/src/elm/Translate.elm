@@ -717,7 +717,7 @@ type TranslationId
     | PleaseSelectGroup
     | PleaseSync
     | PositiveLabel
-    | Postpartum
+    | PostpartumEncounter
     | PostpartumChildDangerSign PostpartumChildDangerSign
     | PostpartumMotherDangerSign PostpartumMotherDangerSign
     | PreeclampsiaPreviousPregnancy
@@ -861,7 +861,7 @@ type TranslationId
     | SignOnDoorPostedQuestion
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | StillbornPreviousDelivery
-    | Subsequent
+    | SubsequentEncounter
     | SubsequentAntenatalVisit
     | SuccessiveAbortions
     | SuccessivePrematureDeliveries
@@ -5406,8 +5406,8 @@ translationSet trans =
             , kinyarwanda = Just "Afite ubwandu"
             }
 
-        Postpartum ->
-            { english = "Postpartum"
+        PostpartumEncounter ->
+            { english = "Postpartum Encounter"
             , kinyarwanda = Nothing
             }
 
@@ -6731,8 +6731,8 @@ translationSet trans =
             , kinyarwanda = Just "Aheruka kubyara umwana upfuye"
             }
 
-        Subsequent ->
-            { english = "Subsequent"
+        SubsequentEncounter ->
+            { english = "Subsequent Encounter"
             , kinyarwanda = Nothing
             }
 
