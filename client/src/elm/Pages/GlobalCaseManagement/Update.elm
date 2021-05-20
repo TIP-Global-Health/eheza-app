@@ -93,7 +93,7 @@ startFollowUpEncountePrenatal currentDate selectedHealthCenter db data =
         |> Maybe.map
             (\newEncounterType ->
                 [ emptyPrenatalEncounter data.participantId currentDate newEncounterType (Just selectedHealthCenter)
-                    |> Backend.Model.PostPrenatalEncounter (generatePostCreateDestination data.encounterType data.hasNurseEncounter)
+                    |> Backend.Model.PostPrenatalEncounter (generatePostCreateDestination newEncounterType data.hasNurseEncounter)
                     |> App.Model.MsgIndexedDb
                 ]
             )
