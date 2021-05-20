@@ -2483,5 +2483,13 @@ div.page-case-management {
     .person-name {
       color: $color-primary;
     }
+
+    button.stacked {
+      margin-bottom: 15px;
+    }
+
+    button.stacked:last-child {
+      margin-bottom: 0;
+    }
   }
 }

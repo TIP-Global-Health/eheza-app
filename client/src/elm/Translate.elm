@@ -717,6 +717,7 @@ type TranslationId
     | PleaseSelectGroup
     | PleaseSync
     | PositiveLabel
+    | Postpartum
     | PostpartumChildDangerSign PostpartumChildDangerSign
     | PostpartumMotherDangerSign PostpartumMotherDangerSign
     | PreeclampsiaPreviousPregnancy
@@ -860,6 +861,7 @@ type TranslationId
     | SignOnDoorPostedQuestion
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | StillbornPreviousDelivery
+    | Subsequent
     | SubsequentAntenatalVisit
     | SuccessiveAbortions
     | SuccessivePrematureDeliveries
@@ -2849,7 +2851,7 @@ translationSet trans =
                     }
 
                 AntenatalEncounter ->
-                    { english = "Do you want to start an Antenatal encounter for"
+                    { english = "What type of Antenatal encounter would yo like to start for"
                     , kinyarwanda = Nothing
                     }
 
@@ -5404,6 +5406,11 @@ translationSet trans =
             , kinyarwanda = Just "Afite ubwandu"
             }
 
+        Postpartum ->
+            { english = "Postpartum"
+            , kinyarwanda = Nothing
+            }
+
         PostpartumChildDangerSign sign ->
             case sign of
                 PostpartumChildInabilityToSuckle ->
@@ -6722,6 +6729,11 @@ translationSet trans =
         StillbornPreviousDelivery ->
             { english = "Stillborn in previous delivery"
             , kinyarwanda = Just "Aheruka kubyara umwana upfuye"
+            }
+
+        Subsequent ->
+            { english = "Subsequent"
+            , kinyarwanda = Nothing
             }
 
         SubsequentAntenatalVisit ->
