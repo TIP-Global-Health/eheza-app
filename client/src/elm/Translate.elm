@@ -399,6 +399,7 @@ type TranslationId
     | CreateGroupEncounter
     | CreateRelationship
     | CreateTrainingGroupEncounters
+    | ChwDashboardLabel
     | DeleteTrainingGroupEncounters
     | DashboardLabel
     | CurrentlyPregnant
@@ -2539,6 +2540,11 @@ translationSet trans =
         CurrentlyPregnant ->
             { english = "Currently Pregnant"
             , kinyarwanda = Just "Aratwite"
+            }
+
+        ChwDashboardLabel ->
+            { english = "CHW Snapshot"
+            , kinyarwanda = Nothing
             }
 
         DeleteTrainingGroupEncounters ->

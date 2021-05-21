@@ -79,16 +79,29 @@ view language page currentDate healthCenterId isChw nurse model db =
                 |> Maybe.withDefault ( spinner, PinCodePage )
 
         header =
-            div
-                [ class "ui basic head segment" ]
-                [ h1 [ class "ui header" ]
-                    [ translateText language Translate.DashboardLabel ]
-                , a
-                    [ class "link-back"
-                    , onClick <| SetActivePage goBackPage
+            if isChw then
+                div
+                    [ class "ui basic head segment" ]
+                    [ h1 [ class "ui header" ]
+                        [ translateText language Translate.ChwDashboardLabel ]
+                    , a
+                        [ class "link-back"
+                        , onClick <| SetActivePage goBackPage
+                        ]
+                        [ span [ class "icon-back" ] [] ]
                     ]
-                    [ span [ class "icon-back" ] [] ]
-                ]
+
+            else
+                div
+                    [ class "ui basic head segment" ]
+                    [ h1 [ class "ui header" ]
+                        [ translateText language Translate.DashboardLabel ]
+                    , a
+                        [ class "link-back"
+                        , onClick <| SetActivePage goBackPage
+                        ]
+                        [ span [ class "icon-back" ] [] ]
+                    ]
     in
     div
         [ class "wrap" ]
