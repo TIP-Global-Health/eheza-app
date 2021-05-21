@@ -3,6 +3,7 @@ module Pages.Dashboard.Model exposing (..)
 import AssocList exposing (Dict)
 import Backend.Dashboard.Model exposing (ParticipantStats)
 import Backend.Entities exposing (HealthCenterId, VillageId)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
@@ -117,6 +118,7 @@ caseManagementSubFilters mainFilter =
 type alias Model =
     { period : FilterPeriod
     , programTypeFilter : FilterProgramType
+    , encounterTypeFilter : Maybe IndividualEncounterType
     , selectedVillageFilter : Maybe VillageId
     , beneficiariesGender : FilterGender
     , currentBeneficiariesChartsFilter : DashboardFilter
@@ -145,6 +147,7 @@ emptyModel maybeSelectedVillage =
     in
     { period = OneYear
     , programTypeFilter = programTypeFilter
+    , encounterTypeFilter = Nothing
     , selectedVillageFilter = selectedVillage
     , beneficiariesGender = Boys
     , currentBeneficiariesChartsFilter = Stunting
@@ -229,4 +232,5 @@ type Msg
     | SetSubFilterCaseManagement DashboardSubFilter
     | SetFilterProgramType String
     | SetSelectedVillage String
+    | SetEncounterTypeFilter (Maybe IndividualEncounterType)
     | SetActivePage Page

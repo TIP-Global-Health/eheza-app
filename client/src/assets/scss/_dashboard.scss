@@ -55,6 +55,32 @@
       }
     }
 
+  &.chw-filters {
+    background-color: transparent;
+    min-height: 40px;
+    //margin-left: 35px;
+    padding: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    button {
+      background-color: $color-white;
+      border: solid 2px $color-primary;
+      color: $color-primary;
+      border-radius: 3px;
+      font-size: 24px;
+      font-weight: 700;
+      padding: 15px;
+      text-transform: none;
+    }
+
+    //button.active {
+    //  background-color: $color-primary;
+    //  color: $color-white;
+    //}
+  }
+
     .content {
 
       .very.basic.table {

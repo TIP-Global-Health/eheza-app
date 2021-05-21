@@ -21,6 +21,7 @@ import Backend.Dashboard.Model
         , emptyTotalBeneficiaries
         )
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
@@ -40,6 +41,7 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (..)
+import Pages.GlobalCaseManagement.Utils exposing (allEncounterTypes)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Pages.Utils exposing (calculatePercentage)
 import Path
@@ -159,27 +161,34 @@ viewMainPage language currentDate isChw nurse stats db model =
                 _ ->
                     emptyNode
     in
-    div [ class "dashboard main" ]
-        [ div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
-        , viewFiltersPane language MainPage filterPeriodsForMainPage db model
-        , div [ class "ui grid" ]
-            [ div [ class "eight wide column" ]
-                [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
-                ]
-            , div [ class "eight wide column" ]
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
-            , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language currentDate MonthlyChartTotals FilterBeneficiariesChart totalsGraphData model.currentBeneficiariesChartsFilter
-                ]
-            , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
-                ]
-            , links
+    if isChw then
+        div [ class "dashboard main" ]
+            [ div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
+            , viewFilterPaneChw language model
             ]
-        , viewCustomModal language isChw nurse stats db model
-        ]
+
+    else
+        div [ class "dashboard main" ]
+            [ div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
+            , viewFiltersPane language MainPage filterPeriodsForMainPage db model
+            , div [ class "ui grid" ]
+                [ div [ class "eight wide column" ]
+                    [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
+                    ]
+                , div [ class "eight wide column" ]
+                    [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                        |> viewTotalEncounters language
+                    ]
+                , div [ class "sixteen wide column" ]
+                    [ viewMonthlyChart language currentDate MonthlyChartTotals FilterBeneficiariesChart totalsGraphData model.currentBeneficiariesChartsFilter
+                    ]
+                , div [ class "sixteen wide column" ]
+                    [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
+                    ]
+                , links
+                ]
+            , viewCustomModal language isChw nurse stats db model
+            ]
 
 
 caseManagementApplyBreakdownFilters : Dict VillageId (List PersonIdentifier) -> Dict ProgramType (List CaseManagement) -> Model -> List CaseManagement
@@ -897,6 +906,32 @@ viewFiltersPane language page filterPeriodsPerPage db model =
     div [ class "ui segment filters" ] <|
         List.map renderButton filterPeriodsPerPage
             ++ [ labelSelected, programTypeFilterFilterButton ]
+
+
+viewFilterPaneChw : Language -> Model -> Html Msg
+viewFilterPaneChw language model =
+    let
+        filters =
+            allEncounterTypes
+                |> List.map Just
+
+        renderButton maybeFilter =
+            let
+                label =
+                    Maybe.map Translate.EncounterTypeFileterLabel maybeFilter
+                        |> Maybe.withDefault Translate.All
+            in
+            button
+                [ classList
+                    [ ( "active", model.encounterTypeFilter == maybeFilter )
+                    , ( "primary ui button", True )
+                    ]
+                , onClick <| SetEncounterTypeFilter maybeFilter
+                ]
+                [ translateText language label ]
+    in
+    div [ class "ui segment chw-filters" ] <|
+        List.map renderButton filters
 
 
 viewGoodNutrition : Language -> List CaseNutritionTotal -> List CaseNutritionTotal -> Html Msg

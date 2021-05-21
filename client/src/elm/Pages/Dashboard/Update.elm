@@ -87,6 +87,12 @@ update msg subPage model =
             , []
             )
 
+        SetEncounterTypeFilter encounterType ->
+            ( { model | encounterTypeFilter = encounterType }
+            , Cmd.none
+            , []
+            )
+
         SetActivePage page ->
             let
                 newPeriod =
