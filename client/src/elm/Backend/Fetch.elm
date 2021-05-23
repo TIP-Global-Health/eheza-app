@@ -4,6 +4,7 @@ import AssocList as Dict
 import Backend.Model exposing (..)
 import LocalData exposing (isNotNeeded)
 import RemoteData exposing (RemoteData(..), isNotAsked, isSuccess)
+import Time
 
 
 {-| Given a `MsgIndexedDb`, do we need to fetch the data it would fetch?
@@ -15,8 +16,8 @@ common. The answer does need to flip to `False` when a request is in progress,
 or we will enter an infinite loop.
 
 -}
-shouldFetch : ModelIndexedDb -> MsgIndexedDb -> Bool
-shouldFetch model msg =
+shouldFetch : Time.Posix -> ModelIndexedDb -> MsgIndexedDb -> Bool
+shouldFetch currentTime model msg =
     let
         hasNoSuccessValues dict =
             dict
@@ -32,8 +33,13 @@ shouldFetch model msg =
                 |> isNotAsked
 
         FetchComputedDashboard healthCenterId ->
-            Dict.member healthCenterId model.computedDashboard
-                |> not
+            -- Do not fetch, if last attempt was less that 20 seconds ago.
+            if Time.posixToMillis currentTime - Time.posixToMillis model.computedDashboardLastFetched < 20000 then
+                False
+
+            else
+                Dict.member healthCenterId model.computedDashboard
+                    |> not
 
         FetchChildrenMeasurements ids ->
             if List.isEmpty ids then
