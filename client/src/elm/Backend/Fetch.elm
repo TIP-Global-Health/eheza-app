@@ -20,8 +20,7 @@ shouldFetch : Time.Posix -> ModelIndexedDb -> MsgIndexedDb -> Bool
 shouldFetch currentTime model msg =
     let
         hasNoSuccessValues dict =
-            dict
-                |> Dict.values
+            Dict.values dict
                 |> List.filter (\v -> RemoteData.isLoading v || RemoteData.isNotAsked v)
                 |> List.isEmpty
                 |> not
@@ -33,7 +32,7 @@ shouldFetch currentTime model msg =
                 |> isNotAsked
 
         FetchComputedDashboard healthCenterId ->
-            -- Do not fetch, if last attempt was less that 20 seconds ago.
+            -- Do not fetch, if last attempt was less than 20 seconds ago.
             if Time.posixToMillis currentTime - Time.posixToMillis model.computedDashboardLastFetched < 20000 then
                 False
 
