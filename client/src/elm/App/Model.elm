@@ -124,6 +124,57 @@ type alias Model =
     }
 
 
+emptyModel : Nav.Key -> Url -> Flags -> Model
+emptyModel key url flags =
+    let
+        healthCenterId =
+            if String.isEmpty flags.healthCenterId then
+                Nothing
+
+            else
+                Just (toEntityUuid flags.healthCenterId)
+
+        villageId =
+            if String.isEmpty flags.villageId then
+                Nothing
+
+            else
+                Just (toEntityUuid flags.villageId)
+
+        syncInfoAuthorities =
+            flags.syncInfoAuthorities
+                |> List.map SyncManager.Utils.syncInfoAuthorityFromPort
+                |> Zipper.fromList
+
+        syncManagerFlags =
+            { syncInfoGeneral = SyncManager.Utils.syncInfoGeneralFromPort flags.syncInfoGeneral
+            , syncInfoAuthorities = syncInfoAuthorities
+            , batchSize = flags.photoDownloadBatchSize
+            , syncSpeed = flags.syncSpeed
+            }
+    in
+    { activePage = PinCodePage
+    , navigationKey = key
+    , url = url
+    , dbVersion = flags.dbVersion
+    , configuration = NotAsked
+    , currentTime = Time.millisToPosix 0
+    , dataWanted = Dict.empty
+    , indexedDb = Backend.Model.emptyModelIndexedDb
+    , language = English
+    , memoryQuota = Nothing
+    , persistentStorage = Nothing
+    , scheduleDataWantedCheck = True
+    , serviceWorker = ServiceWorker.Model.emptyModel flags.activeServiceWorker
+    , storageQuota = Nothing
+    , zscores = ZScore.Model.emptyModel
+    , healthCenterId = healthCenterId
+    , villageId = villageId
+    , syncManager = SyncManager.Model.emptyModel syncManagerFlags
+    , errors = []
+    }
+
+
 type alias StorageQuota =
     { quota : Int
     , usage : Int
@@ -305,57 +356,6 @@ type alias Flags =
     , syncInfoAuthorities : List SyncManager.Model.SyncInfoAuthorityForPort
     , photoDownloadBatchSize : Int
     , syncSpeed : SyncManager.Model.SyncSpeed
-    }
-
-
-emptyModel : Nav.Key -> Url -> Flags -> Model
-emptyModel key url flags =
-    let
-        healthCenterId =
-            if String.isEmpty flags.healthCenterId then
-                Nothing
-
-            else
-                Just (toEntityUuid flags.healthCenterId)
-
-        villageId =
-            if String.isEmpty flags.villageId then
-                Nothing
-
-            else
-                Just (toEntityUuid flags.villageId)
-
-        syncInfoAuthorities =
-            flags.syncInfoAuthorities
-                |> List.map SyncManager.Utils.syncInfoAuthorityFromPort
-                |> Zipper.fromList
-
-        syncManagerFlags =
-            { syncInfoGeneral = SyncManager.Utils.syncInfoGeneralFromPort flags.syncInfoGeneral
-            , syncInfoAuthorities = syncInfoAuthorities
-            , batchSize = flags.photoDownloadBatchSize
-            , syncSpeed = flags.syncSpeed
-            }
-    in
-    { activePage = PinCodePage
-    , navigationKey = key
-    , url = url
-    , dbVersion = flags.dbVersion
-    , configuration = NotAsked
-    , currentTime = Time.millisToPosix 0
-    , dataWanted = Dict.empty
-    , indexedDb = Backend.Model.emptyModelIndexedDb
-    , language = English
-    , memoryQuota = Nothing
-    , persistentStorage = Nothing
-    , scheduleDataWantedCheck = True
-    , serviceWorker = ServiceWorker.Model.emptyModel flags.activeServiceWorker
-    , storageQuota = Nothing
-    , zscores = ZScore.Model.emptyModel
-    , healthCenterId = healthCenterId
-    , villageId = villageId
-    , syncManager = SyncManager.Model.emptyModel syncManagerFlags
-    , errors = []
     }
 
 
