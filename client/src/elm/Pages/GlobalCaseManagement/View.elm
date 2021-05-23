@@ -518,46 +518,31 @@ viewPrenatalFollowUpItem language currentDate db ( participantId, personId ) ite
                     -- Sort DESC
                     |> List.sortWith (\( _, e1 ) ( _, e2 ) -> Date.compare e2.startDate e1.startDate)
 
-            allEncounters =
-                List.map Tuple.second allEncountersWithIds
-
-            allChwEncounters =
-                List.filter (.encounterType >> (/=) NurseEncounter) allEncounters
-
-            lastEncounterWithId =
-                List.head allEncountersWithIds
+            allChwEncountersWithIds =
+                List.filter (Tuple.second >> .encounterType >> (/=) NurseEncounter) allEncountersWithIds
         in
-        lastEncounterWithId
+        List.head allChwEncountersWithIds
             |> Maybe.andThen
                 (\( encounterId, encounter ) ->
                     -- Follow up belongs to last encounter, which indicates that
                     -- there was no other encounter that has resolved this follow up.
                     if item.encounterId == Just encounterId then
                         let
-                            encounterType =
-                                allChwEncounters
-                                    |> List.head
-                                    |> Maybe.map .encounterType
-
                             hasNurseEncounter =
-                                List.length allChwEncounters < List.length allEncounters
+                                List.length allChwEncountersWithIds < List.length allEncountersWithIds
                         in
-                        encounterType
-                            |> Maybe.andThen
-                                (\encounterType_ ->
-                                    if encounterType_ == ChwPostpartumEncounter then
-                                        -- We do not show follow ups taken at Postpartum encounter.
-                                        Nothing
+                        if encounter.encounterType == ChwPostpartumEncounter then
+                            -- We do not show follow ups taken at Postpartum encounter.
+                            Nothing
 
-                                    else
-                                        viewPrenatalFollowUpEntry language
-                                            currentDate
-                                            ( participantId, personId )
-                                            item
-                                            encounterType_
-                                            hasNurseEncounter
-                                            |> Just
-                                )
+                        else
+                            viewPrenatalFollowUpEntry language
+                                currentDate
+                                ( participantId, personId )
+                                item
+                                encounter.encounterType
+                                hasNurseEncounter
+                                |> Just
 
                     else
                         -- Last encounter has not originated the follow up.
