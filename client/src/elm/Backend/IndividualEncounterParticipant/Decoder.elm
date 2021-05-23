@@ -1,4 +1,4 @@
-module Backend.IndividualEncounterParticipant.Decoder exposing (acuteIllnessOutcomeFromString, decodeIndividualEncounterParticipant, pregnancyOutcomeFromString)
+module Backend.IndividualEncounterParticipant.Decoder exposing (..)
 
 import Backend.IndividualEncounterParticipant.Model exposing (..)
 import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString)

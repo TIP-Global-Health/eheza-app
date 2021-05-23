@@ -3,6 +3,7 @@ module Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 import AssocList as Dict exposing (Dict)
 import Backend.Dashboard.Model exposing (..)
 import Backend.Entities exposing (VillageId)
+import Backend.IndividualEncounterParticipant.Decoder exposing (decodeDeliveryLocation, decodeIndividualEncounterParticipantOutcome)
 import Backend.Measurement.Decoder exposing (decodeFamilyPlanningSign)
 import Backend.Person.Decoder exposing (decodeGender)
 import Dict as LegacyDict
@@ -22,6 +23,7 @@ decodeDashboardStats =
         |> required "family_planning" (list decodeFamilyPlanningStats)
         |> required "missed_sessions" (list decodeParticipantStats)
         |> required "total_encounters" decodeTotalEncountersData
+        |> required "prenatal_data" (list decodePrenatalDataItem)
         |> required "villages_with_residents" decodeVillagesWithResidents
         |> required "timestamp" string
         |> required "stats_cache_hash" string
@@ -248,3 +250,14 @@ decodeVillagesWithResidents_ =
                     |> Dict.fromList
                     |> succeed
             )
+
+
+decodePrenatalDataItem : Decoder PrenatalDataItem
+decodePrenatalDataItem =
+    succeed PrenatalDataItem
+        |> required "id" decodeInt
+        |> required "created" decodeYYYYMMDD
+        |> required "expected_date_concluded" (nullable decodeYYYYMMDD)
+        |> required "date_concluded" (nullable decodeYYYYMMDD)
+        |> required "outcome" (nullable decodeIndividualEncounterParticipantOutcome)
+        |> required "delivery_location" (nullable decodeDeliveryLocation)
