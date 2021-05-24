@@ -2066,7 +2066,7 @@ translationSet trans =
 
         CannotStartEncounterLabel ->
             { english = "You cannot open a new encounter, as there's already a completed encounter today for"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ntago bishoboka gutangira isuzuma rishya, kuko hari isuzuma ryarangiye uyu munsi rya"
             }
 
         CardiacDisease ->
@@ -3294,7 +3294,7 @@ translationSet trans =
 
                 DueNextMonth ->
                     { english = "Next Month"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ukwezi gutaha"
                     }
 
         FormError errorValue ->
@@ -5293,7 +5293,7 @@ translationSet trans =
 
         PatientNotYetSeenAtHCLabel ->
             { english = " has not yet been seen at the health center for this pregnancy"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just " ntiyigeze asuzumwa ku kigo nderabuzima kuri iyi nda atwite"
             }
 
         PatientProvisionsTask task ->
