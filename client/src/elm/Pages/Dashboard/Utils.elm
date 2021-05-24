@@ -77,7 +77,7 @@ getTotalPregnantForMonth currentDate selectedDate itemsList =
             (\item ->
                 let
                     -- Expected date exists, and is set to 3 weeks or less, before
-                    -- the begginging of the range.
+                    -- the beggining of the range.
                     expectedDateConcludedFilter =
                         item.expectedDateConcluded
                             |> Maybe.map
@@ -118,6 +118,7 @@ getTotalNewbornForMonth selectedDate itemsList =
             (\item ->
                 Maybe.map2
                     (\dateConcluded outcome ->
+                        -- Live baby born on same month and year.
                         (outcome == Pregnancy OutcomeLiveAtTerm || outcome == Pregnancy OutcomeLivePreTerm)
                             && (Date.monthNumber dateConcluded == month)
                             && (Date.year dateConcluded == year)
