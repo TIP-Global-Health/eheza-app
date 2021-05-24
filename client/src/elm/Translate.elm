@@ -2852,7 +2852,7 @@ translationSet trans =
 
                 AntenatalEncounter ->
                     { english = "What type of Antenatal encounter would you like to start for"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ni irihe suzuma ku mugore utwite ushaka gutangira kuri"
                     }
 
                 HomeVisitEncounter ->
