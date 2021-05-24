@@ -307,12 +307,24 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     DashboardPage subPage ->
-                        Pages.Dashboard.View.view model.language subPage currentDate healthCenterId isChw (Tuple.second loggedInModel.nurse) loggedInModel.dashboardPage model.indexedDb
+                        Pages.Dashboard.View.view model.language
+                            subPage
+                            currentDate
+                            healthCenterId
+                            isChw
+                            (Tuple.second loggedInModel.nurse)
+                            loggedInModel.dashboardPage
+                            model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageDashboard subPage)
                             |> flexPageWrapper model
 
                     GlobalCaseManagementPage ->
-                        Pages.GlobalCaseManagement.View.view model.language currentDate ( healthCenterId, model.villageId ) isChw loggedInModel.globalCaseManagementPage model.indexedDb
+                        Pages.GlobalCaseManagement.View.view model.language
+                            currentDate
+                            ( healthCenterId, model.villageId )
+                            isChw
+                            loggedInModel.globalCaseManagementPage
+                            model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageGlobalCaseManagement)
                             |> flexPageWrapper model
 

@@ -45,7 +45,7 @@ import Pages.GlobalCaseManagement.Utils exposing (allEncounterTypes)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Pages.Utils exposing (calculatePercentage)
 import Path
-import RemoteData
+import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Scale exposing (BandConfig, BandScale, ContinuousScale)
 import Shape exposing (Arc, defaultPieConfig)
@@ -68,6 +68,10 @@ view language page currentDate healthCenterId isChw nurse model db =
             Dict.get healthCenterId db.computedDashboard
                 |> Maybe.map
                     (\stats ->
+                        let
+                            tmp =
+                                temporaryFunc language currentDate healthCenterId stats db model
+                        in
                         case page of
                             MainPage ->
                                 ( viewMainPage language currentDate isChw nurse stats db model, PinCodePage )
@@ -112,11 +116,30 @@ view language page currentDate healthCenterId isChw nurse model db =
         ]
 
 
-viewMainPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewMainPage language currentDate isChw nurse stats db model =
+temporaryFunc : Language -> NominalDate -> HealthCenterId -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+temporaryFunc language currentDate healthCenterId stats db model =
     let
         prenatalData =
             generateFilteredPrenatalData model.selectedVillageFilter stats
+
+        followUps =
+            Dict.get healthCenterId db.followUpMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+
+        ( totalNutritionFollowUps, totalAcuteIllnessFollowUps, totalPrenatalFollowUps ) =
+            Maybe.map2 (getFollowUpsTotals language currentDate db)
+                model.selectedVillageFilter
+                followUps
+                |> Maybe.withDefault ( 0, 0, 0 )
+
+        _ =
+            Debug.log "totalNutritionFollowUps" totalNutritionFollowUps
+
+        _ =
+            Debug.log "totalAcuteIllnessFollowUps" totalAcuteIllnessFollowUps
+
+        _ =
+            Debug.log "totalPrenatalFollowUps" totalPrenatalFollowUps
 
         _ =
             getTotalPregnantForMonth currentDate currentDate prenatalData |> Debug.log "0"
@@ -126,7 +149,13 @@ viewMainPage language currentDate isChw nurse stats db model =
 
         _ =
             getTotalPregnantForMonth currentDate (Date.add Months -2 currentDate) prenatalData |> Debug.log "-2"
+    in
+    emptyNode
 
+
+viewMainPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewMainPage language currentDate isChw nurse stats db model =
+    let
         currentPeriodStats =
             filterStatsWithinPeriod currentDate model stats
 
@@ -173,34 +202,27 @@ viewMainPage language currentDate isChw nurse stats db model =
                 _ ->
                     emptyNode
     in
-    if isChw then
-        div [ class "dashboard main" ]
-            [ div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
-            , viewFilterPaneChw language model
-            ]
-
-    else
-        div [ class "dashboard main" ]
-            [ div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
-            , viewFiltersPane language MainPage filterPeriodsForMainPage db model
-            , div [ class "ui grid" ]
-                [ div [ class "eight wide column" ]
-                    [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
-                    ]
-                , div [ class "eight wide column" ]
-                    [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                        |> viewTotalEncounters language
-                    ]
-                , div [ class "sixteen wide column" ]
-                    [ viewMonthlyChart language currentDate MonthlyChartTotals FilterBeneficiariesChart totalsGraphData model.currentBeneficiariesChartsFilter
-                    ]
-                , div [ class "sixteen wide column" ]
-                    [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
-                    ]
-                , links
+    div [ class "dashboard main" ]
+        [ div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
+        , viewFiltersPane language MainPage filterPeriodsForMainPage db model
+        , div [ class "ui grid" ]
+            [ div [ class "eight wide column" ]
+                [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
                 ]
-            , viewCustomModal language isChw nurse stats db model
+            , div [ class "eight wide column" ]
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
+            , div [ class "sixteen wide column" ]
+                [ viewMonthlyChart language currentDate MonthlyChartTotals FilterBeneficiariesChart totalsGraphData model.currentBeneficiariesChartsFilter
+                ]
+            , div [ class "sixteen wide column" ]
+                [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
+                ]
+            , links
             ]
+        , viewCustomModal language isChw nurse stats db model
+        ]
 
 
 caseManagementApplyBreakdownFilters : Dict VillageId (List PersonIdentifier) -> Dict ProgramType (List CaseManagement) -> Model -> List CaseManagement
