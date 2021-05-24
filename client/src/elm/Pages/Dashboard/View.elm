@@ -163,8 +163,8 @@ viewMainPage language currentDate isChw nurse stats db model =
     in
     if isChw then
         div [ class "dashboard main" ]
-            [ div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
-            , viewFilterPaneChw language model
+            [ viewFilterPaneChw language model
+            , div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
             ]
 
     else
