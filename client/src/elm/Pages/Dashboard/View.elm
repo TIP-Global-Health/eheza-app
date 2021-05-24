@@ -115,6 +115,15 @@ view language page currentDate healthCenterId isChw nurse model db =
 viewMainPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
 viewMainPage language currentDate isChw nurse stats db model =
     let
+        prenatalData =
+            generateFilteredPrenatalData model.selectedVillageFilter stats
+
+        _ =
+            getTotalNewbornForMonth currentDate prenatalData |> Debug.log "0"
+
+        _ =
+            getTotalNewbornForMonth (Date.add Months -1 currentDate) prenatalData |> Debug.log "-1"
+
         currentPeriodStats =
             filterStatsWithinPeriod currentDate model stats
 
