@@ -29,6 +29,7 @@ define('HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES', 'sync_children_beneficiaries_
 define('HEDLEY_STATS_SYNC_FAMILY_PLANNING', 'sync_family_planning_stats');
 define('HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS', 'sync_total_encounters_stats');
 define('HEDLEY_STATS_SYNC_CASE_MANAGEMENT', 'sync_case_management_stats');
+define('HEDLEY_STATS_SYNC_PRENATAL_DATA', 'sync_prenatal_data');
 
 // Cache methods.
 define('HEDLEY_STATS_CACHE_GET', 'get');
@@ -301,10 +302,27 @@ function hedley_stats_get_villages_with_residents($health_center_id) {
   return $result;
 }
 
+/**
+ * Return pregnancies data that is used to generate ANC statistics.
+ *
+ * We get data for pregnancies started during past 480 days.
+ * We need to know when they were created, what was the expected delivery
+ * date, and if exist, real delivery date and outcome.
+ * Also, we add patient ID, to be able to associate it with its village.
+ *
+ * @param int $health_center_id
+ *   The health center node ID.
+ *
+ * @return array
+ *   List of villages UUIDs with IDs of its residents.
+ *
+ * @throws \Exception
+ */
 function hedley_stats_get_prenatal_data($health_center_id) {
-  // We get data for pregnancies started during past 480 days.
-  // We need to know when they were created, what was the expected delivery
-  // date, and if exist, real delivery date with outcome.
+  // Return the cache if exists.
+  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_PRENATAL_DATA, $health_center_id)) {
+    return $cache_data;
+  }
 
   $query = hedley_stats_get_base_query($health_center_id, 'individual_participant', HEDLEY_STATS_PERIOD_480_DAYS);
 
@@ -316,7 +334,6 @@ function hedley_stats_get_prenatal_data($health_center_id) {
     'field_outcome',
     'field_outcome_location',
   ];
-
   foreach ($fields_to_join as $field) {
     hedley_stats_join_field_to_query($query, 'node', $field, FALSE);
   }
@@ -340,6 +357,9 @@ function hedley_stats_get_prenatal_data($health_center_id) {
       'delivery_location' => $row->field_outcome_location,
     ];
   }
+
+  // Store in cache.
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_PRENATAL_DATA, $health_center_id, NULL, $items);
 
   return $items;
 }
