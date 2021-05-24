@@ -66,14 +66,52 @@ generateFilteredPrenatalData maybeVillageId stats =
         |> Maybe.withDefault []
 
 
+getTotalPregnantForMonth : NominalDate -> NominalDate -> List PrenatalDataItem -> Int
+getTotalPregnantForMonth currentDate selectedDate itemsList =
+    let
+        fromDate =
+            Date.floor Date.Month selectedDate
+    in
+    itemsList
+        |> List.filter
+            (\item ->
+                let
+                    -- Expected date exists, and is set to 3 weeks or less, before
+                    -- the begginging of the range.
+                    expectedDateConcludedFilter =
+                        item.expectedDateConcluded
+                            |> Maybe.map
+                                (\expectedDateConcluded ->
+                                    Date.diff Date.Weeks expectedDateConcluded fromDate <= 3
+                                )
+                            |> Maybe.withDefault False
+
+                    -- No date concluded, or it's set within month range, or after that.
+                    actualDateConcludedFilter =
+                        case item.dateConcluded of
+                            Just dateConcluded ->
+                                let
+                                    compareResult =
+                                        Date.compare fromDate dateConcluded
+                                in
+                                compareResult == LT || compareResult == EQ
+
+                            Nothing ->
+                                True
+                in
+                expectedDateConcludedFilter && actualDateConcludedFilter
+            )
+        |> List.length
+
+
 getTotalNewbornForMonth : NominalDate -> List PrenatalDataItem -> Int
-getTotalNewbornForMonth date itemsList =
+getTotalNewbornForMonth selectedDate itemsList =
     let
         month =
-            Date.monthNumber date
+            Date.monthNumber selectedDate
 
         year =
-            Date.year date
+            Date.year selectedDate
     in
     itemsList
         |> List.filter
