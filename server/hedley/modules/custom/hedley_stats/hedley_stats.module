@@ -1208,18 +1208,21 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period, $ex
   // resolved using 'field_date_measured'.
   $date_field = 'field_date_measured';
 
+  // Entities other than measurements are always
+  // resolved usingsingle node type.
   if (!is_array($node_type)) {
-    // If we're dealing with encounter, creation date is
-    // resolved using 'field_scheduled_date'.
     $encounter_types = [
       'acute_illness_encounter',
       'nutrition_encounter',
       'prenatal_encounter',
     ];
-
+    // If we're dealing with encounter, creation date is
+    // resolved using 'field_scheduled_date'.
     if (in_array($node_type, $encounter_types)) {
       $date_field = 'field_scheduled_date';
     }
+    // If we're dealing with individual participant, creation date is
+    // resolved using 'field_expected'.
     elseif ($node_type == 'individual_participant') {
       $date_field = 'field_expected';
     }
