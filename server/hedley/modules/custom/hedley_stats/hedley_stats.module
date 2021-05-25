@@ -16,6 +16,8 @@ define('HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS', 'past_three_month');
 define('HEDLEY_STATS_PERIOD_ONE_YEAR', 'one_year');
 define('HEDLEY_STATS_PERIOD_LAST_YEAR', 'last_year');
 define('HEDLEY_STATS_PERIOD_480_DAYS', '480_days');
+define('HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS', 'past_six_month');
+
 
 define('HEDLEY_STATS_SEVERE', 'severe_nutrition');
 define('HEDLEY_STATS_MODERATE', 'moderate_nutrition');
@@ -29,6 +31,7 @@ define('HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES', 'sync_children_beneficiaries_
 define('HEDLEY_STATS_SYNC_FAMILY_PLANNING', 'sync_family_planning_stats');
 define('HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS', 'sync_total_encounters_stats');
 define('HEDLEY_STATS_SYNC_CASE_MANAGEMENT', 'sync_case_management_stats');
+define('HEDLEY_STATS_SYNC_ACUTE_ILLNESS_DATA', 'sync_acute_illness_data');
 define('HEDLEY_STATS_SYNC_PRENATAL_DATA', 'sync_prenatal_data');
 
 // Cache methods.
@@ -127,6 +130,8 @@ function hedley_stats_clear_caches_for_health_center($nid) {
     HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS,
     HEDLEY_STATS_PERIOD_ONE_YEAR,
     HEDLEY_STATS_PERIOD_LAST_YEAR,
+    HEDLEY_STATS_PERIOD_480_DAYS,
+    HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS,
   ];
 
   // First, clear the stats hash cache.
@@ -300,6 +305,45 @@ function hedley_stats_get_villages_with_residents($health_center_id) {
   }
 
   return $result;
+}
+
+function hedley_stats_get_acute_illness_data($health_center_id) {
+  // Return the cache if exists.
+  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_ACUTE_ILLNESS_DATA, $health_center_id)) {
+    return $cache_data;
+  }
+
+  $query = hedley_stats_get_base_query($health_center_id, 'acute_illness_encounter', HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS);
+
+  hedley_stats_join_field_to_query($query, 'node', 'field_individual_participant');
+  $query->groupBy('field_individual_participant.field_individual_participant_target_id');
+
+  $result = $query
+    ->execute()
+    ->fetchAllAssoc('field_individual_participant');
+
+  $individual_participants = array_keys($result);
+
+  if (empty($individual_participants)) {
+    return [];
+  }
+
+  $query = hedley_stats_get_base_query($health_center_id, 'acute_illness_encounter');
+  $fields_to_join = [
+    'field_individual_participant',
+    'field_sequence_number',
+    'field_acute_illness_diagnosis',
+  ];
+  foreach ($fields_to_join as $field) {
+    hedley_stats_join_field_to_query($query, 'node', $field, FALSE);
+  }
+  $query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
+
+  $result = $query
+    ->execute()
+    ->fetchAllAssoc('nid');
+
+  dpm($result);
 }
 
 /**
@@ -1204,14 +1248,14 @@ function hedley_stats_get_nutrition_measurements_for_individual_encounters_group
 }
 
 /**
- * Base query for stats - pulls measurements in given period for Health Center.
+ * Base query for stats - pulls content in given period for Health Center.
  *
  * @param int $health_center_id
  *   The Health center node ID.
  * @param string|array $node_type
- *   Either single measurement type or an array of types.
+ *   Either single content type or an array of types.
  * @param string $period
- *   The period during which measurement was taken.
+ *   Optional; The period during which content was taken.
  * @param bool $extend
  *   Optional; If True, data goes back one more month for 'one year' period.
  *
@@ -1220,7 +1264,7 @@ function hedley_stats_get_nutrition_measurements_for_individual_encounters_group
  *
  * @throws \Exception
  */
-function hedley_stats_get_base_query($health_center_id, $node_type, $period, $extend = FALSE) {
+function hedley_stats_get_base_query($health_center_id, $node_type, $period = FALSE, $extend = FALSE) {
   $query = db_select('node', 'node');
   $query->fields('node', ['nid', 'type', 'created']);
 
@@ -1259,11 +1303,13 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period, $ex
 
   $query->condition($health_center_field_name, $health_center_id);
 
-  $date = hedley_stats_get_period($period, $extend);
-  $query->condition($date_field_name, [
-    $date['start'],
-    $date['end'],
-  ], 'BETWEEN');
+  if ($period) {
+    $date = hedley_stats_get_period($period, $extend);
+    $query->condition($date_field_name, [
+      $date['start'],
+      $date['end'],
+    ], 'BETWEEN');
+  }
 
   $node_type_operator = is_array($node_type) ? 'IN' : '=';
   $query
@@ -1360,6 +1406,13 @@ function hedley_stats_get_range_for_period($period, $extend = FALSE) {
         'start' => strtotime("-480 days"),
         'end' => $now + $one_day,
       ];
+
+    case HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS:
+      return [
+        'start' => strtotime("first day of -5 months"),
+        'end' => $now + $one_day,
+      ];
+
   }
 }
 
