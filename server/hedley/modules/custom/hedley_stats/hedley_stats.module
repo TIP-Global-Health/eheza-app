@@ -323,7 +323,6 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     ->fetchAllAssoc('field_individual_participant');
 
   $individual_participants = array_keys($result);
-
   if (empty($individual_participants)) {
     return [];
   }
@@ -338,6 +337,36 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     hedley_general_join_field_to_query($query, 'node', $field, FALSE);
   }
   $query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
+
+  // Join with AI Encounter table, through which we can join measurements data.
+  $query->leftJoin('field_data_field_acute_illness_encounter', 'ai_encounter', 'ai_encounter.field_acute_illness_encounter_target_id = node.nid');
+
+  // Pull data of health center referrals.
+  $query->leftJoin('field_data_field_send_to_hc', 'send_to_hc', 'send_to_hc.entity_id = ai_encounter.entity_id');
+  $query->addField('send_to_hc', 'field_send_to_hc_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT send_to_hc.field_send_to_hc_value)", 'send_to_hc');
+
+  // Pull data of recorded fever at symptoms.
+  $query->leftJoin('field_data_field_fever_period', 'fever_period', 'fever_period.entity_id = ai_encounter.entity_id');
+  $query->addField('fever_period', 'field_fever_period_value');
+  $query->addExpression("GROUP_CONCAT(fever_period.field_fever_period_value)", 'fever_period');
+
+  // Pull data of recorded fever at vitals.
+  $query->leftJoin('field_data_field_body_temperature', 'body_temperature', 'body_temperature.entity_id = ai_encounter.entity_id');
+  $query->addField('body_temperature', 'field_body_temperature_value');
+  $query->addExpression("body_temperature.field_body_temperature_value", 'body_temperature');
+
+  // Pull data of 114 calls - COVID suspect.
+  $query->leftJoin('field_data_field_114_contact', '114_contact', '114_contact.entity_id = ai_encounter.entity_id');
+  $query->addField('114_contact', 'field_114_contact_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT 114_contact.field_114_contact_value)", '114_contact');
+
+  // Pull data of isolations - COVID suspect.
+  $query->leftJoin('field_data_field_isolation', 'isolation', 'isolation.entity_id = ai_encounter.entity_id');
+  $query->addField('isolation', 'field_isolation_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT isolation.field_isolation_value)", 'isolation');
+
+  $query->groupBy('node.nid');
 
   $result = $query
     ->execute()
