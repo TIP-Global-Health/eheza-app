@@ -6,6 +6,31 @@
     text-align: center;
   }
 
+  .current-month {
+    margin-bottom: 35px;
+    .icon-back {
+      margin-left: 257px;
+      margin-bottom: -30px;
+    }
+    .header {
+      font-weight: 100;
+      text-transform: capitalize;
+    }
+
+    .icon-back.forward {
+        margin-top: -30px;
+        margin-left: 470px;
+        transform: rotate(180deg);
+
+    }
+  }
+
+  .case-management-label {
+    color: $color-white;
+    margin-top: 50px;
+    margin-bottom: 10px;
+  }
+
   .ui.segment {
     padding: 1.5rem 2rem;
 
@@ -58,10 +83,10 @@
     &.chw-filters {
       background-color: transparent;
       min-height: 40px;
-      padding: 25px;
+      padding: 25px 0;
+      margin-bottom: 25px;
       display: flex;
-      justify-content: center;
-      align-items: center;
+      border-bottom: solid 1px $color-white;
 
       button {
         background-color: $color-white;

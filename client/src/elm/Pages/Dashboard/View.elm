@@ -51,6 +51,7 @@ import Scale exposing (BandConfig, BandScale, ContinuousScale)
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
+import Time exposing (millisToPosix)
 import Translate exposing (Language, TranslationId, translate, translateText)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
@@ -163,8 +164,48 @@ viewMainPage language currentDate isChw nurse stats db model =
     in
     if isChw then
         div [ class "dashboard main" ]
-            [ div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
-            , viewFilterPaneChw language model
+            [ viewFilterPaneChw language model
+            , div [ class "current-month" ]
+                [ a []
+                    [ span [ class "icon-back" ] [] ]
+                , h1 [ class "ui header" ]
+                    [ text "May 2021" ]
+                , a []
+                    [ span [ class "icon-back forward" ] [] ]
+                ]
+            , div [ class "ui grid" ]
+                [ div [ class "five wide column" ]
+                    [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear ]
+                , div [ class "six wide column" ]
+                    [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                        |> viewTotalEncounters language
+                    ]
+                , div [ class "five wide column" ]
+                    [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                        |> viewTotalEncounters language
+                    ]
+                ]
+            , div [ class "center aligned ui grid" ]
+                [ div [ class "five wide column" ]
+                    [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear ]
+                , div [ class "five wide column" ]
+                    [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                        |> viewTotalEncounters language
+                    ]
+                ]
+            , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
+            , div [ class "ui grid" ]
+                [ div [ class "five wide column" ]
+                    [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear ]
+                , div [ class "six wide column" ]
+                    [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                        |> viewTotalEncounters language
+                    ]
+                , div [ class "five wide column" ]
+                    [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                        |> viewTotalEncounters language
+                    ]
+                ]
             ]
 
     else
