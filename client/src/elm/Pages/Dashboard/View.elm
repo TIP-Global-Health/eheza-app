@@ -161,6 +161,9 @@ viewMainPage language currentDate isChw nurse stats db model =
 
                 _ ->
                     emptyNode
+
+        lastUpdated =
+            div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
     in
     if isChw then
         div [ class "dashboard main" ]
@@ -206,12 +209,12 @@ viewMainPage language currentDate isChw nurse stats db model =
                         |> viewTotalEncounters language
                     ]
                 ]
-            , div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
+            , lastUpdated
             ]
 
     else
         div [ class "dashboard main" ]
-            [ div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
+            [ lastUpdated
             , viewFiltersPane language MainPage filterPeriodsForMainPage db model
             , div [ class "ui grid" ]
                 [ div [ class "eight wide column" ]
