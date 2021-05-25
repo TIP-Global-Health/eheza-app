@@ -10,6 +10,7 @@ import Form.Init exposing (setGroup, setString)
 import Form.Validate as Validate exposing (Validation, field)
 import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays)
 import Html exposing (Html)
+import Maybe.Extra
 import Translate exposing (Language, translate)
 
 
@@ -126,14 +127,14 @@ renderAgeMonthsDaysParts language birthDate now =
 renderAgeMonthsDaysAbbrev : Language -> NominalDate -> NominalDate -> String
 renderAgeMonthsDaysAbbrev language birthDate now =
     renderAgeMonthsDaysParts language birthDate now
-        |> List.filterMap identity
+        |> Maybe.Extra.values
         |> String.join " "
 
 
 renderAgeMonthsDaysHtml : Language -> NominalDate -> NominalDate -> List (Html any)
 renderAgeMonthsDaysHtml language birthDate now =
     renderAgeMonthsDaysParts language birthDate now
-        |> List.filterMap identity
+        |> Maybe.Extra.values
         |> List.map Html.text
         |> List.intersperse (Html.br [] [])
 

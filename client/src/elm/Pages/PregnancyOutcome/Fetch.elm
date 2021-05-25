@@ -3,6 +3,7 @@ module Pages.PregnancyOutcome.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
 
 
@@ -32,7 +33,7 @@ fetch participantId db =
             encountersIds
                 |> List.map FetchPrenatalMeasurements
     in
-    List.filterMap identity
+    Maybe.Extra.values
         [ Maybe.map FetchPerson personId
         , Maybe.map FetchPrenatalEncounter lastEncounterId
         ]

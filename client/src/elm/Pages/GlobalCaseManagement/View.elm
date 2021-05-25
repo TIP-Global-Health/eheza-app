@@ -237,7 +237,7 @@ viewNutritionFollowUpEntries : Language -> NominalDate -> Dict PersonId Nutritio
 viewNutritionFollowUpEntries language currentDate itemsDict db =
     Dict.map (viewNutritionFollowUpItem language currentDate db) itemsDict
         |> Dict.values
-        |> List.filterMap identity
+        |> Maybe.Extra.values
 
 
 viewItemHeading : Language -> IndividualEncounterType -> Html Msg
@@ -363,7 +363,7 @@ viewAcuteIllnessFollowUpEntries :
 viewAcuteIllnessFollowUpEntries language currentDate itemsDict db =
     Dict.map (viewAcuteIllnessFollowUpItem language currentDate db) itemsDict
         |> Dict.values
-        |> List.filterMap identity
+        |> Maybe.Extra.values
 
 
 viewAcuteIllnessFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> ( IndividualEncounterParticipantId, PersonId ) -> AcuteIllnessFollowUpItem -> Maybe (Html Msg)
@@ -484,7 +484,7 @@ viewPrenatalFollowUpEntries :
 viewPrenatalFollowUpEntries language currentDate itemsDict db =
     Dict.map (viewPrenatalFollowUpItem language currentDate db) itemsDict
         |> Dict.values
-        |> List.filterMap identity
+        |> Maybe.Extra.values
 
 
 viewPrenatalFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> ( IndividualEncounterParticipantId, PersonId ) -> PrenatalFollowUpItem -> Maybe (Html Msg)

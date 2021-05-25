@@ -56,6 +56,7 @@ import Backend.Person.Model exposing (Gender(..))
 import Float.Extra
 import Gizra.Html exposing (emptyNode)
 import Html exposing (Html)
+import Maybe.Extra
 import RemoteData
 import Round
 import String exposing (fromInt)
@@ -654,7 +655,7 @@ plotReferenceData config zscoreList =
     , Just <| makeLine (getPoints 2) "two-line-new"
     , Just <| makeLine (getPoints 3) "three-line-new"
     ]
-        |> List.filterMap identity
+        |> Maybe.Extra.values
         |> g []
 
 
