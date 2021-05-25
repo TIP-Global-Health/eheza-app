@@ -316,7 +316,7 @@ function hedley_activity_get_person_measurements_by_period($person_id, array $me
   $query->fields('node', ['nid', 'created', 'type']);
 
   $person_field = 'field_person';
-  hedley_stats_join_field_to_query($query, 'node', $person_field);
+  hedley_general_join_field_to_query($query, 'node', $person_field);
   $person_field_name = $person_field . '.' . $person_field . '_target_id';
   $query->condition($person_field_name, $person_id);
 
@@ -324,9 +324,9 @@ function hedley_activity_get_person_measurements_by_period($person_id, array $me
     ->condition('type', $measurement_bundles, 'IN')
     ->condition('status', NODE_PUBLISHED);
 
-  hedley_stats_join_field_to_query($query, 'node', 'field_session');
+  hedley_general_join_field_to_query($query, 'node', 'field_session');
   $date_field = 'field_scheduled_date';
-  hedley_stats_join_field_to_query($query, 'node', $date_field, TRUE, "field_session.field_session_target_id");
+  hedley_general_join_field_to_query($query, 'node', $date_field, TRUE, "field_session.field_session_target_id");
   $date_field_name = $date_field . '.' . $date_field . '_value';
 
   $query->condition($date_field_name, [$period['start'], $period['end']], 'BETWEEN');

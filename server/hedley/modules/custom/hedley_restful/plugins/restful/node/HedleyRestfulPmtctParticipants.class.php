@@ -72,15 +72,15 @@ class HedleyRestfulPmtctParticipants extends HedleyRestfulSyncBase {
     ];
 
     foreach ($field_names as $field_name) {
-      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
+      hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
     }
 
-    hedley_restful_join_field_to_query($query, 'node', 'field_expected', FALSE, NULL, NULL, TRUE);
+    hedley_general_join_field_to_query($query, 'node', 'field_expected', FALSE, NULL, NULL, TRUE);
 
     // Get the UUIDs of the Person, Adult and Clinic.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_person.field_person_target_id", 'uuid_person');
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_adult.field_adult_target_id", 'uuid_adult');
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_clinic.field_clinic_target_id", 'uuid_clinic');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_person.field_person_target_id", 'uuid_person');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_adult.field_adult_target_id", 'uuid_adult');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_clinic.field_clinic_target_id", 'uuid_clinic');
   }
 
   /**

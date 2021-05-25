@@ -243,10 +243,10 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $query = db_select('node', 'node');
 
     // Filter by Shards.
-    hedley_restful_join_field_to_query($query, 'node', 'field_shards', FALSE);
+    hedley_general_join_field_to_query($query, 'node', 'field_shards', FALSE);
 
     // And the table which will give us the UUID of the shard.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_shards.field_shards_target_id", 'field_uuid_shards');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_shards.field_shards_target_id", 'field_uuid_shards');
 
     $query
       ->fields('node', ['type', 'nid', 'vid', 'created', 'changed'])

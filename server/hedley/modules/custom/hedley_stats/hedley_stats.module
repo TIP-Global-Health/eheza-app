@@ -315,7 +315,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
 
   $query = hedley_stats_get_base_query($health_center_id, 'acute_illness_encounter', HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS);
 
-  hedley_stats_join_field_to_query($query, 'node', 'field_individual_participant');
+  hedley_general_join_field_to_query($query, 'node', 'field_individual_participant');
   $query->groupBy('field_individual_participant.field_individual_participant_target_id');
 
   $result = $query
@@ -335,7 +335,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     'field_acute_illness_diagnosis',
   ];
   foreach ($fields_to_join as $field) {
-    hedley_stats_join_field_to_query($query, 'node', $field, FALSE);
+    hedley_general_join_field_to_query($query, 'node', $field, FALSE);
   }
   $query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
 
@@ -379,7 +379,7 @@ function hedley_stats_get_prenatal_data($health_center_id) {
     'field_outcome_location',
   ];
   foreach ($fields_to_join as $field) {
-    hedley_stats_join_field_to_query($query, 'node', $field, FALSE);
+    hedley_general_join_field_to_query($query, 'node', $field, FALSE);
   }
 
   // Get only participants of Antenatal type.
@@ -443,12 +443,12 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
   ];
 
   foreach ($field_names as $field_name) {
-    hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
+    hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
   }
 
   $query->condition('field_clinic.field_clinic_target_id', $fbf_clinics);
 
-  hedley_restful_join_field_to_query($query, 'node', 'field_expected', FALSE, NULL, NULL, TRUE);
+  hedley_general_join_field_to_query($query, 'node', 'field_expected', FALSE, NULL, NULL, TRUE);
 
   $date = hedley_stats_get_period($period);
   // We want to get all participants that graduate within, or after
@@ -516,12 +516,12 @@ function hedley_stats_get_family_planning_stats_by_period($health_center_id, $pe
   $query = hedley_stats_get_base_query($health_center_id, 'family_planning', $period);
 
   // Join `Signs` field (e.g. Pill, Condoms, etc').
-  hedley_stats_join_field_to_query($query, 'node', 'field_family_planning_signs');
+  hedley_general_join_field_to_query($query, 'node', 'field_family_planning_signs');
 
   // Get the group type.
-  hedley_stats_join_field_to_query($query, 'node', 'field_session');
-  hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
-  hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
+  hedley_general_join_field_to_query($query, 'node', 'field_session');
+  hedley_general_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
+  hedley_general_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
   // Only FBF groups.
   $query->condition('field_group_type.field_group_type_value', 'fbf');
 
@@ -787,10 +787,10 @@ function hedley_stats_get_total_encounters_by_clinic_type($health_center_id, $cl
 
   foreach ($queries as $key => $query) {
     // Get the group type.
-    hedley_stats_join_field_to_query($query, 'node', 'field_session');
-    hedley_stats_join_field_to_query($query, 'node', 'field_attended');
-    hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, 'field_session.field_session_target_id');
-    hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, 'field_clinic.field_clinic_target_id');
+    hedley_general_join_field_to_query($query, 'node', 'field_session');
+    hedley_general_join_field_to_query($query, 'node', 'field_attended');
+    hedley_general_join_field_to_query($query, 'node', 'field_clinic', TRUE, 'field_session.field_session_target_id');
+    hedley_general_join_field_to_query($query, 'node', 'field_group_type', TRUE, 'field_clinic.field_clinic_target_id');
 
     // Only participants who actually attended the sessions.
     $query->condition('field_attended.field_attended_value', TRUE);
@@ -800,7 +800,7 @@ function hedley_stats_get_total_encounters_by_clinic_type($health_center_id, $cl
 
     // If patients list specified values.
     if (is_array($patients_ids)) {
-      hedley_stats_join_field_to_query($query, 'node', 'field_person');
+      hedley_general_join_field_to_query($query, 'node', 'field_person');
       $query->condition('field_person.field_person_target_id', $patients_ids, 'IN');
     }
 
@@ -845,8 +845,8 @@ function hedley_stats_get_total_nutrition_encounters($health_center_id, $patient
   foreach ($queries as $key => $query) {
     // If patients list specified values.
     if (is_array($patients_ids)) {
-      hedley_stats_join_field_to_query($query, 'node', 'field_individual_participant');
-      hedley_stats_join_field_to_query($query, 'node', 'field_person', TRUE, 'field_individual_participant.field_individual_participant_target_id');
+      hedley_general_join_field_to_query($query, 'node', 'field_individual_participant');
+      hedley_general_join_field_to_query($query, 'node', 'field_person', TRUE, 'field_individual_participant.field_individual_participant_target_id');
 
       $query->condition('field_person.field_person_target_id', $patients_ids, 'IN');
     }
@@ -1156,21 +1156,21 @@ function hedley_stats_get_nutrition_measurements_for_clinic_type_grouped_by_pers
   $query = hedley_stats_get_base_query($health_center_id, array_keys($node_types), $period, $extend);
 
   // Get the group type.
-  hedley_stats_join_field_to_query($query, 'node', 'field_session');
-  hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, 'field_session.field_session_target_id');
-  hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, 'field_clinic.field_clinic_target_id');
+  hedley_general_join_field_to_query($query, 'node', 'field_session');
+  hedley_general_join_field_to_query($query, 'node', 'field_clinic', TRUE, 'field_session.field_session_target_id');
+  hedley_general_join_field_to_query($query, 'node', 'field_group_type', TRUE, 'field_clinic.field_clinic_target_id');
 
   // Get the person.
-  hedley_stats_join_field_to_query($query, 'node', 'field_person');
+  hedley_general_join_field_to_query($query, 'node', 'field_person');
 
   // Get the nutrition signs for this person.
-  hedley_stats_join_field_to_query($query, 'node', 'field_nutrition_signs', FALSE);
+  hedley_general_join_field_to_query($query, 'node', 'field_nutrition_signs', FALSE);
 
   // Get all other measurements for this person.
-  hedley_stats_join_field_to_query($query, 'node', 'field_zscore_age', FALSE);
-  hedley_stats_join_field_to_query($query, 'node', 'field_muac', FALSE);
-  hedley_stats_join_field_to_query($query, 'node', 'field_zscore_length', FALSE);
-  hedley_stats_join_field_to_query($query, 'node', 'field_zscore_bmi', FALSE);
+  hedley_general_join_field_to_query($query, 'node', 'field_zscore_age', FALSE);
+  hedley_general_join_field_to_query($query, 'node', 'field_muac', FALSE);
+  hedley_general_join_field_to_query($query, 'node', 'field_zscore_length', FALSE);
+  hedley_general_join_field_to_query($query, 'node', 'field_zscore_bmi', FALSE);
 
   // Filter by clinic type.
   $query->condition('field_group_type.field_group_type_value', $clinic_type);
@@ -1218,16 +1218,16 @@ function hedley_stats_get_nutrition_measurements_for_individual_encounters_group
   $query = hedley_stats_get_base_query($health_center_id, array_keys($node_types), $period, $extend);
 
   // Get the person.
-  hedley_stats_join_field_to_query($query, 'node', 'field_person');
+  hedley_general_join_field_to_query($query, 'node', 'field_person');
 
   // Get the nutrition signs for this person.
-  hedley_stats_join_field_to_query($query, 'node', 'field_nutrition_signs', FALSE);
+  hedley_general_join_field_to_query($query, 'node', 'field_nutrition_signs', FALSE);
 
   // Get all other measurements for this person.
-  hedley_stats_join_field_to_query($query, 'node', 'field_zscore_age', FALSE);
-  hedley_stats_join_field_to_query($query, 'node', 'field_muac', FALSE);
-  hedley_stats_join_field_to_query($query, 'node', 'field_zscore_length', FALSE);
-  hedley_stats_join_field_to_query($query, 'node', 'field_zscore_bmi', FALSE);
+  hedley_general_join_field_to_query($query, 'node', 'field_zscore_age', FALSE);
+  hedley_general_join_field_to_query($query, 'node', 'field_muac', FALSE);
+  hedley_general_join_field_to_query($query, 'node', 'field_zscore_length', FALSE);
+  hedley_general_join_field_to_query($query, 'node', 'field_zscore_bmi', FALSE);
 
   $result = $query
     ->execute()
@@ -1292,13 +1292,13 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period = FA
     }
   }
 
-  hedley_stats_join_field_to_query($query, 'node', $date_field);
+  hedley_general_join_field_to_query($query, 'node', $date_field);
   $date_field_name = $date_field . '.' . $date_field . '_value';
 
   // All nodes have the Health center info under `field_shards`.
   $health_center_field = 'field_shards';
   // Filter by health center.
-  hedley_stats_join_field_to_query($query, 'node', $health_center_field);
+  hedley_general_join_field_to_query($query, 'node', $health_center_field);
   $health_center_field_name = $health_center_field . '.' . $health_center_field . '_target_id';
 
   $query->condition($health_center_field_name, $health_center_id);
@@ -1414,61 +1414,6 @@ function hedley_stats_get_range_for_period($period, $extend = FALSE) {
       ];
 
   }
-}
-
-/**
- * Join a field to a DB Select query, and add its main value.
- *
- * @param SelectQuery $query
- *   Query to join to.
- * @param string $entity_type
- *   Type of the host entity of the field. Or NULL to avoid filtering the field
- *   table by entity type.
- * @param string $field_name
- *   Field name.
- * @param bool $require
- *   Whether filter out rows where this field would be NULL.
- * @param string $entity_id_selector
- *   SQL selector for the column by which the field is joined. The entity ID is
- *   used by default.
- *
- * @throws Exception
- */
-function hedley_stats_join_field_to_query(SelectQuery $query, $entity_type, $field_name, $require = TRUE, $entity_id_selector = NULL) {
-  $field = field_info_field($field_name);
-  $table_name = _field_sql_storage_tablename($field);
-
-  if (!$entity_id_selector) {
-    if (!$entity_type) {
-      throw new Exception('Entity type is required when ID selector is not specified');
-    }
-    // Set default entity ID selector.
-    switch ($entity_type) {
-      case 'user':
-        $entity_id_selector = 'users.uid';
-        break;
-
-      case 'node':
-        $entity_id_selector = 'node.nid';
-        break;
-
-      default:
-        throw new Exception(format_string('hedley_general_join_field_to_query() is not implemented for entity_type: "@type"', ['@type' => $entity_type]));
-    }
-  }
-
-  $join = $require ? 'innerJoin' : 'leftJoin';
-  $arguments = [':type' => $entity_type];
-  $conditions[] = "$entity_id_selector = $field_name.entity_id";
-  if ($entity_type) {
-    $conditions[] = "$field_name.entity_type = :type";
-  }
-
-  $query->$join($table_name, $field_name, implode(' AND ', $conditions), $arguments);
-
-  $column_suffix = $field['type'] == 'entityreference' ? 'target_id' : 'value';
-
-  $query->addField($field_name, $field_name . '_' . $column_suffix, $field_name);
 }
 
 /**
