@@ -214,8 +214,7 @@ viewMainPage language currentDate isChw nurse stats db model =
 
     else
         div [ class "dashboard main" ]
-            [ lastUpdated
-            , viewFiltersPane language MainPage filterPeriodsForMainPage db model
+            [ viewFiltersPane language MainPage filterPeriodsForMainPage db model
             , div [ class "ui grid" ]
                 [ div [ class "eight wide column" ]
                     [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
@@ -233,6 +232,7 @@ viewMainPage language currentDate isChw nurse stats db model =
                 , links
                 ]
             , viewCustomModal language isChw nurse stats db model
+            , lastUpdated
             ]
 
 
