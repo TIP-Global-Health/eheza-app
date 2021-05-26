@@ -3,7 +3,7 @@ module Pages.Dashboard.Update exposing (update)
 import App.Model
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (filterProgramTypeFromString)
-import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
+import Pages.Page exposing (ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
 import Restful.Endpoint exposing (toEntityUuid)
 
 
@@ -18,7 +18,7 @@ update msg subPage model =
 
         NavigateToStuntingTable filter ->
             { model | currentCaseManagementSubFilter = filter }
-                |> update (SetActivePage (UserPage (DashboardPage CaseManagementPage))) subPage
+                |> update (SetActivePage (UserPage (DashboardPage (NursePage CaseManagementPage)))) subPage
 
         SetFilterGender gender ->
             ( { model | beneficiariesGender = gender }
@@ -97,13 +97,13 @@ update msg subPage model =
             let
                 newPeriod =
                     case page of
-                        UserPage (DashboardPage MainPage) ->
+                        UserPage (DashboardPage (NursePage MainPage)) ->
                             OneYear
 
-                        UserPage (DashboardPage StatsPage) ->
+                        UserPage (DashboardPage (NursePage StatsPage)) ->
                             ThisMonth
 
-                        UserPage (DashboardPage CaseManagementPage) ->
+                        UserPage (DashboardPage (NursePage CaseManagementPage)) ->
                             ThreeMonthsAgo
 
                         _ ->

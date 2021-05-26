@@ -10,7 +10,7 @@ import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Pages.Page exposing (DashboardPage(..), Page(..))
+import Pages.Page exposing (DashboardPage(..), NurseDashboardPage(..), Page(..))
 
 
 type FilterPeriod
@@ -154,7 +154,7 @@ emptyModel maybeSelectedVillage =
     , currentBeneficiariesIncidenceChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
     , currentCaseManagementSubFilter = FilterTotal
-    , latestPage = MainPage
+    , latestPage = NursePage MainPage
     , modalState = Nothing
     }
 
