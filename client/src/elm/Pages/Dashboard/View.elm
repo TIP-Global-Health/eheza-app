@@ -153,15 +153,15 @@ view language page currentDate healthCenterId isChw nurse model db =
 
                 else
                     div
-                                            [ class "ui basic head segment" ]
-                                            [ h1 [ class "ui header" ]
-                                                [ translateText language Translate.ChwDashboardLabel ]
-                                            , a
-                                                [ class "link-back"
-                                                , onClick <| SetActivePage goBackPage
-                                                ]
-                                                [ span [ class "icon-back" ] [] ]
-                                            ]
+                        [ class "ui basic head segment" ]
+                        [ h1 [ class "ui header" ]
+                            [ translateText language Translate.ChwDashboardLabel ]
+                        , a
+                            [ class "link-back"
+                            , onClick <| SetActivePage goBackPage
+                            ]
+                            [ span [ class "icon-back" ] [] ]
+                        ]
 
             else
                 div
