@@ -10,7 +10,7 @@ import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Pages.Page exposing (DashboardPage(..), NurseDashboardPage(..), Page(..))
+import Pages.Page exposing (DashboardPage(..), NurseDashboardPage(..), ChwDashboardPage(..), Page(..))
 
 
 type FilterPeriod

@@ -89,30 +89,79 @@ view language page currentDate healthCenterId isChw nurse model db =
 
                                     AcuteIllnessPage ->
                                         --@todo
-                                        ( viewMainPage language currentDate isChw nurse stats db model, PinCodePage )
+                                        ( viewAcuteIllnessPage language, UserPage <| DashboardPage (ChwPage ChwMainPage) )
 
                                     NutritionPage ->
                                         --@todo
-                                        ( viewMainPage language currentDate isChw nurse stats db model, PinCodePage )
+                                        ( viewStatsPage language currentDate isChw nurse stats healthCenterId db model, UserPage <| DashboardPage (ChwPage ChwMainPage) )
 
                                     AntenatalPage ->
                                         --@todo
-                                        ( viewMainPage language currentDate isChw nurse stats db model, PinCodePage )
+                                        ( viewStatsPage language currentDate isChw nurse stats healthCenterId db model, UserPage <| DashboardPage (ChwPage ChwMainPage) )
                     )
                 |> Maybe.withDefault ( spinner, PinCodePage )
 
         header =
             if isChw then
-                div
-                    [ class "ui basic head segment" ]
-                    [ h1 [ class "ui header" ]
-                        [ translateText language Translate.ChwDashboardLabel ]
-                    , a
-                        [ class "link-back"
-                        , onClick <| SetActivePage goBackPage
+                if page == ChwPage ChwMainPage then
+                    div
+                        [ class "ui basic head segment" ]
+                        [ h1 [ class "ui header" ]
+                            [ translateText language Translate.ChwDashboardLabel ]
+                        , a
+                            [ class "link-back"
+                            , onClick <| SetActivePage goBackPage
+                            ]
+                            [ span [ class "icon-back" ] [] ]
                         ]
-                        [ span [ class "icon-back" ] [] ]
-                    ]
+
+                else if page == ChwPage AcuteIllnessPage then
+                    div
+                        [ class "ui basic head segment" ]
+                        [ h1 [ class "ui header" ]
+                            [ text <| translate language <| Translate.EncounterTypeFileterLabel AcuteIllnessEncounter ]
+                        , a
+                            [ class "link-back"
+                            , onClick <| SetActivePage goBackPage
+                            ]
+                            [ span [ class "icon-back" ] [] ]
+                        ]
+
+                else if page == ChwPage NutritionPage then
+                    div
+                        [ class "ui basic head segment" ]
+                        [ h1 [ class "ui header" ]
+                            [ text <| translate language <| Translate.EncounterTypeFileterLabel NutritionEncounter ]
+                        , a
+                            [ class "link-back"
+                            , onClick <| SetActivePage goBackPage
+                            ]
+                            [ span [ class "icon-back" ] [] ]
+                        ]
+
+                else if page == ChwPage AntenatalPage then
+                    div
+                        [ class "ui basic head segment" ]
+                        [ h1 [ class "ui header" ]
+                            [ text <| translate language <| Translate.EncounterTypeFileterLabel AntenatalEncounter ]
+                        , a
+                            [ class "link-back"
+                            , onClick <| SetActivePage goBackPage
+                            ]
+                            [ span [ class "icon-back" ] [] ]
+                        ]
+
+                else
+                    div
+                                            [ class "ui basic head segment" ]
+                                            [ h1 [ class "ui header" ]
+                                                [ translateText language Translate.ChwDashboardLabel ]
+                                            , a
+                                                [ class "link-back"
+                                                , onClick <| SetActivePage goBackPage
+                                                ]
+                                                [ span [ class "icon-back" ] [] ]
+                                            ]
 
             else
                 div
@@ -972,7 +1021,7 @@ viewFilterPaneChw language model =
             let
                 label =
                     Maybe.map Translate.EncounterTypeFileterLabel maybeFilter
-                        |> Maybe.withDefault Translate.All
+                        |> Maybe.withDefault Translate.ChwDashboardLabel
             in
             button
                 [ classList
