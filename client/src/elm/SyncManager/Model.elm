@@ -24,7 +24,7 @@ import Editable exposing (Editable)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Json.Decode exposing (Value)
 import List.Zipper exposing (Zipper)
-import RemoteData exposing (RemoteData, WebData)
+import RemoteData exposing (RemoteData(..), WebData)
 import Time
 
 
@@ -225,6 +225,11 @@ type alias Model =
     , syncInfoGeneral : SyncInfoGeneral
     , syncInfoAuthorities : SyncInfoAuthorityZipper
 
+    -- dcs
+    , downloadAuthorityResponse : WebData (DownloadSyncResponse BackendAuthorityEntity)
+    , downloadGeneralResponse : WebData (DownloadSyncResponse BackendGeneralEntity)
+    , downloadRequestTime : Time.Posix
+
     -- Determine how we're going to download photos.
     , downloadPhotosMode : DownloadPhotosMode
 
@@ -251,6 +256,9 @@ emptyModel flags =
     , downloadPhotosStatus = DownloadPhotosIdle
     , syncInfoGeneral = flags.syncInfoGeneral
     , syncInfoAuthorities = flags.syncInfoAuthorities
+    , downloadAuthorityResponse = NotAsked
+    , downloadGeneralResponse = NotAsked
+    , downloadRequestTime = Time.millisToPosix 0
     , downloadPhotosMode = DownloadPhotosAll emptyDownloadPhotosAllRec
     , downloadPhotosBatchSize = flags.batchSize
     , syncCycle = SyncCycleOn
@@ -522,6 +530,7 @@ type Msg
     | BackendPhotoUploadAuthority
     | BackendUploadAuthority (Maybe IndexDbQueryUploadAuthorityResultRecord)
     | BackendUploadAuthorityHandle IndexDbQueryUploadAuthorityResultRecord (WebData ())
+    | BackendAuthoritySyncDataSavedHandle
     | BackendUploadGeneral (Maybe IndexDbQueryUploadGeneralResultRecord)
     | BackendUploadGeneralHandle IndexDbQueryUploadGeneralResultRecord (WebData ())
     | BackendUploadPhotoAuthorityHandle (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))

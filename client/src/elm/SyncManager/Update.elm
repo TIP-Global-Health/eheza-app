@@ -95,8 +95,11 @@ update currentDate currentTime activePage dbVersion device msg model =
         BackendAuthorityFetch ->
             case model.syncStatus of
                 SyncDownloadAuthority webData ->
-                    if RemoteData.isLoading webData then
-                        -- We are already loading.
+                    if
+                        RemoteData.isLoading webData
+                            && (Time.posixToMillis currentTime - Time.posixToMillis model.downloadRequestTime < 35000)
+                    then
+                        -- We are already loading, and request did not timed out.
                         noChange
 
                     else
@@ -108,7 +111,8 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 -- We also, schdule photos download send devicestate report,
                                 -- so that version and synced authorities get updated on backend.
                                 determineSyncStatus
-                                    |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) [ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
+                                    |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device)
+                                        [ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
                             Just zipper ->
                                 let
@@ -143,7 +147,11 @@ update currentDate currentTime activePage dbVersion device msg model =
                                             |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipperUpdated)
                                 in
                                 SubModelReturn
-                                    { model | syncStatus = SyncDownloadAuthority RemoteData.Loading, syncInfoAuthorities = syncInfoAuthorities }
+                                    { model
+                                        | syncStatus = SyncDownloadAuthority RemoteData.Loading
+                                        , syncInfoAuthorities = syncInfoAuthorities
+                                        , downloadRequestTime = currentTime
+                                    }
                                     (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
                                     noError
                                     []
@@ -156,7 +164,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                 currentZipper =
                     Zipper.current zipper
 
-                cmd =
+                ( saveSyncedDataCmd, modelUpdated ) =
                     case RemoteData.toMaybe webData of
                         Just data ->
                             let
@@ -167,16 +175,32 @@ update currentDate currentTime activePage dbVersion device msg model =
                                             []
                                         |> List.reverse
                             in
-                            sendSyncedDataToIndexDb { table = "Authority", data = dataToSend, shard = currentZipper.uuid }
+                            ( sendSyncedDataToIndexDb { table = "Authority", data = dataToSend, shard = currentZipper.uuid }
+                            , { model | downloadAuthorityResponse = webData }
+                            )
 
                         Nothing ->
-                            Cmd.none
+                            ( Cmd.none
+                            , SyncManager.Utils.determineSyncStatus activePage
+                                { model | syncStatus = SyncDownloadAuthority webData }
+                            )
+            in
+            SubModelReturn
+                modelUpdated
+                saveSyncedDataCmd
+                (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
+                []
 
-                deferredPhotosCmd =
-                    -- Prepare a list of the photos, so we could grab them in a later
-                    -- time.
-                    case RemoteData.toMaybe webData of
-                        Just data ->
+        BackendAuthoritySyncDataSavedHandle ->
+            Maybe.map2
+                (\zipper data ->
+                    let
+                        currentZipper =
+                            Zipper.current zipper
+
+                        deferredPhotosCmd =
+                            -- Prepare a list of the photos, so we
+                            -- could grab them  in a later time.
                             let
                                 dataToSend =
                                     data.entities
@@ -202,20 +226,10 @@ update currentDate currentTime activePage dbVersion device msg model =
                             else
                                 sendSyncedDataToIndexDb { table = "DeferredPhotos", data = dataToSend, shard = currentZipper.uuid }
 
-                        Nothing ->
-                            Cmd.none
-
-                appMsgs =
-                    case RemoteData.toMaybe webData of
-                        Just data ->
+                        appMsgs =
                             [ handleNewRevisionsMsg backendAuthorityEntityToRevision data.entities ]
 
-                        Nothing ->
-                            []
-
-                syncInfoAuthorities =
-                    case RemoteData.toMaybe webData of
-                        Just data ->
+                        syncInfoAuthorities =
                             let
                                 status =
                                     if data.revisionCount == 0 then
@@ -243,29 +257,30 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 )
                                 zipper
 
-                        Nothing ->
-                            zipper
+                        modelWithSyncStatus =
+                            SyncManager.Utils.determineSyncStatus activePage
+                                { model
+                                    | syncStatus = SyncDownloadAuthority model.downloadAuthorityResponse
+                                    , syncInfoAuthorities = Just syncInfoAuthorities
+                                }
+                    in
+                    SubModelReturn
+                        modelWithSyncStatus
+                        (Cmd.batch
+                            [ deferredPhotosCmd
 
-                modelWithSyncStatus =
-                    SyncManager.Utils.determineSyncStatus activePage
-                        { model
-                            | syncStatus = SyncDownloadAuthority webData
-                            , syncInfoAuthorities = Just syncInfoAuthorities
-                        }
-            in
-            SubModelReturn
-                modelWithSyncStatus
-                (Cmd.batch
-                    [ cmd
-                    , deferredPhotosCmd
-
-                    -- Send to JS the updated revision ID. We send the entire list.
-                    , sendSyncInfoAuthoritiesCmd syncInfoAuthorities
-                    ]
+                            -- Send to JS the updated revision ID. We send the entire list.
+                            , sendSyncInfoAuthoritiesCmd syncInfoAuthorities
+                            ]
+                        )
+                        (maybeHttpError model.downloadAuthorityResponse "Backend.SyncManager.Update" "BackendAuthoritySyncDataSavedHandle")
+                        appMsgs
                 )
-                (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
-                appMsgs
+                model.syncInfoAuthorities
+                (RemoteData.toMaybe model.downloadAuthorityResponse)
+                |> Maybe.withDefault noChange
 
+        -- |> Maybe.withDefault noChange
         BackendAuthorityDashboardStatsFetch ->
             case model.syncStatus of
                 SyncDownloadAuthorityDashboardStats webData ->
@@ -1829,3 +1844,6 @@ needed.
 
 -}
 port getFromIndexDb : (Value -> msg) -> Sub msg
+
+
+port reportSavedAtIndexedDb : (Value -> msg) -> Sub msg
