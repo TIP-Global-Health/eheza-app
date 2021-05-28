@@ -522,9 +522,20 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
   }
 
   table.bulkPut(entities)
-      .then(function(lastKey) {
-        sendIndexedDbSaveResult(info.table);
+      .then(function() {
+          return sendIndexedDbSaveResult(info.table);
       });
+
+  /**
+   * Report that save operation was successful.
+   */
+  function sendIndexedDbSaveResult(table) {
+    const dataForSend = {
+      'table': table,
+    }
+
+    elmApp.ports.savedAtIndexedDb.send(dataForSend);
+  }
 
 });
 
@@ -827,17 +838,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
     }
 
     elmApp.ports.getFromIndexDb.send(dataForSend);
-  }
-
-  /**
-   * Report that save operation was successful.
-   */
-  function sendIndexedDbSaveResult(table) {
-    const dataForSend = {
-      'table': table,
-    }
-
-    elmApp.ports.savedAtIndexedDb.send(dataForSend);
   }
 
 });

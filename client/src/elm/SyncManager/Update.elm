@@ -1645,6 +1645,12 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 BackendAuthoritySyncDataSavedHandle
                                 model
 
+                        IndexDbSaveResultTableAuthorityStats ->
+                            noChange
+
+                        IndexDbSaveResultTableDeferredPhotos ->
+                            noChange
+
                         IndexDbSaveResultTableGeneral ->
                             noChange
 

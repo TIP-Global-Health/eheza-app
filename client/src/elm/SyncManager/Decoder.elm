@@ -764,6 +764,12 @@ decodeIndexDbSaveResultTable =
                     "Authority" ->
                         succeed IndexDbSaveResultTableAutority
 
+                    "AuthorityStats" ->
+                        succeed IndexDbSaveResultTableAuthorityStats
+
+                    "DeferredPhotos" ->
+                        succeed IndexDbSaveResultTableDeferredPhotos
+
                     "General" ->
                         succeed IndexDbSaveResultTableGeneral
 

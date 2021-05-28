@@ -449,6 +449,8 @@ type alias IndexDbSaveResult =
 
 type IndexDbSaveResultTable
     = IndexDbSaveResultTableAutority
+    | IndexDbSaveResultTableAuthorityStats
+    | IndexDbSaveResultTableDeferredPhotos
     | IndexDbSaveResultTableGeneral
 
 
