@@ -225,9 +225,14 @@ type alias Model =
     , syncInfoGeneral : SyncInfoGeneral
     , syncInfoAuthorities : SyncInfoAuthorityZipper
 
-    -- dcs
+    -- We store download responses until we get an ACK
+    -- from IndexedDB for the save operation.
+    -- Only then we know that DB was updated and we can
+    -- update the Model as well.
     , downloadAuthorityResponse : WebData (DownloadSyncResponse BackendAuthorityEntity)
     , downloadGeneralResponse : WebData (DownloadSyncResponse BackendGeneralEntity)
+
+    -- Used to determione if download request has timed out.
     , downloadRequestTime : Time.Posix
 
     -- Determine how we're going to download photos.
