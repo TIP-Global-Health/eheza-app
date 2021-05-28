@@ -182,8 +182,7 @@ type NurseDashboardPage
 
 
 type ChwDashboardPage
-    = ChwMainPage
-    | AcuteIllnessPage
+    = AcuteIllnessPage
     | NutritionPage
     | AntenatalPage
 

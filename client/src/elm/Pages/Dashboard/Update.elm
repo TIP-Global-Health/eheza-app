@@ -87,8 +87,8 @@ update msg subPage model =
             , []
             )
 
-        SetEncounterTypeFilter encounterType ->
-            ( { model | encounterTypeFilter = encounterType }
+        SetChwDashboardPages page ->
+            ( { model | chwPage = page }
             , Cmd.none
             , []
             )

@@ -83,39 +83,23 @@ view language page currentDate healthCenterId isChw nurse model db =
 
                             ChwPage chwDashboardPage ->
                                 case chwDashboardPage of
-                                    ChwMainPage ->
-                                        --@todo
-                                        ( viewMainPage language currentDate isChw nurse stats db model, PinCodePage )
-
                                     AcuteIllnessPage ->
                                         --@todo
-                                        ( viewAcuteIllnessPage language, UserPage <| DashboardPage (ChwPage ChwMainPage) )
+                                        ( viewAcuteIllnessPage language, UserPage <| DashboardPage (NursePage MainPage) )
 
                                     NutritionPage ->
                                         --@todo
-                                        ( viewStatsPage language currentDate isChw nurse stats healthCenterId db model, UserPage <| DashboardPage (ChwPage ChwMainPage) )
+                                        ( viewStatsPage language currentDate isChw nurse stats healthCenterId db model, UserPage <| DashboardPage (NursePage MainPage) )
 
                                     AntenatalPage ->
                                         --@todo
-                                        ( viewStatsPage language currentDate isChw nurse stats healthCenterId db model, UserPage <| DashboardPage (ChwPage ChwMainPage) )
+                                        ( viewStatsPage language currentDate isChw nurse stats healthCenterId db model, UserPage <| DashboardPage (NursePage MainPage) )
                     )
                 |> Maybe.withDefault ( spinner, PinCodePage )
 
         header =
             if isChw then
-                if page == ChwPage ChwMainPage then
-                    div
-                        [ class "ui basic head segment" ]
-                        [ h1 [ class "ui header" ]
-                            [ translateText language Translate.ChwDashboardLabel ]
-                        , a
-                            [ class "link-back"
-                            , onClick <| SetActivePage goBackPage
-                            ]
-                            [ span [ class "icon-back" ] [] ]
-                        ]
-
-                else if page == ChwPage AcuteIllnessPage then
+                if page == ChwPage AcuteIllnessPage then
                     div
                         [ class "ui basic head segment" ]
                         [ h1 [ class "ui header" ]
@@ -1014,21 +998,21 @@ viewFilterPaneChw : Language -> Model -> Html Msg
 viewFilterPaneChw language model =
     let
         filters =
-            allEncounterTypes
+            [ AntenatalPage, AcuteIllnessPage, NutritionPage ]
                 |> List.map Just
 
         renderButton maybeFilter =
             let
                 label =
-                    Maybe.map Translate.EncounterTypeFileterLabel maybeFilter
+                    Maybe.map Translate.EncounterTypePageLabel maybeFilter
                         |> Maybe.withDefault Translate.ChwDashboardLabel
             in
             button
                 [ classList
-                    [ ( "active", model.encounterTypeFilter == maybeFilter )
+                    [ ( "active", model.chwPage == maybeFilter )
                     , ( "primary ui button", True )
                     ]
-                , onClick <| SetEncounterTypeFilter maybeFilter
+                , onClick <| SetChwDashboardPages maybeFilter
                 ]
                 [ translateText language label ]
     in

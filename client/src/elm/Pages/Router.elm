@@ -77,9 +77,6 @@ pageToFragment current =
 
                                 ChwPage chwDashboardPage ->
                                     case chwDashboardPage of
-                                        ChwMainPage ->
-                                            "main"
-
                                         AcuteIllnessPage ->
                                             "acute-illness"
 
@@ -290,7 +287,6 @@ parseDashboardPage =
         [ map (NursePage MainPage) (s "main")
         , map (NursePage StatsPage) (s "stats")
         , map (NursePage CaseManagementPage) (s "case-management")
-        , map (ChwPage ChwMainPage) (s "main")
         , map (ChwPage AcuteIllnessPage) (s "acute-illness")
         , map (ChwPage NutritionPage) (s "nutrition")
         , map (ChwPage AntenatalPage) (s "antenatal")

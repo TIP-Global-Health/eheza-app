@@ -443,6 +443,7 @@ type TranslationId
     | EgaWeeks
     | EmptyString
     | EncounterTypeFileterLabel IndividualEncounterType
+    | EncounterTypePageLabel ChwDashboardPage
     | EncounterTypeFollowUpQuestion IndividualEncounterType
     | EncounterTypeFollowUpLabel IndividualEncounterType
     | EndEncounter
@@ -2871,6 +2872,23 @@ translationSet trans =
 
                 NutritionEncounter ->
                     { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        EncounterTypePageLabel page ->
+            case page of
+                AcuteIllnessPage ->
+                    { english = "Acute Illness"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionPage ->
+                    { english = "Nutrition"
+                    , kinyarwanda = Nothing
+                    }
+
+                AntenatalPage ->
+                    { english = "Antenatal"
                     , kinyarwanda = Nothing
                     }
 

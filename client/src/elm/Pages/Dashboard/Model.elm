@@ -118,7 +118,6 @@ caseManagementSubFilters mainFilter =
 type alias Model =
     { period : FilterPeriod
     , programTypeFilter : FilterProgramType
-    , encounterTypeFilter : Maybe IndividualEncounterType
     , selectedVillageFilter : Maybe VillageId
     , beneficiariesGender : FilterGender
     , currentBeneficiariesChartsFilter : DashboardFilter
@@ -126,6 +125,7 @@ type alias Model =
     , currentCaseManagementFilter : DashboardFilter
     , currentCaseManagementSubFilter : DashboardSubFilter
     , latestPage : DashboardPage
+    , chwPage : Maybe ChwDashboardPage
     , modalState : Maybe ModalState
     }
 
@@ -147,7 +147,6 @@ emptyModel maybeSelectedVillage =
     in
     { period = OneYear
     , programTypeFilter = programTypeFilter
-    , encounterTypeFilter = Nothing
     , selectedVillageFilter = selectedVillage
     , beneficiariesGender = Boys
     , currentBeneficiariesChartsFilter = Stunting
@@ -155,6 +154,7 @@ emptyModel maybeSelectedVillage =
     , currentCaseManagementFilter = Stunting
     , currentCaseManagementSubFilter = FilterTotal
     , latestPage = NursePage MainPage
+    , chwPage = Nothing
     , modalState = Nothing
     }
 
@@ -232,5 +232,5 @@ type Msg
     | SetSubFilterCaseManagement DashboardSubFilter
     | SetFilterProgramType String
     | SetSelectedVillage String
-    | SetEncounterTypeFilter (Maybe IndividualEncounterType)
+    | SetChwDashboardPages (Maybe ChwDashboardPage)
     | SetActivePage Page
