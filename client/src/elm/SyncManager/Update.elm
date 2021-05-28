@@ -1631,6 +1631,30 @@ update currentDate currentTime activePage dbVersion device msg model =
                         (decodeError "Backend.SyncManager.Update" location error)
                         []
 
+        SavedAtIndexDbHandle val ->
+            case decodeValue SyncManager.Decoder.decodeIndexDbSaveResult val of
+                Ok indexDbSaveResult ->
+                    case indexDbSaveResult.table of
+                        IndexDbSaveResultTableAutority ->
+                            update
+                                currentDate
+                                currentTime
+                                activePage
+                                dbVersion
+                                device
+                                BackendAuthoritySyncDataSavedHandle
+                                model
+
+                        IndexDbSaveResultTableGeneral ->
+                            noChange
+
+                Err error ->
+                    SubModelReturn
+                        model
+                        Cmd.none
+                        (decodeError "Backend.SyncManager.Update" "SavedAtIndexDbHandle" error)
+                        []
+
         ResetSettings ->
             let
                 syncSpeed =
@@ -1787,8 +1811,10 @@ subscriptions model =
                     ]
     in
     Sub.batch <|
-        getFromIndexDb QueryIndexDbHandle
-            :: backendFetchCmds
+        [ getFromIndexDb QueryIndexDbHandle
+        , savedAtIndexedDb SavedAtIndexDbHandle
+        ]
+            ++ backendFetchCmds
 
 
 {-| Send to JS data we have synced, e.g. `person`, `health center`, etc.
@@ -1846,4 +1872,6 @@ needed.
 port getFromIndexDb : (Value -> msg) -> Sub msg
 
 
-port reportSavedAtIndexedDb : (Value -> msg) -> Sub msg
+{-| Reports that save to IndexDB operation was successful.
+-}
+port savedAtIndexedDb : (Value -> msg) -> Sub msg

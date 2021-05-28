@@ -522,11 +522,8 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
   }
 
   table.bulkPut(entities)
-      .then(function(lastKey) {})
-      .catch(Dexie.BulkError, function (e) {
-        // Explicitly catching the bulkAdd() operation makes those successful
-        // additions commit despite that there were errors.
-        // console.error (e);
+      .then(function(lastKey) {
+        sendIndexedDbSaveResult(info.table);
       });
 
 });
@@ -840,7 +837,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       'table': table,
     }
 
-    elmApp.ports.reportSavedAtIndexedDb.send(dataForSend);
+    elmApp.ports.savedAtIndexedDb.send(dataForSend);
   }
 
 });

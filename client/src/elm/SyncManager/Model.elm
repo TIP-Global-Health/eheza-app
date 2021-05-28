@@ -443,6 +443,15 @@ type UploadPhotoError
     | UploadError String
 
 
+type alias IndexDbSaveResult =
+    { table : IndexDbSaveResultTable }
+
+
+type IndexDbSaveResultTable
+    = IndexDbSaveResultTableAutority
+    | IndexDbSaveResultTableGeneral
+
+
 {-| The info we get from query to `generalPhotoUploadChanges`.
 -}
 type alias IndexDbQueryUploadPhotoResultRecord =
@@ -538,6 +547,7 @@ type Msg
     | BackendReportSyncIncident SyncIncidentType
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value
+    | SavedAtIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto
     | FetchFromIndexDbUploadGeneral
     | FetchFromIndexDbUploadAuthority

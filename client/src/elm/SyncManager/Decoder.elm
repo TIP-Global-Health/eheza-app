@@ -3,6 +3,7 @@ module SyncManager.Decoder exposing
     , decodeDownloadSyncResponseAuthorityStats
     , decodeDownloadSyncResponseGeneral
     , decodeIndexDbQueryTypeResult
+    , decodeIndexDbSaveResult
     )
 
 import AssocList as Dict
@@ -38,6 +39,8 @@ import SyncManager.Model
         , IndexDbQueryUploadAuthorityResultRecord
         , IndexDbQueryUploadGeneralResultRecord
         , IndexDbQueryUploadPhotoResultRecord
+        , IndexDbSaveResult
+        , IndexDbSaveResultTable(..)
         , UploadMethod(..)
         , UploadPhotoError(..)
         )
@@ -743,4 +746,27 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
 
                     _ ->
                         fail <| type_ ++ " is unknown BackendAuthorityEntity"
+            )
+
+
+decodeIndexDbSaveResult : Decoder IndexDbSaveResult
+decodeIndexDbSaveResult =
+    succeed IndexDbSaveResult
+        |> required "table" decodeIndexDbSaveResultTable
+
+
+decodeIndexDbSaveResultTable : Decoder IndexDbSaveResultTable
+decodeIndexDbSaveResultTable =
+    string
+        |> andThen
+            (\table ->
+                case table of
+                    "Authority" ->
+                        succeed IndexDbSaveResultTableAutority
+
+                    "General" ->
+                        succeed IndexDbSaveResultTableGeneral
+
+                    _ ->
+                        fail <| table ++ " is not a recognized IndexDbSaveResultTable"
             )
