@@ -151,10 +151,6 @@ determineSyncStatus activePage model =
                                 noChange
 
                     SyncDownloadGeneral webData ->
-                        let
-                            _ =
-                                Debug.log "SyncDownloadGeneral" webData
-                        in
                         case webData of
                             RemoteData.Success data ->
                                 if List.isEmpty data.entities then

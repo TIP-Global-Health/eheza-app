@@ -175,16 +175,9 @@ update currentDate currentTime activePage dbVersion device msg model =
                                             []
                                         |> List.reverse
                             in
-                            if List.isEmpty dataToSend then
-                                ( Cmd.none
-                                , SyncManager.Utils.determineSyncStatus activePage
-                                    { model | syncStatus = SyncDownloadAuthority webData }
-                                )
-
-                            else
-                                ( sendSyncedDataToIndexDb { table = "Authority", data = dataToSend, shard = currentZipper.uuid }
-                                , { model | downloadAuthorityResponse = webData }
-                                )
+                            ( sendSyncedDataToIndexDb { table = "Authority", data = dataToSend, shard = currentZipper.uuid }
+                            , { model | downloadAuthorityResponse = webData }
+                            )
 
                         Nothing ->
                             ( Cmd.none
@@ -673,9 +666,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
         BackendGeneralFetchHandle webData ->
             let
-                _ =
-                    Debug.log "BackendGeneralFetchHandle" webData
-
                 ( saveFetchedDataCmd, modelUpdated ) =
                     case RemoteData.toMaybe webData of
                         Just data ->
@@ -685,16 +675,9 @@ update currentDate currentTime activePage dbVersion device msg model =
                                         |> List.foldl (\entity accum -> SyncManager.Utils.getDataToSendGeneral entity accum) []
                                         |> List.reverse
                             in
-                            if List.isEmpty dataToSend then
-                                ( Cmd.none
-                                , SyncManager.Utils.determineSyncStatus activePage
-                                    { model | syncStatus = SyncDownloadGeneral webData }
-                                )
-
-                            else
-                                ( sendSyncedDataToIndexDb { table = "General", data = dataToSend, shard = "" }
-                                , { model | downloadGeneralResponse = webData }
-                                )
+                            ( sendSyncedDataToIndexDb { table = "General", data = dataToSend, shard = "" }
+                            , { model | downloadGeneralResponse = webData }
+                            )
 
                         Nothing ->
                             ( Cmd.none
@@ -709,10 +692,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                 []
 
         BackendGeneralFetchedDataSavedHandle ->
-            let
-                _ =
-                    Debug.log "BackendGeneralFetchedDataSavedHandle" model.downloadGeneralResponse
-            in
             Maybe.map
                 (\data ->
                     let
