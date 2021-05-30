@@ -29,21 +29,7 @@ import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import RemoteData exposing (RemoteData)
-import SyncManager.Model
-    exposing
-        ( BackendAuthorityEntity(..)
-        , BackendGeneralEntity(..)
-        , DownloadSyncResponse
-        , IndexDbQueryDeferredPhotoResultRecord
-        , IndexDbQueryTypeResult(..)
-        , IndexDbQueryUploadAuthorityResultRecord
-        , IndexDbQueryUploadGeneralResultRecord
-        , IndexDbQueryUploadPhotoResultRecord
-        , IndexDbSaveResult
-        , IndexDbSaveResultTable(..)
-        , UploadMethod(..)
-        , UploadPhotoError(..)
-        )
+import SyncManager.Model exposing (..)
 import Time
 
 
@@ -753,6 +739,7 @@ decodeIndexDbSaveResult : Decoder IndexDbSaveResult
 decodeIndexDbSaveResult =
     succeed IndexDbSaveResult
         |> required "table" decodeIndexDbSaveResultTable
+        |> required "status" decodeIndexDbSaveStatus
 
 
 decodeIndexDbSaveResultTable : Decoder IndexDbSaveResultTable
@@ -775,4 +762,21 @@ decodeIndexDbSaveResultTable =
 
                     _ ->
                         fail <| table ++ " is not a recognized IndexDbSaveResultTable"
+            )
+
+
+decodeIndexDbSaveStatus : Decoder IndexDbSaveStatus
+decodeIndexDbSaveStatus =
+    string
+        |> andThen
+            (\status ->
+                case status of
+                    "Success" ->
+                        succeed IndexDbSaveSuccess
+
+                    "Failure" ->
+                        succeed IndexDbSaveFailure
+
+                    _ ->
+                        fail <| status ++ " is not a recognized IndexDbSaveStatus"
             )

@@ -1634,24 +1634,28 @@ update currentDate currentTime activePage dbVersion device msg model =
         SavedAtIndexDbHandle val ->
             case decodeValue SyncManager.Decoder.decodeIndexDbSaveResult val of
                 Ok indexDbSaveResult ->
-                    case indexDbSaveResult.table of
-                        IndexDbSaveResultTableAutority ->
-                            update
-                                currentDate
-                                currentTime
-                                activePage
-                                dbVersion
-                                device
-                                BackendAuthoritySyncDataSavedHandle
-                                model
+                    case indexDbSaveResult.status of
+                        IndexDbSaveSuccess ->
+                            case indexDbSaveResult.table of
+                                IndexDbSaveResultTableAutority ->
+                                    update
+                                        currentDate
+                                        currentTime
+                                        activePage
+                                        dbVersion
+                                        device
+                                        BackendAuthoritySyncDataSavedHandle
+                                        model
 
-                        IndexDbSaveResultTableAuthorityStats ->
-                            noChange
+                                IndexDbSaveResultTableGeneral ->
+                                    noChange
 
-                        IndexDbSaveResultTableDeferredPhotos ->
-                            noChange
+                                _ ->
+                                    noChange
 
-                        IndexDbSaveResultTableGeneral ->
+                        IndexDbSaveFailure ->
+                            -- For now, we don't make any special handling,
+                            -- so when request times out, we will retry.
                             noChange
 
                 Err error ->

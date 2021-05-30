@@ -449,7 +449,9 @@ type UploadPhotoError
 
 
 type alias IndexDbSaveResult =
-    { table : IndexDbSaveResultTable }
+    { table : IndexDbSaveResultTable
+    , status : IndexDbSaveStatus
+    }
 
 
 type IndexDbSaveResultTable
@@ -457,6 +459,11 @@ type IndexDbSaveResultTable
     | IndexDbSaveResultTableAuthorityStats
     | IndexDbSaveResultTableDeferredPhotos
     | IndexDbSaveResultTableGeneral
+
+
+type IndexDbSaveStatus
+    = IndexDbSaveFailure
+    | IndexDbSaveSuccess
 
 
 {-| The info we get from query to `generalPhotoUploadChanges`.
