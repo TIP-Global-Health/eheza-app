@@ -525,7 +525,6 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
       .then(function() {
           return sendIndexedDbSaveResult('Success', info.table);
       }).catch(Dexie.BulkError, function (e) {
-          // console.error (e);
           return sendIndexedDbSaveResult('Failure', info.table);
       });
 

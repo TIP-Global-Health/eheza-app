@@ -97,7 +97,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                 SyncDownloadAuthority webData ->
                     if
                         RemoteData.isLoading webData
-                            && (Time.posixToMillis currentTime - Time.posixToMillis model.downloadRequestTime < 35000)
+                            && (Time.posixToMillis currentTime - Time.posixToMillis model.downloadRequestTime < downloadRequestTimeout)
                     then
                         -- We are already loading, and request did not timed out.
                         noChange
@@ -615,7 +615,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                 SyncDownloadGeneral webData ->
                     if
                         RemoteData.isLoading webData
-                            && (Time.posixToMillis currentTime - Time.posixToMillis model.downloadRequestTime < 35000)
+                            && (Time.posixToMillis currentTime - Time.posixToMillis model.downloadRequestTime < downloadRequestTimeout)
                     then
                         -- We are already loading, and request did not timed out.
                         noChange
