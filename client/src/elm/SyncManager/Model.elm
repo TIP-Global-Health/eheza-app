@@ -553,9 +553,10 @@ type Msg
     | BackendPhotoUploadAuthority
     | BackendUploadAuthority (Maybe IndexDbQueryUploadAuthorityResultRecord)
     | BackendUploadAuthorityHandle IndexDbQueryUploadAuthorityResultRecord (WebData ())
-    | BackendAuthoritySyncDataSavedHandle
+    | BackendAuthorityFetchedDataSavedHandle
     | BackendUploadGeneral (Maybe IndexDbQueryUploadGeneralResultRecord)
     | BackendUploadGeneralHandle IndexDbQueryUploadGeneralResultRecord (WebData ())
+    | BackendGeneralFetchedDataSavedHandle
     | BackendUploadPhotoAuthorityHandle (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
     | BackendReportState Int
     | BackendReportSyncIncident SyncIncidentType

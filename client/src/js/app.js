@@ -534,8 +534,8 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
    */
   function sendIndexedDbSaveResult(status, table) {
     const dataForSend = {
-      'status': status
-      'table': table,
+      'status': status,
+      'table': table
     }
 
     elmApp.ports.savedAtIndexedDb.send(dataForSend);

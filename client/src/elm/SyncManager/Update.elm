@@ -164,7 +164,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                 currentZipper =
                     Zipper.current zipper
 
-                ( saveSyncedDataCmd, modelUpdated ) =
+                ( saveFetchedDataCmd, modelUpdated ) =
                     case RemoteData.toMaybe webData of
                         Just data ->
                             let
@@ -175,9 +175,16 @@ update currentDate currentTime activePage dbVersion device msg model =
                                             []
                                         |> List.reverse
                             in
-                            ( sendSyncedDataToIndexDb { table = "Authority", data = dataToSend, shard = currentZipper.uuid }
-                            , { model | downloadAuthorityResponse = webData }
-                            )
+                            if List.isEmpty dataToSend then
+                                ( Cmd.none
+                                , SyncManager.Utils.determineSyncStatus activePage
+                                    { model | syncStatus = SyncDownloadAuthority webData }
+                                )
+
+                            else
+                                ( sendSyncedDataToIndexDb { table = "Authority", data = dataToSend, shard = currentZipper.uuid }
+                                , { model | downloadAuthorityResponse = webData }
+                                )
 
                         Nothing ->
                             ( Cmd.none
@@ -187,11 +194,11 @@ update currentDate currentTime activePage dbVersion device msg model =
             in
             SubModelReturn
                 modelUpdated
-                saveSyncedDataCmd
+                saveFetchedDataCmd
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
                 []
 
-        BackendAuthoritySyncDataSavedHandle ->
+        BackendAuthorityFetchedDataSavedHandle ->
             Maybe.map2
                 (\zipper data ->
                     let
@@ -273,14 +280,13 @@ update currentDate currentTime activePage dbVersion device msg model =
                             , sendSyncInfoAuthoritiesCmd syncInfoAuthorities
                             ]
                         )
-                        (maybeHttpError model.downloadAuthorityResponse "Backend.SyncManager.Update" "BackendAuthoritySyncDataSavedHandle")
+                        (maybeHttpError model.downloadAuthorityResponse "Backend.SyncManager.Update" "BackendAuthorityFetchedDataSavedHandle")
                         appMsgs
                 )
                 model.syncInfoAuthorities
                 (RemoteData.toMaybe model.downloadAuthorityResponse)
                 |> Maybe.withDefault noChange
 
-        -- |> Maybe.withDefault noChange
         BackendAuthorityDashboardStatsFetch ->
             case model.syncStatus of
                 SyncDownloadAuthorityDashboardStats webData ->
@@ -614,8 +620,11 @@ update currentDate currentTime activePage dbVersion device msg model =
         BackendGeneralFetch ->
             case model.syncStatus of
                 SyncDownloadGeneral webData ->
-                    if RemoteData.isLoading webData then
-                        -- We are already loading.
+                    if
+                        RemoteData.isLoading webData
+                            && (Time.posixToMillis currentTime - Time.posixToMillis model.downloadRequestTime < 35000)
+                    then
+                        -- We are already loading, and request did not timed out.
                         noChange
 
                     else
@@ -646,7 +655,11 @@ update currentDate currentTime activePage dbVersion device msg model =
                                     |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle)
                         in
                         SubModelReturn
-                            { model | syncStatus = SyncDownloadGeneral RemoteData.Loading, syncInfoGeneral = syncInfoGeneral }
+                            { model
+                                | syncStatus = SyncDownloadGeneral RemoteData.Loading
+                                , syncInfoGeneral = syncInfoGeneral
+                                , downloadRequestTime = currentTime
+                            }
                             (Cmd.batch [ cmd, setSyncInfoGeneralCmd ])
                             noError
                             []
@@ -660,7 +673,10 @@ update currentDate currentTime activePage dbVersion device msg model =
 
         BackendGeneralFetchHandle webData ->
             let
-                cmd =
+                _ =
+                    Debug.log "BackendGeneralFetchHandle" webData
+
+                ( saveFetchedDataCmd, modelUpdated ) =
                     case RemoteData.toMaybe webData of
                         Just data ->
                             let
@@ -670,30 +686,43 @@ update currentDate currentTime activePage dbVersion device msg model =
                                         |> List.reverse
                             in
                             if List.isEmpty dataToSend then
-                                Cmd.none
+                                ( Cmd.none
+                                , SyncManager.Utils.determineSyncStatus activePage
+                                    { model | syncStatus = SyncDownloadGeneral webData }
+                                )
 
                             else
-                                sendSyncedDataToIndexDb { table = "General", data = dataToSend, shard = "" }
+                                ( sendSyncedDataToIndexDb { table = "General", data = dataToSend, shard = "" }
+                                , { model | downloadGeneralResponse = webData }
+                                )
 
                         Nothing ->
-                            Cmd.none
+                            ( Cmd.none
+                            , SyncManager.Utils.determineSyncStatus activePage
+                                { model | syncStatus = SyncDownloadGeneral webData }
+                            )
+            in
+            SubModelReturn
+                modelUpdated
+                saveFetchedDataCmd
+                (maybeHttpError webData "Backend.SyncManager.Update" "BackendGeneralFetchHandle")
+                []
 
-                -- We have successfully downloaded the entities, so
-                -- we can delete them fom the `nodeChanges` table.
-                -- We will do it, by their localId.
-                deleteLocalIdsCmd =
-                    case RemoteData.toMaybe webData of
-                        Just data ->
+        BackendGeneralFetchedDataSavedHandle ->
+            let
+                _ =
+                    Debug.log "BackendGeneralFetchedDataSavedHandle" model.downloadGeneralResponse
+            in
+            Maybe.map
+                (\data ->
+                    let
+                        -- We have successfully saved the entities, so
+                        -- we can delete them fom the `nodeChanges` table.
+                        -- We will do it, by their localId.
+                        deleteLocalIdsCmd =
                             let
                                 localIds =
-                                    List.map
-                                        (\entity ->
-                                            let
-                                                identifier =
-                                                    SyncManager.Utils.getBackendGeneralEntityIdentifier entity
-                                            in
-                                            identifier.uuid
-                                        )
+                                    List.map (SyncManager.Utils.getBackendGeneralEntityIdentifier >> .uuid)
                                         data.entities
                             in
                             if List.isEmpty localIds then
@@ -702,22 +731,12 @@ update currentDate currentTime activePage dbVersion device msg model =
                             else
                                 sendLocalIdsForDelete { type_ = "General", uuid = localIds }
 
-                        _ ->
-                            Cmd.none
+                        appMsgs =
+                            [ Backend.Model.ResetFailedToFetchAuthorities |> App.Model.MsgIndexedDb
+                            , handleNewRevisionsMsg backendGeneralEntityToRevision data.entities
+                            ]
 
-                appMsgs =
-                    [ Backend.Model.ResetFailedToFetchAuthorities |> App.Model.MsgIndexedDb ]
-                        ++ (case RemoteData.toMaybe webData of
-                                Just data ->
-                                    [ handleNewRevisionsMsg backendGeneralEntityToRevision data.entities ]
-
-                                Nothing ->
-                                    []
-                           )
-
-                syncInfoGeneral =
-                    case RemoteData.toMaybe webData of
-                        Just data ->
+                        syncInfoGeneral =
                             let
                                 status =
                                     if data.revisionCount == 0 then
@@ -745,22 +764,25 @@ update currentDate currentTime activePage dbVersion device msg model =
                                         }
                                    )
 
-                        Nothing ->
-                            model.syncInfoGeneral
-
-                modelWithSyncStatus =
-                    SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = SyncDownloadGeneral webData }
-            in
-            SubModelReturn
-                { modelWithSyncStatus | syncInfoGeneral = syncInfoGeneral }
-                (Cmd.batch
-                    [ cmd
-                    , deleteLocalIdsCmd
-                    , sendSyncInfoGeneralCmd syncInfoGeneral
-                    ]
+                        modelWithSyncStatus =
+                            SyncManager.Utils.determineSyncStatus activePage
+                                { model
+                                    | syncStatus = SyncDownloadGeneral model.downloadGeneralResponse
+                                    , syncInfoGeneral = syncInfoGeneral
+                                }
+                    in
+                    SubModelReturn
+                        modelWithSyncStatus
+                        (Cmd.batch
+                            [ deleteLocalIdsCmd
+                            , sendSyncInfoGeneralCmd syncInfoGeneral
+                            ]
+                        )
+                        (maybeHttpError model.downloadAuthorityResponse "Backend.SyncManager.Update" "BackendGeneralFetchedDataSavedHandle")
+                        appMsgs
                 )
-                (maybeHttpError webData "Backend.SyncManager.Update" "BackendGeneralFetchHandle")
-                appMsgs
+                (RemoteData.toMaybe model.downloadGeneralResponse)
+                |> Maybe.withDefault noChange
 
         SetLastFetchedRevisionIdAuthority zipper revisionId ->
             let
@@ -1644,11 +1666,18 @@ update currentDate currentTime activePage dbVersion device msg model =
                                         activePage
                                         dbVersion
                                         device
-                                        BackendAuthoritySyncDataSavedHandle
+                                        BackendAuthorityFetchedDataSavedHandle
                                         model
 
                                 IndexDbSaveResultTableGeneral ->
-                                    noChange
+                                    update
+                                        currentDate
+                                        currentTime
+                                        activePage
+                                        dbVersion
+                                        device
+                                        BackendGeneralFetchedDataSavedHandle
+                                        model
 
                                 _ ->
                                     noChange
