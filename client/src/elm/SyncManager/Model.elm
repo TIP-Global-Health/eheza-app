@@ -516,7 +516,7 @@ type alias IndexDbQueryDeferredPhotoResultRecord =
     }
 
 
-{-| For slow devices, download request 'fetch' pahse
+{-| For slow devices, download request 'fetch' phase
 takes less than 12 seconds, and the 'save' phase,
 less than 3. Timeout is double the sum of the 2.
 -}
