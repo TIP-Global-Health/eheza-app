@@ -257,7 +257,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
       'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS),
       'missed_sessions' => $missed_sessions,
       'total_encounters' => hedley_stats_get_total_encounters($health_center_id, $villages_with_residents),
-      'prenatal_data' =>  hedley_stats_get_prenatal_data($health_center_id),
+      'prenatal_data' => hedley_stats_get_prenatal_data($health_center_id),
       'villages_with_residents' => $villages_with_residents,
       'timestamp' => $timestamp,
     ];
