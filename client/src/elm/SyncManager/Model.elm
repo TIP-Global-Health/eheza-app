@@ -232,7 +232,7 @@ type alias Model =
     , downloadAuthorityResponse : WebData (DownloadSyncResponse BackendAuthorityEntity)
     , downloadGeneralResponse : WebData (DownloadSyncResponse BackendGeneralEntity)
 
-    -- Used to determione if download request has timed out.
+    -- Used to determine if download request has timed out.
     , downloadRequestTime : Time.Posix
 
     -- Determine how we're going to download photos.
