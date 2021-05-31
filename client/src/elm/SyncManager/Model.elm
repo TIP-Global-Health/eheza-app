@@ -225,7 +225,7 @@ type alias Model =
     , syncInfoGeneral : SyncInfoGeneral
     , syncInfoAuthorities : SyncInfoAuthorityZipper
 
-    -- We store download responses until we get an acknowledgement 
+    -- We store download responses until we get an acknowledgement
     -- from IndexedDB for the save operation.
     -- Only then we know that DB was updated and we can
     -- update the Model as well.
