@@ -2883,12 +2883,12 @@ translationSet trans =
                     }
 
                 NutritionPage ->
-                    { english = "Nutrition"
+                    { english = "Child Nutrition"
                     , kinyarwanda = Nothing
                     }
 
                 AntenatalPage ->
-                    { english = "Antenatal"
+                    { english = "Antenatal Care"
                     , kinyarwanda = Nothing
                     }
 
