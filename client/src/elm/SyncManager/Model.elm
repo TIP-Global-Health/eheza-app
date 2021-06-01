@@ -522,7 +522,7 @@ less than 3. Timeout is double the sum of the 2.
 -}
 downloadRequestTimeout : Int
 downloadRequestTimeout =
-    (1200 + 3000) * 2
+    (12000 + 3000) * 2
 
 
 type SyncIncidentType
