@@ -3,6 +3,7 @@ module SyncManager.Decoder exposing
     , decodeDownloadSyncResponseAuthorityStats
     , decodeDownloadSyncResponseGeneral
     , decodeIndexDbQueryTypeResult
+    , decodeIndexDbSaveResult
     )
 
 import AssocList as Dict
@@ -28,19 +29,7 @@ import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import RemoteData exposing (RemoteData)
-import SyncManager.Model
-    exposing
-        ( BackendAuthorityEntity(..)
-        , BackendGeneralEntity(..)
-        , DownloadSyncResponse
-        , IndexDbQueryDeferredPhotoResultRecord
-        , IndexDbQueryTypeResult(..)
-        , IndexDbQueryUploadAuthorityResultRecord
-        , IndexDbQueryUploadGeneralResultRecord
-        , IndexDbQueryUploadPhotoResultRecord
-        , UploadMethod(..)
-        , UploadPhotoError(..)
-        )
+import SyncManager.Model exposing (..)
 import Time
 
 
@@ -743,4 +732,51 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
 
                     _ ->
                         fail <| type_ ++ " is unknown BackendAuthorityEntity"
+            )
+
+
+decodeIndexDbSaveResult : Decoder IndexDbSaveResult
+decodeIndexDbSaveResult =
+    succeed IndexDbSaveResult
+        |> required "table" decodeIndexDbSaveResultTable
+        |> required "status" decodeIndexDbSaveStatus
+
+
+decodeIndexDbSaveResultTable : Decoder IndexDbSaveResultTable
+decodeIndexDbSaveResultTable =
+    string
+        |> andThen
+            (\table ->
+                case table of
+                    "Authority" ->
+                        succeed IndexDbSaveResultTableAutority
+
+                    "AuthorityStats" ->
+                        succeed IndexDbSaveResultTableAuthorityStats
+
+                    "DeferredPhotos" ->
+                        succeed IndexDbSaveResultTableDeferredPhotos
+
+                    "General" ->
+                        succeed IndexDbSaveResultTableGeneral
+
+                    _ ->
+                        fail <| table ++ " is not a recognized IndexDbSaveResultTable"
+            )
+
+
+decodeIndexDbSaveStatus : Decoder IndexDbSaveStatus
+decodeIndexDbSaveStatus =
+    string
+        |> andThen
+            (\status ->
+                case status of
+                    "Success" ->
+                        succeed IndexDbSaveSuccess
+
+                    "Failure" ->
+                        succeed IndexDbSaveFailure
+
+                    _ ->
+                        fail <| status ++ " is not a recognized IndexDbSaveStatus"
             )
