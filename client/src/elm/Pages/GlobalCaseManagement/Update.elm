@@ -49,8 +49,27 @@ update currentDate healthCenterId msg db model =
                                     FollowUpAcuteIllness data ->
                                         startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data
 
+                                    -- We should never get here, as Prenatal Encounter go it's own action.
                                     FollowUpPrenatal data ->
-                                        startFollowUpEncountePrenatal currentDate selectedHealthCenter db data
+                                        []
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( { model | dialogState = Nothing }
+            , Cmd.none
+            , msgs
+            )
+
+        StartPrenatalFollowUpEncounter participantId hasNurseEncounter newEncounterType ->
+            let
+                msgs =
+                    healthCenterId
+                        |> Maybe.map
+                            (\selectedHealthCenter ->
+                                [ emptyPrenatalEncounter participantId currentDate newEncounterType (Just selectedHealthCenter)
+                                    |> Backend.Model.PostPrenatalEncounter (generatePostCreateDestination newEncounterType hasNurseEncounter)
+                                    |> App.Model.MsgIndexedDb
+                                ]
                             )
                         |> Maybe.withDefault []
             in
@@ -85,16 +104,3 @@ startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data =
         |> Backend.Model.PostAcuteIllnessEncounter
         |> App.Model.MsgIndexedDb
     ]
-
-
-startFollowUpEncountePrenatal : NominalDate -> HealthCenterId -> ModelIndexedDb -> FollowUpPrenatalData -> List App.Model.Msg
-startFollowUpEncountePrenatal currentDate selectedHealthCenter db data =
-    Pages.PrenatalEncounter.Utils.getSubsequentEncounterType data.encounterType
-        |> Maybe.map
-            (\newEncounterType ->
-                [ emptyPrenatalEncounter data.participantId currentDate newEncounterType (Just selectedHealthCenter)
-                    |> Backend.Model.PostPrenatalEncounter (generatePostCreateDestination data.encounterType data.hasNurseEncounter)
-                    |> App.Model.MsgIndexedDb
-                ]
-            )
-        |> Maybe.withDefault []

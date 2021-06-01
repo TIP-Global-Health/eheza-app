@@ -84,13 +84,15 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyBackendUrl, toCmd, toTask, withoutDecoder)
 import SyncManager.Model
 import Task
+import Time
 import Translate exposing (Language, translate)
 import ZScore.Model
 
 
 updateIndexedDb :
-    NominalDate
-    -> Language
+    Language
+    -> NominalDate
+    -> Time.Posix
     -> ZScore.Model.Model
     -> Maybe NurseId
     -> Maybe HealthCenterId
@@ -101,7 +103,7 @@ updateIndexedDb :
     -> MsgIndexedDb
     -> ModelIndexedDb
     -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage syncManager msg model =
+updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId villageId isChw activePage syncManager msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -135,18 +137,6 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
             , []
             )
 
-        HandleFetchedComputedDashboard healthCenterId_ webData ->
-            let
-                modelUpdated =
-                    RemoteData.toMaybe webData
-                        |> Maybe.map (\data -> { model | computedDashboard = data })
-                        |> Maybe.withDefault model
-            in
-            ( modelUpdated
-            , Cmd.none
-            , []
-            )
-
         HandleFetchedChildrenMeasurements webData ->
             case RemoteData.toMaybe webData of
                 Nothing ->
@@ -169,15 +159,27 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
             , []
             )
 
+        HandleFetchedClinics clinics ->
+            ( { model | clinics = clinics }
+            , Cmd.none
+            , []
+            )
+
         FetchComputedDashboard healthCenterId_ ->
-            ( model
+            ( { model | computedDashboardLastFetched = currentTime }
             , sw.select computedDashboardEndpoint ()
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedComputedDashboard healthCenterId_)
             , []
             )
 
-        HandleFetchedClinics clinics ->
-            ( { model | clinics = clinics }
+        HandleFetchedComputedDashboard healthCenterId_ webData ->
+            let
+                modelUpdated =
+                    RemoteData.toMaybe webData
+                        |> Maybe.map (\data -> { model | computedDashboard = data })
+                        |> Maybe.withDefault model
+            in
+            ( modelUpdated
             , Cmd.none
             , []
             )
@@ -201,7 +203,7 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
+                |> sequenceExtra (updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions
@@ -1479,7 +1481,7 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
             ( { model | sessionRequests = Dict.insert sessionId subModel model.sessionRequests }
             , Cmd.map (MsgSession sessionId) subCmd
             , fetchMsgs
-                |> List.filter (Backend.Fetch.shouldFetch model)
+                |> List.filter (Backend.Fetch.shouldFetch currentTime model)
                 |> List.map App.Model.MsgIndexedDb
             )
 
@@ -1647,7 +1649,7 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
             , relationshipCmd
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
+                |> sequenceExtra (updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
 
         HandlePostedRelationship personId initiator data ->
             let
@@ -1804,7 +1806,7 @@ updateIndexedDb currentDate language zscores nurseId healthCenterId villageId is
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (updateIndexedDb currentDate language zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
+                |> sequenceExtra (updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
 
         PatchPerson personId person ->
             ( { model | postPerson = Loading }
