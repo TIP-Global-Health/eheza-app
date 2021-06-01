@@ -43,7 +43,7 @@ getSubsequentEncounterType : PrenatalEncounterType -> Maybe PrenatalEncounterTyp
 getSubsequentEncounterType currentEncounterType =
     case currentEncounterType of
         NurseEncounter ->
-            Just NurseEncounter
+            Nothing
 
         ChwFirstEncounter ->
             Just ChwSecondEncounter
@@ -52,7 +52,7 @@ getSubsequentEncounterType currentEncounterType =
             Just ChwThirdPlusEncounter
 
         ChwThirdPlusEncounter ->
-            Just ChwPostpartumEncounter
+            Just ChwThirdPlusEncounter
 
         ChwPostpartumEncounter ->
             Nothing

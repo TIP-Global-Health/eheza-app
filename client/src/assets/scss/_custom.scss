@@ -1274,6 +1274,11 @@ input::placeholder {
     }
   }
 
+  &.prenatal-follow-up-popup {
+    margin-left: -235px;
+    width: 470px;
+  }
+
   > .icon:first-child+*,
   >:first-child:not(.icon) {
     border-top-left-radius: 0;

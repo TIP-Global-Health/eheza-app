@@ -1384,14 +1384,6 @@ viewNextStepsContent language currentDate assembled data =
                 |> Maybe.map
                     (\task ->
                         let
-                            ( label, disabled ) =
-                                case task of
-                                    NextStepsNewbornEnrolment ->
-                                        ( Translate.EnrolNewborn, tasksCompleted == totalTasks )
-
-                                    _ ->
-                                        ( Translate.Save, tasksCompleted /= totalTasks )
-
                             saveMsg =
                                 case task of
                                     NextStepsAppointmentConfirmation ->
@@ -1411,17 +1403,14 @@ viewNextStepsContent language currentDate assembled data =
                                         SaveHealthEducationSubActivity personId measurements.healthEducation nextTask
 
                                     NextStepsNewbornEnrolment ->
-                                        SetActivePage <|
-                                            UserPage <|
-                                                CreatePersonPage (Just assembled.participant.person) <|
-                                                    Backend.Person.Model.PrenatalNextStepsActivityOrigin assembled.id
+                                        SaveNewbornEnrollment nextTask
                         in
                         div [ class "actions next-steps" ]
                             [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                                 , onClick saveMsg
                                 ]
-                                [ text <| translate language label ]
+                                [ text <| translate language Translate.Save ]
                             ]
                     )
                 |> Maybe.withDefault emptyNode
@@ -2725,6 +2714,15 @@ viewNewbornEnrolmentForm : Language -> NominalDate -> AssembledData -> Html Msg
 viewNewbornEnrolmentForm language currentDate assembled =
     div [ class "form newborn-enrolment" ]
         [ text <| translate language <| Translate.EnrolNewbornHelper <| isJust assembled.participant.newborn
+        , button
+            [ classList [ ( "ui fluid primary button", True ), ( "disabled", isJust assembled.participant.newborn ) ]
+            , onClick <|
+                SetActivePage <|
+                    UserPage <|
+                        CreatePersonPage (Just assembled.participant.person) <|
+                            Backend.Person.Model.PrenatalNextStepsActivityOrigin assembled.id
+            ]
+            [ text <| translate language Translate.EnrolNewborn ]
         ]
 
 

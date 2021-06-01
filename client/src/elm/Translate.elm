@@ -719,6 +719,7 @@ type TranslationId
     | PleaseSelectGroup
     | PleaseSync
     | PositiveLabel
+    | PostpartumEncounter
     | PostpartumChildDangerSign PostpartumChildDangerSign
     | PostpartumMotherDangerSign PostpartumMotherDangerSign
     | PreeclampsiaPreviousPregnancy
@@ -862,6 +863,7 @@ type TranslationId
     | SignOnDoorPostedQuestion
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | StillbornPreviousDelivery
+    | SubsequentEncounter
     | SubsequentAntenatalVisit
     | SuccessiveAbortions
     | SuccessivePrematureDeliveries
@@ -2066,7 +2068,7 @@ translationSet trans =
 
         CannotStartEncounterLabel ->
             { english = "You cannot open a new encounter, as there's already a completed encounter today for"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ntago bishoboka gutangira isuzuma rishya, kuko hari isuzuma ryarangiye uyu munsi rya"
             }
 
         CardiacDisease ->
@@ -2856,8 +2858,8 @@ translationSet trans =
                     }
 
                 AntenatalEncounter ->
-                    { english = "Do you want to start an Antenatal encounter for"
-                    , kinyarwanda = Nothing
+                    { english = "What type of Antenatal encounter would you like to start for"
+                    , kinyarwanda = Just "Ni irihe suzuma ku mugore utwite ushaka gutangira kuri"
                     }
 
                 HomeVisitEncounter ->
@@ -3316,7 +3318,7 @@ translationSet trans =
 
                 DueNextMonth ->
                     { english = "Next Month"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ukwezi gutaha"
                     }
 
         FormError errorValue ->
@@ -5315,7 +5317,7 @@ translationSet trans =
 
         PatientNotYetSeenAtHCLabel ->
             { english = " has not yet been seen at the health center for this pregnancy"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just " ntiyigeze asuzumwa ku kigo nderabuzima kuri iyi nda atwite"
             }
 
         PatientProvisionsTask task ->
@@ -5426,6 +5428,11 @@ translationSet trans =
         PositiveLabel ->
             { english = "Positive"
             , kinyarwanda = Just "Afite ubwandu"
+            }
+
+        PostpartumEncounter ->
+            { english = "Postpartum Encounter"
+            , kinyarwanda = Nothing
             }
 
         PostpartumChildDangerSign sign ->
@@ -6746,6 +6753,11 @@ translationSet trans =
         StillbornPreviousDelivery ->
             { english = "Stillborn in previous delivery"
             , kinyarwanda = Just "Aheruka kubyara umwana upfuye"
+            }
+
+        SubsequentEncounter ->
+            { english = "Subsequent Encounter"
+            , kinyarwanda = Nothing
             }
 
         SubsequentAntenatalVisit ->
