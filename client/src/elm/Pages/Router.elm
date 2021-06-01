@@ -64,14 +64,27 @@ pageToFragment current =
                     let
                         url =
                             case subPage of
-                                MainPage ->
-                                    "main"
+                                NursePage nurseDashboardPage ->
+                                    case nurseDashboardPage of
+                                        MainPage ->
+                                            "main"
 
-                                StatsPage ->
-                                    "stats"
+                                        StatsPage ->
+                                            "stats"
 
-                                CaseManagementPage ->
-                                    "case-management"
+                                        CaseManagementPage ->
+                                            "case-management"
+
+                                ChwPage chwDashboardPage ->
+                                    case chwDashboardPage of
+                                        AcuteIllnessPage ->
+                                            "acute-illness"
+
+                                        NutritionPage ->
+                                            "nutrition"
+
+                                        AntenatalPage ->
+                                            "antenatal"
                     in
                     Just ("dashboard/" ++ url)
 
@@ -271,9 +284,12 @@ parser =
 parseDashboardPage : Parser (DashboardPage -> c) c
 parseDashboardPage =
     oneOf
-        [ map MainPage (s "main")
-        , map StatsPage (s "stats")
-        , map CaseManagementPage (s "case-management")
+        [ map (NursePage MainPage) (s "main")
+        , map (NursePage StatsPage) (s "stats")
+        , map (NursePage CaseManagementPage) (s "case-management")
+        , map (ChwPage AcuteIllnessPage) (s "acute-illness")
+        , map (ChwPage NutritionPage) (s "nutrition")
+        , map (ChwPage AntenatalPage) (s "antenatal")
         ]
 
 

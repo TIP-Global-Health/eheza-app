@@ -42,7 +42,7 @@ import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (allEncounterTypes)
-import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
+import Pages.Page exposing (ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
 import Pages.Utils exposing (calculatePercentage)
 import Path
 import RemoteData
@@ -70,29 +70,82 @@ view language page currentDate healthCenterId isChw nurse model db =
                 |> Maybe.map
                     (\stats ->
                         case page of
-                            MainPage ->
-                                ( viewMainPage language currentDate isChw nurse stats db model, PinCodePage )
+                            NursePage nurseDashboardPage ->
+                                case nurseDashboardPage of
+                                    MainPage ->
+                                        ( viewMainPage language currentDate isChw nurse stats db model, PinCodePage )
 
-                            StatsPage ->
-                                ( viewStatsPage language currentDate isChw nurse stats healthCenterId db model, UserPage <| DashboardPage MainPage )
+                                    StatsPage ->
+                                        ( viewStatsPage language currentDate isChw nurse stats healthCenterId db model, UserPage <| DashboardPage (NursePage MainPage) )
 
-                            CaseManagementPage ->
-                                ( viewCaseManagementPage language currentDate stats db model, UserPage <| DashboardPage model.latestPage )
+                                    CaseManagementPage ->
+                                        ( viewCaseManagementPage language currentDate stats db model, UserPage <| DashboardPage model.latestPage )
+
+                            ChwPage chwDashboardPage ->
+                                case chwDashboardPage of
+                                    AcuteIllnessPage ->
+                                        --@todo
+                                        ( viewAcuteIllnessPage language, UserPage <| DashboardPage (NursePage MainPage) )
+
+                                    NutritionPage ->
+                                        --@todo
+                                        ( viewStatsPage language currentDate isChw nurse stats healthCenterId db model, UserPage <| DashboardPage (NursePage MainPage) )
+
+                                    AntenatalPage ->
+                                        --@todo
+                                        ( viewStatsPage language currentDate isChw nurse stats healthCenterId db model, UserPage <| DashboardPage (NursePage MainPage) )
                     )
                 |> Maybe.withDefault ( spinner, PinCodePage )
 
         header =
             if isChw then
-                div
-                    [ class "ui basic head segment" ]
-                    [ h1 [ class "ui header" ]
-                        [ translateText language Translate.ChwDashboardLabel ]
-                    , a
-                        [ class "link-back"
-                        , onClick <| SetActivePage goBackPage
+                if page == ChwPage AcuteIllnessPage then
+                    div
+                        [ class "ui basic head segment" ]
+                        [ h1 [ class "ui header" ]
+                            [ text <| translate language <| Translate.EncounterTypeFileterLabel AcuteIllnessEncounter ]
+                        , a
+                            [ class "link-back"
+                            , onClick <| SetActivePage goBackPage
+                            ]
+                            [ span [ class "icon-back" ] [] ]
                         ]
-                        [ span [ class "icon-back" ] [] ]
-                    ]
+
+                else if page == ChwPage NutritionPage then
+                    div
+                        [ class "ui basic head segment" ]
+                        [ h1 [ class "ui header" ]
+                            [ text <| translate language <| Translate.EncounterTypeFileterLabel NutritionEncounter ]
+                        , a
+                            [ class "link-back"
+                            , onClick <| SetActivePage goBackPage
+                            ]
+                            [ span [ class "icon-back" ] [] ]
+                        ]
+
+                else if page == ChwPage AntenatalPage then
+                    div
+                        [ class "ui basic head segment" ]
+                        [ h1 [ class "ui header" ]
+                            [ text <| translate language <| Translate.EncounterTypeFileterLabel AntenatalEncounter ]
+                        , a
+                            [ class "link-back"
+                            , onClick <| SetActivePage goBackPage
+                            ]
+                            [ span [ class "icon-back" ] [] ]
+                        ]
+
+                else
+                    div
+                        [ class "ui basic head segment" ]
+                        [ h1 [ class "ui header" ]
+                            [ translateText language Translate.ChwDashboardLabel ]
+                        , a
+                            [ class "link-back"
+                            , onClick <| SetActivePage goBackPage
+                            ]
+                            [ span [ class "icon-back" ] [] ]
+                        ]
 
             else
                 div
@@ -188,14 +241,6 @@ viewMainPage language currentDate isChw nurse stats db model =
                         |> viewTotalEncounters language
                     ]
                 ]
-            , div [ class "center aligned ui grid" ]
-                [ div [ class "five wide column" ]
-                    [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear ]
-                , div [ class "five wide column" ]
-                    [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                        |> viewTotalEncounters language
-                    ]
-                ]
             , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
             , div [ class "ui grid" ]
                 [ div [ class "five wide column" ]
@@ -214,7 +259,7 @@ viewMainPage language currentDate isChw nurse stats db model =
 
     else
         div [ class "dashboard main" ]
-            [ viewFiltersPane language MainPage filterPeriodsForMainPage db model
+            [ viewFiltersPane language (NursePage MainPage) filterPeriodsForMainPage db model
             , div [ class "ui grid" ]
                 [ div [ class "eight wide column" ]
                     [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
@@ -658,7 +703,7 @@ viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
                 mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodCaseManagement
         in
         div [ class "dashboard stats" ]
-            [ viewFiltersPane language StatsPage filterPeriodsForStatsPage db model
+            [ viewFiltersPane language (NursePage StatsPage) filterPeriodsForStatsPage db model
             , div [ class "ui equal width grid" ]
                 [ viewMalnourishedCards language malnourishedCurrentMonth malnourishedPreviousMonth
                 , viewMiscCards language currentDate currentPeriodStats monthBeforeStats
@@ -830,7 +875,7 @@ viewCaseManagementPage language currentDate stats db model =
                     |> List.reverse
         in
         div [ class "dashboard case" ]
-            [ viewFiltersPane language CaseManagementPage filterPeriodsForCaseManagementPage db model
+            [ viewFiltersPane language (NursePage CaseManagementPage) filterPeriodsForCaseManagementPage db model
             , div [ class "ui segment blue" ]
                 [ div [ class "case-management" ]
                     [ div [ class "header" ]
@@ -899,7 +944,7 @@ viewFiltersPane : Language -> DashboardPage -> List FilterPeriod -> ModelIndexed
 viewFiltersPane language page filterPeriodsPerPage db model =
     let
         ( programTypeFilterFilterButton, labelSelected ) =
-            if page == MainPage then
+            if page == NursePage MainPage then
                 ( div
                     [ class "primary ui button program-type-filter"
                     , onClick <| SetModalState <| Just FiltersModal
@@ -957,26 +1002,31 @@ viewFilterPaneChw : Language -> Model -> Html Msg
 viewFilterPaneChw language model =
     let
         filters =
-            allEncounterTypes
+            [ AntenatalPage, AcuteIllnessPage, NutritionPage ]
                 |> List.map Just
 
         renderButton maybeFilter =
             let
                 label =
-                    Maybe.map Translate.EncounterTypeFileterLabel maybeFilter
-                        |> Maybe.withDefault Translate.All
+                    Maybe.map Translate.EncounterTypePageLabel maybeFilter
+                        |> Maybe.withDefault Translate.ChwDashboardLabel
             in
             button
                 [ classList
-                    [ ( "active", model.encounterTypeFilter == maybeFilter )
+                    [ ( "active", model.chwPage == maybeFilter )
                     , ( "primary ui button", True )
                     ]
-                , onClick <| SetEncounterTypeFilter maybeFilter
+                , onClick <| SetChwDashboardPages maybeFilter
                 ]
                 [ translateText language label ]
     in
     div [ class "ui segment chw-filters" ] <|
         List.map renderButton filters
+
+
+viewAcuteIllnessPage : Language -> Html Msg
+viewAcuteIllnessPage language =
+    div [] [ text "Acute Illness" ]
 
 
 viewGoodNutrition : Language -> List CaseNutritionTotal -> List CaseNutritionTotal -> Html Msg
@@ -1548,7 +1598,7 @@ viewDashboardPagesLinks language =
     div [ class "dashboards-links" ]
         [ div
             [ class "ui segment stats"
-            , DashboardPage StatsPage
+            , DashboardPage (NursePage StatsPage)
                 |> UserPage
                 |> SetActivePage
                 |> onClick
@@ -1563,7 +1613,7 @@ viewDashboardPagesLinks language =
             ]
         , div
             [ class "ui segment case"
-            , DashboardPage CaseManagementPage
+            , DashboardPage (NursePage CaseManagementPage)
                 |> UserPage
                 |> SetActivePage
                 |> onClick
