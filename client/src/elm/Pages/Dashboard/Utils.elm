@@ -6,6 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..))
 import Date
 import Gizra.NominalDate exposing (NominalDate)
+import Maybe.Extra exposing (isNothing)
 import Pages.Dashboard.Model exposing (..)
 
 
@@ -72,8 +73,8 @@ generateFilteredPrenatalData maybeVillageId stats =
 ---
 
 
-getNewlyIdentifiedPregananciesForMonth : NominalDate -> List PrenatalDataItem -> Int
-getNewlyIdentifiedPregananciesForMonth selectedDate itemsList =
+getNewlyIdentifiedPregananciesForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
+getNewlyIdentifiedPregananciesForSelectedMonth selectedDate itemsList =
     let
         month =
             Date.monthNumber selectedDate
@@ -86,10 +87,10 @@ getNewlyIdentifiedPregananciesForMonth selectedDate itemsList =
         |> List.length
 
 
-getTotalPregnantForMonth : NominalDate -> NominalDate -> List PrenatalDataItem -> Int
-getTotalPregnantForMonth currentDate selectedDate itemsList =
+getTotalPregnantForSelectedMonth : NominalDate -> NominalDate -> List PrenatalDataItem -> Int
+getTotalPregnantForSelectedMonth currentDate selectedDate itemsList =
     let
-        fromDate =
+        dateFirstDayOfSelectedMonth =
             Date.floor Date.Month selectedDate
     in
     itemsList
@@ -102,7 +103,7 @@ getTotalPregnantForMonth currentDate selectedDate itemsList =
                         item.expectedDateConcluded
                             |> Maybe.map
                                 (\expectedDateConcluded ->
-                                    Date.diff Date.Weeks expectedDateConcluded fromDate <= 3
+                                    Date.diff Date.Weeks expectedDateConcluded dateFirstDayOfSelectedMonth <= 3
                                 )
                             |> Maybe.withDefault False
 
@@ -112,7 +113,7 @@ getTotalPregnantForMonth currentDate selectedDate itemsList =
                             Just dateConcluded ->
                                 let
                                     compareResult =
-                                        Date.compare fromDate dateConcluded
+                                        Date.compare dateFirstDayOfSelectedMonth dateConcluded
                                 in
                                 compareResult == LT || compareResult == EQ
 
@@ -124,8 +125,8 @@ getTotalPregnantForMonth currentDate selectedDate itemsList =
         |> List.length
 
 
-getTotalNewbornForMonth : NominalDate -> List PrenatalDataItem -> Int
-getTotalNewbornForMonth selectedDate itemsList =
+getTotalNewbornForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
+getTotalNewbornForSelectedMonth selectedDate itemsList =
     let
         month =
             Date.monthNumber selectedDate
@@ -146,5 +147,36 @@ getTotalNewbornForMonth selectedDate itemsList =
                     item.dateConcluded
                     item.outcome
                     |> Maybe.withDefault False
+            )
+        |> List.length
+
+
+getPregnanciesDueWithin4MonthsForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
+getPregnanciesDueWithin4MonthsForSelectedMonth selectedDate itemsList =
+    let
+        dateFirstDayOfSelectedMonth =
+            Date.floor Date.Month selectedDate
+    in
+    itemsList
+        |> List.filter
+            (\item ->
+                let
+                    -- Expected date exists, is within current month or
+                    -- latter than that, and within 120 days from the
+                    -- beginning of selected month.
+                    expectedDateConcludedFilter =
+                        item.expectedDateConcluded
+                            |> Maybe.map
+                                (\expectedDateConcluded ->
+                                    let
+                                        compareResult =
+                                            Date.compare expectedDateConcluded dateFirstDayOfSelectedMonth
+                                    in
+                                    (compareResult == GT || compareResult == EQ)
+                                        && (Date.diff Date.Days dateFirstDayOfSelectedMonth expectedDateConcluded <= 120)
+                                )
+                            |> Maybe.withDefault False
+                in
+                isNothing item.dateConcluded && expectedDateConcludedFilter
             )
         |> List.length

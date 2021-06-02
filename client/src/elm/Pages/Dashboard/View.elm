@@ -170,13 +170,10 @@ viewMainPage language currentDate isChw nurse stats db model =
             generateFilteredPrenatalData model.selectedVillageFilter stats
 
         _ =
-            getTotalPregnantForMonth currentDate currentDate prenatalData |> Debug.log "0"
+            getTotalPregnantForSelectedMonth currentDate currentDate prenatalData |> Debug.log "getTotalPregnantForSelectedMonth"
 
         _ =
-            getTotalPregnantForMonth currentDate (Date.add Months -4 currentDate) prenatalData |> Debug.log "-4"
-
-        _ =
-            getTotalPregnantForMonth currentDate (Date.add Months -2 currentDate) prenatalData |> Debug.log "-2"
+            getPregnanciesDueWithin4MonthsForSelectedMonth (Date.add Months -4 currentDate) prenatalData |> Debug.log "getPregnanciesDueWithin4MonthsForSelectedMonth"
 
         currentPeriodStats =
             filterStatsWithinPeriod currentDate model stats
