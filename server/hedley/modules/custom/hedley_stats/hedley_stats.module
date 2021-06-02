@@ -387,18 +387,18 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   $result = $query
     ->execute()
     ->fetchAllAssoc('nid');
-  
+
   foreach ($result as $row) {
     $items[$row->field_individual_participant]['encounters'][] = [
-      'scheduled_date' => empty($row->field_scheduled_date) ? NULL : date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
-      'danger_signs' => $row->danger_signs,
+      'created' => empty($row->field_scheduled_date) ? NULL : date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
+      'danger_signs' => explode(',', $row->danger_signs),
     ];
   }
 
     // Store in cache.
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_PRENATAL_DATA, $health_center_id, NULL, $items);
 
-  return $items;
+  return array_values($items);
 }
 
 /**
