@@ -740,6 +740,7 @@ decodeIndexDbSaveResult =
     succeed IndexDbSaveResult
         |> required "table" decodeIndexDbSaveResultTable
         |> required "status" decodeIndexDbSaveStatus
+        |> required "timestamp" string
 
 
 decodeIndexDbSaveResultTable : Decoder IndexDbSaveResultTable
