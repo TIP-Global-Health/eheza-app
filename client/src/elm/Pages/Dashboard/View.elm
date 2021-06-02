@@ -21,7 +21,7 @@ import Backend.Dashboard.Model
         , emptyTotalBeneficiaries
         )
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..), IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
@@ -181,6 +181,10 @@ viewMainPage language currentDate isChw nurse stats db model =
                                 String.fromInt index |> Debug.log "Index"
 
                             _ =
+                                countNewlyIdentifiedPregananciesForSelectedMonth selectedDate prenatalData
+                                    |> Debug.log ""
+
+                            _ =
                                 countCurrentlyPregnantForSelectedMonth currentDate selectedDate prenatalData
                                     |> Debug.log "countCurrentlyPregnantForSelectedMonth"
 
@@ -191,6 +195,17 @@ viewMainPage language currentDate isChw nurse stats db model =
                             _ =
                                 countCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate prenatalData
                                     |> Debug.log "countCurrentlyPregnantWithDangerSignsForSelectedMonth"
+
+                            _ =
+                                countDeliveriesAtLocationForSelectedMonth selectedDate HomeDelivery prenatalData
+                                    |> Debug.log "countDeliveriesAtLocationForSelectedMonth HomeDelivery"
+
+                            _ =
+                                countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery prenatalData
+                                    |> Debug.log "countDeliveriesAtLocationForSelectedMonth FacilityDelivery"
+
+                            _ =
+                                Debug.log "" "---------------------------------------------------------"
                         in
                         ""
                     )

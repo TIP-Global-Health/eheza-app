@@ -3,7 +3,7 @@ module Pages.Dashboard.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Dashboard.Model exposing (DashboardStats, PrenatalDataItem)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..))
+import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (DangerSign(..))
 import Date
 import EverySet exposing (EverySet)
@@ -147,8 +147,8 @@ getCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate ite
             )
 
 
-countTotalNewbornForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
-countTotalNewbornForSelectedMonth selectedDate itemsList =
+countNewbornForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
+countNewbornForSelectedMonth selectedDate itemsList =
     itemsList
         |> List.filter
             (\item ->
@@ -192,6 +192,24 @@ countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate itemsList =
                             |> Maybe.withDefault False
                 in
                 isNothing item.dateConcluded && expectedDateConcludedFilter
+            )
+        |> List.length
+
+
+countDeliveriesAtLocationForSelectedMonth : NominalDate -> DeliveryLocation -> List PrenatalDataItem -> Int
+countDeliveriesAtLocationForSelectedMonth selectedDate location itemsList =
+    itemsList
+        |> List.filter
+            (\item ->
+                Maybe.map2
+                    (\dateConcluded deliveryLocation ->
+                        -- Live baby born within selected month.
+                        withinSelectedMonth selectedDate dateConcluded
+                            && (deliveryLocation == location)
+                    )
+                    item.dateConcluded
+                    item.deliveryLocation
+                    |> Maybe.withDefault False
             )
         |> List.length
 
