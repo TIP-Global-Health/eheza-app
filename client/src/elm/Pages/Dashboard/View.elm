@@ -84,13 +84,13 @@ view language page currentDate healthCenterId isChw nurse model db =
                             ChwPage chwDashboardPage ->
                                 case chwDashboardPage of
                                     AcuteIllnessPage ->
-                                        ( viewAcuteIllnessPage language, UserPage <| DashboardPage (NursePage MainPage) )
+                                        ( viewAcuteIllnessPage language stats, UserPage <| DashboardPage (NursePage MainPage) )
 
                                     NutritionPage ->
                                         ( viewNutritionPage language currentDate isChw nurse stats db model, UserPage <| DashboardPage (NursePage MainPage) )
 
                                     AntenatalPage ->
-                                        ( viewAntenatalPage language, UserPage <| DashboardPage (NursePage MainPage) )
+                                        ( viewAntenatalPage language stats, UserPage <| DashboardPage (NursePage MainPage) )
                     )
                 |> Maybe.withDefault ( spinner, PinCodePage )
 
@@ -169,14 +169,6 @@ viewMainPage language currentDate isChw nurse stats db model =
         currentPeriodStats =
             filterStatsWithinPeriod currentDate model stats
 
-        totalBeneficiariesMonthlyDuringPastYear =
-            generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats
-
-        emptyTotalBeneficiariesDict =
-            List.repeat 12 emptyTotalBeneficiaries
-                |> List.indexedMap (\index empty -> ( index + 1, empty ))
-                |> Dict.fromList
-
         caseManagementsThisYear =
             caseManagementApplyBreakdownFilters stats.villagesWithResidents stats.caseManagement.thisYear model
 
@@ -190,27 +182,6 @@ viewMainPage language currentDate isChw nurse stats db model =
         caseNutritionTotalsLastYear =
             caseManagementsLastYear
                 |> List.map (.nutrition >> generateCaseNutritionTotals)
-
-        totalsGraphData =
-            caseNutritionTotalsThisYear
-                |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
-                |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
-
-        newCasesGraphData =
-            caseManagementsThisYear
-                |> List.map (.nutrition >> generateCaseNutritionNewCases currentDate)
-                |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
-                |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
-
-        links =
-            case model.programTypeFilter of
-                FilterProgramFbf ->
-                    div [ class "sixteen wide column" ]
-                        [ viewDashboardPagesLinks language
-                        ]
-
-                _ ->
-                    emptyNode
     in
     if isChw then
         div [ class "dashboard main" ]
@@ -248,6 +219,7 @@ viewMainPage language currentDate isChw nurse stats db model =
                         |> viewTotalEncounters language
                     ]
                 ]
+            , lastUpdated language stats
             ]
 
     else
@@ -1067,8 +1039,8 @@ viewAcuteIllnessLinks language =
         ]
 
 
-viewAcuteIllnessPage : Language -> Html Msg
-viewAcuteIllnessPage language =
+viewAcuteIllnessPage : Language -> DashboardStats -> Html Msg
+viewAcuteIllnessPage language stats =
     div [ class "dashboard main" ]
         [ viewAcuteIllnessLinks language
         , div [ class "current-month" ]
@@ -1093,6 +1065,7 @@ viewAcuteIllnessPage language =
             , div [ class "five wide column" ]
                 []
             ]
+        , lastUpdated language stats
         ]
 
 
@@ -1164,12 +1137,12 @@ viewNutritionPage language currentDate isChw nurse stats db model =
             , links
             ]
         , viewCustomModal language isChw nurse stats db model
-        , div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
+        , lastUpdated language stats
         ]
 
 
-viewAntenatalPage : Language -> Html Msg
-viewAntenatalPage language =
+viewAntenatalPage : Language -> DashboardStats -> Html Msg
+viewAntenatalPage language stats =
     div [ class "dashboard main" ]
         [ div [ class "current-month" ]
             [ a []
@@ -1195,6 +1168,7 @@ viewAntenatalPage language =
             , div [ class "five wide column" ]
                 []
             ]
+        , lastUpdated language stats
         ]
 
 
@@ -2485,3 +2459,8 @@ resolvePreviousMonth thisMonth =
 
     else
         thisMonth - 1
+
+
+lastUpdated : Language -> DashboardStats -> Html Msg
+lastUpdated language stats =
+    div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
