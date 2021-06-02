@@ -66,6 +66,26 @@ generateFilteredPrenatalData maybeVillageId stats =
         |> Maybe.withDefault []
 
 
+
+---
+--- ANC functions
+---
+
+
+getNewlyIdentifiedPregananciesForMonth : NominalDate -> List PrenatalDataItem -> Int
+getNewlyIdentifiedPregananciesForMonth selectedDate itemsList =
+    let
+        month =
+            Date.monthNumber selectedDate
+
+        year =
+            Date.year selectedDate
+    in
+    List.filter (\item -> (Date.monthNumber item.created == month) && (Date.year item.created == year))
+        itemsList
+        |> List.length
+
+
 getTotalPregnantForMonth : NominalDate -> NominalDate -> List PrenatalDataItem -> Int
 getTotalPregnantForMonth currentDate selectedDate itemsList =
     let
