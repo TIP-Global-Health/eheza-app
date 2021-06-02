@@ -4,7 +4,9 @@ import AssocList as Dict exposing (Dict)
 import Backend.Dashboard.Model exposing (DashboardStats, PrenatalDataItem)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..))
+import Backend.Measurement.Model exposing (DangerSign(..))
 import Date
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isNothing)
 import Pages.Dashboard.Model exposing (..)
@@ -68,27 +70,26 @@ generateFilteredPrenatalData maybeVillageId stats =
 
 
 
----
---- ANC functions
----
+--
+-- ANC functions.
+--
 
 
-getNewlyIdentifiedPregananciesForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
-getNewlyIdentifiedPregananciesForSelectedMonth selectedDate itemsList =
-    let
-        month =
-            Date.monthNumber selectedDate
-
-        year =
-            Date.year selectedDate
-    in
-    List.filter (\item -> (Date.monthNumber item.created == month) && (Date.year item.created == year))
-        itemsList
+countNewlyIdentifiedPregananciesForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
+countNewlyIdentifiedPregananciesForSelectedMonth selectedDate itemsList =
+    itemsList
+        |> List.filter (.created >> withinSelectedMonth selectedDate)
         |> List.length
 
 
-getTotalPregnantForSelectedMonth : NominalDate -> NominalDate -> List PrenatalDataItem -> Int
-getTotalPregnantForSelectedMonth currentDate selectedDate itemsList =
+countCurrentlyPregnantForSelectedMonth : NominalDate -> NominalDate -> List PrenatalDataItem -> Int
+countCurrentlyPregnantForSelectedMonth currentDate selectedDate itemsList =
+    getCurrentlyPregnantForSelectedMonth currentDate selectedDate itemsList
+        |> List.length
+
+
+getCurrentlyPregnantForSelectedMonth : NominalDate -> NominalDate -> List PrenatalDataItem -> List PrenatalDataItem
+getCurrentlyPregnantForSelectedMonth currentDate selectedDate itemsList =
     let
         dateFirstDayOfSelectedMonth =
             Date.floor Date.Month selectedDate
@@ -97,8 +98,8 @@ getTotalPregnantForSelectedMonth currentDate selectedDate itemsList =
         |> List.filter
             (\item ->
                 let
-                    -- Expected date exists, and is set to 3 weeks or less, before
-                    -- the beggining of the range.
+                    -- Expected date exists, and is set to 3 weeks or less,
+                    -- before the beggining of the range.
                     expectedDateConcludedFilter =
                         item.expectedDateConcluded
                             |> Maybe.map
@@ -122,27 +123,40 @@ getTotalPregnantForSelectedMonth currentDate selectedDate itemsList =
                 in
                 expectedDateConcludedFilter && actualDateConcludedFilter
             )
+
+
+countCurrentlyPregnantWithDangerSignsForSelectedMonth : NominalDate -> NominalDate -> List PrenatalDataItem -> Int
+countCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate itemsList =
+    getCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate itemsList
         |> List.length
 
 
-getTotalNewbornForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
-getTotalNewbornForSelectedMonth selectedDate itemsList =
-    let
-        month =
-            Date.monthNumber selectedDate
+getCurrentlyPregnantWithDangerSignsForSelectedMonth : NominalDate -> NominalDate -> List PrenatalDataItem -> List PrenatalDataItem
+getCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate itemsList =
+    getCurrentlyPregnantForSelectedMonth currentDate selectedDate itemsList
+        |> List.filter
+            (.encounters
+                >> List.any
+                    (\encounter ->
+                        -- Active pregnancy that got an encounter at
+                        -- selected month, where danger signs where recorded.
+                        withinSelectedMonth selectedDate encounter.created
+                            && (not <| EverySet.isEmpty encounter.dangerSigns)
+                            && (encounter.dangerSigns /= EverySet.singleton NoDangerSign)
+                    )
+            )
 
-        year =
-            Date.year selectedDate
-    in
+
+countTotalNewbornForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
+countTotalNewbornForSelectedMonth selectedDate itemsList =
     itemsList
         |> List.filter
             (\item ->
                 Maybe.map2
                     (\dateConcluded outcome ->
-                        -- Live baby born on same month and year.
+                        -- Live baby born within selected month.
                         (outcome == Pregnancy OutcomeLiveAtTerm || outcome == Pregnancy OutcomeLivePreTerm)
-                            && (Date.monthNumber dateConcluded == month)
-                            && (Date.year dateConcluded == year)
+                            && withinSelectedMonth selectedDate dateConcluded
                     )
                     item.dateConcluded
                     item.outcome
@@ -151,8 +165,8 @@ getTotalNewbornForSelectedMonth selectedDate itemsList =
         |> List.length
 
 
-getPregnanciesDueWithin4MonthsForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
-getPregnanciesDueWithin4MonthsForSelectedMonth selectedDate itemsList =
+countPregnanciesDueWithin4MonthsForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
+countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate itemsList =
     let
         dateFirstDayOfSelectedMonth =
             Date.floor Date.Month selectedDate
@@ -161,7 +175,7 @@ getPregnanciesDueWithin4MonthsForSelectedMonth selectedDate itemsList =
         |> List.filter
             (\item ->
                 let
-                    -- Expected date exists, is within current month or
+                    -- Expected date exists, is within selected month or
                     -- latter than that, and within 120 days from the
                     -- beginning of selected month.
                     expectedDateConcludedFilter =
@@ -180,3 +194,22 @@ getPregnanciesDueWithin4MonthsForSelectedMonth selectedDate itemsList =
                 isNothing item.dateConcluded && expectedDateConcludedFilter
             )
         |> List.length
+
+
+
+--
+-- Helper functions.
+--
+
+
+withinSelectedMonth : NominalDate -> NominalDate -> Bool
+withinSelectedMonth selectedDate date =
+    let
+        month =
+            Date.monthNumber selectedDate
+
+        year =
+            Date.year selectedDate
+    in
+    (Date.monthNumber date == month)
+        && (Date.year date == year)

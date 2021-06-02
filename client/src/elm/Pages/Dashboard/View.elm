@@ -170,10 +170,30 @@ viewMainPage language currentDate isChw nurse stats db model =
             generateFilteredPrenatalData model.selectedVillageFilter stats
 
         _ =
-            getTotalPregnantForSelectedMonth currentDate currentDate prenatalData |> Debug.log "getTotalPregnantForSelectedMonth"
+            List.repeat 12 ""
+                |> List.indexedMap
+                    (\index _ ->
+                        let
+                            selectedDate =
+                                Date.add Months (-1 * index) currentDate
 
-        _ =
-            getPregnanciesDueWithin4MonthsForSelectedMonth (Date.add Months -4 currentDate) prenatalData |> Debug.log "getPregnanciesDueWithin4MonthsForSelectedMonth"
+                            _ =
+                                String.fromInt index |> Debug.log "Index"
+
+                            _ =
+                                countCurrentlyPregnantForSelectedMonth currentDate selectedDate prenatalData
+                                    |> Debug.log "countCurrentlyPregnantForSelectedMonth"
+
+                            _ =
+                                countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate prenatalData
+                                    |> Debug.log "countPregnanciesDueWithin4MonthsForSelectedMonth"
+
+                            _ =
+                                countCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate prenatalData
+                                    |> Debug.log "countCurrentlyPregnantWithDangerSignsForSelectedMonth"
+                        in
+                        ""
+                    )
 
         currentPeriodStats =
             filterStatsWithinPeriod currentDate model stats
