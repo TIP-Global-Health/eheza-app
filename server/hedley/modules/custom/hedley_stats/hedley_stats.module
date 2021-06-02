@@ -321,7 +321,7 @@ function hedley_stats_get_villages_with_residents($health_center_id) {
 function hedley_stats_get_prenatal_data($health_center_id) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_PRENATAL_DATA, $health_center_id)) {
-    // return $cache_data;
+    return $cache_data;
   }
 
   $query = hedley_stats_get_base_query($health_center_id, 'individual_participant', HEDLEY_STATS_PERIOD_480_DAYS);
