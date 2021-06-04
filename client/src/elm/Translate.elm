@@ -258,6 +258,7 @@ type TranslationId
     | AcuteIllnessNew
     | AcuteIllnessOutcome AcuteIllnessOutcome
     | AcuteIllnessOutcomeLabel
+    | AcuteIllnessDashboardLabel AcuteIllnessDashboardPage
     | Activities
     | ActivitiesCompleted Int
     | ActivitiesHelp Activity
@@ -443,7 +444,6 @@ type TranslationId
     | EgaWeeks
     | EmptyString
     | EncounterTypeFileterLabel IndividualEncounterType
-    | EncounterTypePageLabel ChwDashboardPage
     | EncounterTypeFollowUpQuestion IndividualEncounterType
     | EncounterTypeFollowUpLabel IndividualEncounterType
     | EndEncounter
@@ -2877,20 +2877,25 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        EncounterTypePageLabel page ->
-            case page of
-                AcuteIllnessPage ->
+        AcuteIllnessDashboardLabel subPage ->
+            case subPage of
+                OverviewPage ->
                     { english = "Acute Illness"
                     , kinyarwanda = Nothing
                     }
 
-                NutritionPage ->
-                    { english = "Child Nutrition"
+                Covid19Page ->
+                    { english = "COVID-19"
                     , kinyarwanda = Nothing
                     }
 
-                AntenatalPage ->
-                    { english = "Antenatal Care"
+                MalariaPage ->
+                    { english = "Malaria"
+                    , kinyarwanda = Nothing
+                    }
+
+                GastroPage ->
+                    { english = "Gastro"
                     , kinyarwanda = Nothing
                     }
 

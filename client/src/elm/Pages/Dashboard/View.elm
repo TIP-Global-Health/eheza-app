@@ -42,7 +42,7 @@ import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (allEncounterTypes)
-import Pages.Page exposing (ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
+import Pages.Page exposing (AcuteIllnessDashboardPage(..), ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
 import Pages.Utils exposing (calculatePercentage)
 import Path
 import RemoteData
@@ -83,8 +83,19 @@ view language page currentDate healthCenterId isChw nurse model db =
 
                             ChwPage chwDashboardPage ->
                                 case chwDashboardPage of
-                                    AcuteIllnessPage ->
-                                        ( viewAcuteIllnessPage language stats, UserPage <| DashboardPage (NursePage MainPage) )
+                                    AcuteIllnessPage acuteIllnessPages ->
+                                        case acuteIllnessPages of
+                                            OverviewPage ->
+                                                ( viewAcuteIllnessPage language stats, UserPage <| DashboardPage (NursePage MainPage) )
+
+                                            Covid19Page ->
+                                                ( viewNutritionPage language currentDate isChw nurse stats db model, UserPage <| DashboardPage (NursePage MainPage) )
+
+                                            MalariaPage ->
+                                                ( viewAcuteIllnessPage language stats, UserPage <| DashboardPage (NursePage MainPage) )
+
+                                            GastroPage ->
+                                                ( viewAcuteIllnessPage language stats, UserPage <| DashboardPage (NursePage MainPage) )
 
                                     NutritionPage ->
                                         ( viewNutritionPage language currentDate isChw nurse stats db model, UserPage <| DashboardPage (NursePage MainPage) )
@@ -96,7 +107,7 @@ view language page currentDate healthCenterId isChw nurse model db =
 
         header =
             if isChw then
-                if page == ChwPage AcuteIllnessPage then
+                if page == ChwPage (AcuteIllnessPage OverviewPage) || page == ChwPage (AcuteIllnessPage Covid19Page) || page == ChwPage (AcuteIllnessPage MalariaPage) || page == ChwPage (AcuteIllnessPage GastroPage) then
                     div
                         [ class "ui basic head segment" ]
                         [ h1 [ class "ui header" ]
@@ -955,19 +966,19 @@ viewChwPages language =
             ]
             [ span
                 []
-                [ translateText language <| Translate.EncounterTypePageLabel AntenatalPage
+                [ translateText language <| Translate.EncounterTypeFileterLabel AntenatalEncounter
                 ]
             ]
         , button
             [ class "primary ui button"
-            , DashboardPage (ChwPage AcuteIllnessPage)
+            , DashboardPage (ChwPage <| AcuteIllnessPage OverviewPage)
                 |> UserPage
                 |> SetActivePage
                 |> onClick
             ]
             [ span
                 []
-                [ translateText language <| Translate.EncounterTypePageLabel AcuteIllnessPage
+                [ translateText language <| Translate.EncounterTypeFileterLabel AcuteIllnessEncounter
                 ]
             ]
         , button
@@ -979,64 +990,90 @@ viewChwPages language =
             ]
             [ span
                 []
-                [ translateText language <| Translate.EncounterTypePageLabel NutritionPage
+                [ translateText language <| Translate.EncounterTypeFileterLabel NutritionEncounter
                 ]
             ]
         ]
 
 
-viewAcuteIllnessLinks : Language -> Html Msg
-viewAcuteIllnessLinks language =
-    div [ class "ui segment chw-filters" ]
-        [ button
-            [ class "primary ui button"
-            , DashboardPage (ChwPage AcuteIllnessPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ text "Overview"
+viewAcuteIllnessLinks : Language -> model -> Html Msg
+viewAcuteIllnessLinks language model =
+    let
+        filters =
+            [ Covid19Page, MalariaPage, GastroPage ]
+                |> List.map Just
+                |> List.append [ Nothing ]
+
+        renderButton maybeFilter =
+            let
+                label =
+                    Maybe.map Translate.EncounterTypeFileterLabel maybeFilter
+                        |> Maybe.withDefault Translate.All
+            in
+            button
+                [ classList
+                    [ ( "active", model.encounterTypeFilter == maybeFilter )
+                    , ( "primary ui button", True )
+                    ]
+                , onClick <| SetEncounterTypeFilter maybeFilter
                 ]
-            ]
-        , button
-            [ class "primary ui button"
-            , DashboardPage (ChwPage AcuteIllnessPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ text "COVID-19"
-                ]
-            ]
-        , button
-            [ class "primary ui button"
-            , DashboardPage (ChwPage AcuteIllnessPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ text "Malaria"
-                ]
-            ]
-        , button
-            [ class "primary ui button"
-            , DashboardPage (ChwPage AcuteIllnessPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ text "Gastro"
-                ]
-            ]
-        ]
+                [ translateText language label ]
+    in
+    div [ class "ui segment filters" ] <|
+        List.map renderButton filters
+
+
+
+--div [ class "ui segment chw-filters" ]
+--    [ button
+--        [ class "primary ui button"
+--        , DashboardPage (ChwPage <| AcuteIllnessPage OverviewPage)
+--            |> UserPage
+--            |> SetActivePage
+--            |> onClick
+--        ]
+--        [ span
+--            []
+--            [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage OverviewPage
+--            ]
+--        ]
+--    , button
+--        [ class "primary ui button"
+--        , DashboardPage (ChwPage <| AcuteIllnessPage Covid19Page)
+--            |> UserPage
+--            |> SetActivePage
+--            |> onClick
+--        ]
+--        [ span
+--            []
+--            [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage Covid19Page
+--            ]
+--        ]
+--    , button
+--        [ class "primary ui button"
+--        , DashboardPage (ChwPage <| AcuteIllnessPage MalariaPage)
+--            |> UserPage
+--            |> SetActivePage
+--            |> onClick
+--        ]
+--        [ span
+--            []
+--            [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage MalariaPage
+--            ]
+--        ]
+--    , button
+--        [ class "primary ui button"
+--        , DashboardPage (ChwPage <| AcuteIllnessPage GastroPage)
+--            |> UserPage
+--            |> SetActivePage
+--            |> onClick
+--        ]
+--        [ span
+--            []
+--            [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage GastroPage
+--            ]
+--        ]
+--    ]
 
 
 viewAcuteIllnessPage : Language -> DashboardStats -> Html Msg
@@ -1053,7 +1090,9 @@ viewAcuteIllnessPage language stats =
             ]
         , div [ class "ui grid" ]
             [ div [ class "five wide column" ]
-                []
+                [ div [ class "content" ]
+                    [ div [ class "header" ] [ text "Total # of Assessment" ] ]
+                ]
             , div [ class "six wide column" ]
                 []
             , div [ class "five wide column" ]
@@ -1067,6 +1106,11 @@ viewAcuteIllnessPage language stats =
             ]
         , lastUpdated language stats
         ]
+
+
+viewAcuteIllnessTotalAssessment : Language -> Html Msg
+viewAcuteIllnessTotalAssessment language =
+    div [] []
 
 
 viewNutritionPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
