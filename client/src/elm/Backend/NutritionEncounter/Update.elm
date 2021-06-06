@@ -84,3 +84,43 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveWeight = data }
             , Cmd.none
             )
+
+        SaveSendToHC personId valueId value ->
+            ( { model | saveSendToHC = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value nutritionSendToHCEndpoint HandleSavedSendToHC
+            )
+
+        HandleSavedSendToHC data ->
+            ( { model | saveSendToHC = data }
+            , Cmd.none
+            )
+
+        SaveHealthEducation personId valueId value ->
+            ( { model | saveHealthEducation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value nutritionHealthEducationEndpoint HandleSavedHealthEducation
+            )
+
+        HandleSavedHealthEducation data ->
+            ( { model | saveHealthEducation = data }
+            , Cmd.none
+            )
+
+        SaveContributingFactors personId valueId value ->
+            ( { model | saveContributingFactors = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value nutritionContributingFactorsEndpoint HandleSavedContributingFactors
+            )
+
+        HandleSavedContributingFactors data ->
+            ( { model | saveContributingFactors = data }
+            , Cmd.none
+            )
+
+        SaveFollowUp personId valueId value ->
+            ( { model | saveFollowUp = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value nutritionFollowUpEndpoint HandleSavedFollowUp
+            )
+
+        HandleSavedFollowUp data ->
+            ( { model | saveFollowUp = data }
+            , Cmd.none
+            )

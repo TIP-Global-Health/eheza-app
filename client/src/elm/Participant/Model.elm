@@ -40,13 +40,38 @@ type alias Participant id value activity msg date =
     , getVillage : value -> Maybe String
     , iconClass : String
     , showProgressReportTab : Bool
-    , summarizeActivitiesForParticipant : date -> id -> OfflineSession -> Bool -> CompletedAndPending (List activity)
-    , summarizeParticipantsForActivity : date -> activity -> OfflineSession -> Bool -> CheckedIn -> CompletedAndPending (Dict id value)
+    , summarizeActivitiesForParticipant :
+        date
+        -> ZScore.Model.Model
+        -> id
+        -> OfflineSession
+        -> Bool
+        -> ModelIndexedDb
+        -> CompletedAndPending (List activity)
+    , summarizeParticipantsForActivity :
+        date
+        -> ZScore.Model.Model
+        -> activity
+        -> OfflineSession
+        -> Bool
+        -> ModelIndexedDb
+        -> CheckedIn
+        -> CompletedAndPending (Dict id value)
     , tagActivity : activity -> Activity
     , toChildId : id -> Maybe PersonId
     , toMotherId : id -> Maybe PersonId
     , toParticipantId : id -> ParticipantId
-    , viewMeasurements : Language -> NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> id -> activity -> Pages.Session.Model.Model -> EditableSession -> Html (Pages.Activity.Model.Msg id msg)
+    , viewMeasurements :
+        Language
+        -> NominalDate
+        -> ZScore.Model.Model
+        -> Bool
+        -> ModelIndexedDb
+        -> id
+        -> activity
+        -> Pages.Session.Model.Model
+        -> EditableSession
+        -> Html (Pages.Activity.Model.Msg id msg)
     }
 
 

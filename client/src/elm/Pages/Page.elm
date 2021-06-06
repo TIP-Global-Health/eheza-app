@@ -41,12 +41,14 @@ choices about what to show the user, rather than the details).
 -}
 
 import Activity.Model exposing (Activity(..))
-import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.Entities exposing (..)
+import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
+import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Initiator)
-import NutritionActivity.Model exposing (NutritionActivity(..))
-import PrenatalActivity.Model exposing (PrenatalActivity(..))
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
+import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator, RecordPreganancyInitiator)
 
 
 {-| What does the user want to see?
@@ -122,8 +124,9 @@ the login page instead.
 type UserPage
     = ClinicalPage -- shows a list of clinical options, allows you to choose one
     | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
-    | ClinicalProgressReportPage PrenatalEncounterId
+    | ClinicalProgressReportPage ClinicalProgressReportInitiator PrenatalEncounterId
     | DashboardPage DashboardPage -- Dashboard with visual summary of the data
+    | GlobalCaseManagementPage -- page where info about needed follow ups is displayed.
     | DemographicsReportPage PrenatalEncounterId
     | SessionPage SessionId SessionPage -- pages that manipulate a group session
     | MyAccountPage -- shows information about the logged-in user
@@ -151,7 +154,7 @@ type UserPage
     | PrenatalEncounterPage PrenatalEncounterId -- prenatal activities index
     | PrenatalActivityPage PrenatalEncounterId PrenatalActivity -- record prenatal activity
     | IndividualEncounterTypesPage -- this is where we select the type of encounter we're interested in.
-    | PregnancyOutcomePage IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
+    | PregnancyOutcomePage RecordPreganancyInitiator IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
     | NutritionParticipantPage PersonId
     | NutritionEncounterPage NutritionEncounterId -- nutrition activities index.
     | NutritionActivityPage NutritionEncounterId NutritionActivity -- record nutrition activity.
@@ -161,6 +164,8 @@ type UserPage
     | AcuteIllnessActivityPage AcuteIllnessEncounterId AcuteIllnessActivity -- record acute illness activity.
     | AcuteIllnessProgressReportPage AcuteIllnessEncounterId -- acute illness progress report.
     | AcuteIllnessOutcomePage IndividualEncounterParticipantId -- this is where acute illness outcome is recorded.
+    | HomeVisitEncounterPage HomeVisitEncounterId -- home visit activities index.
+    | HomeVisitActivityPage HomeVisitEncounterId HomeVisitActivity -- record home visit activity.
 
 
 {-| We group together the pages that can only be viewed in the Dashboard
@@ -183,4 +188,5 @@ type SessionPage
     | ParticipantsPage -- page that shows a list of participants
     | ChildPage PersonId -- page that focuses on a particular child
     | MotherPage PersonId -- page that focuses on a particular mother
+    | NextStepsPage PersonId Activity -- page that takes Next Steps measurements.
     | ProgressReportPage PersonId -- shows progress report for child with ID

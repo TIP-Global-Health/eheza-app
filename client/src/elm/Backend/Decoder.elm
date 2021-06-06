@@ -5,6 +5,7 @@ import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
+import Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
 import Backend.Measurement.Decoder exposing (..)
 import Backend.Model exposing (..)
@@ -38,6 +39,9 @@ decodeRevision =
                     "acute_illness_encounter" ->
                         decodeWithUuid AcuteIllnessEncounterRevision decodeAcuteIllnessEncounter
 
+                    "acute_illness_follow_up" ->
+                        decodeWithUuid AcuteIllnessFollowUpRevision decodeAcuteIllnessFollowUp
+
                     "acute_illness_muac" ->
                         decodeWithUuid AcuteIllnessMuacRevision decodeAcuteIllnessMuac
 
@@ -47,11 +51,20 @@ decodeRevision =
                     "acute_illness_vitals" ->
                         decodeWithUuid AcuteIllnessVitalsRevision decodeAcuteIllnessVitals
 
+                    "appointment_confirmation" ->
+                        decodeWithUuid AppointmentConfirmationRevision decodeAppointmentConfirmation
+
                     "attendance" ->
                         decodeWithUuid AttendanceRevision decodeAttendance
 
                     "breast_exam" ->
                         decodeWithUuid BreastExamRevision decodeBreastExam
+
+                    "birth_plan" ->
+                        decodeWithUuid BirthPlanRevision decodeBirthPlan
+
+                    "call_114" ->
+                        decodeWithUuid Call114Revision decodeCall114
 
                     "catchment_area" ->
                         decodeWithUuid CatchmentAreaRevision decodeCatchmentArea
@@ -61,6 +74,9 @@ decodeRevision =
 
                     "clinic" ->
                         decodeWithUuid ClinicRevision decodeClinic
+
+                    "contributing_factors" ->
+                        decodeWithUuid ContributingFactorsRevision decodeContributingFactors
 
                     "core_physical_exam" ->
                         decodeWithUuid CorePhysicalExamRevision decodeCorePhysicalExam
@@ -83,11 +99,17 @@ decodeRevision =
                     "family_planning" ->
                         decodeWithUuid FamilyPlanningRevision decodeFamilyPlanning
 
+                    "follow_up" ->
+                        decodeWithUuid FollowUpRevision decodeFollowUp
+
+                    "group_health_education" ->
+                        decodeWithUuid GroupHealthEducationRevision decodeGroupHealthEducation
+
+                    "group_send_to_hc" ->
+                        decodeWithUuid GroupSendToHCRevision decodeGroupSendToHC
+
                     "hc_contact" ->
                         decodeWithUuid HCContactRevision decodeHCContact
-
-                    "call_114" ->
-                        decodeWithUuid Call114Revision decodeCall114
 
                     "health_center" ->
                         decodeWithUuid HealthCenterRevision decodeHealthCenter
@@ -97,6 +119,9 @@ decodeRevision =
 
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight
+
+                    "home_visit_encounter" ->
+                        decodeWithUuid HomeVisitEncounterRevision decodeHomeVisitEncounter
 
                     "individual_participant" ->
                         decodeWithUuid IndividualEncounterParticipantRevision decodeIndividualEncounterParticipant
@@ -134,11 +159,32 @@ decodeRevision =
                     "nutrition" ->
                         decodeWithUuid ChildNutritionRevision decodeNutrition
 
+                    "nutrition_caring" ->
+                        decodeWithUuid NutritionCaringRevision decodeNutritionCaring
+
+                    "nutrition_contributing_factors" ->
+                        decodeWithUuid NutritionContributingFactorsRevision decodeNutritionContributingFactors
+
                     "nutrition_encounter" ->
                         decodeWithUuid NutritionEncounterRevision decodeNutritionEncounter
 
+                    "nutrition_feeding" ->
+                        decodeWithUuid NutritionFeedingRevision decodeNutritionFeeding
+
+                    "nutrition_follow_up" ->
+                        decodeWithUuid NutritionFollowUpRevision decodeNutritionFollowUp
+
+                    "nutrition_food_security" ->
+                        decodeWithUuid NutritionFoodSecurityRevision decodeNutritionFoodSecurity
+
+                    "nutrition_health_education" ->
+                        decodeWithUuid NutritionHealthEducationRevision decodeNutritionHealthEducation
+
                     "nutrition_height" ->
                         decodeWithUuid NutritionHeightRevision decodeNutritionHeight
+
+                    "nutrition_hygiene" ->
+                        decodeWithUuid NutritionHygieneRevision decodeNutritionHygiene
 
                     "nutrition_muac" ->
                         decodeWithUuid NutritionMuacRevision decodeNutritionMuac
@@ -148,6 +194,9 @@ decodeRevision =
 
                     "nutrition_photo" ->
                         decodeWithUuid NutritionPhotoRevision decodeNutritionPhoto
+
+                    "nutrition_send_to_hc" ->
+                        decodeWithUuid NutritionSendToHCRevision decodeNutritionSendToHC
 
                     "nutrition_weight" ->
                         decodeWithUuid NutritionWeightRevision decodeNutritionWeight
@@ -173,6 +222,9 @@ decodeRevision =
                     "photo" ->
                         decodeWithUuid PhotoRevision decodePhoto
 
+                    "pregnancy_testing" ->
+                        decodeWithUuid PregnancyTestingRevision decodePregnancyTesting
+
                     "pmtct_participant" ->
                         decodeWithUuid PmtctParticipantRevision decodePmtctParticipant
 
@@ -182,11 +234,20 @@ decodeRevision =
                     "prenatal_family_planning" ->
                         decodeWithUuid PrenatalFamilyPlanningRevision decodePrenatalFamilyPlanning
 
+                    "prenatal_health_education" ->
+                        decodeWithUuid PrenatalHealthEducationRevision decodePrenatalHealthEducation
+
+                    "prenatal_follow_up" ->
+                        decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
+
                     "prenatal_nutrition" ->
                         decodeWithUuid PrenatalNutritionRevision decodePrenatalNutrition
 
                     "prenatal_photo" ->
                         decodeWithUuid PrenatalPhotoRevision decodePrenatalPhoto
+
+                    "prenatal_send_to_hc" ->
+                        decodeWithUuid PrenatalSendToHCRevision decodePrenatalSendToHc
 
                     "relationship" ->
                         decodeWithUuid RelationshipRevision decodeRelationship

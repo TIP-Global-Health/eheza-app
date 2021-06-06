@@ -5,8 +5,11 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (Person, Ubudehe(..))
 import Backend.Person.Utils exposing (isAdult)
+import Backend.Session.Model exposing (OfflineSession)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, compare, diffMonths)
+import LocalData
+import Measurement.Model exposing (..)
 import Restful.Endpoint exposing (EntityUuid)
 
 
@@ -137,6 +140,18 @@ splitChildMeasurements sessionId =
 
                 fbf =
                     getCurrentAndPrevious sessionId list.fbfs
+
+                contributingFactors =
+                    getCurrentAndPrevious sessionId list.contributingFactors
+
+                followUp =
+                    getCurrentAndPrevious sessionId list.followUp
+
+                healthEducation =
+                    getCurrentAndPrevious sessionId list.healthEducation
+
+                sendToHC =
+                    getCurrentAndPrevious sessionId list.sendToHC
             in
             { current =
                 -- We can only have one per session ... we enforce that here.
@@ -168,6 +183,22 @@ splitChildMeasurements sessionId =
                     fbf.current
                         |> Dict.toList
                         |> List.head
+                , contributingFactors =
+                    contributingFactors.current
+                        |> Dict.toList
+                        |> List.head
+                , followUp =
+                    followUp.current
+                        |> Dict.toList
+                        |> List.head
+                , healthEducation =
+                    healthEducation.current
+                        |> Dict.toList
+                        |> List.head
+                , sendToHC =
+                    sendToHC.current
+                        |> Dict.toList
+                        |> List.head
                 }
             , previous =
                 { height = height.previous
@@ -177,6 +208,10 @@ splitChildMeasurements sessionId =
                 , photo = photo.previous
                 , counselingSession = counselingSession.previous
                 , fbf = fbf.previous
+                , contributingFactors = contributingFactors.previous
+                , followUp = followUp.previous
+                , healthEducation = healthEducation.previous
+                , sendToHC = sendToHC.previous
                 }
             }
         )
@@ -219,64 +254,6 @@ getCurrentAndPrevious sessionId =
         }
 
 
-lactationSignsToForm : EverySet LactationSign -> LactationForm
-lactationSignsToForm signs =
-    EverySet.member Breastfeeding signs
-        |> Just
-        |> LactationForm
-
-
-lactationFormToSigns : LactationForm -> EverySet LactationSign
-lactationFormToSigns form =
-    form.breastfeeding
-        |> Maybe.map
-            (\breastfeeding ->
-                if breastfeeding then
-                    EverySet.singleton Breastfeeding
-
-                else
-                    EverySet.singleton NoLactationSigns
-            )
-        |> Maybe.withDefault (EverySet.singleton NoLactationSigns)
-
-
-fbfValueToForm : FbfValue -> FbfForm
-fbfValueToForm value =
-    FbfForm (Just value.distributedAmount) (Just value.distributionNotice)
-
-
-fbfFormToValue : FbfForm -> FbfValue
-fbfFormToValue form =
-    Maybe.map2
-        (\distributedAmount distributionNotice ->
-            FbfValue distributedAmount distributionNotice
-        )
-        form.distributedAmount
-        form.distributionNotice
-        -- We should never get here, as we always expect to have
-        -- these fields filled.
-        |> Maybe.withDefault (FbfValue 0 DistributedFully)
-
-
-socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
-socialHistoryHivTestingResultFromString result =
-    case result of
-        "positive" ->
-            Just ResultHivPositive
-
-        "negative" ->
-            Just ResultHivNegative
-
-        "indeterminate" ->
-            Just ResultHivIndeterminate
-
-        "none" ->
-            Just NoHivTesting
-
-        _ ->
-            Nothing
-
-
 medicationNonAdministrationReasonFromString : String -> Maybe MedicationNonAdministrationReason
 medicationNonAdministrationReasonFromString reason =
     case reason of
@@ -316,3 +293,203 @@ medicationNonAdministrationReasonToString reason =
 
         NonAdministrationOther ->
             "other"
+
+
+mapChildMeasurementsAtOfflineSession : PersonId -> (ChildMeasurements -> ChildMeasurements) -> OfflineSession -> OfflineSession
+mapChildMeasurementsAtOfflineSession childId func offlineSession =
+    let
+        mapped =
+            LocalData.map
+                (\measurements ->
+                    let
+                        updatedChildMeasurements =
+                            Dict.get childId measurements.current.children
+                                |> Maybe.map (\childMeasurements -> func childMeasurements)
+
+                        childrenUpdated =
+                            updatedChildMeasurements
+                                |> Maybe.map (\updated -> Dict.insert childId updated measurements.current.children)
+                                |> Maybe.withDefault measurements.current.children
+
+                        currentUpdated =
+                            measurements.current
+                                |> (\current -> { current | children = childrenUpdated })
+                    in
+                    { measurements | current = currentUpdated }
+                )
+                offlineSession.measurements
+    in
+    { offlineSession | measurements = mapped }
+
+
+nutritionAssesmentToString : NutritionAssesment -> String
+nutritionAssesmentToString assesment =
+    case assesment of
+        AssesmentAcuteMalnutritionModerate ->
+            "malnutrition-moderate"
+
+        AssesmentAcuteMalnutritionSevere ->
+            "malnutrition-severe"
+
+        AssesmentUnderweightModerate ->
+            "underweight-moderate"
+
+        AssesmentUnderweightSevere ->
+            "underweight-severe"
+
+        AssesmentDangerSignsNotPresent ->
+            "danger-signs-not-present"
+
+        AssesmentDangerSignsPresent ->
+            "danger-signs-present"
+
+        AssesmentMalnutritionSigns _ ->
+            "malnutrition-signs"
+
+        AssesmentConsecutiveWeightLoss ->
+            "consecutive-weight-loss"
+
+        NoNutritionAssesment ->
+            "none"
+
+
+nutritionAssesmentFromString : String -> Maybe NutritionAssesment
+nutritionAssesmentFromString assesment =
+    case assesment of
+        "malnutrition-moderate" ->
+            Just AssesmentAcuteMalnutritionModerate
+
+        "malnutrition-severe" ->
+            Just AssesmentAcuteMalnutritionSevere
+
+        "underweight-moderate" ->
+            Just AssesmentUnderweightModerate
+
+        "underweight-severe" ->
+            Just AssesmentUnderweightSevere
+
+        "danger-signs-not-present" ->
+            Just AssesmentDangerSignsNotPresent
+
+        "danger-signs-present" ->
+            Just AssesmentDangerSignsPresent
+
+        "malnutrition-signs" ->
+            -- We don't actually know which malnutrition signs we discovered.
+            -- We will be able to determine this by looking at the Nutrition activity.
+            Just (AssesmentMalnutritionSigns [])
+
+        "consecutive-weight-loss" ->
+            Just AssesmentConsecutiveWeightLoss
+
+        "none" ->
+            Just NoNutritionAssesment
+
+        _ ->
+            Nothing
+
+
+postpartumMotherDangerSignToString : PostpartumMotherDangerSign -> String
+postpartumMotherDangerSignToString sign =
+    case sign of
+        PostpartumMotheUterineBleeding ->
+            "uterine-bleeding"
+
+        PostpartumMotherFever ->
+            "fever"
+
+        PostpartumMotherMigraine ->
+            "migraine"
+
+        PostpartumMotherParalysis ->
+            "paralysis"
+
+        PostpartumMotherAcuteAbdominalPain ->
+            "abdominal-pain"
+
+        PostpartumMotherLabouredBreathing ->
+            "laboured-breathing"
+
+        NoPostpartumMotherDangerSigns ->
+            "none"
+
+
+postpartumMotherDangerSignFromString : String -> Maybe PostpartumMotherDangerSign
+postpartumMotherDangerSignFromString sign =
+    case sign of
+        "uterine-bleeding" ->
+            Just PostpartumMotheUterineBleeding
+
+        "fever" ->
+            Just PostpartumMotherFever
+
+        "migraine" ->
+            Just PostpartumMotherMigraine
+
+        "paralysis" ->
+            Just PostpartumMotherParalysis
+
+        "abdominal-pain" ->
+            Just PostpartumMotherAcuteAbdominalPain
+
+        "laboured-breathing" ->
+            Just PostpartumMotherLabouredBreathing
+
+        "none" ->
+            Just NoPostpartumMotherDangerSigns
+
+        _ ->
+            Nothing
+
+
+postpartumChildDangerSignToString : PostpartumChildDangerSign -> String
+postpartumChildDangerSignToString sign =
+    case sign of
+        PostpartumChildInabilityToSuckle ->
+            "inability-to-suckle"
+
+        PostpartumChildParalysis ->
+            "paralysis"
+
+        PostpartumChildLabouredBreathing ->
+            "laboured-breathing"
+
+        PostpartumChildAbnormalTemperature ->
+            "abnormal-temperature"
+
+        PostpartumChildInactiveNoMovement ->
+            "inactive-or-no-movement"
+
+        PostpartumChildBodyTurnedYellow ->
+            "body-turned-yellow"
+
+        NoPostpartumChildDangerSigns ->
+            "none"
+
+
+postpartumChildDangerSignFromString : String -> Maybe PostpartumChildDangerSign
+postpartumChildDangerSignFromString sign =
+    case sign of
+        "inability-to-suckle" ->
+            Just PostpartumChildInabilityToSuckle
+
+        "paralysis" ->
+            Just PostpartumChildParalysis
+
+        "laboured-breathing" ->
+            Just PostpartumChildLabouredBreathing
+
+        "abnormal-temperature" ->
+            Just PostpartumChildAbnormalTemperature
+
+        "inactive-or-no-movement" ->
+            Just PostpartumChildInactiveNoMovement
+
+        "body-turned-yellow" ->
+            Just PostpartumChildBodyTurnedYellow
+
+        "none" ->
+            Just NoPostpartumChildDangerSigns
+
+        _ ->
+            Nothing

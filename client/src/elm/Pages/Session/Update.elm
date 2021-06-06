@@ -14,15 +14,19 @@ import Pages.Activities.Update
 import Pages.Activity.Model
 import Pages.Activity.Update
 import Pages.Attendance.Update
+import Pages.NextSteps.Model
+import Pages.NextSteps.Update
+import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Update
 import Pages.Session.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
+import ZScore.Model
 
 
-update : NominalDate -> SessionId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate sessionId db msg model =
+update : NominalDate -> ZScore.Model.Model -> SessionId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate zscores sessionId db msg model =
     let
         sessionData =
             Dict.get sessionId db.editableSessions
@@ -30,7 +34,7 @@ update currentDate sessionId db msg model =
     in
     case sessionData of
         Success session ->
-            updateFoundSession currentDate sessionId session msg model
+            updateFoundSession currentDate zscores sessionId session db msg model
 
         _ ->
             -- We're handling UI messages here, and the UI should only be shown if
@@ -42,8 +46,8 @@ update currentDate sessionId db msg model =
 {-| We need the editableSession in order to pass on some needed data. But we
 don't modify it directly ... instead, we return messages to do so.
 -}
-updateFoundSession : NominalDate -> SessionId -> EditableSession -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-updateFoundSession currentDate sessionId session msg model =
+updateFoundSession : NominalDate -> ZScore.Model.Model -> SessionId -> EditableSession -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+updateFoundSession currentDate zscores sessionId session db msg model =
     case msg of
         MsgActivities subMsg ->
             let
@@ -76,7 +80,7 @@ updateFoundSession currentDate sessionId session msg model =
                     Maybe.map (\childId -> getChildForm childId model session) maybeChildId
 
                 updateReturns =
-                    Pages.Activity.Update.updateChild currentDate subMsg activityPage session activityType childForm
+                    Pages.Activity.Update.updateChild currentDate zscores subMsg activityPage session activityType childForm db
 
                 sessionMsgs =
                     maybeChildId
@@ -252,5 +256,22 @@ updateFoundSession currentDate sessionId session msg model =
             , List.map (App.Model.MsgLoggedIn << App.Model.MsgPageSession sessionId) extraMsgs
             )
 
+        MsgNextSteps childId activity subMsg ->
+            let
+                nextStepsPage =
+                    Dict.get childId model.nextStepsPages
+                        |> Maybe.withDefault Pages.NextSteps.Model.emptyModel
+
+                ( subModel, subCmd, extraMsgs ) =
+                    Pages.NextSteps.Update.update childId activity subMsg nextStepsPage
+            in
+            ( { model | nextStepsPages = Dict.insert childId subModel model.nextStepsPages }
+            , Cmd.map (MsgNextSteps childId activity) subCmd
+            , List.map (App.Model.MsgLoggedIn << App.Model.MsgPageSession sessionId) extraMsgs
+            )
+
         SetActivePage page ->
             ( model, Cmd.none, [ App.Model.SetActivePage page ] )
+
+        SetActiveSessionPage page ->
+            ( model, Cmd.none, [ App.Model.SetActivePage (UserPage (SessionPage sessionId page)) ] )

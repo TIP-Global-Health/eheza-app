@@ -2,10 +2,20 @@ module Measurement.Update exposing (updateChild, updateMother)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), LactationSign(..), MeasurementData, MotherMeasurements, PhotoUrl(..))
+import Backend.Measurement.Model
+    exposing
+        ( ChildNutritionSign(..)
+        , ContributingFactorsSign(..)
+        , FamilyPlanningSign(..)
+        , LactationSign(..)
+        , MeasurementData
+        , MotherMeasurements
+        , PhotoUrl(..)
+        )
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
+import Pages.Utils exposing (setMultiSelectInputValue)
 
 
 {-| The strategy used here, for the moment, is that the `model` tracks the UI,
@@ -142,6 +152,101 @@ updateChild msg model =
 
         DropZoneComplete result ->
             ( { model | photo = Just (PhotoUrl result.url) }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetReferToHealthCenter value ->
+            let
+                form =
+                    model.sendToHCForm
+
+                updatedForm =
+                    { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
+            in
+            ( { model | sendToHCForm = updatedForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetHandReferralForm value ->
+            let
+                form =
+                    model.sendToHCForm
+
+                updatedForm =
+                    { form | handReferralForm = Just value }
+            in
+            ( { model | sendToHCForm = updatedForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetReasonForNotSendingToHC value ->
+            let
+                form =
+                    model.sendToHCForm
+
+                updatedForm =
+                    { form | reasonForNotSendingToHC = Just value }
+            in
+            ( { model | sendToHCForm = updatedForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetProvidedEducationForDiagnosis value ->
+            let
+                form =
+                    model.healthEducationForm
+
+                updatedForm =
+                    { form | educationForDiagnosis = Just value, reasonForNotProvidingHealthEducation = Nothing }
+            in
+            ( { model | healthEducationForm = updatedForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetReasonForNotProvidingHealthEducation value ->
+            let
+                form =
+                    model.healthEducationForm
+
+                updatedForm =
+                    { form | reasonForNotProvidingHealthEducation = Just value }
+            in
+            ( { model | healthEducationForm = updatedForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetContributingFactorsSign sign ->
+            let
+                form =
+                    model.contributingFactorsForm
+
+                updatedForm =
+                    setMultiSelectInputValue .signs
+                        (\signs -> { form | signs = signs })
+                        NoContributingFactorsSign
+                        sign
+                        form
+            in
+            ( { model | contributingFactorsForm = updatedForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetFollowUpOption option ->
+            let
+                form =
+                    model.followUpForm
+
+                updatedForm =
+                    { form | option = Just option }
+            in
+            ( { model | followUpForm = updatedForm }
             , Cmd.none
             , Nothing
             )

@@ -3,7 +3,7 @@ module Pages.PregnancyOutcome.Update exposing (update)
 import App.Model
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Decoder exposing (pregnancyOutcomeFromString)
-import Backend.IndividualEncounterParticipant.Model
+import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..))
 import Backend.Model
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page(..))
@@ -20,21 +20,21 @@ update currentDate id msg model =
         NoOp ->
             noChange
 
-        SavePregnancyOutcome ->
+        SavePregnancyOutcome destinationPage ->
             Maybe.map3
-                (\dateConcluded outcome isFacilityDelivery ->
+                (\dateConcluded outcome deliveryLocation ->
                     ( model
                     , Cmd.none
-                    , [ Backend.IndividualEncounterParticipant.Model.ClosePrenatalSession dateConcluded outcome isFacilityDelivery
+                    , [ Backend.IndividualEncounterParticipant.Model.ClosePrenatalSession dateConcluded outcome deliveryLocation
                             |> Backend.Model.MsgIndividualSession id
                             |> App.Model.MsgIndexedDb
-                      , App.Model.SetActivePage PinCodePage
+                      , App.Model.SetActivePage destinationPage
                       ]
                     )
                 )
                 model.pregnancyConcludedDate
                 model.pregnancyOutcome
-                model.isFacilityDelivery
+                model.deliveryLocation
                 |> Maybe.withDefault noChange
 
         SetActivePage page ->
@@ -43,8 +43,16 @@ update currentDate id msg model =
             , [ App.Model.SetActivePage page ]
             )
 
-        SetDeliveryLocation value ->
-            ( { model | isFacilityDelivery = Just value }
+        SetDeliveryLocation isFacilityDelivery ->
+            let
+                location =
+                    if isFacilityDelivery then
+                        FacilityDelivery
+
+                    else
+                        HomeDelivery
+            in
+            ( { model | deliveryLocation = Just location }
             , Cmd.none
             , []
             )

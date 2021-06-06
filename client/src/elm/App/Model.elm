@@ -1,10 +1,13 @@
 module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, Model, Msg(..), MsgLoggedIn(..), StorageQuota, SubModelReturn, Version, emptyLoggedInModel, emptyModel)
 
-import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import Backend.Entities exposing (..)
+import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.Model
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.NutritionActivity.Model exposing (NutritionActivity)
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity)
 import Browser
 import Browser.Navigation as Nav
 import Config.Model
@@ -13,7 +16,6 @@ import Error.Model exposing (Error)
 import Http
 import Json.Encode exposing (Value)
 import List.Zipper as Zipper
-import NutritionActivity.Model exposing (NutritionActivity)
 import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessOutcome.Model
@@ -22,6 +24,9 @@ import Pages.AcuteIllnessProgressReport.Model
 import Pages.Clinics.Model
 import Pages.Dashboard.Model
 import Pages.Device.Model
+import Pages.GlobalCaseManagement.Model
+import Pages.HomeVisitActivity.Model
+import Pages.HomeVisitEncounter.Model
 import Pages.IndividualEncounterParticipants.Model
 import Pages.NutritionActivity.Model
 import Pages.NutritionEncounter.Model
@@ -35,7 +40,6 @@ import Pages.PrenatalEncounter.Model
 import Pages.PrenatalParticipant.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
-import PrenatalActivity.Model exposing (PrenatalActivity)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import ServiceWorker.Model
@@ -120,6 +124,57 @@ type alias Model =
     }
 
 
+emptyModel : Nav.Key -> Url -> Flags -> Model
+emptyModel key url flags =
+    let
+        healthCenterId =
+            if String.isEmpty flags.healthCenterId then
+                Nothing
+
+            else
+                Just (toEntityUuid flags.healthCenterId)
+
+        villageId =
+            if String.isEmpty flags.villageId then
+                Nothing
+
+            else
+                Just (toEntityUuid flags.villageId)
+
+        syncInfoAuthorities =
+            flags.syncInfoAuthorities
+                |> List.map SyncManager.Utils.syncInfoAuthorityFromPort
+                |> Zipper.fromList
+
+        syncManagerFlags =
+            { syncInfoGeneral = SyncManager.Utils.syncInfoGeneralFromPort flags.syncInfoGeneral
+            , syncInfoAuthorities = syncInfoAuthorities
+            , batchSize = flags.photoDownloadBatchSize
+            , syncSpeed = flags.syncSpeed
+            }
+    in
+    { activePage = PinCodePage
+    , navigationKey = key
+    , url = url
+    , dbVersion = flags.dbVersion
+    , configuration = NotAsked
+    , currentTime = Time.millisToPosix 0
+    , dataWanted = Dict.empty
+    , indexedDb = Backend.Model.emptyModelIndexedDb
+    , language = English
+    , memoryQuota = Nothing
+    , persistentStorage = Nothing
+    , scheduleDataWantedCheck = True
+    , serviceWorker = ServiceWorker.Model.emptyModel flags.activeServiceWorker
+    , storageQuota = Nothing
+    , zscores = ZScore.Model.emptyModel
+    , healthCenterId = healthCenterId
+    , villageId = villageId
+    , syncManager = SyncManager.Model.emptyModel syncManagerFlags
+    , errors = []
+    }
+
+
 type alias StorageQuota =
     { quota : Int
     , usage : Int
@@ -174,6 +229,7 @@ it at the appropriate moment.
 type alias LoggedInModel =
     { createPersonPage : Pages.Person.Model.Model
     , dashboardPage : Pages.Dashboard.Model.Model
+    , globalCaseManagementPage : Pages.GlobalCaseManagement.Model.Model
     , editPersonPage : Pages.Person.Model.Model
     , relationshipPages : Dict ( PersonId, PersonId ) Pages.Relationship.Model.Model
     , personsPage : Pages.People.Model.Model
@@ -184,6 +240,7 @@ type alias LoggedInModel =
     , nurse : ( NurseId, Nurse )
 
     -- A set of pages for every "open" editable session.
+    , prenatalParticipantPages : Dict PersonId Pages.PrenatalParticipant.Model.Model
     , prenatalEncounterPages : Dict PrenatalEncounterId Pages.PrenatalEncounter.Model.Model
     , prenatalActivityPages : Dict ( PrenatalEncounterId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
     , pregnancyOutcomePages : Dict IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Model
@@ -195,6 +252,8 @@ type alias LoggedInModel =
     , acuteIllnessActivityPages : Dict ( AcuteIllnessEncounterId, AcuteIllnessActivity ) Pages.AcuteIllnessActivity.Model.Model
     , acuteIllnessProgressReportPages : Dict AcuteIllnessEncounterId Pages.AcuteIllnessProgressReport.Model.Model
     , acuteIllnessOutcomePages : Dict IndividualEncounterParticipantId Pages.AcuteIllnessOutcome.Model.Model
+    , homeVisitEncounterPages : Dict HomeVisitEncounterId Pages.HomeVisitEncounter.Model.Model
+    , homeVisitActivityPages : Dict ( HomeVisitEncounterId, HomeVisitActivity ) Pages.HomeVisitActivity.Model.Model
     }
 
 
@@ -202,12 +261,14 @@ emptyLoggedInModel : Maybe VillageId -> ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel villageId nurse =
     { createPersonPage = Pages.Person.Model.emptyCreateModel
     , dashboardPage = Pages.Dashboard.Model.emptyModel villageId
+    , globalCaseManagementPage = Pages.GlobalCaseManagement.Model.emptyModel
     , editPersonPage = Pages.Person.Model.emptyEditModel
     , personsPage = Pages.People.Model.emptyModel
     , individualEncounterParticipantsPage = Pages.IndividualEncounterParticipants.Model.emptyModel
     , clinicsPage = Pages.Clinics.Model.emptyModel
     , relationshipPages = Dict.empty
     , nurse = nurse
+    , prenatalParticipantPages = Dict.empty
     , prenatalEncounterPages = Dict.empty
     , prenatalActivityPages = Dict.empty
     , pregnancyOutcomePages = Dict.empty
@@ -219,6 +280,8 @@ emptyLoggedInModel villageId nurse =
     , acuteIllnessActivityPages = Dict.empty
     , acuteIllnessProgressReportPages = Dict.empty
     , acuteIllnessOutcomePages = Dict.empty
+    , homeVisitEncounterPages = Dict.empty
+    , homeVisitActivityPages = Dict.empty
     }
 
 
@@ -260,6 +323,7 @@ type MsgLoggedIn
     = MsgPageClinics Pages.Clinics.Model.Msg
     | MsgPageCreatePerson Pages.Person.Model.Msg
     | MsgPageDashboard DashboardPage Pages.Dashboard.Model.Msg
+    | MsgPageGlobalCaseManagement Pages.GlobalCaseManagement.Model.Msg
     | MsgPageEditPerson Pages.Person.Model.Msg
     | MsgPagePersons Pages.People.Model.Msg
     | MsgPagePrenatalParticipant PersonId Pages.PrenatalParticipant.Model.Msg
@@ -270,8 +334,10 @@ type MsgLoggedIn
     | MsgPagePrenatalEncounter PrenatalEncounterId Pages.PrenatalEncounter.Model.Msg
     | MsgPageNutritionEncounter NutritionEncounterId Pages.NutritionEncounter.Model.Msg
     | MsgPageAcuteIllnessEncounter AcuteIllnessEncounterId Pages.AcuteIllnessEncounter.Model.Msg
+    | MsgPageHomeVisitEncounter HomeVisitEncounterId Pages.HomeVisitEncounter.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.PrenatalActivity.Model.Msg
     | MsgPageNutritionActivity NutritionEncounterId NutritionActivity Pages.NutritionActivity.Model.Msg
+    | MsgPageHomeVisitActivity HomeVisitEncounterId HomeVisitActivity Pages.HomeVisitActivity.Model.Msg
     | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
     | MsgPageAcuteIllnessActivity AcuteIllnessEncounterId AcuteIllnessActivity Pages.AcuteIllnessActivity.Model.Msg
     | MsgPageAcuteIllnessProgressReport AcuteIllnessEncounterId Pages.AcuteIllnessProgressReport.Model.Msg
@@ -290,57 +356,6 @@ type alias Flags =
     , syncInfoAuthorities : List SyncManager.Model.SyncInfoAuthorityForPort
     , photoDownloadBatchSize : Int
     , syncSpeed : SyncManager.Model.SyncSpeed
-    }
-
-
-emptyModel : Nav.Key -> Url -> Flags -> Model
-emptyModel key url flags =
-    let
-        healthCenterId =
-            if String.isEmpty flags.healthCenterId then
-                Nothing
-
-            else
-                Just (toEntityUuid flags.healthCenterId)
-
-        villageId =
-            if String.isEmpty flags.villageId then
-                Nothing
-
-            else
-                Just (toEntityUuid flags.villageId)
-
-        syncInfoAuthorities =
-            flags.syncInfoAuthorities
-                |> List.map SyncManager.Utils.syncInfoAuthorityFromPort
-                |> Zipper.fromList
-
-        syncManagerFlags =
-            { syncInfoGeneral = SyncManager.Utils.syncInfoGeneralFromPort flags.syncInfoGeneral
-            , syncInfoAuthorities = syncInfoAuthorities
-            , batchSize = flags.photoDownloadBatchSize
-            , syncSpeed = flags.syncSpeed
-            }
-    in
-    { activePage = PinCodePage
-    , navigationKey = key
-    , url = url
-    , dbVersion = flags.dbVersion
-    , configuration = NotAsked
-    , currentTime = Time.millisToPosix 0
-    , dataWanted = Dict.empty
-    , indexedDb = Backend.Model.emptyModelIndexedDb
-    , language = English
-    , memoryQuota = Nothing
-    , persistentStorage = Nothing
-    , scheduleDataWantedCheck = True
-    , serviceWorker = ServiceWorker.Model.emptyModel flags.activeServiceWorker
-    , storageQuota = Nothing
-    , zscores = ZScore.Model.emptyModel
-    , healthCenterId = healthCenterId
-    , villageId = villageId
-    , syncManager = SyncManager.Model.emptyModel syncManagerFlags
-    , errors = []
     }
 
 

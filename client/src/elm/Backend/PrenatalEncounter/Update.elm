@@ -183,3 +183,63 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | savePrenatalPhoto = data }
             , Cmd.none
             )
+
+        SaveBirthPlan personId valueId value ->
+            ( { model | saveBirthPlan = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value birthPlanEndpoint HandleSavedBirthPlan
+            )
+
+        HandleSavedBirthPlan data ->
+            ( { model | savePrenatalPhoto = data }
+            , Cmd.none
+            )
+
+        SavePregnancyTesting personId valueId value ->
+            ( { model | savePregnancyTesting = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value pregnancyTestingEndpoint HandleSavedPregnancyTesting
+            )
+
+        HandleSavedPregnancyTesting data ->
+            ( { model | savePregnancyTesting = data }
+            , Cmd.none
+            )
+
+        SaveHealthEducation personId valueId value ->
+            ( { model | saveHealthEducation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalHealthEducationEndpoint HandleSavedHealthEducation
+            )
+
+        HandleSavedHealthEducation data ->
+            ( { model | saveHealthEducation = data }
+            , Cmd.none
+            )
+
+        SaveFollowUp personId valueId value ->
+            ( { model | saveFollowUp = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalFollowUpEndpoint HandleSavedFollowup
+            )
+
+        HandleSavedFollowup data ->
+            ( { model | saveFollowUp = data }
+            , Cmd.none
+            )
+
+        SaveSendToHC personId valueId value ->
+            ( { model | saveSendToHC = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalSendToHcEndpoint HandleSavedSendToHC
+            )
+
+        HandleSavedSendToHC data ->
+            ( { model | saveSendToHC = data }
+            , Cmd.none
+            )
+
+        SaveAppointmentConfirmation personId valueId value ->
+            ( { model | saveAppointmentConfirmation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value appointmentConfirmationEndpoint HandleSavedAppointmentConfirmation
+            )
+
+        HandleSavedAppointmentConfirmation data ->
+            ( { model | saveAppointmentConfirmation = data }
+            , Cmd.none
+            )

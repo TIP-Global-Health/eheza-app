@@ -5,6 +5,7 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
+import Measurement.Model exposing (..)
 import Pages.Page exposing (Page)
 
 
@@ -79,6 +80,8 @@ type Msg
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution )) (Maybe NextStepsTask)
     | SetProvidedEducationForDiagnosis Bool
     | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation )) (Maybe NextStepsTask)
+    | SetFollowUpOption FollowUpOption
+    | SaveFollowUp PersonId (Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )) (Maybe NextStepsTask)
       -- ONGOIN TREATMENT
     | SetActiveOngoingTreatmentTask OngoingTreatmentTask
     | SetOngoingTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
@@ -340,6 +343,7 @@ type alias NextStepsData =
     , sendToHCForm : SendToHCForm
     , medicationDistributionForm : MedicationDistributionForm
     , healthEducationForm : HealthEducationForm
+    , followUpForm : FollowUpForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -349,9 +353,10 @@ emptyNextStepsData =
     { isolationForm = IsolationForm Nothing Nothing Nothing Nothing
     , hcContactForm = HCContactForm Nothing Nothing Nothing Nothing
     , call114Form = emptyCall114Form
-    , sendToHCForm = SendToHCForm Nothing Nothing Nothing
+    , sendToHCForm = emptySendToHCForm
     , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
-    , healthEducationForm = HealthEducationForm Nothing Nothing
+    , healthEducationForm = emptyHealthEducationForm
+    , followUpForm = FollowUpForm Nothing
     , activeTask = Nothing
     }
 
@@ -363,6 +368,7 @@ type NextStepsTask
     | NextStepsMedicationDistribution
     | NextStepsSendToHC
     | NextStepsHealthEducation
+    | NextStepsFollowUp
 
 
 type alias IsolationForm =
@@ -392,6 +398,11 @@ type alias Call114Form =
     }
 
 
+type alias FollowUpForm =
+    { option : Maybe FollowUpOption
+    }
+
+
 emptyCall114Form : Call114Form
 emptyCall114Form =
     { called114 = Nothing
@@ -404,13 +415,6 @@ emptyCall114Form =
     }
 
 
-type alias SendToHCForm =
-    { handReferralForm : Maybe Bool
-    , referToHealthCenter : Maybe Bool
-    , reasonForNotSendingToHC : Maybe ReasonForNotSendingToHC
-    }
-
-
 type alias MedicationDistributionForm =
     { amoxicillin : Maybe Bool
     , coartem : Maybe Bool
@@ -418,12 +422,6 @@ type alias MedicationDistributionForm =
     , zinc : Maybe Bool
     , lemonJuiceOrHoney : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
-    }
-
-
-type alias HealthEducationForm =
-    { educationForDiagnosis : Maybe Bool
-    , reasonForNotProvidingHealthEducation : Maybe ReasonForNotProvidingHealthEducation
     }
 
 

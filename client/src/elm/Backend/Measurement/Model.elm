@@ -51,6 +51,10 @@ type alias AcuteIllnessMeasurement value =
     Measurement AcuteIllnessEncounterId value
 
 
+type alias HomeVisitMeasurement value =
+    Measurement HomeVisitEncounterId value
+
+
 
 -- GROUP MEASUREMENT TYPES
 
@@ -153,12 +157,6 @@ type alias FbfValue =
     }
 
 
-type alias FbfForm =
-    { distributedAmount : Maybe Float
-    , distributionNotice : Maybe DistributionNotice
-    }
-
-
 type alias ParticipantConsent =
     GroupMeasurement ParticipantConsentValue
 
@@ -191,6 +189,58 @@ type alias CounselingSession =
     GroupMeasurement ( CounselingTiming, EverySet CounselingTopicId )
 
 
+type alias GroupSendToHC =
+    GroupMeasurement SendToHCValue
+
+
+type alias GroupHealthEducation =
+    GroupMeasurement HealthEducationValue
+
+
+type alias ContributingFactors =
+    GroupMeasurement (EverySet ContributingFactorsSign)
+
+
+type alias FollowUp =
+    GroupMeasurement FollowUpValue
+
+
+type alias FollowUpValue =
+    { options : EverySet FollowUpOption
+    , assesment : EverySet NutritionAssesment
+    }
+
+
+type NutritionAssesment
+    = AssesmentAcuteMalnutritionModerate
+    | AssesmentAcuteMalnutritionSevere
+    | AssesmentUnderweightModerate
+    | AssesmentUnderweightSevere
+    | AssesmentDangerSignsNotPresent
+    | AssesmentDangerSignsPresent
+    | AssesmentMalnutritionSigns (List ChildNutritionSign)
+    | AssesmentConsecutiveWeightLoss
+    | NoNutritionAssesment
+
+
+type ContributingFactorsSign
+    = FactorLackOfBreastMilk
+    | FactorMaternalMastitis
+    | FactorPoorSuck
+    | FactorDiarrheaOrVomiting
+    | NoContributingFactorsSign
+
+
+type FollowUpOption
+    = OneDay
+    | ThreeDays
+    | OneWeek
+    | TwoWeeks
+    | OneMonths
+    | TwoMonths
+    | ThreeMonths
+
+
 
 -- NUTRITION MEASUREMENTS
 
@@ -213,6 +263,140 @@ type alias NutritionPhoto =
 
 type alias NutritionWeight =
     NutritionMeasurement WeightInKg
+
+
+type alias NutritionSendToHC =
+    NutritionMeasurement SendToHCValue
+
+
+type alias NutritionHealthEducation =
+    NutritionMeasurement HealthEducationValue
+
+
+type alias NutritionContributingFactors =
+    NutritionMeasurement (EverySet ContributingFactorsSign)
+
+
+type alias NutritionFollowUp =
+    NutritionMeasurement FollowUpValue
+
+
+
+-- HOME VISIT MEASUREMENTS
+
+
+type alias NutritionFeeding =
+    HomeVisitMeasurement NutritionFeedingValue
+
+
+type alias NutritionFeedingValue =
+    { signs : EverySet NutritionFeedingSign
+    , supplementType : NutritionSupplementType
+    , sachetsPerDay : Float
+    }
+
+
+type NutritionFeedingSign
+    = ReceiveSupplement
+    | RationPresentAtHome
+    | EnoughTillNextSession
+    | SupplementShared
+    | EncouragedToEat
+    | RefusingToEat
+    | FeedingSignBreastfeeding
+    | CleanWaterAvailable
+    | EatenWithWater
+    | NoNutritionFeedingSigns
+
+
+type NutritionSupplementType
+    = FortifiedPorridge
+    | Rutf
+    | Ongera
+    | TherapeuticMilk
+    | NoNutritionSupplementType
+
+
+type alias NutritionHygiene =
+    HomeVisitMeasurement NutritionHygieneValue
+
+
+type alias NutritionHygieneValue =
+    { signs : EverySet NutritionHygieneSign
+    , mainWaterSource : MainWaterSource
+    , waterPreparationOption : WaterPreparationOption
+    }
+
+
+type NutritionHygieneSign
+    = SoapInTheHouse
+    | WashHandsBeforeFeeding
+    | FoodCovered
+    | NoNutritionHygieneSigns
+
+
+type MainWaterSource
+    = PipedWaterToHome
+    | PublicWaterTap
+    | RainWaterCollectionSystem
+    | NaturalSourceFlowingWater
+    | NaturalSourceStandingWater
+    | BottledWater
+
+
+type WaterPreparationOption
+    = Boiled
+    | PurificationSolution
+    | Filtered
+    | Bottled
+    | NoWaterPreparationOption
+
+
+type alias NutritionFoodSecurity =
+    HomeVisitMeasurement NutritionFoodSecurityValue
+
+
+type alias NutritionFoodSecurityValue =
+    { signs : EverySet NutritionFoodSecuritySign
+    , mainIncomeSource : MainIncomeSource
+    }
+
+
+type NutritionFoodSecuritySign
+    = HouseholdGotFood
+    | NoNutritionFoodSecuritySigns
+
+
+type MainIncomeSource
+    = HomeBasedAgriculture
+    | CommercialAgriculture
+    | PublicEmployee
+    | PrivateBusinessEmpployee
+
+
+type alias NutritionCaringValue =
+    { signs : EverySet NutritionCaringSign
+    , caringOption : CaringOption
+    }
+
+
+type alias NutritionCaring =
+    HomeVisitMeasurement NutritionCaringValue
+
+
+type NutritionCaringSign
+    = ParentsAliveHealthy
+    | ChildClean
+    | NoCaringSigns
+
+
+type CaringOption
+    = CaredByParent
+    | CaredByGrandparent
+    | CaredBySibling
+    | CaredByNeighbor
+    | CaredByHouseHelper
+    | CaredByDaycare
 
 
 
@@ -316,7 +500,34 @@ type DangerSign
 
 
 type alias DangerSigns =
-    PrenatalMeasurement (EverySet DangerSign)
+    PrenatalMeasurement DangerSignsValue
+
+
+type alias DangerSignsValue =
+    { signs : EverySet DangerSign
+    , postpartumMother : EverySet PostpartumMotherDangerSign
+    , postpartumChild : EverySet PostpartumChildDangerSign
+    }
+
+
+type PostpartumMotherDangerSign
+    = PostpartumMotheUterineBleeding
+    | PostpartumMotherFever
+    | PostpartumMotherMigraine
+    | PostpartumMotherParalysis
+    | PostpartumMotherAcuteAbdominalPain
+    | PostpartumMotherLabouredBreathing
+    | NoPostpartumMotherDangerSigns
+
+
+type PostpartumChildDangerSign
+    = PostpartumChildInabilityToSuckle
+    | PostpartumChildParalysis
+    | PostpartumChildLabouredBreathing
+    | PostpartumChildAbnormalTemperature
+    | PostpartumChildInactiveNoMovement
+    | PostpartumChildBodyTurnedYellow
+    | NoPostpartumChildDangerSigns
 
 
 type alias LastMenstrualPeriodValue =
@@ -510,6 +721,80 @@ type alias VitalsValue =
 
 type alias Vitals =
     PrenatalMeasurement VitalsValue
+
+
+type alias BirthPlanValue =
+    { signs : EverySet BirthPlanSign
+    , familyPlanning : EverySet FamilyPlanningSign
+    }
+
+
+type alias BirthPlan =
+    PrenatalMeasurement BirthPlanValue
+
+
+type BirthPlanSign
+    = Insurance
+    | BoughtClothes
+    | CaregiverAccompany
+    | SavedMoney
+    | Transportation
+    | NoBirthPlan
+
+
+type alias PregnancyTest =
+    PrenatalMeasurement PregnancyTestResult
+
+
+type PregnancyTestResult
+    = PregnancyTestPositive
+    | PregnancyTestNegative
+    | PregnancyTestIndeterminate
+    | PregnancyTestUnableToConduct
+
+
+type alias PrenatalHealthEducation =
+    PrenatalMeasurement (EverySet PrenatalHealthEducationSign)
+
+
+type PrenatalHealthEducationSign
+    = EducationExpectations
+    | EducationVisitsReview
+    | EducationWarningSigns
+    | EducationHemorrhaging
+    | EducationFamilyPlanning
+    | EducationBreastfeeding
+    | EducationImmunization
+    | EducationHygiene
+    | NoPrenatalHealthEducationSigns
+
+
+type alias PrenatalFollowUp =
+    PrenatalMeasurement PrenatalFollowUpValue
+
+
+type alias PrenatalFollowUpValue =
+    { options : EverySet FollowUpOption
+    , assesment : PrenatalAssesment
+    }
+
+
+type PrenatalAssesment
+    = AssesmentNormalPregnancy
+    | AssesmentHighRiskPregnancy
+
+
+type alias PrenatalSendToHC =
+    PrenatalMeasurement SendToHCValue
+
+
+type alias PrenatalAppointmentConfirmationValue =
+    { date : NominalDate
+    }
+
+
+type alias PrenatalAppointmentConfirmation =
+    PrenatalMeasurement PrenatalAppointmentConfirmationValue
 
 
 
@@ -784,6 +1069,7 @@ type alias SendToHCValue =
 type SendToHCSign
     = HandReferrerForm
     | ReferToHealthCenter
+    | PrenatalAccompanyToHC
     | NoSendToHCSigns
 
 
@@ -859,6 +1145,7 @@ type ReasonForNotProvidingHealthEducation
     | ReceivedEmergencyCase
     | LackOfAppropriateEducationUserGuide
     | PatientRefused
+    | PatientTooIll
     | NoReasonForNotProvidingHealthEducation
 
 
@@ -920,6 +1207,10 @@ type HealthEducationSign
     | NoHealthEducationSigns
 
 
+type alias AcuteIllnessFollowUp =
+    AcuteIllnessMeasurement (EverySet FollowUpOption)
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -959,6 +1250,10 @@ type alias ChildMeasurementList =
     , weights : Dict WeightId Weight
     , counselingSessions : Dict CounselingSessionId CounselingSession
     , fbfs : Dict ChildFbfId Fbf
+    , contributingFactors : Dict ContributingFactorsId ContributingFactors
+    , followUp : Dict FollowUpId FollowUp
+    , healthEducation : Dict GroupHealthEducationId GroupHealthEducation
+    , sendToHC : Dict GroupSendToHCId GroupSendToHC
     }
 
 
@@ -971,6 +1266,10 @@ emptyChildMeasurementList =
     , weights = Dict.empty
     , counselingSessions = Dict.empty
     , fbfs = Dict.empty
+    , contributingFactors = Dict.empty
+    , followUp = Dict.empty
+    , healthEducation = Dict.empty
+    , sendToHC = Dict.empty
     }
 
 
@@ -994,8 +1293,7 @@ emptyHistoricalMeasurements =
 -- ONE OF EACH KIND OF MEASUREMENT
 
 
-{-| A set of prenatal measurements that correspond to the same prenatal
-encounter.
+{-| A set of prenatal measurements that correspond to the same Prenatal encounter.
 -}
 type alias PrenatalMeasurements =
     { breastExam : Maybe ( BreastExamId, BreastExam )
@@ -1013,11 +1311,42 @@ type alias PrenatalMeasurements =
     , socialHistory : Maybe ( SocialHistoryId, SocialHistory )
     , vitals : Maybe ( VitalsId, Vitals )
     , prenatalPhoto : Maybe ( PrenatalPhotoId, PrenatalPhoto )
+    , birthPlan : Maybe ( BirthPlanId, BirthPlan )
+    , pregnancyTest : Maybe ( PregnancyTestId, PregnancyTest )
+    , healthEducation : Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )
+    , followUp : Maybe ( PrenatalFollowUpId, PrenatalFollowUp )
+    , sendToHC : Maybe ( PrenatalSendToHcId, PrenatalSendToHC )
+    , appointmentConfirmation : Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )
     }
 
 
-{-| A set of Nutrition measurements that correspond to the same Nutrition
-encounter.
+emptyPrenatalMeasurements : PrenatalMeasurements
+emptyPrenatalMeasurements =
+    { breastExam = Nothing
+    , corePhysicalExam = Nothing
+    , dangerSigns = Nothing
+    , lastMenstrualPeriod = Nothing
+    , medicalHistory = Nothing
+    , medication = Nothing
+    , obstetricalExam = Nothing
+    , obstetricHistory = Nothing
+    , obstetricHistoryStep2 = Nothing
+    , familyPlanning = Nothing
+    , nutrition = Nothing
+    , resource = Nothing
+    , socialHistory = Nothing
+    , vitals = Nothing
+    , prenatalPhoto = Nothing
+    , birthPlan = Nothing
+    , pregnancyTest = Nothing
+    , healthEducation = Nothing
+    , followUp = Nothing
+    , sendToHC = Nothing
+    , appointmentConfirmation = Nothing
+    }
+
+
+{-| A set of Nutrition measurements that correspond to the same Nutrition encounter.
 -}
 type alias NutritionMeasurements =
     { muac : Maybe ( NutritionMuacId, NutritionMuac )
@@ -1025,11 +1354,14 @@ type alias NutritionMeasurements =
     , nutrition : Maybe ( NutritionNutritionId, NutritionNutrition )
     , photo : Maybe ( NutritionPhotoId, NutritionPhoto )
     , weight : Maybe ( NutritionWeightId, NutritionWeight )
+    , sendToHC : Maybe ( NutritionSendToHCId, NutritionSendToHC )
+    , healthEducation : Maybe ( NutritionHealthEducationId, NutritionHealthEducation )
+    , contributingFactors : Maybe ( NutritionContributingFactorsId, NutritionContributingFactors )
+    , followUp : Maybe ( NutritionFollowUpId, NutritionFollowUp )
     }
 
 
-{-| A set of Acute Illness measurements that correspond to the same Nutrition
-encounter.
+{-| A set of Acute Illness measurements that correspond to the same Acute Illness encounter.
 -}
 type alias AcuteIllnessMeasurements =
     { symptomsGeneral : Maybe ( SymptomsGeneralId, SymptomsGeneral )
@@ -1051,6 +1383,27 @@ type alias AcuteIllnessMeasurements =
     , dangerSigns : Maybe ( AcuteIllnessDangerSignsId, AcuteIllnessDangerSigns )
     , nutrition : Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )
     , healthEducation : Maybe ( HealthEducationId, HealthEducation )
+    , followUp : Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )
+    }
+
+
+{-| A set of measurements that represent follow ups needed for certain Healh Center.
+-}
+type alias FollowUpMeasurements =
+    { nutritionGroup : Dict FollowUpId FollowUp
+    , nutritionIndividual : Dict NutritionFollowUpId NutritionFollowUp
+    , acuteIllness : Dict AcuteIllnessFollowUpId AcuteIllnessFollowUp
+    , prenatal : Dict PrenatalFollowUpId PrenatalFollowUp
+    }
+
+
+{-| A set of Home Visit measurements that correspond to the same Home Visit encounter.
+-}
+type alias HomeVisitMeasurements =
+    { feeding : Maybe ( NutritionFeedingId, NutritionFeeding )
+    , hygiene : Maybe ( NutritionHygieneId, NutritionHygiene )
+    , foodSecurity : Maybe ( NutritionFoodSecurityId, NutritionFoodSecurity )
+    , caring : Maybe ( NutritionCaringId, NutritionCaring )
     }
 
 
@@ -1069,6 +1422,10 @@ type alias ChildMeasurements =
     , weight : Maybe ( WeightId, Weight )
     , counselingSession : Maybe ( CounselingSessionId, CounselingSession )
     , fbf : Maybe ( ChildFbfId, Fbf )
+    , contributingFactors : Maybe ( ContributingFactorsId, ContributingFactors )
+    , followUp : Maybe ( FollowUpId, FollowUp )
+    , healthEducation : Maybe ( GroupHealthEducationId, GroupHealthEducation )
+    , sendToHC : Maybe ( GroupSendToHCId, GroupSendToHC )
     }
 
 
@@ -1081,6 +1438,10 @@ emptyChildMeasurements =
     , weight = Nothing
     , counselingSession = Nothing
     , fbf = Nothing
+    , contributingFactors = Nothing
+    , followUp = Nothing
+    , healthEducation = Nothing
+    , sendToHC = Nothing
     }
 
 

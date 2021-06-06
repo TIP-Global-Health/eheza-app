@@ -156,4 +156,11 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
     ];
   }
 
+  /**
+   * Show the date with date only.
+   */
+  protected function renderDate2($date) {
+    return date('Y-m-d', $date);
+  }
+
 }

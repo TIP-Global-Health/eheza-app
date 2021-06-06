@@ -31,6 +31,11 @@ import Pages.Clinics.View
 import Pages.Dashboard.View
 import Pages.DemographicsReport.View
 import Pages.Device.View
+import Pages.GlobalCaseManagement.View
+import Pages.HomeVisitActivity.Model
+import Pages.HomeVisitActivity.View
+import Pages.HomeVisitEncounter.Model
+import Pages.HomeVisitEncounter.View
 import Pages.IndividualEncounterParticipants.View
 import Pages.IndividualEncounterTypes.View
 import Pages.MyAccount.View
@@ -51,6 +56,7 @@ import Pages.PrenatalActivity.Model
 import Pages.PrenatalActivity.View
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.View
+import Pages.PrenatalParticipant.Model
 import Pages.PrenatalParticipant.View
 import Pages.Relationship.Model
 import Pages.Relationship.View
@@ -122,6 +128,22 @@ saves the current language via the Update function in local storage.
 -}
 viewLanguageSwitcherAndVersion : Model -> Html Msg
 viewLanguageSwitcherAndVersion model =
+    let
+        devicePageShortcut =
+            case model.activePage of
+                UserPage (SessionPage _ (NextStepsPage _ _)) ->
+                    -- We do not show the shortcut on Next steps page
+                    -- to prevent navigating outside of that page,
+                    -- before all tasks are completed.
+                    emptyNode
+
+                _ ->
+                    span
+                        [ onClick <| SetActivePage DevicePage
+                        , class "sync-icon"
+                        ]
+                        [ i [ class "icon undo" ] [] ]
+    in
     div
         [ class "ui language-switcher" ]
         [ ul
@@ -147,11 +169,7 @@ viewLanguageSwitcherAndVersion model =
                 , a [] [ span [ class "icon-kinyarwanda" ] [] ]
                 ]
             ]
-        , span
-            [ onClick <| SetActivePage DevicePage
-            , class "sync-icon"
-            ]
-            [ i [ class "icon undo" ] [] ]
+        , devicePageShortcut
         , span
             [ class "version"
             , onClick <| SetActivePage ServiceWorkerPage
@@ -272,8 +290,8 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPageClinics)
                             |> flexPageWrapper model
 
-                    ClinicalProgressReportPage prenatalEncounterId ->
-                        Pages.ClinicalProgressReport.View.view model.language currentDate prenatalEncounterId model.indexedDb
+                    ClinicalProgressReportPage initiator prenatalEncounterId ->
+                        Pages.ClinicalProgressReport.View.view model.language currentDate prenatalEncounterId isChw initiator model.indexedDb
                             |> flexPageWrapper model
 
                     CreatePersonPage relation initiator ->
@@ -291,6 +309,11 @@ viewUserPage page deviceName model configured =
                     DashboardPage subPage ->
                         Pages.Dashboard.View.view model.language subPage currentDate healthCenterId isChw (Tuple.second loggedInModel.nurse) loggedInModel.dashboardPage model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageDashboard subPage)
+                            |> flexPageWrapper model
+
+                    GlobalCaseManagementPage ->
+                        Pages.GlobalCaseManagement.View.view model.language currentDate ( healthCenterId, model.villageId ) isChw loggedInModel.globalCaseManagementPage model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageGlobalCaseManagement)
                             |> flexPageWrapper model
 
                     DemographicsReportPage prenatalEncounterId ->
@@ -319,11 +342,17 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     PrenatalParticipantPage id ->
-                        Pages.PrenatalParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.prenatalParticipantPages
+                                    |> Maybe.withDefault Pages.PrenatalParticipant.Model.emptyModel
+                        in
+                        Pages.PrenatalParticipant.View.view model.language currentDate healthCenterId id isChw model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPagePrenatalParticipant id)
                             |> flexPageWrapper model
 
                     NutritionParticipantPage id ->
-                        Pages.NutritionParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
+                        Pages.NutritionParticipant.View.view model.language currentDate healthCenterId id isChw model.indexedDb
                             |> flexPageWrapper model
 
                     AcuteIllnessParticipantPage id ->
@@ -390,7 +419,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get id loggedInModel.prenatalEncounterPages
                                     |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
                         in
-                        Pages.PrenatalEncounter.View.view model.language currentDate id model.indexedDb page_
+                        Pages.PrenatalEncounter.View.view model.language currentDate id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalEncounter id)
                             |> flexPageWrapper model
 
@@ -400,7 +429,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get ( id, activity ) loggedInModel.prenatalActivityPages
                                     |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
                         in
-                        Pages.PrenatalActivity.View.view model.language currentDate id activity model.indexedDb page_
+                        Pages.PrenatalActivity.View.view model.language currentDate id isChw activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalActivity id activity)
                             |> flexPageWrapper model
 
@@ -408,13 +437,13 @@ viewUserPage page deviceName model configured =
                         Pages.IndividualEncounterTypes.View.view model.language currentDate healthCenterId isChw model
                             |> flexPageWrapper model
 
-                    PregnancyOutcomePage id ->
+                    PregnancyOutcomePage initiator id ->
                         let
                             page_ =
                                 Dict.get id loggedInModel.pregnancyOutcomePages
                                     |> Maybe.withDefault Pages.PregnancyOutcome.Model.emptyModel
                         in
-                        Pages.PregnancyOutcome.View.view model.language currentDate id model.indexedDb page_
+                        Pages.PregnancyOutcome.View.view model.language currentDate id isChw initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePregnancyOutcome id)
                             |> flexPageWrapper model
 
@@ -424,7 +453,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get id loggedInModel.nutritionEncounterPages
                                     |> Maybe.withDefault Pages.NutritionEncounter.Model.emptyModel
                         in
-                        Pages.NutritionEncounter.View.view model.language currentDate id isChw model.indexedDb page_
+                        Pages.NutritionEncounter.View.view model.language currentDate model.zscores id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionEncounter id)
                             |> flexPageWrapper model
 
@@ -480,6 +509,26 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.AcuteIllnessOutcome.View.view model.language currentDate id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessOutcome id)
+                            |> flexPageWrapper model
+
+                    HomeVisitEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.homeVisitEncounterPages
+                                    |> Maybe.withDefault Pages.HomeVisitEncounter.Model.emptyModel
+                        in
+                        Pages.HomeVisitEncounter.View.view model.language currentDate id isChw model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageHomeVisitEncounter id)
+                            |> flexPageWrapper model
+
+                    HomeVisitActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.homeVisitActivityPages
+                                    |> Maybe.withDefault Pages.HomeVisitActivity.Model.emptyModel
+                        in
+                        Pages.HomeVisitActivity.View.view model.language currentDate id activity model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageHomeVisitActivity id activity)
                             |> flexPageWrapper model
 
             else

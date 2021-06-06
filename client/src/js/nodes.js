@@ -50,8 +50,9 @@
         });
 
         // If placeholder still indicates tha DB was not initialized,
+        // or version of initialized DB is not as we expect,
         // initialize it.
-        if (dbSync === null) {
+        if (dbSync === null || dbSync.verno != dbVerno) {
             // Check if IndexedDB exists.
             var dbExists = await Dexie.exists('sync');
             if (!dbExists) {
@@ -114,6 +115,12 @@
                 }
                 else if (type === 'acute-illness-measurements') {
                     return viewMeasurements('acute_illness_encounter', uuid);
+                }
+                else if (type === 'home-visit-measurements') {
+                    return viewMeasurements('home_visit_encounter', uuid);
+                }
+                else if (type === 'follow-up-measurements') {
+                    return viewFollowUpMeasurements(uuid);
                 }
                 else {
                     return view(type, uuid);
@@ -424,9 +431,13 @@
     // taken during groups encounter.
     var groupMeasurementTypes = [
       'attendance',
+      'contributing_factors',
       'counseling_session',
       'child_fbf',
       'family_planning',
+      'follow_up',
+      'group_health_education',
+      'group_send_to_hc',
       'height',
       'lactation',
       'mother_fbf',
@@ -479,6 +490,9 @@
                     else if (key === 'acute_illness_encounter') {
                       target = node.acute_illness_encounter;
                     }
+                    else if (key === 'home_visit_encounter') {
+                        target = node.home_visit_encounter;
+                    }
 
                     data[target] = data[target] || {};
                     if (data[target][node.type]) {
@@ -492,6 +506,62 @@
                 var body = JSON.stringify({
                     // Decoder is expecting a list, so we use Object.values().
                     data: Object.values(data)
+                });
+
+                var response = new Response(body, {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return Promise.resolve(response);
+            } else {
+                response = new Response('', {
+                    status: 404,
+                    statusText: 'Not found'
+                });
+
+                return Promise.reject(response);
+            }
+        }).catch(sendErrorResponses);
+    }
+
+    // List with all types of Follow Up measurements.
+    var followUpMeasurementsTypes = [
+      'acute_illness_follow_up',
+      'follow_up',
+      'nutrition_follow_up',
+      'prenatal_follow_up'
+    ];
+
+    function viewFollowUpMeasurements (shard) {
+        // Load all types of follow up measurements that belong to provided healh center.
+        var query = dbSync.shards.where('type').anyOf(followUpMeasurementsTypes).and(function (item) {
+          return item.shard === shard;
+        });
+
+        // Build an empty list of measurements, so we return some value, even
+        // if no measurements were ever taken.
+        var data = {};
+        data = {};
+        // Decoder is expecting to have the health center UUID.
+        data.uuid = shard;
+
+        return query.toArray().catch(databaseError).then(function (nodes) {
+            if (nodes) {
+                nodes.forEach(function (node) {
+                    if (data[node.type]) {
+                        data[node.type].push(node);
+                    } else {
+                        data[node.type] = [node];
+                    }
+                });
+
+                var body = JSON.stringify({
+                    // Decoder is expecting a list.
+                    data: [data]
                 });
 
                 var response = new Response(body, {
@@ -644,7 +714,14 @@
                     }
                 }
 
-                if (type === 'prenatal_encounter' || type === 'nutrition_encounter' || type === 'acute_illness_encounter') {
+                var encounterTypes = [
+                  'prenatal_encounter',
+                  'nutrition_encounter',
+                  'acute_illness_encounter',
+                  'home_visit_encounter'
+                ];
+
+                if (encounterTypes.includes(type)) {
                   var individualSessionId = params.get('individual_participant');
                   if (individualSessionId) {
                     modifyQuery = modifyQuery.then(function () {

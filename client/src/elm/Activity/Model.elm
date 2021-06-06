@@ -24,9 +24,13 @@ type Activity
 type ChildActivity
     = ChildFbf
     | ChildPicture --| Counseling
+    | ContributingFactors
+    | FollowUp
+    | HealthEducation
     | Height
     | Muac
     | NutritionSigns
+    | SendToHC
     | Weight
 
 

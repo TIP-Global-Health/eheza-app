@@ -1,7 +1,7 @@
 module Pages.AcuteIllnessEncounter.Utils exposing (..)
 
-import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model
@@ -245,12 +245,12 @@ resolveNextStepsTasks currentDate isFirstEncounter data =
     in
     if isFirstEncounter then
         -- The order is important. Do not change.
-        [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC ]
+        [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
             |> List.filter (expectNextStepsTaskFirstEncounter currentDate data.person diagnosis data.measurements)
 
     else if mandatoryActivitiesCompletedSubsequentVisit currentDate data then
         -- The order is important. Do not change.
-        [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsHealthEducation ]
+        [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ]
             |> List.filter (expectNextStepsTaskSubsequentEncounter currentDate data.person diagnosis data.measurements)
 
     else
@@ -297,6 +297,14 @@ expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements task
 
         NextStepsHealthEducation ->
             False
+
+        NextStepsFollowUp ->
+            -- Whenever any other next step exists.
+            expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements NextStepsIsolation
+                || expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements NextStepsCall114
+                || expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements NextStepsContactHC
+                || expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements NextStepsMedicationDistribution
+                || expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements NextStepsSendToHC
 
 
 {-| Send patient to health center if patient is alergic to any of prescribed medications,
@@ -389,6 +397,14 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
 
         NextStepsHealthEducation ->
             not malariaDiagnosedAtCurrentEncounter
+
+        NextStepsFollowUp ->
+            -- Whenever we have a next step task that is other than NextStepsHealthEducation.
+            -- When there's only NextStepsHealthEducation, illness will be resolved, therefore,
+            -- there's no need for a follow up.
+            expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements NextStepsMedicationDistribution
+                || expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements NextStepsSendToHC
+                || expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements NextStepsContactHC
 
         _ ->
             False
@@ -617,22 +633,27 @@ activityCompleted currentDate isFirstEncounter data activity =
             in
             if isFirstEncounter then
                 case nextStepsTasks of
-                    [ NextStepsIsolation, NextStepsCall114 ] ->
-                        isJust measurements.isolation && isJust measurements.call114
+                    [ NextStepsIsolation, NextStepsCall114, NextStepsFollowUp ] ->
+                        isJust measurements.isolation && isJust measurements.call114 && isJust measurements.followUp
 
-                    [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC ] ->
-                        isJust measurements.isolation && isJust measurements.call114 && isJust measurements.hcContact
+                    [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsFollowUp ] ->
+                        isJust measurements.isolation
+                            && isJust measurements.call114
+                            && isJust measurements.hcContact
+                            && isJust measurements.followUp
 
-                    [ NextStepsMedicationDistribution ] ->
-                        isJust measurements.medicationDistribution
+                    [ NextStepsMedicationDistribution, NextStepsFollowUp ] ->
+                        isJust measurements.medicationDistribution && isJust measurements.followUp
 
                     -- When medication was prescribed, but it is out
                     -- of stock, or patient is alergic.
-                    [ NextStepsMedicationDistribution, NextStepsSendToHC ] ->
-                        isJust measurements.medicationDistribution && isJust measurements.sendToHC
+                    [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ] ->
+                        isJust measurements.medicationDistribution
+                            && isJust measurements.sendToHC
+                            && isJust measurements.followUp
 
-                    [ NextStepsSendToHC ] ->
-                        isJust measurements.sendToHC
+                    [ NextStepsSendToHC, NextStepsFollowUp ] ->
+                        isJust measurements.sendToHC && isJust measurements.followUp
 
                     _ ->
                         False
@@ -644,29 +665,32 @@ activityCompleted currentDate isFirstEncounter data activity =
                         isJust measurements.healthEducation
 
                     -- Not improving, without danger signs present.
-                    [ NextStepsSendToHC, NextStepsHealthEducation ] ->
-                        isJust measurements.sendToHC && isJust measurements.healthEducation
+                    [ NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ] ->
+                        isJust measurements.sendToHC && isJust measurements.followUp && isJust measurements.healthEducation
 
                     -- Not improving, with danger signs, and not instructed to send patient to health center.
-                    [ NextStepsContactHC, NextStepsHealthEducation ] ->
-                        isJust measurements.hcContact && isJust measurements.healthEducation
+                    [ NextStepsContactHC, NextStepsHealthEducation, NextStepsFollowUp ] ->
+                        isJust measurements.hcContact && isJust measurements.followUp && isJust measurements.healthEducation
 
                     -- Not improving, with danger signs, and instructed to send patient to health center.
-                    [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation ] ->
-                        isJust measurements.hcContact && isJust measurements.sendToHC && isJust measurements.healthEducation
+                    [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ] ->
+                        isJust measurements.hcContact
+                            && isJust measurements.sendToHC
+                            && isJust measurements.followUp
+                            && isJust measurements.healthEducation
 
-                    -- Uncomplicated malarial for adult.
-                    [ NextStepsMedicationDistribution ] ->
-                        isJust measurements.medicationDistribution
+                    -- Uncomplicated malaria for adult.
+                    [ NextStepsMedicationDistribution, NextStepsFollowUp ] ->
+                        isJust measurements.medicationDistribution && isJust measurements.followUp
 
-                    -- Uncomplicated malarial for adult, when medicine is out
+                    -- Uncomplicated malaria for adult, when medicine is out
                     -- of stock, or patient is alergic.
-                    [ NextStepsMedicationDistribution, NextStepsSendToHC ] ->
-                        isJust measurements.medicationDistribution && isJust measurements.sendToHC
+                    [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ] ->
+                        isJust measurements.medicationDistribution && isJust measurements.sendToHC && isJust measurements.followUp
 
                     -- Other cases of malaria.
-                    [ NextStepsSendToHC ] ->
-                        isJust measurements.sendToHC
+                    [ NextStepsSendToHC, NextStepsFollowUp ] ->
+                        isJust measurements.sendToHC && isJust measurements.followUp
 
                     _ ->
                         False
@@ -933,14 +957,14 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements
             (\testResult ->
                 case testResult of
                     RapidTestPositive ->
-                        if malarialDangerSignsPresent measurements then
+                        if malariaDangerSignsPresent measurements then
                             Just DiagnosisMalariaComplicated
 
                         else
                             Just DiagnosisMalariaUncomplicated
 
                     RapidTestPositiveAndPregnant ->
-                        if malarialDangerSignsPresent measurements then
+                        if malariaDangerSignsPresent measurements then
                             Just DiagnosisMalariaComplicated
 
                         else
@@ -1058,8 +1082,8 @@ malariaRapidTestResult measurements =
         |> Maybe.map (Tuple.second >> .value)
 
 
-malarialDangerSignsPresent : AcuteIllnessMeasurements -> Bool
-malarialDangerSignsPresent measurements =
+malariaDangerSignsPresent : AcuteIllnessMeasurements -> Bool
+malariaDangerSignsPresent measurements =
     Maybe.map3
         (\symptomsGeneral symptomsGI acuteFindings ->
             let

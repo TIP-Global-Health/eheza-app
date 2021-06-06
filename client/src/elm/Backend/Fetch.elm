@@ -4,6 +4,7 @@ import AssocList as Dict
 import Backend.Model exposing (..)
 import LocalData exposing (isNotNeeded)
 import RemoteData exposing (RemoteData(..), isNotAsked, isSuccess)
+import Time
 
 
 {-| Given a `MsgIndexedDb`, do we need to fetch the data it would fetch?
@@ -15,12 +16,11 @@ common. The answer does need to flip to `False` when a request is in progress,
 or we will enter an infinite loop.
 
 -}
-shouldFetch : ModelIndexedDb -> MsgIndexedDb -> Bool
-shouldFetch model msg =
+shouldFetch : Time.Posix -> ModelIndexedDb -> MsgIndexedDb -> Bool
+shouldFetch currentTime model msg =
     let
         hasNoSuccessValues dict =
-            dict
-                |> Dict.values
+            Dict.values dict
                 |> List.filter (\v -> RemoteData.isLoading v || RemoteData.isNotAsked v)
                 |> List.isEmpty
                 |> not
@@ -32,8 +32,13 @@ shouldFetch model msg =
                 |> isNotAsked
 
         FetchComputedDashboard healthCenterId ->
-            Dict.member healthCenterId model.computedDashboard
-                |> not
+            -- Do not fetch, if last attempt was less than 20 seconds ago.
+            if Time.posixToMillis currentTime - Time.posixToMillis model.computedDashboardLastFetched < 20000 then
+                False
+
+            else
+                Dict.member healthCenterId model.computedDashboard
+                    |> not
 
         FetchChildrenMeasurements ids ->
             if List.isEmpty ids then
@@ -198,6 +203,33 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchFollowUpMeasurements id ->
+            Dict.get id model.followUpMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchFollowUpParticipants ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.people)) ids
+
+        FetchHomeVisitEncounter id ->
+            Dict.get id model.homeVisitEncounters
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchHomeVisitEncountersForParticipant id ->
+            Dict.get id model.homeVisitEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchHomeVisitMeasurements id ->
+            Dict.get id model.homeVisitMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchIndividualEncounterParticipant id ->
             Dict.get id model.individualParticipants
                 |> Maybe.withDefault NotAsked
@@ -301,6 +333,18 @@ forget msg model =
 
         FetchAcuteIllnessMeasurements id ->
             { model | acuteIllnessMeasurements = Dict.remove id model.acuteIllnessMeasurements }
+
+        FetchFollowUpMeasurements id ->
+            { model | followUpMeasurements = Dict.remove id model.followUpMeasurements }
+
+        FetchHomeVisitEncounter id ->
+            { model | homeVisitEncounters = Dict.remove id model.homeVisitEncounters }
+
+        FetchHomeVisitEncountersForParticipant id ->
+            { model | homeVisitEncountersByParticipant = Dict.remove id model.homeVisitEncountersByParticipant }
+
+        FetchHomeVisitMeasurements id ->
+            { model | homeVisitMeasurements = Dict.remove id model.homeVisitMeasurements }
 
         FetchIndividualEncounterParticipant id ->
             { model | individualParticipants = Dict.remove id model.individualParticipants }

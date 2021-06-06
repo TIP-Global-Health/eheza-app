@@ -7,7 +7,22 @@ import Backend.Measurement.Model exposing (PrenatalMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
+import Backend.PrenatalActivity.Model
+    exposing
+        ( PregnancyTrimester(..)
+        , allMedicalDiagnosis
+        , allObstetricalDiagnosis
+        , allRiskFactors
+        , allTrimesters
+        )
+import Backend.PrenatalActivity.Utils
+    exposing
+        ( generateMedicalDiagnosisAlertData
+        , generateObstetricalDiagnosisAlertData
+        , generateRiskFactorAlertData
+        , getEncounterTrimesterData
+        )
+import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounter)
 import Date exposing (Interval(..))
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
@@ -23,21 +38,6 @@ import Pages.PrenatalActivity.Utils exposing (calculateBmi)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.Utils exposing (viewPhotoThumbFromPhotoUrl)
-import PrenatalActivity.Model
-    exposing
-        ( PregnancyTrimester(..)
-        , allMedicalDiagnosis
-        , allObstetricalDiagnosis
-        , allRiskFactors
-        , allTrimesters
-        )
-import PrenatalActivity.Utils
-    exposing
-        ( generateMedicalDiagnosisAlertData
-        , generateObstetricalDiagnosisAlertData
-        , generateRiskFactorAlertData
-        , getEncounterTrimesterData
-        )
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate)
@@ -52,17 +52,20 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Html Msg
-view language currentDate id db =
+view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> ClinicalProgressReportInitiator -> ModelIndexedDb -> Html Msg
+view language currentDate id isChw initiator db =
     let
+        allowBackAction =
+            initiator == InitiatorEncounterPage
+
         data =
             generateAssembledData id db
 
         header =
-            viewHeader language id Translate.ClinicalProgressReport
+            viewHeader language id Translate.ClinicalProgressReport allowBackAction
 
         content =
-            viewWebData language (viewContent language currentDate) identity data
+            viewWebData language (viewContent language currentDate isChw initiator) identity data
     in
     div [ class "page-clinical-progress-report" ] <|
         [ header
@@ -70,18 +73,33 @@ view language currentDate id db =
         ]
 
 
-viewContent : Language -> NominalDate -> AssembledData -> Html Msg
-viewContent language currentDate data =
+viewContent : Language -> NominalDate -> Bool -> ClinicalProgressReportInitiator -> AssembledData -> Html Msg
+viewContent language currentDate isChw initiator data =
     let
         firstEncounterMeasurements =
-            getFirstEncounterMeasurements data
+            getFirstEncounterMeasurements isChw data
+
+        actions =
+            case initiator of
+                InitiatorEncounterPage ->
+                    emptyNode
+
+                InitiatorNewEncounter encounterId ->
+                    div [ class "actions" ]
+                        [ button
+                            [ class "ui fluid primary button"
+                            , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage encounterId
+                            ]
+                            [ text <| translate language Translate.Reviewed ]
+                        ]
     in
     div [ class "ui unstackable items" ]
         [ viewHeaderPane language currentDate data
         , viewRiskFactorsPane language currentDate firstEncounterMeasurements
         , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements
-        , viewObstetricalDiagnosisPane language currentDate firstEncounterMeasurements data
-        , viewPatientProgressPane language currentDate data
+        , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data
+        , viewPatientProgressPane language currentDate isChw data
+        , actions
         ]
 
 
@@ -193,12 +211,12 @@ viewMedicalDiagnosisPane language currentDate measurements =
         ]
 
 
-viewObstetricalDiagnosisPane : Language -> NominalDate -> PrenatalMeasurements -> AssembledData -> Html Msg
-viewObstetricalDiagnosisPane language currentDate firstEncounterMeasurements data =
+viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
+viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data =
     let
         alerts =
             allObstetricalDiagnosis
-                |> List.filterMap (generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasurements data)
+                |> List.filterMap (generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements data)
                 |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
     in
     div [ class "obstetric-diagnosis" ]
@@ -207,12 +225,17 @@ viewObstetricalDiagnosisPane language currentDate firstEncounterMeasurements dat
         ]
 
 
-viewPatientProgressPane : Language -> NominalDate -> AssembledData -> Html Msg
-viewPatientProgressPane language currentDate data =
+viewPatientProgressPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
+viewPatientProgressPane language currentDate isChw data =
     let
         allMeasurementsWithDates =
-            data.previousMeasurementsWithDates
-                ++ [ ( currentDate, data.measurements ) ]
+            data.nursePreviousMeasurementsWithDates
+                ++ (if isChw then
+                        []
+
+                    else
+                        [ ( currentDate, data.measurements ) ]
+                   )
 
         allMeasurements =
             allMeasurementsWithDates

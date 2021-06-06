@@ -281,6 +281,7 @@ function hedley_device_assign_shards($node, $wrapper) {
     case 'prenatal_encounter':
     case 'nutrition_encounter':
     case 'acute_illness_encounter':
+    case 'home_visit_encounter':
       // Assign shards based on Person of the individual participant,
       // to which encounter belongs.
       $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();

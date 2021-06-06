@@ -210,6 +210,7 @@ function hedley_general_get_measurement_types() {
       'field_nutrition_encounter',
       'field_prenatal_encounter',
       'field_acute_illness_encounter',
+      'field_home_visit_encounter',
     ];
 
     foreach ($measurement_indicator_fields as $indicator) {

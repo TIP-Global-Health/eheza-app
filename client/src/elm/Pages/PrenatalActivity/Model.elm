@@ -1,50 +1,18 @@
-module Pages.PrenatalActivity.Model exposing
-    ( BreastExamForm
-    , CorePhysicalExamForm
-    , DangerSignsData
-    , DangerSignsForm
-    , ExaminationData
-    , ExaminationTask(..)
-    , FamilyPlanningData
-    , FamilyPlanningForm
-    , HistoryData
-    , HistoryTask(..)
-    , LmpRange(..)
-    , MedicalHistoryForm
-    , MedicationForm
-    , Model
-    , Msg(..)
-    , NutritionAssessmentForm
-    , ObstetricFormFirstStep
-    , ObstetricFormSecondStep
-    , ObstetricHistoryStep(..)
-    , ObstetricalExamForm
-    , PatientProvisionsData
-    , PatientProvisionsTask(..)
-    , PregnancyDatingData
-    , PregnancyDatingForm
-    , PrenatalPhotoData
-    , ResourcesForm
-    , SocialHistoryForm
-    , VitalsForm
-    , decodeLmpRange
-    , emptyModel
-    , emptyObstetricFormFirstStep
-    , emptyObstetricFormSecondStep
-    , encodeLmpRange
-    )
+module Pages.PrenatalActivity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
-import Measurement.Model exposing (DropZoneFile)
+import Measurement.Model exposing (DropZoneFile, SendToHCForm, emptySendToHCForm)
 import Pages.Page exposing (Page)
 
 
 type Msg
-    = DropZoneComplete DropZoneFile
+    = NoOp
+    | DropZoneComplete DropZoneFile
     | SetActivePage Page
     | SetAlertsDialogState Bool
+    | SetWarningPopupState (Maybe String)
       -- PregnancyDatingMsgs
     | ToggleDateSelector
     | SetLmpDate Date
@@ -113,9 +81,36 @@ type Msg
     | SaveResources PersonId (Maybe ( ResourceId, Resource )) (Maybe PatientProvisionsTask)
       -- DangerSignsMsgs
     | SetDangerSign DangerSign
+    | SetPostpartumMotherDangerSign PostpartumMotherDangerSign
+    | SetPostpartumChildDangerSign PostpartumChildDangerSign
     | SaveDangerSigns PersonId (Maybe ( DangerSignsId, DangerSigns ))
       -- PrenatalPhotoMsgs
     | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl
+      -- BirthPlanMsgs
+    | SetBirthPlanBoolInput (Bool -> BirthPlanForm -> BirthPlanForm) Bool
+    | SetBirthPlanFamilyPlanning FamilyPlanningSign
+    | SaveBirthPlan PersonId (Maybe ( BirthPlanId, BirthPlan ))
+      -- LABORATORYMsgs
+    | SetPregnancyTestResult String
+    | SavePregnancyTesting PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
+      -- HealtEducationMsgs
+    | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
+    | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation ))
+      -- NextStepsMsgs
+    | SetActiveNextStepsTask NextStepsTask
+    | SetHealthEducationSubActivityBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
+    | SaveHealthEducationSubActivity PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )) (Maybe NextStepsTask)
+    | SetFollowUpOption FollowUpOption
+    | SaveFollowUp PersonId PrenatalAssesment (Maybe ( PrenatalFollowUpId, PrenatalFollowUp )) (Maybe NextStepsTask)
+    | SaveNewbornEnrollment (Maybe NextStepsTask)
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | SetAccompanyToHC Bool
+    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHcId, PrenatalSendToHC )) (Maybe NextStepsTask)
+    | AppointmentToggleDateSelector
+    | SetAppointmentConfirmation Date
+    | SaveAppointmentConfirmation PersonId (Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -126,7 +121,12 @@ type alias Model =
     , patientProvisionsData : PatientProvisionsData
     , dangerSignsData : DangerSignsData
     , prenatalPhotoData : PrenatalPhotoData
+    , birthPlanData : BirthPlanData
+    , laboratoryData : LaboratoryData
+    , healthEducationData : HealthEducationData
+    , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
+    , warningPopupState : Maybe String
     }
 
 
@@ -139,8 +139,25 @@ emptyModel =
     , patientProvisionsData = emptyPatientProvisionsData
     , dangerSignsData = emptyDangerSignsData
     , prenatalPhotoData = emptyPrenatalPhotoData
+    , birthPlanData = emptyBirthPlanData
+    , laboratoryData = emptyLaboratoryData
+    , healthEducationData = emptyHealthEducationData
+    , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
+    , warningPopupState = Nothing
     }
+
+
+type NextStepsTask
+    = NextStepsAppointmentConfirmation
+    | NextStepsFollowUp
+    | NextStepsSendToHC
+    | NextStepsHealthEducation
+    | NextStepsNewbornEnrolment
+
+
+
+-- DATA
 
 
 type alias PregnancyDatingData =
@@ -231,6 +248,71 @@ emptyDangerSignsData : DangerSignsData
 emptyDangerSignsData =
     { form = emptyDangerSignsForm
     }
+
+
+type alias PrenatalPhotoData =
+    { url : Maybe PhotoUrl }
+
+
+emptyPrenatalPhotoData : PrenatalPhotoData
+emptyPrenatalPhotoData =
+    { url = Nothing }
+
+
+type alias BirthPlanData =
+    { form : BirthPlanForm
+    }
+
+
+emptyBirthPlanData : BirthPlanData
+emptyBirthPlanData =
+    BirthPlanData emptyBirthPlanForm
+
+
+type alias LaboratoryData =
+    { form : PregnancyTestingForm
+    }
+
+
+emptyLaboratoryData : LaboratoryData
+emptyLaboratoryData =
+    { form = PregnancyTestingForm Nothing
+    }
+
+
+type alias HealthEducationData =
+    { form : HealthEducationForm
+    }
+
+
+emptyHealthEducationData : HealthEducationData
+emptyHealthEducationData =
+    HealthEducationData emptyHealthEducationForm
+
+
+type alias NextStepsData =
+    { appointmentConfirmationForm : AppointmentConfirmationForm
+    , followUpForm : FollowUpForm
+    , sendToHCForm : SendToHCForm
+    , healthEducationForm : HealthEducationForm
+    , newbornEnrolmentForm : NewbornEnrolmentForm
+    , activeTask : Maybe NextStepsTask
+    }
+
+
+emptyNextStepsData : NextStepsData
+emptyNextStepsData =
+    { appointmentConfirmationForm = emptyAppointmentConfirmationForm
+    , followUpForm = emptyFollowUpForm
+    , sendToHCForm = emptySendToHCForm
+    , healthEducationForm = emptyHealthEducationForm
+    , newbornEnrolmentForm = emptyNewbornEnrolmentForm
+    , activeTask = Nothing
+    }
+
+
+
+-- FORMS
 
 
 type ObstetricHistoryStep
@@ -572,20 +654,96 @@ emptyResourcesForm =
 
 
 type alias DangerSignsForm =
-    -- Should be EverySet
     { signs : Maybe (List DangerSign)
+    , postpartumMother : Maybe (List PostpartumMotherDangerSign)
+    , postpartumChild : Maybe (List PostpartumChildDangerSign)
     }
 
 
 emptyDangerSignsForm : DangerSignsForm
 emptyDangerSignsForm =
-    DangerSignsForm Nothing
+    DangerSignsForm Nothing Nothing Nothing
 
 
-type alias PrenatalPhotoData =
-    { url : Maybe PhotoUrl }
+type alias BirthPlanForm =
+    { haveInsurance : Maybe Bool
+    , boughtClothes : Maybe Bool
+    , caregiverAccompany : Maybe Bool
+    , savedMoney : Maybe Bool
+    , haveTransportation : Maybe Bool
+    , familyPlanning : Maybe (List FamilyPlanningSign)
+    }
 
 
-emptyPrenatalPhotoData : PrenatalPhotoData
-emptyPrenatalPhotoData =
-    { url = Nothing }
+emptyBirthPlanForm : BirthPlanForm
+emptyBirthPlanForm =
+    { haveInsurance = Nothing
+    , boughtClothes = Nothing
+    , caregiverAccompany = Nothing
+    , savedMoney = Nothing
+    , haveTransportation = Nothing
+    , familyPlanning = Nothing
+    }
+
+
+type alias PregnancyTestingForm =
+    { pregnancyTestResult : Maybe PregnancyTestResult
+    }
+
+
+type alias AppointmentConfirmationForm =
+    { appointmentDate : Maybe Date
+    , isDateSelectorOpen : Bool
+    }
+
+
+emptyAppointmentConfirmationForm : AppointmentConfirmationForm
+emptyAppointmentConfirmationForm =
+    AppointmentConfirmationForm Nothing False
+
+
+type alias FollowUpForm =
+    { option : Maybe FollowUpOption
+
+    -- We do not display this. Using it when saving.
+    , assesment : Maybe PrenatalAssesment
+    }
+
+
+emptyFollowUpForm : FollowUpForm
+emptyFollowUpForm =
+    FollowUpForm Nothing Nothing
+
+
+type alias HealthEducationForm =
+    { expectations : Maybe Bool
+    , visitsReview : Maybe Bool
+    , warningSigns : Maybe Bool
+    , hemorrhaging : Maybe Bool
+    , familyPlanning : Maybe Bool
+    , breastfeeding : Maybe Bool
+    , immunization : Maybe Bool
+    , hygiene : Maybe Bool
+    }
+
+
+emptyHealthEducationForm : HealthEducationForm
+emptyHealthEducationForm =
+    { expectations = Nothing
+    , visitsReview = Nothing
+    , warningSigns = Nothing
+    , hemorrhaging = Nothing
+    , familyPlanning = Nothing
+    , breastfeeding = Nothing
+    , immunization = Nothing
+    , hygiene = Nothing
+    }
+
+
+type alias NewbornEnrolmentForm =
+    {}
+
+
+emptyNewbornEnrolmentForm : NewbornEnrolmentForm
+emptyNewbornEnrolmentForm =
+    {}
