@@ -257,7 +257,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
       // UUID of the health center.
       'uuid' => $wrapper->field_uuid->value(),
       'case_management' => hedley_stats_get_case_management($health_center_id),
-      'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, $fbf_clinics, HEDLEY_STATS_PERIOD_ONE_YEAR),
+      'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, $fbf_clinics),
       'completed_program' => $completed_program,
       'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS),
       'missed_sessions' => $missed_sessions,
@@ -328,7 +328,7 @@ function hedley_stats_get_villages_with_residents($health_center_id) {
 function hedley_stats_get_acute_illness_data($health_center_id) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_ACUTE_ILLNESS_DATA, $health_center_id)) {
-    // return $cache_data;
+    return $cache_data;
   }
 
   // Pull all acute illness encounters during past 6 month.
@@ -435,12 +435,17 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
       'diagnosis' => $row->field_acute_illness_diagnosis,
       'fever' => $fever_by_signs || $fever_by_vitals,
       'send_to_hc' => empty($row->send_to_hc) ? [] : explode(',', $row->send_to_hc),
-      '114_contact' => empty($row->contact_114) ? [] : explode(',', $row->contact_114),
+      'call_114' => empty($row->contact_114) ? [] : explode(',', $row->contact_114),
       'isolation' => empty($row->isolation) ? [] : explode(',', $row->isolation),
     ];
   }
-  
-  return array_values($items);
+
+  $values = array_values($items);
+
+  // Store in cache.
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_ACUTE_ILLNESS_DATA, $health_center_id, NULL, $values);
+
+  return $values;
 }
 
 /**
@@ -536,10 +541,12 @@ function hedley_stats_get_prenatal_data($health_center_id) {
     ];
   }
 
-    // Store in cache.
-  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_PRENATAL_DATA, $health_center_id, NULL, $items);
+  $values = array_values($items);
 
-  return array_values($items);
+    // Store in cache.
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_PRENATAL_DATA, $health_center_id, NULL, $values);
+
+  return $values;
 }
 
 /**
