@@ -4,9 +4,10 @@ module Backend.Dashboard.Model exposing (..)
 -}
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome)
-import Backend.Measurement.Model exposing (DangerSign, FamilyPlanningSign)
+import Backend.Measurement.Model exposing (Call114Sign, DangerSign, FamilyPlanningSign, IsolationSign, SendToHCSign)
 import Backend.Person.Model exposing (Gender)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -26,6 +27,7 @@ type alias DashboardStats =
     , familyPlanning : List FamilyPlanningStats
     , missedSessions : List ParticipantStats
     , totalEncounters : TotalEncountersData
+    , acuteIllnessData : List AcuteIllnessDataItem
     , prenatalData : List PrenatalDataItem
     , villagesWithResidents : Dict VillageId (List PersonIdentifier)
 
@@ -45,6 +47,7 @@ emptyModel =
     , familyPlanning = []
     , missedSessions = []
     , totalEncounters = TotalEncountersData Dict.empty Dict.empty
+    , acuteIllnessData = []
     , prenatalData = []
     , villagesWithResidents = Dict.empty
     , timestamp = ""
@@ -199,4 +202,24 @@ type alias PrenatalDataItem =
 type alias PrenatalEncounterDataItem =
     { created : NominalDate
     , dangerSigns : EverySet DangerSign
+    }
+
+
+type alias AcuteIllnessDataItem =
+    { identifier : PersonIdentifier
+    , created : NominalDate
+    , dateConcluded : Maybe NominalDate
+    , outcome : Maybe IndividualEncounterParticipantOutcome
+    , encounters : List AcuteIllnessEncounterDataItem
+    }
+
+
+type alias AcuteIllnessEncounterDataItem =
+    { created : NominalDate
+    , sequenceNumber : Int
+    , diagnosis : AcuteIllnessDiagnosis
+    , feverRecorded : Bool
+    , call114Signs : EverySet Call114Sign
+    , isolationSigns : EverySet IsolationSign
+    , sendToHCSigns : EverySet SendToHCSign
     }

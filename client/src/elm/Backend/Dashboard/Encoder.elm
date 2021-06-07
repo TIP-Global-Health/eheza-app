@@ -1,10 +1,19 @@
 module Backend.Dashboard.Encoder exposing (encodeDashboardStats)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis)
 import Backend.Dashboard.Model exposing (..)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Encoder exposing (encodeDeliveryLocation, encodeIndividualEncounterParticipantOutcome)
-import Backend.Measurement.Encoder exposing (encodeDangerSign, encodeEverySet, encodeFamilyPlanningSign)
+import Backend.Measurement.Encoder
+    exposing
+        ( encodeCall114Sign
+        , encodeDangerSign
+        , encodeEverySet
+        , encodeFamilyPlanningSign
+        , encodeIsolationSign
+        , encodeSendToHCSign
+        )
 import Backend.Person.Encoder exposing (encodeGender)
 import Dict as LegacyDict
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
@@ -21,6 +30,7 @@ encodeDashboardStats stats =
     , encodeFamilyPlanning stats.familyPlanning
     , encodeMissedSessions stats.missedSessions
     , encodeTotalEncountersData stats.totalEncounters
+    , encodeAcuteIllnessData stats.acuteIllnessData
     , encodePrenatalData stats.prenatalData
     , encodeVillagesWithResidents stats.villagesWithResidents
     , ( "timestamp", string stats.timestamp )
@@ -224,6 +234,33 @@ encodeVillagesWithResidents dict =
                 |> object
     in
     ( "villages_with_residents", value )
+
+
+encodeAcuteIllnessData : List AcuteIllnessDataItem -> ( String, Value )
+encodeAcuteIllnessData itemsList =
+    ( "acute_illness_data", list (encodeAcuteIllnessDataItem >> object) itemsList )
+
+
+encodeAcuteIllnessDataItem : AcuteIllnessDataItem -> List ( String, Value )
+encodeAcuteIllnessDataItem item =
+    [ ( "id", int item.identifier )
+    , ( "created", encodeYYYYMMDD item.created )
+    , ( "date_concluded", maybe encodeYYYYMMDD item.dateConcluded )
+    , ( "outcome", maybe encodeIndividualEncounterParticipantOutcome item.outcome )
+    , ( "encounters", list encodeAcuteIllnessEncounterDataItem item.encounters )
+    ]
+
+
+encodeAcuteIllnessEncounterDataItem : AcuteIllnessEncounterDataItem -> Value
+encodeAcuteIllnessEncounterDataItem item =
+    object
+        [ ( "created", encodeYYYYMMDD item.created )
+        , ( "sequence_number", int item.sequenceNumber )
+        , ( "diagnosis", encodeAcuteIllnessDiagnosis item.diagnosis )
+        , ( "call_114", encodeEverySet encodeCall114Sign item.call114Signs )
+        , ( "isolation", encodeEverySet encodeIsolationSign item.isolationSigns )
+        , ( "send_to_hc", encodeEverySet encodeSendToHCSign item.sendToHCSigns )
+        ]
 
 
 encodePrenatalData : List PrenatalDataItem -> ( String, Value )
