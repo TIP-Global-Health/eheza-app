@@ -262,6 +262,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
       'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS),
       'missed_sessions' => $missed_sessions,
       'total_encounters' => hedley_stats_get_total_encounters($health_center_id, $villages_with_residents),
+      'acute_illness_data' => hedley_stats_get_acute_illness_data($health_center_id),
       'prenatal_data' => hedley_stats_get_prenatal_data($health_center_id),
       'villages_with_residents' => $villages_with_residents,
       'timestamp' => $timestamp,
@@ -307,10 +308,27 @@ function hedley_stats_get_villages_with_residents($health_center_id) {
   return $result;
 }
 
+/**
+ * Return acute illnesses data that is used to generate AI statistics.
+ *
+ * We get data of all encounters for illnesses that were active during
+ * past 6 months.
+ * We need to know when encounters were created, it's diagnosis, if fever was
+ * recorded, and several measurements.
+ * Also, we add patient ID, to be able to associate it with its village.
+ *
+ * @param int $health_center_id
+ *   The health center node ID.
+ *
+ * @return array
+ *   List of AI encounters data.
+ *
+ * @throws \Exception
+ */
 function hedley_stats_get_acute_illness_data($health_center_id) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_ACUTE_ILLNESS_DATA, $health_center_id)) {
-    return $cache_data;
+    // return $cache_data;
   }
 
   $query = hedley_stats_get_base_query($health_center_id, 'acute_illness_encounter', HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS);
@@ -338,6 +356,10 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
   }
   $query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
 
+  // Join with Person table to resolve patient ID.
+  $query->leftJoin('field_data_field_person', 'person', 'person.entity_id = field_individual_participant.field_individual_participant_target_id');
+  $query->addField('person', 'field_person_target_id');
+
   // Join with AI Encounter table, through which we can join measurements data.
   $query->leftJoin('field_data_field_acute_illness_encounter', 'ai_encounter', 'ai_encounter.field_acute_illness_encounter_target_id = node.nid');
 
@@ -359,7 +381,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
   // Pull data of 114 calls - COVID suspect.
   $query->leftJoin('field_data_field_114_contact', '114_contact', '114_contact.entity_id = ai_encounter.entity_id');
   $query->addField('114_contact', 'field_114_contact_value');
-  $query->addExpression("GROUP_CONCAT(DISTINCT 114_contact.field_114_contact_value)", '114_contact');
+  $query->addExpression("GROUP_CONCAT(DISTINCT 114_contact.field_114_contact_value)", 'contact_114');
 
   // Pull data of isolations - COVID suspect.
   $query->leftJoin('field_data_field_isolation', 'isolation', 'isolation.entity_id = ai_encounter.entity_id');
@@ -372,7 +394,25 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     ->execute()
     ->fetchAllAssoc('nid');
 
-  dpm($result);
+  $items = [];
+  // Prepare data to be consumed by client side.
+  foreach ($result as $row) {
+    $fever_by_signs = !empty($row->fever_period) && $row->fever_period > 0;
+    $fever_by_vitals = !empty($row->body_temperature) && (float) $row->body_temperature >= 37.5;
+
+    $items[] = [
+      'id' => $row->field_person_target_id,
+      'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
+      'sequence_number' => $row->field_sequence_number,
+      'diagnosis' => $row->field_acute_illness_diagnosis,
+      'fever' => $fever_by_signs || $fever_by_vitals,
+      'send_to_hc' => empty($row->send_to_hc) ? [] : explode(',', $row->send_to_hc),
+      '114_contact' => empty($row->contact_114) ? [] : explode(',', $row->contact_114),
+      'isolation' => empty($row->isolation) ? [] : explode(',', $row->isolation),
+    ];
+  }
+
+  return $items;
 }
 
 /**
@@ -394,7 +434,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
 function hedley_stats_get_prenatal_data($health_center_id) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_PRENATAL_DATA, $health_center_id)) {
-    return $cache_data;
+    // return $cache_data;
   }
 
   $query = hedley_stats_get_base_query($health_center_id, 'individual_participant', HEDLEY_STATS_PERIOD_480_DAYS);
