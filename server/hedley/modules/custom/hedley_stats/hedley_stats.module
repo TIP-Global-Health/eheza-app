@@ -331,8 +331,10 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     // return $cache_data;
   }
 
+  // Pull all acute illness encounters during past 6 month.
   $query = hedley_stats_get_base_query($health_center_id, 'acute_illness_encounter', HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS);
 
+  // Resolve all illnesses associated with those encounters.
   hedley_general_join_field_to_query($query, 'node', 'field_individual_participant');
   $query->groupBy('field_individual_participant.field_individual_participant_target_id');
 
@@ -345,6 +347,38 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     return [];
   }
 
+  // For each illness, pull the patient and outcome data.
+  $query = hedley_stats_get_base_query($health_center_id, 'individual_participant');
+  $query->condition('node.nid', $individual_participants, 'IN');
+
+  $fields_to_join = [
+    'field_person',
+    'field_outcome',
+  ];
+  foreach ($fields_to_join as $field) {
+    hedley_general_join_field_to_query($query, 'node', $field, FALSE);
+  }
+
+  // We need this to understand if and when illness was resolved.
+  hedley_general_join_field_to_query($query, 'node', 'field_expected', FALSE, NULL, NULL, TRUE);
+
+  $result = $query
+    ->execute()
+    ->fetchAllAssoc('nid');
+
+  $items = [];
+  // Prepare illnesses data to be consumed by client side.
+  foreach ($result as $index => $row) {
+    $items[$index] = [
+      'id' => $row->field_person,
+      'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
+      'date_concluded' => empty($row->field_expected_field_expected_value2) ? NULL : date_format(date_create($row->field_expected_field_expected_value2), 'Y-m-d'),
+      'outcome' => $row->field_outcome,
+      'encounters' => [],
+    ];
+  }
+
+  // Resolve encounters data.
   $query = hedley_stats_get_base_query($health_center_id, 'acute_illness_encounter');
   $fields_to_join = [
     'field_individual_participant',
@@ -355,10 +389,6 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     hedley_general_join_field_to_query($query, 'node', $field, FALSE);
   }
   $query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
-
-  // Join with Person table to resolve patient ID.
-  $query->leftJoin('field_data_field_person', 'person', 'person.entity_id = field_individual_participant.field_individual_participant_target_id');
-  $query->addField('person', 'field_person_target_id');
 
   // Join with AI Encounter table, through which we can join measurements data.
   $query->leftJoin('field_data_field_acute_illness_encounter', 'ai_encounter', 'ai_encounter.field_acute_illness_encounter_target_id = node.nid');
@@ -394,14 +424,12 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     ->execute()
     ->fetchAllAssoc('nid');
 
-  $items = [];
-  // Prepare data to be consumed by client side.
+  // Populate data of the encounters
   foreach ($result as $row) {
     $fever_by_signs = !empty($row->fever_period) && $row->fever_period > 0;
     $fever_by_vitals = !empty($row->body_temperature) && (float) $row->body_temperature >= 37.5;
 
-    $items[] = [
-      'id' => $row->field_person_target_id,
+    $items[$row->field_individual_participant]['encounters'][] = [
       'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
       'sequence_number' => $row->field_sequence_number,
       'diagnosis' => $row->field_acute_illness_diagnosis,
@@ -411,8 +439,8 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
       'isolation' => empty($row->isolation) ? [] : explode(',', $row->isolation),
     ];
   }
-
-  return $items;
+  
+  return array_values($items);
 }
 
 /**
