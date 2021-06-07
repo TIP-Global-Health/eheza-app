@@ -258,7 +258,6 @@ type TranslationId
     | AcuteIllnessNew
     | AcuteIllnessOutcome AcuteIllnessOutcome
     | AcuteIllnessOutcomeLabel
-    | AcuteIllnessDashboardLabel AcuteIllnessDashboardPage
     | Activities
     | ActivitiesCompleted Int
     | ActivitiesHelp Activity
@@ -444,6 +443,7 @@ type TranslationId
     | EgaWeeks
     | EmptyString
     | EncounterTypeFileterLabel IndividualEncounterType
+    | EncounterTypePageLabel ChwDashboardPage
     | EncounterTypeFollowUpQuestion IndividualEncounterType
     | EncounterTypeFollowUpLabel IndividualEncounterType
     | EndEncounter
@@ -2877,25 +2877,37 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        AcuteIllnessDashboardLabel subPage ->
-            case subPage of
-                OverviewPage ->
-                    { english = "Acute Illness"
+        EncounterTypePageLabel page ->
+            case page of
+                AcuteIllnessPage subPage ->
+                    case subPage of
+                        OverviewPage ->
+                            { english = "Overview"
+                            , kinyarwanda = Nothing
+                            }
+
+                        Covid19Page ->
+                            { english = "COVID-19"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MalariaPage ->
+                            { english = "Malaria"
+                            , kinyarwanda = Nothing
+                            }
+
+                        GastroPage ->
+                            { english = "Gastro"
+                            , kinyarwanda = Nothing
+                            }
+
+                NutritionPage ->
+                    { english = "Child Nutrition"
                     , kinyarwanda = Nothing
                     }
 
-                Covid19Page ->
-                    { english = "COVID-19"
-                    , kinyarwanda = Nothing
-                    }
-
-                MalariaPage ->
-                    { english = "Malaria"
-                    , kinyarwanda = Nothing
-                    }
-
-                GastroPage ->
-                    { english = "Gastro"
+                AntenatalPage ->
+                    { english = "Antenatal Care"
                     , kinyarwanda = Nothing
                     }
 

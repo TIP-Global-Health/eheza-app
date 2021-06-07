@@ -966,7 +966,7 @@ viewChwPages language =
             ]
             [ span
                 []
-                [ translateText language <| Translate.EncounterTypeFileterLabel AntenatalEncounter
+                [ translateText language <| Translate.EncounterTypePageLabel AntenatalPage
                 ]
             ]
         , button
@@ -978,7 +978,7 @@ viewChwPages language =
             ]
             [ span
                 []
-                [ translateText language <| Translate.EncounterTypeFileterLabel AcuteIllnessEncounter
+                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage OverviewPage
                 ]
             ]
         , button
@@ -990,90 +990,64 @@ viewChwPages language =
             ]
             [ span
                 []
-                [ translateText language <| Translate.EncounterTypeFileterLabel NutritionEncounter
+                [ translateText language <| Translate.EncounterTypePageLabel NutritionPage
                 ]
             ]
         ]
 
 
-viewAcuteIllnessLinks : Language -> model -> Html Msg
-viewAcuteIllnessLinks language model =
-    let
-        filters =
-            [ Covid19Page, MalariaPage, GastroPage ]
-                |> List.map Just
-                |> List.append [ Nothing ]
-
-        renderButton maybeFilter =
-            let
-                label =
-                    Maybe.map Translate.EncounterTypeFileterLabel maybeFilter
-                        |> Maybe.withDefault Translate.All
-            in
-            button
-                [ classList
-                    [ ( "active", model.encounterTypeFilter == maybeFilter )
-                    , ( "primary ui button", True )
-                    ]
-                , onClick <| SetEncounterTypeFilter maybeFilter
+viewAcuteIllnessLinks : Language -> Html Msg
+viewAcuteIllnessLinks language =
+    div [ class "ui segment chw-filters" ]
+        [ button
+            [ class "primary ui button"
+            , DashboardPage (ChwPage <| AcuteIllnessPage OverviewPage)
+                |> UserPage
+                |> SetActivePage
+                |> onClick
+            ]
+            [ span
+                []
+                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage OverviewPage
                 ]
-                [ translateText language label ]
-    in
-    div [ class "ui segment filters" ] <|
-        List.map renderButton filters
-
-
-
---div [ class "ui segment chw-filters" ]
---    [ button
---        [ class "primary ui button"
---        , DashboardPage (ChwPage <| AcuteIllnessPage OverviewPage)
---            |> UserPage
---            |> SetActivePage
---            |> onClick
---        ]
---        [ span
---            []
---            [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage OverviewPage
---            ]
---        ]
---    , button
---        [ class "primary ui button"
---        , DashboardPage (ChwPage <| AcuteIllnessPage Covid19Page)
---            |> UserPage
---            |> SetActivePage
---            |> onClick
---        ]
---        [ span
---            []
---            [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage Covid19Page
---            ]
---        ]
---    , button
---        [ class "primary ui button"
---        , DashboardPage (ChwPage <| AcuteIllnessPage MalariaPage)
---            |> UserPage
---            |> SetActivePage
---            |> onClick
---        ]
---        [ span
---            []
---            [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage MalariaPage
---            ]
---        ]
---    , button
---        [ class "primary ui button"
---        , DashboardPage (ChwPage <| AcuteIllnessPage GastroPage)
---            |> UserPage
---            |> SetActivePage
---            |> onClick
---        ]
---        [ span
---            []
---            [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage GastroPage
---            ]
---        ]
---    ]
+            ]
+        , button
+            [ class "primary ui button"
+            , DashboardPage (ChwPage <| AcuteIllnessPage Covid19Page)
+                |> UserPage
+                |> SetActivePage
+                |> onClick
+            ]
+            [ span
+                []
+                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage Covid19Page
+                ]
+            ]
+        , button
+            [ class "primary ui button"
+            , DashboardPage (ChwPage <| AcuteIllnessPage MalariaPage)
+                |> UserPage
+                |> SetActivePage
+                |> onClick
+            ]
+            [ span
+                []
+                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage MalariaPage
+                ]
+            ]
+        , button
+            [ class "primary ui button"
+            , DashboardPage (ChwPage <| AcuteIllnessPage GastroPage)
+                |> UserPage
+                |> SetActivePage
+                |> onClick
+            ]
+            [ span
+                []
+                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage GastroPage
+                ]
+            ]
+        ]
 
 
 viewAcuteIllnessPage : Language -> DashboardStats -> Html Msg
