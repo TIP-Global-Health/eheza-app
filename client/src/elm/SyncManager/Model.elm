@@ -24,7 +24,7 @@ import Editable exposing (Editable)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Json.Decode exposing (Value)
 import List.Zipper exposing (Zipper)
-import RemoteData exposing (RemoteData, WebData)
+import RemoteData exposing (RemoteData(..), WebData)
 import Time
 
 
@@ -225,6 +225,16 @@ type alias Model =
     , syncInfoGeneral : SyncInfoGeneral
     , syncInfoAuthorities : SyncInfoAuthorityZipper
 
+    -- We store download responses until we get an acknowledgement
+    -- from IndexedDB for the save operation.
+    -- Only then we know that DB was updated and we can
+    -- update the Model as well.
+    , downloadAuthorityResponse : WebData (DownloadSyncResponse BackendAuthorityEntity)
+    , downloadGeneralResponse : WebData (DownloadSyncResponse BackendGeneralEntity)
+
+    -- Used to determine if download request has timed out.
+    , downloadRequestTime : Time.Posix
+
     -- Determine how we're going to download photos.
     , downloadPhotosMode : DownloadPhotosMode
 
@@ -251,6 +261,9 @@ emptyModel flags =
     , downloadPhotosStatus = DownloadPhotosIdle
     , syncInfoGeneral = flags.syncInfoGeneral
     , syncInfoAuthorities = flags.syncInfoAuthorities
+    , downloadAuthorityResponse = NotAsked
+    , downloadGeneralResponse = NotAsked
+    , downloadRequestTime = Time.millisToPosix 0
     , downloadPhotosMode = DownloadPhotosAll emptyDownloadPhotosAllRec
     , downloadPhotosBatchSize = flags.batchSize
     , syncCycle = SyncCycleOn
@@ -435,6 +448,25 @@ type UploadPhotoError
     | UploadError String
 
 
+type alias IndexDbSaveResult =
+    { table : IndexDbSaveResultTable
+    , status : IndexDbSaveStatus
+    , timestamp : String
+    }
+
+
+type IndexDbSaveResultTable
+    = IndexDbSaveResultTableAutority
+    | IndexDbSaveResultTableAuthorityStats
+    | IndexDbSaveResultTableDeferredPhotos
+    | IndexDbSaveResultTableGeneral
+
+
+type IndexDbSaveStatus
+    = IndexDbSaveFailure
+    | IndexDbSaveSuccess
+
+
 {-| The info we get from query to `generalPhotoUploadChanges`.
 -}
 type alias IndexDbQueryUploadPhotoResultRecord =
@@ -485,6 +517,15 @@ type alias IndexDbQueryDeferredPhotoResultRecord =
     }
 
 
+{-| For slow devices, download request 'fetch' phase
+takes less than 12 seconds, and the 'save' phase,
+less than 3. Timeout is double the sum of the 2.
+-}
+downloadRequestTimeout : Int
+downloadRequestTimeout =
+    (12000 + 3000) * 2
+
+
 type SyncIncidentType
     = FileUploadIncident IncidentContnentIdentifier
     | ContentUploadIncident IncidentContnentIdentifier
@@ -504,6 +545,7 @@ type Msg
     | RefreshPage
     | BackendAuthorityFetch
     | BackendAuthorityFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
+    | BackendAuthorityFetchedDataSavedHandle String
     | BackendAuthorityDashboardStatsFetch
     | BackendAuthorityDashboardStatsFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
       -- This is the main entry point for the Sync loop. This will dispatch a call
@@ -512,6 +554,7 @@ type Msg
     | BackendFetchPhotos
     | BackendGeneralFetch
     | BackendGeneralFetchHandle (WebData (DownloadSyncResponse BackendGeneralEntity))
+    | BackendGeneralFetchedDataSavedHandle String
       -- Fetch a deferred photo from the server.
     | BackendDeferredPhotoFetch (Maybe IndexDbQueryDeferredPhotoResultRecord)
     | BackendDeferredPhotoFetchHandle IndexDbQueryDeferredPhotoResultRecord (WebData ())
@@ -529,6 +572,7 @@ type Msg
     | BackendReportSyncIncident SyncIncidentType
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value
+    | SavedAtIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto
     | FetchFromIndexDbUploadGeneral
     | FetchFromIndexDbUploadAuthority

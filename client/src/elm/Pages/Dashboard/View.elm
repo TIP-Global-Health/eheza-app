@@ -21,7 +21,7 @@ import Backend.Dashboard.Model
         , emptyTotalBeneficiaries
         )
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..), IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
@@ -42,7 +42,7 @@ import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (allEncounterTypes)
-import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
+import Pages.Page exposing (AcuteIllnessDashboardPage(..), ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
 import Pages.Utils exposing (calculatePercentage)
 import Path
 import RemoteData exposing (RemoteData(..))
@@ -51,6 +51,7 @@ import Scale exposing (BandConfig, BandScale, ContinuousScale)
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
+import Time exposing (millisToPosix)
 import Translate exposing (Language, TranslationId, translate, translateText)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
@@ -73,29 +74,90 @@ view language page currentDate healthCenterId isChw nurse model db =
                                 temporaryFunc language currentDate healthCenterId stats db model
                         in
                         case page of
-                            MainPage ->
-                                ( viewMainPage language currentDate isChw nurse stats db model, PinCodePage )
+                            NursePage nurseDashboardPage ->
+                                case nurseDashboardPage of
+                                    MainPage ->
+                                        ( viewMainPage language currentDate isChw nurse stats db model, PinCodePage )
 
-                            StatsPage ->
-                                ( viewStatsPage language currentDate isChw nurse stats healthCenterId db model, UserPage <| DashboardPage MainPage )
+                                    StatsPage ->
+                                        ( viewStatsPage language currentDate isChw nurse stats healthCenterId db model, UserPage <| DashboardPage (NursePage MainPage) )
 
-                            CaseManagementPage ->
-                                ( viewCaseManagementPage language currentDate stats db model, UserPage <| DashboardPage model.latestPage )
+                                    CaseManagementPage ->
+                                        ( viewCaseManagementPage language currentDate stats db model, UserPage <| DashboardPage model.latestPage )
+
+                            ChwPage chwDashboardPage ->
+                                case chwDashboardPage of
+                                    AcuteIllnessPage acuteIllnessPages ->
+                                        case acuteIllnessPages of
+                                            OverviewPage ->
+                                                ( viewAcuteIllnessPage language stats, UserPage <| DashboardPage (NursePage MainPage) )
+
+                                            Covid19Page ->
+                                                ( viewNutritionPage language currentDate isChw nurse stats db model, UserPage <| DashboardPage (NursePage MainPage) )
+
+                                            MalariaPage ->
+                                                ( viewAcuteIllnessPage language stats, UserPage <| DashboardPage (NursePage MainPage) )
+
+                                            GastroPage ->
+                                                ( viewAcuteIllnessPage language stats, UserPage <| DashboardPage (NursePage MainPage) )
+
+                                    NutritionPage ->
+                                        ( viewNutritionPage language currentDate isChw nurse stats db model, UserPage <| DashboardPage (NursePage MainPage) )
+
+                                    AntenatalPage ->
+                                        ( viewAntenatalPage language stats, UserPage <| DashboardPage (NursePage MainPage) )
                     )
                 |> Maybe.withDefault ( spinner, PinCodePage )
 
         header =
             if isChw then
-                div
-                    [ class "ui basic head segment" ]
-                    [ h1 [ class "ui header" ]
-                        [ translateText language Translate.ChwDashboardLabel ]
-                    , a
-                        [ class "link-back"
-                        , onClick <| SetActivePage goBackPage
+                if page == ChwPage (AcuteIllnessPage OverviewPage) || page == ChwPage (AcuteIllnessPage Covid19Page) || page == ChwPage (AcuteIllnessPage MalariaPage) || page == ChwPage (AcuteIllnessPage GastroPage) then
+                    div
+                        [ class "ui basic head segment" ]
+                        [ h1 [ class "ui header" ]
+                            [ text <| translate language <| Translate.EncounterTypeFileterLabel AcuteIllnessEncounter ]
+                        , a
+                            [ class "link-back"
+                            , onClick <| SetActivePage goBackPage
+                            ]
+                            [ span [ class "icon-back" ] [] ]
                         ]
-                        [ span [ class "icon-back" ] [] ]
-                    ]
+
+                else if page == ChwPage NutritionPage then
+                    div
+                        [ class "ui basic head segment" ]
+                        [ h1 [ class "ui header" ]
+                            [ text <| translate language <| Translate.EncounterTypeFileterLabel NutritionEncounter ]
+                        , a
+                            [ class "link-back"
+                            , onClick <| SetActivePage goBackPage
+                            ]
+                            [ span [ class "icon-back" ] [] ]
+                        ]
+
+                else if page == ChwPage AntenatalPage then
+                    div
+                        [ class "ui basic head segment" ]
+                        [ h1 [ class "ui header" ]
+                            [ text <| translate language <| Translate.EncounterTypeFileterLabel AntenatalEncounter ]
+                        , a
+                            [ class "link-back"
+                            , onClick <| SetActivePage goBackPage
+                            ]
+                            [ span [ class "icon-back" ] [] ]
+                        ]
+
+                else
+                    div
+                        [ class "ui basic head segment" ]
+                        [ h1 [ class "ui header" ]
+                            [ translateText language Translate.ChwDashboardLabel ]
+                        , a
+                            [ class "link-back"
+                            , onClick <| SetActivePage goBackPage
+                            ]
+                            [ span [ class "icon-back" ] [] ]
+                        ]
 
             else
                 div
@@ -142,13 +204,45 @@ temporaryFunc language currentDate healthCenterId stats db model =
             Debug.log "totalPrenatalFollowUps" totalPrenatalFollowUps
 
         _ =
-            getTotalPregnantForMonth currentDate currentDate prenatalData |> Debug.log "0"
+            List.repeat 12 ""
+                |> List.indexedMap
+                    (\index _ ->
+                        let
+                            selectedDate =
+                                Date.add Months (-1 * index) currentDate
 
-        _ =
-            getTotalPregnantForMonth currentDate (Date.add Months -4 currentDate) prenatalData |> Debug.log "-4"
+                            _ =
+                                String.fromInt index |> Debug.log "Index"
 
-        _ =
-            getTotalPregnantForMonth currentDate (Date.add Months -2 currentDate) prenatalData |> Debug.log "-2"
+                            _ =
+                                countNewlyIdentifiedPregananciesForSelectedMonth selectedDate prenatalData
+                                    |> Debug.log ""
+
+                            _ =
+                                countCurrentlyPregnantForSelectedMonth currentDate selectedDate prenatalData
+                                    |> Debug.log "countCurrentlyPregnantForSelectedMonth"
+
+                            _ =
+                                countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate prenatalData
+                                    |> Debug.log "countPregnanciesDueWithin4MonthsForSelectedMonth"
+
+                            _ =
+                                countCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate prenatalData
+                                    |> Debug.log "countCurrentlyPregnantWithDangerSignsForSelectedMonth"
+
+                            _ =
+                                countDeliveriesAtLocationForSelectedMonth selectedDate HomeDelivery prenatalData
+                                    |> Debug.log "countDeliveriesAtLocationForSelectedMonth HomeDelivery"
+
+                            _ =
+                                countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery prenatalData
+                                    |> Debug.log "countDeliveriesAtLocationForSelectedMonth FacilityDelivery"
+
+                            _ =
+                                Debug.log "" "---------------------------------------------------------"
+                        in
+                        ""
+                    )
     in
     emptyNode
 
@@ -158,14 +252,6 @@ viewMainPage language currentDate isChw nurse stats db model =
     let
         currentPeriodStats =
             filterStatsWithinPeriod currentDate model stats
-
-        totalBeneficiariesMonthlyDuringPastYear =
-            generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats
-
-        emptyTotalBeneficiariesDict =
-            List.repeat 12 emptyTotalBeneficiaries
-                |> List.indexedMap (\index empty -> ( index + 1, empty ))
-                |> Dict.fromList
 
         caseManagementsThisYear =
             caseManagementApplyBreakdownFilters stats.villagesWithResidents stats.caseManagement.thisYear model
@@ -180,49 +266,48 @@ viewMainPage language currentDate isChw nurse stats db model =
         caseNutritionTotalsLastYear =
             caseManagementsLastYear
                 |> List.map (.nutrition >> generateCaseNutritionTotals)
-
-        totalsGraphData =
-            caseNutritionTotalsThisYear
-                |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
-                |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
-
-        newCasesGraphData =
-            caseManagementsThisYear
-                |> List.map (.nutrition >> generateCaseNutritionNewCases currentDate)
-                |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
-                |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
-
-        links =
-            case model.programTypeFilter of
-                FilterProgramFbf ->
-                    div [ class "sixteen wide column" ]
-                        [ viewDashboardPagesLinks language
-                        ]
-
-                _ ->
-                    emptyNode
     in
-    div [ class "dashboard main" ]
-        [ div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
-        , viewFiltersPane language MainPage filterPeriodsForMainPage db model
-        , div [ class "ui grid" ]
-            [ div [ class "eight wide column" ]
-                [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
+    if isChw then
+        div [ class "dashboard main" ]
+            [ viewChwPages language
+            , div [ class "current-month" ]
+                [ a []
+                    [ span [ class "icon-back" ] [] ]
+                , h1 [ class "ui header" ]
+                    [ text "May 2021" ]
+                , a []
+                    [ span [ class "icon-back forward" ] [] ]
                 ]
-            , div [ class "eight wide column" ]
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
+            , div [ class "ui grid" ]
+                [ div [ class "five wide column" ]
+                    [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear ]
+                , div [ class "six wide column" ]
+                    [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                        |> viewTotalEncounters language
+                    ]
+                , div [ class "five wide column" ]
+                    [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                        |> viewTotalEncounters language
+                    ]
                 ]
-            , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language currentDate MonthlyChartTotals FilterBeneficiariesChart totalsGraphData model.currentBeneficiariesChartsFilter
+            , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
+            , div [ class "ui grid" ]
+                [ div [ class "five wide column" ]
+                    [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear ]
+                , div [ class "six wide column" ]
+                    [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                        |> viewTotalEncounters language
+                    ]
+                , div [ class "five wide column" ]
+                    [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                        |> viewTotalEncounters language
+                    ]
                 ]
-            , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
-                ]
-            , links
+            , lastUpdated language stats
             ]
-        , viewCustomModal language isChw nurse stats db model
-        ]
+
+    else
+        viewNutritionPage language currentDate isChw nurse stats db model
 
 
 caseManagementApplyBreakdownFilters : Dict VillageId (List PersonIdentifier) -> Dict ProgramType (List CaseManagement) -> Model -> List CaseManagement
@@ -647,7 +732,7 @@ viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
                 mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodCaseManagement
         in
         div [ class "dashboard stats" ]
-            [ viewFiltersPane language StatsPage filterPeriodsForStatsPage db model
+            [ viewFiltersPane language (NursePage StatsPage) filterPeriodsForStatsPage db model
             , div [ class "ui equal width grid" ]
                 [ viewMalnourishedCards language malnourishedCurrentMonth malnourishedPreviousMonth
                 , viewMiscCards language currentDate currentPeriodStats monthBeforeStats
@@ -819,7 +904,7 @@ viewCaseManagementPage language currentDate stats db model =
                     |> List.reverse
         in
         div [ class "dashboard case" ]
-            [ viewFiltersPane language CaseManagementPage filterPeriodsForCaseManagementPage db model
+            [ viewFiltersPane language (NursePage CaseManagementPage) filterPeriodsForCaseManagementPage db model
             , div [ class "ui segment blue" ]
                 [ div [ class "case-management" ]
                     [ div [ class "header" ]
@@ -888,7 +973,7 @@ viewFiltersPane : Language -> DashboardPage -> List FilterPeriod -> ModelIndexed
 viewFiltersPane language page filterPeriodsPerPage db model =
     let
         ( programTypeFilterFilterButton, labelSelected ) =
-            if page == MainPage then
+            if page == NursePage MainPage then
                 ( div
                     [ class "primary ui button program-type-filter"
                     , onClick <| SetModalState <| Just FiltersModal
@@ -942,30 +1027,240 @@ viewFiltersPane language page filterPeriodsPerPage db model =
             ++ [ labelSelected, programTypeFilterFilterButton ]
 
 
-viewFilterPaneChw : Language -> Model -> Html Msg
-viewFilterPaneChw language model =
-    let
-        filters =
-            allEncounterTypes
-                |> List.map Just
-
-        renderButton maybeFilter =
-            let
-                label =
-                    Maybe.map Translate.EncounterTypeFileterLabel maybeFilter
-                        |> Maybe.withDefault Translate.All
-            in
-            button
-                [ classList
-                    [ ( "active", model.encounterTypeFilter == maybeFilter )
-                    , ( "primary ui button", True )
-                    ]
-                , onClick <| SetEncounterTypeFilter maybeFilter
+viewChwPages : Language -> Html Msg
+viewChwPages language =
+    div [ class "ui segment chw-filters" ]
+        [ button
+            [ class "primary ui button"
+            , DashboardPage (ChwPage AntenatalPage)
+                |> UserPage
+                |> SetActivePage
+                |> onClick
+            ]
+            [ span
+                []
+                [ translateText language <| Translate.EncounterTypePageLabel AntenatalPage
                 ]
-                [ translateText language label ]
+            ]
+        , button
+            [ class "primary ui button"
+            , DashboardPage (ChwPage <| AcuteIllnessPage OverviewPage)
+                |> UserPage
+                |> SetActivePage
+                |> onClick
+            ]
+            [ span
+                []
+                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage OverviewPage
+                ]
+            ]
+        , button
+            [ class "primary ui button"
+            , DashboardPage (ChwPage NutritionPage)
+                |> UserPage
+                |> SetActivePage
+                |> onClick
+            ]
+            [ span
+                []
+                [ translateText language <| Translate.EncounterTypePageLabel NutritionPage
+                ]
+            ]
+        ]
+
+
+viewAcuteIllnessLinks : Language -> Html Msg
+viewAcuteIllnessLinks language =
+    div [ class "ui segment chw-filters" ]
+        [ button
+            [ class "primary ui button"
+            , DashboardPage (ChwPage <| AcuteIllnessPage OverviewPage)
+                |> UserPage
+                |> SetActivePage
+                |> onClick
+            ]
+            [ span
+                []
+                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage OverviewPage
+                ]
+            ]
+        , button
+            [ class "primary ui button"
+            , DashboardPage (ChwPage <| AcuteIllnessPage Covid19Page)
+                |> UserPage
+                |> SetActivePage
+                |> onClick
+            ]
+            [ span
+                []
+                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage Covid19Page
+                ]
+            ]
+        , button
+            [ class "primary ui button"
+            , DashboardPage (ChwPage <| AcuteIllnessPage MalariaPage)
+                |> UserPage
+                |> SetActivePage
+                |> onClick
+            ]
+            [ span
+                []
+                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage MalariaPage
+                ]
+            ]
+        , button
+            [ class "primary ui button"
+            , DashboardPage (ChwPage <| AcuteIllnessPage GastroPage)
+                |> UserPage
+                |> SetActivePage
+                |> onClick
+            ]
+            [ span
+                []
+                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage GastroPage
+                ]
+            ]
+        ]
+
+
+viewAcuteIllnessPage : Language -> DashboardStats -> Html Msg
+viewAcuteIllnessPage language stats =
+    div [ class "dashboard main" ]
+        [ viewAcuteIllnessLinks language
+        , div [ class "current-month" ]
+            [ a []
+                [ span [ class "icon-back" ] [] ]
+            , h1 [ class "ui header" ]
+                [ text "May 2021" ]
+            , a []
+                [ span [ class "icon-back forward" ] [] ]
+            ]
+        , div [ class "ui grid" ]
+            [ div [ class "five wide column" ]
+                [ div [ class "content" ]
+                    [ div [ class "header" ] [ text "Total # of Assessment" ] ]
+                ]
+            , div [ class "six wide column" ]
+                []
+            , div [ class "five wide column" ]
+                []
+            ]
+        , div [ class "ui grid" ]
+            [ div [ class "five wide column" ]
+                []
+            , div [ class "five wide column" ]
+                []
+            ]
+        , lastUpdated language stats
+        ]
+
+
+viewAcuteIllnessTotalAssessment : Language -> Html Msg
+viewAcuteIllnessTotalAssessment language =
+    div [] []
+
+
+viewNutritionPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewNutritionPage language currentDate isChw nurse stats db model =
+    let
+        currentPeriodStats =
+            filterStatsWithinPeriod currentDate model stats
+
+        totalBeneficiariesMonthlyDuringPastYear =
+            generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats
+
+        emptyTotalBeneficiariesDict =
+            List.repeat 12 emptyTotalBeneficiaries
+                |> List.indexedMap (\index empty -> ( index + 1, empty ))
+                |> Dict.fromList
+
+        caseManagementsThisYear =
+            caseManagementApplyBreakdownFilters stats.villagesWithResidents stats.caseManagement.thisYear model
+
+        caseManagementsLastYear =
+            caseManagementApplyBreakdownFilters stats.villagesWithResidents stats.caseManagement.lastYear model
+
+        caseNutritionTotalsThisYear =
+            caseManagementsThisYear
+                |> List.map (.nutrition >> generateCaseNutritionTotals)
+
+        caseNutritionTotalsLastYear =
+            caseManagementsLastYear
+                |> List.map (.nutrition >> generateCaseNutritionTotals)
+
+        totalsGraphData =
+            caseNutritionTotalsThisYear
+                |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
+                |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
+
+        newCasesGraphData =
+            caseManagementsThisYear
+                |> List.map (.nutrition >> generateCaseNutritionNewCases currentDate)
+                |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
+                |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
+
+        links =
+            case model.programTypeFilter of
+                FilterProgramFbf ->
+                    div [ class "sixteen wide column" ]
+                        [ viewDashboardPagesLinks language
+                        ]
+
+                _ ->
+                    emptyNode
     in
-    div [ class "ui segment chw-filters" ] <|
-        List.map renderButton filters
+    div [ class "dashboard main" ]
+        [ viewFiltersPane language (NursePage MainPage) filterPeriodsForMainPage db model
+        , div [ class "ui grid" ]
+            [ div [ class "eight wide column" ]
+                [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
+                ]
+            , div [ class "eight wide column" ]
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
+            , div [ class "sixteen wide column" ]
+                [ viewMonthlyChart language currentDate MonthlyChartTotals FilterBeneficiariesChart totalsGraphData model.currentBeneficiariesChartsFilter
+                ]
+            , div [ class "sixteen wide column" ]
+                [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
+                ]
+            , links
+            ]
+        , viewCustomModal language isChw nurse stats db model
+        , lastUpdated language stats
+        ]
+
+
+viewAntenatalPage : Language -> DashboardStats -> Html Msg
+viewAntenatalPage language stats =
+    div [ class "dashboard main" ]
+        [ div [ class "current-month" ]
+            [ a []
+                [ span [ class "icon-back" ] [] ]
+            , h1 [ class "ui header" ]
+                [ text "May 2021" ]
+            , a []
+                [ span [ class "icon-back forward" ] [] ]
+            ]
+        , div [ class "ui grid" ]
+            [ div [ class "five wide column" ]
+                []
+            , div [ class "six wide column" ]
+                []
+            , div [ class "five wide column" ]
+                []
+            ]
+        , div [ class "ui grid" ]
+            [ div [ class "five wide column" ]
+                []
+            , div [ class "six wide column" ]
+                []
+            , div [ class "five wide column" ]
+                []
+            ]
+        , lastUpdated language stats
+        ]
 
 
 viewGoodNutrition : Language -> List CaseNutritionTotal -> List CaseNutritionTotal -> Html Msg
@@ -1537,7 +1832,7 @@ viewDashboardPagesLinks language =
     div [ class "dashboards-links" ]
         [ div
             [ class "ui segment stats"
-            , DashboardPage StatsPage
+            , DashboardPage (NursePage StatsPage)
                 |> UserPage
                 |> SetActivePage
                 |> onClick
@@ -1552,7 +1847,7 @@ viewDashboardPagesLinks language =
             ]
         , div
             [ class "ui segment case"
-            , DashboardPage CaseManagementPage
+            , DashboardPage (NursePage CaseManagementPage)
                 |> UserPage
                 |> SetActivePage
                 |> onClick
@@ -2255,3 +2550,8 @@ resolvePreviousMonth thisMonth =
 
     else
         thisMonth - 1
+
+
+lastUpdated : Language -> DashboardStats -> Html Msg
+lastUpdated language stats =
+    div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]

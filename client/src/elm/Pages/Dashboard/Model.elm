@@ -10,7 +10,7 @@ import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Pages.Page exposing (DashboardPage(..), Page(..))
+import Pages.Page exposing (ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..))
 
 
 type FilterPeriod
@@ -118,7 +118,6 @@ caseManagementSubFilters mainFilter =
 type alias Model =
     { period : FilterPeriod
     , programTypeFilter : FilterProgramType
-    , encounterTypeFilter : Maybe IndividualEncounterType
     , selectedVillageFilter : Maybe VillageId
     , beneficiariesGender : FilterGender
     , currentBeneficiariesChartsFilter : DashboardFilter
@@ -126,6 +125,7 @@ type alias Model =
     , currentCaseManagementFilter : DashboardFilter
     , currentCaseManagementSubFilter : DashboardSubFilter
     , latestPage : DashboardPage
+    , chwPage : Maybe ChwDashboardPage
     , modalState : Maybe ModalState
     }
 
@@ -147,14 +147,14 @@ emptyModel maybeSelectedVillage =
     in
     { period = OneYear
     , programTypeFilter = programTypeFilter
-    , encounterTypeFilter = Nothing
     , selectedVillageFilter = selectedVillage
     , beneficiariesGender = Boys
     , currentBeneficiariesChartsFilter = Stunting
     , currentBeneficiariesIncidenceChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
     , currentCaseManagementSubFilter = FilterTotal
-    , latestPage = MainPage
+    , latestPage = NursePage MainPage
+    , chwPage = Nothing
     , modalState = Nothing
     }
 
@@ -232,5 +232,5 @@ type Msg
     | SetSubFilterCaseManagement DashboardSubFilter
     | SetFilterProgramType String
     | SetSelectedVillage String
-    | SetEncounterTypeFilter (Maybe IndividualEncounterType)
+    | SetChwDashboardPages (Maybe ChwDashboardPage)
     | SetActivePage Page

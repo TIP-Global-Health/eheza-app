@@ -211,8 +211,9 @@ update msg model =
                         |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
 
                 ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateIndexedDb currentDate
-                        model.language
+                    Backend.Update.updateIndexedDb model.language
+                        currentDate
+                        model.currentTime
                         model.zscores
                         nurseId
                         model.healthCenterId

@@ -37,6 +37,7 @@ import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.Village.Model exposing (Village)
 import RemoteData exposing (RemoteData(..), WebData)
+import Time
 
 
 {-| This tracks data we fetch from IndexedDB via the service worker. Gradually, we'll
@@ -48,7 +49,6 @@ type alias ModelIndexedDb =
     -- actually need all the clinics at once, but there should be a reasonable
     -- number.
     { clinics : WebData (Dict ClinicId Clinic)
-    , computedDashboard : Dict HealthCenterId DashboardStats
     , everyCounselingSchedule : WebData EveryCounselingSchedule
     , healthCenters : WebData (Dict HealthCenterId HealthCenter)
     , villages : WebData (Dict VillageId Village)
@@ -132,13 +132,16 @@ type alias ModelIndexedDb =
     , postNutritionEncounter : Dict IndividualEncounterParticipantId (WebData ( NutritionEncounterId, NutritionEncounter ))
     , postAcuteIllnessEncounter : Dict IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))
     , postHomeVisitEncounter : Dict IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
+
+    -- Dashboard Statistics.
+    , computedDashboard : Dict HealthCenterId DashboardStats
+    , computedDashboardLastFetched : Time.Posix
     }
 
 
 emptyModelIndexedDb : ModelIndexedDb
 emptyModelIndexedDb =
     { clinics = NotAsked
-    , computedDashboard = Dict.empty
     , editableSessions = Dict.empty
     , everyCounselingSchedule = NotAsked
     , expectedParticipants = Dict.empty
@@ -184,6 +187,8 @@ emptyModelIndexedDb =
     , sessions = Dict.empty
     , sessionsByClinic = Dict.empty
     , followUpMeasurements = Dict.empty
+    , computedDashboard = Dict.empty
+    , computedDashboardLastFetched = Time.millisToPosix 0
     }
 
 

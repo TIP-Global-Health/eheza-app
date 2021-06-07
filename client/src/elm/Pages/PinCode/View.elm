@@ -12,7 +12,7 @@ import Gizra.Html exposing (emptyNode, showIf)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
-import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
+import Pages.Page exposing (DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
@@ -211,7 +211,7 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceNam
             dashboardButton =
                 button
                     [ class "ui primary button"
-                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
+                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage (NursePage MainPage)
                     ]
                     [ text <| translate language Translate.DashboardLabel
                     ]
