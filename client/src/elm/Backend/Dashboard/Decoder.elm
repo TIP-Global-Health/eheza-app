@@ -4,7 +4,8 @@ import AssocList as Dict exposing (Dict)
 import Backend.Dashboard.Model exposing (..)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeDeliveryLocation, decodeIndividualEncounterParticipantOutcome)
-import Backend.Measurement.Decoder exposing (decodeFamilyPlanningSign)
+import Backend.Measurement.Decoder exposing (decodeDangerSign, decodeFamilyPlanningSign)
+import Backend.Measurement.Model exposing (DangerSign(..))
 import Backend.Person.Decoder exposing (decodeGender)
 import Dict as LegacyDict
 import Gizra.Json exposing (decodeInt)
@@ -12,6 +13,7 @@ import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid, toEntityUuid)
+import Utils.Json exposing (decodeEverySet)
 
 
 decodeDashboardStats : Decoder DashboardStats
@@ -261,3 +263,16 @@ decodePrenatalDataItem =
         |> required "date_concluded" (nullable decodeYYYYMMDD)
         |> required "outcome" (nullable decodeIndividualEncounterParticipantOutcome)
         |> required "delivery_location" (nullable decodeDeliveryLocation)
+        |> required "encounters" (list decodePrenatalEncounterDataItem)
+
+
+decodePrenatalEncounterDataItem : Decoder PrenatalEncounterDataItem
+decodePrenatalEncounterDataItem =
+    succeed PrenatalEncounterDataItem
+        |> required "created" decodeYYYYMMDD
+        |> required "danger_signs" (decodeEverySet decodeDangerSignWithFallback)
+
+
+decodeDangerSignWithFallback : Decoder DangerSign
+decodeDangerSignWithFallback =
+    oneOf [ decodeDangerSign, succeed NoDangerSign ]

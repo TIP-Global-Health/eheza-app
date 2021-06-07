@@ -1415,6 +1415,11 @@ div.page-activity.home-visit {
 
       .form.newborn-enrolment {
         min-height: 150px;
+
+        button {
+          margin-top: 20px;
+          width: 50%;
+        }
       }
     }
   }
@@ -2477,6 +2482,14 @@ div.page-case-management {
 
     .person-name {
       color: $color-primary;
+    }
+
+    button.stacked {
+      margin-bottom: 15px;
+    }
+
+    button.stacked:last-child {
+      margin-bottom: 0;
     }
   }
 }

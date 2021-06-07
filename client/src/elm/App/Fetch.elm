@@ -245,7 +245,7 @@ shouldFetch : Model -> Msg -> Bool
 shouldFetch model msg =
     case msg of
         MsgIndexedDb subMsg ->
-            Backend.Fetch.shouldFetch model.indexedDb subMsg
+            Backend.Fetch.shouldFetch model.currentTime model.indexedDb subMsg
 
         _ ->
             False

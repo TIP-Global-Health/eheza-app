@@ -6,8 +6,9 @@ module Backend.Dashboard.Model exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome)
-import Backend.Measurement.Model exposing (FamilyPlanningSign)
+import Backend.Measurement.Model exposing (DangerSign, FamilyPlanningSign)
 import Backend.Person.Model exposing (Gender)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 
 
@@ -191,4 +192,11 @@ type alias PrenatalDataItem =
     , dateConcluded : Maybe NominalDate
     , outcome : Maybe IndividualEncounterParticipantOutcome
     , deliveryLocation : Maybe DeliveryLocation
+    , encounters : List PrenatalEncounterDataItem
+    }
+
+
+type alias PrenatalEncounterDataItem =
+    { created : NominalDate
+    , dangerSigns : EverySet DangerSign
     }

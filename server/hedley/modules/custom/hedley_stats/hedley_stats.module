@@ -418,7 +418,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
 /**
  * Return pregnancies data that is used to generate ANC statistics.
  *
- * We get data for pregnancies started during past 480 days.
+ * We pull data for pregnancies started during past 480 days.
  * We need to know when they were created, what was the expected delivery
  * date, and if exist, real delivery date and outcome.
  * Also, we add patient ID, to be able to associate it with its village.
@@ -458,23 +458,60 @@ function hedley_stats_get_prenatal_data($health_center_id) {
     ->execute()
     ->fetchAllAssoc('nid');
 
+  if (empty($result)) {
+    return [];
+  }
+
   $items = [];
   // Prepare data to be consumed by client side.
-  foreach ($result as $row) {
-    $items[] = [
+  foreach ($result as $index => $row) {
+    $items[$index] = [
       'id' => $row->field_person,
       'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
       'expected_date_concluded' => empty($row->field_expected_date_concluded) ? NULL : date_format(date_create($row->field_expected_date_concluded), 'Y-m-d'),
       'date_concluded' => empty($row->field_date_concluded) ? NULL : date_format(date_create($row->field_date_concluded), 'Y-m-d'),
       'outcome' => $row->field_outcome,
       'delivery_location' => $row->field_outcome_location,
+      'encounters' => [],
     ];
   }
 
-  // Store in cache.
+  $individual_participants = array_keys($items);
+
+  $query = hedley_stats_get_base_query($health_center_id, 'prenatal_encounter');
+  $fields_to_join = [
+    'field_individual_participant',
+  ];
+  foreach ($fields_to_join as $field) {
+    hedley_stats_join_field_to_query($query, 'node', $field, FALSE);
+  }
+  $query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
+
+  // Join with Prenatal Encounter table, through which we can join measurements data.
+  $query->leftJoin('field_data_field_prenatal_encounter', 'prenatal_encounter', 'prenatal_encounter.field_prenatal_encounter_target_id = node.nid');
+
+  // Pull data of danger signs that were recorded during encounter.
+  $query->leftJoin('field_data_field_danger_signs', 'danger_signs', 'danger_signs.entity_id = prenatal_encounter.entity_id');
+  $query->addField('danger_signs', 'field_danger_signs_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT danger_signs.field_danger_signs_value)", 'danger_signs');
+
+  $query->groupBy('node.nid');
+
+  $result = $query
+    ->execute()
+    ->fetchAllAssoc('nid');
+
+  foreach ($result as $row) {
+    $items[$row->field_individual_participant]['encounters'][] = [
+      'created' => empty($row->field_scheduled_date) ? NULL : date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
+      'danger_signs' => explode(',', $row->danger_signs),
+    ];
+  }
+
+    // Store in cache.
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_PRENATAL_DATA, $health_center_id, NULL, $items);
 
-  return $items;
+  return array_values($items);
 }
 
 /**

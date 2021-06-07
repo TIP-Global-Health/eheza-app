@@ -1706,6 +1706,17 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) setActiveTaskMsg
 
+        SaveNewbornEnrollment nextTask_ ->
+            let
+                ( backToActivitiesMsg, setActiveTaskMsg ) =
+                    navigationMsgsByNextStep SetActiveNextStepsTask (PrenatalEncounterPage id) nextTask_
+            in
+            ( model
+            , Cmd.none
+            , backToActivitiesMsg
+            )
+                |> sequenceExtra (update currentDate id db) setActiveTaskMsg
+
         SetReferToHealthCenter value ->
             let
                 form =

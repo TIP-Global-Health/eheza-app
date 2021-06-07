@@ -3,7 +3,33 @@
 
   .timestamp {
     color: $color-white;
-    text-align: center;
+    text-align: left;
+    margin: 10px 0px;
+  }
+
+  .current-month {
+    margin-bottom: 35px;
+    .icon-back {
+      margin-left: 257px;
+      margin-bottom: -30px;
+    }
+    .header {
+      font-weight: 100;
+      text-transform: capitalize;
+    }
+
+    .icon-back.forward {
+        margin-top: -30px;
+        margin-left: 470px;
+        transform: rotate(180deg);
+
+    }
+  }
+
+  .case-management-label {
+    color: $color-white;
+    margin-top: 50px;
+    margin-bottom: 10px;
   }
 
   .ui.segment {
@@ -55,26 +81,26 @@
       }
     }
 
-  &.chw-filters {
-    background-color: transparent;
-    min-height: 40px;
-    padding: 25px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    &.chw-filters {
+      background-color: transparent;
+      min-height: 40px;
+      padding: 25px 0;
+      margin-bottom: 25px;
+      display: flex;
+      border-bottom: solid 1px $color-white;
 
-    button {
-      background-color: $color-white;
-      border: solid 2px $color-primary;
-      color: $color-primary;
-      border-radius: 3px;
-      width: 300px;
-      font-size: 24px;
-      font-weight: 700;
-      padding: 15px;
-      text-transform: none;
+      button {
+        background-color: $color-white;
+        border: solid 2px $color-primary;
+        color: $color-primary;
+        border-radius: 3px;
+        width: 300px;
+        font-size: 24px;
+        font-weight: 700;
+        padding: 15px;
+        text-transform: none;
+      }
     }
-  }
 
     .content {
 
