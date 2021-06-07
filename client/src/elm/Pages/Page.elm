@@ -1,4 +1,4 @@
-module Pages.Page exposing (ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), SessionPage(..), UserPage(..))
+module Pages.Page exposing (AcuteIllnessDashboardPage(..), ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), SessionPage(..), UserPage(..))
 
 {-| A module that defines a type which controls what the user wishes
 to be shown at the moment.
@@ -182,9 +182,16 @@ type NurseDashboardPage
 
 
 type ChwDashboardPage
-    = AcuteIllnessPage
+    = AcuteIllnessPage AcuteIllnessDashboardPage
     | NutritionPage
     | AntenatalPage
+
+
+type AcuteIllnessDashboardPage
+    = OverviewPage
+    | Covid19Page
+    | MalariaPage
+    | GastroPage
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

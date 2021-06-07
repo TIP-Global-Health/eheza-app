@@ -77,8 +77,19 @@ pageToFragment current =
 
                                 ChwPage chwDashboardPage ->
                                     case chwDashboardPage of
-                                        AcuteIllnessPage ->
-                                            "acute-illness"
+                                        AcuteIllnessPage acuteIllnessSubPage ->
+                                            case acuteIllnessSubPage of
+                                                OverviewPage ->
+                                                    "acute-illness"
+
+                                                Covid19Page ->
+                                                    "covid-19"
+
+                                                MalariaPage ->
+                                                    "malaria"
+
+                                                GastroPage ->
+                                                    "gastro"
 
                                         NutritionPage ->
                                             "nutrition"
@@ -287,7 +298,10 @@ parseDashboardPage =
         [ map (NursePage MainPage) (s "main")
         , map (NursePage StatsPage) (s "stats")
         , map (NursePage CaseManagementPage) (s "case-management")
-        , map (ChwPage AcuteIllnessPage) (s "acute-illness")
+        , map (ChwPage <| AcuteIllnessPage OverviewPage) (s "acute-illness")
+        , map (ChwPage <| AcuteIllnessPage Covid19Page) (s "covid-19")
+        , map (ChwPage <| AcuteIllnessPage MalariaPage) (s "malaria")
+        , map (ChwPage <| AcuteIllnessPage GastroPage) (s "gastro")
         , map (ChwPage NutritionPage) (s "nutrition")
         , map (ChwPage AntenatalPage) (s "antenatal")
         ]

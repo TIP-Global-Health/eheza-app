@@ -2879,10 +2879,27 @@ translationSet trans =
 
         EncounterTypePageLabel page ->
             case page of
-                AcuteIllnessPage ->
-                    { english = "Acute Illness"
-                    , kinyarwanda = Nothing
-                    }
+                AcuteIllnessPage subPage ->
+                    case subPage of
+                        OverviewPage ->
+                            { english = "Overview"
+                            , kinyarwanda = Nothing
+                            }
+
+                        Covid19Page ->
+                            { english = "COVID-19"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MalariaPage ->
+                            { english = "Malaria"
+                            , kinyarwanda = Nothing
+                            }
+
+                        GastroPage ->
+                            { english = "Gastro"
+                            , kinyarwanda = Nothing
+                            }
 
                 NutritionPage ->
                     { english = "Child Nutrition"
