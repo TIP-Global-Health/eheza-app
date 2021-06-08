@@ -181,8 +181,48 @@ view language page currentDate healthCenterId isChw nurse model db =
 temporaryFunc : Language -> NominalDate -> HealthCenterId -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
 temporaryFunc language currentDate healthCenterId stats db model =
     let
-        prenatalData =
-            generateFilteredPrenatalData model.selectedVillageFilter stats
+        acuteIllnessData =
+            generateFilteredAcuteIllnessData model.selectedVillageFilter stats
+
+        _ =
+            Debug.log "ACUTE ILLNESS METRICS" ""
+
+        _ =
+            List.repeat 12 ""
+                |> List.indexedMap
+                    (\index _ ->
+                        let
+                            selectedDate =
+                                Date.add Months (-1 * index) currentDate
+
+                            _ =
+                                String.fromInt index |> Debug.log "Index"
+
+                            _ =
+                                countDiagnosedWithMalariaForSelectedMonth selectedDate acuteIllnessData
+                                    |> Debug.log "countDiagnosedWithMalariaForSelectedMonth"
+
+                            _ =
+                                countUncomplicatedMalariaManagedByChwForSelectedMonth selectedDate acuteIllnessData
+                                    |> Debug.log "countUncomplicatedMalariaManagedByChwForSelectedMonth"
+
+                            _ =
+                                countUncomplicatedMalariaAndPregnantSentToHCForSelectedMonth selectedDate acuteIllnessData
+                                    |> Debug.log "countUncomplicatedMalariaAndPregnantSentToHCForSelectedMonth"
+
+                            _ =
+                                countComplicatedMalariaSentToHCForSelectedMonth selectedDate acuteIllnessData
+                                    |> Debug.log "countComplicatedMalariaSentToHCForSelectedMonth"
+
+                            _ =
+                                countResolvedMalariaCasesForSelectedMonth selectedDate acuteIllnessData
+                                    |> Debug.log "countResolvedMalariaCasesForSelectedMonth"
+
+                            _ =
+                                Debug.log "" "---------------------------------------------------------"
+                        in
+                        ""
+                    )
 
         followUps =
             Dict.get healthCenterId db.followUpMeasurements
@@ -195,6 +235,9 @@ temporaryFunc language currentDate healthCenterId stats db model =
                 |> Maybe.withDefault ( 0, 0, 0 )
 
         _ =
+            Debug.log "CASE MANAGEMENT METRICS" ""
+
+        _ =
             Debug.log "totalNutritionFollowUps" totalNutritionFollowUps
 
         _ =
@@ -202,6 +245,12 @@ temporaryFunc language currentDate healthCenterId stats db model =
 
         _ =
             Debug.log "totalPrenatalFollowUps" totalPrenatalFollowUps
+
+        prenatalData =
+            generateFilteredPrenatalData model.selectedVillageFilter stats
+
+        _ =
+            Debug.log "ANC METRICS" ""
 
         _ =
             List.repeat 12 ""
@@ -216,7 +265,7 @@ temporaryFunc language currentDate healthCenterId stats db model =
 
                             _ =
                                 countNewlyIdentifiedPregananciesForSelectedMonth selectedDate prenatalData
-                                    |> Debug.log ""
+                                    |> Debug.log "countNewlyIdentifiedPregananciesForSelectedMonth"
 
                             _ =
                                 countCurrentlyPregnantForSelectedMonth currentDate selectedDate prenatalData
