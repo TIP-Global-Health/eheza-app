@@ -430,7 +430,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     $fever_by_vitals = !empty($row->body_temperature) && (float) $row->body_temperature >= 37.5;
 
     $items[$row->field_individual_participant]['encounters'][] = [
-      'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
+      'start_date' => hedley_stats_convert_timestamp_to_nominal($row->created),
       'sequence_number' => $row->field_sequence_number,
       'diagnosis' => $row->field_acute_illness_diagnosis,
       'fever' => $fever_by_signs || $fever_by_vitals,
@@ -467,7 +467,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
 function hedley_stats_get_prenatal_data($health_center_id) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_PRENATAL_DATA, $health_center_id)) {
-    // return $cache_data;
+    return $cache_data;
   }
 
   $query = hedley_stats_get_base_query($health_center_id, 'individual_participant', HEDLEY_STATS_PERIOD_480_DAYS);
@@ -536,7 +536,7 @@ function hedley_stats_get_prenatal_data($health_center_id) {
 
   foreach ($result as $row) {
     $items[$row->field_individual_participant]['encounters'][] = [
-      'created' => empty($row->field_scheduled_date) ? NULL : date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
+      'start_date' => empty($row->field_scheduled_date) ? NULL : date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
       'danger_signs' => explode(',', $row->danger_signs),
     ];
   }
