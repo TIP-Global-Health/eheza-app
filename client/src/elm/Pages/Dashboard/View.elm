@@ -231,6 +231,22 @@ temporaryFunc language currentDate healthCenterId stats db model =
                                     |> Debug.log "countResolvedMalariaCasesForSelectedMonth"
 
                             _ =
+                                countDiagnosedWithGIForSelectedMonth selectedDate acuteIllnessData
+                                    |> Debug.log "countDiagnosedWithGIForSelectedMonth"
+
+                            _ =
+                                countUncomplicatedGIManagedByChwForSelectedMonth selectedDate acuteIllnessData
+                                    |> Debug.log "countUncomplicatedGIManagedByChwForSelectedMonth"
+
+                            _ =
+                                countComplicatedGISentToHCForSelectedMonth selectedDate acuteIllnessData
+                                    |> Debug.log "countComplicatedGISentToHCForSelectedMonth"
+
+                            _ =
+                                countResolvedGICasesForSelectedMonth selectedDate acuteIllnessData
+                                    |> Debug.log "countResolvedGICasesForSelectedMonth"
+
+                            _ =
                                 Debug.log "" "---------------------------------------------------------"
                         in
                         ""

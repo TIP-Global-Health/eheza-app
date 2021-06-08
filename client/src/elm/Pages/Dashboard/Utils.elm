@@ -156,8 +156,8 @@ countDiagnosedWithMalariaForSelectedMonth selectedDate itemsList =
         (.encounters
             >> List.any
                 (\encounter ->
-                    -- Illness that got an encounter at selected month,
-                    -- and that encounter produced a Malaria diagnosis.
+                    -- Illness that got an encounter at selected month
+                    -- which has produced a Malaria diagnosis.
                     withinSelectedMonth selectedDate encounter.startDate
                         && List.member encounter.diagnosis
                             [ DiagnosisMalariaComplicated
@@ -240,6 +240,88 @@ countResolvedMalariaCasesForSelectedMonth selectedDate itemsList =
                             [ DiagnosisMalariaComplicated
                             , DiagnosisMalariaUncomplicated
                             , DiagnosisMalariaUncomplicatedAndPregnant
+                            ]
+        )
+        itemsList
+        |> List.length
+
+
+
+--
+-- Acute illness - Gastro functions.
+--
+
+
+countDiagnosedWithGIForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
+countDiagnosedWithGIForSelectedMonth selectedDate itemsList =
+    List.filter
+        (.encounters
+            >> List.any
+                (\encounter ->
+                    -- Illness that got an encounter at selected month
+                    -- which has produced a Gastro Infection diagnosis.
+                    withinSelectedMonth selectedDate encounter.startDate
+                        && List.member encounter.diagnosis
+                            [ DiagnosisGastrointestinalInfectionComplicated
+                            , DiagnosisGastrointestinalInfectionUncomplicated
+                            ]
+                )
+        )
+        itemsList
+        |> List.length
+
+
+countUncomplicatedGIManagedByChwForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
+countUncomplicatedGIManagedByChwForSelectedMonth selectedDate itemsList =
+    List.filter
+        (.encounters
+            >> List.any
+                (\encounter ->
+                    -- Illness that got an encounter at selected month
+                    -- which has produced Uncomlicated GI diagnosis,
+                    -- and patient was not sent to health center.
+                    withinSelectedMonth selectedDate encounter.startDate
+                        && (encounter.diagnosis == DiagnosisGastrointestinalInfectionUncomplicated)
+                        && not (EverySet.member ReferToHealthCenter encounter.sendToHCSigns)
+                )
+        )
+        itemsList
+        |> List.length
+
+
+countComplicatedGISentToHCForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
+countComplicatedGISentToHCForSelectedMonth selectedDate itemsList =
+    List.filter
+        (.encounters
+            >> List.any
+                (\encounter ->
+                    -- Illness that got an encounter at selected month
+                    -- which has produced Comlicated GI diagnosis,
+                    -- and patient was sent to health center.
+                    withinSelectedMonth selectedDate encounter.startDate
+                        && (encounter.diagnosis == DiagnosisGastrointestinalInfectionComplicated)
+                        && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
+                )
+        )
+        itemsList
+        |> List.length
+
+
+countResolvedGICasesForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
+countResolvedGICasesForSelectedMonth selectedDate itemsList =
+    List.filter
+        (\item ->
+            case item.dateConcluded of
+                Nothing ->
+                    False
+
+                Just dateConcluded ->
+                    -- Illness that was resolved at selected month,
+                    -- and had a GI diagnosis.
+                    withinSelectedMonth selectedDate dateConcluded
+                        && List.member item.diagnosis
+                            [ DiagnosisGastrointestinalInfectionComplicated
+                            , DiagnosisGastrointestinalInfectionUncomplicated
                             ]
         )
         itemsList
