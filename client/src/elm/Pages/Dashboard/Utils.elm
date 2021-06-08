@@ -2,7 +2,7 @@ module Pages.Dashboard.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
-import Backend.Dashboard.Model exposing (AcuteIllnessDataItem, DashboardStats, PrenatalDataItem)
+import Backend.Dashboard.Model exposing (AcuteIllnessDataItem, AcuteIllnessEncounterDataItem, DashboardStats, PrenatalDataItem)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (Call114Sign(..), DangerSign(..), FollowUpMeasurements, IsolationSign(..), SendToHCSign(..))
@@ -82,6 +82,42 @@ generateFilteredAcuteIllnessData maybeVillageId stats =
         |> Maybe.map
             (\residents -> List.filter (\item -> List.member item.identifier residents) stats.acuteIllnessData)
         |> Maybe.withDefault []
+
+
+
+--
+-- Acute illness - Overview functions.
+--
+
+
+getAcuteIllnessAssesmentsForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem
+getAcuteIllnessAssesmentsForSelectedMonth selectedDate itemsList =
+    List.map .encounters itemsList
+        |> List.concat
+        |> List.filter (.startDate >> withinSelectedMonth selectedDate)
+
+
+countAcuteIllnessAssesments : List AcuteIllnessEncounterDataItem -> Int
+countAcuteIllnessAssesments encounters =
+    -- Count number of encounters that occured during selected month.
+    List.length encounters
+
+
+countAcuteIllnessCasesByHCReferrals : List AcuteIllnessEncounterDataItem -> ( Int, Int )
+countAcuteIllnessCasesByHCReferrals encounters =
+    let
+        ( sentToHC, managedLocally ) =
+            List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis) encounters
+                |> List.partition (\encounter -> EverySet.member ReferToHealthCenter encounter.sendToHCSigns)
+    in
+    ( List.length sentToHC, List.length managedLocally )
+
+
+countAcuteIllnessCasesByPossibleDiagnosises : List AcuteIllnessDiagnosis -> List AcuteIllnessEncounterDataItem -> Int
+countAcuteIllnessCasesByPossibleDiagnosises possible encounters =
+    List.filter (\encounter -> List.member encounter.diagnosis possible)
+        encounters
+        |> List.length
 
 
 
@@ -471,6 +507,12 @@ countDeliveriesAtLocationForSelectedMonth selectedDate location itemsList =
                     |> Maybe.withDefault False
             )
         |> List.length
+
+
+
+--
+-- Case management  functions.
+--
 
 
 getFollowUpsTotals : Language -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )

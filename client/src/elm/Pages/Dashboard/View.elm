@@ -1,6 +1,7 @@
 module Pages.Dashboard.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Dashboard.Model
     exposing
         ( CaseManagement
@@ -195,8 +196,67 @@ temporaryFunc language currentDate healthCenterId stats db model =
                             selectedDate =
                                 Date.add Months (-1 * index) currentDate
 
+                            encountersForSelectedMonth =
+                                getAcuteIllnessAssesmentsForSelectedMonth selectedDate acuteIllnessData
+
+                            totalAssesments =
+                                countAcuteIllnessAssesments encountersForSelectedMonth
+
+                            ( sentToHC, managedLocally ) =
+                                countAcuteIllnessCasesByHCReferrals encountersForSelectedMonth
+
+                            covidCases =
+                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisCovid19 ] encountersForSelectedMonth
+
+                            malariaCases =
+                                countAcuteIllnessCasesByPossibleDiagnosises
+                                    [ DiagnosisMalariaComplicated
+                                    , DiagnosisMalariaUncomplicated
+                                    , DiagnosisMalariaUncomplicatedAndPregnant
+                                    ]
+                                    encountersForSelectedMonth
+
+                            respiratoryCases =
+                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisRespiratoryInfectionComplicated ] encountersForSelectedMonth
+
+                            giCases =
+                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisGastrointestinalInfectionComplicated ] encountersForSelectedMonth
+
+                            undeterminedCases =
+                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisUndeterminedMoreEvaluationNeeded ] encountersForSelectedMonth
+
+                            feverOfUnknownOriginCases =
+                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisFeverOfUnknownOrigin ] encountersForSelectedMonth
+
                             _ =
                                 String.fromInt index |> Debug.log "Index"
+
+                            _ =
+                                Debug.log "totalAssesments" totalAssesments
+
+                            _ =
+                                Debug.log "sentToHC" sentToHC
+
+                            _ =
+                                Debug.log "managedLocally" managedLocally
+
+                            _ =
+                                Debug.log "undeterminedCases" undeterminedCases
+
+                            _ =
+                                Debug.log "feverOfUnknownOriginCases" feverOfUnknownOriginCases
+
+                            _ =
+                                Debug.log "covidCases" covidCases
+
+                            _ =
+                                Debug.log "malariaCases" malariaCases
+
+                            _ =
+                                Debug.log "respiratoryCases" respiratoryCases
+
+                            _ =
+                                Debug.log "giCases" giCases
 
                             _ =
                                 countDiagnosedWithCovidCallsTo114ForSelectedMonth selectedDate acuteIllnessData
