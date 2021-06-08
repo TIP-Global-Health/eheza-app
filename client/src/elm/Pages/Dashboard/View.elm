@@ -966,7 +966,7 @@ viewChwPages language =
             ]
             [ span
                 []
-                [ translateText language <| Translate.EncounterTypePageLabel AntenatalPage
+                [ translateText language <| Translate.EncounterTypeFileterLabel AntenatalEncounter
                 ]
             ]
         , button
@@ -978,7 +978,7 @@ viewChwPages language =
             ]
             [ span
                 []
-                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage OverviewPage
+                [ translateText language <| Translate.EncounterTypeFileterLabel AcuteIllnessEncounter
                 ]
             ]
         , button
@@ -990,7 +990,7 @@ viewChwPages language =
             ]
             [ span
                 []
-                [ translateText language <| Translate.EncounterTypePageLabel NutritionPage
+                [ translateText language <| Translate.EncounterTypeFileterLabel NutritionEncounter
                 ]
             ]
         ]
@@ -1000,7 +1000,7 @@ viewAcuteIllnessLinks : Language -> Html Msg
 viewAcuteIllnessLinks language =
     div [ class "ui segment chw-filters" ]
         [ button
-            [ class "primary ui button"
+            [ class "primary ui button active"
             , DashboardPage (ChwPage <| AcuteIllnessPage OverviewPage)
                 |> UserPage
                 |> SetActivePage
@@ -1080,11 +1080,6 @@ viewAcuteIllnessPage language stats =
             ]
         , lastUpdated language stats
         ]
-
-
-viewAcuteIllnessTotalAssessment : Language -> Html Msg
-viewAcuteIllnessTotalAssessment language =
-    div [] []
 
 
 viewNutritionPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
