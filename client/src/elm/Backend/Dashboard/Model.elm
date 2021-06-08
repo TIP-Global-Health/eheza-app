@@ -200,7 +200,7 @@ type alias PrenatalDataItem =
 
 
 type alias PrenatalEncounterDataItem =
-    { created : NominalDate
+    { startDate : NominalDate
     , dangerSigns : EverySet DangerSign
     }
 
@@ -208,6 +208,7 @@ type alias PrenatalEncounterDataItem =
 type alias AcuteIllnessDataItem =
     { identifier : PersonIdentifier
     , created : NominalDate
+    , diagnosis : AcuteIllnessDiagnosis
     , dateConcluded : Maybe NominalDate
     , outcome : Maybe IndividualEncounterParticipantOutcome
     , encounters : List AcuteIllnessEncounterDataItem
@@ -215,7 +216,7 @@ type alias AcuteIllnessDataItem =
 
 
 type alias AcuteIllnessEncounterDataItem =
-    { created : NominalDate
+    { startDate : NominalDate
     , sequenceNumber : Int
     , diagnosis : AcuteIllnessDiagnosis
     , feverRecorded : Bool

@@ -144,7 +144,7 @@ getCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate ite
                     (\encounter ->
                         -- Active pregnancy that got an encounter at
                         -- selected month, where danger signs where recorded.
-                        withinSelectedMonth selectedDate encounter.created
+                        withinSelectedMonth selectedDate encounter.startDate
                             && (not <| EverySet.isEmpty encounter.dangerSigns)
                             && (encounter.dangerSigns /= EverySet.singleton NoDangerSign)
                     )

@@ -245,6 +245,7 @@ encodeAcuteIllnessDataItem : AcuteIllnessDataItem -> List ( String, Value )
 encodeAcuteIllnessDataItem item =
     [ ( "id", int item.identifier )
     , ( "created", encodeYYYYMMDD item.created )
+    , ( "diagnosis", encodeAcuteIllnessDiagnosis item.diagnosis )
     , ( "date_concluded", maybe encodeYYYYMMDD item.dateConcluded )
     , ( "outcome", maybe encodeIndividualEncounterParticipantOutcome item.outcome )
     , ( "encounters", list encodeAcuteIllnessEncounterDataItem item.encounters )
@@ -254,7 +255,7 @@ encodeAcuteIllnessDataItem item =
 encodeAcuteIllnessEncounterDataItem : AcuteIllnessEncounterDataItem -> Value
 encodeAcuteIllnessEncounterDataItem item =
     object
-        [ ( "created", encodeYYYYMMDD item.created )
+        [ ( "start_date", encodeYYYYMMDD item.startDate )
         , ( "sequence_number", int item.sequenceNumber )
         , ( "diagnosis", encodeAcuteIllnessDiagnosis item.diagnosis )
         , ( "call_114", encodeEverySet encodeCall114Sign item.call114Signs )
@@ -283,6 +284,6 @@ encodePrenatalDataItem item =
 encodePrenatalEncounterDataItem : PrenatalEncounterDataItem -> Value
 encodePrenatalEncounterDataItem item =
     object
-        [ ( "created", encodeYYYYMMDD item.created )
+        [ ( "start_date", encodeYYYYMMDD item.startDate )
         , ( "danger_signs", encodeEverySet encodeDangerSign item.dangerSigns )
         ]

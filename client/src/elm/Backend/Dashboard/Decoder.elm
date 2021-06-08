@@ -2,6 +2,7 @@ module Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Dashboard.Model exposing (..)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeDeliveryLocation, decodeIndividualEncounterParticipantOutcome)
@@ -13,6 +14,7 @@ import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
+import Pages.AcuteIllnessEncounter.Utils exposing (compareAcuteIllnessEncounterDataDesc)
 import Restful.Endpoint exposing (decodeEntityUuid, toEntityUuid)
 import Utils.Json exposing (decodeEverySet)
 
@@ -261,15 +263,30 @@ decodeAcuteIllnessDataItem =
     succeed AcuteIllnessDataItem
         |> required "id" decodeInt
         |> required "created" decodeYYYYMMDD
+        |> hardcoded NoAcuteIllnessDiagnosis
         |> required "date_concluded" (nullable decodeYYYYMMDD)
         |> required "outcome" (nullable decodeIndividualEncounterParticipantOutcome)
         |> required "encounters" (list decodeAcuteIllnessEncounterDataItem)
+        |> Json.Decode.map
+            (\item ->
+                let
+                    orderedEncounters =
+                        List.sortWith compareAcuteIllnessEncounterDataDesc item.encounters
+
+                    resolvedDiagnosis =
+                        List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis) orderedEncounters
+                            |> List.head
+                            |> Maybe.map .diagnosis
+                            |> Maybe.withDefault NoAcuteIllnessDiagnosis
+                in
+                { item | diagnosis = resolvedDiagnosis, encounters = orderedEncounters }
+            )
 
 
 decodeAcuteIllnessEncounterDataItem : Decoder AcuteIllnessEncounterDataItem
 decodeAcuteIllnessEncounterDataItem =
     succeed AcuteIllnessEncounterDataItem
-        |> required "created" decodeYYYYMMDD
+        |> required "start_date" decodeYYYYMMDD
         |> required "sequence_number" decodeInt
         |> required "diagnosis" decodeAcuteIllnessDiagnosis
         |> required "fever" bool
@@ -293,7 +310,7 @@ decodePrenatalDataItem =
 decodePrenatalEncounterDataItem : Decoder PrenatalEncounterDataItem
 decodePrenatalEncounterDataItem =
     succeed PrenatalEncounterDataItem
-        |> required "created" decodeYYYYMMDD
+        |> required "start_date" decodeYYYYMMDD
         |> required "danger_signs" (decodeEverySet (decodeWithFallback NoDangerSign decodeDangerSign))
 
 
