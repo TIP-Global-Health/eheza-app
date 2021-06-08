@@ -199,6 +199,18 @@ temporaryFunc language currentDate healthCenterId stats db model =
                                 String.fromInt index |> Debug.log "Index"
 
                             _ =
+                                countDiagnosedWithCovidCallsTo114ForSelectedMonth selectedDate acuteIllnessData
+                                    |> Debug.log "countDiagnosedWithCovidCallsTo114ForSelectedMonth"
+
+                            _ =
+                                countCovidSentToHCForSelectedMonth selectedDate acuteIllnessData
+                                    |> Debug.log "countCovidSentToHCForSelectedMonth"
+
+                            _ =
+                                countCovidManagedAtHomeForSelectedMonth selectedDate acuteIllnessData
+                                    |> Debug.log "countCovidManagedAtHomeForSelectedMonth"
+
+                            _ =
                                 countDiagnosedWithMalariaForSelectedMonth selectedDate acuteIllnessData
                                     |> Debug.log "countDiagnosedWithMalariaForSelectedMonth"
 

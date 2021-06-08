@@ -5,7 +5,7 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Dashboard.Model exposing (AcuteIllnessDataItem, DashboardStats, PrenatalDataItem)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..))
-import Backend.Measurement.Model exposing (DangerSign(..), FollowUpMeasurements, SendToHCSign(..))
+import Backend.Measurement.Model exposing (Call114Sign(..), DangerSign(..), FollowUpMeasurements, IsolationSign(..), SendToHCSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Date
 import EverySet exposing (EverySet)
@@ -86,7 +86,67 @@ generateFilteredAcuteIllnessData maybeVillageId stats =
 
 
 --
--- Acute illness Malaria functions.
+-- Acute illness - COVID functions.
+--
+
+
+countDiagnosedWithCovidCallsTo114ForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
+countDiagnosedWithCovidCallsTo114ForSelectedMonth selectedDate itemsList =
+    List.filter
+        (.encounters
+            >> List.any
+                (\encounter ->
+                    -- Illness that got an encounter at selected
+                    -- month which has produced Covid19 diagnosis,
+                    -- and there was a call to 114.
+                    withinSelectedMonth selectedDate encounter.startDate
+                        && (encounter.diagnosis == DiagnosisCovid19)
+                        && EverySet.member Call114 encounter.call114Signs
+                )
+        )
+        itemsList
+        |> List.length
+
+
+countCovidSentToHCForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
+countCovidSentToHCForSelectedMonth selectedDate itemsList =
+    List.filter
+        (.encounters
+            >> List.any
+                (\encounter ->
+                    -- Illness that got an encounter at selected
+                    -- month which has produced Covid19 diagnosis,
+                    -- and patient was sent to health center.
+                    withinSelectedMonth selectedDate encounter.startDate
+                        && (encounter.diagnosis == DiagnosisCovid19)
+                        && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
+                )
+        )
+        itemsList
+        |> List.length
+
+
+countCovidManagedAtHomeForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
+countCovidManagedAtHomeForSelectedMonth selectedDate itemsList =
+    List.filter
+        (.encounters
+            >> List.any
+                (\encounter ->
+                    -- Illness that got an encounter at selected
+                    -- month which has produced Covid19 diagnosis,
+                    -- and patient was isolated at home.
+                    withinSelectedMonth selectedDate encounter.startDate
+                        && (encounter.diagnosis == DiagnosisCovid19)
+                        && EverySet.member PatientIsolated encounter.isolationSigns
+                )
+        )
+        itemsList
+        |> List.length
+
+
+
+--
+-- Acute illness - Malaria functions.
 --
 
 
