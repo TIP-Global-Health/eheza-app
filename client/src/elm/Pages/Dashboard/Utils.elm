@@ -113,9 +113,21 @@ countAcuteIllnessCasesByHCReferrals encounters =
     ( List.length sentToHC, List.length managedLocally )
 
 
-countAcuteIllnessCasesByPossibleDiagnosises : List AcuteIllnessDiagnosis -> List AcuteIllnessEncounterDataItem -> Int
-countAcuteIllnessCasesByPossibleDiagnosises possible encounters =
-    List.filter (\encounter -> List.member encounter.diagnosis possible)
+countAcuteIllnessCasesByPossibleDiagnosises : List AcuteIllnessDiagnosis -> Bool -> List AcuteIllnessEncounterDataItem -> Int
+countAcuteIllnessCasesByPossibleDiagnosises possible whenFeverRecorded encounters =
+    List.filter
+        (\encounter ->
+            let
+                feverFilter =
+                    if whenFeverRecorded then
+                        encounter.feverRecorded
+
+                    else
+                        True
+            in
+            List.member encounter.diagnosis possible
+                && feverFilter
+        )
         encounters
         |> List.length
 

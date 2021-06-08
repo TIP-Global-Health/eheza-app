@@ -206,7 +206,7 @@ temporaryFunc language currentDate healthCenterId stats db model =
                                 countAcuteIllnessCasesByHCReferrals encountersForSelectedMonth
 
                             covidCases =
-                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisCovid19 ] encountersForSelectedMonth
+                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisCovid19 ] True encountersForSelectedMonth
 
                             malariaCases =
                                 countAcuteIllnessCasesByPossibleDiagnosises
@@ -214,19 +214,20 @@ temporaryFunc language currentDate healthCenterId stats db model =
                                     , DiagnosisMalariaUncomplicated
                                     , DiagnosisMalariaUncomplicatedAndPregnant
                                     ]
+                                    True
                                     encountersForSelectedMonth
 
                             respiratoryCases =
-                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisRespiratoryInfectionComplicated ] encountersForSelectedMonth
+                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisRespiratoryInfectionComplicated ] True encountersForSelectedMonth
 
                             giCases =
-                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisGastrointestinalInfectionComplicated ] encountersForSelectedMonth
-
-                            undeterminedCases =
-                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisUndeterminedMoreEvaluationNeeded ] encountersForSelectedMonth
+                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisGastrointestinalInfectionComplicated ] True encountersForSelectedMonth
 
                             feverOfUnknownOriginCases =
-                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisFeverOfUnknownOrigin ] encountersForSelectedMonth
+                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisFeverOfUnknownOrigin ] False encountersForSelectedMonth
+
+                            undeterminedCases =
+                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisUndeterminedMoreEvaluationNeeded ] False encountersForSelectedMonth
 
                             _ =
                                 String.fromInt index |> Debug.log "Index"
