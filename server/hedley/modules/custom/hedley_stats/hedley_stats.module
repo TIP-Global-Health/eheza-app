@@ -67,14 +67,14 @@ function hedley_stats_trigger_stats_recalculation($node) {
   }
 
   $wrapper = entity_metadata_wrapper('node', $node);
-
   if (!$wrapper->__isset('field_shards')) {
     // Can't resolve to which health centers content belongs.
     return;
   }
 
+  $health_centers = $wrapper->field_shards->value(['identifier' => TRUE]);
+
   // Get health centers.
-  $health_centers = $wrapper->field_shards->value();
   if (empty($health_centers)) {
     return;
   }
@@ -82,11 +82,11 @@ function hedley_stats_trigger_stats_recalculation($node) {
   // Reset statistics cache of each health center, because
   // content affecting it's statistics has been added / changed.
   foreach ($health_centers as $health_center) {
-    hedley_stats_clear_caches_for_health_center($health_center->nid);
+    hedley_stats_clear_caches_for_health_center($health_center);
 
     // Add an AQ item to re-calculate all the statistics offline.
-    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center->nid, [
-      'health_center_nid' => $health_center->nid,
+    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center, [
+      'health_center_nid' => $health_center,
     ]);
   }
 }
@@ -106,6 +106,15 @@ function hedley_stats_requires_statistics_recalculation($type) {
       HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE,
       HEDLEY_ACTIVITY_FAMILY_PLANNING_CONTENT_TYPE,
       HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_ACUTE_ILLNESS_ENCOUNTER_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_SEND_TO_HC_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_ACUTE_ILLNESS_VITALS_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_SYMPTOMS_GENERAL_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_CALL_114_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_ISOLATION_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_DANGER_SIGNS_CONTENT_TYPE,
     ],
     HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_NUTRITION_BUNDLES,
@@ -140,6 +149,8 @@ function hedley_stats_clear_caches_for_health_center($nid) {
   // Clear cache that doesn't have periods.
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS, $nid);
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $nid);
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_ACUTE_ILLNESS_DATA, $nid);
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_PRENATAL_DATA, $nid);
 
   // Clear cache for all the periods.
   foreach ($periods as $period) {
@@ -221,37 +232,20 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   try {
     $wrapper = entity_metadata_wrapper('node', $health_center_id);
 
-    // UTC date and time on which statistics were generated.
-    $timestamp = date('d-m-Y, H:i', time() - date('Z'));
-
-    // First check if the HC has "FBF" clinics, only those have stats for
-    // the dashboards and we shouldn't send any stats from a HC without
-    // FBF clinics.
     // Get all clinics of type 'FBF' for the HC.
     $fbf_clinics = hedley_health_center_get_clinics_by_health_center($health_center_id, 'fbf');
-    if (empty($fbf_clinics)) {
-      // We send empty stats so we don't upset the decoder in elm.
-      return [
-        'vid' => 1,
-        'type' => 'statistics',
-        // UUID of the health center.
-        'uuid' => $wrapper->field_uuid->value(),
-        'case_management' => [],
-        'children_beneficiaries' => [],
-        'completed_program' => [],
-        'family_planning' => [],
-        'missed_sessions' => [],
-        'total_encounters' => NULL,
-        'acute_illness_data' => [],
-        'prenatal_data' => [],
-        'villages_with_residents' => [],
-        'timestamp' => $timestamp,
-      ];
+
+    // Calculate statistics that are provided for FBF clinics only.
+    $children_beneficiaries = $completed_program = $missed_sessions = [];
+    if (!empty($fbf_clinics)) {
+      $children_beneficiaries = hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, $fbf_clinics);
+      list($completed_program, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, $fbf_clinics);
     }
 
-    // Calculate the stats.
-    list($completed_program, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, $fbf_clinics);
     $villages_with_residents = hedley_stats_get_villages_with_residents($health_center_id);
+
+    // UTC date and time on which statistics were generated.
+    $timestamp = date('d-m-Y, H:i', time() - date('Z'));
 
     $stats = [
       'vid' => 1,
@@ -259,7 +253,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
       // UUID of the health center.
       'uuid' => $wrapper->field_uuid->value(),
       'case_management' => hedley_stats_get_case_management($health_center_id),
-      'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, $fbf_clinics),
+      'children_beneficiaries' => $children_beneficiaries,
       'completed_program' => $completed_program,
       'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS),
       'missed_sessions' => $missed_sessions,
