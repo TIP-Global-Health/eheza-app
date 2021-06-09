@@ -197,29 +197,38 @@ type Adherence
 
 
 type Dashboard
-    = BeneficiariesLabel
+    = AcuteIllnessDiagnosed
+    | BeneficiariesLabel
     | BeneficiariesTableColumnLabel BeneficiariesTableLabels
     | BeneficiariesTableLabel
     | BoysFilterLabel
     | CaseManagementFirstWordHelper
     | CaseManagementHelper
     | CaseManagementLabel
+    | ChildrenWhoDied
     | CompletedProgramLabel
+    | CurrentPregnancies
     | FamilyPlanningLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
+    | FamilyThatMoved
     | Filter DashboardFilter
     | FilterProgramType FilterProgramType
     | Filters
     | GirlsFilterLabel
     | GoodNutritionLabel
+    | HomeDeliveries
+    | HealthFacilityDeliveries
     | IncidenceOf
     | LastUpdated
     | LoadingDataGeneral
     | MissedSessionsLabel
     | Moderate
     | ModeratelyMalnourished
+    | MothersInANC
     | NewBeneficiaries
+    | NewbornsInCare
     | NewCasesLabel
+    | NewPregnancy
     | NoDataGeneral
     | NoDataForPeriod
     | PercentageLabel FilterPeriod
@@ -234,7 +243,10 @@ type Dashboard
     | TotalBeneficiaries
     | TotalMalnourished
     | TotalEncountersLabel
+    | TotalAssessment
     | UseFamilyPlanning
+    | Within4MonthsOfDueDate
+    | WithDangerSigns
 
 
 type TranslationId
@@ -7861,6 +7873,11 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        AcuteIllnessDiagnosed ->
+            { english = "Acute Illness Diagnosed"
+            , kinyarwanda = Nothing
+            }
+
         BeneficiariesTableColumnLabel label ->
             case label of
                 New ->
@@ -7908,8 +7925,18 @@ translateDashboard trans =
             , kinyarwanda = Just "Kuvura Uburwayi"
             }
 
+        ChildrenWhoDied ->
+            { english = "Children Who Died"
+            , kinyarwanda = Nothing
+            }
+
         CompletedProgramLabel ->
             { english = "Completed Program"
+            , kinyarwanda = Nothing
+            }
+
+        CurrentPregnancies ->
+            { english = "Current Prengant Women"
             , kinyarwanda = Nothing
             }
 
@@ -7920,6 +7947,11 @@ translateDashboard trans =
 
         FamilyPlanningOutOfWomen { total, useFamilyPlanning } ->
             { english = String.fromInt useFamilyPlanning ++ " out of " ++ String.fromInt total ++ " women"
+            , kinyarwanda = Nothing
+            }
+
+        FamilyThatMoved ->
+            { english = "Families Who Moved"
             , kinyarwanda = Nothing
             }
 
@@ -7997,6 +8029,16 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        HomeDeliveries ->
+            { english = "Home Deliveries"
+            , kinyarwanda = Nothing
+            }
+
+        HealthFacilityDeliveries ->
+            { english = "Health Facility Deliveries"
+            , kinyarwanda = Nothing
+            }
+
         IncidenceOf ->
             { english = "Incidence of"
             , kinyarwanda = Nothing
@@ -8027,13 +8069,28 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        MothersInANC ->
+            { english = "Mother in ANC"
+            , kinyarwanda = Nothing
+            }
+
         NewCasesLabel ->
             { english = "New Cases"
             , kinyarwanda = Nothing
             }
 
+        NewPregnancy ->
+            { english = "New Identified Pregnancies"
+            , kinyarwanda = Nothing
+            }
+
         NewBeneficiaries ->
             { english = "New Beneficiaries"
+            , kinyarwanda = Nothing
+            }
+
+        NewbornsInCare ->
+            { english = "Newborns in Care"
             , kinyarwanda = Nothing
             }
 
@@ -8153,8 +8210,23 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        TotalAssessment ->
+            { english = "Total # of Assessments"
+            , kinyarwanda = Nothing
+            }
+
         UseFamilyPlanning ->
             { english = "use family planning"
+            , kinyarwanda = Nothing
+            }
+
+        Within4MonthsOfDueDate ->
+            { english = "Within 4 Months of Due Date"
+            , kinyarwanda = Nothing
+            }
+
+        WithDangerSigns ->
+            { english = "With Danger Signs"
             , kinyarwanda = Nothing
             }
 

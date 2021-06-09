@@ -33,7 +33,7 @@
   }
 
   .ui.segment {
-    padding: 1.5rem 2rem;
+    //padding: 1.5rem 2rem;
 
     &.filters {
       background-color: $color-light-background;
@@ -455,12 +455,12 @@
   }
 
   .dashboard-cards {
-    padding: 1.5rem 3rem;
+    padding: 15px 5px;
     border-radius: 1px;
     min-height: 130px;
 
     .header {
-      font-size: 20px;
+      font-size: 18px;
       text-align: center;
       line-height: 20px;
     }
