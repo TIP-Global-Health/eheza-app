@@ -166,7 +166,7 @@ function hedley_stats_requires_nutrition_statistics_recalculation($bundle) {
 function hedley_stats_requires_prenatal_statistics_recalculation($wrapper) {
   $triggering_types = [
     HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_DANGER_SIGNS_CONTENT_TYPE
+    HEDLEY_ACTIVITY_DANGER_SIGNS_CONTENT_TYPE,
   ];
   $bundle = $wrapper->getBundle();
 
@@ -223,7 +223,6 @@ function hedley_stats_requires_acute_illness_statistics_recalculation($wrapper) 
  *
  * @param string $cache_type_for_recalculation
  *   Type of statistics cache for recalculation.
- *   Possible options: Nutrition, Prenatal and Acute illness.
  */
 function hedley_stats_clear_caches_for_health_center($nid, $cache_type_for_recalculation) {
   // First, clear the stats hash cache of health center.
@@ -521,7 +520,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     ->execute()
     ->fetchAllAssoc('nid');
 
-  // Populate data of the encounters
+  // Populate data of the encounters.
   foreach ($result as $row) {
     $fever_by_signs = !empty($row->fever_period) && $row->fever_period > 0;
     $fever_by_vitals = !empty($row->body_temperature) && (float) $row->body_temperature >= 37.5;
