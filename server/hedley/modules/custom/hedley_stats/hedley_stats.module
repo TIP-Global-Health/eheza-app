@@ -242,7 +242,9 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
         'family_planning' => [],
         'missed_sessions' => [],
         'total_encounters' => NULL,
+        'acute_illness_data' => [],
         'prenatal_data' => [],
+        'villages_with_residents' => [],
         'timestamp' => $timestamp,
       ];
     }
@@ -544,7 +546,7 @@ function hedley_stats_get_prenatal_data($health_center_id) {
 
   $values = array_values($items);
 
-    // Store in cache.
+  // Store in cache.
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_PRENATAL_DATA, $health_center_id, NULL, $values);
 
   return $values;
