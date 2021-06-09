@@ -220,9 +220,9 @@ function hedley_stats_requires_acute_illness_statistics_recalculation($wrapper) 
  *
  * @param int $nid
  *   Health center node ID.
- *
  * @param string $cache_type_for_recalculation
  *   Type of statistics cache for recalculation.
+ *   Possible options: Nutrition, Prenatal and Acute illness.
  */
 function hedley_stats_clear_caches_for_health_center($nid, $cache_type_for_recalculation) {
   // First, clear the stats hash cache of health center.
