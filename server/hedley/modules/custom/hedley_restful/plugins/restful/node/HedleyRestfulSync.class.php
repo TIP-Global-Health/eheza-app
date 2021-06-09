@@ -383,20 +383,35 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $health_center_id = hedley_restful_resolve_nid_for_uuid($uuid);
     if (!$health_center_id) {
+      // Can not resolve health center - return empty response.
       return $return;
     }
 
-    $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id);
-    if (empty($cache_data)) {
+    $cached_hash = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id);
+    if (empty($cached_hash)) {
+      // There's no cached data for health center - trigger statistics
+      // calculation by adding an AQ item.
+      hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center_id, [
+        'health_center_nid' => $health_center_id,
+      ]);
       return $return;
     }
 
     $request = $this->getRequest();
 
-    if (!isset($request['stats_cache_hash']) || $cache_data != $request['stats_cache_hash']) {
-      $return['batch'][] = hedley_stats_calculate_stats_for_health_center($health_center_id);
+    watchdog('zzz', "cache: $cached_hash");
+    $zz = $request['stats_cache_hash'];
+    watchdog('zzz', "request: $zz");
+
+    if (!isset($request['stats_cache_hash']) || $cached_hash !== $request['stats_cache_hash']) {
+      // Statistics has does not match that of the server, which indicates
+      // that we need to send updated statistics to client.
+      // Note: we just want to pull existing data, without updating cache.
+      $return['batch'][] = hedley_stats_calculate_stats_for_health_center($health_center_id, $cached_hash);
     }
 
+    // If we got this far, we know that statistics on client are
+    // up to date - return empty response.
     return $return;
   }
 

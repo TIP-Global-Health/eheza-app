@@ -324,11 +324,13 @@ function hedley_stats_calculate_stats_worker($queue_item) {
  *
  * @param int $health_center_id
  *   The health center node ID.
+ * @param string $cached_hash
+ *   Optional; If non empty value provided, we do not update cache hash.
  *
- * @return array|string
- *   The stats or error message if anything went wrong.
+ * @return array
+ *   The stats or error details if anything went wrong.
  */
-function hedley_stats_calculate_stats_for_health_center($health_center_id) {
+function hedley_stats_calculate_stats_for_health_center($health_center_id, $cached_hash = '') {
   try {
     $wrapper = entity_metadata_wrapper('node', $health_center_id);
 
@@ -343,15 +345,13 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
     }
 
     $villages_with_residents = hedley_stats_get_villages_with_residents($health_center_id);
-
-    // UTC date and time on which statistics were generated.
-    $timestamp = date('d-m-Y, H:i', time() - date('Z'));
+    $health_center_uuid = $wrapper->field_uuid->value();
 
     $stats = [
       'vid' => 1,
       'type' => 'statistics',
       // UUID of the health center.
-      'uuid' => $wrapper->field_uuid->value(),
+      'uuid' => $health_center_uuid,
       'case_management' => hedley_stats_get_case_management($health_center_id),
       'children_beneficiaries' => $children_beneficiaries,
       'completed_program' => $completed_program,
@@ -361,12 +361,15 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
       'acute_illness_data' => hedley_stats_get_acute_illness_data($health_center_id),
       'prenatal_data' => hedley_stats_get_prenatal_data($health_center_id),
       'villages_with_residents' => $villages_with_residents,
-      'timestamp' => $timestamp,
     ];
 
-    $stats['stats_cache_hash'] = md5(serialize($stats));
+    $now = time();
+    // UTC date and time on which statistics were generated.
+    $timestamp = date('d-m-Y, H:i', $now - date('Z'));
+    $stats['timestamp'] = $timestamp;
+    $stats['stats_cache_hash'] = empty($cached_hash) ? md5($now) : $cached_hash;
 
-    // Store in cache only the hash, all statistics have their own cache.
+    // Store in cache only the hash. All statistics have their own cache.
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id, NULL, $stats['stats_cache_hash']);
 
     return $stats;
@@ -581,7 +584,7 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   }
 
   // Get only participants of Antenatal type.
-  $query->condition('field_encounter_type.field_encounter_type_value', 'antenatal');
+  $query->condition('field_encounter_type.field_encounter_type_value', HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE);
 
   $result = $query
     ->execute()
