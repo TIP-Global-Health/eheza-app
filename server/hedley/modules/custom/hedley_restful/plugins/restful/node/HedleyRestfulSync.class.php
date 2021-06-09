@@ -398,13 +398,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     }
 
     $request = $this->getRequest();
-
-    watchdog('zzz', "cache: $cached_hash");
-    $zz = $request['stats_cache_hash'];
-    watchdog('zzz', "request: $zz");
-
     if (!isset($request['stats_cache_hash']) || $cached_hash !== $request['stats_cache_hash']) {
-      // Statistics has does not match that of the server, which indicates
+      // Statistics hash does not match that of the server, which indicates
       // that we need to send updated statistics to client.
       // Note: we just want to pull existing data, without updating cache.
       $return['batch'][] = hedley_stats_calculate_stats_for_health_center($health_center_id, $cached_hash);
