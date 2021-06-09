@@ -1,6 +1,7 @@
 module Pages.GlobalCaseManagement.Model exposing (..)
 
 import AssocList exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue, NutritionAssesment, PrenatalFollowUpValue)
@@ -38,6 +39,12 @@ type alias NutritionFollowUpItem =
     }
 
 
+type alias NutritionFollowUpEntry =
+    { personId : PersonId
+    , item : NutritionFollowUpItem
+    }
+
+
 type alias AcuteIllnessFollowUpItem =
     { dateMeasured : NominalDate
     , personName : String
@@ -51,11 +58,29 @@ type alias AcuteIllnessFollowUpItem =
     }
 
 
+type alias AcuteIllnessFollowUpEntry =
+    { participantId : IndividualEncounterParticipantId
+    , personId : PersonId
+    , item : AcuteIllnessFollowUpItem
+    , newEncounterSequenceNumber : Int
+    , diagnosis : AcuteIllnessDiagnosis
+    }
+
+
 type alias PrenatalFollowUpItem =
     { dateMeasured : NominalDate
     , personName : String
     , encounterId : Maybe PrenatalEncounterId
     , value : PrenatalFollowUpValue
+    }
+
+
+type alias PrenatalFollowUpEntry =
+    { participantId : IndividualEncounterParticipantId
+    , personId : PersonId
+    , item : PrenatalFollowUpItem
+    , encounterType : PrenatalEncounterType
+    , hasNurseEncounter : Bool
     }
 
 

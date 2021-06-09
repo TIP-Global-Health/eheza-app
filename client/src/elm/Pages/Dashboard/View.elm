@@ -182,6 +182,43 @@ view language page currentDate healthCenterId isChw nurse model db =
 temporaryFunc : Language -> NominalDate -> HealthCenterId -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
 temporaryFunc language currentDate healthCenterId stats db model =
     let
+        followUps =
+            Dict.get healthCenterId db.followUpMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+
+        ( totalNutritionFollowUps, totalAcuteIllnessFollowUps, totalPrenatalFollowUps ) =
+            Maybe.map2 (getFollowUpsTotals language currentDate db)
+                model.selectedVillageFilter
+                followUps
+                |> Maybe.withDefault ( 0, 0, 0 )
+
+        ( totalCovid, totalMalaria, totalGI ) =
+            Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate db)
+                model.selectedVillageFilter
+                followUps
+                |> Maybe.withDefault ( 0, 0, 0 )
+
+        _ =
+            Debug.log "CASE MANAGEMENT METRICS" ""
+
+        _ =
+            Debug.log "totalNutritionFollowUps" totalNutritionFollowUps
+
+        _ =
+            Debug.log "totalPrenatalFollowUps" totalPrenatalFollowUps
+
+        _ =
+            Debug.log "totalAcuteIllnessFollowUps" totalAcuteIllnessFollowUps
+
+        _ =
+            Debug.log "totalCovid" totalCovid
+
+        _ =
+            Debug.log "totalMalaria" totalMalaria
+
+        _ =
+            Debug.log "totalGI" totalGI
+
         acuteIllnessData =
             generateFilteredAcuteIllnessData model.selectedVillageFilter stats
 
@@ -312,28 +349,6 @@ temporaryFunc language currentDate healthCenterId stats db model =
                         in
                         ""
                     )
-
-        followUps =
-            Dict.get healthCenterId db.followUpMeasurements
-                |> Maybe.andThen RemoteData.toMaybe
-
-        ( totalNutritionFollowUps, totalAcuteIllnessFollowUps, totalPrenatalFollowUps ) =
-            Maybe.map2 (getFollowUpsTotals language currentDate db)
-                model.selectedVillageFilter
-                followUps
-                |> Maybe.withDefault ( 0, 0, 0 )
-
-        _ =
-            Debug.log "CASE MANAGEMENT METRICS" ""
-
-        _ =
-            Debug.log "totalNutritionFollowUps" totalNutritionFollowUps
-
-        _ =
-            Debug.log "totalAcuteIllnessFollowUps" totalAcuteIllnessFollowUps
-
-        _ =
-            Debug.log "totalPrenatalFollowUps" totalPrenatalFollowUps
 
         prenatalData =
             generateFilteredPrenatalData model.selectedVillageFilter stats

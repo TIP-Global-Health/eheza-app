@@ -13,7 +13,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isNothing)
 import Pages.Dashboard.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (filterVillageResidents, generateAcuteIllnessFollowUps, generateNutritionFollowUps, generatePrenatalFollowUps)
-import Pages.GlobalCaseManagement.View exposing (viewAcuteIllnessFollowUpEntries, viewNutritionFollowUpEntries, viewPrenatalFollowUpEntries)
+import Pages.GlobalCaseManagement.View exposing (generateAcuteIllnessFollowUpEntries, generateNutritionFollowUpEntries, generatePrenatalFollowUpEntries)
 import Translate exposing (Language)
 
 
@@ -535,25 +535,65 @@ getFollowUpsTotals language currentDate db villageId followUps =
                 |> filterVillageResidents villageId identity db
 
         nutritionEntries =
-            viewNutritionFollowUpEntries language currentDate nutritionFollowUps db
+            generateNutritionFollowUpEntries language currentDate nutritionFollowUps db
 
         acuteIllnessFollowUps =
             generateAcuteIllnessFollowUps db followUps
                 |> filterVillageResidents villageId Tuple.second db
 
         acuteIllnessEntries =
-            viewAcuteIllnessFollowUpEntries language currentDate acuteIllnessFollowUps db
+            generateAcuteIllnessFollowUpEntries language currentDate acuteIllnessFollowUps db
 
         prenatalFollowUps =
             generatePrenatalFollowUps db followUps
                 |> filterVillageResidents villageId Tuple.second db
 
         prenatalEntries =
-            viewPrenatalFollowUpEntries language currentDate prenatalFollowUps db
+            generatePrenatalFollowUpEntries language currentDate prenatalFollowUps db
     in
     ( List.length nutritionEntries
     , List.length acuteIllnessEntries
     , List.length prenatalEntries
+    )
+
+
+getAcuteIllnessFollowUpsBreakdownByDiagnosis : Language -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
+getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate db villageId followUps =
+    let
+        acuteIllnessFollowUps =
+            generateAcuteIllnessFollowUps db followUps
+                |> filterVillageResidents villageId Tuple.second db
+
+        acuteIllnessEntries =
+            generateAcuteIllnessFollowUpEntries language currentDate acuteIllnessFollowUps db
+
+        covidEntries =
+            List.filter (.diagnosis >> (==) DiagnosisCovid19) acuteIllnessEntries
+
+        malariaEntries =
+            List.filter
+                (\entry ->
+                    List.member entry.diagnosis
+                        [ DiagnosisMalariaComplicated
+                        , DiagnosisMalariaUncomplicated
+                        , DiagnosisMalariaUncomplicatedAndPregnant
+                        ]
+                )
+                acuteIllnessEntries
+
+        giEntries =
+            List.filter
+                (\entry ->
+                    List.member entry.diagnosis
+                        [ DiagnosisGastrointestinalInfectionComplicated
+                        , DiagnosisGastrointestinalInfectionUncomplicated
+                        ]
+                )
+                acuteIllnessEntries
+    in
+    ( List.length covidEntries
+    , List.length malariaEntries
+    , List.length giEntries
     )
 
 
