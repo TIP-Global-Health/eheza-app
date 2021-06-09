@@ -185,14 +185,6 @@ viewMainPage language currentDate isChw nurse stats db model =
 
         caseManagementsLastYear =
             caseManagementApplyBreakdownFilters stats.villagesWithResidents stats.caseManagement.lastYear model
-
-        caseNutritionTotalsThisYear =
-            caseManagementsThisYear
-                |> List.map (.nutrition >> generateCaseNutritionTotals)
-
-        caseNutritionTotalsLastYear =
-            caseManagementsLastYear
-                |> List.map (.nutrition >> generateCaseNutritionTotals)
     in
     if isChw then
         div [ class "dashboard main" ]
@@ -207,28 +199,21 @@ viewMainPage language currentDate isChw nurse stats db model =
                 ]
             , div [ class "ui grid" ]
                 [ div [ class "five wide column" ]
-                    [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear ]
+                    [ viewTotalAssessment language
+                    ]
                 , div [ class "six wide column" ]
-                    [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                        |> viewTotalEncounters language
-                    ]
+                    []
                 , div [ class "five wide column" ]
-                    [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                        |> viewTotalEncounters language
-                    ]
+                    []
                 ]
             , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
             , div [ class "ui grid" ]
                 [ div [ class "five wide column" ]
-                    [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear ]
+                    []
                 , div [ class "six wide column" ]
-                    [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                        |> viewTotalEncounters language
-                    ]
+                    []
                 , div [ class "five wide column" ]
-                    [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                        |> viewTotalEncounters language
-                    ]
+                    []
                 ]
             , lastUpdated language stats
             ]
@@ -1052,10 +1037,6 @@ viewAcuteIllnessLinks language =
 
 viewAcuteIllnessPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
 viewAcuteIllnessPage language currentDate stats db model =
-    let
-        currentPeriodStats =
-            filterStatsWithinPeriod currentDate model stats
-    in
     div [ class "dashboard main" ]
         [ viewAcuteIllnessLinks language
         , div [ class "current-month" ]
@@ -1069,31 +1050,21 @@ viewAcuteIllnessPage language currentDate stats db model =
         , div [ class "ui grid" ]
             [ div [ class "five wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             , div [ class "six wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             , div [ class "five wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             ]
         , div [ class "ui centered grid" ]
             [ div [ class "six wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             , div [ class "six wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             ]
         , div
             [ class "ui blue segment family-planning" ]
@@ -1109,10 +1080,6 @@ viewAcuteIllnessPage language currentDate stats db model =
 
 viewCovid19Page : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
 viewCovid19Page language currentDate stats db model =
-    let
-        currentPeriodStats =
-            filterStatsWithinPeriod currentDate model stats
-    in
     div [ class "dashboard main" ]
         [ viewAcuteIllnessLinks language
         , div [ class "current-month" ]
@@ -1126,26 +1093,18 @@ viewCovid19Page language currentDate stats db model =
         , div [ class "ui grid" ]
             [ div [ class "five wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             , div [ class "six wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             , div [ class "five wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             ]
         , div [ class "ui centered grid" ]
             [ div [ class "six wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             ]
         , lastUpdated language stats
         ]
@@ -1153,10 +1112,6 @@ viewCovid19Page language currentDate stats db model =
 
 viewMalariaPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
 viewMalariaPage language currentDate stats db model =
-    let
-        currentPeriodStats =
-            filterStatsWithinPeriod currentDate model stats
-    in
     div [ class "dashboard main" ]
         [ viewAcuteIllnessLinks language
         , div [ class "current-month" ]
@@ -1170,31 +1125,21 @@ viewMalariaPage language currentDate stats db model =
         , div [ class "ui grid" ]
             [ div [ class "five wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             , div [ class "six wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             , div [ class "five wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             ]
         , div [ class "ui centered grid" ]
             [ div [ class "six wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             , div [ class "six wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             ]
         , lastUpdated language stats
         ]
@@ -1202,10 +1147,6 @@ viewMalariaPage language currentDate stats db model =
 
 viewGastroPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
 viewGastroPage language currentDate stats db model =
-    let
-        currentPeriodStats =
-            filterStatsWithinPeriod currentDate model stats
-    in
     div [ class "dashboard main" ]
         [ viewAcuteIllnessLinks language
         , div [ class "current-month" ]
@@ -1219,31 +1160,21 @@ viewGastroPage language currentDate stats db model =
         , div [ class "ui grid" ]
             [ div [ class "five wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             , div [ class "six wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             , div [ class "five wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             ]
         , div [ class "ui centered grid" ]
             [ div [ class "six wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             , div [ class "six wide column" ]
                 --@todo
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
+                []
             ]
         , lastUpdated language stats
         ]
@@ -1372,6 +1303,24 @@ viewAntenatalPage language currentDate stats db model =
             ]
         , lastUpdated language stats
         ]
+
+
+viewTotalAssessment : Language -> Html Msg
+viewTotalAssessment language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.GoodNutritionLabel
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
 
 
 viewGoodNutrition : Language -> List CaseNutritionTotal -> List CaseNutritionTotal -> Html Msg
@@ -1739,6 +1688,56 @@ viewCard language statsCard =
                     ]
                 , span [ class "percentage-label" ] [ translateText language <| Translate.Dashboard <| Translate.PercentageLabel statsCard.previousPercentageLabel ]
                 ]
+            , statsCard.newCases
+                |> Maybe.map
+                    (\newCases ->
+                        div [ class "new-cases" ]
+                            [ span [ class "label" ] [ translateText language <| Translate.Dashboard Translate.NewCasesLabel ]
+                            , span [ class "new-cases-value" ] [ text <| String.fromInt newCases ]
+                            ]
+                    )
+                |> showMaybe
+            ]
+        ]
+
+
+viewChwCard : Language -> StatsCard -> Html Msg
+viewChwCard language statsCard =
+    let
+        ( cardAction, cardLinkClass ) =
+            case statsCard.cardAction of
+                Nothing ->
+                    ( []
+                    , ""
+                    )
+
+                Just action ->
+                    ( [ onClick action ]
+                    , "link"
+                    )
+
+        severityClass =
+            case statsCard.valueSeverity of
+                Neutral ->
+                    "neutral"
+
+                Good ->
+                    "good"
+
+                Moderate ->
+                    "moderate"
+
+                Severe ->
+                    "severe"
+
+        cardAttributes =
+            (class <| "ui segment blue dashboard-cards " ++ statsCard.cardClasses ++ " " ++ cardLinkClass) :: cardAction
+    in
+    div
+        cardAttributes
+        [ div [ class "content" ]
+            [ div [ class "header" ] [ text statsCard.title ]
+            , div [ class <| "percentage this-year severity severity-" ++ severityClass ] [ text <| String.fromInt statsCard.value ]
             , statsCard.newCases
                 |> Maybe.map
                     (\newCases ->
