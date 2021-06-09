@@ -101,7 +101,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                                         ( viewNutritionPage language currentDate isChw nurse stats db model, UserPage <| DashboardPage (NursePage MainPage) )
 
                                     AntenatalPage ->
-                                        ( viewAntenatalPage language stats, UserPage <| DashboardPage (NursePage MainPage) )
+                                        ( viewAntenatalPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
                     )
                 |> Maybe.withDefault ( spinner, PinCodePage )
 
@@ -1321,8 +1321,12 @@ viewNutritionPage language currentDate isChw nurse stats db model =
         ]
 
 
-viewAntenatalPage : Language -> DashboardStats -> Html Msg
-viewAntenatalPage language stats =
+viewAntenatalPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewAntenatalPage language currentDate stats db model =
+    let
+        currentPeriodStats =
+            filterStatsWithinPeriod currentDate model stats
+    in
     div [ class "dashboard main" ]
         [ div [ class "current-month" ]
             [ a []
@@ -1334,19 +1338,37 @@ viewAntenatalPage language stats =
             ]
         , div [ class "ui grid" ]
             [ div [ class "five wide column" ]
-                []
+                --@todo
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
             , div [ class "six wide column" ]
-                []
+                --@todo
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
             , div [ class "five wide column" ]
-                []
+                --@todo
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
             ]
-        , div [ class "ui grid" ]
+        , div [ class "ui centered grid" ]
             [ div [ class "five wide column" ]
-                []
+                --@todo
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
             , div [ class "six wide column" ]
-                []
+                --@todo
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
             , div [ class "five wide column" ]
-                []
+                --@todo
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
             ]
         , lastUpdated language stats
         ]
