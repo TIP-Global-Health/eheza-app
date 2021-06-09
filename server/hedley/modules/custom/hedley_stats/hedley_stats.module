@@ -520,7 +520,8 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   }
   $query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
 
-  // Join with Prenatal Encounter table, through which we can join measurements data.
+  // Join with Prenatal Encounter table, through which we can join
+  // measurements data.
   $query->leftJoin('field_data_field_prenatal_encounter', 'prenatal_encounter', 'prenatal_encounter.field_prenatal_encounter_target_id = node.nid');
 
   // Pull data of danger signs that were recorded during encounter.

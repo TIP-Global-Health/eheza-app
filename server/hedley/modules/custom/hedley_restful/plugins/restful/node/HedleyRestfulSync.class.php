@@ -374,7 +374,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    *   The UUID of the health center.
    *
    * @return array
-   *   A representation of the required revisions
+   *   A representation of the required revisions.
    */
   public function getForHealthCenterStatistics($uuid) {
     $return = [
