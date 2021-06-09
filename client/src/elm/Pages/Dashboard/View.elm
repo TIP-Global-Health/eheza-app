@@ -95,7 +95,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                                                 ( viewMalariaPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
 
                                             GastroPage ->
-                                                ( viewAcuteIllnessPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
+                                                ( viewGastroPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
 
                                     NutritionPage ->
                                         ( viewNutritionPage language currentDate isChw nurse stats db model, UserPage <| DashboardPage (NursePage MainPage) )
@@ -1055,12 +1055,6 @@ viewAcuteIllnessPage language currentDate stats db model =
     let
         currentPeriodStats =
             filterStatsWithinPeriod currentDate model stats
-
-        caseManagementsThisYear =
-            caseManagementApplyBreakdownFilters stats.villagesWithResidents stats.caseManagement.thisYear model
-
-        caseManagementsLastYear =
-            caseManagementApplyBreakdownFilters stats.villagesWithResidents stats.caseManagement.lastYear model
     in
     div [ class "dashboard main" ]
         [ viewAcuteIllnessLinks language
@@ -1159,6 +1153,55 @@ viewCovid19Page language currentDate stats db model =
 
 viewMalariaPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
 viewMalariaPage language currentDate stats db model =
+    let
+        currentPeriodStats =
+            filterStatsWithinPeriod currentDate model stats
+    in
+    div [ class "dashboard main" ]
+        [ viewAcuteIllnessLinks language
+        , div [ class "current-month" ]
+            [ a []
+                [ span [ class "icon-back" ] [] ]
+            , h1 [ class "ui header" ]
+                [ text "May 2021" ]
+            , a []
+                [ span [ class "icon-back forward" ] [] ]
+            ]
+        , div [ class "ui grid" ]
+            [ div [ class "five wide column" ]
+                --@todo
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
+            , div [ class "six wide column" ]
+                --@todo
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
+            , div [ class "five wide column" ]
+                --@todo
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
+            ]
+        , div [ class "ui centered grid" ]
+            [ div [ class "six wide column" ]
+                --@todo
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
+            , div [ class "six wide column" ]
+                --@todo
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
+            ]
+        , lastUpdated language stats
+        ]
+
+
+viewGastroPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewGastroPage language currentDate stats db model =
     let
         currentPeriodStats =
             filterStatsWithinPeriod currentDate model stats
