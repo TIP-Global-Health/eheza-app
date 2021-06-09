@@ -1153,16 +1153,13 @@ viewGastroPage language currentDate stats db model =
                 [ viewGastroDiagnosedCases language ]
             , div [ class "six wide column" ]
                 --@todo
-                []
+                [ viewUncomplicatedGIInfectionByChws language ]
             , div [ class "five wide column" ]
                 --@todo
-                [ viewUncomplicatedGIInfectionByChws language ]
+                [ viewComplicatedGIInfectionReferredToHc language ]
             ]
         , div [ class "ui centered grid" ]
             [ div [ class "six wide column" ]
-                --@todo
-                [ viewComplicatedGIInfectionReferredToHc language ]
-            , div [ class "six wide column" ]
                 --@todo
                 [ viewGastroResolvedCasesInCare language ]
             ]
