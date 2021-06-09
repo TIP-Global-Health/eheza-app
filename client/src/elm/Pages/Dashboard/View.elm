@@ -92,7 +92,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                                                 ( viewCovid19Page language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
 
                                             MalariaPage ->
-                                                ( viewAcuteIllnessPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
+                                                ( viewMalariaPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
 
                                             GastroPage ->
                                                 ( viewAcuteIllnessPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
@@ -1148,6 +1148,55 @@ viewCovid19Page language currentDate stats db model =
             ]
         , div [ class "ui centered grid" ]
             [ div [ class "six wide column" ]
+                --@todo
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
+            ]
+        , lastUpdated language stats
+        ]
+
+
+viewMalariaPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewMalariaPage language currentDate stats db model =
+    let
+        currentPeriodStats =
+            filterStatsWithinPeriod currentDate model stats
+    in
+    div [ class "dashboard main" ]
+        [ viewAcuteIllnessLinks language
+        , div [ class "current-month" ]
+            [ a []
+                [ span [ class "icon-back" ] [] ]
+            , h1 [ class "ui header" ]
+                [ text "May 2021" ]
+            , a []
+                [ span [ class "icon-back forward" ] [] ]
+            ]
+        , div [ class "ui grid" ]
+            [ div [ class "five wide column" ]
+                --@todo
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
+            , div [ class "six wide column" ]
+                --@todo
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
+            , div [ class "five wide column" ]
+                --@todo
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
+            ]
+        , div [ class "ui centered grid" ]
+            [ div [ class "six wide column" ]
+                --@todo
+                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                    |> viewTotalEncounters language
+                ]
+            , div [ class "six wide column" ]
                 --@todo
                 [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
                     |> viewTotalEncounters language
