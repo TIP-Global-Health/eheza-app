@@ -1062,13 +1062,6 @@ viewAcuteIllnessPage language currentDate stats db model =
         caseManagementsLastYear =
             caseManagementApplyBreakdownFilters stats.villagesWithResidents stats.caseManagement.lastYear model
 
-        caseNutritionTotalsThisYear =
-            caseManagementsThisYear
-                |> List.map (.nutrition >> generateCaseNutritionTotals)
-
-        caseNutritionTotalsLastYear =
-            caseManagementsLastYear
-                |> List.map (.nutrition >> generateCaseNutritionTotals)
     in
     div [ class "dashboard main" ]
         [ viewAcuteIllnessLinks language
@@ -1082,36 +1075,39 @@ viewAcuteIllnessPage language currentDate stats db model =
             ]
         , div [ class "ui grid" ]
             [ div [ class "five wide column" ]
+            --@todo
                 [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
                     |> viewTotalEncounters language
                 ]
             , div [ class "six wide column" ]
+            --@todo
                 [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
                     |> viewTotalEncounters language
                 ]
             , div [ class "five wide column" ]
+            --@todo
                 [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
                     |> viewTotalEncounters language
                 ]
             ]
         , div [ class "ui centered grid" ]
             [ div [ class "six wide column" ]
+                --@todo
                 [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
                     |> viewTotalEncounters language
                 ]
             , div [ class "six wide column" ]
+                --@todo
                 [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
                     |> viewTotalEncounters language
                 ]
             ]
         , div
             [ class "ui blue segment family-planning" ]
-            [ div [ class "header" ]
-                [ h3 [ class "title" ] [ translateText language <| Translate.Dashboard Translate.FamilyPlanningLabel ]
-                ]
-            , div [ class "ui center aligned grid" ]
-                [ div [ class "middle aligned row" ]
-                    [ viewDonutChart language stats ]
+            [ div [ class "ui center aligned grid" ]
+                [ div [ class "row" ]
+                    --@todo
+                    [ ]
                 ]
             ]
         , lastUpdated language stats
