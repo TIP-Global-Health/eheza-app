@@ -202,15 +202,22 @@ type Dashboard
     | BeneficiariesTableColumnLabel BeneficiariesTableLabels
     | BeneficiariesTableLabel
     | BoysFilterLabel
+    | CallsTo114
     | CaseManagementFirstWordHelper
     | CaseManagementHelper
     | CaseManagementLabel
     | ChildrenWhoDied
     | CompletedProgramLabel
+    | CommunityLevelCases
+    | ComplicatedMalariaReferredToHC
+    | ComplicatedGIInfectionsReferredToHc
     | CurrentPregnancies
+    | DiagnosisUndetermined
+    | DiagnosedCases
     | FamilyPlanningLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | FamilyThatMoved
+    | FeverOfUnknownOrigin
     | Filter DashboardFilter
     | FilterProgramType FilterProgramType
     | Filters
@@ -218,6 +225,7 @@ type Dashboard
     | GoodNutritionLabel
     | HomeDeliveries
     | HealthFacilityDeliveries
+    | HealthCenterReferrals
     | IncidenceOf
     | LastUpdated
     | LoadingDataGeneral
@@ -231,9 +239,12 @@ type Dashboard
     | NewPregnancy
     | NoDataGeneral
     | NoDataForPeriod
+    | PatientsManagedAtHome
+    | PatientCurrentlyUnderCare
     | PercentageLabel FilterPeriod
     | PeriodFilter FilterPeriod
     | ProgramType
+    | ResolveCases
     | Severe
     | SeverelyMalnourished
     | StatisticsFirstWordHelper
@@ -244,6 +255,9 @@ type Dashboard
     | TotalMalnourished
     | TotalEncountersLabel
     | TotalAssessment
+    | UncomplicatedMalariaByChws
+    | UncomplicatedMalariaInPregnancyReferredToHc
+    | UncomplicatedGIInfectionByCHWS
     | UseFamilyPlanning
     | Within4MonthsOfDueDate
     | WithDangerSigns
@@ -7910,6 +7924,11 @@ translateDashboard trans =
             , kinyarwanda = Just "Umuhungu"
             }
 
+        CallsTo114 ->
+            { english = "Calls to 114"
+            , kinyarwanda = Nothing
+            }
+
         CaseManagementFirstWordHelper ->
             { english = "Review"
             , kinyarwanda = Nothing
@@ -7936,7 +7955,32 @@ translateDashboard trans =
             }
 
         CurrentPregnancies ->
-            { english = "Current Prengant Women"
+            { english = "Current Pregnant Women"
+            , kinyarwanda = Nothing
+            }
+
+        CommunityLevelCases ->
+            { english = "Community Level Cases"
+            , kinyarwanda = Nothing
+            }
+
+        ComplicatedMalariaReferredToHC ->
+            { english = "Complicated Malaria Referred to HC"
+            , kinyarwanda = Nothing
+            }
+
+        ComplicatedGIInfectionsReferredToHc ->
+            { english = "Complicated GI Infections Referred to Health Center"
+            , kinyarwanda = Nothing
+            }
+
+        DiagnosisUndetermined ->
+            { english = "Diagnosis Undetermined"
+            , kinyarwanda = Nothing
+            }
+
+        DiagnosedCases ->
+            { english = "Diagnoses Cases"
             , kinyarwanda = Nothing
             }
 
@@ -7952,6 +7996,11 @@ translateDashboard trans =
 
         FamilyThatMoved ->
             { english = "Families Who Moved"
+            , kinyarwanda = Nothing
+            }
+
+        FeverOfUnknownOrigin ->
+            { english = " Fever of Unknown Origin"
             , kinyarwanda = Nothing
             }
 
@@ -8039,6 +8088,11 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        HealthCenterReferrals ->
+            { english = "Health Center Referrals"
+            , kinyarwanda = Nothing
+            }
+
         IncidenceOf ->
             { english = "Incidence of"
             , kinyarwanda = Nothing
@@ -8104,6 +8158,16 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        PatientsManagedAtHome ->
+            { english = "Managed at Home"
+            , kinyarwanda = Nothing
+            }
+
+        PatientCurrentlyUnderCare ->
+            { english = "Currently Under Care"
+            , kinyarwanda = Nothing
+            }
+
         PercentageLabel period ->
             case period of
                 Dashboard.OneYear ->
@@ -8150,6 +8214,11 @@ translateDashboard trans =
 
         ProgramType ->
             { english = "Program Type"
+            , kinyarwanda = Nothing
+            }
+
+        ResolveCases ->
+            { english = " Resolved Cases: Currently in Care"
             , kinyarwanda = Nothing
             }
 
@@ -8212,6 +8281,21 @@ translateDashboard trans =
 
         TotalAssessment ->
             { english = "Total # of Assessments"
+            , kinyarwanda = Nothing
+            }
+
+        UncomplicatedMalariaByChws ->
+            { english = "Uncomplicated Malaria Managed by CHWs"
+            , kinyarwanda = Nothing
+            }
+
+        UncomplicatedMalariaInPregnancyReferredToHc ->
+            { english = "Uncomplicated Malaria in Pregnancy Referred to HC"
+            , kinyarwanda = Nothing
+            }
+
+        UncomplicatedGIInfectionByCHWS ->
+            { english = "Uncomplicated GI Infections Managed by CHWs"
             , kinyarwanda = Nothing
             }
 

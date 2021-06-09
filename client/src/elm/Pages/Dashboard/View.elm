@@ -1040,21 +1040,21 @@ viewAcuteIllnessPage language currentDate stats db model =
         , div [ class "ui grid" ]
             [ div [ class "five wide column" ]
                 --@todo
-                []
+                [ viewTotalAssessment language ]
             , div [ class "six wide column" ]
                 --@todo
-                []
+                [ viewCommunityLevelCases language ]
             , div [ class "five wide column" ]
                 --@todo
-                []
+                [ viewHealthCenterReferrals language ]
             ]
         , div [ class "ui centered grid" ]
             [ div [ class "six wide column" ]
                 --@todo
-                []
+                [ viewDiagnosisUndetermined language ]
             , div [ class "six wide column" ]
                 --@todo
-                []
+                [ viewFeverOfUnknownOrigin language ]
             ]
         , div
             [ class "ui blue segment family-planning" ]
@@ -1083,18 +1083,18 @@ viewCovid19Page language currentDate stats db model =
         , div [ class "ui grid" ]
             [ div [ class "five wide column" ]
                 --@todo
-                []
+                [ viewCallsTo114 language ]
             , div [ class "six wide column" ]
                 --@todo
-                []
+                [ viewCovid19HealthCenterReferrals language ]
             , div [ class "five wide column" ]
                 --@todo
-                []
+                [ viewPatientsManagedAtHome language ]
             ]
         , div [ class "ui centered grid" ]
             [ div [ class "six wide column" ]
                 --@todo
-                []
+                [ viewPatientsUnderCare language ]
             ]
         , lastUpdated language stats
         ]
@@ -1115,21 +1115,21 @@ viewMalariaPage language currentDate stats db model =
         , div [ class "ui grid" ]
             [ div [ class "five wide column" ]
                 --@todo
-                []
+                [ viewMalariaDiagnosedCases language ]
             , div [ class "six wide column" ]
                 --@todo
-                []
+                [ viewUncomplicatedMalariaByCHWs language ]
             , div [ class "five wide column" ]
                 --@todo
-                []
+                [ viewUncomplicatedMalariaInPregnancyReferredToHc language ]
             ]
         , div [ class "ui centered grid" ]
             [ div [ class "six wide column" ]
                 --@todo
-                []
+                [ viewComplicatedMalariaReferredToHc language ]
             , div [ class "six wide column" ]
                 --@todo
-                []
+                [ viewMalariaResolvedCasesInCare language ]
             ]
         , lastUpdated language stats
         ]
@@ -1150,21 +1150,21 @@ viewGastroPage language currentDate stats db model =
         , div [ class "ui grid" ]
             [ div [ class "five wide column" ]
                 --@todo
-                []
+                [ viewGastroDiagnosedCases language ]
             , div [ class "six wide column" ]
                 --@todo
                 []
             , div [ class "five wide column" ]
                 --@todo
-                []
+                [ viewUncomplicatedGIInfectionByChws language ]
             ]
         , div [ class "ui centered grid" ]
             [ div [ class "six wide column" ]
                 --@todo
-                []
+                [ viewComplicatedGIInfectionReferredToHc language ]
             , div [ class "six wide column" ]
                 --@todo
-                []
+                [ viewGastroResolvedCasesInCare language ]
             ]
         , lastUpdated language stats
         ]
@@ -1244,10 +1244,6 @@ viewNutritionPage language currentDate isChw nurse stats db model =
 
 viewAntenatalPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
 viewAntenatalPage language currentDate stats db model =
-    let
-        currentPeriodStats =
-            filterStatsWithinPeriod currentDate model stats
-    in
     div [ class "dashboard main" ]
         [ div [ class "current-month" ]
             [ a []
@@ -1378,6 +1374,330 @@ viewAntenatalCaseManagement language =
     let
         statsCard =
             { title = translate language <| Translate.EncounterTypeFileterLabel AntenatalEncounter
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewTotalAssessment : Language -> Html Msg
+viewTotalAssessment language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.TotalAssessment
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewCommunityLevelCases : Language -> Html Msg
+viewCommunityLevelCases language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.CommunityLevelCases
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewHealthCenterReferrals : Language -> Html Msg
+viewHealthCenterReferrals language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.HealthCenterReferrals
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewDiagnosisUndetermined : Language -> Html Msg
+viewDiagnosisUndetermined language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.DiagnosisUndetermined
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewFeverOfUnknownOrigin : Language -> Html Msg
+viewFeverOfUnknownOrigin language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.FeverOfUnknownOrigin
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewCallsTo114 : Language -> Html Msg
+viewCallsTo114 language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.CallsTo114
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewCovid19HealthCenterReferrals : Language -> Html Msg
+viewCovid19HealthCenterReferrals language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.HealthCenterReferrals
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewPatientsManagedAtHome : Language -> Html Msg
+viewPatientsManagedAtHome language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.PatientsManagedAtHome
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewPatientsUnderCare : Language -> Html Msg
+viewPatientsUnderCare language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.PatientCurrentlyUnderCare
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewMalariaDiagnosedCases : Language -> Html Msg
+viewMalariaDiagnosedCases language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.DiagnosedCases
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewUncomplicatedMalariaByCHWs : Language -> Html Msg
+viewUncomplicatedMalariaByCHWs language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.UncomplicatedMalariaByChws
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewUncomplicatedMalariaInPregnancyReferredToHc : Language -> Html Msg
+viewUncomplicatedMalariaInPregnancyReferredToHc language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.UncomplicatedMalariaInPregnancyReferredToHc
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewComplicatedMalariaReferredToHc : Language -> Html Msg
+viewComplicatedMalariaReferredToHc language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.ComplicatedMalariaReferredToHC
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewMalariaResolvedCasesInCare : Language -> Html Msg
+viewMalariaResolvedCasesInCare language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.ResolveCases
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewGastroDiagnosedCases : Language -> Html Msg
+viewGastroDiagnosedCases language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.DiagnosedCases
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewUncomplicatedGIInfectionByChws : Language -> Html Msg
+viewUncomplicatedGIInfectionByChws language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.UncomplicatedGIInfectionByCHWS
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewComplicatedGIInfectionReferredToHc : Language -> Html Msg
+viewComplicatedGIInfectionReferredToHc language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.ComplicatedGIInfectionsReferredToHc
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = 23
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , previousPercentage = 0
+            , previousPercentageLabel = OneYear
+            , newCases = Nothing
+            }
+    in
+    viewChwCard language statsCard
+
+
+viewGastroResolvedCasesInCare : Language -> Html Msg
+viewGastroResolvedCasesInCare language =
+    let
+        statsCard =
+            { title = translate language <| Translate.Dashboard Translate.ResolveCases
             , cardClasses = "good-nutrition"
             , cardAction = Nothing
             , value = 23
