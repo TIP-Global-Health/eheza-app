@@ -10,7 +10,7 @@ import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Pages.Page exposing (ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..))
+import Pages.Page exposing (AcuteIllnessDashboardPage(..), ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..))
 
 
 type FilterPeriod
@@ -125,7 +125,7 @@ type alias Model =
     , currentCaseManagementFilter : DashboardFilter
     , currentCaseManagementSubFilter : DashboardSubFilter
     , latestPage : DashboardPage
-    , chwPage : Maybe ChwDashboardPage
+    , acuteIllnessPage : AcuteIllnessDashboardPage
     , modalState : Maybe ModalState
     }
 
@@ -154,7 +154,7 @@ emptyModel maybeSelectedVillage =
     , currentCaseManagementFilter = Stunting
     , currentCaseManagementSubFilter = FilterTotal
     , latestPage = NursePage MainPage
-    , chwPage = Nothing
+    , acuteIllnessPage = OverviewPage
     , modalState = Nothing
     }
 
@@ -232,5 +232,4 @@ type Msg
     | SetSubFilterCaseManagement DashboardSubFilter
     | SetFilterProgramType String
     | SetSelectedVillage String
-    | SetChwDashboardPages (Maybe ChwDashboardPage)
     | SetActivePage Page

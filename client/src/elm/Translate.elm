@@ -7955,7 +7955,7 @@ translateDashboard trans =
             }
 
         CurrentPregnancies ->
-            { english = "Current Pregnant Women"
+            { english = "Currently Pregnant Women"
             , kinyarwanda = Nothing
             }
 
@@ -7980,7 +7980,7 @@ translateDashboard trans =
             }
 
         DiagnosedCases ->
-            { english = "Diagnoses Cases"
+            { english = "Diagnosed Cases"
             , kinyarwanda = Nothing
             }
 
@@ -8124,7 +8124,7 @@ translateDashboard trans =
             }
 
         MothersInANC ->
-            { english = "Mother in ANC"
+            { english = "Mothers in ANC"
             , kinyarwanda = Nothing
             }
 
