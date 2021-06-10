@@ -967,18 +967,6 @@ viewChwPages language =
             ]
         , button
             [ class "primary ui button"
-            , DashboardPage (ChwPage <| AcuteIllnessPage OverviewPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ translateText language <| Translate.EncounterTypeFileterLabel AcuteIllnessEncounter
-                ]
-            ]
-        , button
-            [ class "primary ui button"
             , DashboardPage (ChwPage NutritionPage)
                 |> UserPage
                 |> SetActivePage
@@ -989,14 +977,29 @@ viewChwPages language =
                 [ translateText language <| Translate.EncounterTypeFileterLabel NutritionEncounter
                 ]
             ]
+        , button
+            [ class "primary ui button"
+            , DashboardPage (ChwPage <| AcuteIllnessPage OverviewPage)
+                |> UserPage
+                |> SetActivePage
+                |> onClick
+            ]
+            [ span
+                []
+                [ translateText language <| Translate.EncounterTypeFileterLabel AcuteIllnessEncounter
+                ]
+            ]
         ]
 
 
-viewAcuteIllnessLinks : Language -> Html Msg
-viewAcuteIllnessLinks language =
+viewAcuteIllnessLinks : Language -> Model -> Html Msg
+viewAcuteIllnessLinks language model =
     div [ class "ui segment chw-filters" ]
         [ button
-            [ class "primary ui button active"
+            [ classList
+                [ ( "active", model.acuteIllnessPage == OverviewPage )
+                , ( "primary ui button", True )
+                ]
             , DashboardPage (ChwPage <| AcuteIllnessPage OverviewPage)
                 |> UserPage
                 |> SetActivePage
@@ -1008,7 +1011,10 @@ viewAcuteIllnessLinks language =
                 ]
             ]
         , button
-            [ class "primary ui button"
+            [ classList
+                [ ( "active", model.acuteIllnessPage == Covid19Page )
+                , ( "primary ui button", True )
+                ]
             , DashboardPage (ChwPage <| AcuteIllnessPage Covid19Page)
                 |> UserPage
                 |> SetActivePage
@@ -1020,7 +1026,10 @@ viewAcuteIllnessLinks language =
                 ]
             ]
         , button
-            [ class "primary ui button"
+            [ classList
+                [ ( "active", model.acuteIllnessPage == MalariaPage )
+                , ( "primary ui button", True )
+                ]
             , DashboardPage (ChwPage <| AcuteIllnessPage MalariaPage)
                 |> UserPage
                 |> SetActivePage
@@ -1032,7 +1041,10 @@ viewAcuteIllnessLinks language =
                 ]
             ]
         , button
-            [ class "primary ui button"
+            [ classList
+                [ ( "primary ui button", True )
+                , ( "active", model.acuteIllnessPage == GastroPage )
+                ]
             , DashboardPage (ChwPage <| AcuteIllnessPage GastroPage)
                 |> UserPage
                 |> SetActivePage
@@ -1076,7 +1088,7 @@ viewAcuteIllnessPage language currentDate page assembled db model =
                     viewGastroPage language currentDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
     in
     div [ class "dashboard acute-illness" ] <|
-        [ viewAcuteIllnessLinks language
+        [ viewAcuteIllnessLinks language model
         , div [ class "current-month" ]
             [ a []
                 [ span [ class "icon-back" ] [] ]
