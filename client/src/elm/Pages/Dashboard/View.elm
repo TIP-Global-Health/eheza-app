@@ -992,74 +992,32 @@ viewChwPages language =
         ]
 
 
-viewAcuteIllnessLinks : Language -> Model -> Html Msg
-viewAcuteIllnessLinks language model =
+viewAcuteIllnessMenu : Language -> AcuteIllnessDashboardPage -> Model -> Html Msg
+viewAcuteIllnessMenu language activePage model =
+    let
+        viewMenu targetPage =
+            button
+                [ classList
+                    [ ( "active", activePage == targetPage )
+                    , ( "primary ui button", True )
+                    ]
+                , DashboardPage (ChwPage <| AcuteIllnessPage targetPage)
+                    |> UserPage
+                    |> SetActivePage
+                    |> onClick
+                ]
+                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage targetPage ]
+    in
     div [ class "ui segment chw-filters" ]
-        [ button
-            [ classList
-                [ ( "active", model.acuteIllnessPage == OverviewPage )
-                , ( "primary ui button", True )
-                ]
-            , DashboardPage (ChwPage <| AcuteIllnessPage OverviewPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage OverviewPage
-                ]
-            ]
-        , button
-            [ classList
-                [ ( "active", model.acuteIllnessPage == Covid19Page )
-                , ( "primary ui button", True )
-                ]
-            , DashboardPage (ChwPage <| AcuteIllnessPage Covid19Page)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage Covid19Page
-                ]
-            ]
-        , button
-            [ classList
-                [ ( "active", model.acuteIllnessPage == MalariaPage )
-                , ( "primary ui button", True )
-                ]
-            , DashboardPage (ChwPage <| AcuteIllnessPage MalariaPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage MalariaPage
-                ]
-            ]
-        , button
-            [ classList
-                [ ( "primary ui button", True )
-                , ( "active", model.acuteIllnessPage == GastroPage )
-                ]
-            , DashboardPage (ChwPage <| AcuteIllnessPage GastroPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage GastroPage
-                ]
-            ]
+        [ viewMenu OverviewPage
+        , viewMenu Covid19Page
+        , viewMenu MalariaPage
+        , viewMenu GastroPage
         ]
 
 
 viewAcuteIllnessPage : Language -> NominalDate -> AcuteIllnessDashboardPage -> AssembledData -> ModelIndexedDb -> Model -> Html Msg
-viewAcuteIllnessPage language currentDate page assembled db model =
+viewAcuteIllnessPage language currentDate activePage assembled db model =
     let
         selectedDate =
             currentDate
@@ -1074,7 +1032,7 @@ viewAcuteIllnessPage language currentDate page assembled db model =
                 |> Maybe.withDefault ( 0, 0, 0 )
 
         pageContent =
-            case page of
+            case activePage of
                 OverviewPage ->
                     viewAcuteIllnessOverviewPage language currentDate encountersForSelectedMonth model
 
@@ -1088,7 +1046,7 @@ viewAcuteIllnessPage language currentDate page assembled db model =
                     viewGastroPage language currentDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
     in
     div [ class "dashboard acute-illness" ] <|
-        [ viewAcuteIllnessLinks language model
+        [ viewAcuteIllnessMenu language activePage model
         , div [ class "current-month" ]
             [ a []
                 [ span [ class "icon-back" ] [] ]

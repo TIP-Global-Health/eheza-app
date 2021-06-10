@@ -125,7 +125,6 @@ type alias Model =
     , currentCaseManagementFilter : DashboardFilter
     , currentCaseManagementSubFilter : DashboardSubFilter
     , latestPage : DashboardPage
-    , acuteIllnessPage : AcuteIllnessDashboardPage
     , modalState : Maybe ModalState
     }
 
@@ -154,7 +153,6 @@ emptyModel maybeSelectedVillage =
     , currentCaseManagementFilter = Stunting
     , currentCaseManagementSubFilter = FilterTotal
     , latestPage = NursePage MainPage
-    , acuteIllnessPage = OverviewPage
     , modalState = Nothing
     }
 
