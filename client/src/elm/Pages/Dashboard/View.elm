@@ -25,7 +25,7 @@ import Backend.Dashboard.Model
         )
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..), IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
+import Backend.Measurement.Model exposing (FamilyPlanningSign(..), FollowUpMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model
@@ -91,7 +91,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                             ChwPage chwDashboardPage ->
                                 case chwDashboardPage of
                                     AcuteIllnessPage acuteIllnessPage ->
-                                        ( viewAcuteIllnessPage language currentDate acuteIllnessPage assembled model, UserPage <| DashboardPage (NursePage MainPage) )
+                                        ( viewAcuteIllnessPage language currentDate acuteIllnessPage assembled db model, UserPage <| DashboardPage (NursePage MainPage) )
 
                                     NutritionPage ->
                                         ( viewNutritionPage language currentDate True nurse stats db model, UserPage <| DashboardPage (NursePage MainPage) )
@@ -286,18 +286,6 @@ temporaryFunc language currentDate healthCenterId stats db model =
 
                             _ =
                                 Debug.log "giCases" giCases
-
-                            _ =
-                                countDiagnosedWithCovidCallsTo114ForSelectedMonth selectedDate acuteIllnessData
-                                    |> Debug.log "countDiagnosedWithCovidCallsTo114ForSelectedMonth"
-
-                            _ =
-                                countCovidSentToHCForSelectedMonth selectedDate acuteIllnessData
-                                    |> Debug.log "countCovidSentToHCForSelectedMonth"
-
-                            _ =
-                                countCovidManagedAtHomeForSelectedMonth selectedDate acuteIllnessData
-                                    |> Debug.log "countCovidManagedAtHomeForSelectedMonth"
 
                             _ =
                                 countDiagnosedWithMalariaForSelectedMonth selectedDate acuteIllnessData
@@ -1265,8 +1253,8 @@ viewAcuteIllnessLinks language =
         ]
 
 
-viewAcuteIllnessPage : Language -> NominalDate -> AcuteIllnessDashboardPage -> AssembledData -> Model -> Html Msg
-viewAcuteIllnessPage language currentDate page assembled model =
+viewAcuteIllnessPage : Language -> NominalDate -> AcuteIllnessDashboardPage -> AssembledData -> ModelIndexedDb -> Model -> Html Msg
+viewAcuteIllnessPage language currentDate page assembled db model =
     let
         selectedDate =
             currentDate
@@ -1280,7 +1268,7 @@ viewAcuteIllnessPage language currentDate page assembled model =
                     viewAcuteIllnessOverviewPage language currentDate encountersForSelectedMonth model
 
                 Covid19Page ->
-                    viewCovid19Page language currentDate assembled.stats model
+                    viewCovid19Page language currentDate encountersForSelectedMonth assembled.caseManagementData db model
 
                 MalariaPage ->
                     viewMalariaPage language currentDate assembled.stats model
@@ -1356,24 +1344,31 @@ viewAcuteIllnessOverviewPage language currentDate encounters model =
     ]
 
 
-viewCovid19Page : Language -> NominalDate -> DashboardStats -> Model -> List (Html Msg)
-viewCovid19Page language currentDate stats model =
+viewCovid19Page : Language -> NominalDate -> List AcuteIllnessEncounterDataItem -> Maybe FollowUpMeasurements -> ModelIndexedDb -> Model -> List (Html Msg)
+viewCovid19Page language currentDate encounters caseManagementData db model =
+    let
+        callsTo114 =
+            countDiagnosedWithCovidCallsTo114 encounters
+
+        sentToHC =
+            countDiagnosedWithCovidSentToHC encounters
+
+        managedAtHome =
+            countDiagnosedWithCovidManagedAtHome encounters
+
+        ( totalCovid, _, _ ) =
+            Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate db)
+                model.selectedVillageFilter
+                caseManagementData
+                |> Maybe.withDefault ( 0, 0, 0 )
+    in
     [ div [ class "ui grid" ]
-        [ div [ class "five wide column" ]
-            --@todo
-            [ viewCallsTo114 language ]
-        , div [ class "six wide column" ]
-            --@todo
-            [ viewCovid19HealthCenterReferrals language ]
-        , div [ class "five wide column" ]
-            --@todo
-            [ viewPatientsManagedAtHome language ]
+        [ chwCard language (Translate.Dashboard Translate.CallsTo114) (String.fromInt callsTo114)
+        , chwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC)
+        , chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
         ]
     , div [ class "ui centered grid" ]
-        [ div [ class "six wide column" ]
-            --@todo
-            [ viewPatientsUnderCare language ]
-        ]
+        [ customChwCard language (Translate.Dashboard Translate.PatientCurrentlyUnderCare) (String.fromInt totalCovid) "six" ]
     ]
 
 
@@ -1540,114 +1535,6 @@ customChwCard : Language -> TranslationId -> String -> String -> Html Msg
 customChwCard language titleTransId value width =
     div [ class <| width ++ " wide column" ]
         [ viewChwCard language titleTransId value ]
-
-
-viewDiagnosisUndetermined : Language -> Html Msg
-viewDiagnosisUndetermined language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.DiagnosisUndetermined
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language Translate.OK "23"
-
-
-viewFeverOfUnknownOrigin : Language -> Html Msg
-viewFeverOfUnknownOrigin language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.FeverOfUnknownOrigin
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language Translate.OK "23"
-
-
-viewCallsTo114 : Language -> Html Msg
-viewCallsTo114 language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.CallsTo114
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language Translate.OK "23"
-
-
-viewCovid19HealthCenterReferrals : Language -> Html Msg
-viewCovid19HealthCenterReferrals language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.HealthCenterReferrals
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language Translate.OK "23"
-
-
-viewPatientsManagedAtHome : Language -> Html Msg
-viewPatientsManagedAtHome language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.PatientsManagedAtHome
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language Translate.OK "23"
-
-
-viewPatientsUnderCare : Language -> Html Msg
-viewPatientsUnderCare language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.PatientCurrentlyUnderCare
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language Translate.OK "23"
 
 
 viewMalariaDiagnosedCases : Language -> Html Msg

@@ -150,57 +150,42 @@ countAcuteIllnessCasesByPossibleDiagnosises possible whenFeverRecorded encounter
 --
 
 
-countDiagnosedWithCovidCallsTo114ForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
-countDiagnosedWithCovidCallsTo114ForSelectedMonth selectedDate itemsList =
+countDiagnosedWithCovidCallsTo114 : List AcuteIllnessEncounterDataItem -> Int
+countDiagnosedWithCovidCallsTo114 encounters =
     List.filter
-        (.encounters
-            >> List.any
-                (\encounter ->
-                    -- Illness that got an encounter at selected
-                    -- month which has produced Covid19 diagnosis,
-                    -- and there was a call to 114.
-                    withinSelectedMonth selectedDate encounter.startDate
-                        && (encounter.diagnosis == DiagnosisCovid19)
-                        && EverySet.member Call114 encounter.call114Signs
-                )
+        (\encounter ->
+            -- Encounter which has produced Covid19 diagnosis,
+            -- and there was a call to 114.
+            (encounter.diagnosis == DiagnosisCovid19)
+                && EverySet.member Call114 encounter.call114Signs
         )
-        itemsList
+        encounters
         |> List.length
 
 
-countCovidSentToHCForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
-countCovidSentToHCForSelectedMonth selectedDate itemsList =
+countDiagnosedWithCovidSentToHC : List AcuteIllnessEncounterDataItem -> Int
+countDiagnosedWithCovidSentToHC encounters =
     List.filter
-        (.encounters
-            >> List.any
-                (\encounter ->
-                    -- Illness that got an encounter at selected
-                    -- month which has produced Covid19 diagnosis,
-                    -- and patient was sent to health center.
-                    withinSelectedMonth selectedDate encounter.startDate
-                        && (encounter.diagnosis == DiagnosisCovid19)
-                        && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
-                )
+        (\encounter ->
+            -- Encounter which has produced Covid19 diagnosis,
+            -- and patient was sent to health center.
+            (encounter.diagnosis == DiagnosisCovid19)
+                && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
         )
-        itemsList
+        encounters
         |> List.length
 
 
-countCovidManagedAtHomeForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
-countCovidManagedAtHomeForSelectedMonth selectedDate itemsList =
+countDiagnosedWithCovidManagedAtHome : List AcuteIllnessEncounterDataItem -> Int
+countDiagnosedWithCovidManagedAtHome encounters =
     List.filter
-        (.encounters
-            >> List.any
-                (\encounter ->
-                    -- Illness that got an encounter at selected
-                    -- month which has produced Covid19 diagnosis,
-                    -- and patient was isolated at home.
-                    withinSelectedMonth selectedDate encounter.startDate
-                        && (encounter.diagnosis == DiagnosisCovid19)
-                        && EverySet.member PatientIsolated encounter.isolationSigns
-                )
+        (\encounter ->
+            -- Encounter which has produced Covid19 diagnosis,
+            -- and patient was isolated at home.
+            (encounter.diagnosis == DiagnosisCovid19)
+                && EverySet.member PatientIsolated encounter.isolationSigns
         )
-        itemsList
+        encounters
         |> List.length
 
 
