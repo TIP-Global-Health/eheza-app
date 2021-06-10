@@ -87,12 +87,6 @@ update msg subPage model =
             , []
             )
 
-        SetChwDashboardPages page ->
-            ( { model | chwPage = page }
-            , Cmd.none
-            , []
-            )
-
         SetActivePage page ->
             let
                 newPeriod =
