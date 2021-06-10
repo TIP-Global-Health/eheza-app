@@ -195,77 +195,56 @@ countDiagnosedWithCovidManagedAtHome encounters =
 --
 
 
-countDiagnosedWithMalariaForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
-countDiagnosedWithMalariaForSelectedMonth selectedDate itemsList =
+countDiagnosedWithMalaria : List AcuteIllnessEncounterDataItem -> Int
+countDiagnosedWithMalaria encounters =
     List.filter
-        (.encounters
-            >> List.any
-                (\encounter ->
-                    -- Illness that got an encounter at selected month
-                    -- which has produced a Malaria diagnosis.
-                    withinSelectedMonth selectedDate encounter.startDate
-                        && List.member encounter.diagnosis
-                            [ DiagnosisMalariaComplicated
-                            , DiagnosisMalariaUncomplicated
-                            , DiagnosisMalariaUncomplicatedAndPregnant
-                            ]
-                )
+        (\encounter ->
+            List.member encounter.diagnosis
+                [ DiagnosisMalariaComplicated
+                , DiagnosisMalariaUncomplicated
+                , DiagnosisMalariaUncomplicatedAndPregnant
+                ]
         )
-        itemsList
+        encounters
         |> List.length
 
 
-countUncomplicatedMalariaManagedByChwForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
-countUncomplicatedMalariaManagedByChwForSelectedMonth selectedDate itemsList =
+countUncomplicatedMalariaManagedByChw : List AcuteIllnessEncounterDataItem -> Int
+countUncomplicatedMalariaManagedByChw encounters =
     List.filter
-        (.encounters
-            >> List.any
-                (\encounter ->
-                    -- Illness that got an encounter at selected month
-                    -- which has produced Uncomlicated Malaria diagnosis,
-                    -- and patient was not sent to health center.
-                    withinSelectedMonth selectedDate encounter.startDate
-                        && (encounter.diagnosis == DiagnosisMalariaUncomplicated)
-                        && not (EverySet.member ReferToHealthCenter encounter.sendToHCSigns)
-                )
+        (\encounter ->
+            -- Enconter which has produced Uncomplicated Malaria diagnosis,
+            -- and patient was not sent to health center.
+            (encounter.diagnosis == DiagnosisMalariaUncomplicated)
+                && not (EverySet.member ReferToHealthCenter encounter.sendToHCSigns)
         )
-        itemsList
+        encounters
         |> List.length
 
 
-countUncomplicatedMalariaAndPregnantSentToHCForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
-countUncomplicatedMalariaAndPregnantSentToHCForSelectedMonth selectedDate itemsList =
+countUncomplicatedMalariaAndPregnantSentToHC : List AcuteIllnessEncounterDataItem -> Int
+countUncomplicatedMalariaAndPregnantSentToHC encounters =
     List.filter
-        (.encounters
-            >> List.any
-                (\encounter ->
-                    -- Illness that got an encounter at selected month
-                    -- which has produced Uncomlicated Malaria and Pregnant diagnosis,
-                    -- and patient was sent to health center.
-                    withinSelectedMonth selectedDate encounter.startDate
-                        && (encounter.diagnosis == DiagnosisMalariaUncomplicatedAndPregnant)
-                        && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
-                )
+        (\encounter ->
+            -- Encounter which has produced Uncomplicated Malaria and Pregnant
+            -- diagnosis, and patient was sent to health center.
+            (encounter.diagnosis == DiagnosisMalariaUncomplicatedAndPregnant)
+                && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
         )
-        itemsList
+        encounters
         |> List.length
 
 
-countComplicatedMalariaSentToHCForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
-countComplicatedMalariaSentToHCForSelectedMonth selectedDate itemsList =
+countComplicatedMalariaSentToHC : List AcuteIllnessEncounterDataItem -> Int
+countComplicatedMalariaSentToHC encounters =
     List.filter
-        (.encounters
-            >> List.any
-                (\encounter ->
-                    -- Illness that got an encounter at selected month
-                    -- which has produced Comlicated Malaria diagnosis,
-                    -- and patient was sent to health center.
-                    withinSelectedMonth selectedDate encounter.startDate
-                        && (encounter.diagnosis == DiagnosisMalariaComplicated)
-                        && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
-                )
+        (\encounter ->
+            -- Encounter which has produced Comlpicated Malaria diagnosis,
+            -- and patient was sent to health center.
+            (encounter.diagnosis == DiagnosisMalariaComplicated)
+                && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
         )
-        itemsList
+        encounters
         |> List.length
 
 

@@ -4,7 +4,8 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Dashboard.Model
     exposing
-        ( AcuteIllnessEncounterDataItem
+        ( AcuteIllnessDataItem
+        , AcuteIllnessEncounterDataItem
         , AssembledData
         , CaseManagement
         , CaseManagementData
@@ -25,7 +26,7 @@ import Backend.Dashboard.Model
         )
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..), IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (FamilyPlanningSign(..), FollowUpMeasurements)
+import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model
@@ -227,81 +228,8 @@ temporaryFunc language currentDate healthCenterId stats db model =
                             encountersForSelectedMonth =
                                 getAcuteIllnessAssesmentsForSelectedMonth selectedDate acuteIllnessData
 
-                            totalAssesments =
-                                countAcuteIllnessAssesments encountersForSelectedMonth
-
-                            ( sentToHC, managedLocally ) =
-                                countAcuteIllnessCasesByHCReferrals encountersForSelectedMonth
-
-                            covidCases =
-                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisCovid19 ] True encountersForSelectedMonth
-
-                            malariaCases =
-                                countAcuteIllnessCasesByPossibleDiagnosises
-                                    [ DiagnosisMalariaComplicated
-                                    , DiagnosisMalariaUncomplicated
-                                    , DiagnosisMalariaUncomplicatedAndPregnant
-                                    ]
-                                    True
-                                    encountersForSelectedMonth
-
-                            respiratoryCases =
-                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisRespiratoryInfectionComplicated ] True encountersForSelectedMonth
-
-                            giCases =
-                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisGastrointestinalInfectionComplicated ] True encountersForSelectedMonth
-
-                            feverOfUnknownOriginCases =
-                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisFeverOfUnknownOrigin ] False encountersForSelectedMonth
-
-                            undeterminedCases =
-                                countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisUndeterminedMoreEvaluationNeeded ] False encountersForSelectedMonth
-
                             _ =
                                 String.fromInt index |> Debug.log "Index"
-
-                            _ =
-                                Debug.log "totalAssesments" totalAssesments
-
-                            _ =
-                                Debug.log "sentToHC" sentToHC
-
-                            _ =
-                                Debug.log "managedLocally" managedLocally
-
-                            _ =
-                                Debug.log "undeterminedCases" undeterminedCases
-
-                            _ =
-                                Debug.log "feverOfUnknownOriginCases" feverOfUnknownOriginCases
-
-                            _ =
-                                Debug.log "covidCases" covidCases
-
-                            _ =
-                                Debug.log "malariaCases" malariaCases
-
-                            _ =
-                                Debug.log "respiratoryCases" respiratoryCases
-
-                            _ =
-                                Debug.log "giCases" giCases
-
-                            _ =
-                                countDiagnosedWithMalariaForSelectedMonth selectedDate acuteIllnessData
-                                    |> Debug.log "countDiagnosedWithMalariaForSelectedMonth"
-
-                            _ =
-                                countUncomplicatedMalariaManagedByChwForSelectedMonth selectedDate acuteIllnessData
-                                    |> Debug.log "countUncomplicatedMalariaManagedByChwForSelectedMonth"
-
-                            _ =
-                                countUncomplicatedMalariaAndPregnantSentToHCForSelectedMonth selectedDate acuteIllnessData
-                                    |> Debug.log "countUncomplicatedMalariaAndPregnantSentToHCForSelectedMonth"
-
-                            _ =
-                                countComplicatedMalariaSentToHCForSelectedMonth selectedDate acuteIllnessData
-                                    |> Debug.log "countComplicatedMalariaSentToHCForSelectedMonth"
 
                             _ =
                                 countResolvedMalariaCasesForSelectedMonth selectedDate acuteIllnessData
@@ -1262,16 +1190,22 @@ viewAcuteIllnessPage language currentDate page assembled db model =
         encountersForSelectedMonth =
             getAcuteIllnessAssesmentsForSelectedMonth selectedDate assembled.acuteIllnessData
 
+        ( managedCovid, managedMalaria, managedGI ) =
+            Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate db)
+                model.selectedVillageFilter
+                assembled.caseManagementData
+                |> Maybe.withDefault ( 0, 0, 0 )
+
         pageContent =
             case page of
                 OverviewPage ->
                     viewAcuteIllnessOverviewPage language currentDate encountersForSelectedMonth model
 
                 Covid19Page ->
-                    viewCovid19Page language currentDate encountersForSelectedMonth assembled.caseManagementData db model
+                    viewCovid19Page language currentDate encountersForSelectedMonth managedCovid db model
 
                 MalariaPage ->
-                    viewMalariaPage language currentDate assembled.stats model
+                    viewMalariaPage language currentDate assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
 
                 GastroPage ->
                     viewGastroPage language currentDate assembled.stats model
@@ -1344,8 +1278,8 @@ viewAcuteIllnessOverviewPage language currentDate encounters model =
     ]
 
 
-viewCovid19Page : Language -> NominalDate -> List AcuteIllnessEncounterDataItem -> Maybe FollowUpMeasurements -> ModelIndexedDb -> Model -> List (Html Msg)
-viewCovid19Page language currentDate encounters caseManagementData db model =
+viewCovid19Page : Language -> NominalDate -> List AcuteIllnessEncounterDataItem -> Int -> ModelIndexedDb -> Model -> List (Html Msg)
+viewCovid19Page language currentDate encounters managedCovid db model =
     let
         callsTo114 =
             countDiagnosedWithCovidCallsTo114 encounters
@@ -1355,12 +1289,6 @@ viewCovid19Page language currentDate encounters caseManagementData db model =
 
         managedAtHome =
             countDiagnosedWithCovidManagedAtHome encounters
-
-        ( totalCovid, _, _ ) =
-            Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate db)
-                model.selectedVillageFilter
-                caseManagementData
-                |> Maybe.withDefault ( 0, 0, 0 )
     in
     [ div [ class "ui grid" ]
         [ chwCard language (Translate.Dashboard Translate.CallsTo114) (String.fromInt callsTo114)
@@ -1368,30 +1296,39 @@ viewCovid19Page language currentDate encounters caseManagementData db model =
         , chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
         ]
     , div [ class "ui centered grid" ]
-        [ customChwCard language (Translate.Dashboard Translate.PatientCurrentlyUnderCare) (String.fromInt totalCovid) "six" ]
+        [ customChwCard language (Translate.Dashboard Translate.PatientCurrentlyUnderCare) (String.fromInt managedCovid) "six" ]
     ]
 
 
-viewMalariaPage : Language -> NominalDate -> DashboardStats -> Model -> List (Html Msg)
-viewMalariaPage language currentDate stats model =
+viewMalariaPage : Language -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
+viewMalariaPage language currentDate acuteIllnessData encountersForSelectedMonth managedMalaria model =
+    let
+        selectedDate =
+            currentDate
+
+        totalDaignosed =
+            countDiagnosedWithMalaria encountersForSelectedMonth
+
+        uncomplicatedMalariaManagedByChw =
+            countUncomplicatedMalariaManagedByChw encountersForSelectedMonth
+
+        uncomplicatedMalariaAndPregnantSentToHC =
+            countUncomplicatedMalariaAndPregnantSentToHC encountersForSelectedMonth
+
+        complicatedMalariaSentToHC =
+            countComplicatedMalariaSentToHC encountersForSelectedMonth
+
+        resolvedMalariaCases =
+            countResolvedMalariaCasesForSelectedMonth selectedDate acuteIllnessData
+    in
     [ div [ class "ui grid" ]
-        [ div [ class "five wide column" ]
-            --@todo
-            [ viewMalariaDiagnosedCases language ]
-        , div [ class "six wide column" ]
-            --@todo
-            [ viewUncomplicatedMalariaByCHWs language ]
-        , div [ class "five wide column" ]
-            --@todo
-            [ viewUncomplicatedMalariaInPregnancyReferredToHc language ]
+        [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+        , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaByChws) (String.fromInt uncomplicatedMalariaManagedByChw)
+        , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaInPregnancyReferredToHc) (String.fromInt uncomplicatedMalariaAndPregnantSentToHC)
         ]
     , div [ class "ui centered grid" ]
-        [ div [ class "six wide column" ]
-            --@todo
-            [ viewComplicatedMalariaReferredToHc language ]
-        , div [ class "six wide column" ]
-            --@todo
-            [ viewMalariaResolvedCasesInCare language ]
+        [ customChwCard language (Translate.Dashboard Translate.ComplicatedMalariaReferredToHC) (String.fromInt complicatedMalariaSentToHC) "six"
+        , customChwCard language (Translate.Dashboard Translate.ResolveCases) (String.fromInt resolvedMalariaCases ++ " : " ++ String.fromInt managedMalaria) "six"
         ]
     ]
 
@@ -1535,96 +1472,6 @@ customChwCard : Language -> TranslationId -> String -> String -> Html Msg
 customChwCard language titleTransId value width =
     div [ class <| width ++ " wide column" ]
         [ viewChwCard language titleTransId value ]
-
-
-viewMalariaDiagnosedCases : Language -> Html Msg
-viewMalariaDiagnosedCases language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.DiagnosedCases
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language Translate.OK "23"
-
-
-viewUncomplicatedMalariaByCHWs : Language -> Html Msg
-viewUncomplicatedMalariaByCHWs language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.UncomplicatedMalariaByChws
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language Translate.OK "23"
-
-
-viewUncomplicatedMalariaInPregnancyReferredToHc : Language -> Html Msg
-viewUncomplicatedMalariaInPregnancyReferredToHc language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.UncomplicatedMalariaInPregnancyReferredToHc
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language Translate.OK "23"
-
-
-viewComplicatedMalariaReferredToHc : Language -> Html Msg
-viewComplicatedMalariaReferredToHc language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.ComplicatedMalariaReferredToHC
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language Translate.OK "23"
-
-
-viewMalariaResolvedCasesInCare : Language -> Html Msg
-viewMalariaResolvedCasesInCare language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.ResolveCases
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language Translate.OK "23"
 
 
 viewGastroDiagnosedCases : Language -> Html Msg
