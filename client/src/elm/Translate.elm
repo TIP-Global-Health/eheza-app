@@ -244,7 +244,7 @@ type Dashboard
     | PercentageLabel FilterPeriod
     | PeriodFilter FilterPeriod
     | ProgramType
-    | ResolveCases
+    | ResolvedCases
     | Severe
     | SeverelyMalnourished
     | StatisticsFirstWordHelper
@@ -8217,7 +8217,7 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
-        ResolveCases ->
+        ResolvedCases ->
             { english = " Resolved Cases: Currently in Care"
             , kinyarwanda = Nothing
             }

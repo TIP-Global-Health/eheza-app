@@ -102,8 +102,8 @@ generateFilteredAcuteIllnessData maybeVillageId stats =
 --
 
 
-getAcuteIllnessAssesmentsForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem
-getAcuteIllnessAssesmentsForSelectedMonth selectedDate itemsList =
+getAcuteIllnessEncountersForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem
+getAcuteIllnessEncountersForSelectedMonth selectedDate itemsList =
     List.map .encounters itemsList
         |> List.concat
         |> List.filter (.startDate >> withinSelectedMonth selectedDate)
@@ -276,58 +276,42 @@ countResolvedMalariaCasesForSelectedMonth selectedDate itemsList =
 --
 
 
-countDiagnosedWithGIForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
-countDiagnosedWithGIForSelectedMonth selectedDate itemsList =
+countDiagnosedWithGI : List AcuteIllnessEncounterDataItem -> Int
+countDiagnosedWithGI encounters =
     List.filter
-        (.encounters
-            >> List.any
-                (\encounter ->
-                    -- Illness that got an encounter at selected month
-                    -- which has produced a Gastro Infection diagnosis.
-                    withinSelectedMonth selectedDate encounter.startDate
-                        && List.member encounter.diagnosis
-                            [ DiagnosisGastrointestinalInfectionComplicated
-                            , DiagnosisGastrointestinalInfectionUncomplicated
-                            ]
-                )
+        (\encounter ->
+            List.member encounter.diagnosis
+                [ DiagnosisGastrointestinalInfectionComplicated
+                , DiagnosisGastrointestinalInfectionUncomplicated
+                ]
         )
-        itemsList
+        encounters
         |> List.length
 
 
-countUncomplicatedGIManagedByChwForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
-countUncomplicatedGIManagedByChwForSelectedMonth selectedDate itemsList =
+countUncomplicatedGIManagedByChw : List AcuteIllnessEncounterDataItem -> Int
+countUncomplicatedGIManagedByChw encounters =
     List.filter
-        (.encounters
-            >> List.any
-                (\encounter ->
-                    -- Illness that got an encounter at selected month
-                    -- which has produced Uncomlicated GI diagnosis,
-                    -- and patient was not sent to health center.
-                    withinSelectedMonth selectedDate encounter.startDate
-                        && (encounter.diagnosis == DiagnosisGastrointestinalInfectionUncomplicated)
-                        && not (EverySet.member ReferToHealthCenter encounter.sendToHCSigns)
-                )
+        (\encounter ->
+            -- Encounter which has produced Uncomlicated GI diagnosis,
+            -- and patient was not sent to health center.
+            (encounter.diagnosis == DiagnosisGastrointestinalInfectionUncomplicated)
+                && not (EverySet.member ReferToHealthCenter encounter.sendToHCSigns)
         )
-        itemsList
+        encounters
         |> List.length
 
 
-countComplicatedGISentToHCForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
-countComplicatedGISentToHCForSelectedMonth selectedDate itemsList =
+countComplicatedGISentToHC : List AcuteIllnessEncounterDataItem -> Int
+countComplicatedGISentToHC encounters =
     List.filter
-        (.encounters
-            >> List.any
-                (\encounter ->
-                    -- Illness that got an encounter at selected month
-                    -- which has produced Comlicated GI diagnosis,
-                    -- and patient was sent to health center.
-                    withinSelectedMonth selectedDate encounter.startDate
-                        && (encounter.diagnosis == DiagnosisGastrointestinalInfectionComplicated)
-                        && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
-                )
+        (\encounter ->
+            -- Encounter which has produced Comlicated GI diagnosis,
+            -- and patient was sent to health center.
+            (encounter.diagnosis == DiagnosisGastrointestinalInfectionComplicated)
+                && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
         )
-        itemsList
+        encounters
         |> List.length
 
 

@@ -174,89 +174,6 @@ view language page currentDate healthCenterId isChw nurse model db =
 temporaryFunc : Language -> NominalDate -> HealthCenterId -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
 temporaryFunc language currentDate healthCenterId stats db model =
     let
-        followUps =
-            Dict.get healthCenterId db.followUpMeasurements
-                |> Maybe.andThen RemoteData.toMaybe
-
-        ( totalNutritionFollowUps, totalAcuteIllnessFollowUps, totalPrenatalFollowUps ) =
-            Maybe.map2 (getFollowUpsTotals language currentDate db)
-                model.selectedVillageFilter
-                followUps
-                |> Maybe.withDefault ( 0, 0, 0 )
-
-        ( totalCovid, totalMalaria, totalGI ) =
-            Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate db)
-                model.selectedVillageFilter
-                followUps
-                |> Maybe.withDefault ( 0, 0, 0 )
-
-        _ =
-            Debug.log "CASE MANAGEMENT METRICS" ""
-
-        _ =
-            Debug.log "totalNutritionFollowUps" totalNutritionFollowUps
-
-        _ =
-            Debug.log "totalPrenatalFollowUps" totalPrenatalFollowUps
-
-        _ =
-            Debug.log "totalAcuteIllnessFollowUps" totalAcuteIllnessFollowUps
-
-        _ =
-            Debug.log "totalCovid" totalCovid
-
-        _ =
-            Debug.log "totalMalaria" totalMalaria
-
-        _ =
-            Debug.log "totalGI" totalGI
-
-        acuteIllnessData =
-            generateFilteredAcuteIllnessData model.selectedVillageFilter stats
-
-        _ =
-            Debug.log "ACUTE ILLNESS METRICS" ""
-
-        _ =
-            List.repeat 12 ""
-                |> List.indexedMap
-                    (\index _ ->
-                        let
-                            selectedDate =
-                                Date.add Months (-1 * index) currentDate
-
-                            encountersForSelectedMonth =
-                                getAcuteIllnessAssesmentsForSelectedMonth selectedDate acuteIllnessData
-
-                            _ =
-                                String.fromInt index |> Debug.log "Index"
-
-                            _ =
-                                countResolvedMalariaCasesForSelectedMonth selectedDate acuteIllnessData
-                                    |> Debug.log "countResolvedMalariaCasesForSelectedMonth"
-
-                            _ =
-                                countDiagnosedWithGIForSelectedMonth selectedDate acuteIllnessData
-                                    |> Debug.log "countDiagnosedWithGIForSelectedMonth"
-
-                            _ =
-                                countUncomplicatedGIManagedByChwForSelectedMonth selectedDate acuteIllnessData
-                                    |> Debug.log "countUncomplicatedGIManagedByChwForSelectedMonth"
-
-                            _ =
-                                countComplicatedGISentToHCForSelectedMonth selectedDate acuteIllnessData
-                                    |> Debug.log "countComplicatedGISentToHCForSelectedMonth"
-
-                            _ =
-                                countResolvedGICasesForSelectedMonth selectedDate acuteIllnessData
-                                    |> Debug.log "countResolvedGICasesForSelectedMonth"
-
-                            _ =
-                                Debug.log "" "---------------------------------------------------------"
-                        in
-                        ""
-                    )
-
         prenatalData =
             generateFilteredPrenatalData model.selectedVillageFilter stats
 
@@ -324,7 +241,7 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
 
         -- ANC
         encountersForSelectedMonth =
-            getAcuteIllnessAssesmentsForSelectedMonth selectedDate assembled.acuteIllnessData
+            getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
 
         ( sentToHC, managedLocally ) =
             countAcuteIllnessCasesByHCReferrals encountersForSelectedMonth
@@ -355,13 +272,13 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
             ]
         , div [ class "ui grid" ]
             [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt <| sentToHC + managedLocally)
-            , chwCard language (Translate.Dashboard Translate.MothersInANC) (String.fromInt currentlyPregnant)
+            , customChwCard language (Translate.Dashboard Translate.MothersInANC) (String.fromInt currentlyPregnant) "six"
             , chwCard language (Translate.Dashboard Translate.NewbornsInCare) (String.fromInt totalNewborn)
             ]
         , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
         , div [ class "ui grid" ]
             [ chwCard language (Translate.EncounterTypeFileterLabel AcuteIllnessEncounter) (String.fromInt totalAcuteIllnessFollowUps)
-            , chwCard language (Translate.EncounterTypeFileterLabel NutritionEncounter) (String.fromInt totalNutritionFollowUps)
+            , customChwCard language (Translate.EncounterTypeFileterLabel NutritionEncounter) (String.fromInt totalNutritionFollowUps) "six"
             , chwCard language (Translate.EncounterTypeFileterLabel AntenatalEncounter) (String.fromInt totalPrenatalFollowUps)
             ]
         , lastUpdated language assembled.stats
@@ -1188,7 +1105,7 @@ viewAcuteIllnessPage language currentDate page assembled db model =
             currentDate
 
         encountersForSelectedMonth =
-            getAcuteIllnessAssesmentsForSelectedMonth selectedDate assembled.acuteIllnessData
+            getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
 
         ( managedCovid, managedMalaria, managedGI ) =
             Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate db)
@@ -1208,7 +1125,7 @@ viewAcuteIllnessPage language currentDate page assembled db model =
                     viewMalariaPage language currentDate assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
 
                 GastroPage ->
-                    viewGastroPage language currentDate assembled.stats model
+                    viewGastroPage language currentDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
     in
     div [ class "dashboard main" ] <|
         [ viewAcuteIllnessLinks language
@@ -1260,7 +1177,7 @@ viewAcuteIllnessOverviewPage language currentDate encounters model =
     in
     [ div [ class "ui grid" ]
         [ chwCard language (Translate.Dashboard Translate.TotalAssessment) (String.fromInt totalAssesments)
-        , chwCard language (Translate.Dashboard Translate.CommunityLevelCases) (String.fromInt managedLocally)
+        , customChwCard language (Translate.Dashboard Translate.CommunityLevelCases) (String.fromInt managedLocally) "six"
         , chwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC)
         ]
     , div [ class "ui centered grid" ]
@@ -1292,7 +1209,7 @@ viewCovid19Page language currentDate encounters managedCovid db model =
     in
     [ div [ class "ui grid" ]
         [ chwCard language (Translate.Dashboard Translate.CallsTo114) (String.fromInt callsTo114)
-        , chwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC)
+        , customChwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC) "six"
         , chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
         ]
     , div [ class "ui centered grid" ]
@@ -1323,33 +1240,41 @@ viewMalariaPage language currentDate acuteIllnessData encountersForSelectedMonth
     in
     [ div [ class "ui grid" ]
         [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
-        , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaByChws) (String.fromInt uncomplicatedMalariaManagedByChw)
+        , customChwCard language (Translate.Dashboard Translate.UncomplicatedMalariaByChws) (String.fromInt uncomplicatedMalariaManagedByChw) "six"
         , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaInPregnancyReferredToHc) (String.fromInt uncomplicatedMalariaAndPregnantSentToHC)
         ]
     , div [ class "ui centered grid" ]
         [ customChwCard language (Translate.Dashboard Translate.ComplicatedMalariaReferredToHC) (String.fromInt complicatedMalariaSentToHC) "six"
-        , customChwCard language (Translate.Dashboard Translate.ResolveCases) (String.fromInt resolvedMalariaCases ++ " : " ++ String.fromInt managedMalaria) "six"
+        , customChwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedMalariaCases ++ " : " ++ String.fromInt managedMalaria) "six"
         ]
     ]
 
 
-viewGastroPage : Language -> NominalDate -> DashboardStats -> Model -> List (Html Msg)
-viewGastroPage language currentDate stats model =
+viewGastroPage : Language -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
+viewGastroPage language currentDate acuteIllnessData encountersForSelectedMonth managedGI model =
+    let
+        selectedDate =
+            currentDate
+
+        totalDaignosed =
+            countDiagnosedWithGI encountersForSelectedMonth
+
+        uncomplicatedGIManagedByChw =
+            countUncomplicatedGIManagedByChw encountersForSelectedMonth
+
+        complicatedGISentToHC =
+            countComplicatedGISentToHC encountersForSelectedMonth
+
+        resolvedGICases =
+            countResolvedGICasesForSelectedMonth selectedDate acuteIllnessData
+    in
     [ div [ class "ui grid" ]
-        [ div [ class "five wide column" ]
-            --@todo
-            [ viewGastroDiagnosedCases language ]
-        , div [ class "six wide column" ]
-            --@todo
-            [ viewUncomplicatedGIInfectionByChws language ]
-        , div [ class "five wide column" ]
-            --@todo
-            [ viewComplicatedGIInfectionReferredToHc language ]
+        [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+        , customChwCard language (Translate.Dashboard Translate.UncomplicatedGIInfectionByCHWS) (String.fromInt uncomplicatedGIManagedByChw) "six"
+        , chwCard language (Translate.Dashboard Translate.ComplicatedGIInfectionsReferredToHc) (String.fromInt complicatedGISentToHC)
         ]
     , div [ class "ui centered grid" ]
-        [ div [ class "six wide column" ]
-            --@todo
-            [ viewGastroResolvedCasesInCare language ]
+        [ customChwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedGICases ++ " : " ++ String.fromInt managedGI) "six"
         ]
     ]
 
@@ -1472,78 +1397,6 @@ customChwCard : Language -> TranslationId -> String -> String -> Html Msg
 customChwCard language titleTransId value width =
     div [ class <| width ++ " wide column" ]
         [ viewChwCard language titleTransId value ]
-
-
-viewGastroDiagnosedCases : Language -> Html Msg
-viewGastroDiagnosedCases language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.DiagnosedCases
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language Translate.OK "23"
-
-
-viewUncomplicatedGIInfectionByChws : Language -> Html Msg
-viewUncomplicatedGIInfectionByChws language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.UncomplicatedGIInfectionByCHWS
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language Translate.OK "23"
-
-
-viewComplicatedGIInfectionReferredToHc : Language -> Html Msg
-viewComplicatedGIInfectionReferredToHc language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.ComplicatedGIInfectionsReferredToHc
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language Translate.OK "23"
-
-
-viewGastroResolvedCasesInCare : Language -> Html Msg
-viewGastroResolvedCasesInCare language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.ResolveCases
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language Translate.OK "23"
 
 
 viewNewPregnancy : Language -> Html Msg
