@@ -355,8 +355,8 @@ function hedley_stats_get_prenatal_data($health_center_id) {
     $items[$index] = [
       'id' => $row->field_person,
       'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
-      'expected_date_concluded' => empty($row->field_expected_date_concluded) ? NULL : date_format(date_create($row->field_expected_date_concluded), 'Y-m-d'),
-      'date_concluded' => empty($row->field_date_concluded) ? NULL : date_format(date_create($row->field_date_concluded), 'Y-m-d'),
+      'expected_date_concluded' => !empty($row->field_expected_date_concluded) ?  date_format(date_create($row->field_expected_date_concluded), 'Y-m-d') : NULL,
+      'date_concluded' => empty($row->field_date_concluded) ? date_format(date_create($row->field_date_concluded), 'Y-m-d') : NULL,
       'outcome' => $row->field_outcome,
       'delivery_location' => $row->field_outcome_location,
       'encounters' => [],
