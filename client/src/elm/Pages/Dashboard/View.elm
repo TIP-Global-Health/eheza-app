@@ -17,6 +17,7 @@ import Backend.Dashboard.Model
         , ParticipantStats
         , Periods
         , PersonIdentifier
+        , PrenatalDataItem
         , ProgramType(..)
         , TotalBeneficiaries
         , TotalEncountersData
@@ -98,7 +99,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                                         ( viewNutritionPage language currentDate True nurse stats db model, UserPage <| DashboardPage (NursePage MainPage) )
 
                                     AntenatalPage ->
-                                        ( viewAntenatalPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
+                                        ( viewAntenatalPage language currentDate assembled db model, UserPage <| DashboardPage (NursePage MainPage) )
                     )
                 |> Maybe.withDefault ( spinner, PinCodePage )
 
@@ -169,59 +170,6 @@ view language page currentDate healthCenterId isChw nurse model db =
         [ header
         , content
         ]
-
-
-temporaryFunc : Language -> NominalDate -> HealthCenterId -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-temporaryFunc language currentDate healthCenterId stats db model =
-    let
-        prenatalData =
-            generateFilteredPrenatalData model.selectedVillageFilter stats
-
-        _ =
-            Debug.log "ANC METRICS" ""
-
-        _ =
-            List.repeat 12 ""
-                |> List.indexedMap
-                    (\index _ ->
-                        let
-                            selectedDate =
-                                Date.add Months (-1 * index) currentDate
-
-                            _ =
-                                String.fromInt index |> Debug.log "Index"
-
-                            _ =
-                                countNewlyIdentifiedPregananciesForSelectedMonth selectedDate prenatalData
-                                    |> Debug.log "countNewlyIdentifiedPregananciesForSelectedMonth"
-
-                            _ =
-                                countCurrentlyPregnantForSelectedMonth currentDate selectedDate prenatalData
-                                    |> Debug.log "countCurrentlyPregnantForSelectedMonth"
-
-                            _ =
-                                countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate prenatalData
-                                    |> Debug.log "countPregnanciesDueWithin4MonthsForSelectedMonth"
-
-                            _ =
-                                countCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate prenatalData
-                                    |> Debug.log "countCurrentlyPregnantWithDangerSignsForSelectedMonth"
-
-                            _ =
-                                countDeliveriesAtLocationForSelectedMonth selectedDate HomeDelivery prenatalData
-                                    |> Debug.log "countDeliveriesAtLocationForSelectedMonth HomeDelivery"
-
-                            _ =
-                                countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery prenatalData
-                                    |> Debug.log "countDeliveriesAtLocationForSelectedMonth FacilityDelivery"
-
-                            _ =
-                                Debug.log "" "---------------------------------------------------------"
-                        in
-                        ""
-                    )
-    in
-    emptyNode
 
 
 viewMainPage : Language -> NominalDate -> HealthCenterId -> Bool -> Nurse -> AssembledData -> ModelIndexedDb -> Model -> Html Msg
@@ -1119,7 +1067,7 @@ viewAcuteIllnessPage language currentDate page assembled db model =
                     viewAcuteIllnessOverviewPage language currentDate encountersForSelectedMonth model
 
                 Covid19Page ->
-                    viewCovid19Page language currentDate encountersForSelectedMonth managedCovid db model
+                    viewCovid19Page language currentDate encountersForSelectedMonth managedCovid model
 
                 MalariaPage ->
                     viewMalariaPage language currentDate assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
@@ -1127,7 +1075,7 @@ viewAcuteIllnessPage language currentDate page assembled db model =
                 GastroPage ->
                     viewGastroPage language currentDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
     in
-    div [ class "dashboard main" ] <|
+    div [ class "dashboard acute-illness" ] <|
         [ viewAcuteIllnessLinks language
         , div [ class "current-month" ]
             [ a []
@@ -1195,8 +1143,8 @@ viewAcuteIllnessOverviewPage language currentDate encounters model =
     ]
 
 
-viewCovid19Page : Language -> NominalDate -> List AcuteIllnessEncounterDataItem -> Int -> ModelIndexedDb -> Model -> List (Html Msg)
-viewCovid19Page language currentDate encounters managedCovid db model =
+viewCovid19Page : Language -> NominalDate -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
+viewCovid19Page language currentDate encounters managedCovid model =
     let
         callsTo114 =
             countDiagnosedWithCovidCallsTo114 encounters
@@ -1351,9 +1299,31 @@ viewNutritionPage language currentDate isChw nurse stats db model =
         ]
 
 
-viewAntenatalPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewAntenatalPage language currentDate stats db model =
-    div [ class "dashboard main" ]
+viewAntenatalPage : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> Model -> Html Msg
+viewAntenatalPage language currentDate assembled db model =
+    let
+        selectedDate =
+            currentDate
+
+        newlyIdentifiedPreganancies =
+            countNewlyIdentifiedPregananciesForSelectedMonth selectedDate assembled.prenatalData
+
+        currentlyPregnant =
+            countCurrentlyPregnantForSelectedMonth currentDate selectedDate assembled.prenatalData
+
+        pregnanciesDueWithin4Month =
+            countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate assembled.prenatalData
+
+        currentlyPregnantWithDangerSigns =
+            countCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate assembled.prenatalData
+
+        deliveriesAtHome =
+            countDeliveriesAtLocationForSelectedMonth selectedDate HomeDelivery assembled.prenatalData
+
+        deliveriesAtFacility =
+            countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery assembled.prenatalData
+    in
+    div [ class "dashboard prenatal" ]
         [ div [ class "current-month" ]
             [ a []
                 [ span [ class "icon-back" ] [] ]
@@ -1363,28 +1333,16 @@ viewAntenatalPage language currentDate stats db model =
                 [ span [ class "icon-back forward" ] [] ]
             ]
         , div [ class "ui grid" ]
-            [ div [ class "five wide column" ]
-                --@todo
-                [ viewNewPregnancy language ]
-            , div [ class "six wide column" ]
-                --@todo
-                [ viewCurrentPregnant language ]
-            , div [ class "five wide column" ]
-                --@todo
-                [ viewWithin4MonthsOfDueDate language ]
+            [ chwCard language (Translate.Dashboard Translate.NewPregnancy) (String.fromInt newlyIdentifiedPreganancies)
+            , customChwCard language (Translate.Dashboard Translate.CurrentPregnancies) (String.fromInt currentlyPregnant) "six"
+            , chwCard language (Translate.Dashboard Translate.Within4MonthsOfDueDate) (String.fromInt pregnanciesDueWithin4Month)
             ]
         , div [ class "ui centered grid" ]
-            [ div [ class "five wide column" ]
-                --@todo
-                [ viewWithDangerSigns language ]
-            , div [ class "six wide column" ]
-                --@todo
-                [ viewHomeDeliveries language ]
-            , div [ class "five wide column" ]
-                --@todo
-                [ viewHealthFacilityDeliveries language ]
+            [ chwCard language (Translate.Dashboard Translate.WithDangerSigns) (String.fromInt currentlyPregnantWithDangerSigns)
+            , customChwCard language (Translate.Dashboard Translate.HomeDeliveries) (String.fromInt deliveriesAtHome) "six"
+            , chwCard language (Translate.Dashboard Translate.HealthFacilityDeliveries) (String.fromInt deliveriesAtFacility)
             ]
-        , lastUpdated language stats
+        , lastUpdated language assembled.stats
         ]
 
 
