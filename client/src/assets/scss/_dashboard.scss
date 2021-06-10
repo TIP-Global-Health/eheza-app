@@ -5,22 +5,25 @@
     color: $color-white;
     text-align: left;
     margin: 10px 0px;
+    font-size: 18px;
   }
 
   .current-month {
     margin-bottom: 35px;
+    text-align: center;
     .icon-back {
       margin-left: 257px;
       margin-bottom: -30px;
     }
     .header {
-      font-weight: 100;
+      font-weight: 500;
+      padding-left: 30px;
       text-transform: capitalize;
     }
 
     .icon-back.forward {
         margin-top: -30px;
-        margin-left: 470px;
+        margin-left: 440px;
         transform: rotate(180deg);
 
     }
@@ -30,6 +33,7 @@
     color: $color-white;
     margin-top: 50px;
     margin-bottom: 10px;
+    font-weight: 500;
   }
 
   .ui.segment {
@@ -99,6 +103,20 @@
         font-weight: 700;
         padding: 15px;
         text-transform: none;
+
+
+        &.active {
+          background-color: $color-primary;
+          border: solid 2px $color-white;
+          color: $color-white;
+
+        }
+        //&.inactive {
+        //  background-color: $color-white;
+        //  border: solid 2px $color-primary;
+        //  color: $color-primary;
+        //
+        //}
       }
     }
 
@@ -455,14 +473,16 @@
   }
 
   .dashboard-cards {
-    padding: 15px 5px;
+    padding: 15px 5px 20px;
     border-radius: 1px;
     min-height: 130px;
 
     .header {
-      font-size: 18px;
+      font-size: 20px;
       text-align: center;
+      font-weight: bolder;
       line-height: 20px;
+      height: 55px;
     }
 
     .this-year {
