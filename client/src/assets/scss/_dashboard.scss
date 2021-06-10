@@ -454,7 +454,7 @@
     }
   }
 
-  .dashboard-cards {
+  .dashboard-card {
     padding: 15px 5px;
     border-radius: 1px;
     min-height: 130px;
@@ -546,6 +546,15 @@
           line-height: 10px;
         }
       }
+    }
+  }
+
+  .dashboard-card.chw {
+    min-height: 150px;
+    padding: 10px;
+
+    .value {
+      color: $color-light-background;
     }
   }
 
@@ -726,10 +735,6 @@
   .case-management .header .filters {
     margin-bottom: 10px;
     margin-top: 0;
-
-    &.secondary {
-
-    }
   }
 
   .dashboards-links {
