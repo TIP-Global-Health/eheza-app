@@ -2,7 +2,7 @@ module Pages.Dashboard.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
-import Backend.Dashboard.Model exposing (AcuteIllnessDataItem, AcuteIllnessEncounterDataItem, DashboardStats, PrenatalDataItem)
+import Backend.Dashboard.Model exposing (AcuteIllnessDataItem, AcuteIllnessEncounterDataItem, AssembledData, DashboardStats, PrenatalDataItem)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (Call114Sign(..), DangerSign(..), FollowUpMeasurements, IsolationSign(..), SendToHCSign(..))
@@ -14,6 +14,7 @@ import Maybe.Extra exposing (isNothing)
 import Pages.Dashboard.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (filterVillageResidents, generateAcuteIllnessFollowUps, generateNutritionFollowUps, generatePrenatalFollowUps)
 import Pages.GlobalCaseManagement.View exposing (generateAcuteIllnessFollowUpEntries, generateNutritionFollowUpEntries, generatePrenatalFollowUpEntries)
+import RemoteData
 import Translate exposing (Language)
 
 
@@ -62,6 +63,17 @@ filterProgramTypeFromString string =
 
         _ ->
             Nothing
+
+
+generateAssembledData : HealthCenterId -> Maybe VillageId -> DashboardStats -> ModelIndexedDb -> AssembledData
+generateAssembledData healthCenterId villageId stats db =
+    { stats = stats
+    , acuteIllnessData = generateFilteredAcuteIllnessData villageId stats
+    , prenatalData = generateFilteredPrenatalData villageId stats
+    , caseManagementData =
+        Dict.get healthCenterId db.followUpMeasurements
+            |> Maybe.andThen RemoteData.toMaybe
+    }
 
 
 generateFilteredPrenatalData : Maybe VillageId -> DashboardStats -> List PrenatalDataItem

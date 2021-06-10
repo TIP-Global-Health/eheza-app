@@ -4,7 +4,8 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Dashboard.Model
     exposing
-        ( CaseManagement
+        ( AssembledData
+        , CaseManagement
         , CaseManagementData
         , CaseNutrition
         , CaseNutritionTotal
@@ -70,11 +71,15 @@ view language page currentDate healthCenterId isChw nurse model db =
             Dict.get healthCenterId db.computedDashboard
                 |> Maybe.map
                     (\stats ->
+                        let
+                            assembled =
+                                generateAssembledData healthCenterId model.selectedVillageFilter stats db
+                        in
                         case page of
                             NursePage nurseDashboardPage ->
                                 case nurseDashboardPage of
                                     MainPage ->
-                                        ( viewMainPage language currentDate healthCenterId isChw nurse stats db model, PinCodePage )
+                                        ( viewMainPage language currentDate healthCenterId isChw nurse assembled db model, PinCodePage )
 
                                     StatsPage ->
                                         ( viewStatsPage language currentDate False nurse stats healthCenterId db model, UserPage <| DashboardPage (NursePage MainPage) )
@@ -84,19 +89,8 @@ view language page currentDate healthCenterId isChw nurse model db =
 
                             ChwPage chwDashboardPage ->
                                 case chwDashboardPage of
-                                    AcuteIllnessPage acuteIllnessPages ->
-                                        case acuteIllnessPages of
-                                            OverviewPage ->
-                                                ( viewAcuteIllnessPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
-
-                                            Covid19Page ->
-                                                ( viewCovid19Page language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
-
-                                            MalariaPage ->
-                                                ( viewMalariaPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
-
-                                            GastroPage ->
-                                                ( viewGastroPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
+                                    AcuteIllnessPage acuteIllnessPage ->
+                                        ( viewAcuteIllnessPage language currentDate acuteIllnessPage stats db model, UserPage <| DashboardPage (NursePage MainPage) )
 
                                     NutritionPage ->
                                         ( viewNutritionPage language currentDate True nurse stats db model, UserPage <| DashboardPage (NursePage MainPage) )
@@ -396,17 +390,17 @@ temporaryFunc language currentDate healthCenterId stats db model =
     emptyNode
 
 
-viewMainPage : Language -> NominalDate -> HealthCenterId -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewMainPage language currentDate healthCenterId isChw nurse stats db model =
+viewMainPage : Language -> NominalDate -> HealthCenterId -> Bool -> Nurse -> AssembledData -> ModelIndexedDb -> Model -> Html Msg
+viewMainPage language currentDate healthCenterId isChw nurse assembled db model =
     if isChw then
-        viewChwMainPage language currentDate healthCenterId stats db model
+        viewChwMainPage language currentDate healthCenterId assembled db model
 
     else
-        viewNutritionPage language currentDate False nurse stats db model
+        viewNutritionPage language currentDate False nurse assembled.stats db model
 
 
-viewChwMainPage : Language -> NominalDate -> HealthCenterId -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewChwMainPage language currentDate healthCenterId stats db model =
+viewChwMainPage : Language -> NominalDate -> HealthCenterId -> AssembledData -> ModelIndexedDb -> Model -> Html Msg
+viewChwMainPage language currentDate healthCenterId assembled db model =
     let
         selectedDate =
             currentDate
@@ -416,34 +410,24 @@ viewChwMainPage language currentDate healthCenterId stats db model =
                 [ viewChwCard language titleTransId value ]
 
         -- ANC
-        acuteIllnessData =
-            generateFilteredAcuteIllnessData model.selectedVillageFilter stats
-
         encountersForSelectedMonth =
-            getAcuteIllnessAssesmentsForSelectedMonth selectedDate acuteIllnessData
+            getAcuteIllnessAssesmentsForSelectedMonth selectedDate assembled.acuteIllnessData
 
         ( sentToHC, managedLocally ) =
             countAcuteIllnessCasesByHCReferrals encountersForSelectedMonth
 
         -- Prenatal
-        prenatalData =
-            generateFilteredPrenatalData model.selectedVillageFilter stats
-
         currentlyPregnant =
-            countCurrentlyPregnantForSelectedMonth currentDate selectedDate prenatalData
+            countCurrentlyPregnantForSelectedMonth currentDate selectedDate assembled.prenatalData
 
         totalNewborn =
-            countNewbornForSelectedMonth selectedDate prenatalData
+            countNewbornForSelectedMonth selectedDate assembled.prenatalData
 
         -- Case Management
-        followUps =
-            Dict.get healthCenterId db.followUpMeasurements
-                |> Maybe.andThen RemoteData.toMaybe
-
         ( totalNutritionFollowUps, totalAcuteIllnessFollowUps, totalPrenatalFollowUps ) =
             Maybe.map2 (getFollowUpsTotals language currentDate db)
                 model.selectedVillageFilter
-                followUps
+                assembled.caseManagementData
                 |> Maybe.withDefault ( 0, 0, 0 )
     in
     div [ class "dashboard main" ]
@@ -467,7 +451,7 @@ viewChwMainPage language currentDate healthCenterId stats db model =
             , card (Translate.EncounterTypeFileterLabel NutritionEncounter) (String.fromInt totalNutritionFollowUps)
             , card (Translate.EncounterTypeFileterLabel AntenatalEncounter) (String.fromInt totalPrenatalFollowUps)
             ]
-        , lastUpdated language stats
+        , lastUpdated language assembled.stats
         ]
 
 
@@ -1284,8 +1268,24 @@ viewAcuteIllnessLinks language =
         ]
 
 
-viewAcuteIllnessPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewAcuteIllnessPage language currentDate stats db model =
+viewAcuteIllnessPage : Language -> NominalDate -> AcuteIllnessDashboardPage -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewAcuteIllnessPage language currentDate page stats db model =
+    case page of
+        OverviewPage ->
+            viewAcuteIllnessOverviewPage language currentDate stats db model
+
+        Covid19Page ->
+            viewCovid19Page language currentDate stats db model
+
+        MalariaPage ->
+            viewMalariaPage language currentDate stats db model
+
+        GastroPage ->
+            viewGastroPage language currentDate stats db model
+
+
+viewAcuteIllnessOverviewPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewAcuteIllnessOverviewPage language currentDate stats db model =
     div [ class "dashboard main" ]
         [ viewAcuteIllnessLinks language
         , div [ class "current-month" ]
