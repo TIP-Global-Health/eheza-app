@@ -971,11 +971,14 @@ viewChwPages language =
         ]
 
 
-viewAcuteIllnessLinks : Language -> Html Msg
-viewAcuteIllnessLinks language =
+viewAcuteIllnessLinks : Language -> Model -> Html Msg
+viewAcuteIllnessLinks language model =
     div [ class "ui segment chw-filters" ]
         [ button
-            [ class "primary ui button active"
+            [ classList
+                [ ( "primary ui button", True )
+                , ( "active", model.acuteIllnessPage == OverviewPage )
+                ]
             , DashboardPage (ChwPage <| AcuteIllnessPage OverviewPage)
                 |> UserPage
                 |> SetActivePage
@@ -987,7 +990,10 @@ viewAcuteIllnessLinks language =
                 ]
             ]
         , button
-            [ class "primary ui button"
+            [ classList
+                [ ( "primary ui button", True )
+                , ( "active", model.acuteIllnessPage == Covid19Page )
+                ]
             , DashboardPage (ChwPage <| AcuteIllnessPage Covid19Page)
                 |> UserPage
                 |> SetActivePage
@@ -999,7 +1005,10 @@ viewAcuteIllnessLinks language =
                 ]
             ]
         , button
-            [ class "primary ui button"
+            [ classList
+                [ ( "primary ui button", True )
+                , ( "active", model.acuteIllnessPage == MalariaPage )
+                ]
             , DashboardPage (ChwPage <| AcuteIllnessPage MalariaPage)
                 |> UserPage
                 |> SetActivePage
@@ -1011,7 +1020,10 @@ viewAcuteIllnessLinks language =
                 ]
             ]
         , button
-            [ class "primary ui button"
+            [ classList
+                [ ( "primary ui button", True )
+                , ( "active", model.acuteIllnessPage == GastroPage )
+                ]
             , DashboardPage (ChwPage <| AcuteIllnessPage GastroPage)
                 |> UserPage
                 |> SetActivePage
@@ -1028,7 +1040,7 @@ viewAcuteIllnessLinks language =
 viewAcuteIllnessPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
 viewAcuteIllnessPage language currentDate stats db model =
     div [ class "dashboard main" ]
-        [ viewAcuteIllnessLinks language
+        [ viewAcuteIllnessLinks language model
         , div [ class "current-month" ]
             [ a []
                 [ span [ class "icon-back" ] [] ]
@@ -1071,7 +1083,7 @@ viewAcuteIllnessPage language currentDate stats db model =
 viewCovid19Page : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
 viewCovid19Page language currentDate stats db model =
     div [ class "dashboard main" ]
-        [ viewAcuteIllnessLinks language
+        [ viewAcuteIllnessLinks language model
         , div [ class "current-month" ]
             [ a []
                 [ span [ class "icon-back" ] [] ]
@@ -1103,7 +1115,7 @@ viewCovid19Page language currentDate stats db model =
 viewMalariaPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
 viewMalariaPage language currentDate stats db model =
     div [ class "dashboard main" ]
-        [ viewAcuteIllnessLinks language
+        [ viewAcuteIllnessLinks language model
         , div [ class "current-month" ]
             [ a []
                 [ span [ class "icon-back" ] [] ]
@@ -1138,7 +1150,7 @@ viewMalariaPage language currentDate stats db model =
 viewGastroPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
 viewGastroPage language currentDate stats db model =
     div [ class "dashboard main" ]
-        [ viewAcuteIllnessLinks language
+        [ viewAcuteIllnessLinks language model
         , div [ class "current-month" ]
             [ a []
                 [ span [ class "icon-back" ] [] ]

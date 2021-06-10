@@ -99,6 +99,20 @@
         font-weight: 700;
         padding: 15px;
         text-transform: none;
+
+
+        &.active {
+          background-color: $color-primary;
+          border: solid 2px $color-white;
+          color: $color-white;
+
+        }
+        //&.inactive {
+        //  background-color: $color-white;
+        //  border: solid 2px $color-primary;
+        //  color: $color-primary;
+        //
+        //}
       }
     }
 
