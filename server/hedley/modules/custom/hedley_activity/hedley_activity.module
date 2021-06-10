@@ -7,7 +7,6 @@
 
 include_once 'hedley_activity.features.inc';
 
-// Define the measurements content types.
 define('HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE', 'nutrition_encounter');
 define('HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE', 'attendance');
 define('HEDLEY_ACTIVITY_FAMILY_PLANNING_CONTENT_TYPE', 'family_planning');
@@ -20,6 +19,16 @@ define('HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE', 'nutrition');
 define('HEDLEY_ACTIVITY_NUTRITION_NUTRITION_CONTENT_TYPE', 'nutrition_nutrition');
 define('HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE', 'weight');
 define('HEDLEY_ACTIVITY_NUTRITION_WEIGHT_CONTENT_TYPE', 'nutrition_weight');
+define('HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE', 'individual_participant');
+define('HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE', 'prenatal_encounter');
+define('HEDLEY_ACTIVITY_ACUTE_ILLNESS_ENCOUNTER_CONTENT_TYPE', 'acute_illness_encounter');
+define('HEDLEY_ACTIVITY_SEND_TO_HC_CONTENT_TYPE', 'send_to_hc');
+define('HEDLEY_ACTIVITY_ACUTE_ILLNESS_VITALS_CONTENT_TYPE', 'acute_illness_vitals');
+define('HEDLEY_ACTIVITY_SYMPTOMS_GENERAL_CONTENT_TYPE', 'symptoms_general');
+define('HEDLEY_ACTIVITY_CALL_114_CONTENT_TYPE', 'call_114');
+define('HEDLEY_ACTIVITY_ISOLATION_CONTENT_TYPE', 'isolation');
+define('HEDLEY_ACTIVITY_DANGER_SIGNS_CONTENT_TYPE', 'danger_signs');
+
 
 const HEDLEY_ACTIVITY_HEIGHT_BUNDLES = [
   HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE,

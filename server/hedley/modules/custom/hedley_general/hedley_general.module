@@ -328,3 +328,45 @@ function hedley_general_join_field_to_query(SelectQuery $query, $entity_type, $f
 
   $query->$join($table_name, $field_alias, implode(' AND ', $conditions), $arguments);
 }
+
+/**
+ * Resolve a shard based on HC field of the node.
+ *
+ * @param int $nid
+ *   The node ID.
+ *
+ * @return int|bool
+ *   Node ID of the shard. False, if shard wasn't successfully resolved.
+ */
+function hedley_general_shard_by_health_center($nid) {
+  // We have this check to allow SimpleTest to pass.
+  if (!$nid) {
+    return FALSE;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $nid);
+  $shard = $wrapper->field_health_center->getIdentifier();
+
+  return !empty($shard) ? $shard : FALSE;
+}
+
+/**
+ * Resolve shards based on Person field of the node.
+ *
+ * @param int $nid
+ *   The node ID.
+ *
+ * @return array
+ *   List of shards node IDs. Empty array, if none are found.
+ */
+function hedley_general_shards_by_person($nid) {
+  // We have this check to allow SimpleTest to pass.
+  if (!$nid) {
+    return [];
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $nid);
+  $shards = $wrapper->field_shards->value(['identifier' => TRUE]);
+
+  return !empty($shards) ? $shards : [];
+}
