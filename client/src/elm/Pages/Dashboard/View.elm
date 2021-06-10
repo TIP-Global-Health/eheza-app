@@ -66,22 +66,21 @@ import Utils.Html exposing (spinner, viewModal)
 view : Language -> DashboardPage -> NominalDate -> HealthCenterId -> Bool -> Nurse -> Model -> ModelIndexedDb -> Html Msg
 view language page currentDate healthCenterId isChw nurse model db =
     let
+        _ =
+            Dict.get healthCenterId db.computedDashboard |> Debug.log "page"
+
         ( content, goBackPage ) =
             Dict.get healthCenterId db.computedDashboard
                 |> Maybe.map
                     (\stats ->
-                        let
-                            tmp =
-                                temporaryFunc language currentDate healthCenterId stats db model
-                        in
                         case page of
                             NursePage nurseDashboardPage ->
                                 case nurseDashboardPage of
                                     MainPage ->
-                                        ( viewMainPage language currentDate isChw nurse stats db model, PinCodePage )
+                                        ( viewMainPage language currentDate False nurse stats db model, PinCodePage )
 
                                     StatsPage ->
-                                        ( viewStatsPage language currentDate isChw nurse stats healthCenterId db model, UserPage <| DashboardPage (NursePage MainPage) )
+                                        ( viewStatsPage language currentDate False nurse stats healthCenterId db model, UserPage <| DashboardPage (NursePage MainPage) )
 
                                     CaseManagementPage ->
                                         ( viewCaseManagementPage language currentDate stats db model, UserPage <| DashboardPage model.latestPage )
@@ -103,7 +102,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                                                 ( viewGastroPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
 
                                     NutritionPage ->
-                                        ( viewNutritionPage language currentDate isChw nurse stats db model, UserPage <| DashboardPage (NursePage MainPage) )
+                                        ( viewNutritionPage language currentDate True nurse stats db model, UserPage <| DashboardPage (NursePage MainPage) )
 
                                     AntenatalPage ->
                                         ( viewAntenatalPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
@@ -403,39 +402,57 @@ temporaryFunc language currentDate healthCenterId stats db model =
 viewMainPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
 viewMainPage language currentDate isChw nurse stats db model =
     if isChw then
-        div [ class "dashboard main" ]
-            [ viewChwPages language
-            , div [ class "current-month" ]
-                [ a []
-                    [ span [ class "icon-back" ] [] ]
-                , h1 [ class "ui header" ]
-                    [ text "May 2021" ]
-                , a []
-                    [ span [ class "icon-back forward" ] [] ]
-                ]
-            , div [ class "ui grid" ]
-                [ div [ class "five wide column" ]
-                    [ viewAcuteDiagnosis language
-                    ]
-                , div [ class "six wide column" ]
-                    [ viewMotherInAnc language ]
-                , div [ class "five wide column" ]
-                    [ viewNewbornInCare language ]
-                ]
-            , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
-            , div [ class "ui grid" ]
-                [ div [ class "five wide column" ]
-                    [ viewAcuteIllnessCaseManagement language ]
-                , div [ class "six wide column" ]
-                    [ viewNutritionCaseManagement language ]
-                , div [ class "five wide column" ]
-                    [ viewAntenatalCaseManagement language ]
-                ]
-            , lastUpdated language stats
-            ]
+        viewChwMainPage language currentDate nurse stats db model
 
     else
-        viewNutritionPage language currentDate isChw nurse stats db model
+        viewNutritionPage language currentDate False nurse stats db model
+
+
+viewChwMainPage : Language -> NominalDate -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewChwMainPage language currentDate nurse stats db model =
+    let
+        acuteIllnessData =
+            generateFilteredAcuteIllnessData model.selectedVillageFilter stats
+
+        selectedDate =
+            currentDate
+
+        encountersForSelectedMonth =
+            getAcuteIllnessAssesmentsForSelectedMonth selectedDate acuteIllnessData
+
+        ( sentToHC, managedLocally ) =
+            countAcuteIllnessCasesByHCReferrals encountersForSelectedMonth
+    in
+    div [ class "dashboard main" ]
+        [ viewChwPages language
+        , div [ class "current-month" ]
+            [ a []
+                [ span [ class "icon-back" ] [] ]
+            , h1 [ class "ui header" ]
+                [ text "May 2021" ]
+            , a []
+                [ span [ class "icon-back forward" ] [] ]
+            ]
+        , div [ class "ui grid" ]
+            [ div [ class "five wide column" ]
+                [ viewAcuteDiagnosis language
+                ]
+            , div [ class "six wide column" ]
+                [ viewMotherInAnc language ]
+            , div [ class "five wide column" ]
+                [ viewNewbornInCare language ]
+            ]
+        , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
+        , div [ class "ui grid" ]
+            [ div [ class "five wide column" ]
+                [ viewAcuteIllnessCaseManagement language ]
+            , div [ class "six wide column" ]
+                [ viewNutritionCaseManagement language ]
+            , div [ class "five wide column" ]
+                [ viewAntenatalCaseManagement language ]
+            ]
+        , lastUpdated language stats
+        ]
 
 
 caseManagementApplyBreakdownFilters : Dict VillageId (List PersonIdentifier) -> Dict ProgramType (List CaseManagement) -> Model -> List CaseManagement
@@ -2422,41 +2439,10 @@ viewCard language statsCard =
 
 viewChwCard : Language -> StatsCard -> Html Msg
 viewChwCard language statsCard =
-    let
-        ( cardAction, cardLinkClass ) =
-            case statsCard.cardAction of
-                Nothing ->
-                    ( []
-                    , ""
-                    )
-
-                Just action ->
-                    ( [ onClick action ]
-                    , "link"
-                    )
-
-        severityClass =
-            case statsCard.valueSeverity of
-                Neutral ->
-                    "neutral"
-
-                Good ->
-                    "good"
-
-                Moderate ->
-                    "moderate"
-
-                Severe ->
-                    "severe"
-
-        cardAttributes =
-            (class <| "ui segment blue dashboard-cards " ++ statsCard.cardClasses ++ " " ++ cardLinkClass) :: cardAction
-    in
-    div
-        cardAttributes
+    div [ class "ui segment blue dashboard-cards" ]
         [ div [ class "content" ]
             [ div [ class "header" ] [ text statsCard.title ]
-            , div [ class <| "percentage this-year severity severity-" ++ severityClass ] [ text <| String.fromInt statsCard.value ]
+            , div [ class <| "percentage this-year severity severity-normal" ] [ text <| String.fromInt statsCard.value ]
             , statsCard.newCases
                 |> Maybe.map
                     (\newCases ->
