@@ -197,34 +197,54 @@ type Adherence
 
 
 type Dashboard
-    = BeneficiariesLabel
+    = AcuteIllnessDiagnosed
+    | BeneficiariesLabel
     | BeneficiariesTableColumnLabel BeneficiariesTableLabels
     | BeneficiariesTableLabel
     | BoysFilterLabel
+    | CallsTo114
     | CaseManagementFirstWordHelper
     | CaseManagementHelper
     | CaseManagementLabel
+    | ChildrenWhoDied
     | CompletedProgramLabel
+    | CommunityLevelCases
+    | ComplicatedMalariaReferredToHC
+    | ComplicatedGIInfectionsReferredToHc
+    | CurrentPregnancies
+    | DiagnosisUndetermined
+    | DiagnosedCases
     | FamilyPlanningLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
+    | FamilyThatMoved
+    | FeverOfUnknownOrigin
     | Filter DashboardFilter
     | FilterProgramType FilterProgramType
     | Filters
     | GirlsFilterLabel
     | GoodNutritionLabel
+    | HomeDeliveries
+    | HealthFacilityDeliveries
+    | HealthCenterReferrals
     | IncidenceOf
     | LastUpdated
     | LoadingDataGeneral
     | MissedSessionsLabel
     | Moderate
     | ModeratelyMalnourished
+    | MothersInANC
     | NewBeneficiaries
+    | NewbornsInCare
     | NewCasesLabel
+    | NewPregnancy
     | NoDataGeneral
     | NoDataForPeriod
+    | PatientsManagedAtHome
+    | PatientCurrentlyUnderCare
     | PercentageLabel FilterPeriod
     | PeriodFilter FilterPeriod
     | ProgramType
+    | ResolveCases
     | Severe
     | SeverelyMalnourished
     | StatisticsFirstWordHelper
@@ -234,7 +254,13 @@ type Dashboard
     | TotalBeneficiaries
     | TotalMalnourished
     | TotalEncountersLabel
+    | TotalAssessment
+    | UncomplicatedMalariaByChws
+    | UncomplicatedMalariaInPregnancyReferredToHc
+    | UncomplicatedGIInfectionByCHWS
     | UseFamilyPlanning
+    | Within4MonthsOfDueDate
+    | WithDangerSigns
 
 
 type TranslationId
@@ -7861,6 +7887,11 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        AcuteIllnessDiagnosed ->
+            { english = "Acute Illness Diagnosed"
+            , kinyarwanda = Nothing
+            }
+
         BeneficiariesTableColumnLabel label ->
             case label of
                 New ->
@@ -7893,6 +7924,11 @@ translateDashboard trans =
             , kinyarwanda = Just "Umuhungu"
             }
 
+        CallsTo114 ->
+            { english = "Calls to 114"
+            , kinyarwanda = Nothing
+            }
+
         CaseManagementFirstWordHelper ->
             { english = "Review"
             , kinyarwanda = Nothing
@@ -7908,8 +7944,43 @@ translateDashboard trans =
             , kinyarwanda = Just "Kuvura Uburwayi"
             }
 
+        ChildrenWhoDied ->
+            { english = "Children Who Died"
+            , kinyarwanda = Nothing
+            }
+
         CompletedProgramLabel ->
             { english = "Completed Program"
+            , kinyarwanda = Nothing
+            }
+
+        CurrentPregnancies ->
+            { english = "Current Pregnant Women"
+            , kinyarwanda = Nothing
+            }
+
+        CommunityLevelCases ->
+            { english = "Community Level Cases"
+            , kinyarwanda = Nothing
+            }
+
+        ComplicatedMalariaReferredToHC ->
+            { english = "Complicated Malaria Referred to HC"
+            , kinyarwanda = Nothing
+            }
+
+        ComplicatedGIInfectionsReferredToHc ->
+            { english = "Complicated GI Infections Referred to Health Center"
+            , kinyarwanda = Nothing
+            }
+
+        DiagnosisUndetermined ->
+            { english = "Diagnosis Undetermined"
+            , kinyarwanda = Nothing
+            }
+
+        DiagnosedCases ->
+            { english = "Diagnoses Cases"
             , kinyarwanda = Nothing
             }
 
@@ -7920,6 +7991,16 @@ translateDashboard trans =
 
         FamilyPlanningOutOfWomen { total, useFamilyPlanning } ->
             { english = String.fromInt useFamilyPlanning ++ " out of " ++ String.fromInt total ++ " women"
+            , kinyarwanda = Nothing
+            }
+
+        FamilyThatMoved ->
+            { english = "Families Who Moved"
+            , kinyarwanda = Nothing
+            }
+
+        FeverOfUnknownOrigin ->
+            { english = " Fever of Unknown Origin"
             , kinyarwanda = Nothing
             }
 
@@ -7997,6 +8078,21 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        HomeDeliveries ->
+            { english = "Home Deliveries"
+            , kinyarwanda = Nothing
+            }
+
+        HealthFacilityDeliveries ->
+            { english = "Health Facility Deliveries"
+            , kinyarwanda = Nothing
+            }
+
+        HealthCenterReferrals ->
+            { english = "Health Center Referrals"
+            , kinyarwanda = Nothing
+            }
+
         IncidenceOf ->
             { english = "Incidence of"
             , kinyarwanda = Nothing
@@ -8027,13 +8123,28 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        MothersInANC ->
+            { english = "Mother in ANC"
+            , kinyarwanda = Nothing
+            }
+
         NewCasesLabel ->
             { english = "New Cases"
             , kinyarwanda = Nothing
             }
 
+        NewPregnancy ->
+            { english = "New Identified Pregnancies"
+            , kinyarwanda = Nothing
+            }
+
         NewBeneficiaries ->
             { english = "New Beneficiaries"
+            , kinyarwanda = Nothing
+            }
+
+        NewbornsInCare ->
+            { english = "Newborns in Care"
             , kinyarwanda = Nothing
             }
 
@@ -8044,6 +8155,16 @@ translateDashboard trans =
 
         NoDataForPeriod ->
             { english = "No data for the selected period."
+            , kinyarwanda = Nothing
+            }
+
+        PatientsManagedAtHome ->
+            { english = "Managed at Home"
+            , kinyarwanda = Nothing
+            }
+
+        PatientCurrentlyUnderCare ->
+            { english = "Currently Under Care"
             , kinyarwanda = Nothing
             }
 
@@ -8093,6 +8214,11 @@ translateDashboard trans =
 
         ProgramType ->
             { english = "Program Type"
+            , kinyarwanda = Nothing
+            }
+
+        ResolveCases ->
+            { english = " Resolved Cases: Currently in Care"
             , kinyarwanda = Nothing
             }
 
@@ -8153,8 +8279,38 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        TotalAssessment ->
+            { english = "Total # of Assessments"
+            , kinyarwanda = Nothing
+            }
+
+        UncomplicatedMalariaByChws ->
+            { english = "Uncomplicated Malaria Managed by CHWs"
+            , kinyarwanda = Nothing
+            }
+
+        UncomplicatedMalariaInPregnancyReferredToHc ->
+            { english = "Uncomplicated Malaria in Pregnancy Referred to HC"
+            , kinyarwanda = Nothing
+            }
+
+        UncomplicatedGIInfectionByCHWS ->
+            { english = "Uncomplicated GI Infections Managed by CHWs"
+            , kinyarwanda = Nothing
+            }
+
         UseFamilyPlanning ->
             { english = "use family planning"
+            , kinyarwanda = Nothing
+            }
+
+        Within4MonthsOfDueDate ->
+            { english = "Within 4 Months of Due Date"
+            , kinyarwanda = Nothing
+            }
+
+        WithDangerSigns ->
+            { english = "With Danger Signs"
             , kinyarwanda = Nothing
             }
 
