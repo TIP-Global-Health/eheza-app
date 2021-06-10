@@ -81,7 +81,7 @@ type alias PersonParams =
 
 encodePersonParams : PersonParams -> List ( String, String )
 encodePersonParams params =
-    List.filterMap identity
+    Maybe.Extra.values
         [ Maybe.map (\name -> ( "name_contains", name )) params.nameContains
         ]
 
@@ -101,7 +101,7 @@ type alias RelationshipParams =
 
 encodeRelationshipParams : RelationshipParams -> List ( String, String )
 encodeRelationshipParams params =
-    List.filterMap identity
+    Maybe.Extra.values
         [ Maybe.map (\person -> ( "person", fromEntityUuid person )) params.person
         , Maybe.map (\relatedTo -> ( "related_to", fromEntityUuid relatedTo )) params.relatedTo
         ]

@@ -4,12 +4,16 @@ import AssocList as Dict exposing (Dict)
 import Backend.Dashboard.Model exposing (DashboardStats, PrenatalDataItem)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..))
-import Backend.Measurement.Model exposing (DangerSign(..))
+import Backend.Measurement.Model exposing (DangerSign(..), FollowUpMeasurements)
+import Backend.Model exposing (ModelIndexedDb)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isNothing)
 import Pages.Dashboard.Model exposing (..)
+import Pages.GlobalCaseManagement.Utils exposing (filterVillageResidents, generateAcuteIllnessFollowUps, generateNutritionFollowUps, generatePrenatalFollowUps)
+import Pages.GlobalCaseManagement.View exposing (viewAcuteIllnessFollowUpEntries, viewNutritionFollowUpEntries, viewPrenatalFollowUpEntries)
+import Translate exposing (Language)
 
 
 filterProgramTypeToString : FilterProgramType -> String
@@ -212,6 +216,36 @@ countDeliveriesAtLocationForSelectedMonth selectedDate location itemsList =
                     |> Maybe.withDefault False
             )
         |> List.length
+
+
+getFollowUpsTotals : Language -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
+getFollowUpsTotals language currentDate db villageId followUps =
+    let
+        nutritionFollowUps =
+            generateNutritionFollowUps db followUps
+                |> filterVillageResidents villageId identity db
+
+        nutritionEntries =
+            viewNutritionFollowUpEntries language currentDate nutritionFollowUps db
+
+        acuteIllnessFollowUps =
+            generateAcuteIllnessFollowUps db followUps
+                |> filterVillageResidents villageId Tuple.second db
+
+        acuteIllnessEntries =
+            viewAcuteIllnessFollowUpEntries language currentDate acuteIllnessFollowUps db
+
+        prenatalFollowUps =
+            generatePrenatalFollowUps db followUps
+                |> filterVillageResidents villageId Tuple.second db
+
+        prenatalEntries =
+            viewPrenatalFollowUpEntries language currentDate prenatalFollowUps db
+    in
+    ( List.length nutritionEntries
+    , List.length acuteIllnessEntries
+    , List.length prenatalEntries
+    )
 
 
 

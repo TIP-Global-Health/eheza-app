@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Village.Utils exposing (getVillageClinicId)
+import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
 
 
@@ -12,7 +13,7 @@ fetch maybeVillageId db =
     maybeVillageId
         |> Maybe.map
             (\villageId ->
-                List.filterMap identity
+                Maybe.Extra.values
                     [ Just FetchClinics
                     , Maybe.map FetchSessionsByClinic (getVillageClinicId villageId db)
                     ]

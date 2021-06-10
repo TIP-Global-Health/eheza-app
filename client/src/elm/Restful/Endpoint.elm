@@ -80,6 +80,7 @@ import Http exposing (Error(..), expectJson)
 import HttpBuilder exposing (..)
 import Json.Decode as JD exposing (Decoder, field, index, list)
 import Json.Encode exposing (Value)
+import Maybe.Extra
 import Task exposing (Task)
 
 
@@ -836,7 +837,7 @@ withOffsetAndRange backend_ offset range =
             Maybe.map (\r -> ( backend_.rangeParam, String.fromInt r )) range
     in
     [ offsetParam, rangeParam ]
-        |> List.filterMap identity
+        |> Maybe.Extra.values
         |> withQueryParams
 
 

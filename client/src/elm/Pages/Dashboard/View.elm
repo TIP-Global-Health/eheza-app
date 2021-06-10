@@ -45,7 +45,7 @@ import Pages.GlobalCaseManagement.Utils exposing (allEncounterTypes)
 import Pages.Page exposing (AcuteIllnessDashboardPage(..), ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
 import Pages.Utils exposing (calculatePercentage)
 import Path
-import RemoteData
+import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Scale exposing (BandConfig, BandScale, ContinuousScale)
 import Shape exposing (Arc, defaultPieConfig)
@@ -69,6 +69,10 @@ view language page currentDate healthCenterId isChw nurse model db =
             Dict.get healthCenterId db.computedDashboard
                 |> Maybe.map
                     (\stats ->
+                        let
+                            tmp =
+                                temporaryFunc language currentDate healthCenterId stats db model
+                        in
                         case page of
                             NursePage nurseDashboardPage ->
                                 case nurseDashboardPage of
