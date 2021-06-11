@@ -32,7 +32,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model
 import Color exposing (Color)
-import Date exposing (Month, Unit(..), isBetween, numberToMonth)
+import Date exposing (Month, Unit(..), isBetween, monthNumber, numberToMonth, year)
 import Debug exposing (toString)
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -79,13 +79,13 @@ view language page currentDate healthCenterId isChw nurse model db =
                                 generateAssembledData healthCenterId model.selectedVillageFilter stats db
                         in
                         case page of
+                            MainPage ->
+                                ( viewMainPage language currentDate healthCenterId isChw nurse assembled db model, PinCodePage )
+
                             NursePage nurseDashboardPage ->
                                 case nurseDashboardPage of
-                                    MainPage ->
-                                        ( viewMainPage language currentDate healthCenterId isChw nurse assembled db model, PinCodePage )
-
                                     StatsPage ->
-                                        ( viewStatsPage language currentDate False nurse stats healthCenterId db model, UserPage <| DashboardPage (NursePage MainPage) )
+                                        ( viewStatsPage language currentDate False nurse stats healthCenterId db model, UserPage <| DashboardPage MainPage )
 
                                     CaseManagementPage ->
                                         ( viewCaseManagementPage language currentDate stats db model, UserPage <| DashboardPage model.latestPage )
@@ -93,65 +93,80 @@ view language page currentDate healthCenterId isChw nurse model db =
                             ChwPage chwDashboardPage ->
                                 case chwDashboardPage of
                                     AcuteIllnessPage acuteIllnessPage ->
-                                        ( viewAcuteIllnessPage language currentDate acuteIllnessPage assembled db model, UserPage <| DashboardPage (NursePage MainPage) )
+                                        ( viewAcuteIllnessPage language currentDate acuteIllnessPage assembled db model, UserPage <| DashboardPage MainPage )
 
                                     NutritionPage ->
-                                        ( viewNutritionPage language currentDate True nurse stats db model, UserPage <| DashboardPage (NursePage MainPage) )
+                                        ( viewNutritionPage language currentDate True nurse stats db model, UserPage <| DashboardPage MainPage )
 
                                     AntenatalPage ->
-                                        ( viewAntenatalPage language currentDate assembled db model, UserPage <| DashboardPage (NursePage MainPage) )
+                                        ( viewAntenatalPage language currentDate assembled db model, UserPage <| DashboardPage MainPage )
                     )
                 |> Maybe.withDefault ( spinner, PinCodePage )
 
         header =
             if isChw then
-                if page == ChwPage (AcuteIllnessPage OverviewPage) || page == ChwPage (AcuteIllnessPage Covid19Page) || page == ChwPage (AcuteIllnessPage MalariaPage) || page == ChwPage (AcuteIllnessPage GastroPage) then
-                    div
-                        [ class "ui basic head segment" ]
-                        [ h1 [ class "ui header" ]
-                            [ text <| translate language <| Translate.EncounterTypeFileterLabel AcuteIllnessEncounter ]
-                        , a
-                            [ class "link-back"
-                            , onClick <| SetActivePage goBackPage
-                            ]
-                            [ span [ class "icon-back" ] [] ]
-                        ]
+                case page of
+                    ChwPage chwDashboardPage ->
+                        case chwDashboardPage of
+                            AcuteIllnessPage _ ->
+                                div
+                                    [ class "ui basic head segment" ]
+                                    [ h1 [ class "ui header" ]
+                                        [ text <| translate language <| Translate.EncounterTypeFileterLabel AcuteIllnessEncounter ]
+                                    , a
+                                        [ class "link-back"
+                                        , onClick <| SetActivePage goBackPage
+                                        ]
+                                        [ span [ class "icon-back" ] [] ]
+                                    ]
 
-                else if page == ChwPage NutritionPage then
-                    div
-                        [ class "ui basic head segment" ]
-                        [ h1 [ class "ui header" ]
-                            [ text <| translate language <| Translate.EncounterTypeFileterLabel NutritionEncounter ]
-                        , a
-                            [ class "link-back"
-                            , onClick <| SetActivePage goBackPage
-                            ]
-                            [ span [ class "icon-back" ] [] ]
-                        ]
+                            NutritionPage ->
+                                div
+                                    [ class "ui basic head segment" ]
+                                    [ h1 [ class "ui header" ]
+                                        [ text <| translate language <| Translate.EncounterTypeFileterLabel NutritionEncounter ]
+                                    , a
+                                        [ class "link-back"
+                                        , onClick <| SetActivePage goBackPage
+                                        ]
+                                        [ span [ class "icon-back" ] [] ]
+                                    ]
 
-                else if page == ChwPage AntenatalPage then
-                    div
-                        [ class "ui basic head segment" ]
-                        [ h1 [ class "ui header" ]
-                            [ text <| translate language <| Translate.EncounterTypeFileterLabel AntenatalEncounter ]
-                        , a
-                            [ class "link-back"
-                            , onClick <| SetActivePage goBackPage
-                            ]
-                            [ span [ class "icon-back" ] [] ]
-                        ]
+                            AntenatalPage ->
+                                div
+                                    [ class "ui basic head segment" ]
+                                    [ h1 [ class "ui header" ]
+                                        [ text <| translate language <| Translate.EncounterTypeFileterLabel AntenatalEncounter ]
+                                    , a
+                                        [ class "link-back"
+                                        , onClick <| SetActivePage goBackPage
+                                        ]
+                                        [ span [ class "icon-back" ] [] ]
+                                    ]
 
-                else
-                    div
-                        [ class "ui basic head segment" ]
-                        [ h1 [ class "ui header" ]
-                            [ translateText language Translate.ChwDashboardLabel ]
-                        , a
-                            [ class "link-back"
-                            , onClick <| SetActivePage goBackPage
+                    MainPage ->
+                        div
+                            [ class "ui basic head segment" ]
+                            [ h1 [ class "ui header" ]
+                                [ translateText language Translate.ChwDashboardLabel ]
+                            , a
+                                [ class "link-back"
+                                , onClick <| SetActivePage goBackPage
+                                ]
+                                [ span [ class "icon-back" ] [] ]
                             ]
-                            [ span [ class "icon-back" ] [] ]
-                        ]
+
+                    NursePage _ ->
+                        div
+                            [ class "ui basic head segment" ]
+                            [ h1 [ class "ui header" ]
+                                [ translateText language Translate.DashboardLabel ]
+                            , a
+                                [ class "link-back"
+                                , onClick <| SetActivePage goBackPage
+                                ]
+                                [ span [ class "icon-back" ] [] ]
+                            ]
 
             else
                 div
@@ -210,14 +225,7 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
     in
     div [ class "dashboard main" ]
         [ viewChwPages language
-        , div [ class "current-month" ]
-            [ a []
-                [ span [ class "icon-back" ] [] ]
-            , h1 [ class "ui header" ]
-                [ text "May 2021" ]
-            , a []
-                [ span [ class "icon-back forward" ] [] ]
-            ]
+        , monthSelector currentDate
         , div [ class "ui grid" ]
             [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt <| sentToHC + managedLocally)
             , customChwCard language (Translate.Dashboard Translate.MothersInANC) (String.fromInt currentlyPregnant) "six"
@@ -896,7 +904,7 @@ viewFiltersPane : Language -> DashboardPage -> List FilterPeriod -> ModelIndexed
 viewFiltersPane language page filterPeriodsPerPage db model =
     let
         ( programTypeFilterFilterButton, labelSelected ) =
-            if page == NursePage MainPage then
+            if page == MainPage then
                 ( div
                     [ class "primary ui button program-type-filter"
                     , onClick <| SetModalState <| Just FiltersModal
@@ -1047,14 +1055,7 @@ viewAcuteIllnessPage language currentDate activePage assembled db model =
     in
     div [ class "dashboard acute-illness" ] <|
         [ viewAcuteIllnessMenu language activePage model
-        , div [ class "current-month" ]
-            [ a []
-                [ span [ class "icon-back" ] [] ]
-            , h1 [ class "ui header" ]
-                [ text "May 2021" ]
-            , a []
-                [ span [ class "icon-back forward" ] [] ]
-            ]
+        , monthSelector currentDate
         ]
             ++ pageContent
             ++ [ lastUpdated language assembled.stats ]
@@ -1247,7 +1248,7 @@ viewNutritionPage language currentDate isChw nurse stats db model =
                     emptyNode
     in
     div [ class "dashboard main" ]
-        [ viewFiltersPane language (NursePage MainPage) filterPeriodsForMainPage db model
+        [ viewFiltersPane language MainPage filterPeriodsForMainPage db model
         , div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
                 [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
@@ -1294,14 +1295,7 @@ viewAntenatalPage language currentDate assembled db model =
             countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery assembled.prenatalData
     in
     div [ class "dashboard prenatal" ]
-        [ div [ class "current-month" ]
-            [ a []
-                [ span [ class "icon-back" ] [] ]
-            , h1 [ class "ui header" ]
-                [ text "May 2021" ]
-            , a []
-                [ span [ class "icon-back forward" ] [] ]
-            ]
+        [ monthSelector currentDate
         , div [ class "ui grid" ]
             [ chwCard language (Translate.Dashboard Translate.NewPregnancy) (String.fromInt newlyIdentifiedPreganancies)
             , customChwCard language (Translate.Dashboard Translate.CurrentPregnancies) (String.fromInt currentlyPregnant) "six"
@@ -2629,3 +2623,23 @@ resolvePreviousMonth thisMonth =
 lastUpdated : Language -> DashboardStats -> Html Msg
 lastUpdated language stats =
     div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
+
+
+monthSelector : NominalDate -> Html Msg
+monthSelector selectedDate =
+    let
+        monthNumber =
+            Date.monthNumber selectedDate
+
+        month =
+            Date.numberToMonth monthNumber
+
+        year =
+            Date.year selectedDate
+    in
+    div [ class "current-month" ]
+        [ span [ class "icon-back" ] []
+        , h1 [ class "ui header" ]
+            [ text <| Debug.toString month ++ " " ++ String.fromInt year ]
+        , span [ class "icon-back forward" ] []
+        ]

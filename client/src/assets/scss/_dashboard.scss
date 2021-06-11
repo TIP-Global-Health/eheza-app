@@ -11,10 +11,12 @@
   .current-month {
     margin-bottom: 35px;
     text-align: center;
+
     .icon-back {
       margin-left: 257px;
       margin-bottom: -30px;
     }
+
     .header {
       font-weight: 500;
       padding-left: 30px;
@@ -22,10 +24,9 @@
     }
 
     .icon-back.forward {
-        margin-top: -30px;
-        margin-left: 440px;
-        transform: rotate(180deg);
-
+      margin-top: -30px;
+      margin-left: 440px;
+      transform: rotate(180deg);
     }
   }
 
@@ -37,7 +38,6 @@
   }
 
   .ui.segment {
-    //padding: 1.5rem 2rem;
 
     &.filters {
       background-color: $color-light-background;
@@ -104,19 +104,11 @@
         padding: 15px;
         text-transform: none;
 
-
         &.active {
           background-color: $color-primary;
           border: solid 2px $color-white;
           color: $color-white;
-
         }
-        //&.inactive {
-        //  background-color: $color-white;
-        //  border: solid 2px $color-primary;
-        //  color: $color-primary;
-        //
-        //}
       }
     }
 
