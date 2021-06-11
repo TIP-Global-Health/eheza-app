@@ -224,7 +224,7 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
                 |> Maybe.withDefault ( 0, 0, 0 )
     in
     div [ class "dashboard main" ]
-        [ viewChwPages language
+        [ viewChwMenu language
         , monthSelector currentDate
         , div [ class "ui grid" ]
             [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt <| sentToHC + managedLocally)
@@ -958,8 +958,8 @@ viewFiltersPane language page filterPeriodsPerPage db model =
             ++ [ labelSelected, programTypeFilterFilterButton ]
 
 
-viewChwPages : Language -> Html Msg
-viewChwPages language =
+viewChwMenu : Language -> Html Msg
+viewChwMenu language =
     div [ class "ui segment chw-filters" ]
         [ button
             [ class "primary ui button"
