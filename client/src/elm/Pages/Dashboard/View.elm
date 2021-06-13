@@ -70,7 +70,43 @@ import Utils.Html exposing (spinner, viewModal)
 view : Language -> DashboardPage -> NominalDate -> HealthCenterId -> Bool -> Nurse -> Model -> ModelIndexedDb -> Html Msg
 view language page currentDate healthCenterId isChw nurse model db =
     let
-        ( content, goBackPage ) =
+        header =
+            case page of
+                MainPage ->
+                    let
+                        label =
+                            if isChw then
+                                Translate.ChwDashboardLabel
+
+                            else
+                                Translate.DashboardLabel
+                    in
+                    viewHeader language label PinCodePage
+
+                ChwPage chwDashboardPage ->
+                    case chwDashboardPage of
+                        AcuteIllnessPage _ ->
+                            viewHeader language (Translate.EncounterTypeFileterLabel AcuteIllnessEncounter) (UserPage <| DashboardPage MainPage)
+
+                        NutritionPage ->
+                            viewHeader language (Translate.EncounterTypeFileterLabel NutritionEncounter) (UserPage <| DashboardPage MainPage)
+
+                        AntenatalPage ->
+                            viewHeader language (Translate.EncounterTypeFileterLabel AntenatalEncounter) (UserPage <| DashboardPage MainPage)
+
+                NursePage nurseDashboardPage ->
+                    let
+                        goBackPage =
+                            case nurseDashboardPage of
+                                StatsPage ->
+                                    UserPage <| DashboardPage MainPage
+
+                                CaseManagementPage ->
+                                    UserPage <| DashboardPage model.latestPage
+                    in
+                    viewHeader language Translate.DashboardLabel goBackPage
+
+        content =
             Dict.get healthCenterId db.computedDashboard
                 |> Maybe.map
                     (\stats ->
@@ -80,110 +116,46 @@ view language page currentDate healthCenterId isChw nurse model db =
                         in
                         case page of
                             MainPage ->
-                                ( viewMainPage language currentDate healthCenterId isChw nurse assembled db model, PinCodePage )
+                                viewMainPage language currentDate healthCenterId isChw nurse assembled db model
 
                             NursePage nurseDashboardPage ->
                                 case nurseDashboardPage of
                                     StatsPage ->
-                                        ( viewStatsPage language currentDate False nurse stats healthCenterId db model, UserPage <| DashboardPage MainPage )
+                                        viewStatsPage language currentDate False nurse stats healthCenterId db model
 
                                     CaseManagementPage ->
-                                        ( viewCaseManagementPage language currentDate stats db model, UserPage <| DashboardPage model.latestPage )
+                                        viewCaseManagementPage language currentDate stats db model
 
                             ChwPage chwDashboardPage ->
                                 case chwDashboardPage of
                                     AcuteIllnessPage acuteIllnessPage ->
-                                        ( viewAcuteIllnessPage language currentDate acuteIllnessPage assembled db model, UserPage <| DashboardPage MainPage )
+                                        viewAcuteIllnessPage language currentDate acuteIllnessPage assembled db model
 
                                     NutritionPage ->
-                                        ( viewNutritionPage language currentDate True nurse stats db model, UserPage <| DashboardPage MainPage )
+                                        viewNutritionPage language currentDate True nurse stats db model
 
                                     AntenatalPage ->
-                                        ( viewAntenatalPage language currentDate assembled db model, UserPage <| DashboardPage MainPage )
+                                        viewAntenatalPage language currentDate assembled db model
                     )
-                |> Maybe.withDefault ( spinner, PinCodePage )
-
-        header =
-            if isChw then
-                case page of
-                    ChwPage chwDashboardPage ->
-                        case chwDashboardPage of
-                            AcuteIllnessPage _ ->
-                                div
-                                    [ class "ui basic head segment" ]
-                                    [ h1 [ class "ui header" ]
-                                        [ text <| translate language <| Translate.EncounterTypeFileterLabel AcuteIllnessEncounter ]
-                                    , a
-                                        [ class "link-back"
-                                        , onClick <| SetActivePage goBackPage
-                                        ]
-                                        [ span [ class "icon-back" ] [] ]
-                                    ]
-
-                            NutritionPage ->
-                                div
-                                    [ class "ui basic head segment" ]
-                                    [ h1 [ class "ui header" ]
-                                        [ text <| translate language <| Translate.EncounterTypeFileterLabel NutritionEncounter ]
-                                    , a
-                                        [ class "link-back"
-                                        , onClick <| SetActivePage goBackPage
-                                        ]
-                                        [ span [ class "icon-back" ] [] ]
-                                    ]
-
-                            AntenatalPage ->
-                                div
-                                    [ class "ui basic head segment" ]
-                                    [ h1 [ class "ui header" ]
-                                        [ text <| translate language <| Translate.EncounterTypeFileterLabel AntenatalEncounter ]
-                                    , a
-                                        [ class "link-back"
-                                        , onClick <| SetActivePage goBackPage
-                                        ]
-                                        [ span [ class "icon-back" ] [] ]
-                                    ]
-
-                    MainPage ->
-                        div
-                            [ class "ui basic head segment" ]
-                            [ h1 [ class "ui header" ]
-                                [ translateText language Translate.ChwDashboardLabel ]
-                            , a
-                                [ class "link-back"
-                                , onClick <| SetActivePage goBackPage
-                                ]
-                                [ span [ class "icon-back" ] [] ]
-                            ]
-
-                    NursePage _ ->
-                        div
-                            [ class "ui basic head segment" ]
-                            [ h1 [ class "ui header" ]
-                                [ translateText language Translate.DashboardLabel ]
-                            , a
-                                [ class "link-back"
-                                , onClick <| SetActivePage goBackPage
-                                ]
-                                [ span [ class "icon-back" ] [] ]
-                            ]
-
-            else
-                div
-                    [ class "ui basic head segment" ]
-                    [ h1 [ class "ui header" ]
-                        [ translateText language Translate.DashboardLabel ]
-                    , a
-                        [ class "link-back"
-                        , onClick <| SetActivePage goBackPage
-                        ]
-                        [ span [ class "icon-back" ] [] ]
-                    ]
+                |> Maybe.withDefault spinner
     in
     div
         [ class "wrap" ]
         [ header
         , content
+        ]
+
+
+viewHeader : Language -> TranslationId -> Page -> Html Msg
+viewHeader language label goBackPage =
+    div [ class "ui basic head segment" ]
+        [ h1 [ class "ui header" ]
+            [ translateText language label ]
+        , a
+            [ class "link-back"
+            , onClick <| SetActivePage goBackPage
+            ]
+            [ span [ class "icon-back" ] [] ]
         ]
 
 
