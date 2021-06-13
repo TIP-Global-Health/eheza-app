@@ -7,7 +7,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome)
-import Backend.Measurement.Model exposing (Call114Sign, DangerSign, FamilyPlanningSign, IsolationSign, SendToHCSign)
+import Backend.Measurement.Model exposing (Call114Sign, DangerSign, FamilyPlanningSign, FollowUpMeasurements, IsolationSign, SendToHCSign)
 import Backend.Person.Model exposing (Gender)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -18,6 +18,14 @@ Added a comment in the main definition to point to this one.
 -}
 type alias ZScore =
     Float
+
+
+type alias AssembledData =
+    { stats : DashboardStats
+    , acuteIllnessData : List AcuteIllnessDataItem
+    , prenatalData : List PrenatalDataItem
+    , caseManagementData : Maybe FollowUpMeasurements
+    }
 
 
 type alias DashboardStats =

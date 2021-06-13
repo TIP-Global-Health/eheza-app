@@ -45,7 +45,7 @@ import Pages.NutritionEncounter.Model
 import Pages.NutritionEncounter.View
 import Pages.NutritionParticipant.View
 import Pages.NutritionProgressReport.View
-import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.Page exposing (DashboardPage(..), Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.People.View
 import Pages.Person.View
@@ -307,16 +307,42 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     DashboardPage subPage ->
-                        Pages.Dashboard.View.view model.language
-                            subPage
-                            currentDate
-                            healthCenterId
-                            isChw
-                            (Tuple.second loggedInModel.nurse)
-                            loggedInModel.dashboardPage
-                            model.indexedDb
-                            |> Html.map (MsgLoggedIn << MsgPageDashboard subPage)
-                            |> flexPageWrapper model
+                        let
+                            viewDashboardPage =
+                                Pages.Dashboard.View.view model.language
+                                    subPage
+                                    currentDate
+                                    healthCenterId
+                                    isChw
+                                    (Tuple.second loggedInModel.nurse)
+                                    loggedInModel.dashboardPage
+                                    model.indexedDb
+                                    |> Html.map (MsgLoggedIn << MsgPageDashboard subPage)
+                                    |> flexPageWrapper model
+
+                            viewPageNotFound =
+                                Pages.PageNotFound.View.viewPage model.language (SetActivePage PinCodePage) (UserPage <| DashboardPage subPage)
+                        in
+                        case subPage of
+                            MainPage ->
+                                -- Main page is common for Nurse and CHw.
+                                viewDashboardPage
+
+                            NursePage _ ->
+                                if isChw then
+                                    -- Only Nursed may access Nursed pages.
+                                    viewPageNotFound
+
+                                else
+                                    viewDashboardPage
+
+                            ChwPage _ ->
+                                if isChw then
+                                    viewDashboardPage
+
+                                else
+                                    -- Only CHW may access CHW pages.
+                                    viewPageNotFound
 
                     GlobalCaseManagementPage ->
                         Pages.GlobalCaseManagement.View.view model.language

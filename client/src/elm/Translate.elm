@@ -78,6 +78,7 @@ import Pages.Dashboard.Model as Dashboard
         ( BeneficiariesTableLabels(..)
         , DashboardFilter(..)
         , DashboardSubFilter(..)
+        , FeverCause(..)
         , FilterPeriod(..)
         , FilterProgramType(..)
         )
@@ -217,6 +218,8 @@ type Dashboard
     | FamilyPlanningLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | FamilyThatMoved
+    | FeversByCause
+    | FeverCause FeverCause
     | FeverOfUnknownOrigin
     | Filter DashboardFilter
     | FilterProgramType FilterProgramType
@@ -244,7 +247,7 @@ type Dashboard
     | PercentageLabel FilterPeriod
     | PeriodFilter FilterPeriod
     | ProgramType
-    | ResolveCases
+    | ResolvedCases
     | Severe
     | SeverelyMalnourished
     | StatisticsFirstWordHelper
@@ -7999,6 +8002,38 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        FeversByCause ->
+            { english = "Fevers by Cause"
+            , kinyarwanda = Nothing
+            }
+
+        FeverCause cause ->
+            case cause of
+                FeverCauseCovid19 ->
+                    { english = "COVID-19"
+                    , kinyarwanda = Nothing
+                    }
+
+                FeverCauseMalaria ->
+                    { english = "Malaria"
+                    , kinyarwanda = Nothing
+                    }
+
+                FeverCauseRespiratory ->
+                    { english = "Respiratory"
+                    , kinyarwanda = Nothing
+                    }
+
+                FeverCauseGI ->
+                    { english = "Gastrointeritis"
+                    , kinyarwanda = Nothing
+                    }
+
+                FeverCauseUnknown ->
+                    { english = "Unknown"
+                    , kinyarwanda = Nothing
+                    }
+
         FeverOfUnknownOrigin ->
             { english = " Fever of Unknown Origin"
             , kinyarwanda = Nothing
@@ -8217,7 +8252,7 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
-        ResolveCases ->
+        ResolvedCases ->
             { english = " Resolved Cases: Currently in Care"
             , kinyarwanda = Nothing
             }
