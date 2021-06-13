@@ -961,47 +961,14 @@ viewFiltersPane language page filterPeriodsPerPage db model =
 viewChwMenu : Language -> Html Msg
 viewChwMenu language =
     div [ class "ui segment chw-filters" ]
-        [ button
-            [ class "primary ui button"
-            , DashboardPage (ChwPage AntenatalPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ translateText language <| Translate.EncounterTypeFileterLabel AntenatalEncounter
-                ]
-            ]
-        , button
-            [ class "primary ui button"
-            , DashboardPage (ChwPage NutritionPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ translateText language <| Translate.EncounterTypeFileterLabel NutritionEncounter
-                ]
-            ]
-        , button
-            [ class "primary ui button"
-            , DashboardPage (ChwPage <| AcuteIllnessPage OverviewPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ translateText language <| Translate.EncounterTypeFileterLabel AcuteIllnessEncounter
-                ]
-            ]
+        [ viewChwMenuButton language AntenatalPage Nothing
+        , viewChwMenuButton language NutritionPage Nothing
+        , viewChwMenuButton language (AcuteIllnessPage OverviewPage) Nothing
         ]
 
 
-viewAcuteIllnessMenu : Language -> AcuteIllnessDashboardPage -> Model -> Html Msg
-viewAcuteIllnessMenu language activePage model =
+viewAcuteIllnessMenu : Language -> AcuteIllnessDashboardPage -> Html Msg
+viewAcuteIllnessMenu language activePage =
     let
         viewMenu targetPage =
             button
@@ -1017,11 +984,35 @@ viewAcuteIllnessMenu language activePage model =
                 [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage targetPage ]
     in
     div [ class "ui segment chw-filters" ]
-        [ viewMenu OverviewPage
-        , viewMenu Covid19Page
-        , viewMenu MalariaPage
-        , viewMenu GastroPage
+        [ viewChwMenuButton language (AcuteIllnessPage OverviewPage) (Just <| AcuteIllnessPage activePage)
+        , viewChwMenuButton language (AcuteIllnessPage Covid19Page) (Just <| AcuteIllnessPage activePage)
+        , viewChwMenuButton language (AcuteIllnessPage MalariaPage) (Just <| AcuteIllnessPage activePage)
+        , viewChwMenuButton language (AcuteIllnessPage GastroPage) (Just <| AcuteIllnessPage activePage)
         ]
+
+
+viewChwMenuButton : Language -> ChwDashboardPage -> Maybe ChwDashboardPage -> Html Msg
+viewChwMenuButton language targetPage activePage =
+    let
+        label =
+            if isNothing activePage && targetPage == AcuteIllnessPage OverviewPage then
+                -- On Main page, and target is Acute Illness page.
+                Translate.EncounterTypeFileterLabel AcuteIllnessEncounter
+
+            else
+                Translate.EncounterTypePageLabel targetPage
+    in
+    button
+        [ classList
+            [ ( "active", activePage == Just targetPage )
+            , ( "primary ui button", True )
+            ]
+        , DashboardPage (ChwPage targetPage)
+            |> UserPage
+            |> SetActivePage
+            |> onClick
+        ]
+        [ translateText language label ]
 
 
 viewAcuteIllnessPage : Language -> NominalDate -> AcuteIllnessDashboardPage -> AssembledData -> ModelIndexedDb -> Model -> Html Msg
@@ -1054,7 +1045,7 @@ viewAcuteIllnessPage language currentDate activePage assembled db model =
                     viewGastroPage language currentDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
     in
     div [ class "dashboard acute-illness" ] <|
-        [ viewAcuteIllnessMenu language activePage model
+        [ viewAcuteIllnessMenu language activePage
         , monthSelector currentDate
         ]
             ++ pageContent
