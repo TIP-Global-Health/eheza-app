@@ -64,11 +64,11 @@ pageToFragment current =
                     let
                         url =
                             case subPage of
+                                MainPage ->
+                                    "main"
+
                                 NursePage nurseDashboardPage ->
                                     case nurseDashboardPage of
-                                        MainPage ->
-                                            "main"
-
                                         StatsPage ->
                                             "stats"
 
@@ -295,7 +295,7 @@ parser =
 parseDashboardPage : Parser (DashboardPage -> c) c
 parseDashboardPage =
     oneOf
-        [ map (NursePage MainPage) (s "main")
+        [ map MainPage (s "main")
         , map (NursePage StatsPage) (s "stats")
         , map (NursePage CaseManagementPage) (s "case-management")
         , map (ChwPage <| AcuteIllnessPage OverviewPage) (s "acute-illness")

@@ -91,7 +91,7 @@ update msg subPage model =
             let
                 newPeriod =
                     case page of
-                        UserPage (DashboardPage (NursePage MainPage)) ->
+                        UserPage (DashboardPage MainPage) ->
                             OneYear
 
                         UserPage (DashboardPage (NursePage StatsPage)) ->

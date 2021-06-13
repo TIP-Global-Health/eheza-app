@@ -152,7 +152,7 @@ emptyModel maybeSelectedVillage =
     , currentBeneficiariesIncidenceChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
     , currentCaseManagementSubFilter = FilterTotal
-    , latestPage = NursePage MainPage
+    , latestPage = MainPage
     , modalState = Nothing
     }
 
