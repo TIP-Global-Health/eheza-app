@@ -218,6 +218,8 @@ type Dashboard
     | FamilyPlanningLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | FamilyThatMoved
+    | FeversByCause
+    | FeverCause FeverCause
     | FeverOfUnknownOrigin
     | Filter DashboardFilter
     | FilterProgramType FilterProgramType
@@ -503,7 +505,6 @@ type TranslationId
     | FetalPresentationLabel
     | FetalPresentation FetalPresentation
     | Fetch
-    | FeverCause FeverCause
     | FilterByName
     | FirstAntenatalVisit
     | FirstName
@@ -3266,33 +3267,6 @@ translationSet trans =
             { english = "Fetch"
             , kinyarwanda = Just "Gushakisha"
             }
-
-        FeverCause cause ->
-            case cause of
-                FeverCauseCovid19 ->
-                    { english = "COVID-19"
-                    , kinyarwanda = Nothing
-                    }
-
-                FeverCauseMalaria ->
-                    { english = "Malaria"
-                    , kinyarwanda = Nothing
-                    }
-
-                FeverCauseRespiratory ->
-                    { english = "Respiratory"
-                    , kinyarwanda = Nothing
-                    }
-
-                FeverCauseGI ->
-                    { english = "Gastrointeritis"
-                    , kinyarwanda = Nothing
-                    }
-
-                FeverCauseUnknown ->
-                    { english = "Unknown"
-                    , kinyarwanda = Nothing
-                    }
 
         FilterByName ->
             { english = "Filter by name"
@@ -8027,6 +8001,38 @@ translateDashboard trans =
             { english = "Families Who Moved"
             , kinyarwanda = Nothing
             }
+
+        FeversByCause ->
+            { english = "Fevers by Cause"
+            , kinyarwanda = Nothing
+            }
+
+        FeverCause cause ->
+            case cause of
+                FeverCauseCovid19 ->
+                    { english = "COVID-19"
+                    , kinyarwanda = Nothing
+                    }
+
+                FeverCauseMalaria ->
+                    { english = "Malaria"
+                    , kinyarwanda = Nothing
+                    }
+
+                FeverCauseRespiratory ->
+                    { english = "Respiratory"
+                    , kinyarwanda = Nothing
+                    }
+
+                FeverCauseGI ->
+                    { english = "Gastrointeritis"
+                    , kinyarwanda = Nothing
+                    }
+
+                FeverCauseUnknown ->
+                    { english = "Unknown"
+                    , kinyarwanda = Nothing
+                    }
 
         FeverOfUnknownOrigin ->
             { english = " Fever of Unknown Origin"

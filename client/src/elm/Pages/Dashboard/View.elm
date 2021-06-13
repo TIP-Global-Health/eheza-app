@@ -1091,7 +1091,7 @@ viewAcuteIllnessOverviewPage language encounters model =
         [ customChwCard language (Translate.Dashboard Translate.DiagnosisUndetermined) (String.fromInt undeterminedCases) "six"
         , customChwCard language (Translate.Dashboard Translate.FeverOfUnknownOrigin) (String.fromInt feverOfUnknownOriginCases) "six"
         ]
-    , div [ class "ui blue segment family-planning" ]
+    , div [ class "ui blue segment donut-chart fever" ]
         [ viewFeverDistributionDonutChart language feverByCauses ]
     ]
 
@@ -1106,23 +1106,9 @@ viewFeverDistributionDonutChart language feverByCauses =
             [ div [ class "middle aligned row" ]
                 [ div [ class "content" ]
                     [ viewPieChart feverCausesColors feverByCauses
-
-                    -- , div [ class "in-chart" ]
-                    --     [ div [ class "stats" ]
-                    --         [ span [ class "percentage neutral" ] [ text <| String.fromInt totalPercent ++ "%" ]
-                    --         , text " "
-                    --         , span [ class "use-label" ] [ translateText language <| Translate.Dashboard Translate.UseFamilyPlanning ]
-                    --         , div [ class "count" ]
-                    --             [ translateText language <|
-                    --                 Translate.Dashboard <|
-                    --                     Translate.FamilyPlanningOutOfWomen
-                    --                         { total = totalWomen
-                    --                         , useFamilyPlanning = useFamilyPlanning
-                    --                         }
-                    --             ]
-                    --         ]
-                    --     ]
-                    , viewPieChartLegend language Translate.FeverCause feverCauseToColor feverByCauses
+                    , div [ class "in-chart" ]
+                        [ translateText language <| Translate.Dashboard Translate.FeversByCause ]
+                    , viewPieChartLegend language (Translate.FeverCause >> Translate.Dashboard) feverCauseToColor feverByCauses
                     ]
                 ]
             ]
@@ -1936,7 +1922,7 @@ viewDashboardPagesLinks language =
 viewFamilyPlanning : Language -> DashboardStats -> Html Msg
 viewFamilyPlanning language stats =
     div
-        [ class "ui blue segment family-planning" ]
+        [ class "ui blue segment donut-chart family-planning" ]
         [ div [ class "header" ]
             [ h3 [ class "title" ] [ translateText language <| Translate.Dashboard Translate.FamilyPlanningLabel ]
             ]
@@ -2172,44 +2158,6 @@ viewFamilyPlanningDonutChart language stats =
                 ]
             , viewPieChartLegend language Translate.FamilyPlanningSignLabel familyPlanningSignToColor signs
             ]
-
-
-viewFamilyPlanningChartLegend : Language -> List ( FamilyPlanningSign, Int ) -> Html Msg
-viewFamilyPlanningChartLegend language signs =
-    let
-        totalSigns =
-            signs
-                |> List.map Tuple.second
-                |> List.foldl (+) 0
-                |> toFloat
-    in
-    div [ class "legend" ]
-        (List.map
-            (\( sign, usage ) ->
-                let
-                    label =
-                        translate language <| Translate.FamilyPlanningSignLabel sign
-
-                    percentage =
-                        round (100 * toFloat usage / totalSigns)
-
-                    -- We want to prevent displaying 0% in case there was usage.
-                    normalizedPercentage =
-                        if usage > 0 && percentage == 0 then
-                            "1"
-
-                        else
-                            toString percentage
-                in
-                div [ class "legend-item" ]
-                    [ svg [ Svg.Attributes.width "12", Svg.Attributes.height "12", viewBox 0 0 100 100 ]
-                        [ Svg.circle [ cx "50", cy "50", r "40", fill <| Fill <| familyPlanningSignToColor sign ] []
-                        ]
-                    , span [] [ text <| label ++ " (" ++ normalizedPercentage ++ "%)" ]
-                    ]
-            )
-            signs
-        )
 
 
 viewPieChart : Dict a Color -> List ( a, Int ) -> Svg msg
