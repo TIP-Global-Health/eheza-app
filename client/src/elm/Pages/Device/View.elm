@@ -14,6 +14,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
 import List.Zipper as Zipper
+import Maybe.Extra
 import Pages.Device.Model exposing (..)
 import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
@@ -92,7 +93,7 @@ viewStorageStatus language app =
     , Maybe.map viewPersistent app.persistentStorage
     , Maybe.map viewMemoryQuota app.memoryQuota
     ]
-        |> List.filterMap identity
+        |> Maybe.Extra.values
         |> ul [ class "storage-dashboard" ]
 
 

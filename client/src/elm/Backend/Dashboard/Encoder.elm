@@ -1,26 +1,10 @@
 module Backend.Dashboard.Encoder exposing (encodeDashboardStats)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model
-    exposing
-        ( CaseManagement
-        , CaseManagementData
-        , CaseNutrition
-        , ChildrenBeneficiariesStats
-        , DashboardStats
-        , FamilyPlanningStats
-        , Nutrition
-        , NutritionStatus(..)
-        , NutritionValue
-        , ParticipantStats
-        , Periods
-        , PersonIdentifier
-        , ProgramType(..)
-        , TotalBeneficiaries
-        , TotalEncountersData
-        )
+import Backend.Dashboard.Model exposing (..)
 import Backend.Entities exposing (VillageId)
-import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSign)
+import Backend.IndividualEncounterParticipant.Encoder exposing (encodeDeliveryLocation, encodeIndividualEncounterParticipantOutcome)
+import Backend.Measurement.Encoder exposing (encodeDangerSign, encodeEverySet, encodeFamilyPlanningSign)
 import Backend.Person.Encoder exposing (encodeGender)
 import Dict as LegacyDict
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
@@ -37,6 +21,7 @@ encodeDashboardStats stats =
     , encodeFamilyPlanning stats.familyPlanning
     , encodeMissedSessions stats.missedSessions
     , encodeTotalEncountersData stats.totalEncounters
+    , encodePrenatalData stats.prenatalData
     , encodeVillagesWithResidents stats.villagesWithResidents
     , ( "timestamp", string stats.timestamp )
     , ( "stats_cache_hash", string stats.cacheHash )
@@ -239,3 +224,28 @@ encodeVillagesWithResidents dict =
                 |> object
     in
     ( "villages_with_residents", value )
+
+
+encodePrenatalData : List PrenatalDataItem -> ( String, Value )
+encodePrenatalData itemsList =
+    ( "prenatal_data", list (encodePrenatalDataItem >> object) itemsList )
+
+
+encodePrenatalDataItem : PrenatalDataItem -> List ( String, Value )
+encodePrenatalDataItem item =
+    [ ( "id", int item.identifier )
+    , ( "created", encodeYYYYMMDD item.created )
+    , ( "expected_date_concluded", maybe encodeYYYYMMDD item.expectedDateConcluded )
+    , ( "date_concluded", maybe encodeYYYYMMDD item.dateConcluded )
+    , ( "outcome", maybe encodeIndividualEncounterParticipantOutcome item.outcome )
+    , ( "delivery_location", maybe encodeDeliveryLocation item.deliveryLocation )
+    , ( "encounters", list encodePrenatalEncounterDataItem item.encounters )
+    ]
+
+
+encodePrenatalEncounterDataItem : PrenatalEncounterDataItem -> Value
+encodePrenatalEncounterDataItem item =
+    object
+        [ ( "created", encodeYYYYMMDD item.created )
+        , ( "danger_signs", encodeEverySet encodeDangerSign item.dangerSigns )
+        ]

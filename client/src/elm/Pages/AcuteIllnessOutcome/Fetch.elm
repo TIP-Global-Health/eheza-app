@@ -3,6 +3,7 @@ module Pages.AcuteIllnessOutcome.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
 
 
@@ -30,7 +31,7 @@ fetch participantId db =
             encountersIds
                 |> List.map FetchAcuteIllnessMeasurements
     in
-    List.filterMap identity
+    Maybe.Extra.values
         [ Maybe.map FetchIndividualEncounterParticipant (Just participantId)
         , Maybe.map FetchPerson personId
         , Maybe.map FetchAcuteIllnessEncountersForParticipant (Just participantId)

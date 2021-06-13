@@ -1,4 +1,4 @@
-module Pages.GlobalCaseManagement.View exposing (view)
+module Pages.GlobalCaseManagement.View exposing (view, viewAcuteIllnessFollowUpEntries, viewNutritionFollowUpEntries, viewPrenatalFollowUpEntries)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
@@ -254,19 +254,29 @@ viewNutritionPane : Language -> NominalDate -> Dict PersonId NutritionFollowUpIt
 viewNutritionPane language currentDate itemsDict db model =
     let
         entries =
-            Dict.map (viewNutritionFollowUpItem language currentDate db) itemsDict
+            viewNutritionFollowUpEntries language currentDate itemsDict db
+
+        _ =
+            entries |> Debug.log "viewNutritionPane"
 
         content =
-            if Dict.isEmpty entries then
+            if List.isEmpty entries then
                 [ translateText language Translate.NoMatchesFound ]
 
             else
-                Dict.values entries
+                entries
     in
     div [ class "pane" ]
         [ viewItemHeading language NutritionEncounter
         , div [ class "pane-content" ] content
         ]
+
+
+viewNutritionFollowUpEntries : Language -> NominalDate -> Dict PersonId NutritionFollowUpItem -> ModelIndexedDb -> List (Html Msg)
+viewNutritionFollowUpEntries language currentDate itemsDict db =
+    Dict.map (viewNutritionFollowUpItem language currentDate db) itemsDict
+        |> Dict.values
+        |> Maybe.Extra.values
 
 
 viewItemHeading : Language -> IndividualEncounterType -> Html Msg
@@ -275,7 +285,7 @@ viewItemHeading language encounterType =
         [ text <| translate language <| Translate.EncounterTypeFollowUpLabel encounterType ]
 
 
-viewNutritionFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> PersonId -> NutritionFollowUpItem -> Html Msg
+viewNutritionFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> PersonId -> NutritionFollowUpItem -> Maybe (Html Msg)
 viewNutritionFollowUpItem language currentDate db personId item =
     let
         lastHomeVisitEncounter =
@@ -297,13 +307,13 @@ viewNutritionFollowUpItem language currentDate db personId item =
             (\encounter ->
                 -- Last Home Visitit encounter occurred before follow up was scheduled.
                 if Date.compare encounter.startDate item.dateMeasured == LT then
-                    viewNutritionFollowUpEntry language currentDate personId item
+                    viewNutritionFollowUpEntry language currentDate personId item |> Just
 
                 else
-                    emptyNode
+                    Nothing
             )
         |> -- No Home Visitit encounter found.
-           Maybe.withDefault (viewNutritionFollowUpEntry language currentDate personId item)
+           Maybe.withDefault (viewNutritionFollowUpEntry language currentDate personId item |> Just)
 
 
 viewNutritionFollowUpEntry : Language -> NominalDate -> PersonId -> NutritionFollowUpItem -> Html Msg
@@ -367,9 +377,7 @@ viewAcuteIllnessPane :
 viewAcuteIllnessPane language currentDate itemsDict db model =
     let
         entries =
-            Dict.map (viewAcuteIllnessFollowUpItem language currentDate db) itemsDict
-                |> Dict.values
-                |> List.filterMap identity
+            viewAcuteIllnessFollowUpEntries language currentDate itemsDict db
 
         content =
             if List.isEmpty entries then
@@ -383,6 +391,18 @@ viewAcuteIllnessPane language currentDate itemsDict db model =
         , div [ class "pane-content" ]
             content
         ]
+
+
+viewAcuteIllnessFollowUpEntries :
+    Language
+    -> NominalDate
+    -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
+    -> ModelIndexedDb
+    -> List (Html Msg)
+viewAcuteIllnessFollowUpEntries language currentDate itemsDict db =
+    Dict.map (viewAcuteIllnessFollowUpItem language currentDate db) itemsDict
+        |> Dict.values
+        |> Maybe.Extra.values
 
 
 viewAcuteIllnessFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> ( IndividualEncounterParticipantId, PersonId ) -> AcuteIllnessFollowUpItem -> Maybe (Html Msg)
@@ -478,9 +498,7 @@ viewPrenatalPane :
 viewPrenatalPane language currentDate itemsDict db model =
     let
         entries =
-            Dict.map (viewPrenatalFollowUpItem language currentDate db) itemsDict
-                |> Dict.values
-                |> List.filterMap identity
+            viewPrenatalFollowUpEntries language currentDate itemsDict db
 
         content =
             if List.isEmpty entries then
@@ -494,6 +512,18 @@ viewPrenatalPane language currentDate itemsDict db model =
         , div [ class "pane-content" ]
             content
         ]
+
+
+viewPrenatalFollowUpEntries :
+    Language
+    -> NominalDate
+    -> Dict ( IndividualEncounterParticipantId, PersonId ) PrenatalFollowUpItem
+    -> ModelIndexedDb
+    -> List (Html Msg)
+viewPrenatalFollowUpEntries language currentDate itemsDict db =
+    Dict.map (viewPrenatalFollowUpItem language currentDate db) itemsDict
+        |> Dict.values
+        |> Maybe.Extra.values
 
 
 viewPrenatalFollowUpItem : Language -> NominalDate -> ModelIndexedDb -> ( IndividualEncounterParticipantId, PersonId ) -> PrenatalFollowUpItem -> Maybe (Html Msg)

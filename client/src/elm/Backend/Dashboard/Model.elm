@@ -5,8 +5,10 @@ module Backend.Dashboard.Model exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (VillageId)
-import Backend.Measurement.Model exposing (FamilyPlanningSign)
+import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome)
+import Backend.Measurement.Model exposing (DangerSign, FamilyPlanningSign)
 import Backend.Person.Model exposing (Gender)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 
 
@@ -24,6 +26,7 @@ type alias DashboardStats =
     , familyPlanning : List FamilyPlanningStats
     , missedSessions : List ParticipantStats
     , totalEncounters : TotalEncountersData
+    , prenatalData : List PrenatalDataItem
     , villagesWithResidents : Dict VillageId (List PersonIdentifier)
 
     -- UTC Date and time on which statistics were generated.
@@ -42,6 +45,7 @@ emptyModel =
     , familyPlanning = []
     , missedSessions = []
     , totalEncounters = TotalEncountersData Dict.empty Dict.empty
+    , prenatalData = []
     , villagesWithResidents = Dict.empty
     , timestamp = ""
     , cacheHash = ""
@@ -178,4 +182,21 @@ type ProgramType
 type alias TotalEncountersData =
     { global : Dict ProgramType Periods
     , villages : Dict VillageId (Dict ProgramType Periods)
+    }
+
+
+type alias PrenatalDataItem =
+    { identifier : PersonIdentifier
+    , created : NominalDate
+    , expectedDateConcluded : Maybe NominalDate
+    , dateConcluded : Maybe NominalDate
+    , outcome : Maybe IndividualEncounterParticipantOutcome
+    , deliveryLocation : Maybe DeliveryLocation
+    , encounters : List PrenatalEncounterDataItem
+    }
+
+
+type alias PrenatalEncounterDataItem =
+    { created : NominalDate
+    , dangerSigns : EverySet DangerSign
     }
