@@ -8,25 +8,24 @@
     font-size: 18px;
   }
 
-  .current-month {
-    margin-bottom: 35px;
-    text-align: center;
+  .month-selector {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
 
-    .icon-back {
-      margin-left: 257px;
-      margin-bottom: -30px;
-    }
-
-    .header {
-      font-weight: 500;
-      padding-left: 30px;
-      text-transform: capitalize;
+    .label {
+      color: white;
+      font-size: 25px;
+      margin: 0 40px;
     }
 
     .icon-back.rotate-180 {
-      margin-top: -30px;
-      margin-left: 440px;
       transform: rotate(180deg);
+    }
+
+    .icon-back.hidden {
+      visibility: hidden;
     }
   }
 

@@ -144,7 +144,8 @@ view language page currentDate healthCenterId isChw nurse model db =
                             [ viewFiltersPane language page db model ]
                                 ++ pageContent
                                 ++ [ viewCustomModal language isChw nurse stats db model
-                                   , lastUpdated language stats
+                                   , div [ class "timestamp" ]
+                                        [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
                                    ]
                     )
                 |> Maybe.withDefault spinner
@@ -206,7 +207,7 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
                 |> Maybe.withDefault ( 0, 0, 0 )
     in
     [ viewChwMenu language
-    , monthSelector currentDate
+    , monthSelector language currentDate
     , div [ class "ui grid" ]
         [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt <| sentToHC + managedLocally)
         , customChwCard language (Translate.Dashboard Translate.MothersInANC) (String.fromInt currentlyPregnant) "six"
@@ -1034,7 +1035,7 @@ viewAcuteIllnessPage language currentDate activePage assembled db model =
                     viewGastroPage language currentDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
     in
     [ viewAcuteIllnessMenu language activePage
-    , monthSelector currentDate
+    , monthSelector language currentDate
     ]
         ++ pageContent
 
@@ -1268,7 +1269,7 @@ viewAntenatalPage language currentDate assembled db model =
         deliveriesAtFacility =
             countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery assembled.prenatalData
     in
-    [ monthSelector currentDate
+    [ monthSelector language currentDate
     , div [ class "ui grid" ]
         [ chwCard language (Translate.Dashboard Translate.NewPregnancy) (String.fromInt newlyIdentifiedPreganancies)
         , customChwCard language (Translate.Dashboard Translate.CurrentPregnancies) (String.fromInt currentlyPregnant) "six"
@@ -2592,13 +2593,8 @@ resolvePreviousMonth thisMonth =
         thisMonth - 1
 
 
-lastUpdated : Language -> DashboardStats -> Html Msg
-lastUpdated language stats =
-    div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
-
-
-monthSelector : NominalDate -> Html Msg
-monthSelector selectedDate =
+monthSelector : Language -> NominalDate -> Html Msg
+monthSelector language selectedDate =
     let
         monthNumber =
             Date.monthNumber selectedDate
@@ -2609,9 +2605,9 @@ monthSelector selectedDate =
         year =
             Date.year selectedDate
     in
-    div [ class "current-month" ]
+    div [ class "month-selector" ]
         [ span [ class "icon-back" ] []
-        , h1 [ class "ui header" ]
-            [ text <| Debug.toString month ++ " " ++ String.fromInt year ]
+        , span [ class "label" ]
+            [ text <| translate language (Translate.ResolveMonth False month) ++ " " ++ String.fromInt year ]
         , span [ class "icon-back rotate-180" ] []
         ]
