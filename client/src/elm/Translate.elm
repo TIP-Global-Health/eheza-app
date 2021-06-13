@@ -78,6 +78,7 @@ import Pages.Dashboard.Model as Dashboard
         ( BeneficiariesTableLabels(..)
         , DashboardFilter(..)
         , DashboardSubFilter(..)
+        , FeverCause(..)
         , FilterPeriod(..)
         , FilterProgramType(..)
         )
@@ -502,6 +503,7 @@ type TranslationId
     | FetalPresentationLabel
     | FetalPresentation FetalPresentation
     | Fetch
+    | FeverCause FeverCause
     | FilterByName
     | FirstAntenatalVisit
     | FirstName
@@ -3264,6 +3266,33 @@ translationSet trans =
             { english = "Fetch"
             , kinyarwanda = Just "Gushakisha"
             }
+
+        FeverCause cause ->
+            case cause of
+                FeverCauseCovid19 ->
+                    { english = "COVID-19"
+                    , kinyarwanda = Nothing
+                    }
+
+                FeverCauseMalaria ->
+                    { english = "Malaria"
+                    , kinyarwanda = Nothing
+                    }
+
+                FeverCauseRespiratory ->
+                    { english = "Respiratory"
+                    , kinyarwanda = Nothing
+                    }
+
+                FeverCauseGI ->
+                    { english = "Gastrointeritis"
+                    , kinyarwanda = Nothing
+                    }
+
+                FeverCauseUnknown ->
+                    { english = "Unknown"
+                    , kinyarwanda = Nothing
+                    }
 
         FilterByName ->
             { english = "Filter by name"

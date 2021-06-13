@@ -1072,6 +1072,15 @@ viewAcuteIllnessOverviewPage language encounters model =
 
         giCases =
             countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisGastrointestinalInfectionComplicated ] True encounters
+
+        feverByCauses =
+            List.filter (Tuple.second >> (/=) 0)
+                [ ( FeverCauseCovid19, covidCases )
+                , ( FeverCauseMalaria, malariaCases )
+                , ( FeverCauseRespiratory, respiratoryCases )
+                , ( FeverCauseGI, giCases )
+                , ( FeverCauseUnknown, feverOfUnknownOriginCases )
+                ]
     in
     [ div [ class "ui grid" ]
         [ chwCard language (Translate.Dashboard Translate.TotalAssessment) (String.fromInt totalAssesments)
@@ -1082,15 +1091,41 @@ viewAcuteIllnessOverviewPage language encounters model =
         [ customChwCard language (Translate.Dashboard Translate.DiagnosisUndetermined) (String.fromInt undeterminedCases) "six"
         , customChwCard language (Translate.Dashboard Translate.FeverOfUnknownOrigin) (String.fromInt feverOfUnknownOriginCases) "six"
         ]
-    , div
-        [ class "ui blue segment family-planning" ]
-        [ div [ class "ui center aligned grid" ]
-            [ div [ class "row" ]
-                --@todo
-                []
-            ]
-        ]
+    , div [ class "ui blue segment family-planning" ]
+        [ viewFeverDistributionDonutChart language feverByCauses ]
     ]
+
+
+viewFeverDistributionDonutChart : Language -> List ( FeverCause, Int ) -> Html Msg
+viewFeverDistributionDonutChart language feverByCauses =
+    if List.isEmpty feverByCauses then
+        div [ class "no-data-message" ] [ translateText language <| Translate.Dashboard Translate.NoDataForPeriod ]
+
+    else
+        div [ class "ui center aligned grid" ]
+            [ div [ class "middle aligned row" ]
+                [ div [ class "content" ]
+                    [ viewPieChart feverCausesColors feverByCauses
+
+                    -- , div [ class "in-chart" ]
+                    --     [ div [ class "stats" ]
+                    --         [ span [ class "percentage neutral" ] [ text <| String.fromInt totalPercent ++ "%" ]
+                    --         , text " "
+                    --         , span [ class "use-label" ] [ translateText language <| Translate.Dashboard Translate.UseFamilyPlanning ]
+                    --         , div [ class "count" ]
+                    --             [ translateText language <|
+                    --                 Translate.Dashboard <|
+                    --                     Translate.FamilyPlanningOutOfWomen
+                    --                         { total = totalWomen
+                    --                         , useFamilyPlanning = useFamilyPlanning
+                    --                         }
+                    --             ]
+                    --         ]
+                    --     ]
+                    , viewPieChartLegend language Translate.FeverCause feverCauseToColor feverByCauses
+                    ]
+                ]
+            ]
 
 
 viewCovid19Page : Language -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
@@ -1907,61 +1942,9 @@ viewFamilyPlanning language stats =
             ]
         , div [ class "ui center aligned grid" ]
             [ div [ class "middle aligned row" ]
-                [ viewDonutChart language stats ]
+                [ viewFamilyPlanningDonutChart language stats ]
             ]
         ]
-
-
-viewDonutChart : Language -> DashboardStats -> Html Msg
-viewDonutChart language stats =
-    let
-        dict =
-            getFamilyPlanningSignsCounter stats
-    in
-    if Dict.isEmpty dict then
-        div [ class "no-data-message" ] [ translateText language <| Translate.Dashboard Translate.NoDataForPeriod ]
-
-    else
-        let
-            totalWomen =
-                stats.familyPlanning
-                    |> List.length
-
-            totalNoFamilyPlanning =
-                Dict.get NoFamilyPlanning dict
-                    |> Maybe.withDefault 0
-
-            useFamilyPlanning =
-                totalWomen - totalNoFamilyPlanning
-
-            totalPercent =
-                useFamilyPlanning * 100 // totalWomen
-
-            signs =
-                dict
-                    |> Dict.toList
-                    |> List.filter (\( sign, _ ) -> sign /= NoFamilyPlanning)
-                    |> List.sortBy (\( name, val ) -> Debug.toString name)
-        in
-        div [ class "content" ]
-            [ viewChart signs
-            , div [ class "in-chart" ]
-                [ div [ class "stats" ]
-                    [ span [ class "percentage neutral" ] [ text <| String.fromInt totalPercent ++ "%" ]
-                    , text " "
-                    , span [ class "use-label" ] [ translateText language <| Translate.Dashboard Translate.UseFamilyPlanning ]
-                    , div [ class "count" ]
-                        [ translateText language <|
-                            Translate.Dashboard <|
-                                Translate.FamilyPlanningOutOfWomen
-                                    { total = totalWomen
-                                    , useFamilyPlanning = useFamilyPlanning
-                                    }
-                        ]
-                    ]
-                ]
-            , viewFamilyPlanningChartLegend language signs
-            ]
 
 
 viewMonthlyChart : Language -> NominalDate -> MonthlyChartType -> FilterType -> Dict Int TotalBeneficiaries -> DashboardFilter -> Html Msg
@@ -2139,6 +2122,58 @@ viewSubFilter language currentSubFilter filter =
         [ translateText language <| Translate.Dashboard <| Translate.SubFilter filter ]
 
 
+viewFamilyPlanningDonutChart : Language -> DashboardStats -> Html Msg
+viewFamilyPlanningDonutChart language stats =
+    let
+        dict =
+            getFamilyPlanningSignsCounter stats
+    in
+    if Dict.isEmpty dict then
+        div [ class "no-data-message" ] [ translateText language <| Translate.Dashboard Translate.NoDataForPeriod ]
+
+    else
+        let
+            totalWomen =
+                stats.familyPlanning
+                    |> List.length
+
+            totalNoFamilyPlanning =
+                Dict.get NoFamilyPlanning dict
+                    |> Maybe.withDefault 0
+
+            useFamilyPlanning =
+                totalWomen - totalNoFamilyPlanning
+
+            totalPercent =
+                useFamilyPlanning * 100 // totalWomen
+
+            signs =
+                dict
+                    |> Dict.toList
+                    |> List.filter (\( sign, _ ) -> sign /= NoFamilyPlanning)
+                    |> List.sortBy (\( name, val ) -> Debug.toString name)
+        in
+        div [ class "content" ]
+            [ viewPieChart familyPlanningSignsColors signs
+            , div [ class "in-chart" ]
+                [ div [ class "stats" ]
+                    [ span [ class "percentage neutral" ] [ text <| String.fromInt totalPercent ++ "%" ]
+                    , text " "
+                    , span [ class "use-label" ] [ translateText language <| Translate.Dashboard Translate.UseFamilyPlanning ]
+                    , div [ class "count" ]
+                        [ translateText language <|
+                            Translate.Dashboard <|
+                                Translate.FamilyPlanningOutOfWomen
+                                    { total = totalWomen
+                                    , useFamilyPlanning = useFamilyPlanning
+                                    }
+                        ]
+                    ]
+                ]
+            , viewPieChartLegend language Translate.FamilyPlanningSignLabel familyPlanningSignToColor signs
+            ]
+
+
 viewFamilyPlanningChartLegend : Language -> List ( FamilyPlanningSign, Int ) -> Html Msg
 viewFamilyPlanningChartLegend language signs =
     let
@@ -2177,16 +2212,14 @@ viewFamilyPlanningChartLegend language signs =
         )
 
 
-viewChart : List ( FamilyPlanningSign, Int ) -> Svg msg
-viewChart signs =
+viewPieChart : Dict a Color -> List ( a, Int ) -> Svg msg
+viewPieChart colors values =
     let
         arcs =
-            signs
-                |> List.map (Tuple.second >> toFloat)
+            List.map (Tuple.second >> toFloat) values
 
-        signsList =
-            signs
-                |> List.map Tuple.first
+        signs =
+            List.map Tuple.first values
 
         pieData =
             arcs
@@ -2198,7 +2231,61 @@ viewChart signs =
                     }
     in
     svg [ Explicit.class [ "pie-chart" ], viewBox 0 0 pieChartWidth pieChartHeight ]
-        [ annular signsList pieData ]
+        [ annular colors signs pieData ]
+
+
+annular : Dict a Color -> List a -> List Arc -> Svg msg
+annular colors signs pieData =
+    let
+        getColor index =
+            List.Extra.getAt index signs
+                |> Maybe.andThen (\sign -> Dict.get sign colors)
+                |> Maybe.withDefault Color.black
+
+        makeSlice index datum =
+            Path.element (Shape.arc { datum | innerRadius = radius - 60 })
+                [ fill <| Fill <| getColor index ]
+    in
+    g [ transform [ Translate (3 * radius + 20) radius ] ]
+        [ g [] <| List.indexedMap makeSlice pieData
+        ]
+
+
+viewPieChartLegend : Language -> (a -> TranslationId) -> (a -> Color) -> List ( a, Int ) -> Html Msg
+viewPieChartLegend language translateFunc colorFunc signs =
+    let
+        totalSigns =
+            List.map Tuple.second signs
+                |> List.sum
+                |> toFloat
+    in
+    div [ class "legend" ]
+        (List.map
+            (\( sign, usage ) ->
+                let
+                    label =
+                        translate language <| translateFunc sign
+
+                    percentage =
+                        round (100 * toFloat usage / totalSigns)
+
+                    -- We want to prevent displaying 0% in case there was usage.
+                    normalizedPercentage =
+                        if usage > 0 && percentage == 0 then
+                            "1"
+
+                        else
+                            toString percentage
+                in
+                div [ class "legend-item" ]
+                    [ svg [ Svg.Attributes.width "12", Svg.Attributes.height "12", viewBox 0 0 100 100 ]
+                        [ Svg.circle [ cx "50", cy "50", r "40", fill <| Fill <| colorFunc sign ] []
+                        ]
+                    , span [] [ text <| label ++ " (" ++ normalizedPercentage ++ "%)" ]
+                    ]
+            )
+            signs
+        )
 
 
 viewCustomModal : Language -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
@@ -2536,24 +2623,6 @@ getFamilyPlanningSignsCounter stats =
         )
         Dict.empty
         stats.familyPlanning
-
-
-annular : List FamilyPlanningSign -> List Arc -> Svg msg
-annular signsList arcs =
-    let
-        getColor index =
-            List.Extra.getAt index signsList
-                |> Maybe.withDefault NoFamilyPlanning
-                |> (\sign -> Dict.get sign colors)
-                |> Maybe.withDefault Color.black
-
-        makeSlice index datum =
-            Path.element (Shape.arc { datum | innerRadius = radius - 60 })
-                [ fill <| Fill <| getColor index ]
-    in
-    g [ transform [ Translate (3 * radius + 20) radius ] ]
-        [ g [] <| List.indexedMap makeSlice arcs
-        ]
 
 
 withinThreePreviousMonths : Int -> Int -> Bool

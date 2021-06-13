@@ -225,6 +225,24 @@ type MonthlyChartType
     | MonthlyChartIncidence
 
 
+type FeverCause
+    = FeverCauseCovid19
+    | FeverCauseMalaria
+    | FeverCauseRespiratory
+    | FeverCauseGI
+    | FeverCauseUnknown
+
+
+allFeverCauses : List FeverCause
+allFeverCauses =
+    [ FeverCauseCovid19
+    , FeverCauseMalaria
+    , FeverCauseRespiratory
+    , FeverCauseGI
+    , FeverCauseUnknown
+    ]
+
+
 type Msg
     = SetModalState (Maybe ModalState)
     | ChangeMonthGap Int
