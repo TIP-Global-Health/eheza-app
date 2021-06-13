@@ -36,16 +36,6 @@ type BeneficiariesTableLabels
     | Total
 
 
-filterPeriodsForMainPage : List FilterPeriod
-filterPeriodsForMainPage =
-    []
-
-
-filterPeriodsForCaseManagementPage : List FilterPeriod
-filterPeriodsForCaseManagementPage =
-    []
-
-
 filterPeriodsForStatsPage : List FilterPeriod
 filterPeriodsForStatsPage =
     [ ThisMonth

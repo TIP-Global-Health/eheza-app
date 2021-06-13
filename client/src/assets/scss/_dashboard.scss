@@ -23,7 +23,7 @@
       text-transform: capitalize;
     }
 
-    .icon-back.forward {
+    .icon-back.rotate-180 {
       margin-top: -30px;
       margin-left: 440px;
       transform: rotate(180deg);
@@ -253,46 +253,43 @@
     }
   }
 
-  &.main {
+  .overlay .ui.modal {
+    margin-left: -350px;
+    width: 700px;
 
-    .overlay .ui.modal {
-      margin-left: -350px;
-      width: 700px;
+    .header {
+      font-size: 30px;
+      font-weight: 500;
+      margin-bottom: 25px;
+      text-align: left;
+      text-transform: capitalize;
+    }
 
-      .header {
-        font-size: 30px;
-        font-weight: 500;
-        margin-bottom: 25px;
-        text-align: left;
-        text-transform: capitalize;
+    .content {
+      text-align: left;
+
+      .helper {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 3px;
       }
 
-      .content {
-        text-align: left;
-
-        .helper {
-          font-size: 18px;
-          font-weight: bold;
-          margin-bottom: 3px;
-        }
-
-        .select-input {
-          background: none;
-          border: 2px solid $color-gray;
-          font-size: 28px;
-          height: 50px;
-          margin-bottom: 20px;
-          padding: 0 7px;
-          width: 100%;
-        }
+      .select-input {
+        background: none;
+        border: 2px solid $color-gray;
+        font-size: 28px;
+        height: 50px;
+        margin-bottom: 20px;
+        padding: 0 7px;
+        width: 100%;
       }
+    }
 
-      .actions {
-        margin-top: 40px;
+    .actions {
+      margin-top: 40px;
 
-        button {
-          margin-left: 0;
-        }
+      button {
+        margin-left: 0;
       }
     }
   }

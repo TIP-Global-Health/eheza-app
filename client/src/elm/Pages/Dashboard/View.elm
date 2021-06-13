@@ -113,29 +113,39 @@ view language page currentDate healthCenterId isChw nurse model db =
                         let
                             assembled =
                                 generateAssembledData healthCenterId model.selectedVillageFilter stats db
+
+                            ( pageContent, pageClass ) =
+                                case page of
+                                    MainPage ->
+                                        ( viewMainPage language currentDate healthCenterId isChw nurse assembled db model
+                                        , "main"
+                                        )
+
+                                    NursePage nurseDashboardPage ->
+                                        case nurseDashboardPage of
+                                            StatsPage ->
+                                                ( viewStatsPage language currentDate False nurse stats healthCenterId db model, "stats" )
+
+                                            CaseManagementPage ->
+                                                ( viewCaseManagementPage language currentDate stats db model, "case" )
+
+                                    ChwPage chwDashboardPage ->
+                                        case chwDashboardPage of
+                                            AcuteIllnessPage acuteIllnessPage ->
+                                                ( viewAcuteIllnessPage language currentDate acuteIllnessPage assembled db model, "acute-illness" )
+
+                                            NutritionPage ->
+                                                ( viewNutritionPage language currentDate True nurse stats db model, "nutrition" )
+
+                                            AntenatalPage ->
+                                                ( viewAntenatalPage language currentDate assembled db model, "prenatal" )
                         in
-                        case page of
-                            MainPage ->
-                                viewMainPage language currentDate healthCenterId isChw nurse assembled db model
-
-                            NursePage nurseDashboardPage ->
-                                case nurseDashboardPage of
-                                    StatsPage ->
-                                        viewStatsPage language currentDate False nurse stats healthCenterId db model
-
-                                    CaseManagementPage ->
-                                        viewCaseManagementPage language currentDate stats db model
-
-                            ChwPage chwDashboardPage ->
-                                case chwDashboardPage of
-                                    AcuteIllnessPage acuteIllnessPage ->
-                                        viewAcuteIllnessPage language currentDate acuteIllnessPage assembled db model
-
-                                    NutritionPage ->
-                                        viewNutritionPage language currentDate True nurse stats db model
-
-                                    AntenatalPage ->
-                                        viewAntenatalPage language currentDate assembled db model
+                        div [ class <| "dashboard " ++ pageClass ] <|
+                            [ viewFiltersPane language page db model ]
+                                ++ pageContent
+                                ++ [ viewCustomModal language isChw nurse stats db model
+                                   , lastUpdated language stats
+                                   ]
                     )
                 |> Maybe.withDefault spinner
     in
@@ -151,7 +161,7 @@ viewHeader language label goBackPage =
     div [ class "ui basic head segment" ]
         [ h1 [ class "ui header" ]
             [ translateText language label ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage goBackPage
             ]
@@ -159,7 +169,7 @@ viewHeader language label goBackPage =
         ]
 
 
-viewMainPage : Language -> NominalDate -> HealthCenterId -> Bool -> Nurse -> AssembledData -> ModelIndexedDb -> Model -> Html Msg
+viewMainPage : Language -> NominalDate -> HealthCenterId -> Bool -> Nurse -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
 viewMainPage language currentDate healthCenterId isChw nurse assembled db model =
     if isChw then
         viewChwMainPage language currentDate healthCenterId assembled db model
@@ -168,7 +178,7 @@ viewMainPage language currentDate healthCenterId isChw nurse assembled db model 
         viewNutritionPage language currentDate False nurse assembled.stats db model
 
 
-viewChwMainPage : Language -> NominalDate -> HealthCenterId -> AssembledData -> ModelIndexedDb -> Model -> Html Msg
+viewChwMainPage : Language -> NominalDate -> HealthCenterId -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
 viewChwMainPage language currentDate healthCenterId assembled db model =
     let
         selectedDate =
@@ -195,22 +205,20 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
                 assembled.caseManagementData
                 |> Maybe.withDefault ( 0, 0, 0 )
     in
-    div [ class "dashboard main" ]
-        [ viewChwMenu language
-        , monthSelector currentDate
-        , div [ class "ui grid" ]
-            [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt <| sentToHC + managedLocally)
-            , customChwCard language (Translate.Dashboard Translate.MothersInANC) (String.fromInt currentlyPregnant) "six"
-            , chwCard language (Translate.Dashboard Translate.NewbornsInCare) (String.fromInt totalNewborn)
-            ]
-        , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
-        , div [ class "ui grid" ]
-            [ chwCard language (Translate.EncounterTypeFileterLabel AcuteIllnessEncounter) (String.fromInt totalAcuteIllnessFollowUps)
-            , customChwCard language (Translate.EncounterTypeFileterLabel NutritionEncounter) (String.fromInt totalNutritionFollowUps) "six"
-            , chwCard language (Translate.EncounterTypeFileterLabel AntenatalEncounter) (String.fromInt totalPrenatalFollowUps)
-            ]
-        , lastUpdated language assembled.stats
+    [ viewChwMenu language
+    , monthSelector currentDate
+    , div [ class "ui grid" ]
+        [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt <| sentToHC + managedLocally)
+        , customChwCard language (Translate.Dashboard Translate.MothersInANC) (String.fromInt currentlyPregnant) "six"
+        , chwCard language (Translate.Dashboard Translate.NewbornsInCare) (String.fromInt totalNewborn)
         ]
+    , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
+    , div [ class "ui grid" ]
+        [ chwCard language (Translate.EncounterTypeFileterLabel AcuteIllnessEncounter) (String.fromInt totalAcuteIllnessFollowUps)
+        , customChwCard language (Translate.EncounterTypeFileterLabel NutritionEncounter) (String.fromInt totalNutritionFollowUps) "six"
+        , chwCard language (Translate.EncounterTypeFileterLabel AntenatalEncounter) (String.fromInt totalPrenatalFollowUps)
+        ]
+    ]
 
 
 caseManagementApplyBreakdownFilters : Dict VillageId (List PersonIdentifier) -> Dict ProgramType (List CaseManagement) -> Model -> List CaseManagement
@@ -601,10 +609,10 @@ generateCaseNutritionNewCases currentDate caseNutrition =
     }
 
 
-viewStatsPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> HealthCenterId -> ModelIndexedDb -> Model -> Html Msg
+viewStatsPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> HealthCenterId -> ModelIndexedDb -> Model -> List (Html Msg)
 viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
     if model.programTypeFilter /= FilterProgramFbf then
-        emptyNode
+        []
 
     else
         let
@@ -634,16 +642,14 @@ viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
             malnourishedPreviousMonth =
                 mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodCaseManagement
         in
-        div [ class "dashboard stats" ]
-            [ viewFiltersPane language (NursePage StatsPage) filterPeriodsForStatsPage db model
-            , div [ class "ui equal width grid" ]
-                [ viewMalnourishedCards language malnourishedCurrentMonth malnourishedPreviousMonth
-                , viewMiscCards language currentDate currentPeriodStats monthBeforeStats
-                ]
-            , viewBeneficiariesTable language currentDate stats currentPeriodStats malnourishedCurrentMonth model
-            , viewFamilyPlanning language currentPeriodStats
-            , viewCustomModal language isChw nurse stats db model
+        [ div [ class "ui equal width grid" ]
+            [ viewMalnourishedCards language malnourishedCurrentMonth malnourishedPreviousMonth
+            , viewMiscCards language currentDate currentPeriodStats monthBeforeStats
             ]
+        , viewBeneficiariesTable language currentDate stats currentPeriodStats malnourishedCurrentMonth model
+        , viewFamilyPlanning language currentPeriodStats
+        , viewCustomModal language isChw nurse stats db model
+        ]
 
 
 mapMalnorishedByMonth : Int -> List CaseManagement -> List MalnorishedNutritionData
@@ -697,10 +703,10 @@ mapMalnorishedByMonth mappedMonth caseManagement =
             []
 
 
-viewCaseManagementPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewCaseManagementPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> List (Html Msg)
 viewCaseManagementPage language currentDate stats db model =
     if model.programTypeFilter /= FilterProgramFbf then
-        emptyNode
+        []
 
     else
         let
@@ -806,22 +812,20 @@ viewCaseManagementPage language currentDate stats db model =
                     |> List.sortBy Tuple.first
                     |> List.reverse
         in
-        div [ class "dashboard case" ]
-            [ viewFiltersPane language (NursePage CaseManagementPage) filterPeriodsForCaseManagementPage db model
-            , div [ class "ui segment blue" ]
-                [ div [ class "case-management" ]
-                    [ div [ class "header" ]
-                        [ h3 [ class "title left floated column" ] [ translateText language <| Translate.Dashboard Translate.CaseManagementLabel ]
-                        , List.map (viewFilter language FilterCaseManagement model.currentCaseManagementFilter) caseManagementFilters
-                            |> div [ class "filters" ]
-                        , List.map (viewSubFilter language model.currentCaseManagementSubFilter) (caseManagementSubFilters model.currentCaseManagementFilter)
-                            |> div [ class "filters secondary" ]
-                        ]
-                    , div [ class "content" ]
-                        [ viewCaseManagementTable language currentDate model tableData ]
+        [ div [ class "ui segment blue" ]
+            [ div [ class "case-management" ]
+                [ div [ class "header" ]
+                    [ h3 [ class "title left floated column" ] [ translateText language <| Translate.Dashboard Translate.CaseManagementLabel ]
+                    , List.map (viewFilter language FilterCaseManagement model.currentCaseManagementFilter) caseManagementFilters
+                        |> div [ class "filters" ]
+                    , List.map (viewSubFilter language model.currentCaseManagementSubFilter) (caseManagementSubFilters model.currentCaseManagementFilter)
+                        |> div [ class "filters secondary" ]
                     ]
+                , div [ class "content" ]
+                    [ viewCaseManagementTable language currentDate model tableData ]
                 ]
             ]
+        ]
 
 
 viewCaseManagementTable : Language -> NominalDate -> Model -> List { name : String, nutrition : List ( Int, NutritionValue ) } -> Html Msg
@@ -872,62 +876,75 @@ viewMonthCell ( month, cellData ) =
     td [ class ] [ span [] [ text cellData.value ] ]
 
 
-viewFiltersPane : Language -> DashboardPage -> List FilterPeriod -> ModelIndexedDb -> Model -> Html Msg
-viewFiltersPane language page filterPeriodsPerPage db model =
+viewFiltersPane : Language -> DashboardPage -> ModelIndexedDb -> Model -> Html Msg
+viewFiltersPane language page db model =
     let
-        ( programTypeFilterFilterButton, labelSelected ) =
-            if page == MainPage then
-                ( div
-                    [ class "primary ui button program-type-filter"
-                    , onClick <| SetModalState <| Just FiltersModal
-                    ]
-                    [ span [] [ translateText language <| Translate.Dashboard Translate.Filters ]
-                    , span [ class "icon-settings" ] []
-                    ]
-                , if model.programTypeFilter == FilterProgramCommunity then
-                    db.villages
-                        |> RemoteData.toMaybe
-                        |> Maybe.andThen
-                            (\villages ->
-                                model.selectedVillageFilter
-                                    |> Maybe.andThen
-                                        (\villageId ->
-                                            Dict.get villageId villages
-                                                |> Maybe.map
-                                                    (\village ->
-                                                        span [ class "label" ]
-                                                            [ text <| translate language Translate.SelectedVillage ++ ": "
-                                                            , text village.name
-                                                            ]
-                                                    )
-                                        )
-                            )
-                        |> Maybe.withDefault emptyNode
+        filters =
+            case page of
+                MainPage ->
+                    [ labelSelected, programTypeFilterButton ]
 
-                  else
-                    span [ class "label" ]
-                        [ text <| translate language Translate.SelectedProgram ++ ": "
-                        , translateText language <| Translate.Dashboard <| Translate.FilterProgramType model.programTypeFilter
-                        ]
-                )
+                NursePage nursePage ->
+                    case nursePage of
+                        StatsPage ->
+                            let
+                                periodButton period =
+                                    button
+                                        [ classList
+                                            [ ( "inactive", model.period /= period )
+                                            , ( "primary ui button", True )
+                                            ]
+                                        , onClick <| SetFilterPeriod period
+                                        ]
+                                        [ translateText language <| Translate.Dashboard <| Translate.PeriodFilter period
+                                        ]
+                            in
+                            List.map periodButton filterPeriodsForStatsPage
+
+                        CaseManagementPage ->
+                            []
+
+                ChwPage _ ->
+                    [ labelSelected, programTypeFilterButton ]
+
+        programTypeFilterButton =
+            div
+                [ class "primary ui button program-type-filter"
+                , onClick <| SetModalState <| Just FiltersModal
+                ]
+                [ span [] [ translateText language <| Translate.Dashboard Translate.Filters ]
+                , span [ class "icon-settings" ] []
+                ]
+
+        labelSelected =
+            if model.programTypeFilter == FilterProgramCommunity then
+                db.villages
+                    |> RemoteData.toMaybe
+                    |> Maybe.andThen
+                        (\villages ->
+                            model.selectedVillageFilter
+                                |> Maybe.andThen
+                                    (\villageId ->
+                                        Dict.get villageId villages
+                                            |> Maybe.map
+                                                (\village ->
+                                                    span [ class "label" ]
+                                                        [ text <| translate language Translate.SelectedVillage ++ ": "
+                                                        , text village.name
+                                                        ]
+                                                )
+                                    )
+                        )
+                    |> Maybe.withDefault emptyNode
 
             else
-                ( emptyNode, emptyNode )
-
-        renderButton period =
-            button
-                [ classList
-                    [ ( "inactive", model.period /= period )
-                    , ( "primary ui button", True )
+                span [ class "label" ]
+                    [ text <| translate language Translate.SelectedProgram ++ ": "
+                    , translateText language <| Translate.Dashboard <| Translate.FilterProgramType model.programTypeFilter
                     ]
-                , onClick <| SetFilterPeriod period
-                ]
-                [ translateText language <| Translate.Dashboard <| Translate.PeriodFilter period
-                ]
     in
-    div [ class "ui segment filters" ] <|
-        List.map renderButton filterPeriodsPerPage
-            ++ [ labelSelected, programTypeFilterFilterButton ]
+    div [ class "ui segment filters" ]
+        filters
 
 
 viewChwMenu : Language -> Html Msg
@@ -987,7 +1004,7 @@ viewChwMenuButton language targetPage activePage =
         [ translateText language label ]
 
 
-viewAcuteIllnessPage : Language -> NominalDate -> AcuteIllnessDashboardPage -> AssembledData -> ModelIndexedDb -> Model -> Html Msg
+viewAcuteIllnessPage : Language -> NominalDate -> AcuteIllnessDashboardPage -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
 viewAcuteIllnessPage language currentDate activePage assembled db model =
     let
         selectedDate =
@@ -1016,12 +1033,10 @@ viewAcuteIllnessPage language currentDate activePage assembled db model =
                 GastroPage ->
                     viewGastroPage language currentDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
     in
-    div [ class "dashboard acute-illness" ] <|
-        [ viewAcuteIllnessMenu language activePage
-        , monthSelector currentDate
-        ]
-            ++ pageContent
-            ++ [ lastUpdated language assembled.stats ]
+    [ viewAcuteIllnessMenu language activePage
+    , monthSelector currentDate
+    ]
+        ++ pageContent
 
 
 viewAcuteIllnessOverviewPage : Language -> NominalDate -> List AcuteIllnessEncounterDataItem -> Model -> List (Html Msg)
@@ -1161,7 +1176,7 @@ viewGastroPage language currentDate acuteIllnessData encountersForSelectedMonth 
     ]
 
 
-viewNutritionPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewNutritionPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> List (Html Msg)
 viewNutritionPage language currentDate isChw nurse stats db model =
     let
         currentPeriodStats =
@@ -1210,30 +1225,26 @@ viewNutritionPage language currentDate isChw nurse stats db model =
                 _ ->
                     emptyNode
     in
-    div [ class "dashboard main" ]
-        [ viewFiltersPane language MainPage filterPeriodsForMainPage db model
-        , div [ class "ui grid" ]
-            [ div [ class "eight wide column" ]
-                [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
-                ]
-            , div [ class "eight wide column" ]
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
-            , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language currentDate MonthlyChartTotals FilterBeneficiariesChart totalsGraphData model.currentBeneficiariesChartsFilter
-                ]
-            , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
-                ]
-            , links
+    [ div [ class "ui grid" ]
+        [ div [ class "eight wide column" ]
+            [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
             ]
-        , viewCustomModal language isChw nurse stats db model
-        , lastUpdated language stats
+        , div [ class "eight wide column" ]
+            [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                |> viewTotalEncounters language
+            ]
+        , div [ class "sixteen wide column" ]
+            [ viewMonthlyChart language currentDate MonthlyChartTotals FilterBeneficiariesChart totalsGraphData model.currentBeneficiariesChartsFilter
+            ]
+        , div [ class "sixteen wide column" ]
+            [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
+            ]
+        , links
         ]
+    ]
 
 
-viewAntenatalPage : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> Model -> Html Msg
+viewAntenatalPage : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
 viewAntenatalPage language currentDate assembled db model =
     let
         selectedDate =
@@ -1257,20 +1268,18 @@ viewAntenatalPage language currentDate assembled db model =
         deliveriesAtFacility =
             countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery assembled.prenatalData
     in
-    div [ class "dashboard prenatal" ]
-        [ monthSelector currentDate
-        , div [ class "ui grid" ]
-            [ chwCard language (Translate.Dashboard Translate.NewPregnancy) (String.fromInt newlyIdentifiedPreganancies)
-            , customChwCard language (Translate.Dashboard Translate.CurrentPregnancies) (String.fromInt currentlyPregnant) "six"
-            , chwCard language (Translate.Dashboard Translate.Within4MonthsOfDueDate) (String.fromInt pregnanciesDueWithin4Month)
-            ]
-        , div [ class "ui centered grid" ]
-            [ chwCard language (Translate.Dashboard Translate.WithDangerSigns) (String.fromInt currentlyPregnantWithDangerSigns)
-            , customChwCard language (Translate.Dashboard Translate.HomeDeliveries) (String.fromInt deliveriesAtHome) "six"
-            , chwCard language (Translate.Dashboard Translate.HealthFacilityDeliveries) (String.fromInt deliveriesAtFacility)
-            ]
-        , lastUpdated language assembled.stats
+    [ monthSelector currentDate
+    , div [ class "ui grid" ]
+        [ chwCard language (Translate.Dashboard Translate.NewPregnancy) (String.fromInt newlyIdentifiedPreganancies)
+        , customChwCard language (Translate.Dashboard Translate.CurrentPregnancies) (String.fromInt currentlyPregnant) "six"
+        , chwCard language (Translate.Dashboard Translate.Within4MonthsOfDueDate) (String.fromInt pregnanciesDueWithin4Month)
         ]
+    , div [ class "ui centered grid" ]
+        [ chwCard language (Translate.Dashboard Translate.WithDangerSigns) (String.fromInt currentlyPregnantWithDangerSigns)
+        , customChwCard language (Translate.Dashboard Translate.HomeDeliveries) (String.fromInt deliveriesAtHome) "six"
+        , chwCard language (Translate.Dashboard Translate.HealthFacilityDeliveries) (String.fromInt deliveriesAtFacility)
+        ]
+    ]
 
 
 chwCard : Language -> TranslationId -> String -> Html Msg
@@ -2604,5 +2613,5 @@ monthSelector selectedDate =
         [ span [ class "icon-back" ] []
         , h1 [ class "ui header" ]
             [ text <| Debug.toString month ++ " " ++ String.fromInt year ]
-        , span [ class "icon-back forward" ] []
+        , span [ class "icon-back rotate-180" ] []
         ]
