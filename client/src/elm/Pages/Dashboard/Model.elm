@@ -116,6 +116,11 @@ type alias Model =
     , currentCaseManagementSubFilter : DashboardSubFilter
     , latestPage : DashboardPage
     , modalState : Maybe ModalState
+
+    -- This is used by month selector to determine
+    -- the gap from current month. We allow to go back
+    -- 6 months, so, valid values are between 0 and 5.
+    , monthGap : MonthGap
     }
 
 
@@ -144,7 +149,17 @@ emptyModel maybeSelectedVillage =
     , currentCaseManagementSubFilter = FilterTotal
     , latestPage = MainPage
     , modalState = Nothing
+    , monthGap = 0
     }
+
+
+type alias MonthGap =
+    Int
+
+
+maxMonthGap : MonthGap
+maxMonthGap =
+    5
 
 
 type ModalState
@@ -212,6 +227,7 @@ type MonthlyChartType
 
 type Msg
     = SetModalState (Maybe ModalState)
+    | ChangeMonthGap Int
     | NavigateToStuntingTable DashboardSubFilter
     | SetFilterGender FilterGender
     | SetFilterPeriod FilterPeriod

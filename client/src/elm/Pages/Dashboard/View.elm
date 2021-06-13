@@ -183,7 +183,7 @@ viewChwMainPage : Language -> NominalDate -> HealthCenterId -> AssembledData -> 
 viewChwMainPage language currentDate healthCenterId assembled db model =
     let
         selectedDate =
-            currentDate
+            getSelectedDate currentDate model
 
         -- ANC
         encountersForSelectedMonth =
@@ -207,7 +207,7 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
                 |> Maybe.withDefault ( 0, 0, 0 )
     in
     [ viewChwMenu language
-    , monthSelector language currentDate
+    , monthSelector language selectedDate model
     , div [ class "ui grid" ]
         [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt <| sentToHC + managedLocally)
         , customChwCard language (Translate.Dashboard Translate.MothersInANC) (String.fromInt currentlyPregnant) "six"
@@ -1009,7 +1009,7 @@ viewAcuteIllnessPage : Language -> NominalDate -> AcuteIllnessDashboardPage -> A
 viewAcuteIllnessPage language currentDate activePage assembled db model =
     let
         selectedDate =
-            currentDate
+            getSelectedDate currentDate model
 
         encountersForSelectedMonth =
             getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
@@ -1023,25 +1023,25 @@ viewAcuteIllnessPage language currentDate activePage assembled db model =
         pageContent =
             case activePage of
                 OverviewPage ->
-                    viewAcuteIllnessOverviewPage language currentDate encountersForSelectedMonth model
+                    viewAcuteIllnessOverviewPage language encountersForSelectedMonth model
 
                 Covid19Page ->
-                    viewCovid19Page language currentDate encountersForSelectedMonth managedCovid model
+                    viewCovid19Page language encountersForSelectedMonth managedCovid model
 
                 MalariaPage ->
-                    viewMalariaPage language currentDate assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
+                    viewMalariaPage language selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
 
                 GastroPage ->
-                    viewGastroPage language currentDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
+                    viewGastroPage language selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
     in
     [ viewAcuteIllnessMenu language activePage
-    , monthSelector language currentDate
+    , monthSelector language selectedDate model
     ]
         ++ pageContent
 
 
-viewAcuteIllnessOverviewPage : Language -> NominalDate -> List AcuteIllnessEncounterDataItem -> Model -> List (Html Msg)
-viewAcuteIllnessOverviewPage language currentDate encounters model =
+viewAcuteIllnessOverviewPage : Language -> List AcuteIllnessEncounterDataItem -> Model -> List (Html Msg)
+viewAcuteIllnessOverviewPage language encounters model =
     let
         totalAssesments =
             countAcuteIllnessAssesments encounters
@@ -1093,8 +1093,8 @@ viewAcuteIllnessOverviewPage language currentDate encounters model =
     ]
 
 
-viewCovid19Page : Language -> NominalDate -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
-viewCovid19Page language currentDate encounters managedCovid model =
+viewCovid19Page : Language -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
+viewCovid19Page language encounters managedCovid model =
     let
         callsTo114 =
             countDiagnosedWithCovidCallsTo114 encounters
@@ -1116,11 +1116,8 @@ viewCovid19Page language currentDate encounters managedCovid model =
 
 
 viewMalariaPage : Language -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
-viewMalariaPage language currentDate acuteIllnessData encountersForSelectedMonth managedMalaria model =
+viewMalariaPage language selectedDate acuteIllnessData encountersForSelectedMonth managedMalaria model =
     let
-        selectedDate =
-            currentDate
-
         totalDaignosed =
             countDiagnosedWithMalaria encountersForSelectedMonth
 
@@ -1149,11 +1146,8 @@ viewMalariaPage language currentDate acuteIllnessData encountersForSelectedMonth
 
 
 viewGastroPage : Language -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
-viewGastroPage language currentDate acuteIllnessData encountersForSelectedMonth managedGI model =
+viewGastroPage language selectedDate acuteIllnessData encountersForSelectedMonth managedGI model =
     let
-        selectedDate =
-            currentDate
-
         totalDaignosed =
             countDiagnosedWithGI encountersForSelectedMonth
 
@@ -1249,7 +1243,7 @@ viewAntenatalPage : Language -> NominalDate -> AssembledData -> ModelIndexedDb -
 viewAntenatalPage language currentDate assembled db model =
     let
         selectedDate =
-            currentDate
+            getSelectedDate currentDate model
 
         newlyIdentifiedPreganancies =
             countNewlyIdentifiedPregananciesForSelectedMonth selectedDate assembled.prenatalData
@@ -1269,7 +1263,7 @@ viewAntenatalPage language currentDate assembled db model =
         deliveriesAtFacility =
             countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery assembled.prenatalData
     in
-    [ monthSelector language currentDate
+    [ monthSelector language selectedDate model
     , div [ class "ui grid" ]
         [ chwCard language (Translate.Dashboard Translate.NewPregnancy) (String.fromInt newlyIdentifiedPreganancies)
         , customChwCard language (Translate.Dashboard Translate.CurrentPregnancies) (String.fromInt currentlyPregnant) "six"
@@ -2593,8 +2587,8 @@ resolvePreviousMonth thisMonth =
         thisMonth - 1
 
 
-monthSelector : Language -> NominalDate -> Html Msg
-monthSelector language selectedDate =
+monthSelector : Language -> NominalDate -> Model -> Html Msg
+monthSelector language selectedDate model =
     let
         monthNumber =
             Date.monthNumber selectedDate
@@ -2606,8 +2600,22 @@ monthSelector language selectedDate =
             Date.year selectedDate
     in
     div [ class "month-selector" ]
-        [ span [ class "icon-back" ] []
+        [ span
+            [ classList
+                [ ( "icon-back", True )
+                , ( "hidden", model.monthGap == maxMonthGap )
+                ]
+            , onClick <| ChangeMonthGap 1
+            ]
+            []
         , span [ class "label" ]
             [ text <| translate language (Translate.ResolveMonth False month) ++ " " ++ String.fromInt year ]
-        , span [ class "icon-back rotate-180" ] []
+        , span
+            [ classList
+                [ ( "icon-back rotate-180", True )
+                , ( "hidden", model.monthGap == 0 )
+                ]
+            , onClick <| ChangeMonthGap -1
+            ]
+            []
         ]

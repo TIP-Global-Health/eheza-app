@@ -16,6 +16,23 @@ update msg subPage model =
             , []
             )
 
+        ChangeMonthGap interval ->
+            let
+                potential =
+                    model.monthGap + interval
+
+                updated =
+                    if potential < 0 || potential > maxMonthGap then
+                        model.monthGap
+
+                    else
+                        potential
+            in
+            ( { model | monthGap = updated }
+            , Cmd.none
+            , []
+            )
+
         NavigateToStuntingTable filter ->
             { model | currentCaseManagementSubFilter = filter }
                 |> update (SetActivePage (UserPage (DashboardPage (NursePage CaseManagementPage)))) subPage

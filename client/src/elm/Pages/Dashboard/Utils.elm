@@ -574,3 +574,8 @@ withinSelectedMonth selectedDate date =
     in
     (Date.monthNumber date == month)
         && (Date.year date == year)
+
+
+getSelectedDate : NominalDate -> Model -> NominalDate
+getSelectedDate currentDate model =
+    Date.add Date.Months (-1 * model.monthGap) currentDate
