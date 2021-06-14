@@ -30,9 +30,9 @@ abstract class HedleyRestfulAcuteIllnessActivityBase extends HedleyRestfulActivi
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     $query = parent::alterQueryForViewWithDbSelect($query);
 
-    hedley_restful_join_field_to_query($query, 'node', 'field_acute_illness_encounter', FALSE);
+    hedley_general_join_field_to_query($query, 'node', 'field_acute_illness_encounter', FALSE);
     // Get the UUID of the Prenatal encounter.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_acute_illness_encounter.field_acute_illness_encounter_target_id", 'uuid_acute_illness_encounter');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_acute_illness_encounter.field_acute_illness_encounter_target_id", 'uuid_acute_illness_encounter');
 
     return $query;
   }

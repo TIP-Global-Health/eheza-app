@@ -171,13 +171,13 @@ type UserPage
 {-| We group together the pages that can only be viewed in the Dashboard
 -}
 type DashboardPage
-    = NursePage NurseDashboardPage
+    = MainPage
+    | NursePage NurseDashboardPage
     | ChwPage ChwDashboardPage
 
 
 type NurseDashboardPage
-    = MainPage
-    | StatsPage
+    = StatsPage
     | CaseManagementPage
 
 

@@ -1,9 +1,13 @@
 module Pages.Dashboard.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Dashboard.Model
     exposing
-        ( CaseManagement
+        ( AcuteIllnessDataItem
+        , AcuteIllnessEncounterDataItem
+        , AssembledData
+        , CaseManagement
         , CaseManagementData
         , CaseNutrition
         , CaseNutritionTotal
@@ -13,6 +17,7 @@ import Backend.Dashboard.Model
         , ParticipantStats
         , Periods
         , PersonIdentifier
+        , PrenatalDataItem
         , ProgramType(..)
         , TotalBeneficiaries
         , TotalEncountersData
@@ -27,7 +32,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model
 import Color exposing (Color)
-import Date exposing (Month, Unit(..), isBetween, numberToMonth)
+import Date exposing (Month, Unit(..), isBetween, monthNumber, numberToMonth, year)
 import Debug exposing (toString)
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -65,111 +70,85 @@ import Utils.Html exposing (spinner, viewModal)
 view : Language -> DashboardPage -> NominalDate -> HealthCenterId -> Bool -> Nurse -> Model -> ModelIndexedDb -> Html Msg
 view language page currentDate healthCenterId isChw nurse model db =
     let
-        ( content, goBackPage ) =
+        header =
+            case page of
+                MainPage ->
+                    let
+                        label =
+                            if isChw then
+                                Translate.ChwDashboardLabel
+
+                            else
+                                Translate.DashboardLabel
+                    in
+                    viewHeader language label PinCodePage
+
+                ChwPage chwDashboardPage ->
+                    case chwDashboardPage of
+                        AcuteIllnessPage _ ->
+                            viewHeader language (Translate.EncounterTypeFileterLabel AcuteIllnessEncounter) (UserPage <| DashboardPage MainPage)
+
+                        NutritionPage ->
+                            viewHeader language (Translate.EncounterTypeFileterLabel NutritionEncounter) (UserPage <| DashboardPage MainPage)
+
+                        AntenatalPage ->
+                            viewHeader language (Translate.EncounterTypeFileterLabel AntenatalEncounter) (UserPage <| DashboardPage MainPage)
+
+                NursePage nurseDashboardPage ->
+                    let
+                        goBackPage =
+                            case nurseDashboardPage of
+                                StatsPage ->
+                                    UserPage <| DashboardPage MainPage
+
+                                CaseManagementPage ->
+                                    UserPage <| DashboardPage model.latestPage
+                    in
+                    viewHeader language Translate.DashboardLabel goBackPage
+
+        content =
             Dict.get healthCenterId db.computedDashboard
                 |> Maybe.map
                     (\stats ->
                         let
-                            tmp =
-                                temporaryFunc language currentDate healthCenterId stats db model
-                        in
-                        case page of
-                            NursePage nurseDashboardPage ->
-                                case nurseDashboardPage of
+                            assembled =
+                                generateAssembledData healthCenterId model.selectedVillageFilter stats db
+
+                            ( pageContent, pageClass ) =
+                                case page of
                                     MainPage ->
-                                        ( viewMainPage language currentDate isChw nurse stats db model, PinCodePage )
+                                        ( viewMainPage language currentDate healthCenterId isChw nurse assembled db model
+                                        , "main"
+                                        )
 
-                                    StatsPage ->
-                                        ( viewStatsPage language currentDate isChw nurse stats healthCenterId db model, UserPage <| DashboardPage (NursePage MainPage) )
+                                    NursePage nurseDashboardPage ->
+                                        case nurseDashboardPage of
+                                            StatsPage ->
+                                                ( viewStatsPage language currentDate False nurse stats healthCenterId db model, "stats" )
 
-                                    CaseManagementPage ->
-                                        ( viewCaseManagementPage language currentDate stats db model, UserPage <| DashboardPage model.latestPage )
+                                            CaseManagementPage ->
+                                                ( viewCaseManagementPage language currentDate stats db model, "case" )
 
-                            ChwPage chwDashboardPage ->
-                                case chwDashboardPage of
-                                    AcuteIllnessPage acuteIllnessPages ->
-                                        case acuteIllnessPages of
-                                            OverviewPage ->
-                                                ( viewAcuteIllnessPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
+                                    ChwPage chwDashboardPage ->
+                                        case chwDashboardPage of
+                                            AcuteIllnessPage acuteIllnessPage ->
+                                                ( viewAcuteIllnessPage language currentDate acuteIllnessPage assembled db model, "acute-illness" )
 
-                                            Covid19Page ->
-                                                ( viewCovid19Page language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
+                                            NutritionPage ->
+                                                ( viewNutritionPage language currentDate True nurse stats db model, "nutrition" )
 
-                                            MalariaPage ->
-                                                ( viewMalariaPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
-
-                                            GastroPage ->
-                                                ( viewGastroPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
-
-                                    NutritionPage ->
-                                        ( viewNutritionPage language currentDate isChw nurse stats db model, UserPage <| DashboardPage (NursePage MainPage) )
-
-                                    AntenatalPage ->
-                                        ( viewAntenatalPage language currentDate stats db model, UserPage <| DashboardPage (NursePage MainPage) )
+                                            AntenatalPage ->
+                                                ( viewAntenatalPage language currentDate assembled db model, "prenatal" )
+                        in
+                        div [ class <| "dashboard " ++ pageClass ] <|
+                            [ viewFiltersPane language page db model ]
+                                ++ pageContent
+                                ++ [ viewCustomModal language isChw nurse stats db model
+                                   , div [ class "timestamp" ]
+                                        [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
+                                   ]
                     )
-                |> Maybe.withDefault ( spinner, PinCodePage )
-
-        header =
-            if isChw then
-                if page == ChwPage (AcuteIllnessPage OverviewPage) || page == ChwPage (AcuteIllnessPage Covid19Page) || page == ChwPage (AcuteIllnessPage MalariaPage) || page == ChwPage (AcuteIllnessPage GastroPage) then
-                    div
-                        [ class "ui basic head segment" ]
-                        [ h1 [ class "ui header" ]
-                            [ text <| translate language <| Translate.EncounterTypeFileterLabel AcuteIllnessEncounter ]
-                        , a
-                            [ class "link-back"
-                            , onClick <| SetActivePage goBackPage
-                            ]
-                            [ span [ class "icon-back" ] [] ]
-                        ]
-
-                else if page == ChwPage NutritionPage then
-                    div
-                        [ class "ui basic head segment" ]
-                        [ h1 [ class "ui header" ]
-                            [ text <| translate language <| Translate.EncounterTypeFileterLabel NutritionEncounter ]
-                        , a
-                            [ class "link-back"
-                            , onClick <| SetActivePage goBackPage
-                            ]
-                            [ span [ class "icon-back" ] [] ]
-                        ]
-
-                else if page == ChwPage AntenatalPage then
-                    div
-                        [ class "ui basic head segment" ]
-                        [ h1 [ class "ui header" ]
-                            [ text <| translate language <| Translate.EncounterTypeFileterLabel AntenatalEncounter ]
-                        , a
-                            [ class "link-back"
-                            , onClick <| SetActivePage goBackPage
-                            ]
-                            [ span [ class "icon-back" ] [] ]
-                        ]
-
-                else
-                    div
-                        [ class "ui basic head segment" ]
-                        [ h1 [ class "ui header" ]
-                            [ translateText language Translate.ChwDashboardLabel ]
-                        , a
-                            [ class "link-back"
-                            , onClick <| SetActivePage goBackPage
-                            ]
-                            [ span [ class "icon-back" ] [] ]
-                        ]
-
-            else
-                div
-                    [ class "ui basic head segment" ]
-                    [ h1 [ class "ui header" ]
-                        [ translateText language Translate.DashboardLabel ]
-                    , a
-                        [ class "link-back"
-                        , onClick <| SetActivePage goBackPage
-                        ]
-                        [ span [ class "icon-back" ] [] ]
-                    ]
+                |> Maybe.withDefault spinner
     in
     div
         [ class "wrap" ]
@@ -178,42 +157,69 @@ view language page currentDate healthCenterId isChw nurse model db =
         ]
 
 
-viewMainPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewMainPage language currentDate isChw nurse stats db model =
-    if isChw then
-        div [ class "dashboard main" ]
-            [ viewChwPages language
-            , div [ class "current-month" ]
-                [ a []
-                    [ span [ class "icon-back" ] [] ]
-                , h1 [ class "ui header" ]
-                    [ text "May 2021" ]
-                , a []
-                    [ span [ class "icon-back forward" ] [] ]
-                ]
-            , div [ class "ui grid" ]
-                [ div [ class "five wide column" ]
-                    [ viewAcuteDiagnosis language
-                    ]
-                , div [ class "six wide column" ]
-                    [ viewMotherInAnc language ]
-                , div [ class "five wide column" ]
-                    [ viewNewbornInCare language ]
-                ]
-            , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
-            , div [ class "ui grid" ]
-                [ div [ class "five wide column" ]
-                    [ viewAcuteIllnessCaseManagement language ]
-                , div [ class "six wide column" ]
-                    [ viewNutritionCaseManagement language ]
-                , div [ class "five wide column" ]
-                    [ viewAntenatalCaseManagement language ]
-                ]
-            , lastUpdated language stats
+viewHeader : Language -> TranslationId -> Page -> Html Msg
+viewHeader language label goBackPage =
+    div [ class "ui basic head segment" ]
+        [ h1 [ class "ui header" ]
+            [ translateText language label ]
+        , span
+            [ class "link-back"
+            , onClick <| SetActivePage goBackPage
             ]
+            [ span [ class "icon-back" ] [] ]
+        ]
+
+
+viewMainPage : Language -> NominalDate -> HealthCenterId -> Bool -> Nurse -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewMainPage language currentDate healthCenterId isChw nurse assembled db model =
+    if isChw then
+        viewChwMainPage language currentDate healthCenterId assembled db model
 
     else
-        viewNutritionPage language currentDate isChw nurse stats db model
+        viewNutritionPage language currentDate False nurse assembled.stats db model
+
+
+viewChwMainPage : Language -> NominalDate -> HealthCenterId -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewChwMainPage language currentDate healthCenterId assembled db model =
+    let
+        selectedDate =
+            getSelectedDate currentDate model
+
+        -- ANC
+        encountersForSelectedMonth =
+            getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
+
+        ( sentToHC, managedLocally ) =
+            countAcuteIllnessCasesByHCReferrals encountersForSelectedMonth
+
+        -- Prenatal
+        currentlyPregnant =
+            countCurrentlyPregnantForSelectedMonth currentDate selectedDate assembled.prenatalData
+
+        totalNewborn =
+            countNewbornForSelectedMonth selectedDate assembled.prenatalData
+
+        -- Case Management
+        ( totalNutritionFollowUps, totalAcuteIllnessFollowUps, totalPrenatalFollowUps ) =
+            Maybe.map2 (getFollowUpsTotals language currentDate db)
+                model.selectedVillageFilter
+                assembled.caseManagementData
+                |> Maybe.withDefault ( 0, 0, 0 )
+    in
+    [ viewChwMenu language
+    , monthSelector language selectedDate model
+    , div [ class "ui grid" ]
+        [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt <| sentToHC + managedLocally)
+        , customChwCard language (Translate.Dashboard Translate.MothersInANC) (String.fromInt currentlyPregnant) "six"
+        , chwCard language (Translate.Dashboard Translate.NewbornsInCare) (String.fromInt totalNewborn)
+        ]
+    , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
+    , div [ class "ui grid" ]
+        [ chwCard language (Translate.EncounterTypeFileterLabel AcuteIllnessEncounter) (String.fromInt totalAcuteIllnessFollowUps)
+        , customChwCard language (Translate.EncounterTypeFileterLabel NutritionEncounter) (String.fromInt totalNutritionFollowUps) "six"
+        , chwCard language (Translate.EncounterTypeFileterLabel AntenatalEncounter) (String.fromInt totalPrenatalFollowUps)
+        ]
+    ]
 
 
 caseManagementApplyBreakdownFilters : Dict VillageId (List PersonIdentifier) -> Dict ProgramType (List CaseManagement) -> Model -> List CaseManagement
@@ -604,10 +610,10 @@ generateCaseNutritionNewCases currentDate caseNutrition =
     }
 
 
-viewStatsPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> HealthCenterId -> ModelIndexedDb -> Model -> Html Msg
+viewStatsPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> HealthCenterId -> ModelIndexedDb -> Model -> List (Html Msg)
 viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
     if model.programTypeFilter /= FilterProgramFbf then
-        emptyNode
+        []
 
     else
         let
@@ -637,16 +643,14 @@ viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
             malnourishedPreviousMonth =
                 mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodCaseManagement
         in
-        div [ class "dashboard stats" ]
-            [ viewFiltersPane language (NursePage StatsPage) filterPeriodsForStatsPage db model
-            , div [ class "ui equal width grid" ]
-                [ viewMalnourishedCards language malnourishedCurrentMonth malnourishedPreviousMonth
-                , viewMiscCards language currentDate currentPeriodStats monthBeforeStats
-                ]
-            , viewBeneficiariesTable language currentDate stats currentPeriodStats malnourishedCurrentMonth model
-            , viewFamilyPlanning language currentPeriodStats
-            , viewCustomModal language isChw nurse stats db model
+        [ div [ class "ui equal width grid" ]
+            [ viewMalnourishedCards language malnourishedCurrentMonth malnourishedPreviousMonth
+            , viewMiscCards language currentDate currentPeriodStats monthBeforeStats
             ]
+        , viewBeneficiariesTable language currentDate stats currentPeriodStats malnourishedCurrentMonth model
+        , viewFamilyPlanning language currentPeriodStats
+        , viewCustomModal language isChw nurse stats db model
+        ]
 
 
 mapMalnorishedByMonth : Int -> List CaseManagement -> List MalnorishedNutritionData
@@ -700,10 +704,10 @@ mapMalnorishedByMonth mappedMonth caseManagement =
             []
 
 
-viewCaseManagementPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewCaseManagementPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> List (Html Msg)
 viewCaseManagementPage language currentDate stats db model =
     if model.programTypeFilter /= FilterProgramFbf then
-        emptyNode
+        []
 
     else
         let
@@ -809,22 +813,20 @@ viewCaseManagementPage language currentDate stats db model =
                     |> List.sortBy Tuple.first
                     |> List.reverse
         in
-        div [ class "dashboard case" ]
-            [ viewFiltersPane language (NursePage CaseManagementPage) filterPeriodsForCaseManagementPage db model
-            , div [ class "ui segment blue" ]
-                [ div [ class "case-management" ]
-                    [ div [ class "header" ]
-                        [ h3 [ class "title left floated column" ] [ translateText language <| Translate.Dashboard Translate.CaseManagementLabel ]
-                        , List.map (viewFilter language FilterCaseManagement model.currentCaseManagementFilter) caseManagementFilters
-                            |> div [ class "filters" ]
-                        , List.map (viewSubFilter language model.currentCaseManagementSubFilter) (caseManagementSubFilters model.currentCaseManagementFilter)
-                            |> div [ class "filters secondary" ]
-                        ]
-                    , div [ class "content" ]
-                        [ viewCaseManagementTable language currentDate model tableData ]
+        [ div [ class "ui segment blue" ]
+            [ div [ class "case-management" ]
+                [ div [ class "header" ]
+                    [ h3 [ class "title left floated column" ] [ translateText language <| Translate.Dashboard Translate.CaseManagementLabel ]
+                    , List.map (viewFilter language FilterCaseManagement model.currentCaseManagementFilter) caseManagementFilters
+                        |> div [ class "filters" ]
+                    , List.map (viewSubFilter language model.currentCaseManagementSubFilter) (caseManagementSubFilters model.currentCaseManagementFilter)
+                        |> div [ class "filters secondary" ]
                     ]
+                , div [ class "content" ]
+                    [ viewCaseManagementTable language currentDate model tableData ]
                 ]
             ]
+        ]
 
 
 viewCaseManagementTable : Language -> NominalDate -> Model -> List { name : String, nutrition : List ( Int, NutritionValue ) } -> Html Msg
@@ -875,315 +877,322 @@ viewMonthCell ( month, cellData ) =
     td [ class ] [ span [] [ text cellData.value ] ]
 
 
-viewFiltersPane : Language -> DashboardPage -> List FilterPeriod -> ModelIndexedDb -> Model -> Html Msg
-viewFiltersPane language page filterPeriodsPerPage db model =
+viewFiltersPane : Language -> DashboardPage -> ModelIndexedDb -> Model -> Html Msg
+viewFiltersPane language page db model =
     let
-        ( programTypeFilterFilterButton, labelSelected ) =
-            if page == NursePage MainPage then
-                ( div
-                    [ class "primary ui button program-type-filter"
-                    , onClick <| SetModalState <| Just FiltersModal
-                    ]
-                    [ span [] [ translateText language <| Translate.Dashboard Translate.Filters ]
-                    , span [ class "icon-settings" ] []
-                    ]
-                , if model.programTypeFilter == FilterProgramCommunity then
-                    db.villages
-                        |> RemoteData.toMaybe
-                        |> Maybe.andThen
-                            (\villages ->
-                                model.selectedVillageFilter
-                                    |> Maybe.andThen
-                                        (\villageId ->
-                                            Dict.get villageId villages
-                                                |> Maybe.map
-                                                    (\village ->
-                                                        span [ class "label" ]
-                                                            [ text <| translate language Translate.SelectedVillage ++ ": "
-                                                            , text village.name
-                                                            ]
-                                                    )
-                                        )
-                            )
-                        |> Maybe.withDefault emptyNode
+        filters =
+            case page of
+                MainPage ->
+                    [ labelSelected, programTypeFilterButton ]
 
-                  else
-                    span [ class "label" ]
-                        [ text <| translate language Translate.SelectedProgram ++ ": "
-                        , translateText language <| Translate.Dashboard <| Translate.FilterProgramType model.programTypeFilter
-                        ]
-                )
+                NursePage nursePage ->
+                    case nursePage of
+                        StatsPage ->
+                            let
+                                periodButton period =
+                                    button
+                                        [ classList
+                                            [ ( "inactive", model.period /= period )
+                                            , ( "primary ui button", True )
+                                            ]
+                                        , onClick <| SetFilterPeriod period
+                                        ]
+                                        [ translateText language <| Translate.Dashboard <| Translate.PeriodFilter period
+                                        ]
+                            in
+                            List.map periodButton filterPeriodsForStatsPage
+
+                        CaseManagementPage ->
+                            []
+
+                ChwPage _ ->
+                    [ labelSelected, programTypeFilterButton ]
+
+        programTypeFilterButton =
+            div
+                [ class "primary ui button program-type-filter"
+                , onClick <| SetModalState <| Just FiltersModal
+                ]
+                [ span [] [ translateText language <| Translate.Dashboard Translate.Filters ]
+                , span [ class "icon-settings" ] []
+                ]
+
+        labelSelected =
+            if model.programTypeFilter == FilterProgramCommunity then
+                db.villages
+                    |> RemoteData.toMaybe
+                    |> Maybe.andThen
+                        (\villages ->
+                            model.selectedVillageFilter
+                                |> Maybe.andThen
+                                    (\villageId ->
+                                        Dict.get villageId villages
+                                            |> Maybe.map
+                                                (\village ->
+                                                    span [ class "label" ]
+                                                        [ text <| translate language Translate.SelectedVillage ++ ": "
+                                                        , text village.name
+                                                        ]
+                                                )
+                                    )
+                        )
+                    |> Maybe.withDefault emptyNode
 
             else
-                ( emptyNode, emptyNode )
+                span [ class "label" ]
+                    [ text <| translate language Translate.SelectedProgram ++ ": "
+                    , translateText language <| Translate.Dashboard <| Translate.FilterProgramType model.programTypeFilter
+                    ]
+    in
+    div [ class "ui segment filters" ]
+        filters
 
-        renderButton period =
+
+viewChwMenu : Language -> Html Msg
+viewChwMenu language =
+    div [ class "ui segment chw-filters" ]
+        [ viewChwMenuButton language AntenatalPage Nothing
+        , viewChwMenuButton language NutritionPage Nothing
+        , viewChwMenuButton language (AcuteIllnessPage OverviewPage) Nothing
+        ]
+
+
+viewAcuteIllnessMenu : Language -> AcuteIllnessDashboardPage -> Html Msg
+viewAcuteIllnessMenu language activePage =
+    let
+        viewMenu targetPage =
             button
                 [ classList
-                    [ ( "inactive", model.period /= period )
+                    [ ( "active", activePage == targetPage )
                     , ( "primary ui button", True )
                     ]
-                , onClick <| SetFilterPeriod period
+                , DashboardPage (ChwPage <| AcuteIllnessPage targetPage)
+                    |> UserPage
+                    |> SetActivePage
+                    |> onClick
                 ]
-                [ translateText language <| Translate.Dashboard <| Translate.PeriodFilter period
+                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage targetPage ]
+    in
+    div [ class "ui segment chw-filters" ]
+        [ viewChwMenuButton language (AcuteIllnessPage OverviewPage) (Just <| AcuteIllnessPage activePage)
+        , viewChwMenuButton language (AcuteIllnessPage Covid19Page) (Just <| AcuteIllnessPage activePage)
+        , viewChwMenuButton language (AcuteIllnessPage MalariaPage) (Just <| AcuteIllnessPage activePage)
+        , viewChwMenuButton language (AcuteIllnessPage GastroPage) (Just <| AcuteIllnessPage activePage)
+        ]
+
+
+viewChwMenuButton : Language -> ChwDashboardPage -> Maybe ChwDashboardPage -> Html Msg
+viewChwMenuButton language targetPage activePage =
+    let
+        label =
+            if isNothing activePage && targetPage == AcuteIllnessPage OverviewPage then
+                -- On Main page, and target is Acute Illness page.
+                Translate.EncounterTypeFileterLabel AcuteIllnessEncounter
+
+            else
+                Translate.EncounterTypePageLabel targetPage
+    in
+    button
+        [ classList
+            [ ( "active", activePage == Just targetPage )
+            , ( "primary ui button", True )
+            ]
+        , DashboardPage (ChwPage targetPage)
+            |> UserPage
+            |> SetActivePage
+            |> onClick
+        ]
+        [ translateText language label ]
+
+
+viewAcuteIllnessPage : Language -> NominalDate -> AcuteIllnessDashboardPage -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewAcuteIllnessPage language currentDate activePage assembled db model =
+    let
+        selectedDate =
+            getSelectedDate currentDate model
+
+        encountersForSelectedMonth =
+            getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
+
+        ( managedCovid, managedMalaria, managedGI ) =
+            Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate db)
+                model.selectedVillageFilter
+                assembled.caseManagementData
+                |> Maybe.withDefault ( 0, 0, 0 )
+
+        pageContent =
+            case activePage of
+                OverviewPage ->
+                    viewAcuteIllnessOverviewPage language encountersForSelectedMonth model
+
+                Covid19Page ->
+                    viewCovid19Page language encountersForSelectedMonth managedCovid model
+
+                MalariaPage ->
+                    viewMalariaPage language selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
+
+                GastroPage ->
+                    viewGastroPage language selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
+    in
+    [ viewAcuteIllnessMenu language activePage
+    , monthSelector language selectedDate model
+    ]
+        ++ pageContent
+
+
+viewAcuteIllnessOverviewPage : Language -> List AcuteIllnessEncounterDataItem -> Model -> List (Html Msg)
+viewAcuteIllnessOverviewPage language encounters model =
+    let
+        totalAssesments =
+            countAcuteIllnessAssesments encounters
+
+        ( sentToHC, managedLocally ) =
+            countAcuteIllnessCasesByHCReferrals encounters
+
+        undeterminedCases =
+            countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisUndeterminedMoreEvaluationNeeded ] False encounters
+
+        feverOfUnknownOriginCases =
+            countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisFeverOfUnknownOrigin ] False encounters
+
+        covidCases =
+            countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisCovid19 ] True encounters
+
+        malariaCases =
+            countAcuteIllnessCasesByPossibleDiagnosises
+                [ DiagnosisMalariaComplicated
+                , DiagnosisMalariaUncomplicated
+                , DiagnosisMalariaUncomplicatedAndPregnant
+                ]
+                True
+                encounters
+
+        respiratoryCases =
+            countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisRespiratoryInfectionComplicated ] True encounters
+
+        giCases =
+            countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisGastrointestinalInfectionComplicated ] True encounters
+
+        feverByCauses =
+            List.filter (Tuple.second >> (/=) 0)
+                [ ( FeverCauseCovid19, covidCases )
+                , ( FeverCauseMalaria, malariaCases )
+                , ( FeverCauseRespiratory, respiratoryCases )
+                , ( FeverCauseGI, giCases )
+                , ( FeverCauseUnknown, feverOfUnknownOriginCases )
                 ]
     in
-    div [ class "ui segment filters" ] <|
-        List.map renderButton filterPeriodsPerPage
-            ++ [ labelSelected, programTypeFilterFilterButton ]
-
-
-viewChwPages : Language -> Html Msg
-viewChwPages language =
-    div [ class "ui segment chw-filters" ]
-        [ button
-            [ class "primary ui button"
-            , DashboardPage (ChwPage AntenatalPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ translateText language <| Translate.EncounterTypeFileterLabel AntenatalEncounter
-                ]
-            ]
-        , button
-            [ class "primary ui button"
-            , DashboardPage (ChwPage NutritionPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ translateText language <| Translate.EncounterTypeFileterLabel NutritionEncounter
-                ]
-            ]
-        , button
-            [ class "primary ui button"
-            , DashboardPage (ChwPage <| AcuteIllnessPage OverviewPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ translateText language <| Translate.EncounterTypeFileterLabel AcuteIllnessEncounter
-                ]
-            ]
+    [ div [ class "ui grid" ]
+        [ chwCard language (Translate.Dashboard Translate.TotalAssessment) (String.fromInt totalAssesments)
+        , customChwCard language (Translate.Dashboard Translate.CommunityLevelCases) (String.fromInt managedLocally) "six"
+        , chwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC)
         ]
-
-
-viewAcuteIllnessLinks : Language -> Model -> Html Msg
-viewAcuteIllnessLinks language model =
-    div [ class "ui segment chw-filters" ]
-        [ button
-            [ classList
-                [ ( "active", model.acuteIllnessPage == OverviewPage )
-                , ( "primary ui button", True )
-                ]
-            , DashboardPage (ChwPage <| AcuteIllnessPage OverviewPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage OverviewPage
-                ]
-            ]
-        , button
-            [ classList
-                [ ( "active", model.acuteIllnessPage == Covid19Page )
-                , ( "primary ui button", True )
-                ]
-            , DashboardPage (ChwPage <| AcuteIllnessPage Covid19Page)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage Covid19Page
-                ]
-            ]
-        , button
-            [ classList
-                [ ( "active", model.acuteIllnessPage == MalariaPage )
-                , ( "primary ui button", True )
-                ]
-            , DashboardPage (ChwPage <| AcuteIllnessPage MalariaPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage MalariaPage
-                ]
-            ]
-        , button
-            [ classList
-                [ ( "primary ui button", True )
-                , ( "active", model.acuteIllnessPage == GastroPage )
-                ]
-            , DashboardPage (ChwPage <| AcuteIllnessPage GastroPage)
-                |> UserPage
-                |> SetActivePage
-                |> onClick
-            ]
-            [ span
-                []
-                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage GastroPage
-                ]
-            ]
+    , div [ class "ui centered grid" ]
+        [ customChwCard language (Translate.Dashboard Translate.DiagnosisUndetermined) (String.fromInt undeterminedCases) "six"
+        , customChwCard language (Translate.Dashboard Translate.FeverOfUnknownOrigin) (String.fromInt feverOfUnknownOriginCases) "six"
         ]
+    , div [ class "ui blue segment donut-chart fever" ]
+        [ viewFeverDistributionDonutChart language feverByCauses ]
+    ]
 
 
-viewAcuteIllnessPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewAcuteIllnessPage language currentDate stats db model =
-    div [ class "dashboard main" ]
-        [ viewAcuteIllnessLinks language model
-        , div [ class "current-month" ]
-            [ a []
-                [ span [ class "icon-back" ] [] ]
-            , h1 [ class "ui header" ]
-                [ text "May 2021" ]
-            , a []
-                [ span [ class "icon-back forward" ] [] ]
-            ]
-        , div [ class "ui grid" ]
-            [ div [ class "five wide column" ]
-                --@todo
-                [ viewTotalAssessment language ]
-            , div [ class "six wide column" ]
-                --@todo
-                [ viewCommunityLevelCases language ]
-            , div [ class "five wide column" ]
-                --@todo
-                [ viewHealthCenterReferrals language ]
-            ]
-        , div [ class "ui centered grid" ]
-            [ div [ class "six wide column" ]
-                --@todo
-                [ viewDiagnosisUndetermined language ]
-            , div [ class "six wide column" ]
-                --@todo
-                [ viewFeverOfUnknownOrigin language ]
-            ]
-        , div
-            [ class "ui blue segment family-planning" ]
-            [ div [ class "ui center aligned grid" ]
-                [ div [ class "row" ]
-                    --@todo
-                    []
+viewFeverDistributionDonutChart : Language -> List ( FeverCause, Int ) -> Html Msg
+viewFeverDistributionDonutChart language feverByCauses =
+    if List.isEmpty feverByCauses then
+        div [ class "no-data-message" ] [ translateText language <| Translate.Dashboard Translate.NoDataForPeriod ]
+
+    else
+        div [ class "ui center aligned grid" ]
+            [ div [ class "middle aligned row" ]
+                [ div [ class "content" ]
+                    [ viewPieChart feverCausesColors feverByCauses
+                    , div [ class "in-chart" ]
+                        [ translateText language <| Translate.Dashboard Translate.FeversByCause ]
+                    , viewPieChartLegend language (Translate.FeverCause >> Translate.Dashboard) feverCauseToColor feverByCauses
+                    ]
                 ]
             ]
-        , lastUpdated language stats
+
+
+viewCovid19Page : Language -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
+viewCovid19Page language encounters managedCovid model =
+    let
+        callsTo114 =
+            countDiagnosedWithCovidCallsTo114 encounters
+
+        sentToHC =
+            countDiagnosedWithCovidSentToHC encounters
+
+        managedAtHome =
+            countDiagnosedWithCovidManagedAtHome encounters
+    in
+    [ div [ class "ui grid" ]
+        [ chwCard language (Translate.Dashboard Translate.CallsTo114) (String.fromInt callsTo114)
+        , customChwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC) "six"
+        , chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
         ]
+    , div [ class "ui centered grid" ]
+        [ customChwCard language (Translate.Dashboard Translate.PatientCurrentlyUnderCare) (String.fromInt managedCovid) "six" ]
+    ]
 
 
-viewCovid19Page : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewCovid19Page language currentDate stats db model =
-    div [ class "dashboard main" ]
-        [ viewAcuteIllnessLinks language model
-        , div [ class "current-month" ]
-            [ a []
-                [ span [ class "icon-back" ] [] ]
-            , h1 [ class "ui header" ]
-                [ text "May 2021" ]
-            , a []
-                [ span [ class "icon-back forward" ] [] ]
-            ]
-        , div [ class "ui grid" ]
-            [ div [ class "five wide column" ]
-                --@todo
-                [ viewCallsTo114 language ]
-            , div [ class "six wide column" ]
-                --@todo
-                [ viewCovid19HealthCenterReferrals language ]
-            , div [ class "five wide column" ]
-                --@todo
-                [ viewPatientsManagedAtHome language ]
-            ]
-        , div [ class "ui centered grid" ]
-            [ div [ class "six wide column" ]
-                --@todo
-                [ viewPatientsUnderCare language ]
-            ]
-        , lastUpdated language stats
+viewMalariaPage : Language -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
+viewMalariaPage language selectedDate acuteIllnessData encountersForSelectedMonth managedMalaria model =
+    let
+        totalDaignosed =
+            countDiagnosedWithMalaria encountersForSelectedMonth
+
+        uncomplicatedMalariaManagedByChw =
+            countUncomplicatedMalariaManagedByChw encountersForSelectedMonth
+
+        uncomplicatedMalariaAndPregnantSentToHC =
+            countUncomplicatedMalariaAndPregnantSentToHC encountersForSelectedMonth
+
+        complicatedMalariaSentToHC =
+            countComplicatedMalariaSentToHC encountersForSelectedMonth
+
+        resolvedMalariaCases =
+            countResolvedMalariaCasesForSelectedMonth selectedDate acuteIllnessData
+    in
+    [ div [ class "ui grid" ]
+        [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+        , customChwCard language (Translate.Dashboard Translate.UncomplicatedMalariaByChws) (String.fromInt uncomplicatedMalariaManagedByChw) "six"
+        , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaInPregnancyReferredToHc) (String.fromInt uncomplicatedMalariaAndPregnantSentToHC)
         ]
-
-
-viewMalariaPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewMalariaPage language currentDate stats db model =
-    div [ class "dashboard main" ]
-        [ viewAcuteIllnessLinks language model
-        , div [ class "current-month" ]
-            [ a []
-                [ span [ class "icon-back" ] [] ]
-            , h1 [ class "ui header" ]
-                [ text "May 2021" ]
-            , a []
-                [ span [ class "icon-back forward" ] [] ]
-            ]
-        , div [ class "ui grid" ]
-            [ div [ class "five wide column" ]
-                --@todo
-                [ viewMalariaDiagnosedCases language ]
-            , div [ class "six wide column" ]
-                --@todo
-                [ viewUncomplicatedMalariaByCHWs language ]
-            , div [ class "five wide column" ]
-                --@todo
-                [ viewUncomplicatedMalariaInPregnancyReferredToHc language ]
-            ]
-        , div [ class "ui centered grid" ]
-            [ div [ class "six wide column" ]
-                --@todo
-                [ viewComplicatedMalariaReferredToHc language ]
-            , div [ class "six wide column" ]
-                --@todo
-                [ viewMalariaResolvedCasesInCare language ]
-            ]
-        , lastUpdated language stats
+    , div [ class "ui centered grid" ]
+        [ customChwCard language (Translate.Dashboard Translate.ComplicatedMalariaReferredToHC) (String.fromInt complicatedMalariaSentToHC) "six"
+        , customChwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedMalariaCases ++ " : " ++ String.fromInt managedMalaria) "six"
         ]
+    ]
 
 
-viewGastroPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewGastroPage language currentDate stats db model =
-    div [ class "dashboard main" ]
-        [ viewAcuteIllnessLinks language model
-        , div [ class "current-month" ]
-            [ a []
-                [ span [ class "icon-back" ] [] ]
-            , h1 [ class "ui header" ]
-                [ text "May 2021" ]
-            , a []
-                [ span [ class "icon-back forward" ] [] ]
-            ]
-        , div [ class "ui grid" ]
-            [ div [ class "five wide column" ]
-                --@todo
-                [ viewGastroDiagnosedCases language ]
-            , div [ class "six wide column" ]
-                --@todo
-                [ viewUncomplicatedGIInfectionByChws language ]
-            , div [ class "five wide column" ]
-                --@todo
-                [ viewComplicatedGIInfectionReferredToHc language ]
-            ]
-        , div [ class "ui centered grid" ]
-            [ div [ class "six wide column" ]
-                --@todo
-                [ viewGastroResolvedCasesInCare language ]
-            ]
-        , lastUpdated language stats
+viewGastroPage : Language -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
+viewGastroPage language selectedDate acuteIllnessData encountersForSelectedMonth managedGI model =
+    let
+        totalDaignosed =
+            countDiagnosedWithGI encountersForSelectedMonth
+
+        uncomplicatedGIManagedByChw =
+            countUncomplicatedGIManagedByChw encountersForSelectedMonth
+
+        complicatedGISentToHC =
+            countComplicatedGISentToHC encountersForSelectedMonth
+
+        resolvedGICases =
+            countResolvedGICasesForSelectedMonth selectedDate acuteIllnessData
+    in
+    [ div [ class "ui grid" ]
+        [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+        , customChwCard language (Translate.Dashboard Translate.UncomplicatedGIInfectionByCHWS) (String.fromInt uncomplicatedGIManagedByChw) "six"
+        , chwCard language (Translate.Dashboard Translate.ComplicatedGIInfectionsReferredToHc) (String.fromInt complicatedGISentToHC)
         ]
+    , div [ class "ui centered grid" ]
+        [ customChwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedGICases ++ " : " ++ String.fromInt managedGI) "six"
+        ]
+    ]
 
 
-viewNutritionPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewNutritionPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> List (Html Msg)
 viewNutritionPage language currentDate isChw nurse stats db model =
     let
         currentPeriodStats =
@@ -1232,604 +1241,72 @@ viewNutritionPage language currentDate isChw nurse stats db model =
                 _ ->
                     emptyNode
     in
-    div [ class "dashboard main" ]
-        [ viewFiltersPane language (NursePage MainPage) filterPeriodsForMainPage db model
-        , div [ class "ui grid" ]
-            [ div [ class "eight wide column" ]
-                [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
-                ]
-            , div [ class "eight wide column" ]
-                [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
-                    |> viewTotalEncounters language
-                ]
-            , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language currentDate MonthlyChartTotals FilterBeneficiariesChart totalsGraphData model.currentBeneficiariesChartsFilter
-                ]
-            , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
-                ]
-            , links
+    [ div [ class "ui grid" ]
+        [ div [ class "eight wide column" ]
+            [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
             ]
-        , viewCustomModal language isChw nurse stats db model
-        , lastUpdated language stats
+        , div [ class "eight wide column" ]
+            [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+                |> viewTotalEncounters language
+            ]
+        , div [ class "sixteen wide column" ]
+            [ viewMonthlyChart language currentDate MonthlyChartTotals FilterBeneficiariesChart totalsGraphData model.currentBeneficiariesChartsFilter
+            ]
+        , div [ class "sixteen wide column" ]
+            [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
+            ]
+        , links
         ]
+    ]
 
 
-viewAntenatalPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewAntenatalPage language currentDate stats db model =
-    div [ class "dashboard main" ]
-        [ div [ class "current-month" ]
-            [ a []
-                [ span [ class "icon-back" ] [] ]
-            , h1 [ class "ui header" ]
-                [ text "May 2021" ]
-            , a []
-                [ span [ class "icon-back forward" ] [] ]
-            ]
-        , div [ class "ui grid" ]
-            [ div [ class "five wide column" ]
-                --@todo
-                [ viewNewPregnancy language ]
-            , div [ class "six wide column" ]
-                --@todo
-                [ viewCurrentPregnant language ]
-            , div [ class "five wide column" ]
-                --@todo
-                [ viewWithin4MonthsOfDueDate language ]
-            ]
-        , div [ class "ui centered grid" ]
-            [ div [ class "five wide column" ]
-                --@todo
-                [ viewWithDangerSigns language ]
-            , div [ class "six wide column" ]
-                --@todo
-                [ viewHomeDeliveries language ]
-            , div [ class "five wide column" ]
-                --@todo
-                [ viewHealthFacilityDeliveries language ]
-            ]
-        , lastUpdated language stats
+viewAntenatalPage : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewAntenatalPage language currentDate assembled db model =
+    let
+        selectedDate =
+            getSelectedDate currentDate model
+
+        newlyIdentifiedPreganancies =
+            countNewlyIdentifiedPregananciesForSelectedMonth selectedDate assembled.prenatalData
+
+        currentlyPregnant =
+            countCurrentlyPregnantForSelectedMonth currentDate selectedDate assembled.prenatalData
+
+        pregnanciesDueWithin4Month =
+            countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate assembled.prenatalData
+
+        currentlyPregnantWithDangerSigns =
+            countCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate assembled.prenatalData
+
+        deliveriesAtHome =
+            countDeliveriesAtLocationForSelectedMonth selectedDate HomeDelivery assembled.prenatalData
+
+        deliveriesAtFacility =
+            countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery assembled.prenatalData
+    in
+    [ monthSelector language selectedDate model
+    , div [ class "ui grid" ]
+        [ chwCard language (Translate.Dashboard Translate.NewPregnancy) (String.fromInt newlyIdentifiedPreganancies)
+        , customChwCard language (Translate.Dashboard Translate.CurrentPregnancies) (String.fromInt currentlyPregnant) "six"
+        , chwCard language (Translate.Dashboard Translate.Within4MonthsOfDueDate) (String.fromInt pregnanciesDueWithin4Month)
         ]
+    , div [ class "ui centered grid" ]
+        [ chwCard language (Translate.Dashboard Translate.WithDangerSigns) (String.fromInt currentlyPregnantWithDangerSigns)
+        , customChwCard language (Translate.Dashboard Translate.HomeDeliveries) (String.fromInt deliveriesAtHome) "six"
+        , chwCard language (Translate.Dashboard Translate.HealthFacilityDeliveries) (String.fromInt deliveriesAtFacility)
+        ]
+    ]
 
 
-viewAcuteDiagnosis : Language -> Html Msg
-viewAcuteDiagnosis language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.AcuteIllnessDiagnosed
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
+chwCard : Language -> TranslationId -> String -> Html Msg
+chwCard language titleTransId value =
+    customChwCard language titleTransId value "five"
 
 
-viewMotherInAnc : Language -> Html Msg
-viewMotherInAnc language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.MothersInANC
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewNewbornInCare : Language -> Html Msg
-viewNewbornInCare language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.NewbornsInCare
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewAcuteIllnessCaseManagement : Language -> Html Msg
-viewAcuteIllnessCaseManagement language =
-    let
-        statsCard =
-            { title = translate language <| Translate.EncounterTypeFileterLabel AcuteIllnessEncounter
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewNutritionCaseManagement : Language -> Html Msg
-viewNutritionCaseManagement language =
-    let
-        statsCard =
-            { title = translate language <| Translate.EncounterTypeFileterLabel NutritionEncounter
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewAntenatalCaseManagement : Language -> Html Msg
-viewAntenatalCaseManagement language =
-    let
-        statsCard =
-            { title = translate language <| Translate.EncounterTypeFileterLabel AntenatalEncounter
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewTotalAssessment : Language -> Html Msg
-viewTotalAssessment language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.TotalAssessment
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewCommunityLevelCases : Language -> Html Msg
-viewCommunityLevelCases language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.CommunityLevelCases
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewHealthCenterReferrals : Language -> Html Msg
-viewHealthCenterReferrals language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.HealthCenterReferrals
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewDiagnosisUndetermined : Language -> Html Msg
-viewDiagnosisUndetermined language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.DiagnosisUndetermined
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewFeverOfUnknownOrigin : Language -> Html Msg
-viewFeverOfUnknownOrigin language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.FeverOfUnknownOrigin
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewCallsTo114 : Language -> Html Msg
-viewCallsTo114 language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.CallsTo114
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewCovid19HealthCenterReferrals : Language -> Html Msg
-viewCovid19HealthCenterReferrals language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.HealthCenterReferrals
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewPatientsManagedAtHome : Language -> Html Msg
-viewPatientsManagedAtHome language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.PatientsManagedAtHome
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewPatientsUnderCare : Language -> Html Msg
-viewPatientsUnderCare language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.PatientCurrentlyUnderCare
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewMalariaDiagnosedCases : Language -> Html Msg
-viewMalariaDiagnosedCases language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.DiagnosedCases
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewUncomplicatedMalariaByCHWs : Language -> Html Msg
-viewUncomplicatedMalariaByCHWs language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.UncomplicatedMalariaByChws
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewUncomplicatedMalariaInPregnancyReferredToHc : Language -> Html Msg
-viewUncomplicatedMalariaInPregnancyReferredToHc language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.UncomplicatedMalariaInPregnancyReferredToHc
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewComplicatedMalariaReferredToHc : Language -> Html Msg
-viewComplicatedMalariaReferredToHc language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.ComplicatedMalariaReferredToHC
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewMalariaResolvedCasesInCare : Language -> Html Msg
-viewMalariaResolvedCasesInCare language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.ResolveCases
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewGastroDiagnosedCases : Language -> Html Msg
-viewGastroDiagnosedCases language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.DiagnosedCases
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewUncomplicatedGIInfectionByChws : Language -> Html Msg
-viewUncomplicatedGIInfectionByChws language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.UncomplicatedGIInfectionByCHWS
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewComplicatedGIInfectionReferredToHc : Language -> Html Msg
-viewComplicatedGIInfectionReferredToHc language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.ComplicatedGIInfectionsReferredToHc
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewGastroResolvedCasesInCare : Language -> Html Msg
-viewGastroResolvedCasesInCare language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.ResolveCases
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewNewPregnancy : Language -> Html Msg
-viewNewPregnancy language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.NewPregnancy
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewCurrentPregnant : Language -> Html Msg
-viewCurrentPregnant language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.CurrentPregnancies
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewWithin4MonthsOfDueDate : Language -> Html Msg
-viewWithin4MonthsOfDueDate language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.Within4MonthsOfDueDate
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewWithDangerSigns : Language -> Html Msg
-viewWithDangerSigns language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.WithDangerSigns
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewHomeDeliveries : Language -> Html Msg
-viewHomeDeliveries language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.HomeDeliveries
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
-
-
-viewHealthFacilityDeliveries : Language -> Html Msg
-viewHealthFacilityDeliveries language =
-    let
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.HealthFacilityDeliveries
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = 23
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = 0
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewChwCard language statsCard
+customChwCard : Language -> TranslationId -> String -> String -> Html Msg
+customChwCard language titleTransId value width =
+    div [ class <| width ++ " wide column" ]
+        [ viewChwCard language titleTransId value ]
 
 
 viewGoodNutrition : Language -> List CaseNutritionTotal -> List CaseNutritionTotal -> Html Msg
@@ -2145,7 +1622,7 @@ viewCard language statsCard =
                     )
 
         cardAttributes =
-            (class <| "ui segment blue dashboard-cards " ++ statsCard.cardClasses ++ " " ++ cardLinkClass) :: cardAction
+            (class <| "ui segment blue dashboard-card " ++ statsCard.cardClasses ++ " " ++ cardLinkClass) :: cardAction
 
         severityClass =
             case statsCard.valueSeverity of
@@ -2210,52 +1687,12 @@ viewCard language statsCard =
         ]
 
 
-viewChwCard : Language -> StatsCard -> Html Msg
-viewChwCard language statsCard =
-    let
-        ( cardAction, cardLinkClass ) =
-            case statsCard.cardAction of
-                Nothing ->
-                    ( []
-                    , ""
-                    )
-
-                Just action ->
-                    ( [ onClick action ]
-                    , "link"
-                    )
-
-        severityClass =
-            case statsCard.valueSeverity of
-                Neutral ->
-                    "neutral"
-
-                Good ->
-                    "good"
-
-                Moderate ->
-                    "moderate"
-
-                Severe ->
-                    "severe"
-
-        cardAttributes =
-            (class <| "ui segment blue dashboard-cards " ++ statsCard.cardClasses ++ " " ++ cardLinkClass) :: cardAction
-    in
-    div
-        cardAttributes
+viewChwCard : Language -> TranslationId -> String -> Html Msg
+viewChwCard language titleTransId value =
+    div [ class "ui segment blue dashboard-card chw" ]
         [ div [ class "content" ]
-            [ div [ class "header" ] [ text statsCard.title ]
-            , div [ class <| "percentage this-year severity severity-" ++ severityClass ] [ text <| String.fromInt statsCard.value ]
-            , statsCard.newCases
-                |> Maybe.map
-                    (\newCases ->
-                        div [ class "new-cases" ]
-                            [ span [ class "label" ] [ translateText language <| Translate.Dashboard Translate.NewCasesLabel ]
-                            , span [ class "new-cases-value" ] [ text <| String.fromInt newCases ]
-                            ]
-                    )
-                |> showMaybe
+            [ div [ class "header" ] [ text <| translate language titleTransId ]
+            , div [ class "value this-year" ] [ text value ]
             ]
         ]
 
@@ -2485,67 +1922,15 @@ viewDashboardPagesLinks language =
 viewFamilyPlanning : Language -> DashboardStats -> Html Msg
 viewFamilyPlanning language stats =
     div
-        [ class "ui blue segment family-planning" ]
+        [ class "ui blue segment donut-chart family-planning" ]
         [ div [ class "header" ]
             [ h3 [ class "title" ] [ translateText language <| Translate.Dashboard Translate.FamilyPlanningLabel ]
             ]
         , div [ class "ui center aligned grid" ]
             [ div [ class "middle aligned row" ]
-                [ viewDonutChart language stats ]
+                [ viewFamilyPlanningDonutChart language stats ]
             ]
         ]
-
-
-viewDonutChart : Language -> DashboardStats -> Html Msg
-viewDonutChart language stats =
-    let
-        dict =
-            getFamilyPlanningSignsCounter stats
-    in
-    if Dict.isEmpty dict then
-        div [ class "no-data-message" ] [ translateText language <| Translate.Dashboard Translate.NoDataForPeriod ]
-
-    else
-        let
-            totalWomen =
-                stats.familyPlanning
-                    |> List.length
-
-            totalNoFamilyPlanning =
-                Dict.get NoFamilyPlanning dict
-                    |> Maybe.withDefault 0
-
-            useFamilyPlanning =
-                totalWomen - totalNoFamilyPlanning
-
-            totalPercent =
-                useFamilyPlanning * 100 // totalWomen
-
-            signs =
-                dict
-                    |> Dict.toList
-                    |> List.filter (\( sign, _ ) -> sign /= NoFamilyPlanning)
-                    |> List.sortBy (\( name, val ) -> Debug.toString name)
-        in
-        div [ class "content" ]
-            [ viewChart signs
-            , div [ class "in-chart" ]
-                [ div [ class "stats" ]
-                    [ span [ class "percentage neutral" ] [ text <| String.fromInt totalPercent ++ "%" ]
-                    , text " "
-                    , span [ class "use-label" ] [ translateText language <| Translate.Dashboard Translate.UseFamilyPlanning ]
-                    , div [ class "count" ]
-                        [ translateText language <|
-                            Translate.Dashboard <|
-                                Translate.FamilyPlanningOutOfWomen
-                                    { total = totalWomen
-                                    , useFamilyPlanning = useFamilyPlanning
-                                    }
-                        ]
-                    ]
-                ]
-            , viewFamilyPlanningChartLegend language signs
-            ]
 
 
 viewMonthlyChart : Language -> NominalDate -> MonthlyChartType -> FilterType -> Dict Int TotalBeneficiaries -> DashboardFilter -> Html Msg
@@ -2723,13 +2108,103 @@ viewSubFilter language currentSubFilter filter =
         [ translateText language <| Translate.Dashboard <| Translate.SubFilter filter ]
 
 
-viewFamilyPlanningChartLegend : Language -> List ( FamilyPlanningSign, Int ) -> Html Msg
-viewFamilyPlanningChartLegend language signs =
+viewFamilyPlanningDonutChart : Language -> DashboardStats -> Html Msg
+viewFamilyPlanningDonutChart language stats =
+    let
+        dict =
+            getFamilyPlanningSignsCounter stats
+    in
+    if Dict.isEmpty dict then
+        div [ class "no-data-message" ] [ translateText language <| Translate.Dashboard Translate.NoDataForPeriod ]
+
+    else
+        let
+            totalWomen =
+                stats.familyPlanning
+                    |> List.length
+
+            totalNoFamilyPlanning =
+                Dict.get NoFamilyPlanning dict
+                    |> Maybe.withDefault 0
+
+            useFamilyPlanning =
+                totalWomen - totalNoFamilyPlanning
+
+            totalPercent =
+                useFamilyPlanning * 100 // totalWomen
+
+            signs =
+                dict
+                    |> Dict.toList
+                    |> List.filter (\( sign, _ ) -> sign /= NoFamilyPlanning)
+                    |> List.sortBy (\( name, val ) -> Debug.toString name)
+        in
+        div [ class "content" ]
+            [ viewPieChart familyPlanningSignsColors signs
+            , div [ class "in-chart" ]
+                [ div [ class "stats" ]
+                    [ span [ class "percentage neutral" ] [ text <| String.fromInt totalPercent ++ "%" ]
+                    , text " "
+                    , span [ class "use-label" ] [ translateText language <| Translate.Dashboard Translate.UseFamilyPlanning ]
+                    , div [ class "count" ]
+                        [ translateText language <|
+                            Translate.Dashboard <|
+                                Translate.FamilyPlanningOutOfWomen
+                                    { total = totalWomen
+                                    , useFamilyPlanning = useFamilyPlanning
+                                    }
+                        ]
+                    ]
+                ]
+            , viewPieChartLegend language Translate.FamilyPlanningSignLabel familyPlanningSignToColor signs
+            ]
+
+
+viewPieChart : Dict a Color -> List ( a, Int ) -> Svg msg
+viewPieChart colors values =
+    let
+        arcs =
+            List.map (Tuple.second >> toFloat) values
+
+        signs =
+            List.map Tuple.first values
+
+        pieData =
+            arcs
+                |> Shape.pie
+                    { defaultPieConfig
+                        | outerRadius = radius
+                        , padAngle = 0
+                        , cornerRadius = 0
+                    }
+    in
+    svg [ Explicit.class [ "pie-chart" ], viewBox 0 0 pieChartWidth pieChartHeight ]
+        [ annular colors signs pieData ]
+
+
+annular : Dict a Color -> List a -> List Arc -> Svg msg
+annular colors signs pieData =
+    let
+        getColor index =
+            List.Extra.getAt index signs
+                |> Maybe.andThen (\sign -> Dict.get sign colors)
+                |> Maybe.withDefault Color.black
+
+        makeSlice index datum =
+            Path.element (Shape.arc { datum | innerRadius = radius - 60 })
+                [ fill <| Fill <| getColor index ]
+    in
+    g [ transform [ Translate (3 * radius + 20) radius ] ]
+        [ g [] <| List.indexedMap makeSlice pieData
+        ]
+
+
+viewPieChartLegend : Language -> (a -> TranslationId) -> (a -> Color) -> List ( a, Int ) -> Html Msg
+viewPieChartLegend language translateFunc colorFunc signs =
     let
         totalSigns =
-            signs
-                |> List.map Tuple.second
-                |> List.foldl (+) 0
+            List.map Tuple.second signs
+                |> List.sum
                 |> toFloat
     in
     div [ class "legend" ]
@@ -2737,7 +2212,7 @@ viewFamilyPlanningChartLegend language signs =
             (\( sign, usage ) ->
                 let
                     label =
-                        translate language <| Translate.FamilyPlanningSignLabel sign
+                        translate language <| translateFunc sign
 
                     percentage =
                         round (100 * toFloat usage / totalSigns)
@@ -2752,37 +2227,13 @@ viewFamilyPlanningChartLegend language signs =
                 in
                 div [ class "legend-item" ]
                     [ svg [ Svg.Attributes.width "12", Svg.Attributes.height "12", viewBox 0 0 100 100 ]
-                        [ Svg.circle [ cx "50", cy "50", r "40", fill <| Fill <| familyPlanningSignToColor sign ] []
+                        [ Svg.circle [ cx "50", cy "50", r "40", fill <| Fill <| colorFunc sign ] []
                         ]
                     , span [] [ text <| label ++ " (" ++ normalizedPercentage ++ "%)" ]
                     ]
             )
             signs
         )
-
-
-viewChart : List ( FamilyPlanningSign, Int ) -> Svg msg
-viewChart signs =
-    let
-        arcs =
-            signs
-                |> List.map (Tuple.second >> toFloat)
-
-        signsList =
-            signs
-                |> List.map Tuple.first
-
-        pieData =
-            arcs
-                |> Shape.pie
-                    { defaultPieConfig
-                        | outerRadius = radius
-                        , padAngle = 0
-                        , cornerRadius = 0
-                    }
-    in
-    svg [ Explicit.class [ "pie-chart" ], viewBox 0 0 pieChartWidth pieChartHeight ]
-        [ annular signsList pieData ]
 
 
 viewCustomModal : Language -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
@@ -3122,24 +2573,6 @@ getFamilyPlanningSignsCounter stats =
         stats.familyPlanning
 
 
-annular : List FamilyPlanningSign -> List Arc -> Svg msg
-annular signsList arcs =
-    let
-        getColor index =
-            List.Extra.getAt index signsList
-                |> Maybe.withDefault NoFamilyPlanning
-                |> (\sign -> Dict.get sign colors)
-                |> Maybe.withDefault Color.black
-
-        makeSlice index datum =
-            Path.element (Shape.arc { datum | innerRadius = radius - 60 })
-                [ fill <| Fill <| getColor index ]
-    in
-    g [ transform [ Translate (3 * radius + 20) radius ] ]
-        [ g [] <| List.indexedMap makeSlice arcs
-        ]
-
-
 withinThreePreviousMonths : Int -> Int -> Bool
 withinThreePreviousMonths currentMonth monthNumber =
     if monthNumber == 13 then
@@ -3171,6 +2604,35 @@ resolvePreviousMonth thisMonth =
         thisMonth - 1
 
 
-lastUpdated : Language -> DashboardStats -> Html Msg
-lastUpdated language stats =
-    div [ class "timestamp" ] [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
+monthSelector : Language -> NominalDate -> Model -> Html Msg
+monthSelector language selectedDate model =
+    let
+        monthNumber =
+            Date.monthNumber selectedDate
+
+        month =
+            Date.numberToMonth monthNumber
+
+        year =
+            Date.year selectedDate
+    in
+    div [ class "month-selector" ]
+        [ span
+            [ classList
+                [ ( "icon-back", True )
+                , ( "hidden", model.monthGap == maxMonthGap )
+                ]
+            , onClick <| ChangeMonthGap 1
+            ]
+            []
+        , span [ class "label" ]
+            [ text <| translate language (Translate.ResolveMonth False month) ++ " " ++ String.fromInt year ]
+        , span
+            [ classList
+                [ ( "icon-back rotate-180", True )
+                , ( "hidden", model.monthGap == 0 )
+                ]
+            , onClick <| ChangeMonthGap -1
+            ]
+            []
+        ]

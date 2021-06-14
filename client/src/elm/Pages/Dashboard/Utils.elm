@@ -1,10 +1,11 @@
 module Pages.Dashboard.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (DashboardStats, PrenatalDataItem)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.Dashboard.Model exposing (AcuteIllnessDataItem, AcuteIllnessEncounterDataItem, AssembledData, DashboardStats, PrenatalDataItem)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..))
-import Backend.Measurement.Model exposing (DangerSign(..), FollowUpMeasurements)
+import Backend.Measurement.Model exposing (Call114Sign(..), DangerSign(..), FollowUpMeasurements, IsolationSign(..), SendToHCSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Date
 import EverySet exposing (EverySet)
@@ -12,7 +13,8 @@ import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isNothing)
 import Pages.Dashboard.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (filterVillageResidents, generateAcuteIllnessFollowUps, generateNutritionFollowUps, generatePrenatalFollowUps)
-import Pages.GlobalCaseManagement.View exposing (viewAcuteIllnessFollowUpEntries, viewNutritionFollowUpEntries, viewPrenatalFollowUpEntries)
+import Pages.GlobalCaseManagement.View exposing (generateAcuteIllnessFollowUpEntries, generateNutritionFollowUpEntries, generatePrenatalFollowUpEntries)
+import RemoteData
 import Translate exposing (Language)
 
 
@@ -63,6 +65,17 @@ filterProgramTypeFromString string =
             Nothing
 
 
+generateAssembledData : HealthCenterId -> Maybe VillageId -> DashboardStats -> ModelIndexedDb -> AssembledData
+generateAssembledData healthCenterId villageId stats db =
+    { stats = stats
+    , acuteIllnessData = generateFilteredAcuteIllnessData villageId stats
+    , prenatalData = generateFilteredPrenatalData villageId stats
+    , caseManagementData =
+        Dict.get healthCenterId db.followUpMeasurements
+            |> Maybe.andThen RemoteData.toMaybe
+    }
+
+
 generateFilteredPrenatalData : Maybe VillageId -> DashboardStats -> List PrenatalDataItem
 generateFilteredPrenatalData maybeVillageId stats =
     maybeVillageId
@@ -71,6 +84,256 @@ generateFilteredPrenatalData maybeVillageId stats =
         |> Maybe.map
             (\residents -> List.filter (\item -> List.member item.identifier residents) stats.prenatalData)
         |> Maybe.withDefault []
+
+
+generateFilteredAcuteIllnessData : Maybe VillageId -> DashboardStats -> List AcuteIllnessDataItem
+generateFilteredAcuteIllnessData maybeVillageId stats =
+    maybeVillageId
+        |> Maybe.andThen
+            (\villageId -> Dict.get villageId stats.villagesWithResidents)
+        |> Maybe.map
+            (\residents -> List.filter (\item -> List.member item.identifier residents) stats.acuteIllnessData)
+        |> Maybe.withDefault []
+
+
+
+--
+-- Acute illness - Overview functions.
+--
+
+
+getAcuteIllnessEncountersForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem
+getAcuteIllnessEncountersForSelectedMonth selectedDate itemsList =
+    List.map .encounters itemsList
+        |> List.concat
+        |> List.filter (.startDate >> withinSelectedMonth selectedDate)
+
+
+countAcuteIllnessAssesments : List AcuteIllnessEncounterDataItem -> Int
+countAcuteIllnessAssesments encounters =
+    -- Count number of encounters that occured during selected month.
+    List.length encounters
+
+
+countAcuteIllnessCasesByHCReferrals : List AcuteIllnessEncounterDataItem -> ( Int, Int )
+countAcuteIllnessCasesByHCReferrals encounters =
+    let
+        ( sentToHC, managedLocally ) =
+            List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis) encounters
+                |> List.partition (\encounter -> EverySet.member ReferToHealthCenter encounter.sendToHCSigns)
+    in
+    ( List.length sentToHC, List.length managedLocally )
+
+
+countAcuteIllnessCasesByPossibleDiagnosises : List AcuteIllnessDiagnosis -> Bool -> List AcuteIllnessEncounterDataItem -> Int
+countAcuteIllnessCasesByPossibleDiagnosises possible whenFeverRecorded encounters =
+    List.filter
+        (\encounter ->
+            let
+                feverFilter =
+                    if whenFeverRecorded then
+                        encounter.feverRecorded
+
+                    else
+                        True
+            in
+            List.member encounter.diagnosis possible
+                && feverFilter
+        )
+        encounters
+        |> List.length
+
+
+
+--
+-- Acute illness - COVID functions.
+--
+
+
+countDiagnosedWithCovidCallsTo114 : List AcuteIllnessEncounterDataItem -> Int
+countDiagnosedWithCovidCallsTo114 encounters =
+    List.filter
+        (\encounter ->
+            -- Encounter which has produced Covid19 diagnosis,
+            -- and there was a call to 114.
+            (encounter.diagnosis == DiagnosisCovid19)
+                && EverySet.member Call114 encounter.call114Signs
+        )
+        encounters
+        |> List.length
+
+
+countDiagnosedWithCovidSentToHC : List AcuteIllnessEncounterDataItem -> Int
+countDiagnosedWithCovidSentToHC encounters =
+    List.filter
+        (\encounter ->
+            -- Encounter which has produced Covid19 diagnosis,
+            -- and patient was sent to health center.
+            (encounter.diagnosis == DiagnosisCovid19)
+                && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
+        )
+        encounters
+        |> List.length
+
+
+countDiagnosedWithCovidManagedAtHome : List AcuteIllnessEncounterDataItem -> Int
+countDiagnosedWithCovidManagedAtHome encounters =
+    List.filter
+        (\encounter ->
+            -- Encounter which has produced Covid19 diagnosis,
+            -- and patient was isolated at home.
+            (encounter.diagnosis == DiagnosisCovid19)
+                && EverySet.member PatientIsolated encounter.isolationSigns
+        )
+        encounters
+        |> List.length
+
+
+
+--
+-- Acute illness - Malaria functions.
+--
+
+
+countDiagnosedWithMalaria : List AcuteIllnessEncounterDataItem -> Int
+countDiagnosedWithMalaria encounters =
+    List.filter
+        (\encounter ->
+            List.member encounter.diagnosis
+                [ DiagnosisMalariaComplicated
+                , DiagnosisMalariaUncomplicated
+                , DiagnosisMalariaUncomplicatedAndPregnant
+                ]
+        )
+        encounters
+        |> List.length
+
+
+countUncomplicatedMalariaManagedByChw : List AcuteIllnessEncounterDataItem -> Int
+countUncomplicatedMalariaManagedByChw encounters =
+    List.filter
+        (\encounter ->
+            -- Enconter which has produced Uncomplicated Malaria diagnosis,
+            -- and patient was not sent to health center.
+            (encounter.diagnosis == DiagnosisMalariaUncomplicated)
+                && not (EverySet.member ReferToHealthCenter encounter.sendToHCSigns)
+        )
+        encounters
+        |> List.length
+
+
+countUncomplicatedMalariaAndPregnantSentToHC : List AcuteIllnessEncounterDataItem -> Int
+countUncomplicatedMalariaAndPregnantSentToHC encounters =
+    List.filter
+        (\encounter ->
+            -- Encounter which has produced Uncomplicated Malaria and Pregnant
+            -- diagnosis, and patient was sent to health center.
+            (encounter.diagnosis == DiagnosisMalariaUncomplicatedAndPregnant)
+                && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
+        )
+        encounters
+        |> List.length
+
+
+countComplicatedMalariaSentToHC : List AcuteIllnessEncounterDataItem -> Int
+countComplicatedMalariaSentToHC encounters =
+    List.filter
+        (\encounter ->
+            -- Encounter which has produced Comlpicated Malaria diagnosis,
+            -- and patient was sent to health center.
+            (encounter.diagnosis == DiagnosisMalariaComplicated)
+                && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
+        )
+        encounters
+        |> List.length
+
+
+countResolvedMalariaCasesForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
+countResolvedMalariaCasesForSelectedMonth selectedDate itemsList =
+    List.filter
+        (\item ->
+            case item.dateConcluded of
+                Nothing ->
+                    False
+
+                Just dateConcluded ->
+                    -- Illness that was resolved at selected month,
+                    -- and had a Malaria diagnosis.
+                    withinSelectedMonth selectedDate dateConcluded
+                        && List.member item.diagnosis
+                            [ DiagnosisMalariaComplicated
+                            , DiagnosisMalariaUncomplicated
+                            , DiagnosisMalariaUncomplicatedAndPregnant
+                            ]
+        )
+        itemsList
+        |> List.length
+
+
+
+--
+-- Acute illness - Gastro functions.
+--
+
+
+countDiagnosedWithGI : List AcuteIllnessEncounterDataItem -> Int
+countDiagnosedWithGI encounters =
+    List.filter
+        (\encounter ->
+            List.member encounter.diagnosis
+                [ DiagnosisGastrointestinalInfectionComplicated
+                , DiagnosisGastrointestinalInfectionUncomplicated
+                ]
+        )
+        encounters
+        |> List.length
+
+
+countUncomplicatedGIManagedByChw : List AcuteIllnessEncounterDataItem -> Int
+countUncomplicatedGIManagedByChw encounters =
+    List.filter
+        (\encounter ->
+            -- Encounter which has produced Uncomlicated GI diagnosis,
+            -- and patient was not sent to health center.
+            (encounter.diagnosis == DiagnosisGastrointestinalInfectionUncomplicated)
+                && not (EverySet.member ReferToHealthCenter encounter.sendToHCSigns)
+        )
+        encounters
+        |> List.length
+
+
+countComplicatedGISentToHC : List AcuteIllnessEncounterDataItem -> Int
+countComplicatedGISentToHC encounters =
+    List.filter
+        (\encounter ->
+            -- Encounter which has produced Comlicated GI diagnosis,
+            -- and patient was sent to health center.
+            (encounter.diagnosis == DiagnosisGastrointestinalInfectionComplicated)
+                && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
+        )
+        encounters
+        |> List.length
+
+
+countResolvedGICasesForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
+countResolvedGICasesForSelectedMonth selectedDate itemsList =
+    List.filter
+        (\item ->
+            case item.dateConcluded of
+                Nothing ->
+                    False
+
+                Just dateConcluded ->
+                    -- Illness that was resolved at selected month,
+                    -- and had a GI diagnosis.
+                    withinSelectedMonth selectedDate dateConcluded
+                        && List.member item.diagnosis
+                            [ DiagnosisGastrointestinalInfectionComplicated
+                            , DiagnosisGastrointestinalInfectionUncomplicated
+                            ]
+        )
+        itemsList
+        |> List.length
 
 
 
@@ -144,7 +407,7 @@ getCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate ite
                     (\encounter ->
                         -- Active pregnancy that got an encounter at
                         -- selected month, where danger signs where recorded.
-                        withinSelectedMonth selectedDate encounter.created
+                        withinSelectedMonth selectedDate encounter.startDate
                             && (not <| EverySet.isEmpty encounter.dangerSigns)
                             && (encounter.dangerSigns /= EverySet.singleton NoDangerSign)
                     )
@@ -218,6 +481,12 @@ countDeliveriesAtLocationForSelectedMonth selectedDate location itemsList =
         |> List.length
 
 
+
+--
+-- Case management  functions.
+--
+
+
 getFollowUpsTotals : Language -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
 getFollowUpsTotals language currentDate db villageId followUps =
     let
@@ -226,25 +495,65 @@ getFollowUpsTotals language currentDate db villageId followUps =
                 |> filterVillageResidents villageId identity db
 
         nutritionEntries =
-            viewNutritionFollowUpEntries language currentDate nutritionFollowUps db
+            generateNutritionFollowUpEntries language currentDate nutritionFollowUps db
 
         acuteIllnessFollowUps =
             generateAcuteIllnessFollowUps db followUps
                 |> filterVillageResidents villageId Tuple.second db
 
         acuteIllnessEntries =
-            viewAcuteIllnessFollowUpEntries language currentDate acuteIllnessFollowUps db
+            generateAcuteIllnessFollowUpEntries language currentDate acuteIllnessFollowUps db
 
         prenatalFollowUps =
             generatePrenatalFollowUps db followUps
                 |> filterVillageResidents villageId Tuple.second db
 
         prenatalEntries =
-            viewPrenatalFollowUpEntries language currentDate prenatalFollowUps db
+            generatePrenatalFollowUpEntries language currentDate prenatalFollowUps db
     in
     ( List.length nutritionEntries
     , List.length acuteIllnessEntries
     , List.length prenatalEntries
+    )
+
+
+getAcuteIllnessFollowUpsBreakdownByDiagnosis : Language -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
+getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate db villageId followUps =
+    let
+        acuteIllnessFollowUps =
+            generateAcuteIllnessFollowUps db followUps
+                |> filterVillageResidents villageId Tuple.second db
+
+        acuteIllnessEntries =
+            generateAcuteIllnessFollowUpEntries language currentDate acuteIllnessFollowUps db
+
+        covidEntries =
+            List.filter (.diagnosis >> (==) DiagnosisCovid19) acuteIllnessEntries
+
+        malariaEntries =
+            List.filter
+                (\entry ->
+                    List.member entry.diagnosis
+                        [ DiagnosisMalariaComplicated
+                        , DiagnosisMalariaUncomplicated
+                        , DiagnosisMalariaUncomplicatedAndPregnant
+                        ]
+                )
+                acuteIllnessEntries
+
+        giEntries =
+            List.filter
+                (\entry ->
+                    List.member entry.diagnosis
+                        [ DiagnosisGastrointestinalInfectionComplicated
+                        , DiagnosisGastrointestinalInfectionUncomplicated
+                        ]
+                )
+                acuteIllnessEntries
+    in
+    ( List.length covidEntries
+    , List.length malariaEntries
+    , List.length giEntries
     )
 
 
@@ -265,3 +574,8 @@ withinSelectedMonth selectedDate date =
     in
     (Date.monthNumber date == month)
         && (Date.year date == year)
+
+
+getSelectedDate : NominalDate -> Model -> NominalDate
+getSelectedDate currentDate model =
+    Date.add Date.Months (-1 * model.monthGap) currentDate

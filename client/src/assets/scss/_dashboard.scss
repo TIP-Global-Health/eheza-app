@@ -8,36 +8,76 @@
     font-size: 18px;
   }
 
-  .current-month {
-    margin-bottom: 35px;
-    text-align: center;
-    .icon-back {
-      margin-left: 257px;
-      margin-bottom: -30px;
-    }
-    .header {
-      font-weight: 500;
-      padding-left: 30px;
-      text-transform: capitalize;
+  .month-selector {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+
+    .label {
+      color: white;
+      font-size: 25px;
+      margin: 0 40px;
     }
 
-    .icon-back.forward {
-        margin-top: -30px;
-        margin-left: 440px;
-        transform: rotate(180deg);
+    .icon-back.rotate-180 {
+      transform: rotate(180deg);
+    }
 
+    .icon-back.hidden {
+      visibility: hidden;
     }
   }
 
   .case-management-label {
     color: $color-white;
-    margin-top: 50px;
-    margin-bottom: 10px;
     font-weight: 500;
+    margin-bottom: 10px;
+    margin-top: 50px;
   }
 
   .ui.segment {
-    //padding: 1.5rem 2rem;
+
+    .content .very.basic.table {
+        width: 100%;
+
+        thead {
+
+          th {
+            font-size: 16px;
+            line-height: 24px;
+            font-weight: normal;
+            padding: 2px 4px 2px;
+            border-left: 0 none;
+            border-right: 0 none;
+            border-bottom: 1px solid $color-text;
+            color: $color-text;
+            text-transform: uppercase;
+
+            &.phone-number {
+              width: 26%;
+            }
+          }
+        }
+
+        tbody {
+
+          td {
+            font-weight: normal;
+            font-size: 20px;
+            line-height: 24px;
+            border: 0 none;
+            color: black;
+            padding: 4px 4px 24px;
+            vertical-align: top;
+
+            &.phone-number {
+              justify-content: center;
+              text-align-last: center;
+            }
+          }
+        }
+      }
 
     &.filters {
       background-color: $color-light-background;
@@ -96,75 +136,23 @@
       button {
         background-color: $color-white;
         border: solid 2px $color-primary;
-        color: $color-primary;
         border-radius: 3px;
+        color: $color-primary;
         width: 300px;
         font-size: 24px;
         font-weight: 700;
         padding: 15px;
         text-transform: none;
 
-
         &.active {
           background-color: $color-primary;
           border: solid 2px $color-white;
           color: $color-white;
-
-        }
-        //&.inactive {
-        //  background-color: $color-white;
-        //  border: solid 2px $color-primary;
-        //  color: $color-primary;
-        //
-        //}
-      }
-    }
-
-    .content {
-
-      .very.basic.table {
-        width: 100%;
-
-        thead {
-
-          th {
-            font-size: 16px;
-            line-height: 24px;
-            font-weight: normal;
-            padding: 2px 4px 2px;
-            border-left: 0 none;
-            border-right: 0 none;
-            border-bottom: 1px solid $color-text;
-            color: $color-text;
-            text-transform: uppercase;
-
-            &.phone-number {
-              width: 26%;
-            }
-          }
-        }
-
-        tbody {
-
-          td {
-            font-weight: normal;
-            font-size: 20px;
-            line-height: 24px;
-            border: 0 none;
-            color: black;
-            padding: 4px 4px 24px;
-            vertical-align: top;
-
-            &.phone-number {
-              justify-content: center;
-              text-align-last: center;
-            }
-          }
         }
       }
     }
 
-    &.family-planning {
+    &.donut-chart {
       margin-bottom: 40px;
       margin-top: 40px;
 
@@ -226,11 +214,19 @@
           }
 
           svg.pie-chart {
-            position: absolute;
-            width: 400px;
             height: 400px;
-            top: 35px;
             left: 55px;
+            position: absolute;
+            top: 35px;
+            width: 400px;
+          }
+
+          svg.pie-chart.fever {
+            height: 500px;
+            left: -235px;
+            position: absolute;
+            top: 4px;
+            width: 500px;
           }
 
           .legend {
@@ -259,48 +255,74 @@
         }
       }
     }
+
+    &.donut-chart.fever {
+      min-height: 300px;
+
+      .row .content {
+
+        svg.pie-chart {
+          height: 500px;
+          left: -185px;
+          position: absolute;
+          top: 4px;
+          width: 500px;
+        }
+
+        .in-chart {
+          font-size: 18px;
+          left: -150px;
+          top: 100px;
+        }
+
+        .legend {
+          margin: 0 0 0 400px;
+
+          .legend-item span {
+            font-size: 18px;
+          }
+        }
+      }
+    }
   }
 
-  &.main {
+  .overlay .ui.modal {
+    margin-left: -350px;
+    width: 700px;
 
-    .overlay .ui.modal {
-      margin-left: -350px;
-      width: 700px;
+    .header {
+      font-size: 30px;
+      font-weight: 500;
+      margin-bottom: 25px;
+      text-align: left;
+      text-transform: capitalize;
+    }
 
-      .header {
-        font-size: 30px;
-        font-weight: 500;
-        margin-bottom: 25px;
-        text-align: left;
-        text-transform: capitalize;
+    .content {
+      text-align: left;
+
+      .helper {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 3px;
       }
 
-      .content {
-        text-align: left;
-
-        .helper {
-          font-size: 18px;
-          font-weight: bold;
-          margin-bottom: 3px;
-        }
-
-        .select-input {
-          background: none;
-          border: 2px solid $color-gray;
-          font-size: 28px;
-          height: 50px;
-          margin-bottom: 20px;
-          padding: 0 7px;
-          width: 100%;
-        }
+      .select-input {
+        background: none;
+        border: 2px solid $color-gray;
+        font-size: 28px;
+        height: 50px;
+        margin-bottom: 20px;
+        padding: 0 7px;
+        width: 100%;
       }
+    }
 
-      .actions {
-        margin-top: 40px;
+    .actions {
+      margin-top: 40px;
 
-        button {
-          margin-left: 0;
-        }
+      button {
+        margin-left: 0;
       }
     }
   }
@@ -472,7 +494,7 @@
     }
   }
 
-  .dashboard-cards {
+  .dashboard-card {
     padding: 15px 5px 20px;
     border-radius: 1px;
     min-height: 130px;
@@ -566,6 +588,15 @@
           line-height: 10px;
         }
       }
+    }
+  }
+
+  .dashboard-card.chw {
+    min-height: 150px;
+    padding: 10px;
+
+    .value {
+      color: $color-light-background;
     }
   }
 
@@ -746,10 +777,6 @@
   .case-management .header .filters {
     margin-bottom: 10px;
     margin-top: 0;
-
-    &.secondary {
-
-    }
   }
 
   .dashboards-links {

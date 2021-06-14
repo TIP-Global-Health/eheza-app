@@ -44,14 +44,14 @@ class HedleyRestfulClinics extends HedleyRestfulSyncBase {
     ];
 
     foreach ($field_names as $field_name) {
-      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
+      hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
     }
 
     // Get the UUID of the health center.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_health_center.field_health_center_target_id", 'uuid_health_center');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_health_center.field_health_center_target_id", 'uuid_health_center');
 
     // Get the UUID of the village.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_village_ref.field_village_ref_target_id", 'uuid_village');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_village_ref.field_village_ref_target_id", 'uuid_village');
   }
 
   /**

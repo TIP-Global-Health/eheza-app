@@ -36,16 +36,6 @@ type BeneficiariesTableLabels
     | Total
 
 
-filterPeriodsForMainPage : List FilterPeriod
-filterPeriodsForMainPage =
-    []
-
-
-filterPeriodsForCaseManagementPage : List FilterPeriod
-filterPeriodsForCaseManagementPage =
-    []
-
-
 filterPeriodsForStatsPage : List FilterPeriod
 filterPeriodsForStatsPage =
     [ ThisMonth
@@ -125,8 +115,12 @@ type alias Model =
     , currentCaseManagementFilter : DashboardFilter
     , currentCaseManagementSubFilter : DashboardSubFilter
     , latestPage : DashboardPage
-    , acuteIllnessPage : AcuteIllnessDashboardPage
     , modalState : Maybe ModalState
+
+    -- This is used by month selector to determine
+    -- the gap from current month. We allow to go back
+    -- 6 months, so, valid values are between 0 and 5.
+    , monthGap : MonthGap
     }
 
 
@@ -153,10 +147,19 @@ emptyModel maybeSelectedVillage =
     , currentBeneficiariesIncidenceChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
     , currentCaseManagementSubFilter = FilterTotal
-    , latestPage = NursePage MainPage
-    , acuteIllnessPage = OverviewPage
+    , latestPage = MainPage
     , modalState = Nothing
+    , monthGap = 0
     }
+
+
+type alias MonthGap =
+    Int
+
+
+maxMonthGap : MonthGap
+maxMonthGap =
+    5
 
 
 type ModalState
@@ -222,8 +225,27 @@ type MonthlyChartType
     | MonthlyChartIncidence
 
 
+type FeverCause
+    = FeverCauseCovid19
+    | FeverCauseMalaria
+    | FeverCauseRespiratory
+    | FeverCauseGI
+    | FeverCauseUnknown
+
+
+allFeverCauses : List FeverCause
+allFeverCauses =
+    [ FeverCauseCovid19
+    , FeverCauseMalaria
+    , FeverCauseRespiratory
+    , FeverCauseGI
+    , FeverCauseUnknown
+    ]
+
+
 type Msg
     = SetModalState (Maybe ModalState)
+    | ChangeMonthGap Int
     | NavigateToStuntingTable DashboardSubFilter
     | SetFilterGender FilterGender
     | SetFilterPeriod FilterPeriod

@@ -49,17 +49,17 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
     ];
 
     foreach ($field_names as $field_name) {
-      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
+      hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
     }
 
     $query->addExpression("GROUP_CONCAT(DISTINCT field_role.field_role_value)", 'field_role');
 
     // Get the UUIDs of the health centers.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_health_centers.field_health_centers_target_id", 'uuids_health_centers');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_health_centers.field_health_centers_target_id", 'uuids_health_centers');
     $query->addExpression("GROUP_CONCAT(DISTINCT uuids_health_centers.field_uuid_value)", 'uuids_health_centers');
 
     // Get the UUIDs of the villages.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_villages.field_villages_target_id", 'uuids_villages');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_villages.field_villages_target_id", 'uuids_villages');
     $query->addExpression("GROUP_CONCAT(DISTINCT uuids_villages.field_uuid_value)", 'uuids_villages');
     $query->groupBy('node.nid');
   }

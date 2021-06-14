@@ -211,7 +211,7 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceNam
             dashboardButton =
                 button
                     [ class "ui primary button"
-                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage (NursePage MainPage)
+                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
                     ]
                     [ text <| translate language Translate.DashboardLabel
                     ]

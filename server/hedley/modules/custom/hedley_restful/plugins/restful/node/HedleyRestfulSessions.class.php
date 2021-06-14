@@ -43,12 +43,12 @@ class HedleyRestfulSessions extends HedleyRestfulSyncBase {
    * {@inheritdoc}
    */
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
-    hedley_restful_join_field_to_query($query, 'node', 'field_clinic', FALSE);
-    hedley_restful_join_field_to_query($query, 'node', 'field_scheduled_date', FALSE, NULL, NULL, TRUE);
+    hedley_general_join_field_to_query($query, 'node', 'field_clinic', FALSE);
+    hedley_general_join_field_to_query($query, 'node', 'field_scheduled_date', FALSE, NULL, NULL, TRUE);
     // Get the UUID of the Clinic.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_clinic.field_clinic_target_id", 'uuid_clinic');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_clinic.field_clinic_target_id", 'uuid_clinic');
     // Get the type of the Clinic.
-    hedley_restful_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
+    hedley_general_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
   }
 
   /**

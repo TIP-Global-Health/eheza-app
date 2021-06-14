@@ -74,7 +74,7 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
     $query->fields('node', ['type', 'nid', 'vid', 'changed', 'title', 'status']);
     $query->condition('node.nid', $node_ids, 'IN');
 
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE);
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE);
 
     return $query;
   }
