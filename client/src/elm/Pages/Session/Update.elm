@@ -88,7 +88,7 @@ updateFoundSession currentDate zscores sessionId session db msg model =
                             (\childId ->
                                 [ Maybe.map (Backend.Session.Model.MeasurementOutMsgChild childId) updateReturns.outMsg
                                 ]
-                                    |> List.filterMap identity
+                                    |> Maybe.Extra.values
                                     |> List.map (App.Model.MsgIndexedDb << Backend.Model.MsgSession sessionId)
                             )
                         |> Maybe.withDefault []
@@ -138,7 +138,7 @@ updateFoundSession currentDate zscores sessionId session db msg model =
                             (\motherId ->
                                 [ Maybe.map (Backend.Session.Model.MeasurementOutMsgMother motherId) updateReturns.outMsg
                                 ]
-                                    |> List.filterMap identity
+                                    |> Maybe.Extra.values
                                     |> List.map (App.Model.MsgIndexedDb << Backend.Model.MsgSession sessionId)
                             )
                         |> Maybe.withDefault []

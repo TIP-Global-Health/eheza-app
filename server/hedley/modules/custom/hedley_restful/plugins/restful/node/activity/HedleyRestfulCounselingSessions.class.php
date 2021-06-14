@@ -40,11 +40,11 @@ class HedleyRestfulCounselingSessions extends HedleyRestfulGroupActivityBase {
     ];
 
     foreach ($field_names as $field_name) {
-      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
+      hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
     }
 
     // Get the UUID of the health center.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_topics.field_topics_target_id", 'uuids_topics');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_topics.field_topics_target_id", 'uuids_topics');
     $query->addExpression("GROUP_CONCAT(DISTINCT uuids_topics.field_uuid_value)", 'uuids_topics');
     $query->groupBy('node.nid');
   }

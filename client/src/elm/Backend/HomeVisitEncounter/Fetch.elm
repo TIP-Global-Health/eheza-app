@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Utils exposing (resolveHomeVisitParticipantForChild)
 import Backend.IndividualEncounterType.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
 
 
@@ -30,7 +31,7 @@ fetchForChild id db =
             encountersIds
                 |> List.map FetchHomeVisitMeasurements
     in
-    List.filterMap identity
+    Maybe.Extra.values
         [ Maybe.map FetchIndividualEncounterParticipant participantId
         , Maybe.map FetchHomeVisitEncountersForParticipant participantId
         , Just <| FetchPerson id

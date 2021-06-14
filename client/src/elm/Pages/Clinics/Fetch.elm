@@ -2,6 +2,7 @@ module Pages.Clinics.Fetch exposing (fetch)
 
 import Backend.Entities exposing (..)
 import Backend.Model
+import Maybe.Extra
 
 
 {-| The `fetch` function is an innovation in how to manage the "lazy" loading
@@ -58,7 +59,7 @@ fetch clinicId =
     -- centrally, by looking at the messages we return. That allows us to
     -- **remember** what data is desired ... and, thus, no longer desired ...
     -- so we can know when to **forget** things as well.
-    List.filterMap identity
+    Maybe.Extra.values
         [ Just Backend.Model.FetchClinics
         , Maybe.map Backend.Model.FetchSessionsByClinic clinicId
         ]

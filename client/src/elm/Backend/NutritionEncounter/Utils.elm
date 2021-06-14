@@ -193,7 +193,7 @@ generateNutritionAssesment currentDate zscores childId muacValue weightValue nut
                                         List.Extra.getAt (index + 1) fourLatest
                                             |> Maybe.map (\previousWeight -> previousWeight - weight)
                                     )
-                                |> List.filterMap identity
+                                |> Maybe.Extra.values
                                 |> (\diffs ->
                                         -- Each diff needs to be 0.5 or more
                                         if List.all (\diff -> diff >= 0.5) diffs then
@@ -252,7 +252,7 @@ generateNutritionAssesment currentDate zscores childId muacValue weightValue nut
                 |> Maybe.withDefault []
     in
     [ assesmentByMuac, assesmentByWeightForAgeZScore, assesmentByConsecutiveWeight, assementByNutritionSigns ]
-        |> List.filterMap identity
+        |> Maybe.Extra.values
 
 
 resolveAllWeightMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, Float )

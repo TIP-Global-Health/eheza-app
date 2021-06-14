@@ -181,6 +181,7 @@ import Http exposing (Error(..), expectJson)
 import HttpBuilder exposing (withExpect, withHeader, withQueryParams)
 import Json.Decode as JD exposing (Decoder, field)
 import Json.Encode exposing (Value)
+import Maybe.Extra
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (AccessToken, BackendUrl, appendUrl)
 import Task exposing (Task)
@@ -1229,7 +1230,7 @@ encodeCredentials config credentials =
             Maybe.map (\encoder -> ( "user", encoder credentials.user )) config.encodeUser
     in
     [ encodedAccessToken, encodedUser ]
-        |> List.filterMap identity
+        |> Maybe.Extra.values
         |> Json.Encode.object
         |> Json.Encode.encode 0
 

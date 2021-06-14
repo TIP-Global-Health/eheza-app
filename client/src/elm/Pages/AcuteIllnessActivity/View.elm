@@ -342,7 +342,7 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
                     |> Maybe.withDefault []
 
             content =
-                List.filterMap identity
+                Maybe.Extra.values
                     [ viewBodyTemperature
                     , viewRespiratoryRate
                     , viewTravelHistory

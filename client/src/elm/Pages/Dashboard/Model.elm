@@ -3,13 +3,14 @@ module Pages.Dashboard.Model exposing (..)
 import AssocList exposing (Dict)
 import Backend.Dashboard.Model exposing (ParticipantStats)
 import Backend.Entities exposing (HealthCenterId, VillageId)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Pages.Page exposing (DashboardPage(..), Page(..))
+import Pages.Page exposing (AcuteIllnessDashboardPage(..), ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..))
 
 
 type FilterPeriod
@@ -33,16 +34,6 @@ type BeneficiariesTableLabels
     | Missed
     | Malnourished
     | Total
-
-
-filterPeriodsForMainPage : List FilterPeriod
-filterPeriodsForMainPage =
-    []
-
-
-filterPeriodsForCaseManagementPage : List FilterPeriod
-filterPeriodsForCaseManagementPage =
-    []
 
 
 filterPeriodsForStatsPage : List FilterPeriod
@@ -125,6 +116,11 @@ type alias Model =
     , currentCaseManagementSubFilter : DashboardSubFilter
     , latestPage : DashboardPage
     , modalState : Maybe ModalState
+
+    -- This is used by month selector to determine
+    -- the gap from current month. We allow to go back
+    -- 6 months, so, valid values are between 0 and 5.
+    , monthGap : MonthGap
     }
 
 
@@ -153,7 +149,17 @@ emptyModel maybeSelectedVillage =
     , currentCaseManagementSubFilter = FilterTotal
     , latestPage = MainPage
     , modalState = Nothing
+    , monthGap = 0
     }
+
+
+type alias MonthGap =
+    Int
+
+
+maxMonthGap : MonthGap
+maxMonthGap =
+    5
 
 
 type ModalState
@@ -219,8 +225,27 @@ type MonthlyChartType
     | MonthlyChartIncidence
 
 
+type FeverCause
+    = FeverCauseCovid19
+    | FeverCauseMalaria
+    | FeverCauseRespiratory
+    | FeverCauseGI
+    | FeverCauseUnknown
+
+
+allFeverCauses : List FeverCause
+allFeverCauses =
+    [ FeverCauseCovid19
+    , FeverCauseMalaria
+    , FeverCauseRespiratory
+    , FeverCauseGI
+    , FeverCauseUnknown
+    ]
+
+
 type Msg
     = SetModalState (Maybe ModalState)
+    | ChangeMonthGap Int
     | NavigateToStuntingTable DashboardSubFilter
     | SetFilterGender FilterGender
     | SetFilterPeriod FilterPeriod

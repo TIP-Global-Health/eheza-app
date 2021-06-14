@@ -30,9 +30,9 @@ abstract class HedleyRestfulPrenatalActivityBase extends HedleyRestfulActivityBa
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     $query = parent::alterQueryForViewWithDbSelect($query);
 
-    hedley_restful_join_field_to_query($query, 'node', 'field_prenatal_encounter', FALSE);
+    hedley_general_join_field_to_query($query, 'node', 'field_prenatal_encounter', FALSE);
     // Get the UUID of the Prenatal encounter.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_prenatal_encounter.field_prenatal_encounter_target_id", 'uuid_prenatal_encounter');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_prenatal_encounter.field_prenatal_encounter_target_id", 'uuid_prenatal_encounter');
 
     return $query;
   }

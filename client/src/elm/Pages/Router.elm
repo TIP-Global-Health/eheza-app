@@ -67,11 +67,35 @@ pageToFragment current =
                                 MainPage ->
                                     "main"
 
-                                StatsPage ->
-                                    "stats"
+                                NursePage nurseDashboardPage ->
+                                    case nurseDashboardPage of
+                                        StatsPage ->
+                                            "stats"
 
-                                CaseManagementPage ->
-                                    "case-management"
+                                        CaseManagementPage ->
+                                            "case-management"
+
+                                ChwPage chwDashboardPage ->
+                                    case chwDashboardPage of
+                                        AcuteIllnessPage acuteIllnessSubPage ->
+                                            case acuteIllnessSubPage of
+                                                OverviewPage ->
+                                                    "acute-illness"
+
+                                                Covid19Page ->
+                                                    "covid-19"
+
+                                                MalariaPage ->
+                                                    "malaria"
+
+                                                GastroPage ->
+                                                    "gastro"
+
+                                        NutritionPage ->
+                                            "nutrition"
+
+                                        AntenatalPage ->
+                                            "antenatal"
                     in
                     Just ("dashboard/" ++ url)
 
@@ -272,8 +296,14 @@ parseDashboardPage : Parser (DashboardPage -> c) c
 parseDashboardPage =
     oneOf
         [ map MainPage (s "main")
-        , map StatsPage (s "stats")
-        , map CaseManagementPage (s "case-management")
+        , map (NursePage StatsPage) (s "stats")
+        , map (NursePage CaseManagementPage) (s "case-management")
+        , map (ChwPage <| AcuteIllnessPage OverviewPage) (s "acute-illness")
+        , map (ChwPage <| AcuteIllnessPage Covid19Page) (s "covid-19")
+        , map (ChwPage <| AcuteIllnessPage MalariaPage) (s "malaria")
+        , map (ChwPage <| AcuteIllnessPage GastroPage) (s "gastro")
+        , map (ChwPage NutritionPage) (s "nutrition")
+        , map (ChwPage AntenatalPage) (s "antenatal")
         ]
 
 

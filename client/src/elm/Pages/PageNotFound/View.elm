@@ -14,8 +14,7 @@ view : Language -> String -> Html Msg
 view language url =
     div
         [ class "wrap wrap-alt-2" ]
-        [ div
-            [ class "ui segment center aligned" ]
+        [ div [ class "ui segment center aligned" ]
             [ h2 [] [ text <| translate language Trans.PageNotFoundMsg ]
             , h4 [] [ text url ]
             , button

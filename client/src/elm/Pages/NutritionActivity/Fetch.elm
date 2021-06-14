@@ -3,6 +3,7 @@ module Pages.NutritionActivity.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb)
+import Maybe.Extra
 import Pages.NutritionEncounter.Fetch
 import RemoteData exposing (RemoteData(..))
 
@@ -24,5 +25,5 @@ fetch id db =
                 |> Maybe.map .person
     in
     Pages.NutritionEncounter.Fetch.fetch id db
-        ++ List.filterMap identity
+        ++ Maybe.Extra.values
             [ Maybe.map Backend.Model.FetchChildMeasurements personId ]
