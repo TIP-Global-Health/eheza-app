@@ -2932,12 +2932,12 @@ translationSet trans =
 
                 NutritionPage ->
                     { english = "Child Nutrition"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imirire y'Umwana"
                     }
 
                 AntenatalPage ->
                     { english = "Antenatal Care"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma ku Mugore Utwite"
                     }
 
         EncounterTypeFollowUpLabel encounterType ->
