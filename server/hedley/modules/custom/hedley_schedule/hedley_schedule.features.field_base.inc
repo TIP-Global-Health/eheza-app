@@ -185,6 +185,7 @@ function hedley_schedule_field_default_field_bases() {
         'home-visit' => 'Home visit',
         'inmmunization' => 'Inmmunization',
         'nutrition' => 'Nutrition',
+        'well-child' => 'Well Child',
       ),
       'allowed_values_function' => '',
     ),
