@@ -1407,6 +1407,10 @@ type alias HomeVisitMeasurements =
     }
 
 
+type alias WellChildMeasurements =
+    {}
+
+
 {-| This is like `ChildMeasurementList`, except that it just covers one
 of each kind of measurements (rather than a list of each kind).
 
