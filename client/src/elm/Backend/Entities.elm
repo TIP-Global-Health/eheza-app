@@ -781,3 +781,11 @@ type alias PrenatalAppointmentConfirmationId =
 
 type PrenatalAppointmentConfirmationUuidType
     = PrenatalAppointmentConfirmationUuidType
+
+
+type alias WellChildEncounterId =
+    EntityUuid WellChildEncounterUuidType
+
+
+type WellChildEncounterUuidType
+    = HomeVisitEncounterUuidType
