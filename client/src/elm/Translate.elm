@@ -2922,12 +2922,12 @@ translationSet trans =
 
                         MalariaPage ->
                             { english = "Malaria"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Malariya"
                             }
 
                         GastroPage ->
                             { english = "Gastro"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Indwara yo mu nda"
                             }
 
                 NutritionPage ->
@@ -8115,17 +8115,17 @@ translateDashboard trans =
 
         HomeDeliveries ->
             { english = "Home Deliveries"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ababyariye mu Rugo"
             }
 
         HealthFacilityDeliveries ->
             { english = "Health Facility Deliveries"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ababyariye ku Ivuriro"
             }
 
         HealthCenterReferrals ->
             { english = "Health Center Referrals"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Aboherejwe ku kigo nderabuzima"
             }
 
         IncidenceOf ->
@@ -8346,7 +8346,7 @@ translateDashboard trans =
 
         WithDangerSigns ->
             { english = "With Danger Signs"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Abafite Ibimenyetso Mpuruza"
             }
 
 
