@@ -58,6 +58,7 @@ dependencies[] = hedley_schedule
 dependencies[] = hedley_stats
 dependencies[] = hedley_user
 dependencies[] = hedley_view_export
+dependencies[] = hedley_well_child
 
 ; Base class for SimpleTests.
 files[] = HedleyWebTestBase.inc

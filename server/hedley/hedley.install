@@ -612,3 +612,10 @@ function hedley_update_7029() {
 function hedley_update_7030() {
   module_enable(['hedley_prenatal']);
 }
+
+/**
+ * Enable the Hedley Well Child module.
+ */
+function hedley_update_7031() {
+  module_enable(['hedley_well_child']);
+}
