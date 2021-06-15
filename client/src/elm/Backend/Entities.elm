@@ -788,4 +788,4 @@ type alias WellChildEncounterId =
 
 
 type WellChildEncounterUuidType
-    = HomeVisitEncounterUuidType
+    = WellChildEncounterUuidType

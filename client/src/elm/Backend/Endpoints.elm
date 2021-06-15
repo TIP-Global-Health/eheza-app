@@ -277,6 +277,11 @@ homeVisitMeasurementsEndpoint =
     swEndpoint "nodes/home-visit-measurements" decodeHomeVisitMeasurements
 
 
+wellChildMeasurementsEndpoint : ReadOnlyEndPoint Error WellChildEncounterId WellChildMeasurements ()
+wellChildMeasurementsEndpoint =
+    swEndpoint "nodes/well-child--measurements" decodeWellChildMeasurements
+
+
 {-| Type-safe params ... how nice!
 -}
 type SessionParams
