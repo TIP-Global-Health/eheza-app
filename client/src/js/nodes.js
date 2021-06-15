@@ -119,6 +119,9 @@
                 else if (type === 'home-visit-measurements') {
                     return viewMeasurements('home_visit_encounter', uuid);
                 }
+                else if (type === 'well-child-measurements') {
+                    return viewMeasurements('well_child_encounter', uuid);
+                }
                 else if (type === 'follow-up-measurements') {
                     return viewFollowUpMeasurements(uuid);
                 }
@@ -493,6 +496,9 @@
                     else if (key === 'home_visit_encounter') {
                         target = node.home_visit_encounter;
                     }
+                    else if (key === 'well_child_encounter') {
+                        target = node.well_child_encounter;
+                    }
 
                     data[target] = data[target] || {};
                     if (data[target][node.type]) {
@@ -718,7 +724,8 @@
                   'prenatal_encounter',
                   'nutrition_encounter',
                   'acute_illness_encounter',
-                  'home_visit_encounter'
+                  'home_visit_encounter',
+                  'well_child_encounter'
                 ];
 
                 if (encounterTypes.includes(type)) {

@@ -29,7 +29,7 @@ var photosUploadUrlRegex = /\/cache-upload\/images/;
  *
  * @type {number}
  */
-var dbVerno = 16;
+var dbVerno = 17;
 
 // All those entities are the entities we're going to get from the backend.
 // They should also be mapped in SyncManager.Model.BackendGeneralEntity (for
@@ -123,7 +123,8 @@ var tableForType = {
     treatment_ongoing: 'shards',
     village: 'nodes',
     vitals: 'shards',
-    weight: 'shards'
+    weight: 'shards',
+    well_child_encounter: 'shards'
 };
 
 function sendRevisions (revisions) {
