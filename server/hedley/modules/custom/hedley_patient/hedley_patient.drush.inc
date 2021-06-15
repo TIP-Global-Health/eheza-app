@@ -61,7 +61,9 @@ function hedley_patient_patient_measurements_report() {
     $group_measurements,
     $antenatal_measurements,
     $nutrition_measurements,
-    $acute_illness_measurements
+    $acute_illness_measurements,
+    $home_visit_measurements,
+    $well_child_measurements
     ) = hedley_patient_group_measurements_by_encounter_type($measurements);
 
   $count = count($group_measurements);
@@ -72,6 +74,10 @@ function hedley_patient_patient_measurements_report() {
   drush_print("Duplicate got $count Nutrition measurements.");
   $count = count($acute_illness_measurements);
   drush_print("Duplicate got $count Acute Illness measurements.");
+  $count = count($home_visit_measurements);
+  drush_print("Duplicate got $count Home Visit measurements.");
+  $count = count($well_child_measurements);
+  drush_print("Duplicate got $count Well Child measurements.");
 }
 
 /**
@@ -126,10 +132,12 @@ function hedley_patient_consolidate_patients() {
     $group_measurements,
     $antenatal_measurements,
     $nutrition_measurements,
-    $acute_illness_measurements
+    $acute_illness_measurements,
+    $home_visit_measurements,
+    $well_child_measurements
     ) = hedley_patient_group_measurements_by_encounter_type($measurements_of_duplicate);
 
-  // Consolidate group measurements.
+  // Consolidate group content.
   $success = hedley_patient_consolidate_group_content($group_measurements, $original);
   // If consolidation failed, we make no changes, so that a fix could be
   // applied, and command could be executed again.
@@ -137,10 +145,11 @@ function hedley_patient_consolidate_patients() {
     return;
   }
 
-  // Consolidate group measurements.
+  // Consolidate individual content.
   hedley_patient_consolidate_antenatal_content($antenatal_measurements, $original, $duplicate);
   hedley_patient_consolidate_nutrition_content($nutrition_measurements, $original, $duplicate);
   hedley_patient_consolidate_acute_illness_content($acute_illness_measurements, $original, $duplicate);
+  // @todo: consolidate Home Visit and Well Child content.
 
   // Mark duplicate patient as Deleted.
   $wrapper_duplicate->field_deleted->set(TRUE);
@@ -437,6 +446,7 @@ function hedley_patient_group_measurements_by_encounter_type(array $measurements
   $nutrition_measurements = [];
   $acute_illness_measurements = [];
   $home_visit_measurements = [];
+  $well_child_measurements = [];
 
   // Group the measurements using encounter type indicator field.
   foreach ($measurements as $measurement) {
@@ -459,11 +469,16 @@ function hedley_patient_group_measurements_by_encounter_type(array $measurements
 
     if ($wrapper->__isset('field_acute_illness_encounter')) {
       $acute_illness_measurements[] = $measurement;
+      continue;
     }
 
     if ($wrapper->__isset('field_home_visit_encounter')) {
-      $nutrition_measurements[] = $measurement;
+      $home_visit_measurements[] = $measurement;
       continue;
+    }
+
+    if ($wrapper->__isset('field_well_child_encounter')) {
+      $well_child_measurements[] = $measurement;
     }
   }
 
@@ -473,6 +488,7 @@ function hedley_patient_group_measurements_by_encounter_type(array $measurements
     $nutrition_measurements,
     $acute_illness_measurements,
     $home_visit_measurements,
+    $well_child_measurements,
   ];
 }
 
