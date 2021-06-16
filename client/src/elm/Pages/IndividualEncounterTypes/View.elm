@@ -94,6 +94,7 @@ viewContent language currentDate selectedHealthCenter isChw app =
                                 else
                                     [ encounterButton AntenatalEncounter
                                     , encounterButton NutritionEncounter
+                                    , encounterButton WellChildEncounter
                                     ]
                         in
                         p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ]
