@@ -49,6 +49,7 @@ import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Initiator)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator, RecordPreganancyInitiator)
+import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 
 
 {-| What does the user want to see?
@@ -166,6 +167,9 @@ type UserPage
     | AcuteIllnessOutcomePage IndividualEncounterParticipantId -- this is where acute illness outcome is recorded.
     | HomeVisitEncounterPage HomeVisitEncounterId -- home visit activities index.
     | HomeVisitActivityPage HomeVisitEncounterId HomeVisitActivity -- record home visit activity.
+    | WellChildParticipantPage PersonId
+    | WellChildEncounterPage WellChildEncounterId -- well child activities index.
+    | WellChildActivityPage WellChildEncounterId WellChildActivity -- record well child activity.
 
 
 {-| We group together the pages that can only be viewed in the Dashboard

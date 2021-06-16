@@ -323,6 +323,7 @@ type MsgIndexedDb
     | MsgNutritionEncounter NutritionEncounterId Backend.NutritionEncounter.Model.Msg
     | MsgAcuteIllnessEncounter AcuteIllnessEncounterId Backend.AcuteIllnessEncounter.Model.Msg
     | MsgHomeVisitEncounter HomeVisitEncounterId Backend.HomeVisitEncounter.Model.Msg
+    | MsgWellChildEncounter WellChildEncounterId Backend.WellChildEncounter.Model.Msg
     | MsgIndividualSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
     | ResetFailedToFetchAuthorities
 

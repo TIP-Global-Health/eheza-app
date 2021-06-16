@@ -56,6 +56,7 @@ import Backend.PrenatalActivity.Model
         )
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
@@ -964,6 +965,7 @@ type TranslationId
     | WeekSinglePlural Int
     | Weight
     | WelcomeUser String
+    | WellChildActivityTitle WellChildActivity
     | WhatDoYouWantToDo
     | WhatType
     | WhatWasTheirResponse
@@ -7390,6 +7392,13 @@ translationSet trans =
             , kinyarwanda = Just <| "Murakaza neza " ++ name
             }
 
+        WellChildActivityTitle activity ->
+            case activity of
+                WellChildNutritionAssessment ->
+                    { english = "Nutrition Assesmen"
+                    , kinyarwanda = Nothing
+                    }
+
         WhatDoYouWantToDo ->
             { english = "What do you want to do?"
             , kinyarwanda = Just "Urashaka gukora iki?"
@@ -7761,6 +7770,21 @@ translateActivePage page =
 
                 HomeVisitActivityPage _ _ ->
                     { english = "Home Visit Activity"
+                    , kinyarwanda = Nothing
+                    }
+
+                WellChildParticipantPage _ ->
+                    { english = "Well Child Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                WellChildEncounterPage _ ->
+                    { english = "Well Child Encounter"
+                    , kinyarwanda = Just "Gusura abarwayi mu rugo"
+                    }
+
+                WellChildActivityPage _ _ ->
+                    { english = "Well Child Activity"
                     , kinyarwanda = Nothing
                     }
 

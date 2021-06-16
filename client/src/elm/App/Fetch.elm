@@ -35,6 +35,9 @@ import Pages.PrenatalEncounter.Fetch
 import Pages.PrenatalParticipant.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
+import Pages.WellChildActivity.Fetch
+import Pages.WellChildEncounter.Fetch
+import Pages.WellChildParticipant.Fetch
 import Time
 
 
@@ -163,6 +166,15 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
+            UserPage (WellChildParticipantPage personId) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( _, loggedIn ) ->
+                            Pages.WellChildParticipant.Fetch.fetch personId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
+
             UserPage (IndividualEncounterParticipantsPage encounterType) ->
                 getLoggedInData model
                     |> Maybe.map
@@ -218,6 +230,14 @@ fetch model =
 
             UserPage (HomeVisitActivityPage id _) ->
                 Pages.HomeVisitActivity.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (WellChildEncounterPage id) ->
+                Pages.WellChildEncounter.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (WellChildActivityPage id _) ->
+                Pages.WellChildActivity.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (NutritionProgressReportPage nutritionEncounterId) ->

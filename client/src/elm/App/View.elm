@@ -62,6 +62,11 @@ import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
 import Pages.Session.View
+import Pages.WellChildActivity.Model
+import Pages.WellChildActivity.View
+import Pages.WellChildEncounter.Model
+import Pages.WellChildEncounter.View
+import Pages.WellChildParticipant.View
 import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
 import SyncManager.View
@@ -391,6 +396,9 @@ viewUserPage page deviceName model configured =
 
                     NutritionParticipantPage id ->
                         Pages.NutritionParticipant.View.view model.language currentDate healthCenterId id isChw model.indexedDb
+
+                    WellChildParticipantPage id ->
+                        Pages.WellChildParticipant.View.view model.language currentDate healthCenterId id isChw model.indexedDb
                             |> flexPageWrapper model
 
                     AcuteIllnessParticipantPage id ->
@@ -567,6 +575,26 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.HomeVisitActivity.View.view model.language currentDate id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageHomeVisitActivity id activity)
+                            |> flexPageWrapper model
+
+                    WellChildEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.wellChildEncounterPages
+                                    |> Maybe.withDefault Pages.WellChildEncounter.Model.emptyModel
+                        in
+                        Pages.WellChildEncounter.View.view model.language currentDate id isChw model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageWellChildEncounter id)
+                            |> flexPageWrapper model
+
+                    WellChildActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.wellChildActivityPages
+                                    |> Maybe.withDefault Pages.WellChildActivity.Model.emptyModel
+                        in
+                        Pages.WellChildActivity.View.view model.language currentDate id activity model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageWellChildActivity id activity)
                             |> flexPageWrapper model
 
             else

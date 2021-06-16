@@ -8,6 +8,7 @@ import Backend.Model
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionActivity.Model exposing (NutritionActivity)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity)
+import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Browser
 import Browser.Navigation as Nav
 import Config.Model
@@ -40,6 +41,8 @@ import Pages.PrenatalEncounter.Model
 import Pages.PrenatalParticipant.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
+import Pages.WellChildActivity.Model
+import Pages.WellChildEncounter.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import ServiceWorker.Model
@@ -254,6 +257,8 @@ type alias LoggedInModel =
     , acuteIllnessOutcomePages : Dict IndividualEncounterParticipantId Pages.AcuteIllnessOutcome.Model.Model
     , homeVisitEncounterPages : Dict HomeVisitEncounterId Pages.HomeVisitEncounter.Model.Model
     , homeVisitActivityPages : Dict ( HomeVisitEncounterId, HomeVisitActivity ) Pages.HomeVisitActivity.Model.Model
+    , wellChildEncounterPages : Dict WellChildEncounterId Pages.WellChildEncounter.Model.Model
+    , wellChildActivityPages : Dict ( WellChildEncounterId, WellChildActivity ) Pages.WellChildActivity.Model.Model
     }
 
 
@@ -282,6 +287,8 @@ emptyLoggedInModel villageId nurse =
     , acuteIllnessOutcomePages = Dict.empty
     , homeVisitEncounterPages = Dict.empty
     , homeVisitActivityPages = Dict.empty
+    , wellChildEncounterPages = Dict.empty
+    , wellChildActivityPages = Dict.empty
     }
 
 
@@ -335,11 +342,13 @@ type MsgLoggedIn
     | MsgPageNutritionEncounter NutritionEncounterId Pages.NutritionEncounter.Model.Msg
     | MsgPageAcuteIllnessEncounter AcuteIllnessEncounterId Pages.AcuteIllnessEncounter.Model.Msg
     | MsgPageHomeVisitEncounter HomeVisitEncounterId Pages.HomeVisitEncounter.Model.Msg
+    | MsgPageWellChildEncounter WellChildEncounterId Pages.WellChildEncounter.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.PrenatalActivity.Model.Msg
     | MsgPageNutritionActivity NutritionEncounterId NutritionActivity Pages.NutritionActivity.Model.Msg
-    | MsgPageHomeVisitActivity HomeVisitEncounterId HomeVisitActivity Pages.HomeVisitActivity.Model.Msg
-    | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
     | MsgPageAcuteIllnessActivity AcuteIllnessEncounterId AcuteIllnessActivity Pages.AcuteIllnessActivity.Model.Msg
+    | MsgPageHomeVisitActivity HomeVisitEncounterId HomeVisitActivity Pages.HomeVisitActivity.Model.Msg
+    | MsgPageWellChildActivity WellChildEncounterId WellChildActivity Pages.WellChildActivity.Model.Msg
+    | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
     | MsgPageAcuteIllnessProgressReport AcuteIllnessEncounterId Pages.AcuteIllnessProgressReport.Model.Msg
     | MsgPageAcuteIllnessOutcome IndividualEncounterParticipantId Pages.AcuteIllnessOutcome.Model.Msg
 

@@ -1485,6 +1485,25 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        MsgWellChildEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.wellChildEncounters
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.wellChildEncounterRequests
+                        |> Maybe.withDefault Backend.WellChildEncounter.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.WellChildEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+            in
+            ( { model | wellChildEncounterRequests = Dict.insert encounterId subModel model.wellChildEncounterRequests }
+            , Cmd.map (MsgWellChildEncounter encounterId) subCmd
+            , []
+            )
+
         MsgIndividualSession participantId subMsg ->
             let
                 participant =

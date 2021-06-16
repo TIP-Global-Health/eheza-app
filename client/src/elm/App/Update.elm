@@ -67,6 +67,10 @@ import Pages.Relationship.Update
 import Pages.Router exposing (activePageByUrl, pageToFragment)
 import Pages.Session.Model
 import Pages.Session.Update
+import Pages.WellChildActivity.Model
+import Pages.WellChildActivity.Update
+import Pages.WellChildEncounter.Model
+import Pages.WellChildEncounter.Update
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
 import ServiceWorker.Model
@@ -417,6 +421,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageWellChildEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.wellChildEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.WellChildEncounter.Model.emptyModel
+                                        |> Pages.WellChildEncounter.Update.update subMsg
+                            in
+                            ( { data | wellChildEncounterPages = Dict.insert id subModel data.wellChildEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageWellChildEncounter id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePrenatalActivity id activity subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -466,6 +483,19 @@ update msg model =
                             in
                             ( { data | homeVisitActivityPages = Dict.insert ( id, activity ) subModel data.homeVisitActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageHomeVisitActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageWellChildActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.wellChildActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.WellChildActivity.Model.emptyModel
+                                        |> Pages.WellChildActivity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | wellChildActivityPages = Dict.insert ( id, activity ) subModel data.wellChildActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageWellChildActivity id activity) subCmd
                             , extraMsgs
                             )
 
