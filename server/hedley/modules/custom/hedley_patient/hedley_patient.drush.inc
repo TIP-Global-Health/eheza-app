@@ -149,7 +149,8 @@ function hedley_patient_consolidate_patients() {
   hedley_patient_consolidate_antenatal_content($antenatal_measurements, $original, $duplicate);
   hedley_patient_consolidate_nutrition_content($nutrition_measurements, $original, $duplicate);
   hedley_patient_consolidate_acute_illness_content($acute_illness_measurements, $original, $duplicate);
-  // @todo: consolidate Home Visit and Well Child content.
+  hedley_patient_consolidate_home_visit_content($home_visit_measurements, $original, $duplicate);
+  hedley_patient_consolidate_well_child_content($well_child_measurements, $original, $duplicate);
 
   // Mark duplicate patient as Deleted.
   $wrapper_duplicate->field_deleted->set(TRUE);
@@ -422,6 +423,38 @@ function hedley_patient_consolidate_acute_illness_content(array $measurements, $
   // with the original patient.
   hedley_patient_associate_content_by_field($participants_duplicate, 'field_person', $original);
   hedley_patient_associate_content_by_field($measurements, 'field_person', $original);
+}
+
+/**
+ * Performs consolidation of Home Visit encounters content.
+ *
+ * @param array $measurements
+ *   A list of group measurements that belong to the 'duplicate' patient.
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function hedley_patient_consolidate_home_visit_content(array $measurements, $original, $duplicate) {
+  // @todo: Implement.
+}
+
+/**
+ * Performs consolidation of Well Child encounters content.
+ *
+ * @param array $measurements
+ *   A list of group measurements that belong to the 'duplicate' patient.
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function hedley_patient_consolidate_well_child_content(array $measurements, $original, $duplicate) {
+  // @todo: Implement.
 }
 
 /**
