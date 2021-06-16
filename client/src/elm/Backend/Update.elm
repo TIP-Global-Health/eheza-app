@@ -450,6 +450,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchWellChildEncountersForParticipant id ->
+            ( { model | wellChildEncountersByParticipant = Dict.insert id Loading model.wellChildEncountersByParticipant }
+            , sw.select wellChildEncounterEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedWellChildEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedWellChildEncountersForParticipant id data ->
+            ( { model | wellChildEncountersByParticipant = Dict.insert id data model.wellChildEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
         FetchAcuteIllnessEncountersForParticipant id ->
             ( { model | acuteIllnessEncountersByParticipant = Dict.insert id Loading model.acuteIllnessEncountersByParticipant }
             , sw.select acuteIllnessEncounterEndpoint (Just id)
@@ -524,6 +537,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandleFetchedHomeVisitMeasurements id data ->
             ( { model | homeVisitMeasurements = Dict.insert id data model.homeVisitMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchWellChildMeasurements id ->
+            ( { model | wellChildMeasurements = Dict.insert id Loading model.wellChildMeasurements }
+            , sw.get wellChildMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedWellChildMeasurements id)
+            , []
+            )
+
+        HandleFetchedWellChildMeasurements id data ->
+            ( { model | wellChildMeasurements = Dict.insert id data model.wellChildMeasurements }
             , Cmd.none
             , []
             )
@@ -792,6 +818,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandleFetchedHomeVisitEncounter id data ->
             ( { model | homeVisitEncounters = Dict.insert id data model.homeVisitEncounters }
+            , Cmd.none
+            , []
+            )
+
+        FetchWellChildEncounter id ->
+            ( { model | wellChildEncounters = Dict.insert id Loading model.wellChildEncounters }
+            , sw.get wellChildEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedWellChildEncounter id)
+            , []
+            )
+
+        HandleFetchedWellChildEncounter id data ->
+            ( { model | wellChildEncounters = Dict.insert id data model.wellChildEncounters }
             , Cmd.none
             , []
             )

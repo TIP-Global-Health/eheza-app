@@ -36,6 +36,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEnco
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.Village.Model exposing (Village)
+import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import RemoteData exposing (RemoteData(..), WebData)
 import Time
 
@@ -80,6 +81,7 @@ type alias ModelIndexedDb =
     , acuteIllnessEncounterRequests : Dict AcuteIllnessEncounterId Backend.AcuteIllnessEncounter.Model.Model
     , individualSessionRequests : Dict IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Model
     , homeVisitEncounterRequests : Dict HomeVisitEncounterId Backend.HomeVisitEncounter.Model.Model
+    , wellChildEncounterRequests : Dict WellChildEncounterId Backend.WellChildEncounter.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -101,6 +103,7 @@ type alias ModelIndexedDb =
     , nutritionEncounters : Dict NutritionEncounterId (WebData NutritionEncounter)
     , acuteIllnessEncounters : Dict AcuteIllnessEncounterId (WebData AcuteIllnessEncounter)
     , homeVisitEncounters : Dict HomeVisitEncounterId (WebData HomeVisitEncounter)
+    , wellChildEncounters : Dict WellChildEncounterId (WebData WellChildEncounter)
     , individualParticipants : Dict IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
 
     -- Cache things organized in certain ways.
@@ -109,11 +112,13 @@ type alias ModelIndexedDb =
     , nutritionEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict NutritionEncounterId NutritionEncounter))
     , acuteIllnessEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
     , homeVisitEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict HomeVisitEncounterId HomeVisitEncounter))
+    , wellChildEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict WellChildEncounterId WellChildEncounter))
     , prenatalMeasurements : Dict PrenatalEncounterId (WebData PrenatalMeasurements)
     , nutritionMeasurements : Dict NutritionEncounterId (WebData NutritionMeasurements)
     , acuteIllnessMeasurements : Dict AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
     , followUpMeasurements : Dict HealthCenterId (WebData FollowUpMeasurements)
     , homeVisitMeasurements : Dict HomeVisitEncounterId (WebData HomeVisitMeasurements)
+    , wellChildMeasurements : Dict WellChildEncounterId (WebData WellChildMeasurements)
 
     -- From the point of view of the specified person, all of their relationships.
     , relationshipsByPerson : Dict PersonId (WebData (Dict RelationshipId MyRelationship))
@@ -132,6 +137,7 @@ type alias ModelIndexedDb =
     , postNutritionEncounter : Dict IndividualEncounterParticipantId (WebData ( NutritionEncounterId, NutritionEncounter ))
     , postAcuteIllnessEncounter : Dict IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))
     , postHomeVisitEncounter : Dict IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
+    , postWellChildEncounter : Dict IndividualEncounterParticipantId (WebData ( WellChildEncounterId, WellChildEncounter ))
 
     -- Dashboard Statistics.
     , computedDashboard : Dict HealthCenterId DashboardStats
@@ -150,6 +156,9 @@ emptyModelIndexedDb =
     , villages = NotAsked
     , motherMeasurements = Dict.empty
     , childMeasurements = Dict.empty
+    , prenatalEncounters = Dict.empty
+    , prenatalEncountersByParticipant = Dict.empty
+    , prenatalMeasurements = Dict.empty
     , nutritionEncounters = Dict.empty
     , nutritionEncountersByParticipant = Dict.empty
     , nutritionMeasurements = Dict.empty
@@ -159,9 +168,9 @@ emptyModelIndexedDb =
     , homeVisitEncounters = Dict.empty
     , homeVisitEncountersByParticipant = Dict.empty
     , homeVisitMeasurements = Dict.empty
-    , prenatalEncounters = Dict.empty
-    , prenatalEncountersByParticipant = Dict.empty
-    , prenatalMeasurements = Dict.empty
+    , wellChildEncounters = Dict.empty
+    , wellChildEncountersByParticipant = Dict.empty
+    , wellChildMeasurements = Dict.empty
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
     , people = Dict.empty
@@ -172,6 +181,7 @@ emptyModelIndexedDb =
     , postPrenatalEncounter = Dict.empty
     , postNutritionEncounter = Dict.empty
     , postHomeVisitEncounter = Dict.empty
+    , postWellChildEncounter = Dict.empty
     , postAcuteIllnessEncounter = Dict.empty
     , postRelationship = Dict.empty
     , postSession = NotAsked
@@ -179,6 +189,7 @@ emptyModelIndexedDb =
     , nutritionEncounterRequests = Dict.empty
     , acuteIllnessEncounterRequests = Dict.empty
     , homeVisitEncounterRequests = Dict.empty
+    , wellChildEncounterRequests = Dict.empty
     , individualSessionRequests = Dict.empty
     , individualParticipants = Dict.empty
     , individualParticipantsByPerson = Dict.empty
@@ -223,6 +234,9 @@ type MsgIndexedDb
     | FetchHomeVisitEncounter HomeVisitEncounterId
     | FetchHomeVisitEncountersForParticipant IndividualEncounterParticipantId
     | FetchHomeVisitMeasurements HomeVisitEncounterId
+    | FetchWellChildEncounter WellChildEncounterId
+    | FetchWellChildEncountersForParticipant IndividualEncounterParticipantId
+    | FetchWellChildMeasurements WellChildEncounterId
     | FetchParticipantForms
     | FetchParticipantsForPerson PersonId
     | FetchPeopleByName String
@@ -259,6 +273,9 @@ type MsgIndexedDb
     | HandleFetchedHomeVisitEncounter HomeVisitEncounterId (WebData HomeVisitEncounter)
     | HandleFetchedHomeVisitEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict HomeVisitEncounterId HomeVisitEncounter))
     | HandleFetchedHomeVisitMeasurements HomeVisitEncounterId (WebData HomeVisitMeasurements)
+    | HandleFetchedWellChildEncounter WellChildEncounterId (WebData WellChildEncounter)
+    | HandleFetchedWellChildEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict WellChildEncounterId WellChildEncounter))
+    | HandleFetchedWellChildMeasurements WellChildEncounterId (WebData WellChildMeasurements)
     | HandleFetchedParticipantForms (WebData (Dict ParticipantFormId ParticipantForm))
     | HandleFetchedParticipantsForPerson PersonId (WebData (Dict PmtctParticipantId PmtctParticipant))
     | HandleFetchedPeopleByName String (WebData (Dict PersonId Person))

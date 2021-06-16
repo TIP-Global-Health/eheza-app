@@ -373,8 +373,8 @@ homeVisitEncounterEndpoint =
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
-wellChildtEncounterEndpoint : ReadWriteEndPoint Error WellChildEncounterId WellChildEncounter WellChildEncounter (Maybe IndividualEncounterParticipantId)
-wellChildtEncounterEndpoint =
+wellChildEncounterEndpoint : ReadWriteEndPoint Error WellChildEncounterId WellChildEncounter WellChildEncounter (Maybe IndividualEncounterParticipantId)
+wellChildEncounterEndpoint =
     swEndpoint "nodes/well_child_encounter" decodeWellChildEncounter
         |> withValueEncoder (object << encodeWellChildEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
