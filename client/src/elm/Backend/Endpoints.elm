@@ -48,6 +48,9 @@ import Backend.Session.Encoder exposing (encodeSession)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.Village.Model exposing (Village)
+import Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
+import Backend.WellChildEncounter.Encoder exposing (encodeWellChildEncounter)
+import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Http exposing (Error)
 import Json.Decode exposing (Decoder, field)
 import Json.Encode exposing (Value, object)
@@ -367,6 +370,13 @@ homeVisitEncounterEndpoint : ReadWriteEndPoint Error HomeVisitEncounterId HomeVi
 homeVisitEncounterEndpoint =
     swEndpoint "nodes/home_visit_encounter" decodeHomeVisitEncounter
         |> withValueEncoder (object << encodeHomeVisitEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
+
+
+wellChildtEncounterEndpoint : ReadWriteEndPoint Error WellChildEncounterId WellChildEncounter WellChildEncounter (Maybe IndividualEncounterParticipantId)
+wellChildtEncounterEndpoint =
+    swEndpoint "nodes/well_child_encounter" decodeWellChildEncounter
+        |> withValueEncoder (object << encodeWellChildEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
