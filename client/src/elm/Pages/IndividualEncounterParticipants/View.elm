@@ -116,6 +116,11 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                         |> Maybe.map not
                         |> Maybe.withDefault False
 
+                WellChildEncounter ->
+                    isPersonAnAdult currentDate person
+                        |> Maybe.map not
+                        |> Maybe.withDefault False
+
                 _ ->
                     False
 
@@ -216,6 +221,9 @@ viewParticipant language currentDate encounterType db id person =
 
                 NutritionEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| NutritionParticipantPage id ]
+
+                WellChildEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| WellChildParticipantPage id ]
 
                 _ ->
                     []

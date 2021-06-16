@@ -282,7 +282,7 @@ homeVisitMeasurementsEndpoint =
 
 wellChildMeasurementsEndpoint : ReadOnlyEndPoint Error WellChildEncounterId WellChildMeasurements ()
 wellChildMeasurementsEndpoint =
-    swEndpoint "nodes/well-child--measurements" decodeWellChildMeasurements
+    swEndpoint "nodes/well-child-measurements" decodeWellChildMeasurements
 
 
 {-| Type-safe params ... how nice!
