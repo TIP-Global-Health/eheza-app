@@ -18,6 +18,7 @@ import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalEncounter)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Session.Decoder exposing (decodeSession)
 import Backend.Village.Decoder exposing (decodeVillage)
+import Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
 import Json.Decode exposing (..)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid)
 
@@ -293,6 +294,9 @@ decodeRevision =
 
                     "weight" ->
                         decodeWithUuid WeightRevision decodeWeight
+
+                    "well_child_encounter" ->
+                        decodeWithUuid WellChildEncounterRevision decodeWellChildEncounter
 
                     _ ->
                         fail <|

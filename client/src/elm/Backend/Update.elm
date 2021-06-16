@@ -2867,6 +2867,21 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             , True
             )
 
+        WellChildEncounterRevision uuid data ->
+            let
+                wellChildEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.wellChildEncounters
+
+                wellChildEncountersByParticipant =
+                    Dict.remove data.participant model.wellChildEncountersByParticipant
+            in
+            ( { model
+                | wellChildEncounters = wellChildEncounters
+                , wellChildEncountersByParticipant = wellChildEncountersByParticipant
+              }
+            , recalc
+            )
+
 
 generatePrenatalAssesmentMsgs : NominalDate -> Language -> Bool -> Bool -> ModelIndexedDb -> PrenatalEncounterId -> List App.Model.Msg
 generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after id =

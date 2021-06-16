@@ -416,3 +416,4 @@ type Revision
     | VillageRevision VillageId Village
     | VitalsRevision VitalsId Vitals
     | WeightRevision WeightId Weight
+    | WellChildEncounterRevision WellChildEncounterId WellChildEncounter
