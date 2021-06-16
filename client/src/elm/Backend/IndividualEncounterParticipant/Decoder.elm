@@ -1,7 +1,7 @@
 module Backend.IndividualEncounterParticipant.Decoder exposing (..)
 
 import Backend.IndividualEncounterParticipant.Model exposing (..)
-import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString)
+import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeFromString)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
@@ -29,7 +29,7 @@ decodeIndividualEncounterType =
     string
         |> andThen
             (\s ->
-                decodeIndividualEncounterTypeFromString s
+                individualEncounterTypeFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (s ++ " is not a recognized EncounterType" |> fail)
             )

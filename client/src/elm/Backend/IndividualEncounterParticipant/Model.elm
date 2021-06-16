@@ -66,6 +66,7 @@ type IndividualEncounterType
     | HomeVisitEncounter
     | InmmunizationEncounter
     | NutritionEncounter
+    | WellChildEncounter
 
 
 type DeliveryLocation

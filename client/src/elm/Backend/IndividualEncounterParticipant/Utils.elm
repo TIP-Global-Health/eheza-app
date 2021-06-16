@@ -6,8 +6,8 @@ import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isNothing)
 
 
-encodeIndividualEncounterTypeAsString : IndividualEncounterType -> String
-encodeIndividualEncounterTypeAsString encounterType =
+individualEncounterTypeToString : IndividualEncounterType -> String
+individualEncounterTypeToString encounterType =
     case encounterType of
         AcuteIllnessEncounter ->
             "acute-illness"
@@ -24,9 +24,12 @@ encodeIndividualEncounterTypeAsString encounterType =
         NutritionEncounter ->
             "nutrition"
 
+        WellChildEncounter ->
+            "well-child"
 
-decodeIndividualEncounterTypeFromString : String -> Maybe IndividualEncounterType
-decodeIndividualEncounterTypeFromString string =
+
+individualEncounterTypeFromString : String -> Maybe IndividualEncounterType
+individualEncounterTypeFromString string =
     case string of
         "acute-illness" ->
             Just AcuteIllnessEncounter
@@ -42,6 +45,9 @@ decodeIndividualEncounterTypeFromString string =
 
         "nutrition" ->
             Just NutritionEncounter
+
+        "well-child" ->
+            Just WellChildEncounter
 
         _ ->
             Nothing

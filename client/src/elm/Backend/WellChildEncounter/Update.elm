@@ -24,7 +24,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                     (\encounter ->
                         ( { model | closeWellChildEncounter = Loading }
                         , { encounter | endDate = Just currentDate }
-                            |> sw.patchFull homeVisitEncounterEndpoint encounterId
+                            |> sw.patchFull wellChildEncounterEndpoint encounterId
                             |> withoutDecoder
                             |> toCmd (RemoteData.fromResult >> HandleClosedWellChildEncounter)
                         )

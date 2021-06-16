@@ -2879,6 +2879,11 @@ translationSet trans =
                     , kinyarwanda = Just "Imirire y'umwana"
                     }
 
+                WellChildEncounter ->
+                    { english = "Well Child"
+                    , kinyarwanda = Nothing
+                    }
+
         EncounterTypeFollowUpQuestion encounterType ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -2902,6 +2907,11 @@ translationSet trans =
                     }
 
                 NutritionEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                WellChildEncounter ->
                     { english = ""
                     , kinyarwanda = Nothing
                     }
@@ -2965,6 +2975,11 @@ translationSet trans =
                 NutritionEncounter ->
                     { english = "Child Nutrition Follow Up"
                     , kinyarwanda = Just "Gukurikirana imirire y'umwana"
+                    }
+
+                WellChildEncounter ->
+                    { english = "Well Child Follow Up"
+                    , kinyarwanda = Nothing
                     }
 
         EndEncounter ->
@@ -3750,6 +3765,11 @@ translationSet trans =
                     , kinyarwanda = Just "Gusura abarwayi mu rugo bwambere"
                     }
 
+                WellChildEncounter ->
+                    { english = "First Well Child Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
         IndividualEncounterLabel encounterType ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -3777,6 +3797,11 @@ translationSet trans =
                     , kinyarwanda = Just "Gusura abarwayi mu rugo"
                     }
 
+                WellChildEncounter ->
+                    { english = "Well Child Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
         IndividualEncounterSelectVisit encounterType ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -3801,6 +3826,11 @@ translationSet trans =
 
                 HomeVisitEncounter ->
                     { english = "Select Home Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                WellChildEncounter ->
+                    { english = "Select Well Child Visit"
                     , kinyarwanda = Nothing
                     }
 
@@ -3831,6 +3861,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                WellChildEncounter ->
+                    { english = "Subsequent Well Child"
+                    , kinyarwanda = Nothing
+                    }
+
         IndividualEncounterType encounterType ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -3855,6 +3890,11 @@ translationSet trans =
 
                 HomeVisitEncounter ->
                     { english = "Home Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                WellChildEncounter ->
+                    { english = "Well Child"
                     , kinyarwanda = Nothing
                     }
 
@@ -7594,6 +7634,11 @@ translateActivePage page =
 
                         HomeVisitEncounter ->
                             { english = "Home Visit Participants"
+                            , kinyarwanda = Nothing
+                            }
+
+                        WellChildEncounter ->
+                            { english = "Well Child Participant"
                             , kinyarwanda = Nothing
                             }
 

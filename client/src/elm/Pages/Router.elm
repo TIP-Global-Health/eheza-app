@@ -7,7 +7,7 @@ import Backend.AcuteIllnessActivity.Utils
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.HomeVisitActivity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encodeIndividualEncounterTypeAsString)
+import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeFromString, individualEncounterTypeToString)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionActivity.Utils
 import Backend.Person.Model exposing (Initiator(..))
@@ -158,7 +158,7 @@ pageToFragment current =
                     Just <| "acute-illness-participant/" ++ fromEntityUuid id
 
                 IndividualEncounterParticipantsPage encounterType ->
-                    Just <| "individual-participants/" ++ encodeIndividualEncounterTypeAsString encounterType
+                    Just <| "individual-participants/" ++ individualEncounterTypeToString encounterType
 
                 RelationshipPage id1 id2 initiator ->
                     let
@@ -353,7 +353,7 @@ parseHomeVisitActivity =
 
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c
 parseIndividualEncounterType =
-    custom "IndividualEncounterType" decodeIndividualEncounterTypeFromString
+    custom "IndividualEncounterType" individualEncounterTypeFromString
 
 
 parseOrigin : Parser (Initiator -> c) c

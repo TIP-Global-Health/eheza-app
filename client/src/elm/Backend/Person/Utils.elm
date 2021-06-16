@@ -1,6 +1,7 @@
 module Backend.Person.Utils exposing (..)
 
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeToString)
 import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), Initiator(..), ParticipantDirectoryOperation(..), Person)
 import Date
 import Gizra.NominalDate exposing (NominalDate, diffMonths, diffYears)
@@ -110,21 +111,7 @@ initiatorToUrlFragmemt initiator =
             "directory"
 
         IndividualEncounterOrigin encounterType ->
-            case encounterType of
-                AcuteIllnessEncounter ->
-                    "acute-illness"
-
-                AntenatalEncounter ->
-                    "antenatal"
-
-                HomeVisitEncounter ->
-                    "home-visit"
-
-                InmmunizationEncounter ->
-                    "inmmunization"
-
-                NutritionEncounter ->
-                    "nutrition"
+            individualEncounterTypeToString encounterType
 
         GroupEncounterOrigin sessionId ->
             "session-" ++ fromEntityUuid sessionId

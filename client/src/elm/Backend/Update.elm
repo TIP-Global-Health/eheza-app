@@ -48,6 +48,8 @@ import Backend.Utils
         , sw
         )
 import Backend.Village.Utils exposing (getVillageClinicId)
+import Backend.WellChildEncounter.Model exposing (emptyWellChildEncounter)
+import Backend.WellChildEncounter.Update
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -1962,6 +1964,12 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                         |> App.Model.MsgIndexedDb
                                     ]
 
+                                WellChildEncounter ->
+                                    [ emptyWellChildEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostWellChildEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
                                 InmmunizationEncounter ->
                                     []
                         )
@@ -2049,6 +2057,27 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     [ App.Model.SetActivePage <|
                         UserPage <|
                             Pages.Page.HomeVisitEncounterPage homeVisitEncounterId
+                    ]
+                )
+                data
+                |> RemoteData.withDefault []
+            )
+
+        PostWellChildEncounter wellChildEncounter ->
+            ( { model | postWellChildEncounter = Dict.insert wellChildEncounter.participant Loading model.postWellChildEncounter }
+            , sw.post wellChildEncounterEndpoint wellChildEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedWellChildEncounter wellChildEncounter.participant)
+            , []
+            )
+
+        HandlePostedWellChildEncounter participantId data ->
+            ( { model | postWellChildEncounter = Dict.insert participantId data model.postWellChildEncounter }
+            , Cmd.none
+            , RemoteData.map
+                (\( wellChildEncounterId, _ ) ->
+                    [ App.Model.SetActivePage <|
+                        UserPage <|
+                            Pages.Page.WellChildEncounterPage wellChildEncounterId
                     ]
                 )
                 data
