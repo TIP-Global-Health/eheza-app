@@ -55,6 +55,10 @@ type alias HomeVisitMeasurement value =
     Measurement HomeVisitEncounterId value
 
 
+type alias WellChildMeasurement value =
+    Measurement WellChildEncounterId value
+
+
 
 -- GROUP MEASUREMENT TYPES
 

@@ -40,6 +40,11 @@ decodeHomeVisitMeasurement =
     decodeMeasurement "home_visit_encounter"
 
 
+decodeWellChildMeasurement : Decoder value -> Decoder (Measurement WellChildEncounterId value)
+decodeWellChildMeasurement =
+    decodeMeasurement "well_child_encounter"
+
+
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
 decodeMeasurement encounterTag valueDecoder =
     succeed Measurement

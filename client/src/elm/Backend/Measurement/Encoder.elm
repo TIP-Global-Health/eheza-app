@@ -383,6 +383,11 @@ encodeHomeVisitMeasurement =
     encodeMeasurement "home_visit_encounter"
 
 
+encodeWellChildMeasurement : (value -> List ( String, Value )) -> WellChildMeasurement value -> List ( String, Value )
+encodeWellChildMeasurement =
+    encodeMeasurement "well_child_encounter"
+
+
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
 encodeMeasurement encounterTag encoder measurement =
     List.concat
