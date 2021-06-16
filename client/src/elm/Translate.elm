@@ -3876,7 +3876,7 @@ translationSet trans =
                     }
 
                 AntenatalEncounter ->
-                    { english = "Antenatal"
+                    { english = "Antenatal Care"
                     , kinyarwanda = Just "Isuzuma ku mugore utwite"
                     }
 
@@ -3896,7 +3896,7 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = "Well Child"
+                    { english = "Well Child Care"
                     , kinyarwanda = Nothing
                     }
 
