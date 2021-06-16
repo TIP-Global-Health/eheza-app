@@ -24,6 +24,7 @@ import Backend.PrenatalEncounter.Decoder
 import Backend.Relationship.Decoder
 import Backend.Session.Decoder
 import Backend.Village.Decoder
+import Backend.WellChildEncounter.Decoder
 import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (..)
@@ -729,6 +730,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeWeight
                             BackendAuthorityWeight
+
+                    "well_child_encounter" ->
+                        doDecode
+                            Backend.WellChildEncounter.Decoder.decodeWellChildEncounter
+                            BackendAuthorityWellChildEncounter
 
                     _ ->
                         fail <| type_ ++ " is unknown BackendAuthorityEntity"

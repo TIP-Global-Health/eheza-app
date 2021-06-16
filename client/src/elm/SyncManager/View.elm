@@ -605,6 +605,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityWeight identifier ->
                 viewMeasurement identifier "Weight"
+
+            BackendAuthorityWellChildEncounter identifier ->
+                text ("WellChildEncounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
         ]
 
 

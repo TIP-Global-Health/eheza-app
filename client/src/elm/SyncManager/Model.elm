@@ -19,6 +19,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Model exposing (Relationship)
 import Backend.Session.Model exposing (Session)
 import Backend.Village.Model exposing (Village)
+import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import Editable exposing (Editable)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
@@ -128,6 +129,7 @@ type BackendAuthorityEntity
     | BackendAuthorityTreatmentReview (BackendEntity TreatmentReview)
     | BackendAuthorityVitals (BackendEntity Vitals)
     | BackendAuthorityWeight (BackendEntity Weight)
+    | BackendAuthorityWellChildEncounter (BackendEntity WellChildEncounter)
 
 
 {-| Wrapper for a Backend entity (both General and Authority).

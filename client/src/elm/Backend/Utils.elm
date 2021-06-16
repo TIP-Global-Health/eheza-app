@@ -12,6 +12,7 @@ import Backend.Measurement.Model
         , MotherMeasurementList
         , NutritionMeasurements
         , PrenatalMeasurements
+        , WellChildMeasurements
         )
 import Backend.Model exposing (..)
 import Json.Encode exposing (object)
@@ -112,6 +113,16 @@ mapHomeVisitMeasurements id func model =
     case id of
         Just encounterId ->
             { model | homeVisitMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.homeVisitMeasurements }
+
+        Nothing ->
+            model
+
+
+mapWellChildMeasurements : Maybe WellChildEncounterId -> (WellChildMeasurements -> WellChildMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapWellChildMeasurements id func model =
+    case id of
+        Just encounterId ->
+            { model | wellChildMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.wellChildMeasurements }
 
         Nothing ->
             model

@@ -20,6 +20,7 @@ import Backend.PrenatalEncounter.Encoder
 import Backend.Relationship.Encoder
 import Backend.Session.Encoder
 import Backend.Village.Encoder
+import Backend.WellChildEncounter.Encoder
 import Editable
 import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
@@ -605,11 +606,14 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityTreatmentReview identifier ->
             getIdentifier identifier "treatment_history"
 
+        BackendAuthorityVitals identifier ->
+            getIdentifier identifier "vitals"
+
         BackendAuthorityWeight identifier ->
             getIdentifier identifier "weight"
 
-        BackendAuthorityVitals identifier ->
-            getIdentifier identifier "vitals"
+        BackendAuthorityWellChildEncounter identifier ->
+            getIdentifier identifier "well_child_encounter"
 
 
 {-| Return a photo from a "Authority" entity.
@@ -1046,6 +1050,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityWeight identifier ->
             encode Backend.Measurement.Encoder.encodeWeight identifier
 
+        BackendAuthorityWellChildEncounter identifier ->
+            encode Backend.WellChildEncounter.Encoder.encodeWellChildEncounter identifier
+
 
 getDataToSendGeneral : BackendGeneralEntity -> List String -> List String
 getDataToSendGeneral entity accum =
@@ -1438,11 +1445,14 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityTreatmentReview identifier ->
             TreatmentReviewRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityVitals identifier ->
+            VitalsRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityWeight identifier ->
             WeightRevision (toEntityUuid identifier.uuid) identifier.entity
 
-        BackendAuthorityVitals identifier ->
-            VitalsRevision (toEntityUuid identifier.uuid) identifier.entity
+        BackendAuthorityWellChildEncounter identifier ->
+            WellChildEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
 
 
 fileUploadFailureThreshold : Int
