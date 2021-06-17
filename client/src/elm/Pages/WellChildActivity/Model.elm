@@ -8,20 +8,20 @@ import Pages.Page exposing (Page)
 
 type Msg
     = SetActivePage Page
-    | SetECDBoolInput (Bool -> ECDForm -> ECDForm) Bool
+    | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
 
 
 type alias Model =
-    { ecdForm : ECDForm
+    { ecdForm : WellChildECDForm
     }
 
 
 emptyModel : Model
 emptyModel =
-    { ecdForm = emptyECDForm }
+    { ecdForm = emptyWellChildECDForm }
 
 
-type alias ECDForm =
+type alias WellChildECDForm =
     { respontToSoundWithSound : Maybe Bool
     , turnHeadWhenCalled : Maybe Bool
     , sitWithoutSupport : Maybe Bool
@@ -56,8 +56,8 @@ type alias ECDForm =
     }
 
 
-emptyECDForm : ECDForm
-emptyECDForm =
+emptyWellChildECDForm : WellChildECDForm
+emptyWellChildECDForm =
     { respontToSoundWithSound = Nothing
     , turnHeadWhenCalled = Nothing
     , sitWithoutSupport = Nothing
