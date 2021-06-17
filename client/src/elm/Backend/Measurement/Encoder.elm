@@ -2447,97 +2447,97 @@ encodeECDSign sign =
     string <|
         case sign of
             RespontToSoundWithSound ->
-                "respont_to_sound_with_sound"
+                "respont-to-sound-with-sound"
 
             TurnHeadWhenCalled ->
-                "turn_head_when_called"
+                "turn-head-when-called"
 
             SitWithoutSupport ->
-                "sit_without_support"
+                "sit-without-support"
 
             SmileBack ->
-                "smile_back"
+                "smile-back"
 
             RollTummyToBack ->
-                "roll_tummy_to_back"
+                "roll-tummy-to-back"
 
             ReachForToys ->
-                "reach_for_toys"
+                "reach-for-toys"
 
             UseSimpleGestures ->
-                "use_simple_gestures"
+                "use-simple-gestures"
 
             StandOnTheirOwn ->
-                "stand_on_their_own"
+                "stand-on-their-own"
 
             CopyDuringPlay ->
-                "copy_during_play"
+                "copy-during-play"
 
             SayMamaDada ->
-                "say_mama_dada"
+                "say-mama-dada"
 
             CanHoldSmallObjects ->
-                "can_hold_small_objects"
+                "can-hold-small-objects"
 
             LooksWhenPointedAt ->
-                "looks_when_pointed_at"
+                "looks-when-pointed-at"
 
             UseSingleWords ->
-                "use_single_words"
+                "use-single-words"
 
             WalkWithoutHelp ->
-                "walk_without_help"
+                "walk-without-help"
 
             PlayPretend ->
-                "play_pretend"
+                "play-pretend"
 
             PointToThingsOfInterest ->
-                "point_to_things_of_interest"
+                "point-to-things-of-interest"
 
             UseShortPhrases ->
-                "use_short_phrases"
+                "use-short-phrases"
 
             InterestedInOtherChildren ->
-                "interested_in_other_children"
+                "interested-in-other-children"
 
             FollowSimlpeInstructions ->
-                "follow_simlpe_instructions"
+                "follow-simlpe-instructions"
 
             KickBall ->
-                "kick_ball"
+                "kick-ball"
 
             PointAtNamedObjects ->
-                "point_at_named_objects"
+                "point-at-named-objects"
 
             DressThemselves ->
-                "dress_themselves"
+                "dress-themselves"
 
             WashHandsGoToToiled ->
-                "wash_hands_go_to_toiled"
+                "wash-hands-go-to-toiled"
 
             KnowsColorsAndNumbers ->
-                "knows_colors_and_numbers"
+                "knows-colors-and-numbers"
 
             UseMediumPhrases ->
-                "use_medium_phrases"
+                "use-medium-phrases"
 
             PlayMakeBelieve ->
-                "play_make_believe"
+                "play-make-believe"
 
             FollowThreeStepInstructions ->
-                "follow_three_step_instructions"
+                "follow-three-step-instructions"
 
             StandOnOneFootFiveSeconds ->
-                "stand_on_one_foot_five_seconds"
+                "stand-on-one-foot-five-seconds"
 
             UseLongPhrases ->
-                "use_long_phrases"
+                "use-long-phrases"
 
             ShareWithOtherChildren ->
-                "share_with_other_children"
+                "share-with-other-children"
 
             CountToTen ->
-                "count_to_ten"
+                "count-to-ten"
 
             NoECDSigns ->
                 "none"

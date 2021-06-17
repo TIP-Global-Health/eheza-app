@@ -2747,97 +2747,97 @@ decodeECDSign =
         |> andThen
             (\sign ->
                 case sign of
-                    "respont_to_sound_with_sound" ->
+                    "respont-to-sound-with-sound" ->
                         succeed RespontToSoundWithSound
 
-                    "turn_head_when_called" ->
+                    "turn-head-when-called" ->
                         succeed TurnHeadWhenCalled
 
-                    "sit_without_support" ->
+                    "sit-without-support" ->
                         succeed SitWithoutSupport
 
-                    "smile_back" ->
+                    "smile-back" ->
                         succeed SmileBack
 
-                    "roll_tummy_to_back" ->
+                    "roll-tummy-to-back" ->
                         succeed RollTummyToBack
 
-                    "reach_for_toys" ->
+                    "reach-for-toys" ->
                         succeed ReachForToys
 
-                    "use_simple_gestures" ->
+                    "use-simple-gestures" ->
                         succeed UseSimpleGestures
 
-                    "stand_on_their_own" ->
+                    "stand-on-their-own" ->
                         succeed StandOnTheirOwn
 
-                    "copy_during_play" ->
+                    "copy-during-play" ->
                         succeed CopyDuringPlay
 
-                    "say_mama_dada" ->
+                    "say-mama-dada" ->
                         succeed SayMamaDada
 
-                    "can_hold_small_objects" ->
+                    "can-hold-small-objects" ->
                         succeed CanHoldSmallObjects
 
-                    "looks_when_pointed_at" ->
+                    "looks-when-pointed-at" ->
                         succeed LooksWhenPointedAt
 
-                    "use_single_words" ->
+                    "use-single-words" ->
                         succeed UseSingleWords
 
-                    "walk_without_help" ->
+                    "walk-without-help" ->
                         succeed WalkWithoutHelp
 
-                    "play_pretend" ->
+                    "play-pretend" ->
                         succeed PlayPretend
 
-                    "point_to_things_of_interest" ->
+                    "point-to-things-of-interest" ->
                         succeed PointToThingsOfInterest
 
-                    "use_short_phrases" ->
+                    "use-short-phrases" ->
                         succeed UseShortPhrases
 
-                    "interested_in_other_children" ->
+                    "interested-in-other-children" ->
                         succeed InterestedInOtherChildren
 
-                    "follow_simlpe_instructions" ->
+                    "follow-simlpe-instructions" ->
                         succeed FollowSimlpeInstructions
 
-                    "kick_ball" ->
+                    "kick-ball" ->
                         succeed KickBall
 
-                    "point_at_named_objects" ->
+                    "point-at-named-objects" ->
                         succeed PointAtNamedObjects
 
-                    "dress_themselves" ->
+                    "dress-themselves" ->
                         succeed DressThemselves
 
-                    "wash_hands_go_to_toiled" ->
+                    "wash-hands-go-to-toiled" ->
                         succeed WashHandsGoToToiled
 
-                    "knows_colors_and_numbers" ->
+                    "knows-colors-and-numbers" ->
                         succeed KnowsColorsAndNumbers
 
-                    "use_medium_phrases" ->
+                    "use-medium-phrases" ->
                         succeed UseMediumPhrases
 
-                    "play_make_believe" ->
+                    "play-make-believe" ->
                         succeed PlayMakeBelieve
 
-                    "follow_three_step_instructions" ->
+                    "follow-three-step-instructions" ->
                         succeed FollowThreeStepInstructions
 
-                    "stand_on_one_foot_five_seconds" ->
+                    "stand-on-one-foot-five-seconds" ->
                         succeed StandOnOneFootFiveSeconds
 
-                    "use_long_phrases" ->
+                    "use-long-phrases" ->
                         succeed UseLongPhrases
 
-                    "share_with_other_children" ->
+                    "share-with-other-children" ->
                         succeed ShareWithOtherChildren
 
-                    "count_to_ten" ->
+                    "count-to-ten" ->
                         succeed CountToTen
 
                     "none" ->
