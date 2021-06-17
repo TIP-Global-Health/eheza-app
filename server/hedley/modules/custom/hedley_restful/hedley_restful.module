@@ -113,6 +113,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'treatment_ongoing' => 'treatment-ongoing',
   'vitals' => 'vitals',
   'weight' => 'weights',
+  'well_child_ecd' => 'well-child-ecd',
 ];
 
 // Make sure that some headers get set.
