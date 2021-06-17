@@ -741,3 +741,9 @@ appointmentConfirmationEndpoint : ReadWriteEndPoint Error PrenatalAppointmentCon
 appointmentConfirmationEndpoint =
     swEndpoint "nodes/appointment_confirmation" decodeAppointmentConfirmation
         |> withValueEncoder (object << encodeAppointmentConfirmation)
+
+
+wellChildECDEndpoint : ReadWriteEndPoint Error WellChildECDId WellChildECD WellChildECD ()
+wellChildECDEndpoint =
+    swEndpoint "nodes/well_child_ecd" decodeWellChildECD
+        |> withValueEncoder (object << encodeWellChildECD)
