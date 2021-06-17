@@ -1216,6 +1216,87 @@ type alias AcuteIllnessFollowUp =
 
 
 
+-- WELL CHILD MEASUREMENTS
+
+
+type alias WellChildECD =
+    WellChildMeasurement (EverySet ECDSign)
+
+
+type ECDSign
+    = -- Up to 9 months.
+      RespontToSoundWithSound
+    | TurnHeadWhenCalled
+    | SitWithoutSupport
+    | SmileBack
+    | RollTummyToBack
+    | ReachForToys
+      -- 9 to 15 months.
+    | UseSimpleGestures
+    | StandOnTheirOwn
+    | CopyDuringPlay
+    | SayMamaDada
+    | CanHoldSmallObjects
+      -- 15 to 18 months.
+    | LooksWhenPointedAt
+    | UseSingleWords
+    | WalkWithoutHelp
+    | PlayPretend
+    | PointToThingsOfInterest
+      -- 18 to 24 months.
+    | UseShortPhrases
+    | InterestedInOtherChildren
+    | FollowSimlpeInstructions
+    | KickBall
+    | PointAtNamedObjects
+      -- 24 to 36 months.
+    | DressThemselves
+    | WashHandsGoToToiled
+    | KnowsColorsAndNumbers
+    | UseMediumPhrases
+    | PlayMakeBelieve
+      -- 36 to 48 months.
+    | FollowThreeStepInstructions
+    | StandOnOneFootFiveSeconds
+    | UseLongPhrases
+    | ShareWithOtherChildren
+    | CountToTen
+
+
+
+--
+--
+-- respont_to_sound_with_sound
+-- turn_head_when_called
+-- sit_without_support
+-- smile_back
+-- roll_tummy_to_back
+-- reach_for_toys
+-- use_simple_gestures
+-- stand_on_their_own
+-- copy_during_play
+-- say_mama_dada
+-- can_hold_small_objects
+-- looks_when_pointed_at
+-- use_single_words
+-- walk_without_help
+-- play_pretend
+-- point_to_things_of_interest
+-- use_short_phrases
+-- interested_in_other_children
+-- follow_simlpe_instructions
+-- kick_ball
+-- point_at_named_objects
+-- dress_themselves
+-- wash_hands_go_to_toiled
+-- knows_colors_and_numbers
+-- use_medium_phrases
+-- play_make_believe
+-- follow_three_step_instructions
+-- stand_on_one_foot_five_seconds
+-- use_long_phrases
+-- share_with_other_children
+-- count_to_ten
 -- LISTS OF MEASUREMENTS
 
 
@@ -1412,7 +1493,8 @@ type alias HomeVisitMeasurements =
 
 
 type alias WellChildMeasurements =
-    {}
+    { ecd : Maybe ( WellChildECDId, WellChildECD )
+    }
 
 
 {-| This is like `ChildMeasurementList`, except that it just covers one
