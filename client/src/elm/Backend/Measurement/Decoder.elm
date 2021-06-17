@@ -175,6 +175,7 @@ decodeHomeVisitMeasurements =
 decodeWellChildMeasurements : Decoder WellChildMeasurements
 decodeWellChildMeasurements =
     succeed WellChildMeasurements
+        |> optional "well_child_ecd" (decodeHead decodeWellChildECD) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -2733,3 +2734,117 @@ postProcessNutritionAssesment assesmentFromString nutritionSign =
                         assesmentFromString
             )
         |> Maybe.withDefault assesmentFromString
+
+
+decodeWellChildECD : Decoder WellChildECD
+decodeWellChildECD =
+    decodeWellChildMeasurement (decodeEverySet decodeECDSign)
+
+
+decodeECDSign : Decoder ECDSign
+decodeECDSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "respont_to_sound_with_sound" ->
+                        succeed RespontToSoundWithSound
+
+                    "turn_head_when_called" ->
+                        succeed TurnHeadWhenCalled
+
+                    "sit_without_support" ->
+                        succeed SitWithoutSupport
+
+                    "smile_back" ->
+                        succeed SmileBack
+
+                    "roll_tummy_to_back" ->
+                        succeed RollTummyToBack
+
+                    "reach_for_toys" ->
+                        succeed ReachForToys
+
+                    "use_simple_gestures" ->
+                        succeed UseSimpleGestures
+
+                    "stand_on_their_own" ->
+                        succeed StandOnTheirOwn
+
+                    "copy_during_play" ->
+                        succeed CopyDuringPlay
+
+                    "say_mama_dada" ->
+                        succeed SayMamaDada
+
+                    "can_hold_small_objects" ->
+                        succeed CanHoldSmallObjects
+
+                    "looks_when_pointed_at" ->
+                        succeed LooksWhenPointedAt
+
+                    "use_single_words" ->
+                        succeed UseSingleWords
+
+                    "walk_without_help" ->
+                        succeed WalkWithoutHelp
+
+                    "play_pretend" ->
+                        succeed PlayPretend
+
+                    "point_to_things_of_interest" ->
+                        succeed PointToThingsOfInterest
+
+                    "use_short_phrases" ->
+                        succeed UseShortPhrases
+
+                    "interested_in_other_children" ->
+                        succeed InterestedInOtherChildren
+
+                    "follow_simlpe_instructions" ->
+                        succeed FollowSimlpeInstructions
+
+                    "kick_ball" ->
+                        succeed KickBall
+
+                    "point_at_named_objects" ->
+                        succeed PointAtNamedObjects
+
+                    "dress_themselves" ->
+                        succeed DressThemselves
+
+                    "wash_hands_go_to_toiled" ->
+                        succeed WashHandsGoToToiled
+
+                    "knows_colors_and_numbers" ->
+                        succeed KnowsColorsAndNumbers
+
+                    "use_medium_phrases" ->
+                        succeed UseMediumPhrases
+
+                    "play_make_believe" ->
+                        succeed PlayMakeBelieve
+
+                    "follow_three_step_instructions" ->
+                        succeed FollowThreeStepInstructions
+
+                    "stand_on_one_foot_five_seconds" ->
+                        succeed StandOnOneFootFiveSeconds
+
+                    "use_long_phrases" ->
+                        succeed UseLongPhrases
+
+                    "share_with_other_children" ->
+                        succeed ShareWithOtherChildren
+
+                    "count_to_ten" ->
+                        succeed CountToTen
+
+                    "none" ->
+                        succeed NoECDSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized ECDSign"
+            )
