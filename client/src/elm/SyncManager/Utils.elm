@@ -612,6 +612,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityWeight identifier ->
             getIdentifier identifier "weight"
 
+        BackendAuthorityWellChildECD identifier ->
+            getIdentifier identifier "well_child_ecd"
+
         BackendAuthorityWellChildEncounter identifier ->
             getIdentifier identifier "well_child_encounter"
 
@@ -1050,6 +1053,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityWeight identifier ->
             encode Backend.Measurement.Encoder.encodeWeight identifier
 
+        BackendAuthorityWellChildECD identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildECD identifier
+
         BackendAuthorityWellChildEncounter identifier ->
             encode Backend.WellChildEncounter.Encoder.encodeWellChildEncounter identifier
 
@@ -1450,6 +1456,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWeight identifier ->
             WeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildECD identifier ->
+            WellChildECDRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityWellChildEncounter identifier ->
             WellChildEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
