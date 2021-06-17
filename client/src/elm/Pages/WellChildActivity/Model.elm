@@ -9,6 +9,7 @@ import Pages.Page exposing (Page)
 type Msg
     = SetActivePage Page
     | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
+    | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
 
 
 type alias Model =

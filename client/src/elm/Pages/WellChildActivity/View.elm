@@ -115,6 +115,9 @@ viewECDContent language currentDate assembled ecdForm =
 
                     ( inputs, tasks ) =
                         ecdFormInputsAndTasks language currentDate assembled ageMonth ecdForm
+
+                    disabled =
+                        tasksCompleted /= totalTasks
                 in
                 [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
                 , div [ class "ui full segment" ]
@@ -122,14 +125,7 @@ viewECDContent language currentDate assembled ecdForm =
                         [ div [ class "ui form ecd" ]
                             inputs
                         ]
-                    , div [ class "actions" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-
-                            -- , onClick <| SaveHealthEducation assembled.participant.person assembled.measurements.healthEducation
-                            ]
-                            [ text <| translate language Translate.Save ]
-                        ]
+                    , viewAction language (SaveECD assembled.participant.person assembled.measurements.ecd) disabled
                     ]
                 ]
             )
@@ -358,13 +354,12 @@ ecdFormInputsAndTasks language currentDate assembled ageMonth ecdForm =
         age36to47Section
 
 
-viewAction : Language -> Msg -> Bool -> List (Html Msg)
+viewAction : Language -> Msg -> Bool -> Html Msg
 viewAction language saveMsg disabled =
-    [ div [ class "actions" ]
+    div [ class "actions" ]
         [ button
             [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
             , onClick saveMsg
             ]
             [ text <| translate language Translate.Save ]
         ]
-    ]

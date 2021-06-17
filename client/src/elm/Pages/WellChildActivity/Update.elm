@@ -33,3 +33,29 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
+
+        SaveECD personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.ecdForm
+                        |> toWellChildECDValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.WellChildEncounter.Model.SaveECD personId measurementId value
+                                    |> Backend.Model.MsgWellChildEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
