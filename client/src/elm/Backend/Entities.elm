@@ -789,3 +789,11 @@ type alias WellChildEncounterId =
 
 type WellChildEncounterUuidType
     = WellChildEncounterUuidType
+
+
+type alias WellChildECDId =
+    EntityUuid WellChildECDUuidType
+
+
+type WellChildECDUuidType
+    = WellChildECDUuidType
