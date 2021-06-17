@@ -7399,6 +7399,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                WellChildECD ->
+                    { english = "ECD"
+                    , kinyarwanda = Nothing
+                    }
+
         WhatDoYouWantToDo ->
             { english = "What do you want to do?"
             , kinyarwanda = Just "Urashaka gukora iki?"

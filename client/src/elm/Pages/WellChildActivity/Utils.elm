@@ -21,11 +21,25 @@ expectActivity : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> Wel
 expectActivity currentDate child data db activity =
     -- For now, we show all activities without any conditions.
     case activity of
-        _ ->
+        WellChildECD ->
             True
+
+        _ ->
+            False
 
 
 activityCompleted : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
 activityCompleted currentDate child data db activity =
-    --@todo
-    True
+    let
+        measurements =
+            data.measurements
+
+        activityExpected =
+            expectActivity currentDate child data db
+    in
+    case activity of
+        WellChildNutritionAssessment ->
+            (not <| activityExpected WellChildNutritionAssessment) || False
+
+        WellChildECD ->
+            (not <| activityExpected WellChildECD) || isJust measurements.ecd

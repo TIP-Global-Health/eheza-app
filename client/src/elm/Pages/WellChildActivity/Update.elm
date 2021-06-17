@@ -23,3 +23,13 @@ update currentDate id db msg model =
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
+
+        SetECDBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.ecdForm
+            in
+            ( { model | ecdForm = updatedForm }
+            , Cmd.none
+            , []
+            )
