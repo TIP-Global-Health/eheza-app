@@ -2738,7 +2738,9 @@ postProcessNutritionAssesment assesmentFromString nutritionSign =
 
 decodeWellChildECD : Decoder WellChildECD
 decodeWellChildECD =
-    decodeWellChildMeasurement (decodeEverySet decodeECDSign)
+    decodeEverySet decodeECDSign
+        |> field "ecd_signs"
+        |> decodeWellChildMeasurement
 
 
 decodeECDSign : Decoder ECDSign
