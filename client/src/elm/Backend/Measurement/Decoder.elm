@@ -2803,8 +2803,8 @@ decodeECDSign =
                     "interested-in-other-children" ->
                         succeed InterestedInOtherChildren
 
-                    "follow-simlpe-instructions" ->
-                        succeed FollowSimlpeInstructions
+                    "follow-simple-instructions" ->
+                        succeed FollowSimpleInstructions
 
                     "kick-ball" ->
                         succeed KickBall

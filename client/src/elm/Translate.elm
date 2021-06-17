@@ -2907,7 +2907,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                FollowSimlpeInstructions ->
+                FollowSimpleInstructions ->
                     { english = "Does the child follow simple instructions"
                     , kinyarwanda = Nothing
                     }

@@ -2500,8 +2500,8 @@ encodeECDSign sign =
             InterestedInOtherChildren ->
                 "interested-in-other-children"
 
-            FollowSimlpeInstructions ->
-                "follow-simlpe-instructions"
+            FollowSimpleInstructions ->
+                "follow-simple-instructions"
 
             KickBall ->
                 "kick-ball"

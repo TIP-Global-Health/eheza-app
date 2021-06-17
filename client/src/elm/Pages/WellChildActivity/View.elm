@@ -254,7 +254,7 @@ ecdFormInputsAndTasks language currentDate assembled ageMonth ecdForm =
             in
             ( viewECDInput UseShortPhrases form.useShortPhrases useShortPhrasesUpdateFunc
                 ++ viewECDInput InterestedInOtherChildren form.interestedInOtherChildren interestedInOtherChildrenUpdateFunc
-                ++ viewECDInput FollowSimlpeInstructions form.followSimlpeInstructions followSimlpeInstructionsUpdateFunc
+                ++ viewECDInput FollowSimpleInstructions form.followSimlpeInstructions followSimlpeInstructionsUpdateFunc
                 ++ viewECDInput KickBall form.kickBall kickBallUpdateFunc
                 ++ viewECDInput PointAtNamedObjects form.pointAtNamedObjects pointAtNamedObjectsUpdateFunc
             , [ form.useShortPhrases

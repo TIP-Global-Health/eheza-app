@@ -1246,7 +1246,7 @@ type ECDSign
       -- 18 to 24 months.
     | UseShortPhrases
     | InterestedInOtherChildren
-    | FollowSimlpeInstructions
+    | FollowSimpleInstructions
     | KickBall
     | PointAtNamedObjects
       -- 24 to 36 months.

@@ -65,7 +65,7 @@ fromWellChildECDValue signs =
     , pointToThingsOfInterest = Maybe.map (EverySet.member PointToThingsOfInterest) signs
     , useShortPhrases = Maybe.map (EverySet.member UseShortPhrases) signs
     , interestedInOtherChildren = Maybe.map (EverySet.member InterestedInOtherChildren) signs
-    , followSimlpeInstructions = Maybe.map (EverySet.member FollowSimlpeInstructions) signs
+    , followSimlpeInstructions = Maybe.map (EverySet.member FollowSimpleInstructions) signs
     , kickBall = Maybe.map (EverySet.member KickBall) signs
     , pointAtNamedObjects = Maybe.map (EverySet.member PointAtNamedObjects) signs
     , dressThemselves = Maybe.map (EverySet.member DressThemselves) signs
@@ -105,7 +105,7 @@ wellChildECDFormWithDefault form saved =
                 , pointToThingsOfInterest = or form.pointToThingsOfInterest (EverySet.member PointToThingsOfInterest signs |> Just)
                 , useShortPhrases = or form.useShortPhrases (EverySet.member UseShortPhrases signs |> Just)
                 , interestedInOtherChildren = or form.interestedInOtherChildren (EverySet.member InterestedInOtherChildren signs |> Just)
-                , followSimlpeInstructions = or form.followSimlpeInstructions (EverySet.member FollowSimlpeInstructions signs |> Just)
+                , followSimlpeInstructions = or form.followSimlpeInstructions (EverySet.member FollowSimpleInstructions signs |> Just)
                 , kickBall = or form.kickBall (EverySet.member KickBall signs |> Just)
                 , pointAtNamedObjects = or form.pointAtNamedObjects (EverySet.member PointAtNamedObjects signs |> Just)
                 , dressThemselves = or form.dressThemselves (EverySet.member DressThemselves signs |> Just)
@@ -147,7 +147,7 @@ toWellChildECDValue form =
     , ifNullableTrue PointToThingsOfInterest form.pointToThingsOfInterest
     , ifNullableTrue UseShortPhrases form.useShortPhrases
     , ifNullableTrue InterestedInOtherChildren form.interestedInOtherChildren
-    , ifNullableTrue FollowSimlpeInstructions form.followSimlpeInstructions
+    , ifNullableTrue FollowSimpleInstructions form.followSimlpeInstructions
     , ifNullableTrue KickBall form.kickBall
     , ifNullableTrue PointAtNamedObjects form.pointAtNamedObjects
     , ifNullableTrue DressThemselves form.dressThemselves
