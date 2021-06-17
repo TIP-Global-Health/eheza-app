@@ -295,6 +295,9 @@ decodeRevision =
                     "weight" ->
                         decodeWithUuid WeightRevision decodeWeight
 
+                    "well_child_ecd" ->
+                        decodeWithUuid WellChildECDRevision decodeWellChildECD
+
                     "well_child_encounter" ->
                         decodeWithUuid WellChildEncounterRevision decodeWellChildEncounter
 
