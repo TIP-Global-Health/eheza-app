@@ -6,6 +6,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolveAllWeightMeasurementsForChild)
+import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import EverySet
@@ -91,8 +92,270 @@ viewContent language currentDate id activity db model assembled =
 
 viewActivity : Language -> NominalDate -> WellChildEncounterId -> WellChildActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
 viewActivity language currentDate id activity assembled db model =
-    -- @todo
-    []
+    case activity of
+        WellChildECD ->
+            viewECDContent language currentDate assembled model.ecdForm
+
+        _ ->
+            []
+
+
+viewECDContent : Language -> NominalDate -> AssembledData -> WellChildECDForm -> List (Html Msg)
+viewECDContent language currentDate assembled ecdForm =
+    ageInMonths currentDate assembled.person
+        |> Maybe.map
+            (\ageMonth ->
+                let
+                    totalTasks =
+                        List.length tasks
+
+                    tasksCompleted =
+                        List.map taskCompleted tasks
+                            |> List.sum
+
+                    ( inputs, tasks ) =
+                        ecdFormInputsAndTasks language currentDate assembled ageMonth ecdForm
+                in
+                [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+                , div [ class "ui full segment" ]
+                    [ div [ class "full content" ]
+                        [ div [ class "ui form ecd" ]
+                            inputs
+                        ]
+                    , div [ class "actions" ]
+                        [ button
+                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+
+                            -- , onClick <| SaveHealthEducation assembled.participant.person assembled.measurements.healthEducation
+                            ]
+                            [ text <| translate language Translate.Save ]
+                        ]
+                    ]
+                ]
+            )
+        |> Maybe.withDefault []
+
+
+ecdFormInputsAndTasks : Language -> NominalDate -> AssembledData -> Int -> WellChildECDForm -> ( List (Html Msg), List (Maybe Bool) )
+ecdFormInputsAndTasks language currentDate assembled ageMonth ecdForm =
+    let
+        form =
+            assembled.measurements.ecd
+                |> Maybe.map (Tuple.second >> .value)
+                |> wellChildECDFormWithDefault ecdForm
+
+        age0to8Section =
+            let
+                respontToSoundWithSoundUpdateFunc value form_ =
+                    { form_ | respontToSoundWithSound = Just value }
+
+                turnHeadWhenCalledUpdateFunc value form_ =
+                    { form_ | turnHeadWhenCalled = Just value }
+
+                sitWithoutSupportUpdateFunc value form_ =
+                    { form_ | sitWithoutSupport = Just value }
+
+                smileBackUpdateFunc value form_ =
+                    { form_ | smileBack = Just value }
+
+                rollTummyToBackUpdateFunc value form_ =
+                    { form_ | rollTummyToBack = Just value }
+
+                reachForToysUpdateFunc value form_ =
+                    { form_ | reachForToys = Just value }
+            in
+            ( viewECDInput RespontToSoundWithSound form.respontToSoundWithSound respontToSoundWithSoundUpdateFunc
+                ++ viewECDInput TurnHeadWhenCalled form.turnHeadWhenCalled turnHeadWhenCalledUpdateFunc
+                ++ viewECDInput SitWithoutSupport form.sitWithoutSupport sitWithoutSupportUpdateFunc
+                ++ viewECDInput SmileBack form.smileBack smileBackUpdateFunc
+                ++ viewECDInput RollTummyToBack form.rollTummyToBack rollTummyToBackUpdateFunc
+                ++ viewECDInput ReachForToys form.reachForToys reachForToysUpdateFunc
+            , [ form.respontToSoundWithSound
+              , form.turnHeadWhenCalled
+              , form.sitWithoutSupport
+              , form.smileBack
+              , form.rollTummyToBack
+              , form.reachForToys
+              ]
+            )
+
+        age9to14Section =
+            let
+                useSimpleGesturesUpdateFunc value form_ =
+                    { form_ | useSimpleGestures = Just value }
+
+                standOnTheirOwnUpdateFunc value form_ =
+                    { form_ | standOnTheirOwn = Just value }
+
+                copyDuringPlayUpdateFunc value form_ =
+                    { form_ | copyDuringPlay = Just value }
+
+                sayMamaDadaUpdateFunc value form_ =
+                    { form_ | sayMamaDada = Just value }
+
+                canHoldSmallObjectsUpdateFunc value form_ =
+                    { form_ | canHoldSmallObjects = Just value }
+            in
+            ( viewECDInput UseSimpleGestures form.useSimpleGestures useSimpleGesturesUpdateFunc
+                ++ viewECDInput StandOnTheirOwn form.standOnTheirOwn standOnTheirOwnUpdateFunc
+                ++ viewECDInput CopyDuringPlay form.copyDuringPlay copyDuringPlayUpdateFunc
+                ++ viewECDInput SayMamaDada form.sayMamaDada sayMamaDadaUpdateFunc
+                ++ viewECDInput CanHoldSmallObjects form.canHoldSmallObjects canHoldSmallObjectsUpdateFunc
+            , [ form.useSimpleGestures
+              , form.standOnTheirOwn
+              , form.copyDuringPlay
+              , form.sayMamaDada
+              , form.canHoldSmallObjects
+              ]
+            )
+
+        age15to17Section =
+            let
+                looksWhenPointedAtUpdateFunc value form_ =
+                    { form_ | looksWhenPointedAt = Just value }
+
+                useSingleWordsUpdateFunc value form_ =
+                    { form_ | useSingleWords = Just value }
+
+                walkWithoutHelpUpdateFunc value form_ =
+                    { form_ | walkWithoutHelp = Just value }
+
+                playPretendUpdateFunc value form_ =
+                    { form_ | playPretend = Just value }
+
+                pointToThingsOfInterestUpdateFunc value form_ =
+                    { form_ | pointToThingsOfInterest = Just value }
+            in
+            ( viewECDInput LooksWhenPointedAt form.looksWhenPointedAt looksWhenPointedAtUpdateFunc
+                ++ viewECDInput UseSingleWords form.useSingleWords useSingleWordsUpdateFunc
+                ++ viewECDInput WalkWithoutHelp form.walkWithoutHelp walkWithoutHelpUpdateFunc
+                ++ viewECDInput PlayPretend form.playPretend playPretendUpdateFunc
+                ++ viewECDInput PointToThingsOfInterest form.pointToThingsOfInterest pointToThingsOfInterestUpdateFunc
+            , [ form.looksWhenPointedAt
+              , form.useSingleWords
+              , form.walkWithoutHelp
+              , form.playPretend
+              , form.pointToThingsOfInterest
+              ]
+            )
+
+        age18to23Section =
+            let
+                useShortPhrasesUpdateFunc value form_ =
+                    { form_ | useShortPhrases = Just value }
+
+                interestedInOtherChildrenUpdateFunc value form_ =
+                    { form_ | interestedInOtherChildren = Just value }
+
+                followSimlpeInstructionsUpdateFunc value form_ =
+                    { form_ | followSimlpeInstructions = Just value }
+
+                kickBallUpdateFunc value form_ =
+                    { form_ | kickBall = Just value }
+
+                pointAtNamedObjectsUpdateFunc value form_ =
+                    { form_ | pointAtNamedObjects = Just value }
+            in
+            ( viewECDInput UseShortPhrases form.useShortPhrases useShortPhrasesUpdateFunc
+                ++ viewECDInput InterestedInOtherChildren form.interestedInOtherChildren interestedInOtherChildrenUpdateFunc
+                ++ viewECDInput FollowSimlpeInstructions form.followSimlpeInstructions followSimlpeInstructionsUpdateFunc
+                ++ viewECDInput KickBall form.kickBall kickBallUpdateFunc
+                ++ viewECDInput PointAtNamedObjects form.pointAtNamedObjects pointAtNamedObjectsUpdateFunc
+            , [ form.useShortPhrases
+              , form.interestedInOtherChildren
+              , form.followSimlpeInstructions
+              , form.kickBall
+              , form.pointAtNamedObjects
+              ]
+            )
+
+        age24to35Section =
+            let
+                dressThemselvesUpdateFunc value form_ =
+                    { form_ | dressThemselves = Just value }
+
+                washHandsGoToToiledUpdateFunc value form_ =
+                    { form_ | washHandsGoToToiled = Just value }
+
+                knowsColorsAndNumbersUpdateFunc value form_ =
+                    { form_ | knowsColorsAndNumbers = Just value }
+
+                useMediumPhrasesUpdateFunc value form_ =
+                    { form_ | useMediumPhrases = Just value }
+
+                playMakeBelieveUpdateFunc value form_ =
+                    { form_ | playMakeBelieve = Just value }
+            in
+            ( viewECDInput DressThemselves form.dressThemselves dressThemselvesUpdateFunc
+                ++ viewECDInput WashHandsGoToToiled form.washHandsGoToToiled washHandsGoToToiledUpdateFunc
+                ++ viewECDInput KnowsColorsAndNumbers form.knowsColorsAndNumbers knowsColorsAndNumbersUpdateFunc
+                ++ viewECDInput UseMediumPhrases form.useMediumPhrases useMediumPhrasesUpdateFunc
+                ++ viewECDInput PlayMakeBelieve form.playMakeBelieve playMakeBelieveUpdateFunc
+            , [ form.dressThemselves
+              , form.washHandsGoToToiled
+              , form.knowsColorsAndNumbers
+              , form.useMediumPhrases
+              , form.playMakeBelieve
+              ]
+            )
+
+        age36to47Section =
+            let
+                followThreeStepInstructionsUpdateFunc value form_ =
+                    { form_ | followThreeStepInstructions = Just value }
+
+                standOnOneFootFiveSecondsUpdateFunc value form_ =
+                    { form_ | standOnOneFootFiveSeconds = Just value }
+
+                useLongPhrasesUpdateFunc value form_ =
+                    { form_ | useLongPhrases = Just value }
+
+                shareWithOtherChildrenUpdateFunc value form_ =
+                    { form_ | shareWithOtherChildren = Just value }
+
+                countToTenUpdateFunc value form_ =
+                    { form_ | countToTen = Just value }
+            in
+            ( viewECDInput FollowThreeStepInstructions form.followThreeStepInstructions followThreeStepInstructionsUpdateFunc
+                ++ viewECDInput StandOnOneFootFiveSeconds form.standOnOneFootFiveSeconds standOnOneFootFiveSecondsUpdateFunc
+                ++ viewECDInput UseLongPhrases form.useLongPhrases useLongPhrasesUpdateFunc
+                ++ viewECDInput ShareWithOtherChildren form.shareWithOtherChildren shareWithOtherChildrenUpdateFunc
+                ++ viewECDInput CountToTen form.countToTen countToTenUpdateFunc
+            , [ form.followThreeStepInstructions
+              , form.standOnOneFootFiveSeconds
+              , form.useLongPhrases
+              , form.shareWithOtherChildren
+              , form.countToTen
+              ]
+            )
+
+        viewECDInput sign value updateFunc =
+            [ viewQuestionLabel language <| Translate.ECDSignQuestion sign
+            , viewBoolInput
+                language
+                value
+                (SetECDBoolInput updateFunc)
+                ""
+                Nothing
+            ]
+    in
+    if ageMonth < 9 then
+        age0to8Section
+
+    else if ageMonth < 15 then
+        age9to14Section
+
+    else if ageMonth < 18 then
+        age15to17Section
+
+    else if ageMonth < 24 then
+        age18to23Section
+
+    else if ageMonth < 36 then
+        age24to35Section
+
+    else
+        age36to47Section
 
 
 viewAction : Language -> Msg -> Bool -> List (Html Msg)

@@ -464,6 +464,7 @@ type TranslationId
     | Downloading
     | DropzoneDefaultMessage
     | DueDate
+    | ECDSignQuestion ECDSign
     | Edd
     | EddHeader
     | Edema
@@ -2813,6 +2814,168 @@ translationSet trans =
             { english = "Due Date"
             , kinyarwanda = Just "Itariki azabyariraho"
             }
+
+        ECDSignQuestion sign ->
+            case sign of
+                RespontToSoundWithSound ->
+                    { english = "Does the child respond to sound by making sound"
+                    , kinyarwanda = Nothing
+                    }
+
+                TurnHeadWhenCalled ->
+                    { english = "Does the child turn their head when their name is called"
+                    , kinyarwanda = Nothing
+                    }
+
+                SitWithoutSupport ->
+                    { english = "Can the child sit without support for a short while"
+                    , kinyarwanda = Nothing
+                    }
+
+                SmileBack ->
+                    { english = "Does the child smile back at you"
+                    , kinyarwanda = Nothing
+                    }
+
+                RollTummyToBack ->
+                    { english = "Can the child roll from tummy to back on their own"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReachForToys ->
+                    { english = "Does the child reach for nearby toys"
+                    , kinyarwanda = Nothing
+                    }
+
+                UseSimpleGestures ->
+                    { english = "Does the child use simple gestures such as waving “bye-bye”"
+                    , kinyarwanda = Nothing
+                    }
+
+                StandOnTheirOwn ->
+                    { english = "Can the child stand on their own"
+                    , kinyarwanda = Nothing
+                    }
+
+                CopyDuringPlay ->
+                    { english = "Does the child copy you during play"
+                    , kinyarwanda = Nothing
+                    }
+
+                SayMamaDada ->
+                    { english = "Does the child say “mama” and “dada”"
+                    , kinyarwanda = Nothing
+                    }
+
+                CanHoldSmallObjects ->
+                    { english = "Can the child hold small objects that fit inside their hands"
+                    , kinyarwanda = Nothing
+                    }
+
+                LooksWhenPointedAt ->
+                    { english = "Does the child look at something when you point to it and say “look”"
+                    , kinyarwanda = Nothing
+                    }
+
+                UseSingleWords ->
+                    { english = "Does the child use several single words to get what they want"
+                    , kinyarwanda = Nothing
+                    }
+
+                WalkWithoutHelp ->
+                    { english = "Does the child walk without help"
+                    , kinyarwanda = Nothing
+                    }
+
+                PlayPretend ->
+                    { english = "Does the child play pretend - like talking on a toy phone"
+                    , kinyarwanda = Nothing
+                    }
+
+                PointToThingsOfInterest ->
+                    { english = "Does the child point to interesting things"
+                    , kinyarwanda = Nothing
+                    }
+
+                UseShortPhrases ->
+                    { english = "Does the child use 2-4 word phrases"
+                    , kinyarwanda = Nothing
+                    }
+
+                InterestedInOtherChildren ->
+                    { english = "Does the child show interest in other children"
+                    , kinyarwanda = Nothing
+                    }
+
+                FollowSimlpeInstructions ->
+                    { english = "Does the child follow simple instructions"
+                    , kinyarwanda = Nothing
+                    }
+
+                KickBall ->
+                    { english = "Can the child kick a ball"
+                    , kinyarwanda = Nothing
+                    }
+
+                PointAtNamedObjects ->
+                    { english = "Does the child point to something - like a toy or a picture - when you name it"
+                    , kinyarwanda = Nothing
+                    }
+
+                DressThemselves ->
+                    { english = "Can the child dress themselves"
+                    , kinyarwanda = Nothing
+                    }
+
+                WashHandsGoToToiled ->
+                    { english = "Can the child wash their hands on their own and go to the toilet in the designated area on their own"
+                    , kinyarwanda = Nothing
+                    }
+
+                KnowsColorsAndNumbers ->
+                    { english = "Does the child know basic colors and numbers"
+                    , kinyarwanda = Nothing
+                    }
+
+                UseMediumPhrases ->
+                    { english = "Does the child use 4-5 word sentences"
+                    , kinyarwanda = Nothing
+                    }
+
+                PlayMakeBelieve ->
+                    { english = "Does the child play make-believe"
+                    , kinyarwanda = Nothing
+                    }
+
+                FollowThreeStepInstructions ->
+                    { english = "Does the child follow 3-step commands - like “get dressed, comb your hair, and wash your face"
+                    , kinyarwanda = Nothing
+                    }
+
+                StandOnOneFootFiveSeconds ->
+                    { english = "Can the child hop and stand on one foot for up to 5 seconds"
+                    , kinyarwanda = Nothing
+                    }
+
+                UseLongPhrases ->
+                    { english = "Does the child use 5-6 word sentences"
+                    , kinyarwanda = Nothing
+                    }
+
+                ShareWithOtherChildren ->
+                    { english = "Does the child share and take turns with other children"
+                    , kinyarwanda = Nothing
+                    }
+
+                CountToTen ->
+                    { english = "Can the child count to 10"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoECDSigns ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
+                    }
 
         Edd ->
             { english = "EDD"
