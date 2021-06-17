@@ -16,6 +16,12 @@ update msg subPage model =
             , []
             )
 
+        Reset villageId ->
+            ( emptyModel villageId
+            , Cmd.none
+            , []
+            )
+
         ChangeMonthGap interval ->
             let
                 potential =

@@ -245,6 +245,7 @@ allFeverCauses =
 
 type Msg
     = SetModalState (Maybe ModalState)
+    | Reset (Maybe VillageId)
     | ChangeMonthGap Int
     | NavigateToStuntingTable DashboardSubFilter
     | SetFilterGender FilterGender
