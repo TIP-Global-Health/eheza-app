@@ -72,10 +72,6 @@ generateNutritionAssesment currentDate zscores db assembled =
 expectActivity : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
 expectActivity currentDate zscores child isChw data db activity =
     case activity of
-        -- Do not show for community health workers.
-        Height ->
-            not isChw
-
         -- Show for children that are at least 6 month old.
         Muac ->
             ageInMonths currentDate child
@@ -92,6 +88,7 @@ expectActivity currentDate zscores child isChw data db activity =
             else
                 False
 
+        -- In all other cases, we always view the ativity.
         _ ->
             True
 
