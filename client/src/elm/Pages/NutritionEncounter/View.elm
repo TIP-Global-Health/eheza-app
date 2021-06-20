@@ -15,7 +15,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
-import Pages.NutritionActivity.Utils exposing (activityCompleted, expectActivity)
+import Pages.NutritionActivity.Utils exposing (activityCompleted, allMandatoryActivities, expectActivity)
 import Pages.NutritionEncounter.Model exposing (..)
 import Pages.NutritionEncounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -164,15 +164,18 @@ viewMainPageContent language currentDate zscores id isChw db data model =
                     ]
 
         allowEndEcounter =
-            case pendingActivities of
-                [] ->
-                    True
-
-                [ Photo ] ->
-                    True
-
-                _ ->
-                    False
+            let
+                mandatoryActivities =
+                    allMandatoryActivities isChw
+            in
+            pendingActivities
+                |> List.all
+                    (\activity ->
+                        -- Not an activity that is required to make a decision
+                        -- on next steps, and not the Next Steps activity itself.
+                        not (List.member activity mandatoryActivities)
+                            && (activity /= NextSteps)
+                    )
 
         endEcounterButtonAttributes =
             if allowEndEcounter then

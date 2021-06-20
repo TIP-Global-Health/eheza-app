@@ -128,9 +128,21 @@ activityCompleted currentDate zscores child isChw data db activity =
 
 mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> Bool
 mandatoryActivitiesCompleted currentDate zscores child isChw data db =
-    [ Height, Muac, Nutrition, Weight ]
+    allMandatoryActivities isChw
         |> List.filter (not << activityCompleted currentDate zscores child isChw data db)
         |> List.isEmpty
+
+
+{-| List of activities that need to be completed, in order to
+decide if to show Next Steps activity, or not.
+-}
+allMandatoryActivities : Bool -> List NutritionActivity
+allMandatoryActivities isChw =
+    if isChw then
+        [ Muac, Nutrition, Weight ]
+
+    else
+        [ Height, Muac, Nutrition, Weight ]
 
 
 nextStepsTasksCompletedFromTotal : NutritionMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
