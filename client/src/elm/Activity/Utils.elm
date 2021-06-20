@@ -316,9 +316,6 @@ whether we would expect to perform this action if checked in.
 expectChildActivity : NominalDate -> ZScore.Model.Model -> OfflineSession -> PersonId -> Bool -> ModelIndexedDb -> ChildActivity -> Bool
 expectChildActivity currentDate zscores offlineSession childId isChw db activity =
     case activity of
-        Height ->
-            not isChw
-
         Muac ->
             Dict.get childId offlineSession.children
                 |> Maybe.andThen .birthDate
@@ -356,7 +353,7 @@ expectChildActivity currentDate zscores offlineSession childId isChw db activity
             expectChildActivity currentDate zscores offlineSession childId isChw db ContributingFactors
 
         _ ->
-            -- In all other cases, we expect each ativity each time.
+            -- In all other cases, we always view the ativity.
             True
 
 
