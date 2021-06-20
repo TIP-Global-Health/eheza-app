@@ -1246,6 +1246,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
+                [ NutritionHeightRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ NutritionMuacRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
@@ -1270,6 +1280,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ HeightRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessNutritionGroup data (\childMeasurements -> { childMeasurements | height = Just ( uuid, data ) })
                     in
                     ( newModel
                     , Cmd.none
