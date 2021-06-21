@@ -131,21 +131,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $query = db_select('node', 'node');
 
     $query
-      ->fields('node', ['nid', 'vid', 'created', 'changed', 'type'])
+      ->fields('node', ['nid', 'vid', 'created', 'type'])
       ->condition('node.type', array_keys($handlers_by_types), 'IN');
-
-    // Get the timestamp of the last revision. We'll also get a count of
-    // remaining nodes, but the timestamp of the last revision will also
-    // help us display how far out-of-date the client is.
-    $last_revision_query = clone $query;
-
-    $last_revision = $last_revision_query
-      ->orderBy('node.vid', 'DESC')
-      ->range(0, 1)
-      ->execute()
-      ->fetchObject();
-
-    $last_timestamp = $last_revision ? $last_revision->changed : 0;
 
     // Restrict to revisions the client doesn't already have.
     $query->condition('node.vid', $base, '>');
@@ -186,7 +173,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $return = [
       'base_revision' => $base,
-      'last_timestamp' => $last_timestamp,
       'revision_count' => $count,
     ];
 
@@ -242,48 +228,28 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $query = db_select('node', 'node');
 
+    $query
+      ->fields('node', ['type', 'nid', 'vid', 'created'])
+      ->condition('node.type', array_keys($handlers_by_types), 'IN')
+      ->condition('node.vid', $base, '>');
+
     // Filter by Shards.
     hedley_restful_join_field_to_query($query, 'node', 'field_shards', FALSE);
 
     // And the table which will give us the UUID of the shard.
     hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_shards.field_shards_target_id", 'field_uuid_shards');
 
-    $query
-      ->fields('node', ['type', 'nid', 'vid', 'created', 'changed'])
-      ->condition('field_uuid_shards.field_uuid_value', $uuid)
-      ->condition('node.type', array_keys($handlers_by_types), 'IN');
-
-    $query->distinct();
-
-    // Get the timestamp of the last revision. We'll also get a count of
-    // remaining revisions, but the timestamp of the last revision will also
-    // help us display how far out-of-date the client is.
-    $last_revision_query = clone $query;
-
-    $last_revision = $last_revision_query
-      ->orderBy('node.vid', 'DESC')
-      ->range(0, 1)
-      ->execute()
-      ->fetchObject();
-
-    $last_timestamp = $last_revision ? $last_revision->changed : 0;
-
-    // Restrict to revisions the client doesn't already have.
-    $query->condition('node.vid', $base, '>');
+    $query->condition('field_uuid_shards.field_uuid_value', $uuid);
 
     // First, get the total number of revisions that are greater than the base
     // revision. This will help the client show progress. Note that this
     // includes the revisions in the batch we will return (but not earlier
     // revisions).
-    $count_query = clone $query;
-    $count = $count_query
-      ->countQuery()
-      ->execute()
-      ->fetchField();
+    $count = $query->countQuery()->execute()->fetchField();
 
     // Then, get one batch worth of results.
     $batch = $query
-      ->orderBy('node.vid', 'ASC')
+      ->orderBy('node.vid')
       ->range(0, self::HEDLEY_RESTFUL_DB_QUERY_RANGE)
       ->execute()
       ->fetchAll();
@@ -361,7 +327,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     return [
       'base_revision' => $base,
-      'last_timestamp' => $last_timestamp,
       'revision_count' => $count,
       'batch' => $output,
     ];
