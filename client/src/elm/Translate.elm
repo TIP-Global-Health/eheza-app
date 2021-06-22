@@ -2576,7 +2576,7 @@ translationSet trans =
 
         ChwDashboardLabel ->
             { english = "CHW Snapshot"
-            , kinyarwanda = Just "Ishusho y'ibyagezweho n'abajyanama b'ubuzima"
+            , kinyarwanda = Just "Ishusho y'ibyagezweho"
             }
 
         DeleteTrainingGroupEncounters ->
