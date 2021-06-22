@@ -173,6 +173,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $return = [
       'base_revision' => $base,
+      // We temporary leave last_timestamp, until all
+      // clients update the APP, and do not expect to decode it.
+      'last_timestamp' => time(),
       'revision_count' => $count,
     ];
 
@@ -327,6 +330,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     return [
       'base_revision' => $base,
+      // We temporary leave last_timestamp, until all
+      // clients update the APP, and do not expect to decode it.
+      'last_timestamp' => time(),
       'revision_count' => $count,
       'batch' => $output,
     ];
