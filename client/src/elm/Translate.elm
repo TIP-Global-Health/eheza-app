@@ -2912,7 +2912,7 @@ translationSet trans =
                     case subPage of
                         OverviewPage ->
                             { english = "Overview"
-                            , kinyarwanda = Just "Ishusho RU"
+                            , kinyarwanda = Just "Ishusho Rusange"
                             }
 
                         Covid19Page ->
