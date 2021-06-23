@@ -2942,6 +2942,14 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             , True
             )
 
+        WellChildContributingFactorsRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | contributingFactors = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildECDRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
@@ -2962,6 +2970,79 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
                 | wellChildEncounters = wellChildEncounters
                 , wellChildEncountersByParticipant = wellChildEncountersByParticipant
               }
+            , recalc
+            )
+
+        WellChildFollowUpRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    -- @todo:
+                    -- mapFollowUpMeasurements
+                    --     healthCenterId
+                    --     (\measurements -> { measurements | nutritionIndividual = Dict.insert uuid data measurements.nutritionIndividual })
+                    --     model
+                    model
+            in
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                modelWithMappedFollowUp
+            , recalc
+            )
+
+        WellChildHealthEducationRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildHeightRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | height = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildMuacRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | muac = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildNutritionRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildPhotoRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | photo = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildSendToHCRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | sendToHC = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildWeightRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | weight = Just ( uuid, data ) })
+                model
             , recalc
             )
 

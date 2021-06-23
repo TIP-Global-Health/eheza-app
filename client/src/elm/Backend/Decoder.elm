@@ -295,11 +295,38 @@ decodeRevision =
                     "weight" ->
                         decodeWithUuid WeightRevision decodeWeight
 
+                    "well_child_contributing_factors" ->
+                        decodeWithUuid WellChildContributingFactorsRevision decodeWellChildContributingFactors
+
                     "well_child_ecd" ->
                         decodeWithUuid WellChildECDRevision decodeWellChildECD
 
                     "well_child_encounter" ->
                         decodeWithUuid WellChildEncounterRevision decodeWellChildEncounter
+
+                    "well_child_follow_up" ->
+                        decodeWithUuid WellChildFollowUpRevision decodeWellChildFollowUp
+
+                    "well_child_health_education" ->
+                        decodeWithUuid WellChildHealthEducationRevision decodeWellChildHealthEducation
+
+                    "well_child_height" ->
+                        decodeWithUuid WellChildHeightRevision decodeWellChildHeight
+
+                    "well_child_muac" ->
+                        decodeWithUuid WellChildMuacRevision decodeWellChildMuac
+
+                    "well_child_nutrition" ->
+                        decodeWithUuid WellChildNutritionRevision decodeWellChildNutrition
+
+                    "well_child_photo" ->
+                        decodeWithUuid WellChildPhotoRevision decodeWellChildPhoto
+
+                    "well_child_send_to_hc" ->
+                        decodeWithUuid WellChildSendToHCRevision decodeWellChildSendToHC
+
+                    "well_child_weight" ->
+                        decodeWithUuid WellChildWeightRevision decodeWellChildWeight
 
                     _ ->
                         fail <|
