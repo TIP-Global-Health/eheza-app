@@ -1223,6 +1223,42 @@ type alias WellChildECD =
     WellChildMeasurement (EverySet ECDSign)
 
 
+type alias WellChildHeight =
+    WellChildMeasurement HeightInCm
+
+
+type alias WellChildMuac =
+    WellChildMeasurement MuacInCm
+
+
+type alias WellChildNutrition =
+    WellChildMeasurement (EverySet ChildNutritionSign)
+
+
+type alias WellChildPhoto =
+    WellChildMeasurement PhotoUrl
+
+
+type alias WellChildWeight =
+    WellChildMeasurement WeightInKg
+
+
+type alias WellChildSendToHC =
+    WellChildMeasurement SendToHCValue
+
+
+type alias WellChildHealthEducation =
+    WellChildMeasurement HealthEducationValue
+
+
+type alias WellChildContributingFactors =
+    WellChildMeasurement (EverySet ContributingFactorsSign)
+
+
+type alias WellChildFollowUp =
+    WellChildMeasurement FollowUpValue
+
+
 type ECDSign
     = -- Up to 9 months.
       RespontToSoundWithSound
@@ -1462,6 +1498,15 @@ type alias HomeVisitMeasurements =
 
 type alias WellChildMeasurements =
     { ecd : Maybe ( WellChildECDId, WellChildECD )
+    , height : Maybe ( WellChildHeightId, WellChildHeight )
+    , muac : Maybe ( WellChildMuacId, WellChildMuac )
+    , nutrition : Maybe ( WellChildNutritionId, WellChildNutrition )
+    , photo : Maybe ( WellChildPhotoId, WellChildPhoto )
+    , weight : Maybe ( WellChildWeightId, WellChildWeight )
+    , contributingFactors : Maybe ( WellChildContributingFactorsId, WellChildContributingFactors )
+    , healthEducation : Maybe ( WellChildHealthEducationId, WellChildHealthEducation )
+    , followUp : Maybe ( WellChildFollowUpId, WellChildFollowUp )
+    , sendToHC : Maybe ( WellChildSendToHCId, WellChildSendToHC )
     }
 
 
