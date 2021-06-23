@@ -8254,7 +8254,7 @@ translateDashboard trans =
 
         ResolvedCases ->
             { english = " Resolved Cases: Currently in Care"
-            , kinyarwanda = Just "Abavuwe: bacyitabwaho"
+            , kinyarwanda = Just "Abavuwe: Bacyitabwaho"
             }
 
         Severe ->
