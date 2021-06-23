@@ -22,22 +22,17 @@ encodeEverySet encoder set =
 
 encodeHeight : Height -> List ( String, Value )
 encodeHeight =
-    encodeGroupMeasurement encodeHeightValue
+    encodeGroupMeasurement (encodeHeightValueWithType "height")
 
 
 encodeNutritionHeight : NutritionHeight -> List ( String, Value )
 encodeNutritionHeight =
-    encodeNutritionMeasurement encodeNutritionHeightValue
+    encodeNutritionMeasurement (encodeHeightValueWithType "nutrition_height")
 
 
-encodeHeightValue : HeightInCm -> List ( String, Value )
-encodeHeightValue height =
-    encodeHeightValueWithType "height" height
-
-
-encodeNutritionHeightValue : HeightInCm -> List ( String, Value )
-encodeNutritionHeightValue height =
-    encodeHeightValueWithType "nutrition_height" height
+encodeWellChildHeight : WellChildHeight -> List ( String, Value )
+encodeWellChildHeight =
+    encodeWellChildMeasurement (encodeHeightValueWithType "well_child_height")
 
 
 encodeHeightValueWithType : String -> HeightInCm -> List ( String, Value )
@@ -58,6 +53,11 @@ encodeNutritionMuac =
     encodeNutritionMeasurement (encodeMuacValueWithType "nutrition_muac")
 
 
+encodeWellChildMuac : WellChildMuac -> List ( String, Value )
+encodeWellChildMuac =
+    encodeWellChildMeasurement (encodeMuacValueWithType "well_child_muac")
+
+
 encodeMuacValueWithType : String -> MuacInCm -> List ( String, Value )
 encodeMuacValueWithType type_ (MuacInCm muac) =
     [ ( "muac", float muac )
@@ -68,22 +68,17 @@ encodeMuacValueWithType type_ (MuacInCm muac) =
 
 encodeWeight : Weight -> List ( String, Value )
 encodeWeight =
-    encodeGroupMeasurement encodeWeightValue
+    encodeGroupMeasurement (encodeWeightValueWithType "weight")
 
 
 encodeNutritionWeight : NutritionWeight -> List ( String, Value )
 encodeNutritionWeight =
-    encodeNutritionMeasurement encodeNutritionWeightValue
+    encodeNutritionMeasurement (encodeWeightValueWithType "nutrition_weight")
 
 
-encodeWeightValue : WeightInKg -> List ( String, Value )
-encodeWeightValue weight =
-    encodeWeightValueWithType "weight" weight
-
-
-encodeNutritionWeightValue : WeightInKg -> List ( String, Value )
-encodeNutritionWeightValue weight =
-    encodeWeightValueWithType "nutrition_weight" weight
+encodeWellChildWeight : WellChildWeight -> List ( String, Value )
+encodeWellChildWeight =
+    encodeWellChildMeasurement (encodeWeightValueWithType "well_child_weight")
 
 
 encodeWeightValueWithType : String -> WeightInKg -> List ( String, Value )
@@ -96,40 +91,29 @@ encodeWeightValueWithType type_ (WeightInKg weight) =
 
 encodePhoto : Photo -> List ( String, Value )
 encodePhoto =
-    encodeGroupMeasurement encodePhotoUrl
-
-
-encodePhotoUrl : PhotoUrl -> List ( String, Value )
-encodePhotoUrl (PhotoUrl url) =
-    [ ( "photo", string url )
-    , ( "deleted", bool False )
-    , ( "type", string "photo" )
-    ]
+    encodeGroupMeasurement (encodePhotoUrlWithType "photo")
 
 
 encodeNutritionPhoto : NutritionPhoto -> List ( String, Value )
 encodeNutritionPhoto =
-    encodeNutritionMeasurement encodeNutritionPhotoUrl
-
-
-encodeNutritionPhotoUrl : PhotoUrl -> List ( String, Value )
-encodeNutritionPhotoUrl (PhotoUrl url) =
-    [ ( "photo", string url )
-    , ( "deleted", bool False )
-    , ( "type", string "nutrition_photo" )
-    ]
+    encodeNutritionMeasurement (encodePhotoUrlWithType "nutrition_photo")
 
 
 encodePrenatalPhoto : PrenatalPhoto -> List ( String, Value )
 encodePrenatalPhoto =
-    encodePrenatalMeasurement encodePrenatalPhotoUrl
+    encodePrenatalMeasurement (encodePhotoUrlWithType "prenatal_photo")
 
 
-encodePrenatalPhotoUrl : PhotoUrl -> List ( String, Value )
-encodePrenatalPhotoUrl (PhotoUrl url) =
+encodeWellChildPhoto : WellChildPhoto -> List ( String, Value )
+encodeWellChildPhoto =
+    encodeWellChildMeasurement (encodePhotoUrlWithType "well_child_photo")
+
+
+encodePhotoUrlWithType : String -> PhotoUrl -> List ( String, Value )
+encodePhotoUrlWithType type_ (PhotoUrl url) =
     [ ( "photo", string url )
     , ( "deleted", bool False )
-    , ( "type", string "prenatal_photo" )
+    , ( "type", string type_ )
     ]
 
 
@@ -257,12 +241,17 @@ encodeAppointmentConfirmationValue value =
 
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
-    encodeGroupMeasurement encodeNutritionValue
+    encodeGroupMeasurement (encodeNutritionValueWithType "nutrition")
 
 
-encodeNutritionValue : EverySet ChildNutritionSign -> List ( String, Value )
-encodeNutritionValue nutritions =
-    encodeNutritionValueWithType "nutrition" nutritions
+encodeNutritionNutrition : NutritionNutrition -> List ( String, Value )
+encodeNutritionNutrition =
+    encodeNutritionMeasurement (encodeNutritionValueWithType "nutrition_nutrition")
+
+
+encodeWellChildNutrition : WellChildNutrition -> List ( String, Value )
+encodeWellChildNutrition =
+    encodeWellChildMeasurement (encodeNutritionValueWithType "well_child_nutrition")
 
 
 encodeNutritionValueWithType : String -> EverySet ChildNutritionSign -> List ( String, Value )
@@ -271,16 +260,6 @@ encodeNutritionValueWithType type_ nutritions =
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
-
-
-encodeNutritionNutrition : NutritionNutrition -> List ( String, Value )
-encodeNutritionNutrition =
-    encodeNutritionMeasurement encodeNutritionNutritionValue
-
-
-encodeNutritionNutritionValue : EverySet ChildNutritionSign -> List ( String, Value )
-encodeNutritionNutritionValue nutritions =
-    encodeNutritionValueWithType "nutrition_nutrition" nutritions
 
 
 encodeParticipantConsentValue : ParticipantConsentValue -> List ( String, Value )
@@ -1477,6 +1456,11 @@ encodeNutritionSendToHC =
     encodeNutritionMeasurement (encodeSendToHCValueWithType "nutrition_send_to_hc")
 
 
+encodeWellChildSendToHC : WellChildSendToHC -> List ( String, Value )
+encodeWellChildSendToHC =
+    encodeWellChildMeasurement (encodeSendToHCValueWithType "well_child_send_to_hc")
+
+
 encodeGroupSendToHC : GroupSendToHC -> List ( String, Value )
 encodeGroupSendToHC =
     encodeGroupMeasurement (encodeSendToHCValueWithType "group_send_to_hc")
@@ -1538,6 +1522,11 @@ encodeNutritionContributingFactors =
     encodeNutritionMeasurement (encodeContributingFactorsValueWithType "nutrition_contributing_factors")
 
 
+encodeWellChildContributingFactors : WellChildContributingFactors -> List ( String, Value )
+encodeWellChildContributingFactors =
+    encodeWellChildMeasurement (encodeContributingFactorsValueWithType "well_child_contributing_factors")
+
+
 encodeContributingFactorsValueWithType : String -> EverySet ContributingFactorsSign -> List ( String, Value )
 encodeContributingFactorsValueWithType type_ value =
     [ ( "contributing_factors_signs", encodeEverySet encodeContributingFactorsSign value )
@@ -1574,6 +1563,11 @@ encodeFollowUp =
 encodeNutritionFollowUp : NutritionFollowUp -> List ( String, Value )
 encodeNutritionFollowUp =
     encodeNutritionMeasurement (encodeFollowUpValueWithType "nutrition_follow_up")
+
+
+encodeWellChildFollowUp : WellChildFollowUp -> List ( String, Value )
+encodeWellChildFollowUp =
+    encodeWellChildMeasurement (encodeFollowUpValueWithType "well_child_follow_up")
 
 
 encodeFollowUpValueWithType : String -> FollowUpValue -> List ( String, Value )
@@ -2379,6 +2373,11 @@ encodeHealthEducation =
 encodeNutritionHealthEducation : NutritionHealthEducation -> List ( String, Value )
 encodeNutritionHealthEducation =
     encodeNutritionMeasurement (encodeHealthEducationValueWithType "nutrition_health_education")
+
+
+encodeWellChildHealthEducation : WellChildHealthEducation -> List ( String, Value )
+encodeWellChildHealthEducation =
+    encodeWellChildMeasurement (encodeHealthEducationValueWithType "well_child_health_education")
 
 
 encodeGroupHealthEducation : GroupHealthEducation -> List ( String, Value )
