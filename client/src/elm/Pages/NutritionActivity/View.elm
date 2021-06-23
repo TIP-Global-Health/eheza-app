@@ -592,7 +592,6 @@ viewWeightContent language currentDate zscores isChw assembled data previousGrou
                     [ text zScoreForHeightText
                     ]
                 ]
-                |> showIf (not isChw)
             ]
         , div [ class "actions" ]
             [ button
