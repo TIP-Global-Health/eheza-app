@@ -21,11 +21,11 @@ expectActivity : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> Wel
 expectActivity currentDate child data db activity =
     -- For now, we show all activities without any conditions.
     case activity of
-        WellChildECD ->
+        WellChildNutritionAssessment ->
             True
 
-        _ ->
-            False
+        WellChildECD ->
+            True
 
 
 activityCompleted : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
