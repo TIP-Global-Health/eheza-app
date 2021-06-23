@@ -612,11 +612,38 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityWeight identifier ->
             getIdentifier identifier "weight"
 
+        BackendAuthorityWellChildContributingFactors identifier ->
+            getIdentifier identifier "well_child_contributing_factors"
+
         BackendAuthorityWellChildECD identifier ->
             getIdentifier identifier "well_child_ecd"
 
         BackendAuthorityWellChildEncounter identifier ->
             getIdentifier identifier "well_child_encounter"
+
+        BackendAuthorityWellChildFollowUp identifier ->
+            getIdentifier identifier "well_child_follow_up"
+
+        BackendAuthorityWellChildHealthEducation identifier ->
+            getIdentifier identifier "well_child_health_education"
+
+        BackendAuthorityWellChildHeight identifier ->
+            getIdentifier identifier "well_child_height"
+
+        BackendAuthorityWellChildMuac identifier ->
+            getIdentifier identifier "well_child_muac"
+
+        BackendAuthorityWellChildNutrition identifier ->
+            getIdentifier identifier "well_child_nutrition"
+
+        BackendAuthorityWellChildPhoto identifier ->
+            getIdentifier identifier "well_child_photo"
+
+        BackendAuthorityWellChildSendToHC identifier ->
+            getIdentifier identifier "well_child_send_to_hc"
+
+        BackendAuthorityWellChildWeight identifier ->
+            getIdentifier identifier "well_child_weight"
 
 
 {-| Return a photo from a "Authority" entity.
@@ -1053,11 +1080,38 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityWeight identifier ->
             encode Backend.Measurement.Encoder.encodeWeight identifier
 
+        BackendAuthorityWellChildContributingFactors identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildContributingFactors identifier
+
         BackendAuthorityWellChildECD identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildECD identifier
 
         BackendAuthorityWellChildEncounter identifier ->
             encode Backend.WellChildEncounter.Encoder.encodeWellChildEncounter identifier
+
+        BackendAuthorityWellChildFollowUp identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildFollowUp identifier
+
+        BackendAuthorityWellChildHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildHealthEducation identifier
+
+        BackendAuthorityWellChildHeight identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildHeight identifier
+
+        BackendAuthorityWellChildMuac identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildMuac identifier
+
+        BackendAuthorityWellChildNutrition identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildNutrition identifier
+
+        BackendAuthorityWellChildPhoto identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildPhoto identifier
+
+        BackendAuthorityWellChildSendToHC identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildSendToHC identifier
+
+        BackendAuthorityWellChildWeight identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildWeight identifier
 
 
 getDataToSendGeneral : BackendGeneralEntity -> List String -> List String
@@ -1457,11 +1511,38 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityWeight identifier ->
             WeightRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityWellChildContributingFactors identifier ->
+            WellChildContributingFactorsRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityWellChildECD identifier ->
             WellChildECDRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityWellChildEncounter identifier ->
             WellChildEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildFollowUp identifier ->
+            WellChildFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildHealthEducation identifier ->
+            WellChildHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildHeight identifier ->
+            WellChildHeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildMuac identifier ->
+            WellChildMuacRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildNutrition identifier ->
+            WellChildNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildPhoto identifier ->
+            WellChildPhotoRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildSendToHC identifier ->
+            WellChildSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildWeight identifier ->
+            WellChildWeightRevision (toEntityUuid identifier.uuid) identifier.entity
 
 
 fileUploadFailureThreshold : Int

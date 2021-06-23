@@ -731,6 +731,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeWeight
                             BackendAuthorityWeight
 
+                    "well_child_contributing_factors" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildContributingFactors
+                            BackendAuthorityWellChildContributingFactors
+
                     "well_child_ecd" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildECD
@@ -740,6 +745,46 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.WellChildEncounter.Decoder.decodeWellChildEncounter
                             BackendAuthorityWellChildEncounter
+
+                    "well_child_follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildFollowUp
+                            BackendAuthorityWellChildFollowUp
+
+                    "well_child_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildHealthEducation
+                            BackendAuthorityWellChildHealthEducation
+
+                    "well_child_height" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildHeight
+                            BackendAuthorityWellChildHeight
+
+                    "well_child_muac" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildMuac
+                            BackendAuthorityWellChildMuac
+
+                    "well_child_nutrition" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildNutrition
+                            BackendAuthorityWellChildNutrition
+
+                    "well_child_photo" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildPhoto
+                            BackendAuthorityWellChildPhoto
+
+                    "well_child_send_to_hc" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildSendToHC
+                            BackendAuthorityWellChildSendToHC
+
+                    "well_child_weight" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildWeight
+                            BackendAuthorityWellChildWeight
 
                     _ ->
                         fail <| type_ ++ " is unknown BackendAuthorityEntity"

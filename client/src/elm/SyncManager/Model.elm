@@ -129,8 +129,17 @@ type BackendAuthorityEntity
     | BackendAuthorityTreatmentReview (BackendEntity TreatmentReview)
     | BackendAuthorityVitals (BackendEntity Vitals)
     | BackendAuthorityWeight (BackendEntity Weight)
+    | BackendAuthorityWellChildContributingFactors (BackendEntity WellChildContributingFactors)
     | BackendAuthorityWellChildECD (BackendEntity WellChildECD)
     | BackendAuthorityWellChildEncounter (BackendEntity WellChildEncounter)
+    | BackendAuthorityWellChildFollowUp (BackendEntity WellChildFollowUp)
+    | BackendAuthorityWellChildHealthEducation (BackendEntity WellChildHealthEducation)
+    | BackendAuthorityWellChildHeight (BackendEntity WellChildHeight)
+    | BackendAuthorityWellChildMuac (BackendEntity WellChildMuac)
+    | BackendAuthorityWellChildNutrition (BackendEntity WellChildNutrition)
+    | BackendAuthorityWellChildPhoto (BackendEntity WellChildPhoto)
+    | BackendAuthorityWellChildSendToHC (BackendEntity WellChildSendToHC)
+    | BackendAuthorityWellChildWeight (BackendEntity WellChildWeight)
 
 
 {-| Wrapper for a Backend entity (both General and Authority).
