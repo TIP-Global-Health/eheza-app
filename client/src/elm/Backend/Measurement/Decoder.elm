@@ -176,25 +176,20 @@ decodeWellChildMeasurements : Decoder WellChildMeasurements
 decodeWellChildMeasurements =
     succeed WellChildMeasurements
         |> optional "well_child_ecd" (decodeHead decodeWellChildECD) Nothing
+        |> optional "well_child_height" (decodeHead decodeWellChildHeight) Nothing
+        |> optional "well_child_muac" (decodeHead decodeWellChildMuac) Nothing
+        |> optional "well_child_nutrition" (decodeHead decodeWellChildNutrition) Nothing
+        |> optional "well_child_photo" (decodeHead decodeWellChildPhoto) Nothing
+        |> optional "well_child_weight" (decodeHead decodeWellChildWeight) Nothing
+        |> optional "well_child_contributing_factors" (decodeHead decodeWellChildContributingFactors) Nothing
+        |> optional "well_child_health_education" (decodeHead decodeWellChildHealthEducation) Nothing
+        |> optional "well_child_follow_up" (decodeHead decodeWellChildFollowUp) Nothing
+        |> optional "well_child_send_to_hc" (decodeHead decodeWellChildSendToHC) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
 decodeHead =
     map List.head << list << decodeWithEntityUuid
-
-
-decodePhoto : Decoder Photo
-decodePhoto =
-    field "photo" (decodeStringWithDefault "")
-        |> map PhotoUrl
-        |> decodeGroupMeasurement
-
-
-decodePrenatalPhoto : Decoder PrenatalPhoto
-decodePrenatalPhoto =
-    field "photo" (decodeStringWithDefault "")
-        |> map PhotoUrl
-        |> decodePrenatalMeasurement
 
 
 decodePregnancyTesting : Decoder PregnancyTest
@@ -327,6 +322,27 @@ decodeHeight =
         |> decodeGroupMeasurement
 
 
+decodeMuac : Decoder Muac
+decodeMuac =
+    field "muac" decodeFloat
+        |> map MuacInCm
+        |> decodeGroupMeasurement
+
+
+decodeNutrition : Decoder ChildNutrition
+decodeNutrition =
+    decodeEverySet decodeChildNutritionSign
+        |> field "nutrition_signs"
+        |> decodeGroupMeasurement
+
+
+decodePhoto : Decoder Photo
+decodePhoto =
+    field "photo" (decodeStringWithDefault "")
+        |> map PhotoUrl
+        |> decodeGroupMeasurement
+
+
 decodeWeight : Decoder Weight
 decodeWeight =
     field "weight" decodeFloat
@@ -334,11 +350,81 @@ decodeWeight =
         |> decodeGroupMeasurement
 
 
-decodeMuac : Decoder Muac
-decodeMuac =
+decodePrenatalPhoto : Decoder PrenatalPhoto
+decodePrenatalPhoto =
+    field "photo" (decodeStringWithDefault "")
+        |> map PhotoUrl
+        |> decodePrenatalMeasurement
+
+
+decodeNutritionHeight : Decoder NutritionHeight
+decodeNutritionHeight =
+    field "height" decodeFloat
+        |> map HeightInCm
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionMuac : Decoder NutritionMuac
+decodeNutritionMuac =
     field "muac" decodeFloat
         |> map MuacInCm
-        |> decodeGroupMeasurement
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionNutrition : Decoder NutritionNutrition
+decodeNutritionNutrition =
+    decodeEverySet decodeChildNutritionSign
+        |> field "nutrition_signs"
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionPhoto : Decoder NutritionPhoto
+decodeNutritionPhoto =
+    field "photo" (decodeStringWithDefault "")
+        |> map PhotoUrl
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionWeight : Decoder NutritionWeight
+decodeNutritionWeight =
+    field "weight" decodeFloat
+        |> map WeightInKg
+        |> decodeNutritionMeasurement
+
+
+decodeWellChildHeight : Decoder WellChildHeight
+decodeWellChildHeight =
+    field "height" decodeFloat
+        |> map HeightInCm
+        |> decodeWellChildMeasurement
+
+
+decodeWellChildMuac : Decoder WellChildMuac
+decodeWellChildMuac =
+    field "muac" decodeFloat
+        |> map MuacInCm
+        |> decodeWellChildMeasurement
+
+
+decodeWellChildNutrition : Decoder WellChildNutrition
+decodeWellChildNutrition =
+    decodeEverySet decodeChildNutritionSign
+        |> field "nutrition_signs"
+        |> decodeWellChildMeasurement
+
+
+decodeWellChildPhoto : Decoder WellChildPhoto
+decodeWellChildPhoto =
+    field "photo" (decodeStringWithDefault "")
+        |> map PhotoUrl
+        |> decodeWellChildMeasurement
+
+
+decodeWellChildWeight : Decoder WellChildWeight
+decodeWellChildWeight =
+    field "weight" decodeFloat
+        |> map WeightInKg
+        |> decodeWellChildMeasurement
 
 
 decodeFamilyPlanning : Decoder FamilyPlanning
@@ -376,13 +462,6 @@ decodeParticipantConsentValue =
     succeed ParticipantConsentValue
         |> required "language" decodeLanguage
         |> required "participant_form" decodeEntityUuid
-
-
-decodeNutrition : Decoder ChildNutrition
-decodeNutrition =
-    decodeEverySet decodeChildNutritionSign
-        |> field "nutrition_signs"
-        |> decodeGroupMeasurement
 
 
 decodeCounselingSession : Decoder CounselingSession
@@ -1259,41 +1338,6 @@ decodeBirthPlanSign =
             )
 
 
-decodeNutritionMuac : Decoder NutritionMuac
-decodeNutritionMuac =
-    field "muac" decodeFloat
-        |> map MuacInCm
-        |> decodeNutritionMeasurement
-
-
-decodeNutritionHeight : Decoder NutritionHeight
-decodeNutritionHeight =
-    field "height" decodeFloat
-        |> map HeightInCm
-        |> decodeNutritionMeasurement
-
-
-decodeNutritionNutrition : Decoder NutritionNutrition
-decodeNutritionNutrition =
-    decodeEverySet decodeChildNutritionSign
-        |> field "nutrition_signs"
-        |> decodeNutritionMeasurement
-
-
-decodeNutritionPhoto : Decoder NutritionPhoto
-decodeNutritionPhoto =
-    field "photo" (decodeStringWithDefault "")
-        |> map PhotoUrl
-        |> decodeNutritionMeasurement
-
-
-decodeNutritionWeight : Decoder NutritionWeight
-decodeNutritionWeight =
-    field "weight" decodeFloat
-        |> map WeightInKg
-        |> decodeNutritionMeasurement
-
-
 decodeContributingFactors : Decoder ContributingFactors
 decodeContributingFactors =
     decodeGroupMeasurement decodeContributingFactorsValue
@@ -1302,6 +1346,11 @@ decodeContributingFactors =
 decodeNutritionContributingFactors : Decoder NutritionContributingFactors
 decodeNutritionContributingFactors =
     decodeNutritionMeasurement decodeContributingFactorsValue
+
+
+decodeWellChildContributingFactors : Decoder WellChildContributingFactors
+decodeWellChildContributingFactors =
+    decodeWellChildMeasurement decodeContributingFactorsValue
 
 
 decodeContributingFactorsValue : Decoder (EverySet ContributingFactorsSign)
@@ -1318,6 +1367,11 @@ decodeFollowUp =
 decodeNutritionFollowUp : Decoder NutritionFollowUp
 decodeNutritionFollowUp =
     decodeNutritionMeasurement decodeFollowUpValue
+
+
+decodeWellChildFollowUp : Decoder WellChildFollowUp
+decodeWellChildFollowUp =
+    decodeWellChildMeasurement decodeFollowUpValue
 
 
 decodeFollowUpValue : Decoder FollowUpValue
@@ -1906,6 +1960,11 @@ decodeSendToHC =
 decodeNutritionSendToHC : Decoder NutritionSendToHC
 decodeNutritionSendToHC =
     decodeNutritionMeasurement decodeSendToHCValue
+
+
+decodeWellChildSendToHC : Decoder WellChildSendToHC
+decodeWellChildSendToHC =
+    decodeWellChildMeasurement decodeSendToHCValue
 
 
 decodeGroupSendToHC : Decoder GroupSendToHC
@@ -2635,6 +2694,11 @@ decodeHealthEducation =
 decodeNutritionHealthEducation : Decoder NutritionHealthEducation
 decodeNutritionHealthEducation =
     decodeNutritionMeasurement decodeHealthEducationValue
+
+
+decodeWellChildHealthEducation : Decoder WellChildHealthEducation
+decodeWellChildHealthEducation =
+    decodeWellChildMeasurement decodeHealthEducationValue
 
 
 decodeGroupHealthEducation : Decoder GroupHealthEducation
