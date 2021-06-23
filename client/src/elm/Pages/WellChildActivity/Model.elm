@@ -3,6 +3,19 @@ module Pages.WellChildActivity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Measurement.Model exposing (..)
+import Pages.NutritionActivity.Model
+    exposing
+        ( HeightForm
+        , MuacForm
+        , NutritionForm
+        , PhotoForm
+        , WeightForm
+        , emptyHeightForm
+        , emptyMuacForm
+        , emptyNutritionForm
+        , emptyPhotoForm
+        , emptyWeightForm
+        )
 import Pages.Page exposing (Page)
 
 
@@ -14,12 +27,15 @@ type Msg
 
 type alias Model =
     { ecdForm : WellChildECDForm
+    , nutritionAssesmentData : NutritionAssesmentData
     }
 
 
 emptyModel : Model
 emptyModel =
-    { ecdForm = emptyWellChildECDForm }
+    { ecdForm = emptyWellChildECDForm
+    , nutritionAssesmentData = emptyNutritionAssesmentData
+    }
 
 
 type alias WellChildECDForm =
@@ -91,3 +107,44 @@ emptyWellChildECDForm =
     , shareWithOtherChildren = Nothing
     , countToTen = Nothing
     }
+
+
+type alias NutritionAssesmentData =
+    { heightForm : HeightForm
+    , muacForm : MuacForm
+    , nutritionForm : NutritionForm
+    , photoForm : PhotoForm
+    , weightForm : WeightForm
+    , contributingFactorsForm : ContributingFactorsForm
+    , healthEducationForm : HealthEducationForm
+    , followUpForm : FollowUpForm
+    , sendToHCForm : SendToHCForm
+    , activeTask : Maybe NutritionAssesmentTask
+    }
+
+
+emptyNutritionAssesmentData : NutritionAssesmentData
+emptyNutritionAssesmentData =
+    { heightForm = emptyHeightForm
+    , muacForm = emptyMuacForm
+    , nutritionForm = emptyNutritionForm
+    , photoForm = emptyPhotoForm
+    , weightForm = emptyWeightForm
+    , contributingFactorsForm = emptyContributingFactorsForm
+    , healthEducationForm = emptyHealthEducationForm
+    , followUpForm = emptyFollowUpForm
+    , sendToHCForm = emptySendToHCForm
+    , activeTask = Nothing
+    }
+
+
+type NutritionAssesmentTask
+    = TaskHeight
+    | TaskMuac
+    | TaskNutrition
+    | TaskPhoto
+    | TaskWeight
+    | TaskContributingFactors
+    | TaskSendToHC
+    | TaskHealthEducation
+    | TaskFollowUp
