@@ -2576,7 +2576,7 @@ translationSet trans =
 
         ChwDashboardLabel ->
             { english = "CHW Snapshot"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ishusho y'ibyagezweho"
             }
 
         DeleteTrainingGroupEncounters ->
@@ -2912,7 +2912,7 @@ translationSet trans =
                     case subPage of
                         OverviewPage ->
                             { english = "Overview"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Ishusho Rusange"
                             }
 
                         Covid19Page ->
@@ -2922,22 +2922,22 @@ translationSet trans =
 
                         MalariaPage ->
                             { english = "Malaria"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Malariya"
                             }
 
                         GastroPage ->
                             { english = "Gastro"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Indwara yo mu nda"
                             }
 
                 NutritionPage ->
                     { english = "Child Nutrition"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imirire y'Umwana"
                     }
 
                 AntenatalPage ->
                     { english = "Antenatal Care"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma ku Mugore Utwite"
                     }
 
         EncounterTypeFollowUpLabel encounterType ->
@@ -7892,7 +7892,7 @@ translateDashboard trans =
 
         AcuteIllnessDiagnosed ->
             { english = "Acute Illness Diagnosed"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uburwayi bufatiyeho bwasuzumwe"
             }
 
         BeneficiariesTableColumnLabel label ->
@@ -7929,7 +7929,7 @@ translateDashboard trans =
 
         CallsTo114 ->
             { english = "Calls to 114"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Inshuro bahamagaye 114"
             }
 
         CaseManagementFirstWordHelper ->
@@ -7959,32 +7959,32 @@ translateDashboard trans =
 
         CurrentPregnancies ->
             { english = "Currently Pregnant Women"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Abagore basanzwe batwite"
             }
 
         CommunityLevelCases ->
             { english = "Community Level Cases"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'ababonetse ku rwego rw'umudugudu"
             }
 
         ComplicatedMalariaReferredToHC ->
             { english = "Complicated Malaria Referred to HC"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Abarwaye Malariya y'ikigatu boherejwe ku Kigo Nderabuzima"
             }
 
         ComplicatedGIInfectionsReferredToHc ->
             { english = "Complicated GI Infections Referred to Health Center"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uburwayi bwo munda bukomeye bwoherejwe ku kigo nderabuzima"
             }
 
         DiagnosisUndetermined ->
             { english = "Diagnosis Undetermined"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uburwayi budasobanutse"
             }
 
         DiagnosedCases ->
             { english = "Diagnosed Cases"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'indwara zavuwe"
             }
 
         FamilyPlanningLabel ->
@@ -8036,24 +8036,24 @@ translateDashboard trans =
 
         FeverOfUnknownOrigin ->
             { english = " Fever of Unknown Origin"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umuriro utazwi icyawuteye"
             }
 
         Filter filter ->
             case filter of
                 Stunting ->
                     { english = "Stunting"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Abagwingiye"
                     }
 
                 Underweight ->
                     { english = "Underweight"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Abafite ibiro bidahagije"
                     }
 
                 Wasting ->
                     { english = "Wasting"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Abananutse Bikabije"
                     }
 
                 Dashboard.MUAC ->
@@ -8110,22 +8110,22 @@ translateDashboard trans =
 
         GoodNutritionLabel ->
             { english = "% Good nutrition"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "% Abafite imirire myiza"
             }
 
         HomeDeliveries ->
             { english = "Home Deliveries"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ababyariye mu Rugo"
             }
 
         HealthFacilityDeliveries ->
             { english = "Health Facility Deliveries"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ababyariye ku Ivuriro"
             }
 
         HealthCenterReferrals ->
             { english = "Health Center Referrals"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Aboherejwe ku kigo nderabuzima"
             }
 
         IncidenceOf ->
@@ -8160,7 +8160,7 @@ translateDashboard trans =
 
         MothersInANC ->
             { english = "Mothers in ANC"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ababyeyi bari muri serivisi ikurikirana abagore batwite"
             }
 
         NewCasesLabel ->
@@ -8170,7 +8170,7 @@ translateDashboard trans =
 
         NewPregnancy ->
             { english = "New Identified Pregnancies"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Abagore bashya batwite"
             }
 
         NewBeneficiaries ->
@@ -8180,7 +8180,7 @@ translateDashboard trans =
 
         NewbornsInCare ->
             { english = "Newborns in Care"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Impinja zikurikiranwa"
             }
 
         NoDataGeneral ->
@@ -8190,17 +8190,17 @@ translateDashboard trans =
 
         NoDataForPeriod ->
             { english = "No data for the selected period."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Nta bipimo bigaragara muri iki gihe wahisemo"
             }
 
         PatientsManagedAtHome ->
             { english = "Managed at Home"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Abavuriwe mu Rugo"
             }
 
         PatientCurrentlyUnderCare ->
             { english = "Currently Under Care"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Abacyitabwaho"
             }
 
         PercentageLabel period ->
@@ -8254,7 +8254,7 @@ translateDashboard trans =
 
         ResolvedCases ->
             { english = " Resolved Cases: Currently in Care"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Abavuwe: Bacyitabwaho"
             }
 
         Severe ->
@@ -8301,7 +8301,7 @@ translateDashboard trans =
 
         TotalBeneficiaries ->
             { english = "Total Beneficiaries"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare wose w'"
             }
 
         TotalMalnourished ->
@@ -8311,27 +8311,27 @@ translateDashboard trans =
 
         TotalEncountersLabel ->
             { english = "Total encounters completed"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibikorwa byose byarangiye"
             }
 
         TotalAssessment ->
             { english = "Total # of Assessments"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare wose w'Amasuzuma Yakozwe"
             }
 
         UncomplicatedMalariaByChws ->
             { english = "Uncomplicated Malaria Managed by CHWs"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Abarwaye Malariya yorohejwe yavuwe n'abajyanama b'ubuzima"
             }
 
         UncomplicatedMalariaInPregnancyReferredToHc ->
             { english = "Uncomplicated Malaria in Pregnancy Referred to HC"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ababyeyi batwite bafite Malariya yoroheje boherejwe ku kigo nderabuzima"
             }
 
         UncomplicatedGIInfectionByCHWS ->
             { english = "Uncomplicated GI Infections Managed by CHWs"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uburwayi bwo mu nda bworoheje bwavuwe n'abajyanama w'ubuzima"
             }
 
         UseFamilyPlanning ->
@@ -8341,12 +8341,12 @@ translateDashboard trans =
 
         Within4MonthsOfDueDate ->
             { english = "Within 4 Months of Due Date"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Inda ibura amezi 4 ngo ivuke"
             }
 
         WithDangerSigns ->
             { english = "With Danger Signs"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Abafite Ibimenyetso Mpuruza"
             }
 
 
