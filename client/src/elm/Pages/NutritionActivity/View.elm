@@ -1,4 +1,4 @@
-module Pages.NutritionActivity.View exposing (view, viewHeightForm, warningPopup)
+module Pages.NutritionActivity.View exposing (view, viewHeightForm, viewMuacForm, viewNutritionForm, viewPhotoForm, viewWeightForm, warningPopup)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -364,7 +364,7 @@ viewMuacContent language currentDate assembled data previousGroupValue =
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
-            viewMuacForm language currentDate assembled.person previousGroupValue previousIndividualValue form
+            viewMuacForm language currentDate assembled.person previousGroupValue previousIndividualValue SetMuac form
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
@@ -382,9 +382,10 @@ viewMuacForm :
     -> Person
     -> Maybe ( NominalDate, Float )
     -> Maybe ( NominalDate, Float )
+    -> (String -> msg)
     -> MuacForm
-    -> List (Html Msg)
-viewMuacForm language currentDate person previousGroupValue previousIndividualValue form =
+    -> List (Html msg)
+viewMuacForm language currentDate person previousGroupValue previousIndividualValue setMuacMsg form =
     let
         activity =
             Muac
@@ -404,7 +405,7 @@ viewMuacForm language currentDate person previousGroupValue previousIndividualVa
                 [ viewMeasurementInput
                     language
                     form.muac
-                    SetMuac
+                    setMuacMsg
                     "muac"
                     Translate.CentimeterShorthand
                 ]
@@ -436,7 +437,7 @@ viewNutritionContent language currentDate ( personId, measurements ) data =
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
-            viewNutritionForm language currentDate form
+            viewNutritionForm language currentDate SetNutritionSign form
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
@@ -448,8 +449,8 @@ viewNutritionContent language currentDate ( personId, measurements ) data =
     ]
 
 
-viewNutritionForm : Language -> NominalDate -> NutritionForm -> List (Html Msg)
-viewNutritionForm language currentDate form =
+viewNutritionForm : Language -> NominalDate -> (ChildNutritionSign -> msg) -> NutritionForm -> List (Html msg)
+viewNutritionForm language currentDate setSignMsg form =
     let
         activity =
             Nutrition
@@ -462,7 +463,7 @@ viewNutritionForm language currentDate form =
             [ Apathy, PoorAppetite, BrittleHair ]
             (form.signs |> Maybe.withDefault [])
             (Just NormalChildNutrition)
-            SetNutritionSign
+            setSignMsg
             Translate.ChildNutritionSignLabel
         ]
     ]
@@ -587,7 +588,7 @@ viewWeightContent language currentDate zscores assembled data previousGroupValue
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
-            viewWeightForm language currentDate zscores assembled.person heightValue previousGroupValue previousIndividualValue form
+            viewWeightForm language currentDate zscores assembled.person heightValue previousGroupValue previousIndividualValue SetWeight form
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
@@ -599,8 +600,18 @@ viewWeightContent language currentDate zscores assembled data previousGroupValue
     ]
 
 
-viewWeightForm : Language -> NominalDate -> ZScore.Model.Model -> Person -> Maybe HeightInCm -> Maybe ( NominalDate, Float ) -> Maybe ( NominalDate, Float ) -> WeightForm -> List (Html Msg)
-viewWeightForm language currentDate zscores person heightValue previousGroupValue previousIndividualValue form =
+viewWeightForm :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Person
+    -> Maybe HeightInCm
+    -> Maybe ( NominalDate, Float )
+    -> Maybe ( NominalDate, Float )
+    -> (String -> msg)
+    -> WeightForm
+    -> List (Html msg)
+viewWeightForm language currentDate zscores person heightValue previousGroupValue previousIndividualValue setWeightMsg form =
     let
         activity =
             Weight
@@ -647,7 +658,7 @@ viewWeightForm language currentDate zscores person heightValue previousGroupValu
                 [ viewMeasurementInput
                     language
                     form.weight
-                    SetWeight
+                    setWeightMsg
                     "weight"
                     Translate.KilogramShorthand
                 ]

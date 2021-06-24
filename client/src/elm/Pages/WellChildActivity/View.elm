@@ -29,7 +29,7 @@ import Measurement.View
         , viewSendToHCForm
         , zScoreForHeightOrLength
         )
-import Pages.NutritionActivity.View exposing (viewHeightForm)
+import Pages.NutritionActivity.View exposing (viewHeightForm, viewMuacForm, viewNutritionForm, viewPhotoForm, viewWeightForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
 import Pages.Utils
@@ -235,13 +235,6 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                         >> List.head
                     )
 
-        -- previousGroupMuac =
-        --     resolvePreviousGroupValue .muacs
-        --         |> Maybe.map (\( date, MuacInCm val ) -> ( date, val ))
-        --
-        -- previousGroupWeight =
-        --     resolvePreviousGroupValue .weights
-        --         |> Maybe.map (\( date, WeightInKg val ) -> ( date, val ))
         viewForm =
             case activeTask of
                 Just TaskHeight ->
@@ -257,6 +250,56 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                         |> Maybe.map (Tuple.second >> .value)
                         |> heightFormWithDefault data.heightForm
                         |> viewHeightForm language currentDate zscores assembled.person previousGroupValue previousIndividualValue SetHeight
+
+                Just TaskMuac ->
+                    let
+                        previousIndividualValue =
+                            resolveIndividualWellChildValue assembled.previousMeasurementsWithDates .muac (\(MuacInCm cm) -> cm)
+
+                        previousGroupValue =
+                            resolvePreviousGroupValue .muacs
+                                |> Maybe.map (\( date, MuacInCm val ) -> ( date, val ))
+                    in
+                    measurements.muac
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> muacFormWithDefault data.muacForm
+                        |> viewMuacForm language currentDate assembled.person previousGroupValue previousIndividualValue SetMuac
+
+                Just TaskNutrition ->
+                    measurements.nutrition
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> nutritionFormWithDefault data.nutritionForm
+                        |> viewNutritionForm language currentDate SetNutritionSign
+
+                Just TaskPhoto ->
+                    let
+                        displayPhoto =
+                            case data.photoForm.url of
+                                Just url ->
+                                    Just url
+
+                                Nothing ->
+                                    Maybe.map (Tuple.second >> .value) assembled.measurements.photo
+                    in
+                    viewPhotoForm language currentDate displayPhoto DropZoneComplete
+
+                Just TaskWeight ->
+                    let
+                        heightValue =
+                            assembled.measurements.height
+                                |> Maybe.map (Tuple.second >> .value)
+
+                        previousIndividualValue =
+                            resolveIndividualWellChildValue assembled.previousMeasurementsWithDates .weight (\(WeightInKg cm) -> cm)
+
+                        previousGroupValue =
+                            resolvePreviousGroupValue .weights
+                                |> Maybe.map (\( date, WeightInKg val ) -> ( date, val ))
+                    in
+                    measurements.weight
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> weightFormWithDefault data.weightForm
+                        |> viewWeightForm language currentDate zscores assembled.person heightValue previousGroupValue previousIndividualValue SetWeight
 
                 Just TaskContributingFactors ->
                     measurements.contributingFactors
