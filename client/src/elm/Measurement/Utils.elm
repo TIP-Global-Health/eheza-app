@@ -5,6 +5,15 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
+import Backend.NutritionEncounter.Utils
+    exposing
+        ( calculateZScoreWeightForAge
+        , muacModerate
+        , muacSevere
+        , resolveIndividualValues
+        , zScoreWeightForAgeModerate
+        , zScoreWeightForAgeSevere
+        )
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
 import EverySet exposing (EverySet)
@@ -13,7 +22,7 @@ import LocalData
 import Maybe.Extra exposing (andMap, or, unwrap)
 import Measurement.Model exposing (..)
 import Pages.Session.Model
-import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue)
+import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, valueConsideringIsDirtyField)
 
 
 getInputConstraintsHeight : FloatInputConstraints
@@ -246,6 +255,132 @@ fbfFormToValue form =
         -- We should never get here, as we always expect to have
         -- these fields filled.
         |> Maybe.withDefault (FbfValue 0 DistributedFully)
+
+
+resolveIndividualValue :
+    List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
+    -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a ))
+    -> (a -> b)
+    -> Maybe ( NominalDate, b )
+resolveIndividualValue measurementsWithDates measurementFunc valueFunc =
+    resolveIndividualValues measurementsWithDates measurementFunc valueFunc
+        |> List.head
+
+
+fromMuacValue : Maybe MuacInCm -> MuacForm
+fromMuacValue saved =
+    { muac = Maybe.map (\(MuacInCm cm) -> cm) saved
+    , muacDirty = False
+    }
+
+
+muacFormWithDefault : MuacForm -> Maybe MuacInCm -> MuacForm
+muacFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { muac = valueConsideringIsDirtyField form.muacDirty form.muac (value |> (\(MuacInCm cm) -> cm))
+                , muacDirty = form.muacDirty
+                }
+            )
+
+
+toMuacValueWithDefault : Maybe MuacInCm -> MuacForm -> Maybe MuacInCm
+toMuacValueWithDefault saved form =
+    muacFormWithDefault form saved
+        |> toMuacValue
+
+
+toMuacValue : MuacForm -> Maybe MuacInCm
+toMuacValue form =
+    Maybe.map MuacInCm form.muac
+
+
+fromHeightValue : Maybe HeightInCm -> HeightForm
+fromHeightValue saved =
+    { height = Maybe.map (\(HeightInCm cm) -> cm) saved
+    , heightDirty = False
+    }
+
+
+heightFormWithDefault : HeightForm -> Maybe HeightInCm -> HeightForm
+heightFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { height = valueConsideringIsDirtyField form.heightDirty form.height (value |> (\(HeightInCm cm) -> cm))
+                , heightDirty = form.heightDirty
+                }
+            )
+
+
+toHeightValueWithDefault : Maybe HeightInCm -> HeightForm -> Maybe HeightInCm
+toHeightValueWithDefault saved form =
+    heightFormWithDefault form saved
+        |> toHeightValue
+
+
+toHeightValue : HeightForm -> Maybe HeightInCm
+toHeightValue form =
+    Maybe.map HeightInCm form.height
+
+
+fromNutritionValue : Maybe (EverySet ChildNutritionSign) -> NutritionForm
+fromNutritionValue saved =
+    { signs = Maybe.map EverySet.toList saved }
+
+
+nutritionFormWithDefault : NutritionForm -> Maybe (EverySet ChildNutritionSign) -> NutritionForm
+nutritionFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { signs = or form.signs (EverySet.toList value |> Just) }
+            )
+
+
+toNutritionValueWithDefault : Maybe (EverySet ChildNutritionSign) -> NutritionForm -> Maybe (EverySet ChildNutritionSign)
+toNutritionValueWithDefault saved form =
+    nutritionFormWithDefault form saved
+        |> toNutritionValue
+
+
+toNutritionValue : NutritionForm -> Maybe (EverySet ChildNutritionSign)
+toNutritionValue form =
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NormalChildNutrition) form.signs
+
+
+fromWeightValue : Maybe WeightInKg -> WeightForm
+fromWeightValue saved =
+    { weight = Maybe.map (\(WeightInKg cm) -> cm) saved
+    , weightDirty = False
+    }
+
+
+weightFormWithDefault : WeightForm -> Maybe WeightInKg -> WeightForm
+weightFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { weight = valueConsideringIsDirtyField form.weightDirty form.weight (value |> (\(WeightInKg cm) -> cm))
+                , weightDirty = form.weightDirty
+                }
+            )
+
+
+toWeightValueWithDefault : Maybe WeightInKg -> WeightForm -> Maybe WeightInKg
+toWeightValueWithDefault saved form =
+    weightFormWithDefault form saved
+        |> toWeightValue
+
+
+toWeightValue : WeightForm -> Maybe WeightInKg
+toWeightValue form =
+    Maybe.map WeightInKg form.weight
 
 
 fromContributingFactorsValue : Maybe (EverySet ContributingFactorsSign) -> ContributingFactorsForm

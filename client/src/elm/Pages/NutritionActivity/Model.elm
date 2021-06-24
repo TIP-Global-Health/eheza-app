@@ -67,17 +67,6 @@ emptyMuacData =
     MuacData emptyMuacForm
 
 
-type alias MuacForm =
-    { muac : Maybe Float
-    , muacDirty : Bool
-    }
-
-
-emptyMuacForm : MuacForm
-emptyMuacForm =
-    MuacForm Nothing False
-
-
 type alias HeightData =
     { form : HeightForm
     }
@@ -86,17 +75,6 @@ type alias HeightData =
 emptyHeightData : HeightData
 emptyHeightData =
     HeightData emptyHeightForm
-
-
-type alias HeightForm =
-    { height : Maybe Float
-    , heightDirty : Bool
-    }
-
-
-emptyHeightForm : HeightForm
-emptyHeightForm =
-    HeightForm Nothing False
 
 
 type alias NutritionData =
@@ -109,16 +87,6 @@ emptyNutritionData =
     NutritionData emptyNutritionForm
 
 
-type alias NutritionForm =
-    { signs : Maybe (List ChildNutritionSign)
-    }
-
-
-emptyNutritionForm : NutritionForm
-emptyNutritionForm =
-    NutritionForm Nothing
-
-
 type alias PhotoData =
     { form : PhotoForm
     }
@@ -129,16 +97,6 @@ emptyPhotoData =
     PhotoData emptyPhotoForm
 
 
-type alias PhotoForm =
-    { url : Maybe PhotoUrl
-    }
-
-
-emptyPhotoForm : PhotoForm
-emptyPhotoForm =
-    PhotoForm Nothing
-
-
 type alias WeightData =
     { form : WeightForm
     }
@@ -147,17 +105,6 @@ type alias WeightData =
 emptyWeightData : WeightData
 emptyWeightData =
     WeightData emptyWeightForm
-
-
-type alias WeightForm =
-    { weight : Maybe Float
-    , weightDirty : Bool
-    }
-
-
-emptyWeightForm : WeightForm
-emptyWeightForm =
-    WeightForm Nothing False
 
 
 type alias NextStepsData =

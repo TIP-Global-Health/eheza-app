@@ -2,20 +2,8 @@ module Pages.WellChildActivity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
-import Pages.NutritionActivity.Model
-    exposing
-        ( HeightForm
-        , MuacForm
-        , NutritionForm
-        , PhotoForm
-        , WeightForm
-        , emptyHeightForm
-        , emptyMuacForm
-        , emptyNutritionForm
-        , emptyPhotoForm
-        , emptyWeightForm
-        )
 import Pages.Page exposing (Page)
 
 
@@ -23,18 +11,41 @@ type Msg
     = SetActivePage Page
     | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
     | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
+      -- NUTRITION ASSESMENT
+    | SetActiveNutritionAssesmentTask NutritionAssesmentTask
+    | SetHeight String
+    | SaveHeight PersonId (Maybe ( WellChildHeightId, WellChildHeight )) (Maybe NutritionAssesmentTask)
+    | SetMuac String
+    | SaveMuac PersonId (Maybe ( WellChildMuacId, WellChildMuac )) (Maybe NutritionAssesmentTask)
+    | SetNutritionSign ChildNutritionSign
+    | SaveNutrition PersonId (Maybe ( WellChildNutritionId, WellChildNutrition )) (Maybe NutritionAssesmentTask)
+    | DropZoneComplete DropZoneFile
+    | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl (Maybe NutritionAssesmentTask)
+    | SetWeight String
+    | SaveWeight PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssesmentTask)
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SaveSendToHC PersonId (Maybe ( WellChildSendToHCId, WellChildSendToHC )) (Maybe NutritionAssesmentTask)
+    | SetProvidedEducationForDiagnosis Bool
+    | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
+    | SaveHealthEducation PersonId (Maybe ( WellChildHealthEducationId, WellChildHealthEducation )) (Maybe NutritionAssesmentTask)
+    | SetContributingFactorsSign ContributingFactorsSign
+    | SaveContributingFactors PersonId (Maybe ( WellChildContributingFactorsId, WellChildContributingFactors )) (Maybe NutritionAssesmentTask)
+    | SetFollowUpOption FollowUpOption
+    | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssesment) (Maybe NutritionAssesmentTask)
 
 
 type alias Model =
     { ecdForm : WellChildECDForm
-    , nutritionAssesmentData : NutritionAssesmentData
+    , nutritionAssessmentData : NutritionAssessmentData
     }
 
 
 emptyModel : Model
 emptyModel =
     { ecdForm = emptyWellChildECDForm
-    , nutritionAssesmentData = emptyNutritionAssesmentData
+    , nutritionAssessmentData = emptyNutritionAssessmentData
     }
 
 
@@ -109,7 +120,7 @@ emptyWellChildECDForm =
     }
 
 
-type alias NutritionAssesmentData =
+type alias NutritionAssessmentData =
     { heightForm : HeightForm
     , muacForm : MuacForm
     , nutritionForm : NutritionForm
@@ -123,8 +134,8 @@ type alias NutritionAssesmentData =
     }
 
 
-emptyNutritionAssesmentData : NutritionAssesmentData
-emptyNutritionAssesmentData =
+emptyNutritionAssessmentData : NutritionAssessmentData
+emptyNutritionAssessmentData =
     { heightForm = emptyHeightForm
     , muacForm = emptyMuacForm
     , nutritionForm = emptyNutritionForm
