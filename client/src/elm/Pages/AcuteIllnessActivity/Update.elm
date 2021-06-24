@@ -29,7 +29,15 @@ import Backend.Model exposing (ModelIndexedDb)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Utils exposing (toHealthEducationValueWithDefault, toSendToHCValueWithDefault)
+import Measurement.Utils
+    exposing
+        ( muacFormWithDefault
+        , nutritionFormWithDefault
+        , toHealthEducationValueWithDefault
+        , toMuacValueWithDefault
+        , toNutritionValueWithDefault
+        , toSendToHCValueWithDefault
+        )
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))

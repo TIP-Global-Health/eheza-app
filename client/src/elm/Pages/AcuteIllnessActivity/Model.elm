@@ -191,8 +191,8 @@ emptyPhysicalExamData : PhysicalExamData
 emptyPhysicalExamData =
     { vitalsForm = VitalsForm Nothing False Nothing False
     , acuteFindingsForm = AcuteFindingsForm Nothing Nothing
-    , muacForm = MuacForm Nothing False
-    , nutritionForm = NutritionForm Nothing
+    , muacForm = emptyMuacForm
+    , nutritionForm = emptyNutritionForm
     , activeTask = PhysicalExamVitals
     }
 
@@ -212,20 +212,9 @@ type alias VitalsForm =
     }
 
 
-type alias MuacForm =
-    { muac : Maybe Float
-    , muacDirty : Bool
-    }
-
-
 type alias AcuteFindingsForm =
     { signsGeneral : Maybe (List AcuteFindingsGeneralSign)
     , signsRespiratory : Maybe (List AcuteFindingsRespiratorySign)
-    }
-
-
-type alias NutritionForm =
-    { signs : Maybe (List ChildNutritionSign)
     }
 
 

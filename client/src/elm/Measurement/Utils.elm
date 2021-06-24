@@ -267,36 +267,6 @@ resolveIndividualValue measurementsWithDates measurementFunc valueFunc =
         |> List.head
 
 
-fromMuacValue : Maybe MuacInCm -> MuacForm
-fromMuacValue saved =
-    { muac = Maybe.map (\(MuacInCm cm) -> cm) saved
-    , muacDirty = False
-    }
-
-
-muacFormWithDefault : MuacForm -> Maybe MuacInCm -> MuacForm
-muacFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { muac = valueConsideringIsDirtyField form.muacDirty form.muac (value |> (\(MuacInCm cm) -> cm))
-                , muacDirty = form.muacDirty
-                }
-            )
-
-
-toMuacValueWithDefault : Maybe MuacInCm -> MuacForm -> Maybe MuacInCm
-toMuacValueWithDefault saved form =
-    muacFormWithDefault form saved
-        |> toMuacValue
-
-
-toMuacValue : MuacForm -> Maybe MuacInCm
-toMuacValue form =
-    Maybe.map MuacInCm form.muac
-
-
 fromHeightValue : Maybe HeightInCm -> HeightForm
 fromHeightValue saved =
     { height = Maybe.map (\(HeightInCm cm) -> cm) saved
@@ -325,6 +295,36 @@ toHeightValueWithDefault saved form =
 toHeightValue : HeightForm -> Maybe HeightInCm
 toHeightValue form =
     Maybe.map HeightInCm form.height
+
+
+fromMuacValue : Maybe MuacInCm -> MuacForm
+fromMuacValue saved =
+    { muac = Maybe.map (\(MuacInCm cm) -> cm) saved
+    , muacDirty = False
+    }
+
+
+muacFormWithDefault : MuacForm -> Maybe MuacInCm -> MuacForm
+muacFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { muac = valueConsideringIsDirtyField form.muacDirty form.muac (value |> (\(MuacInCm cm) -> cm))
+                , muacDirty = form.muacDirty
+                }
+            )
+
+
+toMuacValueWithDefault : Maybe MuacInCm -> MuacForm -> Maybe MuacInCm
+toMuacValueWithDefault saved form =
+    muacFormWithDefault form saved
+        |> toMuacValue
+
+
+toMuacValue : MuacForm -> Maybe MuacInCm
+toMuacValue form =
+    Maybe.map MuacInCm form.muac
 
 
 fromNutritionValue : Maybe (EverySet ChildNutritionSign) -> NutritionForm
