@@ -10,7 +10,8 @@ import Backend.NutritionEncounter.Utils
         ( calculateZScoreWeightForAge
         , muacModerate
         , muacSevere
-        , resolveIndividualValues
+        , resolveIndividualNutritionValues
+        , resolveIndividualWellChildValues
         , zScoreWeightForAgeModerate
         , zScoreWeightForAgeSevere
         )
@@ -257,13 +258,23 @@ fbfFormToValue form =
         |> Maybe.withDefault (FbfValue 0 DistributedFully)
 
 
-resolveIndividualValue :
+resolveIndividualNutritionValue :
     List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a ))
     -> (a -> b)
     -> Maybe ( NominalDate, b )
-resolveIndividualValue measurementsWithDates measurementFunc valueFunc =
-    resolveIndividualValues measurementsWithDates measurementFunc valueFunc
+resolveIndividualNutritionValue measurementsWithDates measurementFunc valueFunc =
+    resolveIndividualNutritionValues measurementsWithDates measurementFunc valueFunc
+        |> List.head
+
+
+resolveIndividualWellChildValue :
+    List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+    -> (WellChildMeasurements -> Maybe ( id, WellChildMeasurement a ))
+    -> (a -> b)
+    -> Maybe ( NominalDate, b )
+resolveIndividualWellChildValue measurementsWithDates measurementFunc valueFunc =
+    resolveIndividualWellChildValues measurementsWithDates measurementFunc valueFunc
         |> List.head
 
 

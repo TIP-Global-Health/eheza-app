@@ -29,6 +29,7 @@ import Measurement.View
         , viewSendToHCForm
         , zScoreForHeightOrLength
         )
+import Pages.NutritionActivity.View exposing (viewHeightForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
 import Pages.Utils
@@ -106,35 +107,6 @@ viewContent language currentDate zscores id activity db model assembled =
 
 viewActivity : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> WellChildActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
 viewActivity language currentDate zscores id activity assembled db model =
-    let
-        childMeasurements =
-            Dict.get assembled.participant.person db.childMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-
-        resolvePreviousGroupValue getChildMeasurementFunc =
-            childMeasurements
-                |> Maybe.andThen
-                    (getChildMeasurementFunc
-                        >> Dict.values
-                        >> List.map (\measurement -> ( measurement.dateMeasured, measurement.value ))
-                        -- Most recent date to least recent date.
-                        >> List.sortWith (\m1 m2 -> Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1))
-                        >> List.head
-                    )
-
-        previousGroupHeight =
-            resolvePreviousGroupValue .heights
-                |> Maybe.map (\( date, HeightInCm val ) -> ( date, val ))
-
-        previousGroupMuac =
-            resolvePreviousGroupValue .muacs
-                |> Maybe.map (\( date, MuacInCm val ) -> ( date, val ))
-
-        previousGroupWeight =
-            resolvePreviousGroupValue .weights
-                |> Maybe.map (\( date, WeightInKg val ) -> ( date, val ))
-    in
     case activity of
         WellChildNutritionAssessment ->
             viewNutritionAssessmenContent language currentDate zscores id assembled db model.nutritionAssessmentData
@@ -247,13 +219,51 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                 |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
                 |> Maybe.withDefault ( 0, 0 )
 
+        childMeasurements =
+            Dict.get assembled.participant.person db.childMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+
+        resolvePreviousGroupValue getChildMeasurementFunc =
+            childMeasurements
+                |> Maybe.andThen
+                    (getChildMeasurementFunc
+                        >> Dict.values
+                        >> List.map (\measurement -> ( measurement.dateMeasured, measurement.value ))
+                        -- Most recent date to least recent date.
+                        >> List.sortWith (\m1 m2 -> Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1))
+                        >> List.head
+                    )
+
+        -- previousGroupMuac =
+        --     resolvePreviousGroupValue .muacs
+        --         |> Maybe.map (\( date, MuacInCm val ) -> ( date, val ))
+        --
+        -- previousGroupWeight =
+        --     resolvePreviousGroupValue .weights
+        --         |> Maybe.map (\( date, WeightInKg val ) -> ( date, val ))
         viewForm =
             case activeTask of
+                Just TaskHeight ->
+                    let
+                        previousIndividualValue =
+                            resolveIndividualWellChildValue assembled.previousMeasurementsWithDates .height (\(HeightInCm cm) -> cm)
+
+                        previousGroupValue =
+                            resolvePreviousGroupValue .heights
+                                |> Maybe.map (\( date, HeightInCm val ) -> ( date, val ))
+                    in
+                    measurements.height
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> heightFormWithDefault data.heightForm
+                        |> viewHeightForm language currentDate zscores assembled.person previousGroupValue previousIndividualValue SetHeight
+
                 Just TaskContributingFactors ->
                     measurements.contributingFactors
                         |> Maybe.map (Tuple.second >> .value)
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
                         |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
+                        |> List.singleton
 
                 Just TaskHealthEducation ->
                     measurements.healthEducation
@@ -263,12 +273,14 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                             currentDate
                             SetProvidedEducationForDiagnosis
                             SetReasonForNotProvidingHealthEducation
+                        |> List.singleton
 
                 Just TaskFollowUp ->
                     measurements.followUp
                         |> Maybe.map (Tuple.second >> .value)
                         |> followUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language currentDate SetFollowUpOption
+                        |> List.singleton
 
                 Just TaskSendToHC ->
                     measurements.sendToHC
@@ -280,9 +292,11 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                             SetReasonForNotSendingToHC
                             SetHandReferralForm
                             Nothing
+                        |> List.singleton
 
+                -- @todo:
                 _ ->
-                    emptyNode
+                    []
 
         nextTask =
             List.filter
@@ -323,13 +337,7 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                                     _ ->
                                         SaveSendToHC personId measurements.sendToHC nextTask
                         in
-                        div [ class "actions next-steps" ]
-                            [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                , onClick saveMsg
-                                ]
-                                [ text <| translate language Translate.Save ]
-                            ]
+                        viewAction language saveMsg (tasksCompleted /= totalTasks)
                     )
                 |> Maybe.withDefault emptyNode
     in
@@ -339,10 +347,8 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
         ]
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ]
-            [ viewForm
-            , actions
-            ]
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
         ]
     ]
 

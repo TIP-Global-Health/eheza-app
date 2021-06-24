@@ -265,7 +265,7 @@ resolveAllWeightMeasurementsForChild childId db =
             generateIndividualMeasurementsForChild childId db
 
         individualWeightMeasurements =
-            resolveIndividualValues individualMeasurements .weight weightValueFunc
+            resolveIndividualNutritionValues individualMeasurements .weight weightValueFunc
 
         groupWeightMeasurements =
             Dict.get childId db.childMeasurements
@@ -283,12 +283,30 @@ resolveAllWeightMeasurementsForChild childId db =
         |> List.sortWith (\m1 m2 -> Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1))
 
 
-resolveIndividualValues :
+resolveIndividualNutritionValues :
     List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a ))
     -> (a -> b)
     -> List ( NominalDate, b )
-resolveIndividualValues measurementsWithDates measurementFunc valueFunc =
+resolveIndividualNutritionValues measurementsWithDates measurementFunc valueFunc =
+    measurementsWithDates
+        |> List.filterMap
+            (\( date, ( _, measurements ) ) ->
+                measurementFunc measurements
+                    |> Maybe.map
+                        (\measurement ->
+                            ( date, Tuple.second measurement |> .value |> valueFunc )
+                        )
+            )
+        |> List.reverse
+
+
+resolveIndividualWellChildValues :
+    List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+    -> (WellChildMeasurements -> Maybe ( id, WellChildMeasurement a ))
+    -> (a -> b)
+    -> List ( NominalDate, b )
+resolveIndividualWellChildValues measurementsWithDates measurementFunc valueFunc =
     measurementsWithDates
         |> List.filterMap
             (\( date, ( _, measurements ) ) ->
