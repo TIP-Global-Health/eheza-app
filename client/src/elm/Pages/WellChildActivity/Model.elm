@@ -156,6 +156,20 @@ type NutritionAssesmentTask
     | TaskPhoto
     | TaskWeight
     | TaskContributingFactors
-    | TaskSendToHC
     | TaskHealthEducation
     | TaskFollowUp
+    | TaskSendToHC
+
+
+allNutritionAssesmentTasks : List NutritionAssesmentTask
+allNutritionAssesmentTasks =
+    [ TaskHeight
+    , TaskMuac
+    , TaskNutrition
+    , TaskPhoto
+    , TaskWeight
+    , TaskContributingFactors
+    , TaskHealthEducation
+    , TaskFollowUp
+    , TaskSendToHC
+    ]

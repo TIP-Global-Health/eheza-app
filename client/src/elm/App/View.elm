@@ -593,7 +593,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get ( id, activity ) loggedInModel.wellChildActivityPages
                                     |> Maybe.withDefault Pages.WellChildActivity.Model.emptyModel
                         in
-                        Pages.WellChildActivity.View.view model.language currentDate id activity model.indexedDb page_
+                        Pages.WellChildActivity.View.view model.language currentDate model.zscores id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageWellChildActivity id activity)
                             |> flexPageWrapper model
 
