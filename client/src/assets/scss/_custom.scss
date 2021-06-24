@@ -1475,15 +1475,15 @@ input::placeholder {
   }
 }
 
-.icon-section {
-  display: block;
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  border-width: 2px;
-  border-style: solid;
-  margin: 0 auto 10px auto;
+.icon-activity-task {
   border-color: $color-text;
+  border-radius: 50%;
+  border-style: solid;
+  border-width: 2px;
+  display: block;
+  height: 90px;
+  margin: 0 auto 10px;
+  width: 90px;
 
   .active & {
     background-color: $color-primary;
@@ -1491,31 +1491,14 @@ input::placeholder {
   }
 
   &:after {
-    content: " ";
-    display: block;
-    width: 100%;
-    height: 100%;
     background-position: center center;
     background-repeat: no-repeat;
-    border: 3px solid #fff;
+    border: 3px solid $color-white;
     border-radius: 50%;
-  }
-}
-
-.icon-weight {
-  &:after {
-    background-position: center 5px;
-  }
-}
-
-.icon-weight {
-  .active &:after {
-    background-image: url(#{$img-path}icon-weight-active.svg);
-  }
-
-  &:after {
-    background-image: url(#{$img-path}icon-weight.svg);
-    background-size: 50px 65px;
+    content: " ";
+    display: block;
+    height: 100%;
+    width: 100%;
   }
 }
 
@@ -1527,26 +1510,6 @@ input::placeholder {
   &:after {
     background-image: url(#{$img-path}icon-height.svg);
     background-size: 49px 54px;
-  }
-}
-
-.icon-counseling {
-  .active &:after {
-    background-image: url(#{$img-path}icon-counseling-active.svg);
-  }
-
-  &:after {
-    background-image: url(#{$img-path}icon-counseling.svg);
-  }
-}
-
-.icon-forms {
-  .active &:after {
-    background-image: url(#{$img-path}icon-forms-active.svg);
-  }
-
-  &:after {
-    background-image: url(#{$img-path}icon-forms.svg);
   }
 }
 
@@ -1580,6 +1543,38 @@ input::placeholder {
   &:after {
     background-image: url(#{$img-path}icon-photo.svg);
     background-size: 56px 40px;
+  }
+}
+
+.icon-weight {
+  .active &:after {
+    background-image: url(#{$img-path}icon-weight-active.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-weight.svg);
+    background-position: center 5px;
+    background-size: 50px 65px;
+  }
+}
+
+.icon-counseling {
+  .active &:after {
+    background-image: url(#{$img-path}icon-counseling-active.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-counseling.svg);
+  }
+}
+
+.icon-forms {
+  .active &:after {
+    background-image: url(#{$img-path}icon-forms-active.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-forms.svg);
   }
 }
 
@@ -1656,443 +1651,305 @@ input::placeholder {
   }
 }
 
-.icon-activity-task {
-  display: block;
-  height: 90px;
-  margin: 0 auto 10px;
-  width: 90px;
-
-  &:after {
-    content: " ";
-    display: block;
-    width: 100%;
-    height: 100%;
-    background-position: center center;
-    background-repeat: no-repeat;
-    border: 3px solid #fff;
-  }
-}
-
 .icon-obstetric {
   .active &:after {
-    background-image: url(#{$img-path}icon-obstetrichistory-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-obstetrichistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-obstetrichistory-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-obstetrichistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-obstetrichistory-gray.svg);
   }
 }
 
 .icon-medical {
   .active &:after {
-    background-image: url(#{$img-path}icon-medicalhistory-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-medicalhistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-medicalhistory-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-medicalhistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-medicalhistory-gray.svg);
   }
 }
 
 .icon-social {
   .active &:after {
-    background-image: url(#{$img-path}icon-socialhistory-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-socialhistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-socialhistory-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-socialhistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-socialhistory-gray.svg);
   }
 }
 
 .icon-vitals {
   .active &:after {
-    background-image: url(#{$img-path}icon-vitals-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-vitals-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-vitals-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-vitals-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-vitals-gray.svg);
   }
 }
 
 .icon-nutrition-assessment {
   .active &:after {
-    background-image: url(#{$img-path}icon-nutritionassessment-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-nutritionassessment-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-nutritionassessment-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-nutritionassessment-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-nutritionassessment-gray.svg);
   }
 }
 
 .icon-core-physical-exam {
   .active &:after {
-    background-image: url(#{$img-path}icon-corephysicalexam-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-corephysicalexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-corephysicalexam-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-corephysicalexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-corephysicalexam-gray.svg);
   }
 }
 
 .icon-obstetrical-exam {
   .active &:after {
-    background-image: url(#{$img-path}icon-obstetricalexam-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-obstetricalexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-obstetricalexam-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-obstetricalexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-obstetricalexam-gray.svg);
   }
 }
 
 .icon-breast-exam {
   .active &:after {
-    background-image: url(#{$img-path}icon-breastexam-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-breastexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-breastexam-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-breastexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-breastexam-gray.svg);
   }
 }
 
 .icon-medication {
   .active &:after {
-    background-image: url(#{$img-path}icon-medication-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-medication-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-medication-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-medication-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-medication-gray.svg);
   }
 }
 
 .icon-resources {
   .active &:after {
-    background-image: url(#{$img-path}icon-resources-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-resources-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-resources-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-resources-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-resources-gray.svg);
   }
 }
 
 .icon-symptoms-general {
   .active &:after {
-    background-image: url(#{$img-path}icon-symptoms-general-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-symptoms-general-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-symptoms-general-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-symptoms-general-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-symptoms-general-gray.svg);
   }
 }
 
 .icon-symptoms-respiratory {
   .active &:after {
-    background-image: url(#{$img-path}icon-symptoms-respiratory-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-symptoms-respiratory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-symptoms-respiratory-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-symptoms-respiratory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-symptoms-respiratory-gray.svg);
   }
 }
 
 .icon-symptoms-gi {
   .active &:after {
-    background-image: url(#{$img-path}icon-symptoms-gi-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-symptoms-gi-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-symptoms-gi-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-symptoms-gi-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-symptoms-gi-gray.svg);
   }
 }
 
 .icon-physical-exam-vitals {
   .active &:after {
-    background-image: url(#{$img-path}icon-vitals-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-vitals-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-vitals-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-vitals-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-vitals-gray.svg);
   }
 }
 
 .icon-laboratory-malaria-testing {
   .active &:after {
-    background-image: url(#{$img-path}icon-malaria-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-malaria-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-malaria-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-malaria-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-malaria-gray.svg);
   }
 }
 
 .icon-exposure-travel {
   .active &:after {
-    background-image: url(#{$img-path}icon-travel-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-travel-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-travel-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-travel-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-travel-gray.svg);
   }
 }
 
 .icon-exposure-exposure {
   .active &:after {
-    background-image: url(#{$img-path}icon-exposure-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-exposure-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-exposure-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-exposure-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-exposure-gray.svg);
   }
 }
 
 .icon-treatment-review {
   .active &:after {
-    background-image: url(#{$img-path}icon-treatment-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-treatment-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-treatment-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-treatment-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-treatment-gray.svg);
   }
 }
 
 .icon-acute-findings {
   .active &:after {
-    background-image: url(#{$img-path}icon-acute-findings-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-acute-findings-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-acute-findings-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-acute-findings-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-acute-findings-gray.svg);
   }
 }
 
 .icon-next-steps-isolation {
   .active &:after {
-    background-image: url(#{$img-path}icon-isolation-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-isolation-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-isolation-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-isolation-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-isolation-gray.svg);
   }
 }
 
 .icon-next-steps-call {
   .active &:after {
-    background-image: url(#{$img-path}icon-contact-hc-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-contact-hc-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-contact-hc-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-contact-hc-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-contact-hc-gray.svg);
   }
 }
 
 .icon-next-steps-medication-distribution {
   .active &:after {
-    background-image: url(#{$img-path}icon-medication-distribution-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-medication-distribution-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-medication-distribution-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-medication-distribution-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-medication-distribution-gray.svg);
   }
 }
 
 .icon-next-steps-send-to-hc {
   .active &:after {
-    background-image: url(#{$img-path}icon-health-center-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-health-center-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-health-center-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-health-center-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-health-center-gray.svg);
   }
 }
 
 .icon-physical-exam-muac {
   .active &:after {
-    background-image: url(#{$img-path}icon-muac-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-muac-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-muac-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-muac-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-muac-gray.svg);
   }
 }
 
 .icon-danger-signs {
   .active &:after {
-    background-image: url(#{$img-path}icon-danger-signs-white.svg), url(#{$img-path}icon-selected-circle.svg);
-    background-size: 83px 83px;
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-danger-signs-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-danger-signs-white.svg);
     background-size: 83px 83px;
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-danger-signs-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-danger-signs-gray.svg);
     background-size: 83px 83px;
   }
 }
 
 .icon-physical-exam-nutrition {
   .active &:after {
-    background-image: url(#{$img-path}icon-nutrition-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-nutrition-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-nutrition-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-nutrition-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-nutrition-gray.svg);
   }
 }
 
 .icon-next-steps-health-education {
   .active &:after {
-    background-image: url(#{$img-path}icon-health-education-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-health-education-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-health-education-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-health-education-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-health-education-gray.svg);
   }
 }
 
 .icon-next-steps-contributing-factors {
   .active &:after {
-    background-image: url(#{$img-path}icon-contributing-factors-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-contributing-factors-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-contributing-factors-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-contributing-factors-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-contributing-factors-gray.svg);
   }
 }
 
 .icon-next-steps-follow-up {
   .active &:after {
-    background-image: url(#{$img-path}icon-follow-up-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-follow-up-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-follow-up-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-follow-up-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-follow-up-gray.svg);
   }
 }
 
 .icon-next-steps-newborn-enrolment {
   .active &:after {
-    background-image: url(#{$img-path}icon-newborn-white.svg), url(#{$img-path}icon-selected-circle.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-newborn-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-newborn-white.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-newborn-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-newborn-gray.svg);
   }
 }
 
