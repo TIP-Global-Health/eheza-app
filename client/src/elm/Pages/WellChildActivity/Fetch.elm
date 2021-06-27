@@ -25,3 +25,5 @@ fetch id db =
                 |> Maybe.map .person
     in
     Pages.WellChildEncounter.Fetch.fetch id db
+        ++ Maybe.Extra.values
+            [ Maybe.map Backend.Model.FetchChildMeasurements personId ]
