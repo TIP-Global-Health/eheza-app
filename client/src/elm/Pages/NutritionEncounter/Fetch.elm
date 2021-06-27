@@ -3,7 +3,7 @@ module Pages.NutritionEncounter.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import Backend.NutritionEncounter.Fetch exposing (fetchForChild)
+import Backend.NutritionEncounter.Fetch exposing (fetch)
 import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
 
@@ -28,6 +28,6 @@ fetch id db =
         [ Just <| FetchNutritionEncounter id
         , Maybe.map FetchIndividualEncounterParticipant participantId
         ]
-        ++ (Maybe.map (\personId -> Backend.NutritionEncounter.Fetch.fetchForChild personId db) maybePersonId
+        ++ (Maybe.map (\personId -> Backend.NutritionEncounter.Fetch.fetch personId db) maybePersonId
                 |> Maybe.withDefault []
            )

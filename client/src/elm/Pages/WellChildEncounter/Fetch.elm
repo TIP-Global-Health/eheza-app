@@ -30,6 +30,6 @@ fetch id db =
         [ Just <| FetchWellChildEncounter id
         , Maybe.map FetchIndividualEncounterParticipant participantId
         ]
-        ++ (Maybe.map (\personId -> Backend.NutritionEncounter.Fetch.fetchForChild personId db) maybePersonId
+        ++ (Maybe.map (\personId -> Backend.NutritionEncounter.Fetch.fetch personId db) maybePersonId
                 |> Maybe.withDefault []
            )

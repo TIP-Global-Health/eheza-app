@@ -45,7 +45,7 @@ update nurseId sessionId maybeSession currentDate db msg model =
         MeasurementOutMsgChild personId subMsg ->
             case subMsg of
                 FetchIndividualNutritionData id ->
-                    ( model, Cmd.none, Backend.NutritionEncounter.Fetch.fetchForChild id db )
+                    ( model, Cmd.none, Backend.NutritionEncounter.Fetch.fetch id db )
 
                 SaveHeight valueId value ->
                     ( { model | saveHeightRequest = Dict.insert personId Loading model.saveHeightRequest }

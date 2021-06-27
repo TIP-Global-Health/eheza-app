@@ -1,4 +1,4 @@
-module Backend.NutritionEncounter.Fetch exposing (fetchForChild)
+module Backend.NutritionEncounter.Fetch exposing (fetch)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -9,8 +9,8 @@ import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
 
 
-fetchForChild : PersonId -> ModelIndexedDb -> List MsgIndexedDb
-fetchForChild id db =
+fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
+fetch id db =
     [ FetchPerson id
 
     -- We need this, so we can resolve the nutrition participant for child.
