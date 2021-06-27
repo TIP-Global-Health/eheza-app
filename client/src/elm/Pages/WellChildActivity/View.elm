@@ -363,6 +363,23 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                         let
                             saveMsg =
                                 case task of
+                                    TaskHeight ->
+                                        SaveHeight personId measurements.height nextTask
+
+                                    TaskMuac ->
+                                        SaveMuac personId measurements.muac nextTask
+
+                                    TaskNutrition ->
+                                        SaveNutrition personId measurements.nutrition nextTask
+
+                                    TaskPhoto ->
+                                        -- @todo
+                                        -- SavePhoto personId measurements.photo nextTask
+                                        SaveSendToHC personId measurements.sendToHC nextTask
+
+                                    TaskWeight ->
+                                        SaveWeight personId measurements.weight nextTask
+
                                     TaskContributingFactors ->
                                         SaveContributingFactors personId measurements.contributingFactors nextTask
 
@@ -380,10 +397,6 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                                         SaveFollowUp personId measurements.followUp assesment nextTask
 
                                     TaskSendToHC ->
-                                        SaveSendToHC personId measurements.sendToHC nextTask
-
-                                    -- @todo
-                                    _ ->
                                         SaveSendToHC personId measurements.sendToHC nextTask
                         in
                         viewAction language saveMsg (tasksCompleted /= totalTasks)
