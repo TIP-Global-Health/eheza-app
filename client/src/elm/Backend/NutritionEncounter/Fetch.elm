@@ -54,6 +54,9 @@ fetchForWellChild id db =
         participantId =
             resolveIndividualParticipantForPerson id WellChildEncounter db
 
+        _ =
+            Debug.log "participantId" participantId
+
         encountersIds =
             participantId
                 |> Maybe.map

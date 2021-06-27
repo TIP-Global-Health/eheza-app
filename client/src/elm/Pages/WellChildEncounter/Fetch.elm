@@ -26,5 +26,10 @@ fetch id db =
                 |> RemoteData.toMaybe
                 |> Maybe.map .person
     in
-    Maybe.map (\personId -> Backend.NutritionEncounter.Fetch.fetchForChild personId db) maybePersonId
-        |> Maybe.withDefault []
+    Maybe.Extra.values
+        [ Just <| FetchWellChildEncounter id
+        , Maybe.map FetchIndividualEncounterParticipant participantId
+        ]
+        ++ (Maybe.map (\personId -> Backend.NutritionEncounter.Fetch.fetchForChild personId db) maybePersonId
+                |> Maybe.withDefault []
+           )
