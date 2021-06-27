@@ -55,6 +55,7 @@ import Backend.Utils
         , sw
         )
 import Backend.Village.Utils exposing (getVillageClinicId)
+import Backend.WellChildActivity.Model
 import Backend.WellChildEncounter.Model exposing (emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
 import Date exposing (Unit(..))
@@ -89,6 +90,9 @@ import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.Utils
 import Pages.Relationship.Model
 import Pages.Session.Model
+import Pages.WellChildActivity.Model
+import Pages.WellChildActivity.Utils
+import Pages.WellChildEncounter.Utils
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyBackendUrl, toCmd, toTask, withoutDecoder)
 import SyncManager.Model
@@ -998,6 +1002,27 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                             sessionId
                             |> Maybe.withDefault ( newModel, [] )
 
+                processRevisionAndAssessWellChild participantId encounterId =
+                    if downloadingContent then
+                        ( model, [] )
+
+                    else
+                        let
+                            person =
+                                Dict.get participantId model.people
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.toMaybe
+
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw newModel)
+                                    encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
+
                 processRevisionAndAssessPrenatal participantId encounterId updateAssesment =
                     if downloadingContent then
                         ( model, [] )
@@ -1400,6 +1425,46 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildHeightRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessWellChild data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildMuacRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessWellChild data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildNutritionRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessWellChild data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildWeightRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessWellChild data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -3286,6 +3351,61 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                             _ ->
                                 []
             )
+        |> Maybe.withDefault []
+
+
+generateNutritionAssessmentWellChildlMsgs : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> WellChildEncounterId -> List App.Model.Msg
+generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw after id =
+    Maybe.map
+        (\assembledAfter ->
+            let
+                mandatoryActivitiesCompleted =
+                    Pages.WellChildActivity.Utils.mandatoryNutritionAssesmentTasksCompleted
+                        currentDate
+                        zscores
+                        isChw
+                        assembledAfter
+                        after
+            in
+            if not mandatoryActivitiesCompleted then
+                -- Assement is done only when all mandatory measurements were recorded.
+                []
+
+            else
+                let
+                    assesmentAfter =
+                        Pages.WellChildActivity.Utils.generateNutritionAssesment currentDate zscores after assembledAfter
+
+                    updateFollowUpAssesmentMsg =
+                        assembledAfter.measurements.followUp
+                            |> Maybe.map
+                                (\( measurementId, measurement ) ->
+                                    let
+                                        updatedValue =
+                                            measurement.value
+                                                |> (\value -> { value | assesment = nutritionAssesmentForBackend assesmentAfter })
+                                    in
+                                    Backend.WellChildEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
+                                        |> Backend.Model.MsgWellChildEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                        |> List.singleton
+                                )
+                            |> Maybe.withDefault []
+                in
+                if List.isEmpty assesmentAfter then
+                    -- No assesment, so, only thing we want to update is the
+                    -- assesment field on Follow Up measurement, if it exists already.
+                    updateFollowUpAssesmentMsg
+
+                else
+                    updateFollowUpAssesmentMsg
+                        ++ [ -- Show warning popup with new assesment.
+                             Pages.WellChildActivity.Model.SetWarningPopupState assesmentAfter
+                                |> App.Model.MsgPageWellChildActivity id Backend.WellChildActivity.Model.WellChildNutritionAssessment
+                                |> App.Model.MsgLoggedIn
+                           ]
+        )
+        (RemoteData.toMaybe <| Pages.WellChildEncounter.Utils.generateAssembledData id after)
         |> Maybe.withDefault []
 
 
