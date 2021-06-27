@@ -4,7 +4,9 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (WellChildEncounterId)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -16,34 +18,175 @@ import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskComple
 import Pages.WellChildActivity.Model exposing (..)
 import Pages.WellChildEncounter.Model exposing (AssembledData)
 import RemoteData exposing (RemoteData(..))
+import ZScore.Model exposing (Kilograms(..))
+import ZScore.Utils exposing (zScoreWeightForAge)
 
 
-expectActivity : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
-expectActivity currentDate child data db activity =
-    -- For now, we show all activities without any conditions.
-    case activity of
-        WellChildNutritionAssessment ->
-            True
+generateNutritionAssesment : NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> List NutritionAssesment
+generateNutritionAssesment currentDate zscores db assembled =
+    let
+        measurements =
+            assembled.measurements
 
-        WellChildECD ->
-            True
+        muacValue =
+            Maybe.map (Tuple.second >> .value) measurements.muac
+
+        nutritionValue =
+            Maybe.map (Tuple.second >> .value) measurements.nutrition
+
+        weightValue =
+            Maybe.map
+                (Tuple.second
+                    >> .value
+                    >> weightValueFunc
+                )
+                measurements.weight
+
+        weightValueFunc =
+            \(WeightInKg kg) -> kg
+    in
+    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembled.participant.person muacValue weightValue nutritionValue db
 
 
-activityCompleted : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
-activityCompleted currentDate child data db activity =
+activityCompleted : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
+activityCompleted currentDate zscores isChw data db activity =
     let
         measurements =
             data.measurements
 
         activityExpected =
-            expectActivity currentDate child data db
+            expectActivity currentDate data db
     in
     case activity of
         WellChildNutritionAssessment ->
-            (not <| activityExpected WellChildNutritionAssessment) || False
+            let
+                ( mandatory, optional ) =
+                    partitionNutritionAssessmentTasks isChw
+            in
+            if mandatoryNutritionAssesmentTasksCompleted currentDate zscores isChw data db then
+                let
+                    nonEmptyAssessment =
+                        generateNutritionAssesment currentDate zscores db data
+                            |> List.isEmpty
+                            |> not
+                in
+                if nonEmptyAssessment then
+                    List.all (nutritionAssessmentTaskCompleted currentDate zscores isChw data db) (optional ++ nutritionAssessmentNextStepsTasks)
+
+                else
+                    List.all (nutritionAssessmentTaskCompleted currentDate zscores isChw data db) optional
+
+            else
+                False
 
         WellChildECD ->
             (not <| activityExpected WellChildECD) || isJust measurements.ecd
+
+
+expectActivity : NominalDate -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
+expectActivity currentDate data db activity =
+    case activity of
+        WellChildECD ->
+            True
+
+        _ ->
+            True
+
+
+nutritionAssessmentTaskCompleted : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssesmentTask -> Bool
+nutritionAssessmentTaskCompleted currentDate zscores isChw data db task =
+    let
+        measurements =
+            data.measurements
+
+        taskExpected =
+            expectNutritionAssessmentTask currentDate zscores isChw data db
+    in
+    case task of
+        TaskHeight ->
+            (not <| taskExpected TaskHeight) || isJust measurements.height
+
+        TaskMuac ->
+            (not <| taskExpected TaskMuac) || isJust measurements.muac
+
+        TaskNutrition ->
+            (not <| taskExpected TaskNutrition) || isJust measurements.nutrition
+
+        TaskPhoto ->
+            (not <| taskExpected TaskPhoto) || isJust measurements.photo
+
+        TaskWeight ->
+            (not <| taskExpected TaskWeight) || isJust measurements.weight
+
+        TaskContributingFactors ->
+            (not <| taskExpected TaskContributingFactors) || isJust measurements.contributingFactors
+
+        TaskHealthEducation ->
+            (not <| taskExpected TaskHealthEducation) || isJust measurements.healthEducation
+
+        TaskFollowUp ->
+            (not <| taskExpected TaskFollowUp) || isJust measurements.followUp
+
+        TaskSendToHC ->
+            (not <| taskExpected TaskContributingFactors) || isJust measurements.sendToHC
+
+
+expectNutritionAssessmentTask : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssesmentTask -> Bool
+expectNutritionAssessmentTask currentDate zscores isChw data db task =
+    case task of
+        -- Show for children that are at least 6 month old.
+        TaskMuac ->
+            ageInMonths currentDate data.person
+                |> Maybe.map (\ageMonths -> ageMonths > 5)
+                |> Maybe.withDefault False
+
+        TaskContributingFactors ->
+            if mandatoryNutritionAssesmentTasksCompleted currentDate zscores isChw data db then
+                -- Any assesment require Next Steps tasks.
+                generateNutritionAssesment currentDate zscores db data
+                    |> List.isEmpty
+                    |> not
+
+            else
+                False
+
+        TaskHealthEducation ->
+            expectNutritionAssessmentTask currentDate zscores isChw data db TaskContributingFactors
+
+        TaskFollowUp ->
+            expectNutritionAssessmentTask currentDate zscores isChw data db TaskContributingFactors
+
+        TaskSendToHC ->
+            expectNutritionAssessmentTask currentDate zscores isChw data db TaskContributingFactors
+
+        -- View any other task.
+        _ ->
+            True
+
+
+mandatoryNutritionAssesmentTasksCompleted : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> Bool
+mandatoryNutritionAssesmentTasksCompleted currentDate zscores isChw data db =
+    partitionNutritionAssessmentTasks isChw
+        |> Tuple.first
+        |> List.filter (not << nutritionAssessmentTaskCompleted currentDate zscores isChw data db)
+        |> List.isEmpty
+
+
+{-| List of activities that need to be completed, in order to
+decide if to show Next Steps activity, or not.
+-}
+partitionNutritionAssessmentTasks : Bool -> ( List NutritionAssesmentTask, List NutritionAssesmentTask )
+partitionNutritionAssessmentTasks isChw =
+    if isChw then
+        ( [ TaskMuac, TaskNutrition, TaskWeight ], [ TaskHeight, TaskPhoto ] )
+
+    else
+        ( [ TaskHeight, TaskMuac, TaskNutrition, TaskWeight ], [ TaskPhoto ] )
+
+
+nutritionAssessmentNextStepsTasks : List NutritionAssesmentTask
+nutritionAssessmentNextStepsTasks =
+    [ TaskContributingFactors, TaskHealthEducation, TaskFollowUp, TaskSendToHC ]
 
 
 fromWellChildECDValue : Maybe (EverySet ECDSign) -> WellChildECDForm

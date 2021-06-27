@@ -25,25 +25,26 @@ import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem)
 import Utils.NominalDate exposing (renderAgeMonthsDays)
 import Utils.WebData exposing (viewWebData)
+import ZScore.Model
 
 
-view : Language -> NominalDate -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id isChw db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores id isChw db model =
     let
         data =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id isChw db model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate zscores id isChw db model) identity data
 
 
-viewHeaderAndContent : Language -> NominalDate -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id isChw db model data =
+viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate zscores id isChw db model data =
     let
         header =
             viewHeader language data
 
         content =
-            viewContent language currentDate id isChw db model data
+            viewContent language currentDate zscores id isChw db model data
     in
     div [ class "page-encounter home-visit" ]
         [ header
@@ -72,21 +73,21 @@ viewHeader language data =
         ]
 
 
-viewContent : Language -> NominalDate -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id isChw db model data =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate zscores id isChw db model data =
     ((viewPersonDetails language currentDate data.person Nothing |> div [ class "item" ])
-        :: viewMainPageContent language currentDate id isChw db data model
+        :: viewMainPageContent language currentDate zscores id isChw db data model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewMainPageContent : Language -> NominalDate -> WellChildEncounterId -> Bool -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate id isChw db data model =
+viewMainPageContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate zscores id isChw db data model =
     let
         ( completedActivities, pendingActivities ) =
             getAllActivities
-                |> List.filter (expectActivity currentDate data.person data db)
-                |> List.partition (activityCompleted currentDate data.person data db)
+                |> List.filter (expectActivity currentDate data db)
+                |> List.partition (activityCompleted currentDate zscores isChw data db)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities

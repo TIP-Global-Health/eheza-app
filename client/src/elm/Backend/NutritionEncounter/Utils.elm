@@ -22,91 +22,6 @@ import ZScore.Model exposing (Kilograms(..))
 import ZScore.Utils exposing (zScoreWeightForAge)
 
 
-generateIndividualMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
-generateIndividualMeasurementsForChild childId db =
-    resolveIndividualParticipantForPerson childId NutritionEncounter db
-        |> Maybe.map
-            (\participantId ->
-                Dict.get participantId db.nutritionEncountersByParticipant
-                    |> Maybe.withDefault NotAsked
-                    |> RemoteData.map
-                        (Dict.toList
-                            >> List.filterMap
-                                (\( encounterId, encounter ) ->
-                                    case Dict.get encounterId db.nutritionMeasurements of
-                                        Just (Success data) ->
-                                            Just ( encounter.startDate, ( encounterId, data ) )
-
-                                        _ ->
-                                            Nothing
-                                )
-                            -- Most recent date to least recent date.
-                            >> List.sortWith
-                                (\m1 m2 -> Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1))
-                        )
-                    |> RemoteData.withDefault []
-            )
-        |> Maybe.withDefault []
-
-
-generatePreviousValuesForChild : PersonId -> ModelIndexedDb -> PreviousMeasurementsValue
-generatePreviousValuesForChild childId db =
-    resolveIndividualParticipantForPerson childId NutritionEncounter db
-        |> Maybe.map
-            (\participantId ->
-                let
-                    measurementsWithDates =
-                        Dict.get participantId db.nutritionEncountersByParticipant
-                            |> Maybe.withDefault NotAsked
-                            |> RemoteData.map
-                                (Dict.toList
-                                    >> List.filterMap
-                                        (\( encounterId, encounter ) ->
-                                            case Dict.get encounterId db.nutritionMeasurements of
-                                                Just (Success data) ->
-                                                    Just ( encounter.startDate, data )
-
-                                                _ ->
-                                                    Nothing
-                                        )
-                                    -- Most recent date to least recent date.
-                                    >> List.sortWith
-                                        (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date2 date1)
-                                )
-                            |> RemoteData.withDefault []
-
-                    previuosHeight =
-                        measurementsWithDates
-                            |> List.filterMap
-                                (\( date, measurements ) ->
-                                    measurements.height
-                                        |> Maybe.map (\measurement -> ( date, Tuple.second measurement |> .value ))
-                                )
-                            |> List.head
-
-                    previousMuac =
-                        measurementsWithDates
-                            |> List.filterMap
-                                (\( date, measurements ) ->
-                                    measurements.muac
-                                        |> Maybe.map (\measurement -> ( date, Tuple.second measurement |> .value ))
-                                )
-                            |> List.head
-
-                    previousWeight =
-                        measurementsWithDates
-                            |> List.filterMap
-                                (\( date, measurements ) ->
-                                    measurements.weight
-                                        |> Maybe.map (\measurement -> ( date, Tuple.second measurement |> .value ))
-                                )
-                            |> List.head
-                in
-                PreviousMeasurementsValue previuosHeight previousMuac previousWeight
-            )
-        |> Maybe.withDefault (PreviousMeasurementsValue Nothing Nothing Nothing)
-
-
 generateNutritionAssesment :
     NominalDate
     -> ZScore.Model.Model
@@ -139,31 +54,29 @@ generateNutritionAssesment currentDate zscores childId muacValue weightValue nut
         allWeightMeasuements =
             resolveAllWeightMeasurementsForChild childId db
 
-        weightForAgeZScore =
-            Maybe.map (\child_ -> calculateZScoreWeightForAge currentDate zscores child_ weightValue) child
-
         assesmentByWeightForAgeZScore =
             Maybe.andThen
                 (\child_ ->
                     calculateZScoreWeightForAge currentDate zscores child_ weightValue
                         |> Maybe.andThen
                             (\zScore ->
-                                let
-                                    previousZScore =
-                                        List.Extra.getAt 1 allWeightMeasuements
-                                            |> Maybe.andThen
-                                                (\( date, previousWeightValue ) ->
-                                                    calculateZScoreWeightForAge date zscores child_ (Just previousWeightValue)
-                                                )
-                                in
                                 if zScoreWeightForAgeSevere zScore then
                                     Just AssesmentUnderweightSevere
 
-                                else if zScoreWeightForAgeModerate currentDate child_ zScore previousZScore then
-                                    Just AssesmentUnderweightModerate
-
                                 else
-                                    Nothing
+                                    let
+                                        previousZScore =
+                                            List.Extra.getAt 1 allWeightMeasuements
+                                                |> Maybe.andThen
+                                                    (\( date, previousWeightValue ) ->
+                                                        calculateZScoreWeightForAge date zscores child_ (Just previousWeightValue)
+                                                    )
+                                    in
+                                    if zScoreWeightForAgeModerate currentDate child_ zScore previousZScore then
+                                        Just AssesmentUnderweightModerate
+
+                                    else
+                                        Nothing
                             )
                 )
                 child
@@ -253,6 +166,91 @@ generateNutritionAssesment currentDate zscores childId muacValue weightValue nut
     in
     [ assesmentByMuac, assesmentByWeightForAgeZScore, assesmentByConsecutiveWeight, assementByNutritionSigns ]
         |> Maybe.Extra.values
+
+
+generateIndividualMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
+generateIndividualMeasurementsForChild childId db =
+    resolveIndividualParticipantForPerson childId NutritionEncounter db
+        |> Maybe.map
+            (\participantId ->
+                Dict.get participantId db.nutritionEncountersByParticipant
+                    |> Maybe.withDefault NotAsked
+                    |> RemoteData.map
+                        (Dict.toList
+                            >> List.filterMap
+                                (\( encounterId, encounter ) ->
+                                    case Dict.get encounterId db.nutritionMeasurements of
+                                        Just (Success data) ->
+                                            Just ( encounter.startDate, ( encounterId, data ) )
+
+                                        _ ->
+                                            Nothing
+                                )
+                            -- Most recent date to least recent date.
+                            >> List.sortWith
+                                (\m1 m2 -> Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1))
+                        )
+                    |> RemoteData.withDefault []
+            )
+        |> Maybe.withDefault []
+
+
+generatePreviousValuesForChild : PersonId -> ModelIndexedDb -> PreviousMeasurementsValue
+generatePreviousValuesForChild childId db =
+    resolveIndividualParticipantForPerson childId NutritionEncounter db
+        |> Maybe.map
+            (\participantId ->
+                let
+                    measurementsWithDates =
+                        Dict.get participantId db.nutritionEncountersByParticipant
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.map
+                                (Dict.toList
+                                    >> List.filterMap
+                                        (\( encounterId, encounter ) ->
+                                            case Dict.get encounterId db.nutritionMeasurements of
+                                                Just (Success data) ->
+                                                    Just ( encounter.startDate, data )
+
+                                                _ ->
+                                                    Nothing
+                                        )
+                                    -- Most recent date to least recent date.
+                                    >> List.sortWith
+                                        (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date2 date1)
+                                )
+                            |> RemoteData.withDefault []
+
+                    previuosHeight =
+                        measurementsWithDates
+                            |> List.filterMap
+                                (\( date, measurements ) ->
+                                    measurements.height
+                                        |> Maybe.map (\measurement -> ( date, Tuple.second measurement |> .value ))
+                                )
+                            |> List.head
+
+                    previousMuac =
+                        measurementsWithDates
+                            |> List.filterMap
+                                (\( date, measurements ) ->
+                                    measurements.muac
+                                        |> Maybe.map (\measurement -> ( date, Tuple.second measurement |> .value ))
+                                )
+                            |> List.head
+
+                    previousWeight =
+                        measurementsWithDates
+                            |> List.filterMap
+                                (\( date, measurements ) ->
+                                    measurements.weight
+                                        |> Maybe.map (\measurement -> ( date, Tuple.second measurement |> .value ))
+                                )
+                            |> List.head
+                in
+                PreviousMeasurementsValue previuosHeight previousMuac previousWeight
+            )
+        |> Maybe.withDefault (PreviousMeasurementsValue Nothing Nothing Nothing)
 
 
 resolveAllWeightMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, Float )
