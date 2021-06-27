@@ -191,29 +191,6 @@ getChildForm childId pages session =
                     )
 
 
-{-| Here we get a Float measurement value with it's date\_measured, from group and individual contexts.
-We return the most recent value, or Nothing, if both provided parameters were Nothing.
--}
-resolvePreviousValueInCommonContext : Maybe ( NominalDate, Float ) -> Maybe ( NominalDate, Float ) -> Maybe Float
-resolvePreviousValueInCommonContext previousGroupMeasurement previousIndividualMeasurement =
-    case previousGroupMeasurement of
-        Just ( pgmDate, pgmValue ) ->
-            case previousIndividualMeasurement of
-                Just ( pimDate, pimValue ) ->
-                    case Gizra.NominalDate.compare pgmDate pimDate of
-                        GT ->
-                            Just pgmValue
-
-                        _ ->
-                            Just pimValue
-
-                Nothing ->
-                    Just pgmValue
-
-        Nothing ->
-            Maybe.map Tuple.second previousIndividualMeasurement
-
-
 withinConstraints : FloatInputConstraints -> Float -> Bool
 withinConstraints constraints value =
     value >= constraints.minVal && value <= constraints.maxVal

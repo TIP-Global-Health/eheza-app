@@ -8,7 +8,7 @@ import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
-import Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, nutritionAssesmentForBackend)
+import Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, nutritionAssesmentForBackend, resolvePreviousValueInCommonContext)
 import Backend.Person.Model exposing (Person)
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -286,6 +286,7 @@ viewHeightForm language currentDate zscores person previousGroupValue previousIn
 
         previousValue =
             resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
+                |> Maybe.map Tuple.second
 
         zScoreText =
             form.height
@@ -392,6 +393,7 @@ viewMuacForm language currentDate person previousGroupValue previousIndividualVa
 
         previousValue =
             resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
+                |> Maybe.map Tuple.second
 
         constraints =
             getInputConstraintsMuac
@@ -623,6 +625,7 @@ viewWeightForm language currentDate zscores person heightValue previousGroupValu
 
         previousValue =
             resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
+                |> Maybe.map Tuple.second
 
         zScoreForAgeText =
             calculateZScoreWeightForAge currentDate zscores person form.weight

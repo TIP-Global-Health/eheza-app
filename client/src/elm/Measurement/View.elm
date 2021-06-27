@@ -25,7 +25,7 @@ import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, e
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
+import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend, resolvePreviousValueInCommonContext)
 import Backend.Person.Model exposing (Gender, Person)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EverySet exposing (EverySet)
@@ -90,7 +90,6 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             let
                 previousIndividualHeight =
                     previousIndividualMeasurements.height
-                        |> Maybe.map (\( date, HeightInCm val ) -> ( date, val ))
             in
             viewHeight language currentDate isChw child (mapMeasurementData .height measurements) previousIndividualHeight zscores model
 
@@ -98,7 +97,6 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             let
                 previousIndividualMuac =
                     previousIndividualMeasurements.muac
-                        |> Maybe.map (\( date, MuacInCm val ) -> ( date, val ))
             in
             viewMuac language currentDate isChw child (mapMeasurementData .muac measurements) previousIndividualMuac zscores model
 
@@ -111,7 +109,6 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             let
                 previousIndividualWeight =
                     previousIndividualMeasurements.weight
-                        |> Maybe.map (\( date, WeightInKg val ) -> ( date, val ))
             in
             viewWeight language currentDate isChw child (mapMeasurementData .weight measurements) previousIndividualWeight zscores model
 
@@ -275,6 +272,7 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
 
         previousValue =
             resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
+                |> Maybe.map Tuple.second
 
         -- For calculating ZScores, we need to know how old the child was at
         -- the time of the **measurement**. If we have an existing value that

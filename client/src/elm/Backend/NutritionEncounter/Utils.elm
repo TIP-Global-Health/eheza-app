@@ -195,62 +195,102 @@ generateIndividualMeasurementsForChild childId db =
         |> Maybe.withDefault []
 
 
-generatePreviousValuesForChild : PersonId -> ModelIndexedDb -> PreviousMeasurementsValue
-generatePreviousValuesForChild childId db =
-    resolveIndividualParticipantForPerson childId NutritionEncounter db
-        |> Maybe.map
-            (\participantId ->
-                let
-                    measurementsWithDates =
-                        Dict.get participantId db.nutritionEncountersByParticipant
-                            |> Maybe.withDefault NotAsked
-                            |> RemoteData.map
-                                (Dict.toList
-                                    >> List.filterMap
-                                        (\( encounterId, encounter ) ->
-                                            case Dict.get encounterId db.nutritionMeasurements of
-                                                Just (Success data) ->
-                                                    Just ( encounter.startDate, data )
+generatePreviousIndividualValuesForChild : PersonId -> ModelIndexedDb -> PreviousMeasurementsValue
+generatePreviousIndividualValuesForChild childId db =
+    let
+        previousValuesByEncounterType encounterType encountersByParticipantFunc measurementsFunc =
+            resolveIndividualParticipantForPerson childId NutritionEncounter db
+                |> Maybe.map
+                    (\participantId ->
+                        let
+                            measurementsWithDates =
+                                Dict.get participantId db.nutritionEncountersByParticipant
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.map
+                                        (Dict.toList
+                                            >> List.filterMap
+                                                (\( encounterId, encounter ) ->
+                                                    case Dict.get encounterId db.nutritionMeasurements of
+                                                        Just (Success data) ->
+                                                            Just ( encounter.startDate, data )
 
-                                                _ ->
-                                                    Nothing
+                                                        _ ->
+                                                            Nothing
+                                                )
+                                            -- Most recent date to least recent date.
+                                            >> List.sortWith
+                                                (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date2 date1)
                                         )
-                                    -- Most recent date to least recent date.
-                                    >> List.sortWith
-                                        (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date2 date1)
-                                )
-                            |> RemoteData.withDefault []
+                                    |> RemoteData.withDefault []
 
-                    previuosHeight =
-                        measurementsWithDates
-                            |> List.filterMap
-                                (\( date, measurements ) ->
-                                    measurements.height
-                                        |> Maybe.map (\measurement -> ( date, Tuple.second measurement |> .value ))
-                                )
-                            |> List.head
+                            getPreviousValue getValueFunc toFloatFunc =
+                                measurementsWithDates
+                                    |> List.filterMap
+                                        (\( date, measurements ) ->
+                                            getValueFunc measurements
+                                                |> Maybe.map
+                                                    (\measurement ->
+                                                        ( date
+                                                        , Tuple.second measurement
+                                                            |> .value
+                                                            |> toFloatFunc
+                                                        )
+                                                    )
+                                        )
+                                    |> List.head
 
-                    previousMuac =
-                        measurementsWithDates
-                            |> List.filterMap
-                                (\( date, measurements ) ->
-                                    measurements.muac
-                                        |> Maybe.map (\measurement -> ( date, Tuple.second measurement |> .value ))
-                                )
-                            |> List.head
+                            previuosHeight =
+                                getPreviousValue .height (\(HeightInCm cm) -> cm)
 
-                    previousWeight =
-                        measurementsWithDates
-                            |> List.filterMap
-                                (\( date, measurements ) ->
-                                    measurements.weight
-                                        |> Maybe.map (\measurement -> ( date, Tuple.second measurement |> .value ))
-                                )
-                            |> List.head
-                in
-                PreviousMeasurementsValue previuosHeight previousMuac previousWeight
-            )
-        |> Maybe.withDefault (PreviousMeasurementsValue Nothing Nothing Nothing)
+                            previousMuac =
+                                getPreviousValue .muac (\(MuacInCm cm) -> cm)
+
+                            previousWeight =
+                                getPreviousValue .weight (\(WeightInKg kg) -> kg)
+                        in
+                        PreviousMeasurementsValue previuosHeight previousMuac previousWeight
+                    )
+                |> Maybe.withDefault (PreviousMeasurementsValue Nothing Nothing Nothing)
+
+        previousNutritionValues =
+            previousValuesByEncounterType NutritionEncounter .nutritionEncountersByParticipant .nutritionMeasurements
+
+        previousWellChildValues =
+            previousValuesByEncounterType WellChildEncounter .wellChildEncountersByParticipant .wellChildMeasurements
+
+        height =
+            resolvePreviousValueInCommonContext previousNutritionValues.height previousWellChildValues.height
+
+        muac =
+            resolvePreviousValueInCommonContext previousNutritionValues.muac previousWellChildValues.muac
+
+        weight =
+            resolvePreviousValueInCommonContext previousNutritionValues.weight previousWellChildValues.weight
+    in
+    PreviousMeasurementsValue height muac weight
+
+
+{-| Here we get a Float measurement value with it's date\_measured, from group and individual contexts.
+We return the most recent value, or Nothing, if both provided parameters were Nothing.
+-}
+resolvePreviousValueInCommonContext : Maybe ( NominalDate, Float ) -> Maybe ( NominalDate, Float ) -> Maybe ( NominalDate, Float )
+resolvePreviousValueInCommonContext value1 value2 =
+    case value1 of
+        Just ( v1Date, v1Value ) ->
+            case value2 of
+                Just ( v2Date, v2Value ) ->
+                    case Gizra.NominalDate.compare v1Date v2Date of
+                        GT ->
+                            value1
+
+                        _ ->
+                            value2
+
+                Nothing ->
+                    value1
+
+        Nothing ->
+            value2
 
 
 resolveAllWeightMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, Float )
