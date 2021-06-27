@@ -1512,16 +1512,15 @@ input::placeholder {
 
 .icon-height {
   .active &:after {
-    background-image: url(#{$img-path}icon-height-active.svg);
+    background-image: url(#{$img-path}icon-height-white.svg);
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-height-active.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-height-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-height.svg);
-    background-size: 49px 54px;
+    background-image: url(#{$img-path}icon-height-gray.svg);
   }
 }
 
