@@ -49,6 +49,9 @@ update currentDate id db msg model =
             , [ App.Model.SetActivePage page ]
             )
 
+        SetWarningPopupState state ->
+            ( { model | warningPopupState = state }, Cmd.none, [] )
+
         SetECDBoolInput formUpdateFunc value ->
             let
                 updatedForm =

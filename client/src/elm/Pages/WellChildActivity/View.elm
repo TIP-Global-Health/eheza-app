@@ -28,7 +28,7 @@ import Measurement.View
         , viewSendToHCForm
         , zScoreForHeightOrLength
         )
-import Pages.NutritionActivity.View exposing (viewHeightForm, viewMuacForm, viewNutritionForm, viewPhotoForm, viewWeightForm)
+import Pages.NutritionActivity.View exposing (viewHeightForm, viewMuacForm, viewNutritionForm, viewPhotoForm, viewWeightForm, warningPopup)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
 import Pages.Utils
@@ -50,6 +50,7 @@ import Pages.WellChildEncounter.Model exposing (AssembledData)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
@@ -76,6 +77,11 @@ viewHeaderAndContent language currentDate zscores id isChw activity db model dat
     div [ class "page-activity well-child" ]
         [ header
         , content
+        , viewModal <|
+            warningPopup language
+                currentDate
+                SetWarningPopupState
+                model.warningPopupState
         ]
 
 

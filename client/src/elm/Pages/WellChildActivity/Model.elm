@@ -9,6 +9,7 @@ import Pages.Page exposing (Page)
 
 type Msg
     = SetActivePage Page
+    | SetWarningPopupState (List NutritionAssesment)
     | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
     | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
       -- NUTRITION ASSESMENT
@@ -39,6 +40,7 @@ type Msg
 type alias Model =
     { ecdForm : WellChildECDForm
     , nutritionAssessmentData : NutritionAssessmentData
+    , warningPopupState : List NutritionAssesment
     }
 
 
@@ -46,6 +48,7 @@ emptyModel : Model
 emptyModel =
     { ecdForm = emptyWellChildECDForm
     , nutritionAssessmentData = emptyNutritionAssessmentData
+    , warningPopupState = []
     }
 
 
