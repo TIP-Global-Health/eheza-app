@@ -7,7 +7,7 @@ import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (resolveAllWeightMeasurementsForChild)
+import Backend.NutritionEncounter.Utils exposing (resolveNutritionWeightMeasurementsForChild)
 import EverySet
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -299,7 +299,7 @@ viewFeedingContent language currentDate assembled db feedingForm =
             { form_ | eatenWithWater = Just value }
 
         allWeightMeasuements =
-            resolveAllWeightMeasurementsForChild assembled.participant.person db
+            resolveNutritionWeightMeasurementsForChild assembled.participant.person db
 
         childWeight =
             List.head allWeightMeasuements

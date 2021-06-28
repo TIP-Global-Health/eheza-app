@@ -52,7 +52,7 @@ generateNutritionAssesment currentDate zscores childId muacValue weightValue nut
                     )
 
         allWeightMeasuements =
-            resolveAllWeightMeasurementsForChild childId db
+            resolveNutritionWeightMeasurementsForChild childId db
 
         assesmentByWeightForAgeZScore =
             Maybe.andThen
@@ -168,8 +168,8 @@ generateNutritionAssesment currentDate zscores childId muacValue weightValue nut
         |> Maybe.Extra.values
 
 
-generateIndividualMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
-generateIndividualMeasurementsForChild childId db =
+generateIndividualNutritionMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
+generateIndividualNutritionMeasurementsForChild childId db =
     resolveIndividualParticipantForPerson childId NutritionEncounter db
         |> Maybe.map
             (\participantId ->
@@ -187,8 +187,33 @@ generateIndividualMeasurementsForChild childId db =
                                             Nothing
                                 )
                             -- Most recent date to least recent date.
-                            >> List.sortWith
-                                (\m1 m2 -> Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1))
+                            >> List.sortWith sortTuplesByDateDesc
+                        )
+                    |> RemoteData.withDefault []
+            )
+        |> Maybe.withDefault []
+
+
+generateIndividualWellChildMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+generateIndividualWellChildMeasurementsForChild childId db =
+    resolveIndividualParticipantForPerson childId WellChildEncounter db
+        |> Maybe.map
+            (\participantId ->
+                Dict.get participantId db.wellChildEncountersByParticipant
+                    |> Maybe.withDefault NotAsked
+                    |> RemoteData.map
+                        (Dict.toList
+                            >> List.filterMap
+                                (\( encounterId, encounter ) ->
+                                    case Dict.get encounterId db.wellChildMeasurements of
+                                        Just (Success data) ->
+                                            Just ( encounter.startDate, ( encounterId, data ) )
+
+                                        _ ->
+                                            Nothing
+                                )
+                            -- Most recent date to least recent date.
+                            >> List.sortWith sortTuplesByDateDesc
                         )
                     |> RemoteData.withDefault []
             )
@@ -296,11 +321,22 @@ resolvePreviousValueInCommonContext value1 value2 =
 resolveAllWeightMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, Float )
 resolveAllWeightMeasurementsForChild childId db =
     let
-        weightValueFunc =
-            \(WeightInKg kg) -> kg
+        nutritionWeights =
+            resolveNutritionWeightMeasurementsForChild childId db
 
+        wellChildWeights =
+            resolveWellChildWeightMeasurementsForChild childId db
+    in
+    nutritionWeights
+        ++ wellChildWeights
+        |> List.sortWith sortTuplesByDateDesc
+
+
+resolveNutritionWeightMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, Float )
+resolveNutritionWeightMeasurementsForChild childId db =
+    let
         individualMeasurements =
-            generateIndividualMeasurementsForChild childId db
+            generateIndividualNutritionMeasurementsForChild childId db
 
         individualWeightMeasurements =
             resolveIndividualNutritionValues individualMeasurements .weight weightValueFunc
@@ -318,7 +354,7 @@ resolveAllWeightMeasurementsForChild childId db =
     in
     groupWeightMeasurements
         ++ individualWeightMeasurements
-        |> List.sortWith (\m1 m2 -> Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1))
+        |> List.sortWith sortTuplesByDateDesc
 
 
 resolveIndividualNutritionValues :
@@ -337,6 +373,15 @@ resolveIndividualNutritionValues measurementsWithDates measurementFunc valueFunc
                         )
             )
         |> List.reverse
+
+
+resolveWellChildWeightMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, Float )
+resolveWellChildWeightMeasurementsForChild childId db =
+    let
+        individualMeasurements =
+            generateIndividualWellChildMeasurementsForChild childId db
+    in
+    resolveIndividualWellChildValues individualMeasurements .weight weightValueFunc
 
 
 resolveIndividualWellChildValues :
@@ -417,3 +462,13 @@ nutritionAssesmentForBackend : List NutritionAssesment -> EverySet NutritionAsse
 nutritionAssesmentForBackend assesment =
     EverySet.fromList assesment
         |> ifEverySetEmpty NoNutritionAssesment
+
+
+weightValueFunc : WeightInKg -> Float
+weightValueFunc =
+    \(WeightInKg kg) -> kg
+
+
+sortTuplesByDateDesc : ( NominalDate, a ) -> ( NominalDate, a ) -> Order
+sortTuplesByDateDesc m1 m2 =
+    Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1)

@@ -13,10 +13,10 @@ fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
     [ FetchPerson id
 
-    -- We need this, so we can resolve the individual participants of the child.
+    -- We need this, so we can resolve the individual participants of child.
     , FetchIndividualEncounterParticipantsForPerson id
 
-    -- Fetch Group measuments that belong to the child.
+    -- Fetch Group measuments that belong to child.
     , Backend.Model.FetchChildMeasurements id
     ]
         ++ fetchForNutrition id db

@@ -6,7 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, mapMeasurementData, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (generateIndividualMeasurementsForChild)
+import Backend.NutritionEncounter.Utils exposing (generateIndividualNutritionMeasurementsForChild)
 import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.Person.Utils exposing (graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
@@ -51,7 +51,7 @@ view language currentDate zscores childId ( sessionId, session ) db =
                         |> Maybe.withDefault NotAsked
 
                 individualChildMeasurements =
-                    generateIndividualMeasurementsForChild childId db
+                    generateIndividualNutritionMeasurementsForChild childId db
 
                 mother =
                     getMyMother childId session.offlineSession
