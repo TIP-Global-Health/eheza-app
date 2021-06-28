@@ -12,8 +12,6 @@ import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLo
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.WellChildEncounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, translate)
-import ZScore.Model
 
 
 generateAssembledData : WellChildEncounterId -> ModelIndexedDb -> WebData AssembledData

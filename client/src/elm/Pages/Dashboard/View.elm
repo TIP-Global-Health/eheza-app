@@ -209,15 +209,19 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
     [ viewChwMenu language
     , monthSelector language selectedDate model
     , div [ class "ui grid" ]
-        [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt <| sentToHC + managedLocally)
-        , customChwCard language (Translate.Dashboard Translate.MothersInANC) (String.fromInt currentlyPregnant) "six"
-        , chwCard language (Translate.Dashboard Translate.NewbornsInCare) (String.fromInt totalNewborn)
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt <| sentToHC + managedLocally)
+            , chwCard language (Translate.Dashboard Translate.MothersInANC) (String.fromInt currentlyPregnant)
+            , chwCard language (Translate.Dashboard Translate.NewbornsInCare) (String.fromInt totalNewborn)
+            ]
         ]
     , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
     , div [ class "ui grid" ]
-        [ chwCard language (Translate.EncounterTypeFileterLabel AcuteIllnessEncounter) (String.fromInt totalAcuteIllnessFollowUps)
-        , customChwCard language (Translate.EncounterTypeFileterLabel NutritionEncounter) (String.fromInt totalNutritionFollowUps) "six"
-        , chwCard language (Translate.EncounterTypeFileterLabel AntenatalEncounter) (String.fromInt totalPrenatalFollowUps)
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.EncounterTypeFileterLabel AcuteIllnessEncounter) (String.fromInt totalAcuteIllnessFollowUps)
+            , chwCard language (Translate.EncounterTypeFileterLabel NutritionEncounter) (String.fromInt totalNutritionFollowUps)
+            , chwCard language (Translate.EncounterTypeFileterLabel AntenatalEncounter) (String.fromInt totalPrenatalFollowUps)
+            ]
         ]
     ]
 
@@ -1083,13 +1087,17 @@ viewAcuteIllnessOverviewPage language encounters model =
                 ]
     in
     [ div [ class "ui grid" ]
-        [ chwCard language (Translate.Dashboard Translate.TotalAssessment) (String.fromInt totalAssesments)
-        , customChwCard language (Translate.Dashboard Translate.CommunityLevelCases) (String.fromInt managedLocally) "six"
-        , chwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC)
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.TotalAssessment) (String.fromInt totalAssesments)
+            , chwCard language (Translate.Dashboard Translate.CommunityLevelCases) (String.fromInt managedLocally)
+            , chwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC)
+            ]
         ]
     , div [ class "ui centered grid" ]
-        [ customChwCard language (Translate.Dashboard Translate.DiagnosisUndetermined) (String.fromInt undeterminedCases) "six"
-        , customChwCard language (Translate.Dashboard Translate.FeverOfUnknownOrigin) (String.fromInt feverOfUnknownOriginCases) "six"
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.DiagnosisUndetermined) (String.fromInt undeterminedCases)
+            , chwCard language (Translate.Dashboard Translate.FeverOfUnknownOrigin) (String.fromInt feverOfUnknownOriginCases)
+            ]
         ]
     , div [ class "ui blue segment donut-chart fever" ]
         [ viewFeverDistributionDonutChart language feverByCauses ]
@@ -1127,12 +1135,16 @@ viewCovid19Page language encounters managedCovid model =
             countDiagnosedWithCovidManagedAtHome encounters
     in
     [ div [ class "ui grid" ]
-        [ chwCard language (Translate.Dashboard Translate.CallsTo114) (String.fromInt callsTo114)
-        , customChwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC) "six"
-        , chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.CallsTo114) (String.fromInt callsTo114)
+            , chwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC)
+            , chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
+            ]
         ]
     , div [ class "ui centered grid" ]
-        [ customChwCard language (Translate.Dashboard Translate.PatientCurrentlyUnderCare) (String.fromInt managedCovid) "six" ]
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.PatientCurrentlyUnderCare) (String.fromInt managedCovid) ]
+        ]
     ]
 
 
@@ -1155,13 +1167,17 @@ viewMalariaPage language selectedDate acuteIllnessData encountersForSelectedMont
             countResolvedMalariaCasesForSelectedMonth selectedDate acuteIllnessData
     in
     [ div [ class "ui grid" ]
-        [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
-        , customChwCard language (Translate.Dashboard Translate.UncomplicatedMalariaByChws) (String.fromInt uncomplicatedMalariaManagedByChw) "six"
-        , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaInPregnancyReferredToHc) (String.fromInt uncomplicatedMalariaAndPregnantSentToHC)
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+            , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaByChws) (String.fromInt uncomplicatedMalariaManagedByChw)
+            , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaInPregnancyReferredToHc) (String.fromInt uncomplicatedMalariaAndPregnantSentToHC)
+            ]
         ]
     , div [ class "ui centered grid" ]
-        [ customChwCard language (Translate.Dashboard Translate.ComplicatedMalariaReferredToHC) (String.fromInt complicatedMalariaSentToHC) "six"
-        , customChwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedMalariaCases ++ " : " ++ String.fromInt managedMalaria) "six"
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.ComplicatedMalariaReferredToHC) (String.fromInt complicatedMalariaSentToHC)
+            , chwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedMalariaCases ++ " : " ++ String.fromInt managedMalaria)
+            ]
         ]
     ]
 
@@ -1182,12 +1198,16 @@ viewGastroPage language selectedDate acuteIllnessData encountersForSelectedMonth
             countResolvedGICasesForSelectedMonth selectedDate acuteIllnessData
     in
     [ div [ class "ui grid" ]
-        [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
-        , customChwCard language (Translate.Dashboard Translate.UncomplicatedGIInfectionByCHWS) (String.fromInt uncomplicatedGIManagedByChw) "six"
-        , chwCard language (Translate.Dashboard Translate.ComplicatedGIInfectionsReferredToHc) (String.fromInt complicatedGISentToHC)
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+            , chwCard language (Translate.Dashboard Translate.UncomplicatedGIInfectionByCHWS) (String.fromInt uncomplicatedGIManagedByChw)
+            , chwCard language (Translate.Dashboard Translate.ComplicatedGIInfectionsReferredToHc) (String.fromInt complicatedGISentToHC)
+            ]
         ]
     , div [ class "ui centered grid" ]
-        [ customChwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedGICases ++ " : " ++ String.fromInt managedGI) "six"
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedGICases ++ " : " ++ String.fromInt managedGI)
+            ]
         ]
     ]
 
@@ -1286,26 +1306,25 @@ viewAntenatalPage language currentDate assembled db model =
     in
     [ monthSelector language selectedDate model
     , div [ class "ui grid" ]
-        [ chwCard language (Translate.Dashboard Translate.NewPregnancy) (String.fromInt newlyIdentifiedPreganancies)
-        , customChwCard language (Translate.Dashboard Translate.CurrentPregnancies) (String.fromInt currentlyPregnant) "six"
-        , chwCard language (Translate.Dashboard Translate.Within4MonthsOfDueDate) (String.fromInt pregnanciesDueWithin4Month)
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.NewPregnancy) (String.fromInt newlyIdentifiedPreganancies)
+            , chwCard language (Translate.Dashboard Translate.CurrentPregnancies) (String.fromInt currentlyPregnant)
+            , chwCard language (Translate.Dashboard Translate.Within4MonthsOfDueDate) (String.fromInt pregnanciesDueWithin4Month)
+            ]
         ]
     , div [ class "ui centered grid" ]
-        [ chwCard language (Translate.Dashboard Translate.WithDangerSigns) (String.fromInt currentlyPregnantWithDangerSigns)
-        , customChwCard language (Translate.Dashboard Translate.HomeDeliveries) (String.fromInt deliveriesAtHome) "six"
-        , chwCard language (Translate.Dashboard Translate.HealthFacilityDeliveries) (String.fromInt deliveriesAtFacility)
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.WithDangerSigns) (String.fromInt currentlyPregnantWithDangerSigns)
+            , chwCard language (Translate.Dashboard Translate.HomeDeliveries) (String.fromInt deliveriesAtHome)
+            , chwCard language (Translate.Dashboard Translate.HealthFacilityDeliveries) (String.fromInt deliveriesAtFacility)
+            ]
         ]
     ]
 
 
 chwCard : Language -> TranslationId -> String -> Html Msg
 chwCard language titleTransId value =
-    customChwCard language titleTransId value "five"
-
-
-customChwCard : Language -> TranslationId -> String -> String -> Html Msg
-customChwCard language titleTransId value width =
-    div [ class <| width ++ " wide column" ]
+    div [ class "column" ]
         [ viewChwCard language titleTransId value ]
 
 
@@ -1689,7 +1708,7 @@ viewCard language statsCard =
 
 viewChwCard : Language -> TranslationId -> String -> Html Msg
 viewChwCard language titleTransId value =
-    div [ class "ui segment blue dashboard-card chw" ]
+    div [ class "ui segment dashboard-card chw" ]
         [ div [ class "content" ]
             [ div [ class "header" ] [ text <| translate language titleTransId ]
             , div [ class "value this-year" ] [ text value ]

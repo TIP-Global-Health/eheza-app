@@ -123,7 +123,10 @@ class RoboFile extends Tasks {
       return;
     }
 
-    $this->_exec("cd $pantheonDirectory && git pull && git add . && git commit -am 'Site update' && git push");
+    $push_status = $this->_exec("cd $pantheonDirectory && git pull && git add . && git commit -am 'Site update' && git push")->getExitCode();
+    if ($client_sync_result != 0) {
+      throw new Exception('Failed to push to Pantheon');
+    }
 
     $pantheonEnv = $branchName == 'master' ? 'dev' : $branchName;
     $this->deployPantheonSync($pantheonEnv, FALSE);
