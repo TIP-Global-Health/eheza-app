@@ -1481,7 +1481,7 @@ input::placeholder {
       background-repeat: no-repeat;
       border: 3px solid $color-white;
       border-radius: 50%;
-      content: " ";
+      content: ' ';
       display: block;
       height: 100%;
       width: 100%;
@@ -1502,6 +1502,7 @@ input::placeholder {
       border: 0;
 
       &:after {
+        background-position: right;
         border: 0;
         border-radius: 0;
       }
@@ -1526,62 +1527,57 @@ input::placeholder {
 
 .icon-muac {
   .active &:after {
-    background-image: url(#{$img-path}icon-muac-active.svg);
+    background-image: url(#{$img-path}icon-muac-white.svg);
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-muac-active.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-muac-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-muac.svg);
-    background-size: 59px 54px;
+    background-image: url(#{$img-path}icon-muac-gray.svg);
   }
 }
 
 .icon-nutrition {
   .active &:after {
-    background-image: url(#{$img-path}icon-nutrition-active.svg);
+    background-image: url(#{$img-path}icon-nutrition-white.svg);
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-nutrition-active.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-nutrition-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-nutrition.svg);
-    background-size: 60px 51px;
+    background-image: url(#{$img-path}icon-nutrition-gray.svg);
   }
 }
 
 .icon-photo {
   .active &:after {
-    background-image: url(#{$img-path}icon-photo-active.svg);
+    background-image: url(#{$img-path}icon-photo-white.svg);
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-photo-active.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-photo-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-photo.svg);
-    background-size: 56px 40px;
+    background-image: url(#{$img-path}icon-photo-gray.svg);
   }
 }
 
 .icon-weight {
   .active &:after {
-    background-image: url(#{$img-path}icon-weight-active.svg);
+    background-image: url(#{$img-path}icon-weight-white.svg);
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-weight-active.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-weight-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-weight.svg);
-    background-position: center 5px;
-    background-size: 50px 65px;
+    background-image: url(#{$img-path}icon-weight-gray.svg);
   }
 }
 
