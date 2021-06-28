@@ -13,8 +13,11 @@ fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
     [ FetchPerson id
 
-    -- We need this, so we can resolve the nutrition participant for child.
+    -- We need this, so we can resolve the individual participants of the child.
     , FetchIndividualEncounterParticipantsForPerson id
+
+    -- Fetch Group measuments that belong to the child.
+    , Backend.Model.FetchChildMeasurements id
     ]
         ++ fetchForNutrition id db
         ++ fetchForWellChild id db
@@ -53,9 +56,6 @@ fetchForWellChild id db =
     let
         participantId =
             resolveIndividualParticipantForPerson id WellChildEncounter db
-
-        _ =
-            Debug.log "participantId" participantId
 
         encountersIds =
             participantId
