@@ -16,7 +16,7 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
+import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
@@ -50,11 +50,8 @@ generateNutritionAssesment currentDate zscores childId db offlineSession =
 
         weightValue =
             Maybe.andThen (.weight >> Maybe.map (Tuple.second >> .value >> weightValueFunc)) measurements
-
-        weightValueFunc =
-            \(WeightInKg kg) -> kg
     in
-    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores childId muacValue weightValue nutritionValue db
+    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores childId muacValue nutritionValue True weightValue db
 
 
 {-| Used for URL etc., not for display in the normal UI (since we'd translatefor that).

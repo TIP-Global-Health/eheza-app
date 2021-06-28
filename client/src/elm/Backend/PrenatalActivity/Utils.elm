@@ -23,6 +23,7 @@ expected (and not completed).
 -}
 
 import Backend.Measurement.Model exposing (HeightInCm(..), MuacInCm(..), PrenatalMeasurements, PreviousDeliverySign(..), WeightInKg(..))
+import Backend.Measurement.Utils exposing (heightValueFunc, muacValueFunc, weightValueFunc)
 import Backend.PrenatalActivity.Model exposing (..)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
@@ -834,7 +835,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                                         Tuple.second measurement
                                             |> .value
                                             |> .muac
-                                            |> (\(MuacInCm cm) -> cm)
+                                            |> muacValueFunc
                                 in
                                 if muac >= 18.5 && muac < 22 then
                                     Just (transAlert diagnosis)
@@ -863,19 +864,19 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                                         Tuple.second measurement
                                             |> .value
                                             |> .height
-                                            |> (\(HeightInCm cm) -> cm)
+                                            |> heightValueFunc
 
                                     weight =
                                         Tuple.second measurement
                                             |> .value
                                             |> .weight
-                                            |> (\(WeightInKg kg) -> kg)
+                                            |> weightValueFunc
 
                                     muac =
                                         Tuple.second measurement
                                             |> .value
                                             |> .muac
-                                            |> (\(MuacInCm cm) -> cm)
+                                            |> muacValueFunc
                                 in
                                 if muac < 18.5 then
                                     Just (transAlert diagnosis)
@@ -912,13 +913,13 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                                         Tuple.second measurement
                                             |> .value
                                             |> .height
-                                            |> (\(HeightInCm cm) -> cm)
+                                            |> heightValueFunc
 
                                     weight =
                                         Tuple.second measurement
                                             |> .value
                                             |> .weight
-                                            |> (\(WeightInKg kg) -> kg)
+                                            |> weightValueFunc
                                 in
                                 calculateBmi (Just height) (Just weight)
                                     |> Maybe.andThen
@@ -951,13 +952,13 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                                         Tuple.second measurement
                                             |> .value
                                             |> .height
-                                            |> (\(HeightInCm cm) -> cm)
+                                            |> heightValueFunc
 
                                     weight =
                                         Tuple.second measurement
                                             |> .value
                                             |> .weight
-                                            |> (\(WeightInKg kg) -> kg)
+                                            |> weightValueFunc
                                 in
                                 calculateBmi (Just height) (Just weight)
                                     |> Maybe.andThen

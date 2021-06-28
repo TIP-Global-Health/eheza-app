@@ -15,6 +15,7 @@ import Backend.Measurement.Model
         , NutritionMeasurements
         , WeightInKg(..)
         )
+import Backend.Measurement.Utils exposing (weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Utils
@@ -54,11 +55,8 @@ generateNutritionAssesment currentDate zscores db assembled =
                     >> weightValueFunc
                 )
                 measurements.weight
-
-        weightValueFunc =
-            \(WeightInKg kg) -> kg
     in
-    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembled.participant.person muacValue weightValue nutritionValue db
+    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembled.participant.person muacValue nutritionValue True weightValue db
 
 
 expectActivity : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool

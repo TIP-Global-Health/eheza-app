@@ -23,9 +23,9 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData, muacIndication)
+import Backend.Measurement.Utils exposing (currentValues, heightValueFunc, mapMeasurementData, muacIndication, muacValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend, resolvePreviousValueInCommonContext)
+import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
 import Backend.Person.Model exposing (Gender, Person)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EverySet exposing (EverySet)
@@ -76,9 +76,9 @@ viewChild :
     -> EditableSession
     -> ModelIndexedDb
     -> ModelChild
-    -> PreviousMeasurementsValue
+    -> PreviousValuesSet
     -> Html MsgChild
-viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db model previousIndividualMeasurements =
+viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db model previousValuesSet =
     case activity of
         ChildFbf ->
             viewChildFbf language currentDate child session.offlineSession.session.clinicType (mapMeasurementData .fbf measurements) model.fbfForm
@@ -87,18 +87,10 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewPhoto language (mapMeasurementData .photo measurements) model.photo
 
         Height ->
-            let
-                previousIndividualHeight =
-                    previousIndividualMeasurements.height
-            in
-            viewHeight language currentDate isChw child (mapMeasurementData .height measurements) previousIndividualHeight zscores model
+            viewHeight language currentDate isChw child (mapMeasurementData .height measurements) previousValuesSet.height zscores model
 
         Muac ->
-            let
-                previousIndividualMuac =
-                    previousIndividualMeasurements.muac
-            in
-            viewMuac language currentDate isChw child (mapMeasurementData .muac measurements) previousIndividualMuac zscores model
+            viewMuac language currentDate isChw child (mapMeasurementData .muac measurements) previousValuesSet.muac zscores model
 
         NutritionSigns ->
             viewNutritionSigns language (mapMeasurementData .nutrition measurements) model.nutritionSigns
@@ -106,11 +98,7 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
         -- Counseling ->
         --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
         Weight ->
-            let
-                previousIndividualWeight =
-                    previousIndividualMeasurements.weight
-            in
-            viewWeight language currentDate isChw child (mapMeasurementData .weight measurements) previousIndividualWeight zscores model
+            viewWeight language currentDate isChw child (mapMeasurementData .weight measurements) previousValuesSet.weight zscores model
 
         ContributingFactors ->
             viewContributingFactors language currentDate (mapMeasurementData .contributingFactors measurements) model.contributingFactorsForm
@@ -157,7 +145,7 @@ heightFormConfig =
     , constraints = getInputConstraintsHeight
     , unit = Translate.CentimeterShorthand
     , inputValue = .height
-    , storedValue = .value >> (\(HeightInCm val) -> val)
+    , storedValue = .value >> heightValueFunc
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateHeight
@@ -176,7 +164,7 @@ muacFormConfig =
     , constraints = getInputConstraintsMuac
     , unit = Translate.CentimeterShorthand
     , inputValue = .muac
-    , storedValue = .value >> (\(MuacInCm val) -> val)
+    , storedValue = .value >> muacValueFunc
     , dateMeasured = .dateMeasured
     , viewIndication = Just <| \language val -> viewMuacIndication language (muacIndication (MuacInCm val))
     , updateMsg = UpdateMuac
@@ -195,7 +183,7 @@ weightFormConfig =
     , constraints = getInputConstraintsWeight
     , unit = Translate.KilogramShorthand
     , inputValue = .weight
-    , storedValue = .value >> (\(WeightInKg val) -> val)
+    , storedValue = .value >> weightValueFunc
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateWeight
@@ -212,23 +200,23 @@ zScoreForHeightOrLength model (Days days) (Centimetres cm) gender weight =
         zScoreWeightForHeight model (ZScore.Model.Height cm) gender (Kilograms weight)
 
 
-viewHeight : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( HeightId, Height )) -> Maybe ( NominalDate, Float ) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewHeight : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( HeightId, Height )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewHeight =
     viewFloatForm heightFormConfig
 
 
-viewWeight : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( WeightId, Weight )) -> Maybe ( NominalDate, Float ) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewWeight : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( WeightId, Weight )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewWeight =
     viewFloatForm weightFormConfig
 
 
-viewMuac : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> Maybe ( NominalDate, Float ) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewMuac : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewMuac =
     viewFloatForm muacFormConfig
 
 
-viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( id, value )) -> Maybe ( NominalDate, Float ) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
-viewFloatForm config language currentDate isChw child measurements previousIndividualValue zscores model =
+viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( id, value )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewFloatForm config language currentDate isChw child measurements previousValue zscores model =
     let
         -- What is the string input value from the form?
         inputValue =
@@ -260,19 +248,6 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
         -- measurement we haven't saved yet, this will be Nothing.
         savedMeasurement =
             measurements.current
-
-        previousGroupValue =
-            measurements.previous
-                |> Maybe.map
-                    (\( _, measurement ) ->
-                        ( measurement |> config.dateMeasured
-                        , measurement |> config.storedValue
-                        )
-                    )
-
-        previousValue =
-            resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
-                |> Maybe.map Tuple.second
 
         -- For calculating ZScores, we need to know how old the child was at
         -- the time of the **measurement**. If we have an existing value that

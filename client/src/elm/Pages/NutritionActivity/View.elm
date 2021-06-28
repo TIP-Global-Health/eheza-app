@@ -8,7 +8,7 @@ import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
-import Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, nutritionAssesmentForBackend, resolvePreviousValueInCommonContext, sortTuplesByDateDesc)
+import Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, nutritionAssesmentForBackend, resolvePreviousValuesSetForChild)
 import Backend.Person.Model exposing (Person)
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -174,40 +174,15 @@ warningPopup language currentDate setStateMsg state =
 viewActivity : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
 viewActivity language currentDate zscores id activity isChw assembled db model =
     let
-        childMeasurements =
-            Dict.get assembled.participant.person db.childMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-
-        resolvePreviousGroupValue getChildMeasurementFunc =
-            childMeasurements
-                |> Maybe.andThen
-                    (getChildMeasurementFunc
-                        >> Dict.values
-                        >> List.map (\measurement -> ( measurement.dateMeasured, measurement.value ))
-                        -- Most recent date to least recent date.
-                        >> List.sortWith sortTuplesByDateDesc
-                        >> List.head
-                    )
-
-        previousGroupHeight =
-            resolvePreviousGroupValue .heights
-                |> Maybe.map (\( date, HeightInCm val ) -> ( date, val ))
-
-        previousGroupMuac =
-            resolvePreviousGroupValue .muacs
-                |> Maybe.map (\( date, MuacInCm val ) -> ( date, val ))
-
-        previousGroupWeight =
-            resolvePreviousGroupValue .weights
-                |> Maybe.map (\( date, WeightInKg val ) -> ( date, val ))
+        previousValuesSet =
+            resolvePreviousValuesSetForChild assembled.participant.person db
     in
     case activity of
         Height ->
-            viewHeightContent language currentDate zscores assembled model.heightData previousGroupHeight
+            viewHeightContent language currentDate zscores assembled model.heightData previousValuesSet.height
 
         Muac ->
-            viewMuacContent language currentDate assembled model.muacData previousGroupMuac
+            viewMuacContent language currentDate assembled model.muacData previousValuesSet.muac
 
         Nutrition ->
             viewNutritionContent language currentDate ( assembled.participant.person, assembled.measurements ) model.nutritionData
@@ -216,14 +191,14 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
             viewPhotoContent language currentDate ( assembled.participant.person, assembled.measurements ) model.photoData
 
         Weight ->
-            viewWeightContent language currentDate zscores assembled model.weightData previousGroupWeight
+            viewWeightContent language currentDate zscores assembled model.weightData previousValuesSet.weight
 
         NextSteps ->
             viewNextStepsContent language currentDate zscores id assembled db model.nextStepsData
 
 
-viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> HeightData -> Maybe ( NominalDate, Float ) -> List (Html Msg)
-viewHeightContent language currentDate zscores assembled data previousGroupValue =
+viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> HeightData -> Maybe Float -> List (Html Msg)
+viewHeightContent language currentDate zscores assembled data previousValue =
     let
         form =
             assembled.measurements.height
@@ -235,9 +210,6 @@ viewHeightContent language currentDate zscores assembled data previousGroupValue
 
         tasksCompleted =
             taskCompleted form.height
-
-        previousIndividualValue =
-            resolveIndividualNutritionValue assembled.previousMeasurementsWithDates .height (\(HeightInCm cm) -> cm)
 
         constraints =
             getInputConstraintsHeight
@@ -252,7 +224,7 @@ viewHeightContent language currentDate zscores assembled data previousGroupValue
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
-            viewHeightForm language currentDate zscores assembled.person previousGroupValue previousIndividualValue SetHeight form
+            viewHeightForm language currentDate zscores assembled.person previousValue SetHeight form
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
@@ -269,12 +241,11 @@ viewHeightForm :
     -> NominalDate
     -> ZScore.Model.Model
     -> Person
-    -> Maybe ( NominalDate, Float )
-    -> Maybe ( NominalDate, Float )
+    -> Maybe Float
     -> (String -> msg)
     -> HeightForm
     -> List (Html msg)
-viewHeightForm language currentDate zscores person previousGroupValue previousIndividualValue setHeightMsg form =
+viewHeightForm language currentDate zscores person previousValue setHeightMsg form =
     let
         activity =
             Height
@@ -283,10 +254,6 @@ viewHeightForm language currentDate zscores person previousGroupValue previousIn
             Maybe.map
                 (\birthDate -> diffDays birthDate currentDate)
                 person.birthDate
-
-        previousValue =
-            resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
-                |> Maybe.map Tuple.second
 
         zScoreText =
             form.height
@@ -335,8 +302,8 @@ viewHeightForm language currentDate zscores person previousGroupValue previousIn
     ]
 
 
-viewMuacContent : Language -> NominalDate -> AssembledData -> MuacData -> Maybe ( NominalDate, Float ) -> List (Html Msg)
-viewMuacContent language currentDate assembled data previousGroupValue =
+viewMuacContent : Language -> NominalDate -> AssembledData -> MuacData -> Maybe Float -> List (Html Msg)
+viewMuacContent language currentDate assembled data previousValue =
     let
         form =
             assembled.measurements.muac
@@ -348,9 +315,6 @@ viewMuacContent language currentDate assembled data previousGroupValue =
 
         tasksCompleted =
             taskCompleted form.muac
-
-        previousIndividualValue =
-            resolveIndividualNutritionValue assembled.previousMeasurementsWithDates .muac (\(MuacInCm cm) -> cm)
 
         constraints =
             getInputConstraintsMuac
@@ -365,7 +329,7 @@ viewMuacContent language currentDate assembled data previousGroupValue =
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
-            viewMuacForm language currentDate assembled.person previousGroupValue previousIndividualValue SetMuac form
+            viewMuacForm language currentDate assembled.person previousValue SetMuac form
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
@@ -381,19 +345,14 @@ viewMuacForm :
     Language
     -> NominalDate
     -> Person
-    -> Maybe ( NominalDate, Float )
-    -> Maybe ( NominalDate, Float )
+    -> Maybe Float
     -> (String -> msg)
     -> MuacForm
     -> List (Html msg)
-viewMuacForm language currentDate person previousGroupValue previousIndividualValue setMuacMsg form =
+viewMuacForm language currentDate person previousValue setMuacMsg form =
     let
         activity =
             Muac
-
-        previousValue =
-            resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
-                |> Maybe.map Tuple.second
 
         constraints =
             getInputConstraintsMuac
@@ -556,8 +515,8 @@ viewPhotoForm language currentDate displayPhoto dropZoneCompleteMsg =
     ]
 
 
-viewWeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> WeightData -> Maybe ( NominalDate, Float ) -> List (Html Msg)
-viewWeightContent language currentDate zscores assembled data previousGroupValue =
+viewWeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> WeightData -> Maybe Float -> List (Html Msg)
+viewWeightContent language currentDate zscores assembled data previousValue =
     let
         form =
             assembled.measurements.weight
@@ -569,9 +528,6 @@ viewWeightContent language currentDate zscores assembled data previousGroupValue
 
         tasksCompleted =
             taskCompleted form.weight
-
-        previousIndividualValue =
-            resolveIndividualNutritionValue assembled.previousMeasurementsWithDates .weight (\(WeightInKg kg) -> kg)
 
         heightValue =
             assembled.measurements.height
@@ -590,7 +546,7 @@ viewWeightContent language currentDate zscores assembled data previousGroupValue
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
-            viewWeightForm language currentDate zscores assembled.person heightValue previousGroupValue previousIndividualValue SetWeight form
+            viewWeightForm language currentDate zscores assembled.person heightValue previousValue SetWeight form
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
@@ -608,12 +564,11 @@ viewWeightForm :
     -> ZScore.Model.Model
     -> Person
     -> Maybe HeightInCm
-    -> Maybe ( NominalDate, Float )
-    -> Maybe ( NominalDate, Float )
+    -> Maybe Float
     -> (String -> msg)
     -> WeightForm
     -> List (Html msg)
-viewWeightForm language currentDate zscores person heightValue previousGroupValue previousIndividualValue setWeightMsg form =
+viewWeightForm language currentDate zscores person heightValue previousValue setWeightMsg form =
     let
         activity =
             Weight
@@ -622,10 +577,6 @@ viewWeightForm language currentDate zscores person heightValue previousGroupValu
             Maybe.map
                 (\birthDate -> diffDays birthDate currentDate)
                 person.birthDate
-
-        previousValue =
-            resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
-                |> Maybe.map Tuple.second
 
         zScoreForAgeText =
             calculateZScoreWeightForAge currentDate zscores person form.weight

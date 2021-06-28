@@ -494,3 +494,18 @@ postpartumChildDangerSignFromString sign =
 
         _ ->
             Nothing
+
+
+heightValueFunc : HeightInCm -> Float
+heightValueFunc =
+    \(HeightInCm cm) -> cm
+
+
+muacValueFunc : MuacInCm -> Float
+muacValueFunc =
+    \(MuacInCm cm) -> cm
+
+
+weightValueFunc : WeightInKg -> Float
+weightValueFunc =
+    \(WeightInKg kg) -> kg

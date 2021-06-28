@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend, sortTuplesByDateDesc)
+import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend, resolvePreviousValuesSetForChild)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
@@ -226,51 +226,22 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                 |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
                 |> Maybe.withDefault ( 0, 0 )
 
-        childMeasurements =
-            Dict.get assembled.participant.person db.childMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-
-        resolvePreviousGroupValue getChildMeasurementFunc =
-            childMeasurements
-                |> Maybe.andThen
-                    (getChildMeasurementFunc
-                        >> Dict.values
-                        >> List.map (\measurement -> ( measurement.dateMeasured, measurement.value ))
-                        -- Most recent date to least recent date.
-                        >> List.sortWith sortTuplesByDateDesc
-                        >> List.head
-                    )
+        previousValuesSet =
+            resolvePreviousValuesSetForChild assembled.participant.person db
 
         viewForm =
             case activeTask of
                 Just TaskHeight ->
-                    let
-                        previousIndividualValue =
-                            resolveIndividualWellChildValue assembled.previousMeasurementsWithDates .height (\(HeightInCm cm) -> cm)
-
-                        previousGroupValue =
-                            resolvePreviousGroupValue .heights
-                                |> Maybe.map (\( date, HeightInCm val ) -> ( date, val ))
-                    in
                     measurements.height
                         |> Maybe.map (Tuple.second >> .value)
                         |> heightFormWithDefault data.heightForm
-                        |> viewHeightForm language currentDate zscores assembled.person previousGroupValue previousIndividualValue SetHeight
+                        |> viewHeightForm language currentDate zscores assembled.person previousValuesSet.height SetHeight
 
                 Just TaskMuac ->
-                    let
-                        previousIndividualValue =
-                            resolveIndividualWellChildValue assembled.previousMeasurementsWithDates .muac (\(MuacInCm cm) -> cm)
-
-                        previousGroupValue =
-                            resolvePreviousGroupValue .muacs
-                                |> Maybe.map (\( date, MuacInCm val ) -> ( date, val ))
-                    in
                     measurements.muac
                         |> Maybe.map (Tuple.second >> .value)
                         |> muacFormWithDefault data.muacForm
-                        |> viewMuacForm language currentDate assembled.person previousGroupValue previousIndividualValue SetMuac
+                        |> viewMuacForm language currentDate assembled.person previousValuesSet.muac SetMuac
 
                 Just TaskNutrition ->
                     measurements.nutrition
@@ -295,18 +266,11 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                         heightValue =
                             assembled.measurements.height
                                 |> Maybe.map (Tuple.second >> .value)
-
-                        previousIndividualValue =
-                            resolveIndividualWellChildValue assembled.previousMeasurementsWithDates .weight (\(WeightInKg cm) -> cm)
-
-                        previousGroupValue =
-                            resolvePreviousGroupValue .weights
-                                |> Maybe.map (\( date, WeightInKg val ) -> ( date, val ))
                     in
                     measurements.weight
                         |> Maybe.map (Tuple.second >> .value)
                         |> weightFormWithDefault data.weightForm
-                        |> viewWeightForm language currentDate zscores assembled.person heightValue previousGroupValue previousIndividualValue SetWeight
+                        |> viewWeightForm language currentDate zscores assembled.person heightValue previousValuesSet.weight SetWeight
 
                 Just TaskContributingFactors ->
                     measurements.contributingFactors

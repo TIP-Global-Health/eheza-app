@@ -33,19 +33,8 @@ generateNutritionAssesment currentDate zscores db assembled =
 
         nutritionValue =
             Maybe.map (Tuple.second >> .value) measurements.nutrition
-
-        weightValue =
-            Maybe.map
-                (Tuple.second
-                    >> .value
-                    >> weightValueFunc
-                )
-                measurements.weight
-
-        weightValueFunc =
-            \(WeightInKg kg) -> kg
     in
-    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembled.participant.person muacValue weightValue nutritionValue db
+    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembled.participant.person muacValue nutritionValue False Nothing db
 
 
 activityCompleted : NominalDate -> ZScore.Model.Model -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
