@@ -6,8 +6,9 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (Person, Ubudehe(..))
 import Backend.Person.Utils exposing (isAdult)
 import Backend.Session.Model exposing (OfflineSession)
+import Date
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, compare, diffMonths)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import LocalData
 import Measurement.Model exposing (..)
 import Restful.Endpoint exposing (EntityUuid)
@@ -242,7 +243,7 @@ getCurrentAndPrevious sessionId =
                         { acc | previous = Just ( id, value ) }
 
                     Just ( _, previousValue ) ->
-                        if Gizra.NominalDate.compare value.dateMeasured previousValue.dateMeasured == GT then
+                        if Date.compare value.dateMeasured previousValue.dateMeasured == GT then
                             { acc | previous = Just ( id, value ) }
 
                         else

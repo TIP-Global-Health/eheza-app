@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
+import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend, sortTuplesByDateDesc)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
@@ -238,7 +238,7 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                         >> Dict.values
                         >> List.map (\measurement -> ( measurement.dateMeasured, measurement.value ))
                         -- Most recent date to least recent date.
-                        >> List.sortWith (\m1 m2 -> Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1))
+                        >> List.sortWith sortTuplesByDateDesc
                         >> List.head
                     )
 

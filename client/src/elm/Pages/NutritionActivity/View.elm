@@ -8,7 +8,7 @@ import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
-import Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, nutritionAssesmentForBackend, resolvePreviousValueInCommonContext)
+import Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, nutritionAssesmentForBackend, resolvePreviousValueInCommonContext, sortTuplesByDateDesc)
 import Backend.Person.Model exposing (Person)
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -186,7 +186,7 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
                         >> Dict.values
                         >> List.map (\measurement -> ( measurement.dateMeasured, measurement.value ))
                         -- Most recent date to least recent date.
-                        >> List.sortWith (\m1 m2 -> Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1))
+                        >> List.sortWith sortTuplesByDateDesc
                         >> List.head
                     )
 

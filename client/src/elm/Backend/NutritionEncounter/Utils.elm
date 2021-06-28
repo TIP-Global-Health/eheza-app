@@ -10,6 +10,7 @@ import Backend.NutritionActivity.Model exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
+import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
@@ -243,8 +244,7 @@ generatePreviousIndividualValuesForChild childId db =
                                                             Nothing
                                                 )
                                             -- Most recent date to least recent date.
-                                            >> List.sortWith
-                                                (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date2 date1)
+                                            >> List.sortWith sortTuplesByDateDesc
                                         )
                                     |> RemoteData.withDefault []
 
@@ -304,7 +304,7 @@ resolvePreviousValueInCommonContext value1 value2 =
         Just ( v1Date, v1Value ) ->
             case value2 of
                 Just ( v2Date, v2Value ) ->
-                    case Gizra.NominalDate.compare v1Date v2Date of
+                    case Date.compare v1Date v2Date of
                         GT ->
                             value1
 
@@ -471,4 +471,4 @@ weightValueFunc =
 
 sortTuplesByDateDesc : ( NominalDate, a ) -> ( NominalDate, a ) -> Order
 sortTuplesByDateDesc m1 m2 =
-    Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1)
+    Date.compare (Tuple.first m2) (Tuple.first m1)

@@ -568,7 +568,7 @@ generatePreviousMeasurements currentEncounterId participantId db =
                         -- We do not want to get data of current encounter.
                         id /= currentEncounterId
                     )
-                >> List.sortWith (\( _, e1 ) ( _, e2 ) -> Gizra.NominalDate.compare e1.startDate e2.startDate)
+                >> List.sortWith (\( _, e1 ) ( _, e2 ) -> Date.compare e1.startDate e2.startDate)
                 >> (\previousEncounters ->
                         let
                             ( nurseEncounters, chwEncounters ) =

@@ -236,7 +236,7 @@ viewFoundChild language currentDate zscores ( childId, child ) individualChildMe
         sessionsAndEncounters =
             expectedSessions
                 ++ expectedlEncounters
-                |> List.sortWith (\s1 s2 -> Gizra.NominalDate.compare (Tuple.second s1) (Tuple.second s2))
+                |> List.sortWith (\s1 s2 -> Date.compare (Tuple.second s1) (Tuple.second s2))
                 |> List.reverse
 
         heightValuesIndexed =
@@ -687,7 +687,7 @@ viewPhotos language child photos =
                 [ img [ src url, class "orientation" ] [] ]
     in
     photos
-        |> List.sortWith (\m1 m2 -> Gizra.NominalDate.compare m1.dateMeasured m2.dateMeasured)
+        |> List.sortWith (\m1 m2 -> Date.compare m1.dateMeasured m2.dateMeasured)
         |> List.map
             (\photo ->
                 div
