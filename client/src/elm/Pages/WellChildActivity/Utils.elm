@@ -190,6 +190,7 @@ generateCompletedECDSigns assembled =
             )
         |> List.concat
         |> List.filter ((/=) NoECDSigns)
+        -- Eliminate duplicate occurances.
         |> EverySet.fromList
         |> EverySet.toList
 
