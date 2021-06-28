@@ -84,10 +84,22 @@ activityCompleted currentDate zscores data db activity =
 
 
 expectActivity : NominalDate -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
-expectActivity currentDate data db activity =
+expectActivity currentDate assembled db activity =
     case activity of
         WellChildECD ->
-            True
+            ageInMonths currentDate assembled.person
+                |> Maybe.map
+                    (\ageMonths ->
+                        let
+                            completed =
+                                generateCompletedECDSigns assembled
+                        in
+                        expectedECDSignsByAge ageMonths
+                            |> List.filter (\sign -> not <| List.member sign completed)
+                            |> List.isEmpty
+                            |> not
+                    )
+                |> Maybe.withDefault False
 
         _ ->
             True
@@ -274,6 +286,7 @@ toWellChildECDValue form =
     , ifNullableTrue SitWithoutSupport form.sitWithoutSupport
     , ifNullableTrue SmileBack form.smileBack
     , ifNullableTrue RollTummyToBack form.rollTummyToBack
+    , ifNullableTrue ReachForToys form.reachForToys
     , ifNullableTrue UseSimpleGestures form.useSimpleGestures
     , ifNullableTrue StandOnTheirOwn form.standOnTheirOwn
     , ifNullableTrue CopyDuringPlay form.copyDuringPlay
@@ -341,8 +354,11 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
             )
 
         TaskPhoto ->
-            ( -- @todo:
-              0
+            ( if isNothing data.photoForm.url && isNothing measurements.photo then
+                0
+
+              else
+                1
             , 1
             )
 
@@ -432,3 +448,124 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
             ( reasonForNotSentActive + taskCompleted form.handReferralForm
             , reasonForNotSentCompleted + 1
             )
+
+
+generateCompletedECDSigns : AssembledData -> List ECDSign
+generateCompletedECDSigns assembled =
+    assembled.previousMeasurementsWithDates
+        |> List.map
+            (\( _, ( _, measurements ) ) ->
+                measurements.ecd
+                    |> Maybe.map (Tuple.second >> .value >> EverySet.toList)
+                    |> Maybe.withDefault []
+            )
+        |> List.concat
+        |> List.filter ((/=) NoECDSigns)
+        |> EverySet.fromList
+        |> EverySet.toList
+
+
+expectedECDSignsByAge : Int -> List ECDSign
+expectedECDSignsByAge ageMonths =
+    if ageMonths < 6 then
+        []
+
+    else if ageMonths < 9 then
+        List.Extra.splitAt 1 groupedECDSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 15 then
+        List.Extra.splitAt 2 groupedECDSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 18 then
+        List.Extra.splitAt 3 groupedECDSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 24 then
+        List.Extra.splitAt 4 groupedECDSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 36 then
+        List.Extra.splitAt 5 groupedECDSigns
+            |> Tuple.first
+            |> List.concat
+
+    else
+        List.concat groupedECDSigns
+
+
+groupedECDSigns : List (List ECDSign)
+groupedECDSigns =
+    [ ecdSigns6to8
+    , ecdSigns9to14
+    , ecdSigns15to17
+    , ecdSigns18to23
+    , ecdSigns24to35
+    , ecdSigns36to47
+    ]
+
+
+ecdSigns6to8 : List ECDSign
+ecdSigns6to8 =
+    [ RespontToSoundWithSound
+    , TurnHeadWhenCalled
+    , SitWithoutSupport
+    , SmileBack
+    , RollTummyToBack
+    , ReachForToys
+    ]
+
+
+ecdSigns9to14 : List ECDSign
+ecdSigns9to14 =
+    [ UseSimpleGestures
+    , StandOnTheirOwn
+    , CopyDuringPlay
+    , SayMamaDada
+    , CanHoldSmallObjects
+    ]
+
+
+ecdSigns15to17 : List ECDSign
+ecdSigns15to17 =
+    [ LooksWhenPointedAt
+    , UseSingleWords
+    , WalkWithoutHelp
+    , PlayPretend
+    , PointToThingsOfInterest
+    ]
+
+
+ecdSigns18to23 : List ECDSign
+ecdSigns18to23 =
+    [ UseShortPhrases
+    , InterestedInOtherChildren
+    , FollowSimpleInstructions
+    , KickBall
+    , PointAtNamedObjects
+    ]
+
+
+ecdSigns24to35 : List ECDSign
+ecdSigns24to35 =
+    [ DressThemselves
+    , WashHandsGoToToiled
+    , KnowsColorsAndNumbers
+    , UseMediumPhrases
+    , PlayMakeBelieve
+    ]
+
+
+ecdSigns36to47 : List ECDSign
+ecdSigns36to47 =
+    [ FollowThreeStepInstructions
+    , StandOnOneFootFiveSeconds
+    , UseLongPhrases
+    , ShareWithOtherChildren
+    , CountToTen
+    ]

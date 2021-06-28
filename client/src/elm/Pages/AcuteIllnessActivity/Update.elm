@@ -885,7 +885,7 @@ update currentDate id db msg model =
                     model.nextStepsData.isolationForm
 
                 updatedForm =
-                    { form | patientIsolated = Just value }
+                    { form | patientIsolated = Just value, signOnDoor = Nothing }
 
                 updatedData =
                     model.nextStepsData

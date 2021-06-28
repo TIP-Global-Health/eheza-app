@@ -1461,106 +1461,126 @@ input::placeholder {
 // Custom Links with Icons
 
 .link-section {
+  color: $color-text;
   display: block;
   text-align: center;
-  color: $color-text;
   white-space: normal;
 
-  &:hover {
-    color: inherit;
+  .icon-activity-task {
+    border-color: $color-text;
+    border-radius: 50%;
+    border-style: solid;
+    border-width: 2px;
+    display: block;
+    height: 90px;
+    margin: 0 auto 10px;
+    width: 90px;
+
+    &:after {
+      background-position: center center;
+      background-repeat: no-repeat;
+      border: 3px solid $color-white;
+      border-radius: 50%;
+      content: ' ';
+      display: block;
+      height: 100%;
+      width: 100%;
+    }
   }
 
-  &.active {
-    color: $color-primary;
-  }
-}
-
-.icon-activity-task {
-  border-color: $color-text;
-  border-radius: 50%;
-  border-style: solid;
-  border-width: 2px;
-  display: block;
-  height: 90px;
-  margin: 0 auto 10px;
-  width: 90px;
-
-  .active & {
+  &.active .icon-activity-task {
     background-color: $color-primary;
     border-color: $color-primary;
   }
 
-  &:after {
-    background-position: center center;
-    background-repeat: no-repeat;
-    border: 3px solid $color-white;
-    border-radius: 50%;
-    content: " ";
-    display: block;
-    height: 100%;
-    width: 100%;
+  &.completed .icon-activity-task {
+    border: 0;
+
+    &:after {
+      border: 0;
+      border-radius: 0;
+    }
   }
+
 }
 
 .icon-height {
   .active &:after {
-    background-image: url(#{$img-path}icon-height-active.svg);
+    background-image: url(#{$img-path}icon-height-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-height-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-height.svg);
-    background-size: 49px 54px;
+    background-image: url(#{$img-path}icon-height-gray.svg);
   }
 }
 
 .icon-muac {
   .active &:after {
-    background-image: url(#{$img-path}icon-muac-active.svg);
+    background-image: url(#{$img-path}icon-muac-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-muac-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-muac.svg);
-    background-size: 59px 54px;
+    background-image: url(#{$img-path}icon-muac-gray.svg);
   }
 }
 
 .icon-nutrition {
   .active &:after {
-    background-image: url(#{$img-path}icon-nutrition-active.svg);
+    background-image: url(#{$img-path}icon-nutrition-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-nutrition-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-nutrition.svg);
-    background-size: 60px 51px;
+    background-image: url(#{$img-path}icon-nutrition-gray.svg);
   }
 }
 
 .icon-photo {
   .active &:after {
-    background-image: url(#{$img-path}icon-photo-active.svg);
+    background-image: url(#{$img-path}icon-photo-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-photo-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-photo.svg);
-    background-size: 56px 40px;
+    background-image: url(#{$img-path}icon-photo-gray.svg);
   }
 }
 
 .icon-weight {
   .active &:after {
-    background-image: url(#{$img-path}icon-weight-active.svg);
+    background-image: url(#{$img-path}icon-weight-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-weight-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-weight.svg);
-    background-position: center 5px;
-    background-size: 50px 65px;
+    background-image: url(#{$img-path}icon-weight-gray.svg);
   }
 }
 
 .icon-counseling {
   .active &:after {
     background-image: url(#{$img-path}icon-counseling-active.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-counseling-active.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1573,6 +1593,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-forms-active.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-forms-active.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-forms.svg);
   }
@@ -1581,6 +1605,10 @@ input::placeholder {
 .icon-planning {
   .active &:after {
     background-image: url(#{$img-path}icon-planning-active.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-planning-active.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1594,6 +1622,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-lactation-active.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-lactation-active.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-lactation.svg);
     background-size: 62px 62px;
@@ -1603,6 +1635,10 @@ input::placeholder {
 .icon-fbf {
   .active &:after {
     background-image: url(#{$img-path}icon-fbf-active.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-fbf-active.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1616,6 +1652,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-contributing-factors-white.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-contributing-factors-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-contributing-factors-gray.svg);
   }
@@ -1624,6 +1664,10 @@ input::placeholder {
 .icon-health-education {
   .active &:after {
     background-image: url(#{$img-path}icon-health-education-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-health-education-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1636,6 +1680,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-health-center-white.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-health-center-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-health-center-gray.svg);
   }
@@ -1644,6 +1692,10 @@ input::placeholder {
 .icon-follow-up {
   .active &:after {
     background-image: url(#{$img-path}icon-follow-up-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-follow-up-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1656,6 +1708,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-obstetrichistory-white.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-obstetrichistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-obstetrichistory-gray.svg);
   }
@@ -1664,6 +1720,10 @@ input::placeholder {
 .icon-medical {
   .active &:after {
     background-image: url(#{$img-path}icon-medicalhistory-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-medicalhistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1676,6 +1736,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-socialhistory-white.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-socialhistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-socialhistory-gray.svg);
   }
@@ -1684,6 +1748,10 @@ input::placeholder {
 .icon-vitals {
   .active &:after {
     background-image: url(#{$img-path}icon-vitals-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-vitals-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1696,6 +1764,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-nutritionassessment-white.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-utritionassessment-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-nutritionassessment-gray.svg);
   }
@@ -1704,6 +1776,10 @@ input::placeholder {
 .icon-core-physical-exam {
   .active &:after {
     background-image: url(#{$img-path}icon-corephysicalexam-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-corephysicalexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1716,6 +1792,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-obstetricalexam-white.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-obstetricalexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-obstetricalexam-gray.svg);
   }
@@ -1724,6 +1804,10 @@ input::placeholder {
 .icon-breast-exam {
   .active &:after {
     background-image: url(#{$img-path}icon-breastexam-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-breastexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1736,6 +1820,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-medication-white.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-medication-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-medication-gray.svg);
   }
@@ -1744,6 +1832,10 @@ input::placeholder {
 .icon-resources {
   .active &:after {
     background-image: url(#{$img-path}icon-resources-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-resources-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1756,6 +1848,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-symptoms-general-white.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-symptoms-general.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-symptoms-general-gray.svg);
   }
@@ -1764,6 +1860,10 @@ input::placeholder {
 .icon-symptoms-respiratory {
   .active &:after {
     background-image: url(#{$img-path}icon-symptoms-respiratory-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-symptoms-respiratory.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1776,6 +1876,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-symptoms-gi-white.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-symptoms-gi-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-symptoms-gi-gray.svg);
   }
@@ -1784,6 +1888,10 @@ input::placeholder {
 .icon-physical-exam-vitals {
   .active &:after {
     background-image: url(#{$img-path}icon-vitals-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-vitals-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1796,6 +1904,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-malaria-white.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-malaria-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-malaria-gray.svg);
   }
@@ -1804,6 +1916,10 @@ input::placeholder {
 .icon-exposure-travel {
   .active &:after {
     background-image: url(#{$img-path}icon-travel-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-travel-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1816,6 +1932,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-exposure-white.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-exposure-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-exposure-gray.svg);
   }
@@ -1824,6 +1944,10 @@ input::placeholder {
 .icon-treatment-review {
   .active &:after {
     background-image: url(#{$img-path}icon-treatment-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-treatment-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1836,6 +1960,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-acute-findings-white.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-acute-findings-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-acute-findings-gray.svg);
   }
@@ -1844,6 +1972,10 @@ input::placeholder {
 .icon-next-steps-isolation {
   .active &:after {
     background-image: url(#{$img-path}icon-isolation-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-isolation-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1856,6 +1988,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-contact-hc-white.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-contact-hc-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-contact-hc-gray.svg);
   }
@@ -1864,6 +2000,10 @@ input::placeholder {
 .icon-next-steps-medication-distribution {
   .active &:after {
     background-image: url(#{$img-path}icon-medication-distribution-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-hmedication-distribution-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1876,6 +2016,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-health-center-white.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-health-center-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-health-center-gray.svg);
   }
@@ -1884,6 +2028,10 @@ input::placeholder {
 .icon-physical-exam-muac {
   .active &:after {
     background-image: url(#{$img-path}icon-muac-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-muac-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1897,6 +2045,10 @@ input::placeholder {
     background-size: 83px 83px;
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-danger-signs-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-danger-signs-gray.svg);
     background-size: 83px 83px;
@@ -1906,6 +2058,10 @@ input::placeholder {
 .icon-physical-exam-nutrition {
   .active &:after {
     background-image: url(#{$img-path}icon-nutrition-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-nutrition-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1918,6 +2074,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-health-education-white.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-health-education-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-health-education-gray.svg);
   }
@@ -1926,6 +2086,10 @@ input::placeholder {
 .icon-next-steps-contributing-factors {
   .active &:after {
     background-image: url(#{$img-path}icon-contributing-factors-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-contributing-factors-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1938,6 +2102,10 @@ input::placeholder {
     background-image: url(#{$img-path}icon-follow-up-white.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-follow-up-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-follow-up-gray.svg);
   }
@@ -1946,6 +2114,10 @@ input::placeholder {
 .icon-next-steps-newborn-enrolment {
   .active &:after {
     background-image: url(#{$img-path}icon-newborn-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-newborn-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
