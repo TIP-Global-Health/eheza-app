@@ -1,6 +1,7 @@
 module Pages.WellChildActivity.Update exposing (update)
 
 import App.Model
+import App.Ports exposing (bindDropZone)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
@@ -52,6 +53,12 @@ update currentDate id db msg model =
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
 
+        NoOp ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
         SetECDBoolInput formUpdateFunc value ->
             let
                 updatedForm =
@@ -90,12 +97,20 @@ update currentDate id db msg model =
 
         SetActiveNutritionAssesmentTask task ->
             let
+                cmd =
+                    case task of
+                        TaskPhoto ->
+                            bindDropZone ()
+
+                        _ ->
+                            Cmd.none
+
                 updatedData =
                     model.nutritionAssessmentData
                         |> (\data -> { data | activeTask = Just task })
             in
             ( { model | nutritionAssessmentData = updatedData }
-            , Cmd.none
+            , cmd
             , []
             )
 

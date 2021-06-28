@@ -1488,24 +1488,17 @@ input::placeholder {
     }
   }
 
-  &.active {
-
-    .icon-activity-task {
-      background-color: $color-primary;
-      border-color: $color-primary;
-    }
+  &.active .icon-activity-task {
+    background-color: $color-primary;
+    border-color: $color-primary;
   }
 
-  &.completed {
+  &.completed .icon-activity-task {
+    border: 0;
 
-    .icon-activity-task {
+    &:after {
       border: 0;
-
-      &:after {
-        background-position: right;
-        border: 0;
-        border-radius: 0;
-      }
+      border-radius: 0;
     }
   }
 

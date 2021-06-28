@@ -10,6 +10,7 @@ import Pages.Page exposing (Page)
 type Msg
     = SetActivePage Page
     | SetWarningPopupState (List NutritionAssesment)
+    | NoOp
     | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
     | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
       -- NUTRITION ASSESMENT

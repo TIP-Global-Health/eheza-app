@@ -341,8 +341,11 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
             )
 
         TaskPhoto ->
-            ( -- @todo:
-              0
+            ( if isNothing data.photoForm.url && isNothing measurements.photo then
+                0
+
+              else
+                1
             , 1
             )
 

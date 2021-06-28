@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
@@ -343,8 +344,7 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                             Nothing
                         |> List.singleton
 
-                -- @todo:
-                _ ->
+                Nothing ->
                     []
 
         nextTask =
@@ -373,9 +373,13 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                                         SaveNutrition personId measurements.nutrition nextTask
 
                                     TaskPhoto ->
-                                        -- @todo
-                                        -- SavePhoto personId measurements.photo nextTask
-                                        SaveSendToHC personId measurements.sendToHC nextTask
+                                        let
+                                            photoId =
+                                                Maybe.map Tuple.first measurements.photo
+                                        in
+                                        data.photoForm.url
+                                            |> Maybe.map (\url -> SavePhoto personId photoId url nextTask)
+                                            |> Maybe.withDefault NoOp
 
                                     TaskWeight ->
                                         SaveWeight personId measurements.weight nextTask
@@ -389,17 +393,23 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                                     TaskFollowUp ->
                                         let
                                             assesment =
-                                                -- @todo:
-                                                -- generateNutritionAssesment currentDate zscores db assembled
-                                                --     |> nutritionAssesmentForBackend
-                                                EverySet.empty
+                                                generateNutritionAssesment currentDate zscores db assembled
+                                                    |> nutritionAssesmentForBackend
                                         in
                                         SaveFollowUp personId measurements.followUp assesment nextTask
 
                                     TaskSendToHC ->
                                         SaveSendToHC personId measurements.sendToHC nextTask
+
+                            disabled =
+                                case task of
+                                    TaskPhoto ->
+                                        isNothing data.photoForm.url
+
+                                    _ ->
+                                        tasksCompleted /= totalTasks
                         in
-                        viewAction language saveMsg (tasksCompleted /= totalTasks)
+                        viewAction language saveMsg disabled
                     )
                 |> Maybe.withDefault emptyNode
     in
