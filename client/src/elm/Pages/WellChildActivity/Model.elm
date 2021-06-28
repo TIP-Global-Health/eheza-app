@@ -167,13 +167,17 @@ type NutritionAssesmentTask
 
 allNutritionAssesmentTasks : List NutritionAssesmentTask
 allNutritionAssesmentTasks =
-    [ TaskHeight
+    [ TaskContributingFactors
+    , TaskHealthEducation
+    , TaskFollowUp
+    , TaskSendToHC
+
+    -- Above are next steps tasks.
+    -- We want them first, so if they're needed,
+    -- they will be first to complete.
+    , TaskHeight
     , TaskMuac
     , TaskNutrition
     , TaskPhoto
     , TaskWeight
-    , TaskContributingFactors
-    , TaskHealthEducation
-    , TaskFollowUp
-    , TaskSendToHC
     ]
