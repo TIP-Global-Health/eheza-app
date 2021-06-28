@@ -163,3 +163,109 @@ toWellChildECDValue form =
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoECDSigns)
+
+
+expectedEcdSignsByAge : Int -> List ECDSign
+expectedEcdSignsByAge ageMonths =
+    if ageMonths < 6 then
+        []
+
+    else if ageMonths < 9 then
+        List.Extra.splitAt 1 groupedECDSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 15 then
+        List.Extra.splitAt 2 groupedECDSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 18 then
+        List.Extra.splitAt 3 groupedECDSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 24 then
+        List.Extra.splitAt 4 groupedECDSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 36 then
+        List.Extra.splitAt 5 groupedECDSigns
+            |> Tuple.first
+            |> List.concat
+
+    else
+        List.concat groupedECDSigns
+
+
+groupedECDSigns : List (List ECDSign)
+groupedECDSigns =
+    [ ecdSigns6to8
+    , ecdSigns9to14
+    , ecdSigns15to17
+    , ecdSigns18to23
+    , ecdSigns24to35
+    , ecdSigns36to47
+    ]
+
+
+ecdSigns6to8 : List ECDSign
+ecdSigns6to8 =
+    [ RespontToSoundWithSound
+    , TurnHeadWhenCalled
+    , SitWithoutSupport
+    , SmileBack
+    , RollTummyToBack
+    , ReachForToys
+    ]
+
+
+ecdSigns9to14 : List ECDSign
+ecdSigns9to14 =
+    [ UseSimpleGestures
+    , StandOnTheirOwn
+    , CopyDuringPlay
+    , SayMamaDada
+    , CanHoldSmallObjects
+    ]
+
+
+ecdSigns15to17 : List ECDSign
+ecdSigns15to17 =
+    [ LooksWhenPointedAt
+    , UseSingleWords
+    , WalkWithoutHelp
+    , PlayPretend
+    , PointToThingsOfInterest
+    ]
+
+
+ecdSigns18to23 : List ECDSign
+ecdSigns18to23 =
+    [ UseShortPhrases
+    , InterestedInOtherChildren
+    , FollowSimpleInstructions
+    , KickBall
+    , PointAtNamedObjects
+    ]
+
+
+ecdSigns24to35 : List ECDSign
+ecdSigns24to35 =
+    [ DressThemselves
+    , WashHandsGoToToiled
+    , KnowsColorsAndNumbers
+    , UseMediumPhrases
+    , PlayMakeBelieve
+    ]
+
+
+ecdSigns36to47 : List ECDSign
+ecdSigns36to47 =
+    [ FollowThreeStepInstructions
+    , StandOnOneFootFiveSeconds
+    , UseLongPhrases
+    , ShareWithOtherChildren
+    , CountToTen
+    ]

@@ -140,190 +140,293 @@ ecdFormInputsAndTasks language currentDate assembled ageMonth ecdForm =
                 |> Maybe.map (Tuple.second >> .value)
                 |> wellChildECDFormWithDefault ecdForm
 
-        age0to8Section =
-            let
-                respontToSoundWithSoundUpdateFunc value form_ =
-                    { form_ | respontToSoundWithSound = Just value }
+        expected =
+            expectedEcdSignsByAge ageMonth
+                |> List.map inputAndTaskForSign
 
-                turnHeadWhenCalledUpdateFunc value form_ =
-                    { form_ | turnHeadWhenCalled = Just value }
+        inputAndTaskForSign sign =
+            case sign of
+                RespontToSoundWithSound ->
+                    let
+                        respontToSoundWithSoundUpdateFunc value form_ =
+                            { form_ | respontToSoundWithSound = Just value }
+                    in
+                    ( viewECDInput RespontToSoundWithSound form.respontToSoundWithSound respontToSoundWithSoundUpdateFunc
+                    , form.respontToSoundWithSound
+                    )
 
-                sitWithoutSupportUpdateFunc value form_ =
-                    { form_ | sitWithoutSupport = Just value }
+                TurnHeadWhenCalled ->
+                    let
+                        turnHeadWhenCalledUpdateFunc value form_ =
+                            { form_ | turnHeadWhenCalled = Just value }
+                    in
+                    ( viewECDInput TurnHeadWhenCalled form.turnHeadWhenCalled turnHeadWhenCalledUpdateFunc
+                    , form.turnHeadWhenCalled
+                    )
 
-                smileBackUpdateFunc value form_ =
-                    { form_ | smileBack = Just value }
+                SitWithoutSupport ->
+                    let
+                        sitWithoutSupportUpdateFunc value form_ =
+                            { form_ | sitWithoutSupport = Just value }
+                    in
+                    ( viewECDInput SitWithoutSupport form.sitWithoutSupport sitWithoutSupportUpdateFunc
+                    , form.sitWithoutSupport
+                    )
 
-                rollTummyToBackUpdateFunc value form_ =
-                    { form_ | rollTummyToBack = Just value }
+                SmileBack ->
+                    let
+                        smileBackUpdateFunc value form_ =
+                            { form_ | smileBack = Just value }
+                    in
+                    ( viewECDInput SmileBack form.smileBack smileBackUpdateFunc
+                    , form.smileBack
+                    )
 
-                reachForToysUpdateFunc value form_ =
-                    { form_ | reachForToys = Just value }
-            in
-            ( viewECDInput RespontToSoundWithSound form.respontToSoundWithSound respontToSoundWithSoundUpdateFunc
-                ++ viewECDInput TurnHeadWhenCalled form.turnHeadWhenCalled turnHeadWhenCalledUpdateFunc
-                ++ viewECDInput SitWithoutSupport form.sitWithoutSupport sitWithoutSupportUpdateFunc
-                ++ viewECDInput SmileBack form.smileBack smileBackUpdateFunc
-                ++ viewECDInput RollTummyToBack form.rollTummyToBack rollTummyToBackUpdateFunc
-                ++ viewECDInput ReachForToys form.reachForToys reachForToysUpdateFunc
-            , [ form.respontToSoundWithSound
-              , form.turnHeadWhenCalled
-              , form.sitWithoutSupport
-              , form.smileBack
-              , form.rollTummyToBack
-              , form.reachForToys
-              ]
-            )
+                RollTummyToBack ->
+                    let
+                        rollTummyToBackUpdateFunc value form_ =
+                            { form_ | rollTummyToBack = Just value }
+                    in
+                    ( viewECDInput RollTummyToBack form.rollTummyToBack rollTummyToBackUpdateFunc
+                    , form.rollTummyToBack
+                    )
 
-        age9to14Section =
-            let
-                useSimpleGesturesUpdateFunc value form_ =
-                    { form_ | useSimpleGestures = Just value }
+                ReachForToys ->
+                    let
+                        reachForToysUpdateFunc value form_ =
+                            { form_ | reachForToys = Just value }
+                    in
+                    ( viewECDInput ReachForToys form.reachForToys reachForToysUpdateFunc
+                    , form.reachForToys
+                    )
 
-                standOnTheirOwnUpdateFunc value form_ =
-                    { form_ | standOnTheirOwn = Just value }
+                UseSimpleGestures ->
+                    let
+                        useSimpleGesturesUpdateFunc value form_ =
+                            { form_ | useSimpleGestures = Just value }
+                    in
+                    ( viewECDInput UseSimpleGestures form.useSimpleGestures useSimpleGesturesUpdateFunc
+                    , form.useSimpleGestures
+                    )
 
-                copyDuringPlayUpdateFunc value form_ =
-                    { form_ | copyDuringPlay = Just value }
+                StandOnTheirOwn ->
+                    let
+                        standOnTheirOwnUpdateFunc value form_ =
+                            { form_ | standOnTheirOwn = Just value }
+                    in
+                    ( viewECDInput StandOnTheirOwn form.standOnTheirOwn standOnTheirOwnUpdateFunc
+                    , form.standOnTheirOwn
+                    )
 
-                sayMamaDadaUpdateFunc value form_ =
-                    { form_ | sayMamaDada = Just value }
+                CopyDuringPlay ->
+                    let
+                        copyDuringPlayUpdateFunc value form_ =
+                            { form_ | copyDuringPlay = Just value }
+                    in
+                    ( viewECDInput CopyDuringPlay form.copyDuringPlay copyDuringPlayUpdateFunc
+                    , form.copyDuringPlay
+                    )
 
-                canHoldSmallObjectsUpdateFunc value form_ =
-                    { form_ | canHoldSmallObjects = Just value }
-            in
-            ( viewECDInput UseSimpleGestures form.useSimpleGestures useSimpleGesturesUpdateFunc
-                ++ viewECDInput StandOnTheirOwn form.standOnTheirOwn standOnTheirOwnUpdateFunc
-                ++ viewECDInput CopyDuringPlay form.copyDuringPlay copyDuringPlayUpdateFunc
-                ++ viewECDInput SayMamaDada form.sayMamaDada sayMamaDadaUpdateFunc
-                ++ viewECDInput CanHoldSmallObjects form.canHoldSmallObjects canHoldSmallObjectsUpdateFunc
-            , [ form.useSimpleGestures
-              , form.standOnTheirOwn
-              , form.copyDuringPlay
-              , form.sayMamaDada
-              , form.canHoldSmallObjects
-              ]
-            )
+                SayMamaDada ->
+                    let
+                        sayMamaDadaUpdateFunc value form_ =
+                            { form_ | sayMamaDada = Just value }
+                    in
+                    ( viewECDInput SayMamaDada form.sayMamaDada sayMamaDadaUpdateFunc
+                    , form.sayMamaDada
+                    )
 
-        age15to17Section =
-            let
-                looksWhenPointedAtUpdateFunc value form_ =
-                    { form_ | looksWhenPointedAt = Just value }
+                CanHoldSmallObjects ->
+                    let
+                        canHoldSmallObjectsUpdateFunc value form_ =
+                            { form_ | canHoldSmallObjects = Just value }
+                    in
+                    ( viewECDInput CanHoldSmallObjects form.canHoldSmallObjects canHoldSmallObjectsUpdateFunc
+                    , form.canHoldSmallObjects
+                    )
 
-                useSingleWordsUpdateFunc value form_ =
-                    { form_ | useSingleWords = Just value }
+                LooksWhenPointedAt ->
+                    let
+                        looksWhenPointedAtUpdateFunc value form_ =
+                            { form_ | looksWhenPointedAt = Just value }
+                    in
+                    ( viewECDInput LooksWhenPointedAt form.looksWhenPointedAt looksWhenPointedAtUpdateFunc
+                    , form.looksWhenPointedAt
+                    )
 
-                walkWithoutHelpUpdateFunc value form_ =
-                    { form_ | walkWithoutHelp = Just value }
+                UseSingleWords ->
+                    let
+                        useSingleWordsUpdateFunc value form_ =
+                            { form_ | useSingleWords = Just value }
+                    in
+                    ( viewECDInput UseSingleWords form.useSingleWords useSingleWordsUpdateFunc
+                    , form.useSingleWords
+                    )
 
-                playPretendUpdateFunc value form_ =
-                    { form_ | playPretend = Just value }
+                WalkWithoutHelp ->
+                    let
+                        walkWithoutHelpUpdateFunc value form_ =
+                            { form_ | walkWithoutHelp = Just value }
+                    in
+                    ( viewECDInput WalkWithoutHelp form.walkWithoutHelp walkWithoutHelpUpdateFunc
+                    , form.walkWithoutHelp
+                    )
 
-                pointToThingsOfInterestUpdateFunc value form_ =
-                    { form_ | pointToThingsOfInterest = Just value }
-            in
-            ( viewECDInput LooksWhenPointedAt form.looksWhenPointedAt looksWhenPointedAtUpdateFunc
-                ++ viewECDInput UseSingleWords form.useSingleWords useSingleWordsUpdateFunc
-                ++ viewECDInput WalkWithoutHelp form.walkWithoutHelp walkWithoutHelpUpdateFunc
-                ++ viewECDInput PlayPretend form.playPretend playPretendUpdateFunc
-                ++ viewECDInput PointToThingsOfInterest form.pointToThingsOfInterest pointToThingsOfInterestUpdateFunc
-            , [ form.looksWhenPointedAt
-              , form.useSingleWords
-              , form.walkWithoutHelp
-              , form.playPretend
-              , form.pointToThingsOfInterest
-              ]
-            )
+                PlayPretend ->
+                    let
+                        playPretendUpdateFunc value form_ =
+                            { form_ | playPretend = Just value }
+                    in
+                    ( viewECDInput PlayPretend form.playPretend playPretendUpdateFunc
+                    , form.playPretend
+                    )
 
-        age18to23Section =
-            let
-                useShortPhrasesUpdateFunc value form_ =
-                    { form_ | useShortPhrases = Just value }
+                PointToThingsOfInterest ->
+                    let
+                        pointToThingsOfInterestUpdateFunc value form_ =
+                            { form_ | pointToThingsOfInterest = Just value }
+                    in
+                    ( viewECDInput PointToThingsOfInterest form.pointToThingsOfInterest pointToThingsOfInterestUpdateFunc
+                    , form.pointToThingsOfInterest
+                    )
 
-                interestedInOtherChildrenUpdateFunc value form_ =
-                    { form_ | interestedInOtherChildren = Just value }
+                UseShortPhrases ->
+                    let
+                        useShortPhrasesUpdateFunc value form_ =
+                            { form_ | useShortPhrases = Just value }
+                    in
+                    ( viewECDInput UseShortPhrases form.useShortPhrases useShortPhrasesUpdateFunc
+                    , form.useShortPhrases
+                    )
 
-                followSimlpeInstructionsUpdateFunc value form_ =
-                    { form_ | followSimlpeInstructions = Just value }
+                InterestedInOtherChildren ->
+                    let
+                        interestedInOtherChildrenUpdateFunc value form_ =
+                            { form_ | interestedInOtherChildren = Just value }
+                    in
+                    ( viewECDInput InterestedInOtherChildren form.interestedInOtherChildren interestedInOtherChildrenUpdateFunc
+                    , form.interestedInOtherChildren
+                    )
 
-                kickBallUpdateFunc value form_ =
-                    { form_ | kickBall = Just value }
+                FollowSimpleInstructions ->
+                    let
+                        followSimlpeInstructionsUpdateFunc value form_ =
+                            { form_ | followSimlpeInstructions = Just value }
+                    in
+                    ( viewECDInput FollowSimpleInstructions form.followSimlpeInstructions followSimlpeInstructionsUpdateFunc
+                    , form.followSimlpeInstructions
+                    )
 
-                pointAtNamedObjectsUpdateFunc value form_ =
-                    { form_ | pointAtNamedObjects = Just value }
-            in
-            ( viewECDInput UseShortPhrases form.useShortPhrases useShortPhrasesUpdateFunc
-                ++ viewECDInput InterestedInOtherChildren form.interestedInOtherChildren interestedInOtherChildrenUpdateFunc
-                ++ viewECDInput FollowSimpleInstructions form.followSimlpeInstructions followSimlpeInstructionsUpdateFunc
-                ++ viewECDInput KickBall form.kickBall kickBallUpdateFunc
-                ++ viewECDInput PointAtNamedObjects form.pointAtNamedObjects pointAtNamedObjectsUpdateFunc
-            , [ form.useShortPhrases
-              , form.interestedInOtherChildren
-              , form.followSimlpeInstructions
-              , form.kickBall
-              , form.pointAtNamedObjects
-              ]
-            )
+                KickBall ->
+                    let
+                        kickBallUpdateFunc value form_ =
+                            { form_ | kickBall = Just value }
+                    in
+                    ( viewECDInput KickBall form.kickBall kickBallUpdateFunc
+                    , form.kickBall
+                    )
 
-        age24to35Section =
-            let
-                dressThemselvesUpdateFunc value form_ =
-                    { form_ | dressThemselves = Just value }
+                PointAtNamedObjects ->
+                    let
+                        pointAtNamedObjectsUpdateFunc value form_ =
+                            { form_ | pointAtNamedObjects = Just value }
+                    in
+                    ( viewECDInput PointAtNamedObjects form.pointAtNamedObjects pointAtNamedObjectsUpdateFunc
+                    , form.pointAtNamedObjects
+                    )
 
-                washHandsGoToToiledUpdateFunc value form_ =
-                    { form_ | washHandsGoToToiled = Just value }
+                DressThemselves ->
+                    let
+                        dressThemselvesUpdateFunc value form_ =
+                            { form_ | dressThemselves = Just value }
+                    in
+                    ( viewECDInput DressThemselves form.dressThemselves dressThemselvesUpdateFunc
+                    , form.dressThemselves
+                    )
 
-                knowsColorsAndNumbersUpdateFunc value form_ =
-                    { form_ | knowsColorsAndNumbers = Just value }
+                WashHandsGoToToiled ->
+                    let
+                        washHandsGoToToiledUpdateFunc value form_ =
+                            { form_ | washHandsGoToToiled = Just value }
+                    in
+                    ( viewECDInput WashHandsGoToToiled form.washHandsGoToToiled washHandsGoToToiledUpdateFunc
+                    , form.washHandsGoToToiled
+                    )
 
-                useMediumPhrasesUpdateFunc value form_ =
-                    { form_ | useMediumPhrases = Just value }
+                KnowsColorsAndNumbers ->
+                    let
+                        knowsColorsAndNumbersUpdateFunc value form_ =
+                            { form_ | knowsColorsAndNumbers = Just value }
+                    in
+                    ( viewECDInput KnowsColorsAndNumbers form.knowsColorsAndNumbers knowsColorsAndNumbersUpdateFunc
+                    , form.knowsColorsAndNumbers
+                    )
 
-                playMakeBelieveUpdateFunc value form_ =
-                    { form_ | playMakeBelieve = Just value }
-            in
-            ( viewECDInput DressThemselves form.dressThemselves dressThemselvesUpdateFunc
-                ++ viewECDInput WashHandsGoToToiled form.washHandsGoToToiled washHandsGoToToiledUpdateFunc
-                ++ viewECDInput KnowsColorsAndNumbers form.knowsColorsAndNumbers knowsColorsAndNumbersUpdateFunc
-                ++ viewECDInput UseMediumPhrases form.useMediumPhrases useMediumPhrasesUpdateFunc
-                ++ viewECDInput PlayMakeBelieve form.playMakeBelieve playMakeBelieveUpdateFunc
-            , [ form.dressThemselves
-              , form.washHandsGoToToiled
-              , form.knowsColorsAndNumbers
-              , form.useMediumPhrases
-              , form.playMakeBelieve
-              ]
-            )
+                UseMediumPhrases ->
+                    let
+                        useMediumPhrasesUpdateFunc value form_ =
+                            { form_ | useMediumPhrases = Just value }
+                    in
+                    ( viewECDInput UseMediumPhrases form.useMediumPhrases useMediumPhrasesUpdateFunc
+                    , form.useMediumPhrases
+                    )
 
-        age36to47Section =
-            let
-                followThreeStepInstructionsUpdateFunc value form_ =
-                    { form_ | followThreeStepInstructions = Just value }
+                PlayMakeBelieve ->
+                    let
+                        playMakeBelieveUpdateFunc value form_ =
+                            { form_ | playMakeBelieve = Just value }
+                    in
+                    ( viewECDInput PlayMakeBelieve form.playMakeBelieve playMakeBelieveUpdateFunc
+                    , form.playMakeBelieve
+                    )
 
-                standOnOneFootFiveSecondsUpdateFunc value form_ =
-                    { form_ | standOnOneFootFiveSeconds = Just value }
+                FollowThreeStepInstructions ->
+                    let
+                        followThreeStepInstructionsUpdateFunc value form_ =
+                            { form_ | followThreeStepInstructions = Just value }
+                    in
+                    ( viewECDInput FollowThreeStepInstructions form.followThreeStepInstructions followThreeStepInstructionsUpdateFunc
+                    , form.followThreeStepInstructions
+                    )
 
-                useLongPhrasesUpdateFunc value form_ =
-                    { form_ | useLongPhrases = Just value }
+                StandOnOneFootFiveSeconds ->
+                    let
+                        standOnOneFootFiveSecondsUpdateFunc value form_ =
+                            { form_ | standOnOneFootFiveSeconds = Just value }
+                    in
+                    ( viewECDInput StandOnOneFootFiveSeconds form.standOnOneFootFiveSeconds standOnOneFootFiveSecondsUpdateFunc
+                    , form.standOnOneFootFiveSeconds
+                    )
 
-                shareWithOtherChildrenUpdateFunc value form_ =
-                    { form_ | shareWithOtherChildren = Just value }
+                UseLongPhrases ->
+                    let
+                        useLongPhrasesUpdateFunc value form_ =
+                            { form_ | useLongPhrases = Just value }
+                    in
+                    ( viewECDInput UseLongPhrases form.useLongPhrases useLongPhrasesUpdateFunc
+                    , form.useLongPhrases
+                    )
 
-                countToTenUpdateFunc value form_ =
-                    { form_ | countToTen = Just value }
-            in
-            ( viewECDInput FollowThreeStepInstructions form.followThreeStepInstructions followThreeStepInstructionsUpdateFunc
-                ++ viewECDInput StandOnOneFootFiveSeconds form.standOnOneFootFiveSeconds standOnOneFootFiveSecondsUpdateFunc
-                ++ viewECDInput UseLongPhrases form.useLongPhrases useLongPhrasesUpdateFunc
-                ++ viewECDInput ShareWithOtherChildren form.shareWithOtherChildren shareWithOtherChildrenUpdateFunc
-                ++ viewECDInput CountToTen form.countToTen countToTenUpdateFunc
-            , [ form.followThreeStepInstructions
-              , form.standOnOneFootFiveSeconds
-              , form.useLongPhrases
-              , form.shareWithOtherChildren
-              , form.countToTen
-              ]
-            )
+                ShareWithOtherChildren ->
+                    let
+                        shareWithOtherChildrenUpdateFunc value form_ =
+                            { form_ | shareWithOtherChildren = Just value }
+                    in
+                    ( viewECDInput ShareWithOtherChildren form.shareWithOtherChildren shareWithOtherChildrenUpdateFunc
+                    , form.shareWithOtherChildren
+                    )
+
+                CountToTen ->
+                    let
+                        countToTenUpdateFunc value form_ =
+                            { form_ | countToTen = Just value }
+                    in
+                    ( viewECDInput CountToTen form.countToTen countToTenUpdateFunc
+                    , form.countToTen
+                    )
+
+                NoECDSigns ->
+                    ( [], Nothing )
 
         viewECDInput sign value updateFunc =
             [ viewQuestionLabel language <| Translate.ECDSignQuestion sign
@@ -335,23 +438,9 @@ ecdFormInputsAndTasks language currentDate assembled ageMonth ecdForm =
                 Nothing
             ]
     in
-    if ageMonth < 9 then
-        age0to8Section
-
-    else if ageMonth < 15 then
-        age9to14Section
-
-    else if ageMonth < 18 then
-        age15to17Section
-
-    else if ageMonth < 24 then
-        age18to23Section
-
-    else if ageMonth < 36 then
-        age24to35Section
-
-    else
-        age36to47Section
+    ( List.map Tuple.first expected |> List.concat
+    , List.map Tuple.second expected
+    )
 
 
 viewAction : Language -> Msg -> Bool -> Html Msg

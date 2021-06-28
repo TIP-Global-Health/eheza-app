@@ -1224,7 +1224,7 @@ type alias WellChildECD =
 
 
 type ECDSign
-    = -- Up to 9 months.
+    = -- 6 to 9 months.
       RespontToSoundWithSound
     | TurnHeadWhenCalled
     | SitWithoutSupport
