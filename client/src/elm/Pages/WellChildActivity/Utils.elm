@@ -5,6 +5,7 @@ import Backend.Entities exposing (WellChildEncounterId)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -18,11 +19,23 @@ import RemoteData exposing (RemoteData(..))
 
 
 expectActivity : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
-expectActivity currentDate child data db activity =
+expectActivity currentDate child assembled db activity =
     -- For now, we show all activities without any conditions.
     case activity of
         WellChildECD ->
-            True
+            ageInMonths currentDate assembled.person
+                |> Maybe.map
+                    (\ageMonths ->
+                        let
+                            completed =
+                                generateCompletedECDSigns assembled
+                        in
+                        expectedECDSignsByAge ageMonths
+                            |> List.filter (\sign -> not <| List.member sign completed)
+                            |> List.isEmpty
+                            |> not
+                    )
+                |> Maybe.withDefault False
 
         _ ->
             False
@@ -135,6 +148,7 @@ toWellChildECDValue form =
     , ifNullableTrue SitWithoutSupport form.sitWithoutSupport
     , ifNullableTrue SmileBack form.smileBack
     , ifNullableTrue RollTummyToBack form.rollTummyToBack
+    , ifNullableTrue ReachForToys form.reachForToys
     , ifNullableTrue UseSimpleGestures form.useSimpleGestures
     , ifNullableTrue StandOnTheirOwn form.standOnTheirOwn
     , ifNullableTrue CopyDuringPlay form.copyDuringPlay
@@ -165,8 +179,23 @@ toWellChildECDValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoECDSigns)
 
 
-expectedEcdSignsByAge : Int -> List ECDSign
-expectedEcdSignsByAge ageMonths =
+generateCompletedECDSigns : AssembledData -> List ECDSign
+generateCompletedECDSigns assembled =
+    assembled.previousMeasurementsWithDates
+        |> List.map
+            (\( _, ( _, measurements ) ) ->
+                measurements.ecd
+                    |> Maybe.map (Tuple.second >> .value >> EverySet.toList)
+                    |> Maybe.withDefault []
+            )
+        |> List.concat
+        |> List.filter ((/=) NoECDSigns)
+        |> EverySet.fromList
+        |> EverySet.toList
+
+
+expectedECDSignsByAge : Int -> List ECDSign
+expectedECDSignsByAge ageMonths =
     if ageMonths < 6 then
         []
 

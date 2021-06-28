@@ -104,7 +104,7 @@ viewECDContent : Language -> NominalDate -> AssembledData -> WellChildECDForm ->
 viewECDContent language currentDate assembled ecdForm =
     ageInMonths currentDate assembled.person
         |> Maybe.map
-            (\ageMonth ->
+            (\ageMonths ->
                 let
                     totalTasks =
                         List.length tasks
@@ -114,7 +114,7 @@ viewECDContent language currentDate assembled ecdForm =
                             |> List.sum
 
                     ( inputs, tasks ) =
-                        ecdFormInputsAndTasks language currentDate assembled ageMonth ecdForm
+                        ecdFormInputsAndTasks language currentDate assembled ageMonths ecdForm
 
                     disabled =
                         tasksCompleted /= totalTasks
@@ -133,15 +133,19 @@ viewECDContent language currentDate assembled ecdForm =
 
 
 ecdFormInputsAndTasks : Language -> NominalDate -> AssembledData -> Int -> WellChildECDForm -> ( List (Html Msg), List (Maybe Bool) )
-ecdFormInputsAndTasks language currentDate assembled ageMonth ecdForm =
+ecdFormInputsAndTasks language currentDate assembled ageMonths ecdForm =
     let
         form =
             assembled.measurements.ecd
                 |> Maybe.map (Tuple.second >> .value)
                 |> wellChildECDFormWithDefault ecdForm
 
+        completed =
+            generateCompletedECDSigns assembled
+
         expected =
-            expectedEcdSignsByAge ageMonth
+            expectedECDSignsByAge ageMonths
+                |> List.filter (\sign -> not <| List.member sign completed)
                 |> List.map inputAndTaskForSign
 
         inputAndTaskForSign sign =
