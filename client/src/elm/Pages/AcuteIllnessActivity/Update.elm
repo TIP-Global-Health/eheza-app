@@ -881,7 +881,7 @@ update currentDate id db msg model =
 
                 updatedData =
                     model.nextStepsData
-                        |> (\data -> { data | isolationForm = updatedForm })
+                        |> (\data -> { data | isolationForm = updatedForm, signOnDoor = Nothing })
             in
             ( { model | nextStepsData = updatedData }
             , Cmd.none
