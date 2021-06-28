@@ -84,24 +84,22 @@ activityCompleted currentDate zscores data db activity =
 
 
 expectActivity : NominalDate -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
-expectActivity currentDate data db activity =
+expectActivity currentDate assembled db activity =
     case activity of
         WellChildECD ->
-            case activity of
-                WellChildECD ->
-                    ageInMonths currentDate assembled.person
-                        |> Maybe.map
-                            (\ageMonths ->
-                                let
-                                    completed =
-                                        generateCompletedECDSigns assembled
-                                in
-                                expectedECDSignsByAge ageMonths
-                                    |> List.filter (\sign -> not <| List.member sign completed)
-                                    |> List.isEmpty
-                                    |> not
-                            )
-                        |> Maybe.withDefault False            
+            ageInMonths currentDate assembled.person
+                |> Maybe.map
+                    (\ageMonths ->
+                        let
+                            completed =
+                                generateCompletedECDSigns assembled
+                        in
+                        expectedECDSignsByAge ageMonths
+                            |> List.filter (\sign -> not <| List.member sign completed)
+                            |> List.isEmpty
+                            |> not
+                    )
+                |> Maybe.withDefault False
 
         _ ->
             True
