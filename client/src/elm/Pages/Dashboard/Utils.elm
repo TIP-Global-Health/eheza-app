@@ -360,11 +360,18 @@ getCurrentlyPregnantForSelectedMonth currentDate selectedDate itemsList =
     let
         dateFirstDayOfSelectedMonth =
             Date.floor Date.Month selectedDate
+
+        dateFirstDayOfNextMonth =
+            Date.ceiling Date.Month selectedDate
     in
     itemsList
         |> List.filter
             (\item ->
                 let
+                    -- Pregnancy was tracked during current month, or before.
+                    createdDateFilter =
+                        Date.compare item.created dateFirstDayOfNextMonth == LT
+
                     -- Expected date exists, and is set to 3 weeks or less,
                     -- before the beggining of the range.
                     expectedDateConcludedFilter =
@@ -388,7 +395,7 @@ getCurrentlyPregnantForSelectedMonth currentDate selectedDate itemsList =
                             Nothing ->
                                 True
                 in
-                expectedDateConcludedFilter && actualDateConcludedFilter
+                createdDateFilter && expectedDateConcludedFilter && actualDateConcludedFilter
             )
 
 
