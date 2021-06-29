@@ -3041,12 +3041,10 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
         WellChildFollowUpRevision uuid data ->
             let
                 modelWithMappedFollowUp =
-                    -- @todo:
-                    -- mapFollowUpMeasurements
-                    --     healthCenterId
-                    --     (\measurements -> { measurements | nutritionIndividual = Dict.insert uuid data measurements.nutritionIndividual })
-                    --     model
-                    model
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | wellChild = Dict.insert uuid data measurements.wellChild })
+                        model
             in
             ( mapWellChildMeasurements
                 data.encounterId
