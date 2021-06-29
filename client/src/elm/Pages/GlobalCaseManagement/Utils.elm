@@ -27,29 +27,33 @@ generateNutritionFollowUps db followUps =
         nutritionGroup =
             Dict.values followUps.nutritionGroup
 
-        generateFollowUpItems itemsList accumDict =
-            itemsList
+        wellChild =
+            Dict.values followUps.wellChild
+
+        generateFollowUpItems followUpsList accumDict =
+            followUpsList
                 |> List.foldl
-                    (\item accum ->
+                    (\followUp accum ->
                         let
-                            newItem =
-                                NutritionFollowUpItem item.dateMeasured "" item.value
+                            makeNewItem dateMeasured value =
+                                NutritionFollowUpItem dateMeasured "" value
                         in
-                        Dict.get item.participantId accum
+                        Dict.get followUp.participantId accum
                             |> Maybe.map
                                 (\member ->
-                                    if Date.compare item.dateMeasured member.dateMeasured == GT then
-                                        Dict.insert item.participantId newItem accum
+                                    if Date.compare followUp.dateMeasured member.dateMeasured == GT then
+                                        Dict.insert followUp.participantId (makeNewItem followUp.dateMeasured followUp.value) accum
 
                                     else
                                         accum
                                 )
-                            |> Maybe.withDefault (Dict.insert item.participantId newItem accum)
+                            |> Maybe.withDefault (Dict.insert followUp.participantId (makeNewItem followUp.dateMeasured followUp.value) accum)
                     )
                     accumDict
     in
     generateFollowUpItems nutritionIndividual Dict.empty
         |> generateFollowUpItems nutritionGroup
+        |> generateFollowUpItems wellChild
 
 
 generateAcuteIllnessFollowUps : ModelIndexedDb -> FollowUpMeasurements -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
