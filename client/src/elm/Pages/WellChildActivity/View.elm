@@ -16,6 +16,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
+import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils exposing (..)
 import Measurement.View
@@ -356,6 +357,26 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                 tasks
                 |> List.head
 
+        tasksTray =
+            let
+                ( topTasks, bottomTasks ) =
+                    List.Extra.splitAt 5 tasks
+
+                topSection =
+                    List.map viewTask topTasks
+                        |> div [ class "ui five column grid" ]
+
+                bottomSection =
+                    if List.isEmpty bottomTasks then
+                        emptyNode
+
+                    else
+                        List.map viewTask bottomTasks
+                            |> div [ class "ui four column grid" ]
+            in
+            div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+                [ topSection, bottomSection ]
+
         actions =
             activeTask
                 |> Maybe.map
@@ -413,10 +434,7 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                     )
                 |> Maybe.withDefault emptyNode
     in
-    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
-        [ div [ class "ui three column grid" ] <|
-            List.map viewTask tasks
-        ]
+    [ tasksTray
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
