@@ -29,11 +29,11 @@ generateNutritionAssesment :
     -> PersonId
     -> Maybe MuacInCm
     -> Maybe (EverySet.EverySet ChildNutritionSign)
-    -> Bool
     -> Maybe Float
+    -> Bool
     -> ModelIndexedDb
     -> List NutritionAssesment
-generateNutritionAssesment currentDate zscores childId muacValue nutritionValue assessByWeight weightValue db =
+generateNutritionAssesment currentDate zscores childId muacValue nutritionValue weightValue assessByPreviousWeights db =
     let
         child =
             Dict.get childId db.people
@@ -55,10 +55,10 @@ generateNutritionAssesment currentDate zscores childId muacValue nutritionValue 
                 |> Maybe.withDefault []
 
         assesmentByWeight =
-            if assessByWeight then
+            if assessByPreviousWeights then
                 Maybe.map
                     (\child_ ->
-                        generateNutritionAssesmentByWeight currentDate zscores childId child_ weightValue db
+                        generateNutritionAssesmentByWeight currentDate zscores childId child_ weightValue assessByPreviousWeights db
                     )
                     child
                     |> Maybe.withDefault []
@@ -122,14 +122,22 @@ generateNutritionAssesmentByWeight :
     -> PersonId
     -> Person
     -> Maybe Float
+    -> Bool
     -> ModelIndexedDb
     -> List NutritionAssesment
-generateNutritionAssesmentByWeight currentDate zscores childId child weightValue db =
+generateNutritionAssesmentByWeight currentDate zscores childId child weightValue assessByPreviousWeights db =
     let
         -- We do not want to include here weight
         -- measurements taken at Well Child encounters.
         nutritionWeightMeasuements =
-            resolveNutritionWeightMeasurementsForChild childId db
+            if assessByPreviousWeights then
+                resolveNutritionWeightMeasurementsForChild childId db
+
+            else
+                -- We do need to assess by previous weights,
+                -- so we don't load previous measurements.
+                -- All consiquent calculations will produce Nothing.
+                []
 
         assesmentByWeightForAgeZScore =
             calculateZScoreWeightForAge currentDate zscores child weightValue

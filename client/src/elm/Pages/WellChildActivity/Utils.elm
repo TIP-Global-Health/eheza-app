@@ -3,6 +3,7 @@ module Pages.WellChildActivity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (WellChildEncounterId)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
@@ -33,8 +34,16 @@ generateNutritionAssesment currentDate zscores db assembled =
 
         nutritionValue =
             Maybe.map (Tuple.second >> .value) measurements.nutrition
+
+        weightValue =
+            Maybe.map
+                (Tuple.second
+                    >> .value
+                    >> weightValueFunc
+                )
+                measurements.weight
     in
-    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembled.participant.person muacValue nutritionValue False Nothing db
+    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembled.participant.person muacValue nutritionValue weightValue False db
 
 
 activityCompleted : NominalDate -> ZScore.Model.Model -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
