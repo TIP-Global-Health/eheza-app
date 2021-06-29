@@ -225,9 +225,6 @@ function hedley_stats_requires_acute_illness_statistics_recalculation($wrapper) 
  *   Possible options: Nutrition, Prenatal and Acute illness.
  */
 function hedley_stats_clear_caches_for_health_center($nid, $cache_type_for_recalculation) {
-  // First, clear the stats hash cache of health center.
-  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_STATS_CACHE, $nid);
-
   switch ($cache_type_for_recalculation) {
     case HEDLEY_STATS_PRENATAL:
       hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_PRENATAL_DATA, $nid);
@@ -453,13 +450,11 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
   $fields_to_join = [
     'field_person',
     'field_outcome',
+    'field_date_concluded',
   ];
   foreach ($fields_to_join as $field) {
     hedley_general_join_field_to_query($query, 'node', $field, FALSE);
   }
-
-  // We need this to understand if and when illness was resolved.
-  hedley_general_join_field_to_query($query, 'node', 'field_expected', FALSE, NULL, NULL, TRUE);
 
   $result = $query
     ->execute()
@@ -470,8 +465,9 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
   foreach ($result as $index => $row) {
     $items[$index] = [
       'id' => $row->field_person,
-      'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
-      'date_concluded' => empty($row->field_expected_field_expected_value2) ? NULL : date_format(date_create($row->field_expected_field_expected_value2), 'Y-m-d'),
+      // Field for 'created' is added at hedley_stats_get_base_query().
+      'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
+      'date_concluded' => !empty($row->field_date_concluded) ? date_format(date_create($row->field_date_concluded), 'Y-m-d') : NULL,
       'outcome' => $row->field_outcome,
       'encounters' => [],
     ];
@@ -529,7 +525,8 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     $fever_by_vitals = !empty($row->body_temperature) && (float) $row->body_temperature >= 37.5;
 
     $items[$row->field_individual_participant]['encounters'][] = [
-      'start_date' => hedley_stats_convert_timestamp_to_nominal($row->created),
+      // Field for 'created' is added at hedley_stats_get_base_query().
+      'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
       'sequence_number' => $row->field_sequence_number,
       'diagnosis' => $row->field_acute_illness_diagnosis,
       'fever' => $fever_by_signs || $fever_by_vitals,
@@ -599,7 +596,8 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   foreach ($result as $index => $row) {
     $items[$index] = [
       'id' => $row->field_person,
-      'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
+      // Field for 'created' is added at hedley_stats_get_base_query().
+      'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
       'expected_date_concluded' => !empty($row->field_expected_date_concluded) ? date_format(date_create($row->field_expected_date_concluded), 'Y-m-d') : NULL,
       'date_concluded' => empty($row->field_date_concluded) ? date_format(date_create($row->field_date_concluded), 'Y-m-d') : NULL,
       'outcome' => $row->field_outcome,
@@ -636,7 +634,8 @@ function hedley_stats_get_prenatal_data($health_center_id) {
 
   foreach ($result as $row) {
     $items[$row->field_individual_participant]['encounters'][] = [
-      'start_date' => empty($row->field_scheduled_date) ? NULL : date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
+      // Field for 'created' is added at hedley_stats_get_base_query().
+      'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
       'danger_signs' => explode(',', $row->danger_signs),
     ];
   }
@@ -1514,7 +1513,7 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period = FA
   $date_field = 'field_date_measured';
 
   // Entities other than measurements are always
-  // resolved usingsingle node type.
+  // resolved using single node type.
   if (!is_array($node_type)) {
     $encounter_types = [
       'acute_illness_encounter',
