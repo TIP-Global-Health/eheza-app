@@ -519,33 +519,36 @@ countDeliveriesAtLocationForSelectedMonth selectedDate location itemsList =
 
 
 --
--- Case management  functions.
+-- Case management functions.
 --
 
 
-getFollowUpsTotals : Language -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
-getFollowUpsTotals language currentDate db villageId followUps =
+getFollowUpsTotals : Language -> NominalDate -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
+getFollowUpsTotals language currentDate limitDate db villageId followUps =
     let
+        followUpsToLimitDate =
+            filterFollowUpMeasurementsByLimitDate limitDate followUps
+
         nutritionFollowUps =
-            generateNutritionFollowUps db followUps
+            generateNutritionFollowUps db followUpsToLimitDate
                 |> filterVillageResidents villageId identity db
 
         nutritionEntries =
-            generateNutritionFollowUpEntries language currentDate nutritionFollowUps db
+            generateNutritionFollowUpEntries language currentDate limitDate nutritionFollowUps db
 
         acuteIllnessFollowUps =
-            generateAcuteIllnessFollowUps db followUps
+            generateAcuteIllnessFollowUps db followUpsToLimitDate
                 |> filterVillageResidents villageId Tuple.second db
 
         acuteIllnessEntries =
-            generateAcuteIllnessFollowUpEntries language currentDate acuteIllnessFollowUps db
+            generateAcuteIllnessFollowUpEntries language currentDate limitDate acuteIllnessFollowUps db
 
         prenatalFollowUps =
-            generatePrenatalFollowUps db followUps
+            generatePrenatalFollowUps db followUpsToLimitDate
                 |> filterVillageResidents villageId Tuple.second db
 
         prenatalEntries =
-            generatePrenatalFollowUpEntries language currentDate prenatalFollowUps db
+            generatePrenatalFollowUpEntries language currentDate limitDate prenatalFollowUps db
     in
     ( List.length nutritionEntries
     , List.length acuteIllnessEntries
@@ -553,15 +556,16 @@ getFollowUpsTotals language currentDate db villageId followUps =
     )
 
 
-getAcuteIllnessFollowUpsBreakdownByDiagnosis : Language -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
-getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate db villageId followUps =
+getAcuteIllnessFollowUpsBreakdownByDiagnosis : Language -> NominalDate -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
+getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db villageId followUps =
     let
         acuteIllnessFollowUps =
-            generateAcuteIllnessFollowUps db followUps
+            filterFollowUpMeasurementsByLimitDate limitDate followUps
+                |> generateAcuteIllnessFollowUps db
                 |> filterVillageResidents villageId Tuple.second db
 
         acuteIllnessEntries =
-            generateAcuteIllnessFollowUpEntries language currentDate acuteIllnessFollowUps db
+            generateAcuteIllnessFollowUpEntries language currentDate limitDate acuteIllnessFollowUps db
 
         covidEntries =
             List.filter (.diagnosis >> (==) DiagnosisCovid19) acuteIllnessEntries
@@ -593,6 +597,16 @@ getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate db villageId f
     )
 
 
+filterFollowUpMeasurementsByLimitDate : NominalDate -> FollowUpMeasurements -> FollowUpMeasurements
+filterFollowUpMeasurementsByLimitDate limitDate followUpMeasurements =
+    { followUpMeasurements
+        | nutritionGroup = filterByLimitDate limitDate followUpMeasurements.nutritionGroup
+        , nutritionIndividual = filterByLimitDate limitDate followUpMeasurements.nutritionIndividual
+        , acuteIllness = filterByLimitDate limitDate followUpMeasurements.acuteIllness
+        , prenatal = filterByLimitDate limitDate followUpMeasurements.prenatal
+    }
+
+
 
 --
 -- Helper functions.
@@ -615,3 +629,8 @@ withinSelectedMonth selectedDate date =
 getSelectedDate : NominalDate -> Model -> NominalDate
 getSelectedDate currentDate model =
     Date.add Date.Months (-1 * model.monthGap) currentDate
+
+
+filterByLimitDate : NominalDate -> Dict id { a | dateMeasured : NominalDate } -> Dict id { a | dateMeasured : NominalDate }
+filterByLimitDate limitDate followUps =
+    Dict.filter (\_ followUp -> Date.compare followUp.dateMeasured limitDate == LT) followUps
