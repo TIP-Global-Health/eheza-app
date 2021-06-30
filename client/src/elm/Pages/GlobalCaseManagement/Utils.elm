@@ -6,7 +6,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (FollowUpMeasurements, FollowUpOption(..), FollowUpValue, PrenatalFollowUpValue)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Village.Utils exposing (personLivesInVillage)
-import Date
+import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Pages.GlobalCaseManagement.Model exposing (..)
@@ -33,21 +33,28 @@ generateNutritionFollowUps db followUps =
         generateFollowUpItems followUpsList accumDict =
             followUpsList
                 |> List.foldl
-                    (\followUp accum ->
+                    (\candidate accum ->
                         let
-                            makeNewItem dateMeasured value =
-                                NutritionFollowUpItem dateMeasured "" value
+                            candidateItem =
+                                NutritionFollowUpItem candidate.dateMeasured "" candidate.value
                         in
-                        Dict.get followUp.participantId accum
+                        Dict.get candidate.participantId accum
                             |> Maybe.map
-                                (\member ->
-                                    if Date.compare followUp.dateMeasured member.dateMeasured == GT then
-                                        Dict.insert followUp.participantId (makeNewItem followUp.dateMeasured followUp.value) accum
+                                (\memberItem ->
+                                    let
+                                        candidateDueDate =
+                                            caclulateFollowUpDueDate candidateItem.dateMeasured candidateItem.value.options
+
+                                        memberDueDate =
+                                            caclulateFollowUpDueDate memberItem.dateMeasured memberItem.value.options
+                                    in
+                                    if Date.compare candidateDueDate memberDueDate == LT then
+                                        Dict.insert candidate.participantId candidateItem accum
 
                                     else
                                         accum
                                 )
-                            |> Maybe.withDefault (Dict.insert followUp.participantId (makeNewItem followUp.dateMeasured followUp.value) accum)
+                            |> Maybe.withDefault (Dict.insert candidate.participantId candidateItem accum)
                     )
                     accumDict
     in
@@ -227,37 +234,14 @@ generateParticipantsIdsByEncounters getEncountersFunc encounters db =
 followUpDueOptionByDate : NominalDate -> NominalDate -> EverySet FollowUpOption -> FollowUpDueOption
 followUpDueOptionByDate currentDate dateMeasured options =
     let
-        dueIn =
+        dueDate =
             EverySet.toList options
                 |> List.head
-                |> Maybe.map
-                    (\option ->
-                        case option of
-                            OneDay ->
-                                1
-
-                            ThreeDays ->
-                                3
-
-                            OneWeek ->
-                                7
-
-                            TwoWeeks ->
-                                14
-
-                            OneMonths ->
-                                30
-
-                            TwoMonths ->
-                                60
-
-                            ThreeMonths ->
-                                90
-                    )
-                |> Maybe.withDefault 0
+                |> Maybe.map (caclulateDueDate dateMeasured)
+                |> Maybe.withDefault dateMeasured
 
         diff =
-            diffDays currentDate dateMeasured + dueIn
+            diffDays currentDate dueDate
     in
     if diff < 0 then
         OverDue
@@ -273,6 +257,39 @@ followUpDueOptionByDate currentDate dateMeasured options =
 
     else
         DueNextMonth
+
+
+caclulateFollowUpDueDate : NominalDate -> EverySet FollowUpOption -> NominalDate
+caclulateFollowUpDueDate dateMeasured options =
+    EverySet.toList options
+        |> List.head
+        |> Maybe.map (caclulateDueDate dateMeasured)
+        |> Maybe.withDefault dateMeasured
+
+
+caclulateDueDate : NominalDate -> FollowUpOption -> NominalDate
+caclulateDueDate dateMeasured option =
+    case option of
+        OneDay ->
+            Date.add Days 1 dateMeasured
+
+        ThreeDays ->
+            Date.add Days 3 dateMeasured
+
+        OneWeek ->
+            Date.add Days 7 dateMeasured
+
+        TwoWeeks ->
+            Date.add Days 14 dateMeasured
+
+        OneMonths ->
+            Date.add Months 1 dateMeasured
+
+        TwoMonths ->
+            Date.add Months 2 dateMeasured
+
+        ThreeMonths ->
+            Date.add Months 3 dateMeasured
 
 
 compareAcuteIllnessFollowUpItems : AcuteIllnessFollowUpItem -> AcuteIllnessFollowUpItem -> Order
