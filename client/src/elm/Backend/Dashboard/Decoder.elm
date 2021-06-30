@@ -6,8 +6,27 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Dashboard.Model exposing (..)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeDeliveryLocation, decodeIndividualEncounterParticipantOutcome)
-import Backend.Measurement.Decoder exposing (decodeCall114Sign, decodeDangerSign, decodeFamilyPlanningSign, decodeIsolationSign, decodeSendToHCSign)
-import Backend.Measurement.Model exposing (Call114Sign(..), DangerSign(..), IsolationSign(..), SendToHCSign(..))
+import Backend.Measurement.Decoder
+    exposing
+        ( decodeCall114Sign
+        , decodeDangerSign
+        , decodeFamilyPlanningSign
+        , decodeHCContactSign
+        , decodeHCRecommendation
+        , decodeIsolationSign
+        , decodeRecommendation114
+        , decodeSendToHCSign
+        )
+import Backend.Measurement.Model
+    exposing
+        ( Call114Sign(..)
+        , DangerSign(..)
+        , HCContactSign(..)
+        , HCRecommendation(..)
+        , IsolationSign(..)
+        , Recommendation114(..)
+        , SendToHCSign(..)
+        )
 import Backend.Person.Decoder exposing (decodeGender)
 import Dict as LegacyDict
 import Gizra.Json exposing (decodeInt)
@@ -290,9 +309,12 @@ decodeAcuteIllnessEncounterDataItem =
         |> required "sequence_number" decodeInt
         |> required "diagnosis" decodeAcuteIllnessDiagnosis
         |> required "fever" bool
-        |> required "call_114" (decodeEverySet (decodeWithFallback NoCall114Signs decodeCall114Sign))
         |> required "isolation" (decodeEverySet (decodeWithFallback NoIsolationSigns decodeIsolationSign))
         |> required "send_to_hc" (decodeEverySet (decodeWithFallback NoSendToHCSigns decodeSendToHCSign))
+        |> required "call_114" (decodeEverySet (decodeWithFallback NoCall114Signs decodeCall114Sign))
+        |> required "recommendation_114" (decodeEverySet (decodeWithFallback NoneOtherRecommendation114 decodeRecommendation114))
+        |> required "contact_hc" (decodeEverySet (decodeWithFallback NoHCContactSigns decodeHCContactSign))
+        |> required "recommendation_hc" (decodeEverySet (decodeWithFallback HCRecommendationNotApplicable decodeHCRecommendation))
 
 
 decodePrenatalDataItem : Decoder PrenatalDataItem
