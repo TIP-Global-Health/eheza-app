@@ -130,13 +130,13 @@ countAcuteIllnessCasesByHCReferrals encounters =
     let
         ( sentToHC, managedLocally ) =
             List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis) encounters
-                |> List.partition wasSendToHCByDiagnosis
+                |> List.partition wasSentToHCByDiagnosis
     in
     ( List.length sentToHC, List.length managedLocally )
 
 
-wasSendToHCByDiagnosis : AcuteIllnessEncounterDataItem -> Bool
-wasSendToHCByDiagnosis encounter =
+wasSentToHCByDiagnosis : AcuteIllnessEncounterDataItem -> Bool
+wasSentToHCByDiagnosis encounter =
     case encounter.diagnosis of
         DiagnosisCovid19 ->
             let
@@ -197,7 +197,7 @@ countDiagnosedWithCovidSentToHC encounters =
     -- Encounters which has produced Covid19 diagnosis,
     -- and patient was sent to health center.
     List.filter (.diagnosis >> (==) DiagnosisCovid19) encounters
-        |> List.filter wasSendToHCByDiagnosis
+        |> List.filter wasSentToHCByDiagnosis
         |> List.length
 
 
@@ -206,9 +206,13 @@ countDiagnosedWithCovidManagedAtHome encounters =
     List.filter
         (\encounter ->
             -- Encounter which has produced Covid19 diagnosis,
-            -- and patient was isolated at home.
+            -- HC was contacted, and it suggested home isolation
+            -- or CHW monitoring.
             (encounter.diagnosis == DiagnosisCovid19)
-                && EverySet.member PatientIsolated encounter.isolationSigns
+                && EverySet.member ContactedHealthCenter encounter.hcContactSigns
+                && (EverySet.member HomeIsolation encounter.hcRecommendation
+                        || EverySet.member ChwMonitoring encounter.hcRecommendation
+                   )
         )
         encounters
         |> List.length
