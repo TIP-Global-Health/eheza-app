@@ -37,7 +37,7 @@ function hedley_general_add_task_to_advanced_queue_by_id($machine_name, $unique_
 }
 
 /**
- * Check whether a specific task exist and not processed yet.
+ * Check whether a specific task exists, and not yet / being processed.
  *
  * @param string $queue_machine_name
  *   The machine name of the queue.
@@ -47,20 +47,40 @@ function hedley_general_add_task_to_advanced_queue_by_id($machine_name, $unique_
  *   The statuses to filter by.
  *
  * @return bool
- *   TRUE if the task exist and not processed yet, otherwise returns FALSE.
+ *   TRUE if the task exists and not and not yet / being processed.
  */
 function hedley_general_advanced_queue_task_exists($queue_machine_name, $title, array $statuses = [
   ADVANCEDQUEUE_STATUS_QUEUED,
   ADVANCEDQUEUE_STATUS_PROCESSING,
 ]) {
-  return (bool) db_select('advancedqueue', 'a')
-    ->fields('a')
-    ->condition('name', $queue_machine_name)
+  $tasks = db_select('advancedqueue', 'aq')
+    ->fields('aq', ['item_id', 'status', 'created'])
     ->condition('title', $title)
+    ->condition('name', $queue_machine_name)
     ->condition('status', $statuses, 'IN')
-    ->countQuery()
+    ->range(0, 100)
     ->execute()
-    ->fetchField();
+    ->fetchAll();
+
+  foreach ($tasks as $task) {
+    if ($task->status == ADVANCEDQUEUE_STATUS_QUEUED) {
+      // Task did not start processing.
+      return TRUE;
+    }
+
+    if ($task->status == ADVANCEDQUEUE_STATUS_PROCESSING) {
+      if (time() - $task->created < variable_get('hedley_aq_task_max_processing_period', 20 * 60)) {
+        // Task is being processed, and did not exceed allowed time period,
+        // which is set to 20 minutes, by default.
+        return TRUE;
+      }
+      else {
+        watchdog('hedley_aq', "AQ task suspected as stuck: $task->item_id");
+      }
+    }
+  }
+
+  return FALSE;
 }
 
 /**
