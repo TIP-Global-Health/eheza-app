@@ -5,7 +5,17 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Dashboard.Model exposing (AcuteIllnessDataItem, AcuteIllnessEncounterDataItem, AssembledData, DashboardStats, PrenatalDataItem)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..))
-import Backend.Measurement.Model exposing (Call114Sign(..), DangerSign(..), FollowUpMeasurements, IsolationSign(..), SendToHCSign(..))
+import Backend.Measurement.Model
+    exposing
+        ( Call114Sign(..)
+        , DangerSign(..)
+        , FollowUpMeasurements
+        , HCContactSign(..)
+        , HCRecommendation(..)
+        , IsolationSign(..)
+        , Recommendation114(..)
+        , SendToHCSign(..)
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Date
 import EverySet exposing (EverySet)
@@ -120,9 +130,28 @@ countAcuteIllnessCasesByHCReferrals encounters =
     let
         ( sentToHC, managedLocally ) =
             List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis) encounters
-                |> List.partition (\encounter -> EverySet.member ReferToHealthCenter encounter.sendToHCSigns)
+                |> List.partition wasSendToHCByDiagnosis
     in
     ( List.length sentToHC, List.length managedLocally )
+
+
+wasSendToHCByDiagnosis : AcuteIllnessEncounterDataItem -> Bool
+wasSendToHCByDiagnosis encounter =
+    case encounter.diagnosis of
+        DiagnosisCovid19 ->
+            let
+                sentToHCBy114 =
+                    EverySet.member Call114 encounter.call114Signs
+                        && EverySet.member SendToHealthCenter encounter.recommendation114
+
+                sentToHCByHC =
+                    EverySet.member ContactedHealthCenter encounter.hcContactSigns
+                        && EverySet.member ComeToHealthCenter encounter.hcRecommendation
+            in
+            sentToHCBy114 || sentToHCByHC
+
+        _ ->
+            EverySet.member ReferToHealthCenter encounter.sendToHCSigns
 
 
 countAcuteIllnessCasesByPossibleDiagnosises : List AcuteIllnessDiagnosis -> Bool -> List AcuteIllnessEncounterDataItem -> Int
@@ -165,14 +194,10 @@ countDiagnosedWithCovidCallsTo114 encounters =
 
 countDiagnosedWithCovidSentToHC : List AcuteIllnessEncounterDataItem -> Int
 countDiagnosedWithCovidSentToHC encounters =
-    List.filter
-        (\encounter ->
-            -- Encounter which has produced Covid19 diagnosis,
-            -- and patient was sent to health center.
-            (encounter.diagnosis == DiagnosisCovid19)
-                && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
-        )
-        encounters
+    -- Encounters which has produced Covid19 diagnosis,
+    -- and patient was sent to health center.
+    List.filter (.diagnosis >> (==) DiagnosisCovid19) encounters
+        |> List.filter wasSendToHCByDiagnosis
         |> List.length
 
 
