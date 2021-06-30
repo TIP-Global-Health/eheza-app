@@ -3396,8 +3396,16 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw after id =
 
                 else
                     updateFollowUpAssesmentMsg
-                        ++ [ -- Show warning popup with new assesment.
-                             Pages.WellChildActivity.Model.SetWarningPopupState assesmentAfter
+                        ++ [ -- Navigate to Well Child activity page, because that's where we show assessment popup.
+                             App.Model.SetActivePage (UserPage (WellChildActivityPage id Backend.WellChildActivity.Model.WellChildNutritionAssessment))
+
+                           -- Focus on first 'Next Steps' task.
+                           , Pages.WellChildActivity.Model.SetActiveNutritionAssesmentTask Pages.WellChildActivity.Model.TaskContributingFactors
+                                |> App.Model.MsgPageWellChildActivity id Backend.WellChildActivity.Model.WellChildNutritionAssessment
+                                |> App.Model.MsgLoggedIn
+
+                           -- Show warning popup with new assesment.
+                           , Pages.WellChildActivity.Model.SetWarningPopupState assesmentAfter
                                 |> App.Model.MsgPageWellChildActivity id Backend.WellChildActivity.Model.WellChildNutritionAssessment
                                 |> App.Model.MsgLoggedIn
                            ]
