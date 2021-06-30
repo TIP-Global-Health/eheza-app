@@ -197,8 +197,9 @@ function hedley_stats_requires_acute_illness_statistics_recalculation($wrapper) 
     HEDLEY_ACTIVITY_SEND_TO_HC_CONTENT_TYPE,
     HEDLEY_ACTIVITY_ACUTE_ILLNESS_VITALS_CONTENT_TYPE,
     HEDLEY_ACTIVITY_SYMPTOMS_GENERAL_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_CALL_114_CONTENT_TYPE,
     HEDLEY_ACTIVITY_ISOLATION_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_CALL_114_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_HC_CONTAC_CONTENT_TYPE,
   ];
 
   $bundle = $wrapper->getBundle();
@@ -503,15 +504,30 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
   $query->addField('body_temperature', 'field_body_temperature_value');
   $query->addExpression("body_temperature.field_body_temperature_value", 'body_temperature');
 
+  // Pull data of isolations - COVID suspect.
+  $query->leftJoin('field_data_field_isolation', 'isolation', 'isolation.entity_id = ai_encounter.entity_id');
+  $query->addField('isolation', 'field_isolation_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT isolation.field_isolation_value)", 'isolation');
+
   // Pull data of 114 calls - COVID suspect.
   $query->leftJoin('field_data_field_114_contact', '114_contact', '114_contact.entity_id = ai_encounter.entity_id');
   $query->addField('114_contact', 'field_114_contact_value');
   $query->addExpression("GROUP_CONCAT(DISTINCT 114_contact.field_114_contact_value)", 'contact_114');
 
-  // Pull data of isolations - COVID suspect.
-  $query->leftJoin('field_data_field_isolation', 'isolation', 'isolation.entity_id = ai_encounter.entity_id');
-  $query->addField('isolation', 'field_isolation_value');
-  $query->addExpression("GROUP_CONCAT(DISTINCT isolation.field_isolation_value)", 'isolation');
+  // Pull data of 114 recommendations - COVID suspect.
+  $query->leftJoin('field_data_field_114_recommendation', '114_recommendation', '114_recommendation.entity_id = ai_encounter.entity_id');
+  $query->addField('114_recommendation', 'field_114_recommendation_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT 114_recommendation.field_114_recommendation_value)", 'recommendation_114');
+
+  // Pull data of HC contact - COVID suspect.
+  $query->leftJoin('field_data_field_hc_contact', 'hc_contact', 'hc_contact.entity_id = ai_encounter.entity_id');
+  $query->addField('hc_contact', 'field_hc_contact_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT hc_contact.field_hc_contact_value)", 'contact_hc');
+
+  // Pull data of HC recommendations - COVID suspect.
+  $query->leftJoin('field_data_field_hc_recommendation', 'hc_recommendation', 'hc_recommendation.entity_id = ai_encounter.entity_id');
+  $query->addField('hc_recommendation', 'field_hc_recommendation_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT hc_recommendation.field_hc_recommendation_value)", 'recommendation_hc');
 
   $query->groupBy('node.nid');
 
@@ -531,8 +547,11 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
       'diagnosis' => $row->field_acute_illness_diagnosis,
       'fever' => $fever_by_signs || $fever_by_vitals,
       'send_to_hc' => empty($row->send_to_hc) ? [] : explode(',', $row->send_to_hc),
-      'call_114' => empty($row->contact_114) ? [] : explode(',', $row->contact_114),
       'isolation' => empty($row->isolation) ? [] : explode(',', $row->isolation),
+      'call_114' => empty($row->contact_114) ? [] : explode(',', $row->contact_114),
+      'recommendation_114' => empty($row->recommendation_114) ? [] : explode(',', $row->recommendation_114),
+      'contact_hc' => empty($row->contact_hc) ? [] : explode(',', $row->contact_hc),
+      'recommendation_hc' => empty($row->recommendation_hc) ? [] : explode(',', $row->recommendation_hc),
     ];
   }
 
