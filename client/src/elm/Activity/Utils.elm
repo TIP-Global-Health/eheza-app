@@ -51,7 +51,7 @@ generateNutritionAssesment currentDate zscores childId db offlineSession =
         weightValue =
             Maybe.andThen (.weight >> Maybe.map (Tuple.second >> .value >> weightValueFunc)) measurements
     in
-    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores childId muacValue nutritionValue True weightValue db
+    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores childId muacValue nutritionValue weightValue True db
 
 
 {-| Used for URL etc., not for display in the normal UI (since we'd translatefor that).
