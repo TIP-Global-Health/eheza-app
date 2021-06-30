@@ -55,16 +55,12 @@ generateNutritionAssesment currentDate zscores childId muacValue nutritionValue 
                 |> Maybe.withDefault []
 
         assesmentByWeight =
-            if assessByPreviousWeights then
-                Maybe.map
-                    (\child_ ->
-                        generateNutritionAssesmentByWeight currentDate zscores childId child_ weightValue assessByPreviousWeights db
-                    )
-                    child
-                    |> Maybe.withDefault []
-
-            else
-                []
+            Maybe.map
+                (\child_ ->
+                    generateNutritionAssesmentByWeight currentDate zscores childId child_ weightValue assessByPreviousWeights db
+                )
+                child
+                |> Maybe.withDefault []
 
         assesmentByMuacAndWeight =
             assesmentByMuac ++ assesmentByWeight
