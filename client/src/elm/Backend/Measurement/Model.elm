@@ -1605,8 +1605,8 @@ type alias MeasurementData data =
     }
 
 
-type alias PreviousMeasurementsValue =
-    { height : Maybe ( NominalDate, HeightInCm )
-    , muac : Maybe ( NominalDate, MuacInCm )
-    , weight : Maybe ( NominalDate, WeightInKg )
+type alias PreviousValuesSet =
+    { height : Maybe Float
+    , muac : Maybe Float
+    , weight : Maybe Float
     }

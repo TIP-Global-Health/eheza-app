@@ -3,7 +3,7 @@ module Pages.Activity.Utils exposing (viewChildMeasurements, viewMotherMeasureme
 import Activity.Model exposing (ChildActivity(..), MotherActivity(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (generatePreviousValuesForChild)
+import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getMother, getMotherMeasurementData)
 import Gizra.Html exposing (emptyNode)
@@ -46,7 +46,7 @@ viewChildMeasurements language currentDate zscores isChw db childId activity pag
                 getChild childId session.offlineSession
                     |> Maybe.map
                         (\child ->
-                            generatePreviousValuesForChild childId db
+                            resolvePreviousValuesSetForChild childId db
                                 |> Measurement.View.viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db form
                                 |> Html.map MsgMeasurement
                         )

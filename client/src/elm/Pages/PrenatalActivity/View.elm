@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Encoder exposing (pregnancyTestResultAsString, socialHistoryHivTestingResultToString)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
@@ -670,7 +671,7 @@ viewExaminationContent language currentDate assembled data =
                                         assembled.nursePreviousMeasurementsWithDates
                                             |> List.head
                                             |> Maybe.andThen (Tuple.second >> getMotherHeightMeasurement)
-                                            |> Maybe.map (\(HeightInCm height) -> height)
+                                            |> Maybe.map heightValueFunc
 
                                     else
                                         Nothing
@@ -2181,11 +2182,11 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
 
         heightPreviousValue =
             resolvePreviousValue assembled .nutrition .height
-                |> Maybe.map (\(HeightInCm cm) -> cm)
+                |> Maybe.map heightValueFunc
 
         weightPreviousValue =
             resolvePreviousValue assembled .nutrition .weight
-                |> Maybe.map (\(WeightInKg kg) -> kg)
+                |> Maybe.map weightValueFunc
 
         bmiPreviousValue =
             calculateBmi heightPreviousValue weightPreviousValue
@@ -2193,7 +2194,7 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
 
         muacPreviousValue =
             resolvePreviousValue assembled .nutrition .muac
-                |> Maybe.map (\(MuacInCm cm) -> cm)
+                |> Maybe.map muacValueFunc
 
         calculatedBmi =
             calculateBmi form.height form.weight
@@ -2506,7 +2507,7 @@ viewObstetricalExamForm language currentDate assembled form =
 
         fundalHeightPreviousValue =
             resolvePreviousValue assembled .obstetricalExam .fundalHeight
-                |> Maybe.map (\(HeightInCm cm) -> cm)
+                |> Maybe.map heightValueFunc
     in
     div [ class "ui form examination obstetrical-exam" ]
         [ div [ class "ui grid" ]

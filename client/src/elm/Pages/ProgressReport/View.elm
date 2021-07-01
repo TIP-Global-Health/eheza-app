@@ -6,7 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, mapMeasurementData, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (generateIndividualMeasurementsForChild)
+import Backend.NutritionEncounter.Utils exposing (generateIndividualNutritionMeasurementsForChild)
 import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.Person.Utils exposing (graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
@@ -51,7 +51,7 @@ view language currentDate zscores childId ( sessionId, session ) db =
                         |> Maybe.withDefault NotAsked
 
                 individualChildMeasurements =
-                    generateIndividualMeasurementsForChild childId db
+                    generateIndividualNutritionMeasurementsForChild childId db
 
                 mother =
                     getMyMother childId session.offlineSession
@@ -236,7 +236,7 @@ viewFoundChild language currentDate zscores ( childId, child ) individualChildMe
         sessionsAndEncounters =
             expectedSessions
                 ++ expectedlEncounters
-                |> List.sortWith (\s1 s2 -> Gizra.NominalDate.compare (Tuple.second s1) (Tuple.second s2))
+                |> List.sortWith (\s1 s2 -> Date.compare (Tuple.second s1) (Tuple.second s2))
                 |> List.reverse
 
         heightValuesIndexed =
@@ -687,7 +687,7 @@ viewPhotos language child photos =
                 [ img [ src url, class "orientation" ] [] ]
     in
     photos
-        |> List.sortWith (\m1 m2 -> Gizra.NominalDate.compare m1.dateMeasured m2.dateMeasured)
+        |> List.sortWith (\m1 m2 -> Date.compare m1.dateMeasured m2.dateMeasured)
         |> List.map
             (\photo ->
                 div

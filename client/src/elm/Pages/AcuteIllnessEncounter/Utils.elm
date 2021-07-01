@@ -37,6 +37,7 @@ import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
+import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing)
@@ -158,7 +159,7 @@ compareAcuteIllnessEncounterDataAsc :
     -> { a | startDate : NominalDate, sequenceNumber : Int }
     -> Order
 compareAcuteIllnessEncounterDataAsc data1 data2 =
-    case Gizra.NominalDate.compare data1.startDate data2.startDate of
+    case Date.compare data1.startDate data2.startDate of
         LT ->
             LT
 

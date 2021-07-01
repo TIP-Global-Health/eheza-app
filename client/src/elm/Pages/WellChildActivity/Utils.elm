@@ -3,6 +3,7 @@ module Pages.WellChildActivity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (WellChildEncounterId)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
@@ -41,11 +42,8 @@ generateNutritionAssesment currentDate zscores db assembled =
                     >> weightValueFunc
                 )
                 measurements.weight
-
-        weightValueFunc =
-            \(WeightInKg kg) -> kg
     in
-    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembled.participant.person muacValue weightValue nutritionValue db
+    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembled.participant.person muacValue nutritionValue weightValue False db
 
 
 activityCompleted : NominalDate -> ZScore.Model.Model -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool

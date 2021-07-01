@@ -5,7 +5,7 @@ import Activity.Utils exposing (getActivityIcon, summarizeChildParticipant, summ
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (generatePreviousValuesForChild)
+import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
 import Backend.Person.Model exposing (Gender(..), Person, Ubudehe(..))
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother)
@@ -184,7 +184,7 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                             |> LocalData.unwrap
                                 []
                                 (\measurements ->
-                                    [ generatePreviousValuesForChild childId db
+                                    [ resolvePreviousValuesSetForChild childId db
                                         |> Measurement.View.viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db form
                                         |> Html.map MsgMeasurement
                                         |> keyed "content"

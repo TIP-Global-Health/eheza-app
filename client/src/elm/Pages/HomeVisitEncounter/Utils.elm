@@ -81,5 +81,5 @@ generatePreviousMeasurements currentEncounterId participantId db =
                     )
                 -- Most recent date to least recent date.
                 >> List.sortWith
-                    (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date2 date1)
+                    (\( date1, _ ) ( date2, _ ) -> Date.compare date2 date1)
             )

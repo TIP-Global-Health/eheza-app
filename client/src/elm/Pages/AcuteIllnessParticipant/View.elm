@@ -7,6 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
+import Date
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
@@ -88,7 +89,7 @@ viewContent language currentDate selectedHealthCenter id db model sessions =
                         (session.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter)
                             && isAcuteIllnessActive currentDate session
                     )
-                |> List.sortWith (\( _, s1 ) ( _, s2 ) -> Gizra.NominalDate.compare s1.startDate s2.startDate)
+                |> List.sortWith (\( _, s1 ) ( _, s2 ) -> Date.compare s1.startDate s2.startDate)
     in
     case model.viewMode of
         ManageIllnesses ->

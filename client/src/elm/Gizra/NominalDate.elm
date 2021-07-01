@@ -5,7 +5,7 @@ module Gizra.NominalDate exposing
     , fromLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , allMonths, compare, daysInMonth, diffCalendarMonths, diffMonths, diffYears, formatDDMMYY, formatDDMMYYYY, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
+    , allMonths, daysInMonth, diffCalendarMonths, diffMonths, diffYears, formatDDMMYY, formatDDMMYYYY, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -48,11 +48,6 @@ type alias NominalDateRange =
     { start : NominalDate
     , end : NominalDate
     }
-
-
-compare : NominalDate -> NominalDate -> Order
-compare =
-    Date.compare
 
 
 {-| Convert a nominal date to formatted string.

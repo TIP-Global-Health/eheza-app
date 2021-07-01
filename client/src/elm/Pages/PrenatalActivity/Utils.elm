@@ -2,6 +2,7 @@ module Pages.PrenatalActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import EverySet exposing (EverySet)
@@ -615,7 +616,7 @@ toMedicationValue form =
 
 fromObstetricalExamValue : Maybe ObstetricalExamValue -> ObstetricalExamForm
 fromObstetricalExamValue saved =
-    { fundalHeight = Maybe.map (.fundalHeight >> (\(HeightInCm cm) -> cm)) saved
+    { fundalHeight = Maybe.map (.fundalHeight >> heightValueFunc) saved
     , fundalHeightDirty = False
     , fetalPresentation = Maybe.map .fetalPresentation saved
     , fetalMovement = Maybe.map .fetalMovement saved
@@ -631,7 +632,7 @@ obstetricalExamFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { fundalHeight = valueConsideringIsDirtyField form.fundalHeightDirty form.fundalHeight (value.fundalHeight |> (\(HeightInCm cm) -> cm))
+                { fundalHeight = valueConsideringIsDirtyField form.fundalHeightDirty form.fundalHeight (heightValueFunc value.fundalHeight)
                 , fundalHeightDirty = form.fundalHeightDirty
                 , fetalPresentation = or form.fetalPresentation (Just value.fetalPresentation)
                 , fetalMovement = or form.fetalMovement (Just value.fetalMovement)
@@ -809,11 +810,11 @@ toFamilyPlanningValue form =
 
 fromPrenatalNutritionValue : Maybe PrenatalNutritionValue -> NutritionAssessmentForm
 fromPrenatalNutritionValue saved =
-    { height = Maybe.map (.height >> (\(HeightInCm cm) -> cm)) saved
+    { height = Maybe.map (.height >> heightValueFunc) saved
     , heightDirty = False
-    , weight = Maybe.map (.weight >> (\(WeightInKg kg) -> kg)) saved
+    , weight = Maybe.map (.weight >> weightValueFunc) saved
     , weightDirty = False
-    , muac = Maybe.map (.muac >> (\(MuacInCm cm) -> cm)) saved
+    , muac = Maybe.map (.muac >> muacValueFunc) saved
     , muacDirty = False
     }
 
@@ -824,11 +825,11 @@ prenatalNutritionFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { height = valueConsideringIsDirtyField form.heightDirty form.height (value.height |> (\(HeightInCm cm) -> cm))
+                { height = valueConsideringIsDirtyField form.heightDirty form.height (heightValueFunc value.height)
                 , heightDirty = form.heightDirty
-                , weight = valueConsideringIsDirtyField form.weightDirty form.weight (value.weight |> (\(WeightInKg kg) -> kg))
+                , weight = valueConsideringIsDirtyField form.weightDirty form.weight (weightValueFunc value.weight)
                 , weightDirty = form.weightDirty
-                , muac = valueConsideringIsDirtyField form.muacDirty form.muac (value.muac |> (\(MuacInCm cm) -> cm))
+                , muac = valueConsideringIsDirtyField form.muacDirty form.muac (muacValueFunc value.muac)
                 , muacDirty = form.muacDirty
                 }
             )

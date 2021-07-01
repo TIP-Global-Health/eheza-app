@@ -14,7 +14,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Encoder exposing (malariaRapidTestResultAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (muacIndication)
+import Backend.Measurement.Utils exposing (muacIndication, muacValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, isPersonAFertileWoman)
@@ -884,7 +884,7 @@ viewMuacForm language currentDate assembled form_ =
             getInputConstraintsMuac
 
         previousValue =
-            resolvePreviousValue assembled .muac (\(MuacInCm cm) -> cm)
+            resolvePreviousValue assembled .muac muacValueFunc
     in
     div [ class "ui form physical-exam muac" ]
         [ viewLabel language Translate.MUAC

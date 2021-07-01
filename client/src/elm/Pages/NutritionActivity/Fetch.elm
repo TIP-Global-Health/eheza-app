@@ -10,20 +10,4 @@ import RemoteData exposing (RemoteData(..))
 
 fetch : NutritionEncounterId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
-    let
-        participantId =
-            Dict.get id db.nutritionEncounters
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-                |> Maybe.map .participant
-
-        personId =
-            participantId
-                |> Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants)
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-                |> Maybe.map .person
-    in
     Pages.NutritionEncounter.Fetch.fetch id db
-        ++ Maybe.Extra.values
-            [ Maybe.map Backend.Model.FetchChildMeasurements personId ]

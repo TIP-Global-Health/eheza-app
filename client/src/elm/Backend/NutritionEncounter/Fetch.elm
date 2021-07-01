@@ -1,4 +1,4 @@
-module Backend.NutritionEncounter.Fetch exposing (fetchForChild)
+module Backend.NutritionEncounter.Fetch exposing (fetch)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -9,8 +9,22 @@ import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
 
 
-fetchForChild : PersonId -> ModelIndexedDb -> List MsgIndexedDb
-fetchForChild id db =
+fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
+fetch id db =
+    [ FetchPerson id
+
+    -- We need this, so we can resolve the individual participants of child.
+    , FetchIndividualEncounterParticipantsForPerson id
+
+    -- Fetch Group measuments that belong to child.
+    , Backend.Model.FetchChildMeasurements id
+    ]
+        ++ fetchForNutrition id db
+        ++ fetchForWellChild id db
+
+
+fetchForNutrition : PersonId -> ModelIndexedDb -> List MsgIndexedDb
+fetchForNutrition id db =
     let
         participantId =
             resolveIndividualParticipantForPerson id NutritionEncounter db
@@ -28,15 +42,38 @@ fetchForChild id db =
 
         -- We fetch measurements of all encounters.
         fetchMeasurements =
-            encountersIds
-                |> List.map FetchNutritionMeasurements
+            List.map FetchNutritionMeasurements encountersIds
     in
     Maybe.Extra.values
         [ Maybe.map FetchIndividualEncounterParticipant participantId
         , Maybe.map FetchNutritionEncountersForParticipant participantId
-        , Just <| FetchPerson id
+        ]
+        ++ fetchMeasurements
 
-        -- We need this, so we can resolve the nutrition participant for child.
-        , Just <| FetchIndividualEncounterParticipantsForPerson id
+
+fetchForWellChild : PersonId -> ModelIndexedDb -> List MsgIndexedDb
+fetchForWellChild id db =
+    let
+        participantId =
+            resolveIndividualParticipantForPerson id WellChildEncounter db
+
+        encountersIds =
+            participantId
+                |> Maybe.map
+                    (\participantId_ ->
+                        Dict.get participantId_ db.wellChildEncountersByParticipant
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.map Dict.keys
+                            |> RemoteData.withDefault []
+                    )
+                |> Maybe.withDefault []
+
+        -- We fetch measurements of all encounters.
+        fetchMeasurements =
+            List.map FetchWellChildMeasurements encountersIds
+    in
+    Maybe.Extra.values
+        [ Maybe.map FetchIndividualEncounterParticipant participantId
+        , Maybe.map FetchWellChildEncountersForParticipant participantId
         ]
         ++ fetchMeasurements

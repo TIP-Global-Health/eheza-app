@@ -58,10 +58,10 @@ fromChildMeasurementData data =
                 |> Maybe.map mappingFunc
     in
     { height =
-        fromData .height (.value >> (\(HeightInCm cm) -> String.fromFloat cm))
+        fromData .height (.value >> heightValueFunc >> String.fromFloat)
             |> Maybe.withDefault ""
     , muac =
-        fromData .muac (.value >> (\(MuacInCm cm) -> String.fromFloat cm))
+        fromData .muac (.value >> muacValueFunc >> String.fromFloat)
             |> Maybe.withDefault ""
     , nutritionSigns =
         fromData .nutrition .value
@@ -71,7 +71,7 @@ fromChildMeasurementData data =
     , photo =
         fromData .photo .value
     , weight =
-        fromData .weight (.value >> (\(WeightInKg kg) -> String.fromFloat kg))
+        fromData .weight (.value >> weightValueFunc >> String.fromFloat)
             |> Maybe.withDefault ""
     , fbfForm =
         fromData .fbf (.value >> fbfValueToForm)
@@ -191,29 +191,6 @@ getChildForm childId pages session =
                     )
 
 
-{-| Here we get a Float measurement value with it's date\_measured, from group and individual contexts.
-We return the most recent value, or Nothing, if both provided parameters were Nothing.
--}
-resolvePreviousValueInCommonContext : Maybe ( NominalDate, Float ) -> Maybe ( NominalDate, Float ) -> Maybe Float
-resolvePreviousValueInCommonContext previousGroupMeasurement previousIndividualMeasurement =
-    case previousGroupMeasurement of
-        Just ( pgmDate, pgmValue ) ->
-            case previousIndividualMeasurement of
-                Just ( pimDate, pimValue ) ->
-                    case Gizra.NominalDate.compare pgmDate pimDate of
-                        GT ->
-                            Just pgmValue
-
-                        _ ->
-                            Just pimValue
-
-                Nothing ->
-                    Just pgmValue
-
-        Nothing ->
-            Maybe.map Tuple.second previousIndividualMeasurement
-
-
 withinConstraints : FloatInputConstraints -> Float -> Bool
 withinConstraints constraints value =
     value >= constraints.minVal && value <= constraints.maxVal
@@ -280,7 +257,7 @@ resolveIndividualWellChildValue measurementsWithDates measurementFunc valueFunc 
 
 fromHeightValue : Maybe HeightInCm -> HeightForm
 fromHeightValue saved =
-    { height = Maybe.map (\(HeightInCm cm) -> cm) saved
+    { height = Maybe.map heightValueFunc saved
     , heightDirty = False
     }
 
@@ -291,7 +268,7 @@ heightFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { height = valueConsideringIsDirtyField form.heightDirty form.height (value |> (\(HeightInCm cm) -> cm))
+                { height = valueConsideringIsDirtyField form.heightDirty form.height (value |> heightValueFunc)
                 , heightDirty = form.heightDirty
                 }
             )
@@ -310,7 +287,7 @@ toHeightValue form =
 
 fromMuacValue : Maybe MuacInCm -> MuacForm
 fromMuacValue saved =
-    { muac = Maybe.map (\(MuacInCm cm) -> cm) saved
+    { muac = Maybe.map muacValueFunc saved
     , muacDirty = False
     }
 
@@ -321,7 +298,7 @@ muacFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { muac = valueConsideringIsDirtyField form.muacDirty form.muac (value |> (\(MuacInCm cm) -> cm))
+                { muac = valueConsideringIsDirtyField form.muacDirty form.muac (value |> muacValueFunc)
                 , muacDirty = form.muacDirty
                 }
             )
@@ -366,7 +343,7 @@ toNutritionValue form =
 
 fromWeightValue : Maybe WeightInKg -> WeightForm
 fromWeightValue saved =
-    { weight = Maybe.map (\(WeightInKg cm) -> cm) saved
+    { weight = Maybe.map weightValueFunc saved
     , weightDirty = False
     }
 
@@ -377,7 +354,7 @@ weightFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { weight = valueConsideringIsDirtyField form.weightDirty form.weight (value |> (\(WeightInKg cm) -> cm))
+                { weight = valueConsideringIsDirtyField form.weightDirty form.weight (weightValueFunc value)
                 , weightDirty = form.weightDirty
                 }
             )
