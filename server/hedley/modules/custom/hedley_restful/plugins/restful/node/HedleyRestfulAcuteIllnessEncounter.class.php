@@ -39,7 +39,7 @@ class HedleyRestfulAcuteIllnessEncounter extends HedleyRestfulIndividualEncounte
     ];
 
     foreach ($field_names as $field_name) {
-      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
+      hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
     }
   }
 

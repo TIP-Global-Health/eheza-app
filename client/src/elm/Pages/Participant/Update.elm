@@ -95,6 +95,14 @@ updateChild msg model childForm =
                 Nothing
                 Nothing
 
+        SetWarningPopupState state ->
+            ChildUpdateReturns
+                { model | warningPopupState = state }
+                Cmd.none
+                childForm
+                Nothing
+                Nothing
+
 
 {-| See comments on `updateChild` ... this has a similar structure.
 -}
@@ -135,6 +143,14 @@ updateMother msg model motherForm measurements =
                     | selectedTab = tab
                     , selectedActivity = Nothing
                 }
+                Cmd.none
+                motherForm
+                Nothing
+                Nothing
+
+        SetWarningPopupState state ->
+            MotherUpdateReturns
+                { model | warningPopupState = state }
                 Cmd.none
                 motherForm
                 Nothing

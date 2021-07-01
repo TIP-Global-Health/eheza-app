@@ -82,6 +82,35 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_boolean',
   );
 
+  // Exported field_base: 'field_birth_plan_signs'.
+  $field_bases['field_birth_plan_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_birth_plan_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'have-insurance' => 'Have insurance',
+        'bought-clothes-for-child' => 'Bought clothes for the child',
+        'caregiver-to-accompany-you' => 'Caregiver to accompany you',
+        'saved-money-for-use' => 'Saved money for use',
+        'planned-for-transportation' => 'Planned for transportation',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_bmi'.
   $field_bases['field_bmi'] = array(
     'active' => 1,
@@ -260,6 +289,34 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_boolean',
+  );
+
+  // Exported field_base: 'field_contributing_factors_signs'.
+  $field_bases['field_contributing_factors_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_contributing_factors_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'lack-of-breast-milk' => 'Lack of breast milk',
+        'maternal-mastitis' => 'Maternal mastitis',
+        'poor-suck' => 'Poor suck',
+        'diarrhea-or-vomiting' => 'Diarrhea or vomiting',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_currently_pregnant'.
@@ -534,6 +591,36 @@ function hedley_activity_field_default_field_bases() {
         'breech' => 'Breech',
         'twins' => 'Twins',
         'unknown' => 'Unknown',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_follow_up_options'.
+  $field_bases['field_follow_up_options'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_follow_up_options',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        '1-d' => '1 Day',
+        '3-d' => '3 Days',
+        '1-w' => '1 Week',
+        '2-w' => '2 Weeks',
+        '1-m' => '1 Month',
+        '2-m' => '2 Months',
+        '3-m' => '3 Months',
       ),
       'allowed_values_function' => '',
     ),
@@ -956,6 +1043,38 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
+  // Exported field_base: 'field_nutrition_assesment'.
+  $field_bases['field_nutrition_assesment'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_nutrition_assesment',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'malnutrition-moderate' => 'Malnutrition Moderate',
+        'malnutrition-severe' => 'Malnutrition Severe',
+        'underweight-moderate' => 'Underweight Moderate',
+        'underweight-severe' => 'Underweight Severe',
+        'danger-signs-not-present' => 'Danger signs not present',
+        'danger-signs-present' => 'Danger signs present',
+        'malnutrition-signs' => 'Malnutrition signs',
+        'consecutive-weight-loss' => 'Consecutive weight loss',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_nutrition_encounter'.
   $field_bases['field_nutrition_encounter'] = array(
     'active' => 1,
@@ -1078,6 +1197,66 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_postpartum_child'.
+  $field_bases['field_postpartum_child'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_postpartum_child',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'inability-to-suckle' => 'Inability to Suckle',
+        'paralysis' => 'Paralysis',
+        'laboured-breathing' => 'Laboured Breathing',
+        'abnormal-temperature' => 'Abnormal Temperature',
+        'inactive-or-no-movement' => 'Inactive or No Movement',
+        'body-turned-yellow' => 'Body Turned Yellow',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_postpartum_mother'.
+  $field_bases['field_postpartum_mother'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_postpartum_mother',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'uterine-bleeding' => 'Uterine Bleeding',
+        'fever' => 'Fever',
+        'migraine' => 'Migraine',
+        'paralysis' => 'Paralysis',
+        'abdominal-pain' => 'Acute Abdominal Pain',
+        'laboured-breathing' => 'Laboured Breathing',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_prenatal_encounter'.
   $field_bases['field_prenatal_encounter'] = array(
     'active' => 1,
@@ -1111,6 +1290,38 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'entityreference',
+  );
+
+  // Exported field_base: 'field_prenatal_health_education'.
+  $field_bases['field_prenatal_health_education'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_prenatal_health_education',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'expectations' => 'Expectations',
+        'visits-review' => 'Visits review',
+        'warning-signs' => 'Warning signs',
+        'hemorrhaging' => 'Hemorrhaging',
+        'family-planning' => 'Family planning',
+        'breastfeeding' => 'Breastfeeding',
+        'immunization' => 'Immunization',
+        'hygiene' => 'Hygiene',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_preterm_pregnancy'.
@@ -1346,6 +1557,33 @@ function hedley_activity_field_default_field_bases() {
     'settings' => array(),
     'translatable' => 0,
     'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_urine_pregnancy_test'.
+  $field_bases['field_urine_pregnancy_test'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_urine_pregnancy_test',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'positive' => 'Positive',
+        'negative' => 'Negative',
+        'indeterminate' => 'Indeterminate',
+        'unable-to-conduct' => 'Unable to conduct',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_weight'.

@@ -455,6 +455,39 @@ viewCheckBoxValueInputNone language data setMsg translateFunc noneSign =
         ]
 
 
+setMultiSelectInputValue : (f -> Maybe (List s)) -> (Maybe (List s) -> f) -> s -> s -> f -> f
+setMultiSelectInputValue getSignsFunc setSignsFunc noValueIndicator value form =
+    case getSignsFunc form of
+        Just signs ->
+            if List.member value signs then
+                let
+                    updatedSigns =
+                        if List.length signs == 1 then
+                            Nothing
+
+                        else
+                            signs |> List.filter ((/=) value) |> Just
+                in
+                setSignsFunc updatedSigns
+
+            else if value == noValueIndicator then
+                setSignsFunc (Just [ value ])
+
+            else
+                let
+                    updatedSigns =
+                        if signs == [ noValueIndicator ] then
+                            Just [ value ]
+
+                        else
+                            Just (value :: signs)
+                in
+                setSignsFunc updatedSigns
+
+        Nothing ->
+            setSignsFunc (Just [ value ])
+
+
 viewEndEncounterDialog : Language -> TranslationId -> TranslationId -> msg -> msg -> Html msg
 viewEndEncounterDialog language heading message confirmAction cancelAction =
     div [ class "ui tiny active modal" ]
@@ -491,6 +524,20 @@ taskCompleted maybe =
         0
 
 
+taskCompletedWithException : Maybe a -> a -> Int
+taskCompletedWithException maybe exception =
+    case maybe of
+        Just value ->
+            if value == exception then
+                0
+
+            else
+                1
+
+        Nothing ->
+            0
+
+
 taskListCompleted : List (Maybe a) -> Int
 taskListCompleted list =
     if List.all isJust list then
@@ -507,6 +554,26 @@ ifEverySetEmpty value set =
 
     else
         set
+
+
+ifTrue : a -> Bool -> EverySet a
+ifTrue value condition =
+    if condition then
+        EverySet.singleton value
+
+    else
+        EverySet.empty
+
+
+ifFalse : a -> Bool -> EverySet a
+ifFalse value condition =
+    ifTrue value (not condition)
+
+
+ifNullableTrue : a -> Maybe Bool -> Maybe (EverySet a)
+ifNullableTrue value maybeCondition =
+    Maybe.map (ifTrue value >> Just) maybeCondition
+        |> Maybe.withDefault (Just EverySet.empty)
 
 
 valueConsideringIsDirtyField : Bool -> Maybe a -> a -> Maybe a

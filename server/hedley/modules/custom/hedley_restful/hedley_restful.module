@@ -5,7 +5,7 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 15);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 16);
 define('HEDLEY_RESTFUL_INCIDENT_TYPE_CONTENT_UPLOAD', 'content-upload');
 
 /**
@@ -38,24 +38,34 @@ const HEDLEY_RESTFUL_SHARDED = [
   'prenatal_encounter' => 'prenatal-encounters',
   'nutrition_encounter' => 'nutrition-encounters',
   'acute_illness_encounter' => 'acute-illness-encounters',
+  'home_visit_encounter' => 'home-visit-encounter',
   'relationship' => 'relationships',
   'session' => 'sessions',
   // Measurements.
   'acute_findings' => 'acute-findings',
   'acute_illness_danger_signs' => 'acute-illness-danger-signs',
+  'acute_illness_follow_up' => 'acute-illness-follow-up',
   'acute_illness_muac' => 'acute-illness-muacs',
   'acute_illness_nutrition' => 'acute-illness-nutritions',
   'acute_illness_vitals' => 'acute-illness-vitals',
+  'prenatal_follow_up' => 'prenatal-follow-up',
+  'prenatal_send_to_hc' => 'prenatal-send-to-hc',
+  'appointment_confirmation' => 'appointment-confirmation',
   'attendance' => 'attendances',
   'barcode_scan' => 'barcode-scan',
   'breast_exam' => 'breast-exams',
+  'birth_plan' => 'birth-plan',
   'call_114' => 'call-114s',
   'child_fbf' => 'child-fbfs',
+  'contributing_factors' => 'contributing-factors',
   'counseling_session' => 'counseling-sessions',
   'core_physical_exam' => 'core-physical-exams',
   'danger_signs' => 'danger-signs',
   'exposure' => 'exposures',
   'family_planning' => 'family-plannings',
+  'follow_up' => 'follow-up',
+  'group_health_education' => 'group-health-education',
+  'group_send_to_hc' => 'group-send-to-hc',
   'health_education' => 'health-education',
   'hc_contact' => 'hc-contacts',
   'height' => 'heights',
@@ -69,16 +79,26 @@ const HEDLEY_RESTFUL_SHARDED = [
   'mother_fbf' => 'mother-fbfs',
   'muac' => 'muacs',
   'nutrition' => 'nutritions',
+  'nutrition_caring' => 'nutrition-caring',
+  'nutrition_contributing_factors' => 'nutrition-contributing-factors',
+  'nutrition_feeding' => 'nutrition-feeding',
+  'nutrition_follow_up' => 'nutrition-follow-up',
+  'nutrition_food_security' => 'nutrition-food-security',
+  'nutrition_health_education' => 'nutrition-health-education',
   'nutrition_height' => 'nutrition-heights',
+  'nutrition_hygiene' => 'nutrition-hygiene',
   'nutrition_muac' => 'nutrition-muacs',
   'nutrition_nutrition' => 'nutrition-nutritions',
   'nutrition_photo' => 'nutrition-photos',
+  'nutrition_send_to_hc' => 'nutrition-send-to-hc',
   'nutrition_weight' => 'nutrition-weights',
   'obstetrical_exam' => 'obstetrical-exams',
   'obstetric_history' => 'obstetric-histories',
   'obstetric_history_step2' => 'obstetric-histories-step2',
   'participant_consent' => 'participants-consent',
+  'pregnancy_testing' => 'pregnancy-testings',
   'prenatal_family_planning' => 'prenatal-family-plannings',
+  'prenatal_health_education' => 'prenatal-health-education',
   'prenatal_nutrition' => 'prenatal-nutritions',
   'photo' => 'photos',
   'prenatal_photo' => 'prenatal-photos',
@@ -315,80 +335,6 @@ function hedley_restful_query_in_batches(\EntityFieldQuery $base_query, $batch_s
     $offset += $batch_size;
     entity_get_controller('node')->resetCache($keys);
   }
-}
-
-/**
- * Join a field to a DB Select query, and add its main value.
- *
- * @param SelectQuery $query
- *   Query to join to.
- * @param string $entity_type
- *   Type of the host entity of the field. Or NULL to avoid filtering the field
- *   table by entity type.
- * @param string $field_name
- *   Field name.
- * @param bool $require
- *   Whether filter out rows where this field would be NULL.
- * @param string $entity_id_selector
- *   SQL selector for the column by which the field is joined. The entity ID is
- *   used by default.
- * @param string $field_alias
- *   The field alias.
- *
- * @throws Exception
- */
-function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $field_name, $require = TRUE, $entity_id_selector = NULL, $field_alias = NULL, $second_value = FALSE) {
-  $field = field_info_field($field_name);
-  $table_name = _field_sql_storage_tablename($field);
-
-  if (!$entity_id_selector) {
-    if (!$entity_type) {
-      throw new Exception('Entity type is required when ID selector is not specified');
-    }
-    // Set default entity ID selector.
-    switch ($entity_type) {
-      case 'user':
-        $entity_id_selector = 'users.uid';
-        break;
-
-      case 'node':
-        $entity_id_selector = 'node.nid';
-        break;
-
-      default:
-        throw new Exception(format_string('hedley_general_join_field_to_query() is not implemented for entity_type: "@type"', ['@type' => $entity_type]));
-    }
-  }
-
-  switch ($field['type']) {
-    case 'entityreference':
-      $column_suffix = 'target_id';
-      break;
-
-    case 'image':
-    case 'file':
-      $column_suffix = 'fid';
-      break;
-
-    default:
-      $column_suffix = 'value';
-  }
-
-  $field_alias = $field_alias ?: $field_name;
-  $query->addField($field_alias, $field_name . '_' . $column_suffix, $field_alias);
-  if ($second_value) {
-    $column_suffix = 'value2';
-    $query->addField($field_alias, $field_name . '_' . $column_suffix, $field_alias);
-  }
-
-  $join = $require ? 'innerJoin' : 'leftJoin';
-  $arguments = [':type' => $entity_type];
-  $conditions[] = "$entity_id_selector = $field_alias.entity_id";
-  if ($entity_type) {
-    $conditions[] = "$field_alias.entity_type = :type";
-  }
-
-  $query->$join($table_name, $field_alias, implode(' AND ', $conditions), $arguments);
 }
 
 /**

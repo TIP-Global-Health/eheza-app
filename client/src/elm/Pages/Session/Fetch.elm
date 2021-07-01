@@ -17,11 +17,19 @@ import Pages.Participant.Fetch
 import Pages.Participants.Fetch
 import Pages.ProgressReport.Fetch
 import RemoteData exposing (RemoteData(..))
+import ZScore.Model
 
 
-fetch : NominalDate -> SessionId -> SessionPage -> ModelIndexedDb -> List MsgIndexedDb
-fetch currentDate sessionId sessionPage db =
+fetch : NominalDate -> ZScore.Model.Model -> SessionId -> SessionPage -> ModelIndexedDb -> List MsgIndexedDb
+fetch currentDate zscores sessionId sessionPage db =
     let
+        fetchForChild childId =
+            let
+                ( forChildPage, childPageCalculations ) =
+                    Pages.Participant.Fetch.fetch sessionId
+            in
+            ( forChildPage ++ Backend.NutritionEncounter.Fetch.fetchForChild childId db, childPageCalculations )
+
         ( forSessionPage, calculations ) =
             case sessionPage of
                 ActivityPage activity ->
@@ -54,7 +62,7 @@ fetch currentDate sessionId sessionPage db =
                                                             { completed = Dict.empty
                                                             , pending = Dict.empty
                                                             }
-                                                            (Activity.Utils.summarizeChildActivity currentDate childActivity ediatbleSession.offlineSession False)
+                                                            (Activity.Utils.summarizeChildActivity currentDate zscores childActivity ediatbleSession.offlineSession False db)
                                                         |> .pending
                                                         |> Dict.toList
                                                         |> List.head
@@ -79,14 +87,13 @@ fetch currentDate sessionId sessionPage db =
                     Pages.Attendance.Fetch.fetch sessionId
 
                 ChildPage childId ->
-                    let
-                        ( forChildPage, childPageCalculations ) =
-                            Pages.Participant.Fetch.fetch sessionId
-                    in
-                    ( forChildPage ++ Backend.NutritionEncounter.Fetch.fetchForChild childId db, childPageCalculations )
+                    fetchForChild childId
 
                 MotherPage _ ->
                     Pages.Participant.Fetch.fetch sessionId
+
+                NextStepsPage childId _ ->
+                    fetchForChild childId
 
                 ParticipantsPage ->
                     Pages.Participants.Fetch.fetch sessionId

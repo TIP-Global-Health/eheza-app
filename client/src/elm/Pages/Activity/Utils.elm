@@ -47,7 +47,7 @@ viewChildMeasurements language currentDate zscores isChw db childId activity pag
                     |> Maybe.map
                         (\child ->
                             generatePreviousValuesForChild childId db
-                                |> Measurement.View.viewChild language currentDate isChw child activity measurements zscores session form
+                                |> Measurement.View.viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db form
                                 |> Html.map MsgMeasurement
                         )
                     |> Maybe.withDefault emptyNode

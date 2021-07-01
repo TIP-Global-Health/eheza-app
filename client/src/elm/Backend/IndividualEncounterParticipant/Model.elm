@@ -1,6 +1,7 @@
 module Backend.IndividualEncounterParticipant.Model exposing (..)
 
 import Backend.Entities exposing (..)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import Date exposing (Date)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -15,25 +16,39 @@ type alias IndividualEncounterParticipant =
     , dateConcluded : Maybe NominalDate
     , outcome : Maybe IndividualEncounterParticipantOutcome
     , deliveryLocation : Maybe DeliveryLocation
+    , newborn : Maybe PersonId
     , deleted : Bool
     , shard : Maybe HealthCenterId
     }
+
+
+emptyIndividualEncounterParticipant : NominalDate -> PersonId -> IndividualEncounterType -> HealthCenterId -> IndividualEncounterParticipant
+emptyIndividualEncounterParticipant currentDate personId type_ healthCenterId =
+    IndividualEncounterParticipant personId type_ currentDate Nothing Nothing Nothing Nothing Nothing Nothing False (Just healthCenterId)
+
+
+type IndividualParticipantExtraData
+    = AntenatalData PrenatalEncounterType
+    | NoIndividualParticipantExtraData
 
 
 type alias Model =
     { closePrenatalSession : WebData ()
     , closeAcuteIllnessSession : WebData ()
     , setEddDate : WebData ()
+    , setNewborn : WebData ()
     }
 
 
 type Msg
-    = ClosePrenatalSession Date PregnancyOutcome Bool
+    = ClosePrenatalSession Date PregnancyOutcome DeliveryLocation
     | HandleClosedPrenatalSession (WebData ())
     | CloseAcuteIllnessSession AcuteIllnessOutcome
     | HandleClosedAcuteIllnessSession (WebData ())
     | SetEddDate NominalDate
     | HandleSetEddDate (WebData ())
+    | SetNewborn PersonId
+    | HandleSetNewborn (WebData ())
 
 
 emptyModel : Model
@@ -41,12 +56,14 @@ emptyModel =
     { closePrenatalSession = NotAsked
     , closeAcuteIllnessSession = NotAsked
     , setEddDate = NotAsked
+    , setNewborn = NotAsked
     }
 
 
 type IndividualEncounterType
     = AcuteIllnessEncounter
     | AntenatalEncounter
+    | HomeVisitEncounter
     | InmmunizationEncounter
     | NutritionEncounter
 

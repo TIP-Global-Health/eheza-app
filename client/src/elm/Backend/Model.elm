@@ -24,18 +24,20 @@ import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, E
 import Backend.Dashboard.Model exposing (DashboardStats)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
+import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantExtraData)
 import Backend.Measurement.Model exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Initiator, Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterPostCreateDestination)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.Village.Model exposing (Village)
 import RemoteData exposing (RemoteData(..), WebData)
+import Time
 
 
 {-| This tracks data we fetch from IndexedDB via the service worker. Gradually, we'll
@@ -47,7 +49,6 @@ type alias ModelIndexedDb =
     -- actually need all the clinics at once, but there should be a reasonable
     -- number.
     { clinics : WebData (Dict ClinicId Clinic)
-    , computedDashboard : Dict HealthCenterId DashboardStats
     , everyCounselingSchedule : WebData EveryCounselingSchedule
     , healthCenters : WebData (Dict HealthCenterId HealthCenter)
     , villages : WebData (Dict VillageId Village)
@@ -78,6 +79,7 @@ type alias ModelIndexedDb =
     , nutritionEncounterRequests : Dict NutritionEncounterId Backend.NutritionEncounter.Model.Model
     , acuteIllnessEncounterRequests : Dict AcuteIllnessEncounterId Backend.AcuteIllnessEncounter.Model.Model
     , individualSessionRequests : Dict IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Model
+    , homeVisitEncounterRequests : Dict HomeVisitEncounterId Backend.HomeVisitEncounter.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -98,6 +100,7 @@ type alias ModelIndexedDb =
     , prenatalEncounters : Dict PrenatalEncounterId (WebData PrenatalEncounter)
     , nutritionEncounters : Dict NutritionEncounterId (WebData NutritionEncounter)
     , acuteIllnessEncounters : Dict AcuteIllnessEncounterId (WebData AcuteIllnessEncounter)
+    , homeVisitEncounters : Dict HomeVisitEncounterId (WebData HomeVisitEncounter)
     , individualParticipants : Dict IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
 
     -- Cache things organized in certain ways.
@@ -105,9 +108,12 @@ type alias ModelIndexedDb =
     , prenatalEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict PrenatalEncounterId PrenatalEncounter))
     , nutritionEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict NutritionEncounterId NutritionEncounter))
     , acuteIllnessEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
+    , homeVisitEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict HomeVisitEncounterId HomeVisitEncounter))
     , prenatalMeasurements : Dict PrenatalEncounterId (WebData PrenatalMeasurements)
     , nutritionMeasurements : Dict NutritionEncounterId (WebData NutritionMeasurements)
     , acuteIllnessMeasurements : Dict AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
+    , followUpMeasurements : Dict HealthCenterId (WebData FollowUpMeasurements)
+    , homeVisitMeasurements : Dict HomeVisitEncounterId (WebData HomeVisitMeasurements)
 
     -- From the point of view of the specified person, all of their relationships.
     , relationshipsByPerson : Dict PersonId (WebData (Dict RelationshipId MyRelationship))
@@ -125,14 +131,17 @@ type alias ModelIndexedDb =
     , postPrenatalEncounter : Dict IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
     , postNutritionEncounter : Dict IndividualEncounterParticipantId (WebData ( NutritionEncounterId, NutritionEncounter ))
     , postAcuteIllnessEncounter : Dict IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))
+    , postHomeVisitEncounter : Dict IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
+
+    -- Dashboard Statistics.
+    , computedDashboard : Dict HealthCenterId DashboardStats
+    , computedDashboardLastFetched : Time.Posix
     }
 
 
 emptyModelIndexedDb : ModelIndexedDb
 emptyModelIndexedDb =
-    { childMeasurements = Dict.empty
-    , clinics = NotAsked
-    , computedDashboard = Dict.empty
+    { clinics = NotAsked
     , editableSessions = Dict.empty
     , everyCounselingSchedule = NotAsked
     , expectedParticipants = Dict.empty
@@ -140,37 +149,46 @@ emptyModelIndexedDb =
     , healthCenters = NotAsked
     , villages = NotAsked
     , motherMeasurements = Dict.empty
+    , childMeasurements = Dict.empty
     , nutritionEncounters = Dict.empty
     , nutritionEncountersByParticipant = Dict.empty
+    , nutritionMeasurements = Dict.empty
     , acuteIllnessEncounters = Dict.empty
     , acuteIllnessEncountersByParticipant = Dict.empty
     , acuteIllnessMeasurements = Dict.empty
-    , nutritionMeasurements = Dict.empty
+    , homeVisitEncounters = Dict.empty
+    , homeVisitEncountersByParticipant = Dict.empty
+    , homeVisitMeasurements = Dict.empty
+    , prenatalEncounters = Dict.empty
+    , prenatalEncountersByParticipant = Dict.empty
+    , prenatalMeasurements = Dict.empty
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
     , people = Dict.empty
     , personSearches = Dict.empty
-    , postNutritionEncounter = Dict.empty
     , postPerson = NotAsked
     , postPmtctParticipant = Dict.empty
     , postIndividualSession = Dict.empty
     , postPrenatalEncounter = Dict.empty
+    , postNutritionEncounter = Dict.empty
+    , postHomeVisitEncounter = Dict.empty
     , postAcuteIllnessEncounter = Dict.empty
     , postRelationship = Dict.empty
     , postSession = NotAsked
-    , prenatalEncounters = Dict.empty
     , prenatalEncounterRequests = Dict.empty
     , nutritionEncounterRequests = Dict.empty
     , acuteIllnessEncounterRequests = Dict.empty
+    , homeVisitEncounterRequests = Dict.empty
     , individualSessionRequests = Dict.empty
     , individualParticipants = Dict.empty
     , individualParticipantsByPerson = Dict.empty
-    , prenatalEncountersByParticipant = Dict.empty
-    , prenatalMeasurements = Dict.empty
     , relationshipsByPerson = Dict.empty
     , sessionRequests = Dict.empty
     , sessions = Dict.empty
     , sessionsByClinic = Dict.empty
+    , followUpMeasurements = Dict.empty
+    , computedDashboard = Dict.empty
+    , computedDashboardLastFetched = Time.millisToPosix 0
     }
 
 
@@ -193,6 +211,8 @@ type MsgIndexedDb
     | FetchEveryCounselingSchedule
     | FetchExpectedParticipants SessionId
     | FetchExpectedSessions PersonId
+    | FetchFollowUpMeasurements HealthCenterId
+    | FetchFollowUpParticipants (List PersonId)
     | FetchHealthCenters
     | FetchIndividualEncounterParticipantsForPerson PersonId
     | FetchMotherMeasurements PersonId
@@ -200,6 +220,9 @@ type MsgIndexedDb
     | FetchNutritionEncounter NutritionEncounterId
     | FetchNutritionEncountersForParticipant IndividualEncounterParticipantId
     | FetchNutritionMeasurements NutritionEncounterId
+    | FetchHomeVisitEncounter HomeVisitEncounterId
+    | FetchHomeVisitEncountersForParticipant IndividualEncounterParticipantId
+    | FetchHomeVisitMeasurements HomeVisitEncounterId
     | FetchParticipantForms
     | FetchParticipantsForPerson PersonId
     | FetchPeopleByName String
@@ -224,6 +247,8 @@ type MsgIndexedDb
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
     | HandleFetchedExpectedParticipants SessionId (WebData ExpectedParticipants)
     | HandleFetchedExpectedSessions PersonId (WebData (Dict SessionId Session))
+    | HandleFetchedFollowUpMeasurements HealthCenterId (WebData FollowUpMeasurements)
+    | HandleFetchFollowUpParticipants (WebData (Dict PersonId Person))
     | HandleFetchedHealthCenters (WebData (Dict HealthCenterId HealthCenter))
     | HandleFetchedIndividualEncounterParticipantsForPerson PersonId (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
     | HandleFetchedMotherMeasurements PersonId (WebData MotherMeasurementList)
@@ -231,6 +256,9 @@ type MsgIndexedDb
     | HandleFetchedNutritionEncounter NutritionEncounterId (WebData NutritionEncounter)
     | HandleFetchedNutritionEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict NutritionEncounterId NutritionEncounter))
     | HandleFetchedNutritionMeasurements NutritionEncounterId (WebData NutritionMeasurements)
+    | HandleFetchedHomeVisitEncounter HomeVisitEncounterId (WebData HomeVisitEncounter)
+    | HandleFetchedHomeVisitEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict HomeVisitEncounterId HomeVisitEncounter))
+    | HandleFetchedHomeVisitMeasurements HomeVisitEncounterId (WebData HomeVisitMeasurements)
     | HandleFetchedParticipantForms (WebData (Dict ParticipantFormId ParticipantForm))
     | HandleFetchedParticipantsForPerson PersonId (WebData (Dict PmtctParticipantId PmtctParticipant))
     | HandleFetchedPeopleByName String (WebData (Dict PersonId Person))
@@ -250,20 +278,22 @@ type MsgIndexedDb
     | PostRelationship PersonId MyRelationship (Maybe ClinicId) Initiator
     | PostPmtctParticipant Initiator PmtctParticipant
     | PostSession Session
-    | PostIndividualSession IndividualEncounterParticipant
-    | PostPrenatalEncounter PrenatalEncounter
+    | PostIndividualSession IndividualParticipantExtraData IndividualEncounterParticipant
+    | PostPrenatalEncounter PrenatalEncounterPostCreateDestination PrenatalEncounter
     | PostNutritionEncounter NutritionEncounter
     | PostAcuteIllnessEncounter AcuteIllnessEncounter
+    | PostHomeVisitEncounter HomeVisitEncounter
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) Initiator (WebData PersonId)
     | HandlePatchedPerson PersonId (WebData Person)
     | HandlePostedRelationship PersonId Initiator (WebData MyRelationship)
     | HandlePostedPmtctParticipant PersonId Initiator (WebData ( PmtctParticipantId, PmtctParticipant ))
     | HandlePostedSession ClinicType (WebData SessionId)
-    | HandlePostedIndividualSession PersonId IndividualEncounterType (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
-    | HandlePostedPrenatalEncounter IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
+    | HandlePostedIndividualSession PersonId IndividualEncounterType IndividualParticipantExtraData (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
+    | HandlePostedPrenatalEncounter IndividualEncounterParticipantId PrenatalEncounterPostCreateDestination (WebData ( PrenatalEncounterId, PrenatalEncounter ))
     | HandlePostedNutritionEncounter IndividualEncounterParticipantId (WebData ( NutritionEncounterId, NutritionEncounter ))
     | HandlePostedAcuteIllnessEncounter IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))
+    | HandlePostedHomeVisitEncounter IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.
@@ -273,6 +303,7 @@ type MsgIndexedDb
     | MsgPrenatalEncounter PrenatalEncounterId Backend.PrenatalEncounter.Model.Msg
     | MsgNutritionEncounter NutritionEncounterId Backend.NutritionEncounter.Model.Msg
     | MsgAcuteIllnessEncounter AcuteIllnessEncounterId Backend.AcuteIllnessEncounter.Model.Msg
+    | MsgHomeVisitEncounter HomeVisitEncounterId Backend.HomeVisitEncounter.Model.Msg
     | MsgIndividualSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
     | ResetFailedToFetchAuthorities
 
@@ -282,17 +313,22 @@ type MsgIndexedDb
 type Revision
     = AcuteFindingsRevision AcuteFindingsId AcuteFindings
     | AcuteIllnessDangerSignsRevision AcuteIllnessDangerSignsId AcuteIllnessDangerSigns
+    | AcuteIllnessFollowUpRevision AcuteIllnessFollowUpId AcuteIllnessFollowUp
     | AcuteIllnessMuacRevision AcuteIllnessMuacId AcuteIllnessMuac
     | AcuteIllnessNutritionRevision AcuteIllnessNutritionId AcuteIllnessNutrition
     | AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
     | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
+    | AppointmentConfirmationRevision PrenatalAppointmentConfirmationId PrenatalAppointmentConfirmation
     | AttendanceRevision AttendanceId Attendance
     | BarcodeScanRevision BarcodeScanId BarcodeScan
     | BreastExamRevision BreastExamId BreastExam
+    | BirthPlanRevision BirthPlanId BirthPlan
+    | Call114Revision Call114Id Call114
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
     | ChildFbfRevision ChildFbfId Fbf
     | ChildNutritionRevision ChildNutritionId ChildNutrition
     | ClinicRevision ClinicId Clinic
+    | ContributingFactorsRevision ContributingFactorsId ContributingFactors
     | CorePhysicalExamRevision CorePhysicalExamId CorePhysicalExam
     | CounselingScheduleRevision CounselingScheduleId CounselingSchedule
     | CounselingSessionRevision CounselingSessionId CounselingSession
@@ -301,11 +337,14 @@ type Revision
     | DashboardStatsRevision HealthCenterId DashboardStats
     | ExposureRevision ExposureId Exposure
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
+    | FollowUpRevision FollowUpId FollowUp
+    | GroupHealthEducationRevision GroupHealthEducationId GroupHealthEducation
+    | GroupSendToHCRevision GroupSendToHCId GroupSendToHC
     | HCContactRevision HCContactId HCContact
-    | Call114Revision Call114Id Call114
     | HealthCenterRevision HealthCenterId HealthCenter
     | HealthEducationRevision HealthEducationId HealthEducation
     | HeightRevision HeightId Height
+    | HomeVisitEncounterRevision HomeVisitEncounterId HomeVisitEncounter
     | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant
     | IsolationRevision IsolationId Isolation
     | LactationRevision LactationId Lactation
@@ -317,11 +356,19 @@ type Revision
     | MotherFbfRevision MotherFbfId Fbf
     | MuacRevision MuacId Muac
     | NurseRevision NurseId Nurse
+    | NutritionCaringRevision NutritionCaringId NutritionCaring
+    | NutritionContributingFactorsRevision NutritionContributingFactorsId NutritionContributingFactors
     | NutritionEncounterRevision NutritionEncounterId NutritionEncounter
+    | NutritionFeedingRevision NutritionFeedingId NutritionFeeding
+    | NutritionFollowUpRevision NutritionFollowUpId NutritionFollowUp
+    | NutritionFoodSecurityRevision NutritionFoodSecurityId NutritionFoodSecurity
+    | NutritionHealthEducationRevision NutritionHealthEducationId NutritionHealthEducation
     | NutritionHeightRevision NutritionHeightId NutritionHeight
+    | NutritionHygieneRevision NutritionHygieneId NutritionHygiene
     | NutritionMuacRevision NutritionMuacId NutritionMuac
     | NutritionNutritionRevision NutritionNutritionId NutritionNutrition
     | NutritionPhotoRevision NutritionPhotoId NutritionPhoto
+    | NutritionSendToHCRevision NutritionSendToHCId NutritionSendToHC
     | NutritionWeightRevision NutritionWeightId NutritionWeight
     | ObstetricalExamRevision ObstetricalExamId ObstetricalExam
     | ObstetricHistoryRevision ObstetricHistoryId ObstetricHistory
@@ -331,7 +378,11 @@ type Revision
     | PersonRevision PersonId Person
     | PhotoRevision PhotoId Photo
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
+    | PregnancyTestingRevision PregnancyTestId PregnancyTest
     | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
+    | PrenatalHealthEducationRevision PrenatalHealthEducationId PrenatalHealthEducation
+    | PrenatalFollowUpRevision PrenatalFollowUpId PrenatalFollowUp
+    | PrenatalSendToHCRevision PrenatalSendToHcId PrenatalSendToHC
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto

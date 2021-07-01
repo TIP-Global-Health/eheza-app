@@ -1,6 +1,5 @@
 port module App.Ports exposing
     ( bindDropZone
-    , bindDropZoneForTesseract
     , cacheHealthCenter
     , cachePinCode
     , cacheVillage
@@ -57,9 +56,6 @@ port cacheVillage : String -> Cmd msg
 
 
 port bindDropZone : () -> Cmd msg
-
-
-port bindDropZoneForTesseract : () -> Cmd msg
 
 
 port scrollToElement : String -> Cmd msg

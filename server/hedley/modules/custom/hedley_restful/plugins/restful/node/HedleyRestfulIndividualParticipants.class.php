@@ -54,6 +54,11 @@ class HedleyRestfulIndividualParticipants extends HedleyRestfulSyncBase {
       'property' => 'field_outcome_location',
     ];
 
+    $public_fields['newborn'] = [
+      'property' => 'field_newborn',
+      'sub_property' => 'field_uuid',
+    ];
+
     $public_fields['deleted'] = [
       'property' => 'field_deleted',
     ];
@@ -62,23 +67,6 @@ class HedleyRestfulIndividualParticipants extends HedleyRestfulSyncBase {
     unset($public_fields['label']);
 
     return $public_fields;
-  }
-
-  /**
-   * Show the date only.
-   */
-  public function renderDate($date) {
-    return [
-      'value' => $date['value'] ? hedley_restful_timestamp_only_date($date['value']) : NULL,
-      'value2' => $date['value2'] ? hedley_restful_timestamp_only_date($date['value2']) : NULL,
-    ];
-  }
-
-  /**
-   * Show the date with date only.
-   */
-  public function renderDate2($date) {
-    return date("Y-m-d", $date);
   }
 
   /**
@@ -92,17 +80,22 @@ class HedleyRestfulIndividualParticipants extends HedleyRestfulSyncBase {
       'field_date_concluded',
       'field_outcome',
       'field_outcome_location',
+      'field_newborn',
       'field_deleted',
     ];
 
     foreach ($field_names as $field_name) {
-      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
+      hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
     }
 
-    hedley_restful_join_field_to_query($query, 'node', 'field_expected', FALSE, NULL, NULL, TRUE);
+    hedley_general_join_field_to_query($query, 'node', 'field_expected', FALSE, NULL, NULL, TRUE);
 
-    // Get the UUIDs of the Person.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_person.field_person_target_id", 'uuid_person');
+    // Get the UUID of the Person.
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_person.field_person_target_id", 'uuid_person');
+
+    // Get the UUID of the Newborn.
+    // Not every node may have it, so we do not defined it as required.
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_newborn.field_newborn_target_id", 'uuid_newborn');
   }
 
   /**
@@ -128,6 +121,9 @@ class HedleyRestfulIndividualParticipants extends HedleyRestfulSyncBase {
 
       $date = explode(' ', $item->date_concluded);
       $item->date_concluded = !empty($date[0]) ? $date[0] : NULL;
+
+      $item->newborn = $item->uuid_newborn;
+      unset($item->uuid_newborn);
 
       unset($item->label);
     }

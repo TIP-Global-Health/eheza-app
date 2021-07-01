@@ -4,8 +4,8 @@ import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter, emptyAcuteIllnessEncounter)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
-import Backend.IndividualEncounterParticipant.Utils exposing (emptyIndividualEncounterParticipant, isDailyEncounterActive)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), emptyIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
@@ -161,7 +161,7 @@ viewManageIllnessesContent language currentDate selectedHealthCenter id db activ
 
         startIllnessAction =
             emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter selectedHealthCenter
-                |> Backend.Model.PostIndividualSession
+                |> Backend.Model.PostIndividualSession Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
                 |> MsgBackend
 
         createIllnessNavigateToEncounterSection =
@@ -258,7 +258,7 @@ viewManageParticipantsContent language currentDate selectedHealthCenter id db ac
 
         startIllnessAction =
             emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter selectedHealthCenter
-                |> Backend.Model.PostIndividualSession
+                |> Backend.Model.PostIndividualSession Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
                 |> MsgBackend
 
         createIllnessNavigateToEncounterButton =

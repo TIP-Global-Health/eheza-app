@@ -6,6 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, graduatingAgeInMonth, isPersonAnAdult)
+import Backend.PrenatalActivity.Model
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -80,6 +81,9 @@ viewHeader initiator relation title =
                     relation
                         |> Maybe.map (\personId -> UserPage (PersonPage personId initiator))
                         |> Maybe.withDefault (UserPage (SessionPage sessionId AttendancePage))
+
+                PrenatalNextStepsActivityOrigin encounterId ->
+                    UserPage (PrenatalActivityPage encounterId Backend.PrenatalActivity.Model.NextSteps)
     in
     div
         [ class "ui basic segment head" ]

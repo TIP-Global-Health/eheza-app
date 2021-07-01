@@ -423,6 +423,7 @@ function hedley_patient_consolidate_acute_illness_content(array $measurements, $
  *   - Antenatal.
  *   - Nutrition.
  *   - Acute Illness.
+ *   - Home visit.
  *
  * @param array $measurements
  *   A list of measurements IDs.
@@ -435,6 +436,7 @@ function hedley_patient_group_measurements_by_encounter_type(array $measurements
   $antenatal_measurements = [];
   $nutrition_measurements = [];
   $acute_illness_measurements = [];
+  $home_visit_measurements = [];
 
   // Group the measurements using encounter type indicator field.
   foreach ($measurements as $measurement) {
@@ -458,6 +460,11 @@ function hedley_patient_group_measurements_by_encounter_type(array $measurements
     if ($wrapper->__isset('field_acute_illness_encounter')) {
       $acute_illness_measurements[] = $measurement;
     }
+
+    if ($wrapper->__isset('field_home_visit_encounter')) {
+      $nutrition_measurements[] = $measurement;
+      continue;
+    }
   }
 
   return [
@@ -465,6 +472,7 @@ function hedley_patient_group_measurements_by_encounter_type(array $measurements
     $antenatal_measurements,
     $nutrition_measurements,
     $acute_illness_measurements,
+    $home_visit_measurements,
   ];
 }
 

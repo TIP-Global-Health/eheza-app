@@ -59,6 +59,14 @@ function hedley_schedule_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'home_visit_encounter' => array(
+      'name' => t('Home Visit Encounter'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'individual_participant' => array(
       'name' => t('Individual Participant'),
       'base' => 'node_content',

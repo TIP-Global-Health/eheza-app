@@ -172,8 +172,8 @@ gulp.task("copy:fonts", function() {
 });
 
 // Copy index.html and CNAME files to the "serve" directory
-gulp.task("copy:dev", ["copy:bower", "copy:tesseract", "copy:images", "copy:favicon",
-  "copy:fonts", "copy:lang-data"
+gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon",
+  "copy:fonts"
 ], function() {
   return gulp.src(["src/index.html", "src/CNAME", "src/js/**/*"])
     .pipe(gulp.dest("serve"))
@@ -195,18 +195,6 @@ gulp.task("copy:bower", function() {
     }))
 });
 
-// Copy bower.
-gulp.task("copy:tesseract", function() {
-  // There are unused Dexie files that causes trouble for uglify later
-  return gulp.src([
-    "node_modules/tesseract.js/**/*",
-    "node_modules/tesseract.js-core/**/*"
-  ]).pipe(gulp.dest("serve/bower_components/tesseract"))
-    .pipe($.size({
-      title: "Tesseract"
-    }))
-});
-
 // Copy images.
 gulp.task("copy:images", function() {
   return gulp.src(["src/assets/images/**/*"])
@@ -222,15 +210,6 @@ gulp.task("copy:favicon", function() {
     .pipe(gulp.dest("serve/"))
     .pipe($.size({
       title: "Assets favicon"
-    }));
-});
-
-// Copy lang data
-gulp.task("copy:lang-data", function() {
-  return gulp.src(["src/assets/lang-data/**/*"])
-    .pipe(gulp.dest("serve/assets/lang-data"))
-    .pipe($.size({
-      title: "Lang Data"
     }));
 });
 
@@ -414,10 +393,7 @@ var precacheLocalDev = [
   'bower_components/dexie/dist/dexie.min.js',
   'bower_components/exif-js/exif.js',
   'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
-  'bower_components/semantic/dist/semantic.min.css',
-  'bower_components/tesseract/tesseract-core.wasm.js',
-  'bower_components/tesseract/dist/tesseract.min.js',
-  'bower_components/tesseract/dist/worker.min.js'
+  'bower_components/semantic/dist/semantic.min.css'
 ];
 
 // There may be a better way to do this, but for the moment we have some
@@ -431,10 +407,7 @@ var precacheProd = [
   'bower_components/dexie/dist/dexie.min.*.js',
   'bower_components/exif-js/exif.js',
   'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
-  'bower_components/semantic/dist/semantic.min.*.css',
-  'bower_components/tesseract/tesseract-core.wasm.js',
-  'bower_components/tesseract/dist/tesseract.min.js',
-  'bower_components/tesseract/dist/worker.min.js'
+  'bower_components/semantic/dist/semantic.min.*.css'
 ];
 
 // For offline use while developing

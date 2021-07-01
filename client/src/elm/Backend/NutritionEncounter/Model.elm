@@ -1,4 +1,4 @@
-module Backend.NutritionEncounter.Model exposing (Model, Msg(..), NutritionEncounter, emptyModel)
+module Backend.NutritionEncounter.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -15,6 +15,15 @@ type alias NutritionEncounter =
     }
 
 
+emptyNutritionEncounter : IndividualEncounterParticipantId -> NominalDate -> Maybe HealthCenterId -> NutritionEncounter
+emptyNutritionEncounter participant startDate shard =
+    { participant = participant
+    , startDate = startDate
+    , endDate = Nothing
+    , shard = shard
+    }
+
+
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress
 to peform the updates indicated by the `Msg` type below.
 -}
@@ -25,6 +34,10 @@ type alias Model =
     , saveNutrition : WebData ()
     , savePhoto : WebData ()
     , saveWeight : WebData ()
+    , saveSendToHC : WebData ()
+    , saveHealthEducation : WebData ()
+    , saveContributingFactors : WebData ()
+    , saveFollowUp : WebData ()
     }
 
 
@@ -36,6 +49,10 @@ emptyModel =
     , saveNutrition = NotAsked
     , savePhoto = NotAsked
     , saveWeight = NotAsked
+    , saveSendToHC = NotAsked
+    , saveHealthEducation = NotAsked
+    , saveContributingFactors = NotAsked
+    , saveFollowUp = NotAsked
     }
 
 
@@ -52,3 +69,11 @@ type Msg
     | HandleSavedPhoto (WebData ())
     | SaveWeight PersonId (Maybe NutritionWeightId) WeightInKg
     | HandleSavedWeight (WebData ())
+    | SaveSendToHC PersonId (Maybe NutritionSendToHCId) SendToHCValue
+    | HandleSavedSendToHC (WebData ())
+    | SaveHealthEducation PersonId (Maybe NutritionHealthEducationId) HealthEducationValue
+    | HandleSavedHealthEducation (WebData ())
+    | SaveContributingFactors PersonId (Maybe NutritionContributingFactorsId) (EverySet ContributingFactorsSign)
+    | HandleSavedContributingFactors (WebData ())
+    | SaveFollowUp PersonId (Maybe NutritionFollowUpId) FollowUpValue
+    | HandleSavedFollowUp (WebData ())

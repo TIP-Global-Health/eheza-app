@@ -12,7 +12,7 @@ import Gizra.Html exposing (emptyNode, showIf)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
-import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
+import Pages.Page exposing (DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
@@ -26,8 +26,11 @@ view language activePage nurseData ( healthCenterId, villageId ) deviceName mode
             case nurseData of
                 Success ( _, nurse ) ->
                     let
+                        isChw =
+                            isCommunityHealthWorker nurse
+
                         selectedAuthorizedLocation =
-                            if isCommunityHealthWorker nurse then
+                            if isChw then
                                 villageId
                                     |> Maybe.map (\id -> EverySet.member id nurse.villages)
                                     |> Maybe.withDefault False
@@ -38,7 +41,7 @@ view language activePage nurseData ( healthCenterId, villageId ) deviceName mode
                                     |> Maybe.withDefault False
                     in
                     ( viewLoggedInHeader language nurse selectedAuthorizedLocation
-                    , viewLoggedInContent language nurse ( healthCenterId, villageId ) deviceName selectedAuthorizedLocation db
+                    , viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db
                     )
 
                 _ ->
@@ -144,8 +147,8 @@ viewAnonymousContent language activePage nurseData model =
     ]
 
 
-viewLoggedInContent : Language -> Nurse -> ( Maybe HealthCenterId, Maybe VillageId ) -> Maybe String -> Bool -> ModelIndexedDb -> List (Html Msg)
-viewLoggedInContent language nurse ( healthCenterId, villageId ) deviceName selectedAuthorizedLocation db =
+viewLoggedInContent : Language -> Nurse -> ( Maybe HealthCenterId, Maybe VillageId ) -> Bool -> Maybe String -> Bool -> ModelIndexedDb -> List (Html Msg)
+viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db =
     let
         logoutButton =
             button
@@ -219,11 +222,24 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) deviceName sele
                     , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing ParticipantDirectoryOrigin
                     ]
                     [ text <| translate language Translate.ParticipantDirectory ]
+
+            caseManagementButton =
+                if isChw then
+                    button
+                        [ class "ui primary button"
+                        , onClick <| SendOutMsg <| SetActivePage <| UserPage GlobalCaseManagementPage
+                        ]
+                        [ text <| translate language Translate.CaseManagement
+                        ]
+
+                else
+                    emptyNode
         in
         [ generalInfo
         , clinicalButton
         , participantDirectoryButton
         , dashboardButton
+        , caseManagementButton
         , deviceStatusButton
         , logoutButton
         ]

@@ -21,7 +21,7 @@ before_install:
 # There were often failures and very long retry loops with
 # the built-in registry mirror provided by Docker.
 - tmpdaemon=$(mktemp)
-- sudo jq '."registry-mirrors" = ["http://docker.gizra.com"]' /etc/docker/daemon.json > $tmpdaemon
+- sudo jq '."registry-mirrors" = ["https://docker.gizra.com"]' /etc/docker/daemon.json > $tmpdaemon
 - sudo mv $tmpdaemon /etc/docker/daemon.json
 - sudo systemctl daemon-reload
 - sudo systemctl restart docker

@@ -20,4 +20,4 @@ RUN npm install -g bower
 RUN npm install -g gulp
 # For Elm Unit tests
 RUN npm -g config set user root
-RUN npm install -g elm-test@0.18.13-beta4
+RUN npm install -g elm-test@0.19.1-revision6

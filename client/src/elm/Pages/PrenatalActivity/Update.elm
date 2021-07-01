@@ -4,6 +4,7 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
+import Backend.Measurement.Decoder exposing (pregnancyTestResultFromString)
 import Backend.Measurement.Model
     exposing
         ( AbdomenCPESign(..)
@@ -16,20 +17,23 @@ import Backend.Measurement.Model
         , LungsCPESign(..)
         , NeckCPESign(..)
         , PhotoUrl(..)
+        , PostpartumChildDangerSign(..)
+        , PostpartumMotherDangerSign(..)
         , PreviousDeliveryPeriod(..)
         , SocialHistoryHivTestingResult(..)
         )
-import Backend.Measurement.Utils exposing (socialHistoryHivTestingResultFromString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
+import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Utils exposing (toSendToHCValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (calculateEDD)
-import Pages.Utils exposing (tasksBarId)
+import Pages.Utils exposing (setMultiSelectInputValue, tasksBarId)
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
 
@@ -47,8 +51,28 @@ update currentDate id db msg model =
                         >> corePhysicalExamFormWithDefault model.examinationData.corePhysicalExamForm
                     )
                 |> Maybe.withDefault model.examinationData.corePhysicalExamForm
+
+        --navigationMsgsByNextStep : (t -> msg) -> UserPage -> Maybe t -> ( List App.Model.Msg, List msg )
+        navigationMsgsByNextStep setActiveTaskMsg encounterPage nextTask =
+            nextTask
+                |> Maybe.map
+                    (\task ->
+                        ( []
+                        , [ setActiveTaskMsg task ]
+                        )
+                    )
+                |> Maybe.withDefault
+                    ( [ App.Model.SetActivePage <| UserPage encounterPage ]
+                    , []
+                    )
     in
     case msg of
+        NoOp ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
         DropZoneComplete result ->
             let
                 updatedData =
@@ -68,6 +92,9 @@ update currentDate id db msg model =
 
         SetAlertsDialogState isOpen ->
             ( { model | showAlertsDialog = isOpen }, Cmd.none, [] )
+
+        SetWarningPopupState state ->
+            ( { model | warningPopupState = state }, Cmd.none, [] )
 
         ToggleDateSelector ->
             let
@@ -779,47 +806,19 @@ update currentDate id db msg model =
             , []
             )
 
-        SetCorePhysicalExamNeck value ->
+        SetCorePhysicalExamNeck sign ->
             let
+                form =
+                    corePhysicalExamForm
+
+                updatedForm =
+                    setMultiSelectInputValue .neck
+                        (\signs -> { form | neck = signs })
+                        NormalNeck
+                        sign
+                        form
+
                 updatedData =
-                    let
-                        updatedForm =
-                            corePhysicalExamForm
-                                |> (\form ->
-                                        case form.neck of
-                                            Just options ->
-                                                if List.member value options then
-                                                    let
-                                                        updatedOptions =
-                                                            if List.length options == 1 then
-                                                                Nothing
-
-                                                            else
-                                                                options |> List.filter ((/=) value) |> Just
-                                                    in
-                                                    { form | neck = updatedOptions }
-
-                                                else
-                                                    case value of
-                                                        NormalNeck ->
-                                                            { form | neck = Just [ value ] }
-
-                                                        _ ->
-                                                            let
-                                                                updatedOptions =
-                                                                    case options of
-                                                                        [ NormalNeck ] ->
-                                                                            Just [ value ]
-
-                                                                        _ ->
-                                                                            Just (value :: options)
-                                                            in
-                                                            { form | neck = updatedOptions }
-
-                                            Nothing ->
-                                                { form | neck = Just [ value ] }
-                                   )
-                    in
                     model.examinationData
                         |> (\data -> { data | corePhysicalExamForm = updatedForm })
             in
@@ -828,47 +827,19 @@ update currentDate id db msg model =
             , []
             )
 
-        SetCorePhysicalExamLungs value ->
+        SetCorePhysicalExamLungs sign ->
             let
+                form =
+                    corePhysicalExamForm
+
+                updatedForm =
+                    setMultiSelectInputValue .lungs
+                        (\signs -> { form | lungs = signs })
+                        NormalLungs
+                        sign
+                        form
+
                 updatedData =
-                    let
-                        updatedForm =
-                            corePhysicalExamForm
-                                |> (\form ->
-                                        case form.lungs of
-                                            Just options ->
-                                                if List.member value options then
-                                                    let
-                                                        updatedOptions =
-                                                            if List.length options == 1 then
-                                                                Nothing
-
-                                                            else
-                                                                options |> List.filter ((/=) value) |> Just
-                                                    in
-                                                    { form | lungs = updatedOptions }
-
-                                                else
-                                                    case value of
-                                                        NormalLungs ->
-                                                            { form | lungs = Just [ value ] }
-
-                                                        _ ->
-                                                            let
-                                                                updatedOptions =
-                                                                    case options of
-                                                                        [ NormalLungs ] ->
-                                                                            Just [ value ]
-
-                                                                        _ ->
-                                                                            Just (value :: options)
-                                                            in
-                                                            { form | lungs = updatedOptions }
-
-                                            Nothing ->
-                                                { form | lungs = Just [ value ] }
-                                   )
-                    in
                     model.examinationData
                         |> (\data -> { data | corePhysicalExamForm = updatedForm })
             in
@@ -877,47 +848,19 @@ update currentDate id db msg model =
             , []
             )
 
-        SetCorePhysicalExamAbdomen value ->
+        SetCorePhysicalExamAbdomen sign ->
             let
+                form =
+                    corePhysicalExamForm
+
+                updatedForm =
+                    setMultiSelectInputValue .abdomen
+                        (\signs -> { form | abdomen = signs })
+                        NormalAbdomen
+                        sign
+                        form
+
                 updatedData =
-                    let
-                        updatedForm =
-                            corePhysicalExamForm
-                                |> (\form ->
-                                        case form.abdomen of
-                                            Just options ->
-                                                if List.member value options then
-                                                    let
-                                                        updatedOptions =
-                                                            if List.length options == 1 then
-                                                                Nothing
-
-                                                            else
-                                                                options |> List.filter ((/=) value) |> Just
-                                                    in
-                                                    { form | abdomen = updatedOptions }
-
-                                                else
-                                                    case value of
-                                                        NormalAbdomen ->
-                                                            { form | abdomen = Just [ value ] }
-
-                                                        _ ->
-                                                            let
-                                                                updatedOptions =
-                                                                    case options of
-                                                                        [ NormalAbdomen ] ->
-                                                                            Just [ value ]
-
-                                                                        _ ->
-                                                                            Just (value :: options)
-                                                            in
-                                                            { form | abdomen = updatedOptions }
-
-                                            Nothing ->
-                                                { form | abdomen = Just [ value ] }
-                                   )
-                    in
                     model.examinationData
                         |> (\data -> { data | corePhysicalExamForm = updatedForm })
             in
@@ -926,47 +869,19 @@ update currentDate id db msg model =
             , []
             )
 
-        SetCorePhysicalExamHands value ->
+        SetCorePhysicalExamHands sign ->
             let
+                form =
+                    corePhysicalExamForm
+
+                updatedForm =
+                    setMultiSelectInputValue .hands
+                        (\signs -> { form | hands = signs })
+                        NormalHands
+                        sign
+                        form
+
                 updatedData =
-                    let
-                        updatedForm =
-                            corePhysicalExamForm
-                                |> (\form ->
-                                        case form.hands of
-                                            Just options ->
-                                                if List.member value options then
-                                                    let
-                                                        updatedOptions =
-                                                            if List.length options == 1 then
-                                                                Nothing
-
-                                                            else
-                                                                options |> List.filter ((/=) value) |> Just
-                                                    in
-                                                    { form | hands = updatedOptions }
-
-                                                else
-                                                    case value of
-                                                        NormalHands ->
-                                                            { form | hands = Just [ value ] }
-
-                                                        _ ->
-                                                            let
-                                                                updatedOptions =
-                                                                    case options of
-                                                                        [ NormalHands ] ->
-                                                                            Just [ value ]
-
-                                                                        _ ->
-                                                                            Just (value :: options)
-                                                            in
-                                                            { form | hands = updatedOptions }
-
-                                            Nothing ->
-                                                { form | hands = Just [ value ] }
-                                   )
-                    in
                     model.examinationData
                         |> (\data -> { data | corePhysicalExamForm = updatedForm })
             in
@@ -975,47 +890,19 @@ update currentDate id db msg model =
             , []
             )
 
-        SetCorePhysicalExamLegs value ->
+        SetCorePhysicalExamLegs sign ->
             let
+                form =
+                    corePhysicalExamForm
+
+                updatedForm =
+                    setMultiSelectInputValue .legs
+                        (\signs -> { form | legs = signs })
+                        NormalLegs
+                        sign
+                        form
+
                 updatedData =
-                    let
-                        updatedForm =
-                            corePhysicalExamForm
-                                |> (\form ->
-                                        case form.legs of
-                                            Just options ->
-                                                if List.member value options then
-                                                    let
-                                                        updatedOptions =
-                                                            if List.length options == 1 then
-                                                                Nothing
-
-                                                            else
-                                                                options |> List.filter ((/=) value) |> Just
-                                                    in
-                                                    { form | legs = updatedOptions }
-
-                                                else
-                                                    case value of
-                                                        NormalLegs ->
-                                                            { form | legs = Just [ value ] }
-
-                                                        _ ->
-                                                            let
-                                                                updatedOptions =
-                                                                    case options of
-                                                                        [ NormalLegs ] ->
-                                                                            Just [ value ]
-
-                                                                        _ ->
-                                                                            Just (value :: options)
-                                                            in
-                                                            { form | legs = updatedOptions }
-
-                                            Nothing ->
-                                                { form | legs = Just [ value ] }
-                                   )
-                    in
                     model.examinationData
                         |> (\data -> { data | corePhysicalExamForm = updatedForm })
             in
@@ -1192,58 +1079,27 @@ update currentDate id db msg model =
             , []
             )
 
-        SetBreastExamBreast value ->
+        SetBreastExamBreast sign ->
             let
+                form =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.breastExam
+                                >> Maybe.map (Tuple.second >> .value)
+                                >> breastExamFormWithDefault model.examinationData.breastExamForm
+                            )
+                        |> Maybe.withDefault model.examinationData.breastExamForm
+
+                updatedForm =
+                    setMultiSelectInputValue .breast
+                        (\signs -> { form | breast = signs })
+                        NormalBreast
+                        sign
+                        form
+
                 updatedData =
-                    let
-                        breastExamForm =
-                            Dict.get id db.prenatalMeasurements
-                                |> Maybe.withDefault NotAsked
-                                |> RemoteData.toMaybe
-                                |> Maybe.map
-                                    (.breastExam
-                                        >> Maybe.map (Tuple.second >> .value)
-                                        >> breastExamFormWithDefault model.examinationData.breastExamForm
-                                    )
-                                |> Maybe.withDefault model.examinationData.breastExamForm
-
-                        updatedForm =
-                            breastExamForm
-                                |> (\form ->
-                                        case form.breast of
-                                            Just options ->
-                                                if List.member value options then
-                                                    let
-                                                        updatedOptions =
-                                                            if List.length options == 1 then
-                                                                Nothing
-
-                                                            else
-                                                                options |> List.filter ((/=) value) |> Just
-                                                    in
-                                                    { form | breast = updatedOptions }
-
-                                                else
-                                                    case value of
-                                                        NormalBreast ->
-                                                            { form | breast = Just [ value ] }
-
-                                                        _ ->
-                                                            let
-                                                                updatedOptions =
-                                                                    case options of
-                                                                        [ NormalBreast ] ->
-                                                                            Just [ value ]
-
-                                                                        _ ->
-                                                                            Just (value :: options)
-                                                            in
-                                                            { form | breast = updatedOptions }
-
-                                            Nothing ->
-                                                { form | breast = Just [ value ] }
-                                   )
-                    in
                     model.examinationData
                         |> (\data -> { data | breastExamForm = updatedForm })
             in
@@ -1304,38 +1160,11 @@ update currentDate id db msg model =
                         |> Maybe.withDefault model.familyPlanningData.form
 
                 updatedForm =
-                    case form.signs of
-                        Just signs ->
-                            if List.member sign signs then
-                                let
-                                    updatedSigns =
-                                        if List.length signs == 1 then
-                                            Nothing
-
-                                        else
-                                            signs |> List.filter ((/=) sign) |> Just
-                                in
-                                { form | signs = updatedSigns }
-
-                            else
-                                case sign of
-                                    NoFamilyPlanning ->
-                                        { form | signs = Just [ sign ] }
-
-                                    _ ->
-                                        let
-                                            updatedSigns =
-                                                case signs of
-                                                    [ NoFamilyPlanning ] ->
-                                                        Just [ sign ]
-
-                                                    _ ->
-                                                        Just (sign :: signs)
-                                        in
-                                        { form | signs = updatedSigns }
-
-                        Nothing ->
-                            { form | signs = Just [ sign ] }
+                    setMultiSelectInputValue .signs
+                        (\signs -> { form | signs = signs })
+                        NoFamilyPlanning
+                        sign
+                        form
 
                 updatedData =
                     model.familyPlanningData
@@ -1503,38 +1332,69 @@ update currentDate id db msg model =
                         |> Maybe.withDefault model.dangerSignsData.form
 
                 updatedForm =
-                    case form.signs of
-                        Just signs ->
-                            if List.member sign signs then
-                                let
-                                    updatedSigns =
-                                        if List.length signs == 1 then
-                                            Nothing
+                    setMultiSelectInputValue .signs
+                        (\signs -> { form | signs = signs })
+                        NoDangerSign
+                        sign
+                        form
 
-                                        else
-                                            signs |> List.filter ((/=) sign) |> Just
-                                in
-                                { form | signs = updatedSigns }
+                updatedData =
+                    model.dangerSignsData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | dangerSignsData = updatedData }
+            , Cmd.none
+            , []
+            )
 
-                            else
-                                case sign of
-                                    NoDangerSign ->
-                                        { form | signs = Just [ sign ] }
+        SetPostpartumMotherDangerSign sign ->
+            let
+                form =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.dangerSigns
+                                >> Maybe.map (Tuple.second >> .value)
+                                >> dangerSignsFormWithDefault model.dangerSignsData.form
+                            )
+                        |> Maybe.withDefault model.dangerSignsData.form
 
-                                    _ ->
-                                        let
-                                            updatedSigns =
-                                                case signs of
-                                                    [ NoDangerSign ] ->
-                                                        Just [ sign ]
+                updatedForm =
+                    setMultiSelectInputValue .postpartumMother
+                        (\signs -> { form | postpartumMother = signs })
+                        NoPostpartumMotherDangerSigns
+                        sign
+                        form
 
-                                                    _ ->
-                                                        Just (sign :: signs)
-                                        in
-                                        { form | signs = updatedSigns }
+                updatedData =
+                    model.dangerSignsData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | dangerSignsData = updatedData }
+            , Cmd.none
+            , []
+            )
 
-                        Nothing ->
-                            { form | signs = Just [ sign ] }
+        SetPostpartumChildDangerSign sign ->
+            let
+                form =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.dangerSigns
+                                >> Maybe.map (Tuple.second >> .value)
+                                >> dangerSignsFormWithDefault model.dangerSignsData.form
+                            )
+                        |> Maybe.withDefault model.dangerSignsData.form
+
+                updatedForm =
+                    setMultiSelectInputValue .postpartumChild
+                        (\signs -> { form | postpartumChild = signs })
+                        NoPostpartumChildDangerSigns
+                        sign
+                        form
 
                 updatedData =
                     model.dangerSignsData
@@ -1585,3 +1445,432 @@ update currentDate id db msg model =
               , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
               ]
             )
+
+        SetBirthPlanBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.birthPlanData.form
+                    in
+                    model.birthPlanData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | birthPlanData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetBirthPlanFamilyPlanning sign ->
+            let
+                form =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.birthPlan
+                                >> Maybe.map (Tuple.second >> .value)
+                                >> birthPlanFormWithDefault model.birthPlanData.form
+                            )
+                        |> Maybe.withDefault model.birthPlanData.form
+
+                updatedForm =
+                    setMultiSelectInputValue .familyPlanning
+                        (\signs -> { form | familyPlanning = signs })
+                        NoFamilyPlanning
+                        sign
+                        form
+
+                updatedData =
+                    model.birthPlanData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | birthPlanData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPregnancyTestResult value ->
+            let
+                result =
+                    pregnancyTestResultFromString value
+
+                updatedData =
+                    let
+                        updatedForm =
+                            model.laboratoryData.form
+                                |> (\form -> { form | pregnancyTestResult = result })
+                    in
+                    model.laboratoryData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveBirthPlan personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.birthPlanData.form
+                        |> toBirthPlanValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveBirthPlan personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SavePregnancyTesting personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.laboratoryData.form
+                        |> toPregnancyTestingValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SavePregnancyTesting personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetHealthEducationBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.healthEducationData.form
+                    in
+                    model.healthEducationData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | healthEducationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHealthEducation personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.healthEducationData.form
+                        |> toHealthEducationValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveHealthEducation personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetActiveNextStepsTask task ->
+            let
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHealthEducationSubActivityBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.nextStepsData.healthEducationForm
+                    in
+                    model.nextStepsData
+                        |> (\data -> { data | healthEducationForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHealthEducationSubActivity personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, setActiveTaskMsg ) =
+                    navigationMsgsByNextStep SetActiveNextStepsTask (PrenatalEncounterPage id) nextTask_
+
+                appMsgs =
+                    model.nextStepsData.healthEducationForm
+                        |> toHealthEducationValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.PrenatalEncounter.Model.SaveHealthEducation personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) setActiveTaskMsg
+
+        SetFollowUpOption option ->
+            let
+                form =
+                    model.nextStepsData.followUpForm
+
+                updatedForm =
+                    { form | option = Just option }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | followUpForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveFollowUp personId assesment saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, setActiveTaskMsg ) =
+                    navigationMsgsByNextStep SetActiveNextStepsTask (PrenatalEncounterPage id) nextTask_
+
+                appMsgs =
+                    model.nextStepsData.followUpForm
+                        |> (\form -> { form | assesment = Just assesment })
+                        |> toFollowUpValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.PrenatalEncounter.Model.SaveFollowUp personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) setActiveTaskMsg
+
+        SaveNewbornEnrollment nextTask_ ->
+            let
+                ( backToActivitiesMsg, setActiveTaskMsg ) =
+                    navigationMsgsByNextStep SetActiveNextStepsTask (PrenatalEncounterPage id) nextTask_
+            in
+            ( model
+            , Cmd.none
+            , backToActivitiesMsg
+            )
+                |> sequenceExtra (update currentDate id db) setActiveTaskMsg
+
+        SetReferToHealthCenter value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHandReferralForm value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | handReferralForm = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetAccompanyToHC value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | accompanyToHealthCenter = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotSendingToHC value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | reasonForNotSendingToHC = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveSendToHC personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, setActiveTaskMsg ) =
+                    navigationMsgsByNextStep SetActiveNextStepsTask (PrenatalEncounterPage id) nextTask_
+
+                appMsgs =
+                    model.nextStepsData.sendToHCForm
+                        |> toSendToHCValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.PrenatalEncounter.Model.SaveSendToHC personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) setActiveTaskMsg
+
+        AppointmentToggleDateSelector ->
+            let
+                updatedForm =
+                    model.nextStepsData.appointmentConfirmationForm
+                        |> (\form -> { form | isDateSelectorOpen = not form.isDateSelectorOpen })
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | appointmentConfirmationForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetAppointmentConfirmation value ->
+            let
+                updatedForm =
+                    model.nextStepsData.appointmentConfirmationForm
+                        |> (\form -> { form | appointmentDate = Just value })
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | appointmentConfirmationForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveAppointmentConfirmation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, setActiveTaskMsg ) =
+                    navigationMsgsByNextStep SetActiveNextStepsTask (PrenatalEncounterPage id) nextTask_
+
+                appMsgs =
+                    model.nextStepsData.appointmentConfirmationForm
+                        |> toAppointmentConfirmationValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.PrenatalEncounter.Model.SaveAppointmentConfirmation personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) setActiveTaskMsg

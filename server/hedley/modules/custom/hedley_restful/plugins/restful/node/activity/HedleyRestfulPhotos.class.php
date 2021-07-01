@@ -33,7 +33,7 @@ class HedleyRestfulPhotos extends HedleyRestfulGroupActivityBase {
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     $query = parent::alterQueryForViewWithDbSelect($query);
 
-    hedley_restful_join_field_to_query($query, 'node', 'field_photo', FALSE);
+    hedley_general_join_field_to_query($query, 'node', 'field_photo', FALSE);
 
     // For the Photo, get to the `file`. We'll convert the `uri`
     // to `field_photo`.
