@@ -11,4 +11,4 @@ date and outcome set.
 -}
 isAcuteIllnessActive : NominalDate -> IndividualEncounterParticipant -> Bool
 isAcuteIllnessActive currentDate session =
-    isNothing session.endDate && isNothing session.outcome
+    isNothing session.endDate || isNothing session.outcome
