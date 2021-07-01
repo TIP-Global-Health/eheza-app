@@ -67,17 +67,17 @@ function hedley_patient_patient_measurements_report() {
     ) = _group_measurements_by_encounter_type($measurements);
 
   $count = count($group_measurements);
-  drush_print("Duplicate got $count Group measurements.");
+  drush_print("Patient got $count Group measurements.");
   $count = count($antenatal_measurements);
-  drush_print("Duplicate got $count Antenatal measurements.");
+  drush_print("Patient got $count Antenatal measurements.");
   $count = count($nutrition_measurements);
-  drush_print("Duplicate got $count Nutrition measurements.");
+  drush_print("Patient got $count Nutrition measurements.");
   $count = count($acute_illness_measurements);
-  drush_print("Duplicate got $count Acute Illness measurements.");
+  drush_print("Patient got $count Acute Illness measurements.");
   $count = count($home_visit_measurements);
-  drush_print("Duplicate got $count Home Visit measurements.");
+  drush_print("Patient got $count Home Visit measurements.");
   $count = count($well_child_measurements);
-  drush_print("Duplicate got $count Well Child measurements.");
+  drush_print("Patient got $count Well Child measurements.");
 }
 
 /**
@@ -88,8 +88,13 @@ function hedley_patient_patient_measurements_report() {
  * @throws \EntityMetadataWrapperException
  */
 function hedley_patient_consolidate_patients() {
+  drush_print('Running validations ...');
+  drush_print('');
   $success = _consolidate_patients_validate();
   if ($success) {
+    drush_print('Executing consolidation ...');
+    drush_print('');
+
     _consolidate_patients_execute();
   }
 }
@@ -170,6 +175,18 @@ function _consolidate_patients_validate() {
     return FALSE;
   }
 
+  // Validation before consolidating Antenatal encounters content.
+  $success = _consolidate_antenatal_content_validate($antenatal_measurements, $original, $duplicate);
+  if (!$success) {
+    return FALSE;
+  }
+
+  // Validation before consolidating Acute Illness encounters content.
+  $success = _consolidate_acute_illness_content_validate($acute_illness_measurements, $original, $duplicate);
+  if (!$success) {
+    return FALSE;
+  }
+
   drush_print('');
   drush_print('SUCCESS! All validations passed!');
   drush_print('');
@@ -179,6 +196,7 @@ function _consolidate_patients_validate() {
 
 /**
  * Executes consolidation process.
+ *
  * All content is relocated from 'duplicate' patient to 'original' patient.
  * Once completed, marks 'duplicate' patient as deleted.
  *
@@ -204,11 +222,11 @@ function _consolidate_patients_execute() {
 
   // Execute consolidations.
   _consolidate_group_content_execute($group_measurements, $original);
-  _consolidate_antenatal_content_execute($antenatal_measurements, $original, $duplicate);
   _consolidate_nutrition_content_execute($nutrition_measurements, $original, $duplicate);
-  _consolidate_acute_illness_content_execute($acute_illness_measurements, $original, $duplicate);
   _consolidate_home_visit_content_execute($home_visit_measurements, $original, $duplicate);
   _consolidate_well_child_content_execute($well_child_measurements, $original, $duplicate);
+  _consolidate_antenatal_content_execute($antenatal_measurements, $original, $duplicate);
+  _consolidate_acute_illness_content_execute($acute_illness_measurements, $original, $duplicate);
 
   // Mark duplicate patient as Deleted.
   $wrapper_duplicate->field_deleted->set(TRUE);
@@ -291,6 +309,37 @@ function _consolidate_group_content_execute(array $measurements, $original) {
   _associate_content_by_field($measurements, 'field_person', $original);
 
   drush_print("Consolidation of Group encounters content is completed.");
+  drush_print('');
+}
+
+/**
+ * Performs validations before consolidation of Prenatal encounters content.
+ *
+ * For now, it only prints some data. No failure option.
+ *
+ * @param array $measurements
+ *   A list of Nutrition measurements that belong to the 'duplicate' patient.
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return bool
+ *   True, if validation was successful.
+ */
+function _consolidate_antenatal_content_validate(array $measurements, $original, $duplicate) {
+  $count = count($measurements);
+  drush_print("Duplicate got $count Prenatal measurements.");
+
+  $participants_original = hedley_person_individual_participants_for_person($original, 'antenatal', 'DESC');
+  $count = count($participants_original);
+  drush_print("Original got $count Prenatal Participants.");
+
+  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'antenatal', 'DESC');
+  $count = count($participants_duplicate);
+  drush_print("Duplicate got $count Prenatal Participants.");
+
+  return TRUE;
 }
 
 /**
@@ -321,16 +370,8 @@ function _consolidate_group_content_execute(array $measurements, $original) {
  * @throws \EntityMetadataWrapperException
  */
 function _consolidate_antenatal_content_execute(array $measurements, $original, $duplicate) {
-  $count = count($measurements);
-  drush_print("Duplicate got $count Antenatal measurements.");
-
   $participants_original = hedley_person_individual_participants_for_person($original, 'antenatal', 'DESC');
-  $count = count($participants_original);
-  drush_print("Original got $count Participants.");
-
   $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'antenatal', 'DESC');
-  $count = count($participants_duplicate);
-  drush_print("Duplicate got $count Participants.");
 
   // Search for ongoing participant (pregnancy) of original patient.
   // If found, record it's ID.
@@ -348,14 +389,13 @@ function _consolidate_antenatal_content_execute(array $measurements, $original, 
   // If original patient does not have an ongoing pregnancy, associate
   // participants and measurements of duplicate with the original patient.
   if (!$participant_original_ongoing) {
-    drush_print('Original ongoing Participant NOT FOUND.');
-
     _associate_content_by_field($participants_duplicate, 'field_person', $original);
     _associate_content_by_field($measurements, 'field_person', $original);
+
+    drush_print("Consolidation of Prenatal encounters content is completed.");
+    drush_print('');
     return;
   }
-
-  drush_print("Original ongoing Participant: $participant_original_ongoing.");
 
   // If we got here, we know that original patient has an ongoing pregnancy.
   // We search for ongoing pregnancy of duplicate patient.
@@ -378,17 +418,12 @@ function _consolidate_antenatal_content_execute(array $measurements, $original, 
   // encounters with ongoing pregnancy of original patient.
   // Afterwards, mark ongoing pregnancy of duplicate as deleted.
   if ($participant_duplicate_ongoing) {
-    drush_print("Duplicate ongoing Participant: $participant_duplicate_ongoing.");
-
     $encounters = hedley_person_encounters_for_individual_participant($participant_duplicate_ongoing);
     _associate_content_by_field($encounters, 'field_individual_participant', $participant_original_ongoing);
 
     $wrapper_participant = entity_metadata_wrapper('node', $participant_duplicate_ongoing);
     $wrapper_participant->field_deleted->set(TRUE);
     $wrapper_participant->save();
-  }
-  else {
-    drush_print('Duplicate ongoing Participant NOT FOUND.');
   }
 
   // Associate remaining  participants and measurements of duplicate,
@@ -397,6 +432,7 @@ function _consolidate_antenatal_content_execute(array $measurements, $original, 
   _associate_content_by_field($measurements, 'field_person', $original);
 
   drush_print("Consolidation of Prenatal encounters content is completed.");
+  drush_print('');
 }
 
 /**
@@ -456,7 +492,7 @@ function _consolidate_nutrition_content_execute(array $measurements, $original, 
  * @throws \EntityMetadataWrapperException
  */
 function _consolidate_home_visit_content_validate(array $measurements, $original, $duplicate) {
-  return _consolidate_nutritionlike_content_validate($measurements, $original, $duplicate, 'home_visit');
+  return _consolidate_nutritionlike_content_validate($measurements, $original, $duplicate, 'home-visit');
 }
 
 /**
@@ -474,7 +510,7 @@ function _consolidate_home_visit_content_validate(array $measurements, $original
  * @throws \EntityMetadataWrapperException
  */
 function _consolidate_home_visit_content_execute(array $measurements, $original, $duplicate) {
-  _consolidate_nutritionlike_content_execute($measurements, $original, $duplicate, 'home_visit');
+  _consolidate_nutritionlike_content_execute($measurements, $original, $duplicate, 'home-visit');
 }
 
 /**
@@ -495,7 +531,7 @@ function _consolidate_home_visit_content_execute(array $measurements, $original,
  * @throws \EntityMetadataWrapperException
  */
 function _consolidate_well_child_content_validate(array $measurements, $original, $duplicate) {
-  return _consolidate_nutritionlike_content_validate($measurements, $original, $duplicate, 'well_child');
+  return _consolidate_nutritionlike_content_validate($measurements, $original, $duplicate, 'well-child');
 }
 
 /**
@@ -513,7 +549,7 @@ function _consolidate_well_child_content_validate(array $measurements, $original
  * @throws \EntityMetadataWrapperException
  */
 function _consolidate_well_child_content_execute(array $measurements, $original, $duplicate) {
-  _consolidate_nutritionlike_content_execute($measurements, $original, $duplicate, 'well_child');
+  _consolidate_nutritionlike_content_execute($measurements, $original, $duplicate, 'well-child');
 }
 
 /**
@@ -525,9 +561,9 @@ function _consolidate_well_child_content_execute(array $measurements, $original,
  * Original patient must not have multiple participants, since we would not
  * know to which content should be transferred.
  * Duplicate patient may have multiple participants (though should not, per
- * system design), because all content is to be transferred. It should have at
- * least one participant, because otherwise we can't transfer encounters, and
- * measurements are associated with encounters.
+ * system design), because all content is to be transferred. If measurements
+ * exist, it should have at least one participant, because otherwise we can't
+ * transfer encounters, to which measurements are associated.
  *
  * Supported encounter types:
  *  - Nutrition
@@ -549,13 +585,13 @@ function _consolidate_well_child_content_execute(array $measurements, $original,
  * @throws \EntityMetadataWrapperException
  */
 function _consolidate_nutritionlike_content_validate(array $measurements, $original, $duplicate, $encounter_type) {
-  if (!in_array($encounter_type, ['nutrition', 'home_visit', 'well_child'])) {
-    drush_print('Error: Allowed encounter types: nutrition, home_visit, well_child');
+  if (!in_array($encounter_type, ['nutrition', 'home-visit', 'well-child'])) {
+    drush_print('Error: Allowed encounter types: nutrition, home-visit, well-child');
     return FALSE;
   }
 
-  $count = count($measurements);
-  drush_print("Duplicate got $count $encounter_type measurements.");
+  $count_measurements = count($measurements);
+  drush_print("Duplicate got $count_measurements $encounter_type measurements.");
 
   $participants_original = hedley_person_individual_participants_for_person($original, $encounter_type, 'DESC');
   $count_original = count($participants_original);
@@ -570,8 +606,8 @@ function _consolidate_nutritionlike_content_validate(array $measurements, $origi
 
   $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, $encounter_type, 'DESC');
   $count_duplicate = count($participants_duplicate);
-  if ($count_duplicate == 0) {
-    drush_print('Error: Duplicate got 0 participants. Can not pull encounters data for duplicate.');
+  if ($count_duplicate == 0 && $count_measurements > 0) {
+    drush_print("Error: Duplicate got 0 $encounter_type participants. Can not pull encounters data for duplicate.");
     return FALSE;
   }
 
@@ -612,6 +648,14 @@ function _consolidate_nutritionlike_content_execute(array $measurements, $origin
     // If original patient does not have a participant, associate
     // one (last, if multiple) participant with the original patient.
     $original_participant = array_pop($participants_duplicate);
+    // If there's no such participant, we can skip - validation has passed,
+    // so there are no more measurements.
+    if (empty($original_participant)) {
+      drush_print("Consolidation of $encounter_type encounters content is completed.");
+      drush_print('');
+      return;
+    }
+
     _associate_content_by_field([$original_participant], 'field_person', $original);
   }
   else {
@@ -634,6 +678,33 @@ function _consolidate_nutritionlike_content_execute(array $measurements, $origin
   _associate_content_by_field($measurements, 'field_person', $original);
 
   drush_print("Consolidation of $encounter_type encounters content is completed.");
+  drush_print('');
+}
+
+/**
+ * Performs validations before consolidation of Acute Illness content.
+ *
+ * For now, it only prints some data. No failure option.
+ *
+ * @param array $measurements
+ *   A list of Nutrition measurements that belong to the 'duplicate' patient.
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return bool
+ *   True, if validation was successful.
+ */
+function _consolidate_acute_illness_content_validate(array $measurements, $original, $duplicate) {
+  $count = count($measurements);
+  drush_print("Duplicate got $count Acute Illness measurements.");
+
+  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'acute_illness', 'DESC');
+  $count = count($participants_duplicate);
+  drush_print("Duplicate got $count  Acute Illness Participants.");
+
+  return TRUE;
 }
 
 /**
@@ -653,12 +724,7 @@ function _consolidate_nutritionlike_content_execute(array $measurements, $origin
  * @throws \EntityMetadataWrapperException
  */
 function _consolidate_acute_illness_content_execute(array $measurements, $original, $duplicate) {
-  $count = count($measurements);
-  drush_print("Duplicate got $count Acute Illness measurements.");
-
   $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'acute_illness', 'DESC');
-  $count = count($participants_duplicate);
-  drush_print("Duplicate got $count Participants.");
 
   // Associate all  participants and measurements of duplicate,
   // with the original patient.
@@ -666,6 +732,7 @@ function _consolidate_acute_illness_content_execute(array $measurements, $origin
   _associate_content_by_field($measurements, 'field_person', $original);
 
   drush_print("Consolidation of Acute Illness encounters content is completed.");
+  drush_print('');
 }
 
 /**
