@@ -797,3 +797,75 @@ type alias WellChildECDId =
 
 type WellChildECDUuidType
     = WellChildECDUuidType
+
+
+type alias WellChildNutritionId =
+    EntityUuid WellChildNutritionUuidType
+
+
+type WellChildNutritionUuidType
+    = WellChildNutritionUuidType
+
+
+type alias WellChildMuacId =
+    EntityUuid WellChildMuacUuidType
+
+
+type WellChildMuacUuidType
+    = WellChildMuacUuidType
+
+
+type alias WellChildHeightId =
+    EntityUuid WellChildHeightUuidType
+
+
+type WellChildHeightUuidType
+    = WellChildHeightUuidType
+
+
+type alias WellChildPhotoId =
+    EntityUuid WellChildPhotoUuidType
+
+
+type WellChildPhotoUuidType
+    = WellChildPhotoUuidType
+
+
+type alias WellChildWeightId =
+    EntityUuid WellChildWeightUuidType
+
+
+type WellChildWeightUuidType
+    = WellChildWeightUuidType
+
+
+type alias WellChildSendToHCId =
+    EntityUuid WellChildSendToHCIdUuidType
+
+
+type WellChildSendToHCIdUuidType
+    = WellChildSendToHCIdUuidType
+
+
+type alias WellChildHealthEducationId =
+    EntityUuid WellChildHealthEducationUuidType
+
+
+type WellChildHealthEducationUuidType
+    = WellChildHealthEducationUuidType
+
+
+type alias WellChildContributingFactorsId =
+    EntityUuid WellChildContributingFactorsIdUuidType
+
+
+type WellChildContributingFactorsIdUuidType
+    = WellChildContributingFactorsIdUuidType
+
+
+type alias WellChildFollowUpId =
+    EntityUuid WellChildFollowUpIdUuidType
+
+
+type WellChildFollowUpIdUuidType
+    = WellChildFollowUpIdUuidType

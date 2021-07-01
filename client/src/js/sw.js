@@ -124,8 +124,17 @@ var tableForType = {
     village: 'nodes',
     vitals: 'shards',
     weight: 'shards',
+    well_child_contributing_factors: 'shards',
     well_child_ecd: 'shards',
-    well_child_encounter: 'shards'
+    well_child_encounter: 'shards',
+    well_child_follow_up: 'shards',
+    well_child_health_education: 'shards',
+    well_child_height: 'shards',
+    well_child_muac: 'shards',
+    well_child_nutrition: 'shards',
+    well_child_photo: 'shards',
+    well_child_send_to_hc: 'shards',
+    well_child_weight: 'shards'
 };
 
 function sendRevisions (revisions) {

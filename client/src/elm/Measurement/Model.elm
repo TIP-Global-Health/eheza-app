@@ -277,3 +277,56 @@ type NextStepsTask
     | NextStepsHealthEducation
     | NextStepContributingFactors
     | NextStepFollowUp
+
+
+type alias HeightForm =
+    { height : Maybe Float
+    , heightDirty : Bool
+    }
+
+
+emptyHeightForm : HeightForm
+emptyHeightForm =
+    HeightForm Nothing False
+
+
+type alias MuacForm =
+    { muac : Maybe Float
+    , muacDirty : Bool
+    }
+
+
+emptyMuacForm : MuacForm
+emptyMuacForm =
+    MuacForm Nothing False
+
+
+type alias NutritionForm =
+    { signs : Maybe (List ChildNutritionSign)
+    }
+
+
+emptyNutritionForm : NutritionForm
+emptyNutritionForm =
+    NutritionForm Nothing
+
+
+type alias PhotoForm =
+    { url : Maybe PhotoUrl
+    }
+
+
+emptyPhotoForm : PhotoForm
+emptyPhotoForm =
+    PhotoForm Nothing
+
+
+type alias WeightForm =
+    { weight : Maybe Float
+    , weightDirty : Bool
+    }
+
+
+emptyWeightForm : WeightForm
+emptyWeightForm =
+    WeightForm Nothing False

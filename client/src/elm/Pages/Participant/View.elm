@@ -472,7 +472,7 @@ viewActivityListItem config language clinicType selectedActivity activityItem =
                 , ( "active", selectedActivity == Just activityItem )
                 ]
             ]
-            [ span [ class ("icon-section icon-" ++ getActivityIcon (config.tagActivity activityItem)) ] []
+            [ span [ class ("icon-activity-task icon-" ++ getActivityIcon (config.tagActivity activityItem)) ] []
             , text <| translate language activityTitle
             ]
         ]

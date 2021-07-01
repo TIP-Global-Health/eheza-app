@@ -44,3 +44,93 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveECD = data }
             , Cmd.none
             )
+
+        SaveHeight personId valueId value ->
+            ( { model | saveHeight = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildHeightEndpoint HandleSavedHeight
+            )
+
+        HandleSavedHeight data ->
+            ( { model | saveHeight = data }
+            , Cmd.none
+            )
+
+        SaveMuac personId valueId value ->
+            ( { model | saveMuac = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildMuacEndpoint HandleSavedMuac
+            )
+
+        HandleSavedMuac data ->
+            ( { model | saveMuac = data }
+            , Cmd.none
+            )
+
+        SaveNutrition personId valueId value ->
+            ( { model | saveNutrition = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildNutritionEndpoint HandleSavedNutrition
+            )
+
+        HandleSavedNutrition data ->
+            ( { model | saveNutrition = data }
+            , Cmd.none
+            )
+
+        SavePhoto personId valueId value ->
+            ( { model | savePhoto = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildPhotoEndpoint HandleSavedPhoto
+            )
+
+        HandleSavedPhoto data ->
+            ( { model | savePhoto = data }
+            , Cmd.none
+            )
+
+        SaveWeight personId valueId value ->
+            ( { model | saveWeight = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildWeightEndpoint HandleSavedWeight
+            )
+
+        HandleSavedWeight data ->
+            ( { model | saveWeight = data }
+            , Cmd.none
+            )
+
+        SaveContributingFactors personId valueId value ->
+            ( { model | saveContributingFactors = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildContributingFactorsEndpoint HandleSavedContributingFactors
+            )
+
+        HandleSavedContributingFactors data ->
+            ( { model | saveContributingFactors = data }
+            , Cmd.none
+            )
+
+        SaveHealthEducation personId valueId value ->
+            ( { model | saveHealthEducation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildHealthEducationEndpoint HandleSavedHealthEducation
+            )
+
+        HandleSavedHealthEducation data ->
+            ( { model | saveHealthEducation = data }
+            , Cmd.none
+            )
+
+        SaveFollowUp personId valueId value ->
+            ( { model | saveFollowUp = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildFollowUpEndpoint HandleSavedFollowUp
+            )
+
+        HandleSavedFollowUp data ->
+            ( { model | saveFollowUp = data }
+            , Cmd.none
+            )
+
+        SaveSendToHC personId valueId value ->
+            ( { model | saveSendToHC = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildSendToHCEndpoint HandleSavedSendToHC
+            )
+
+        HandleSavedSendToHC data ->
+            ( { model | saveSendToHC = data }
+            , Cmd.none
+            )

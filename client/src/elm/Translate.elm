@@ -93,6 +93,7 @@ import Pages.PrenatalActivity.Model
         , LmpRange(..)
         , PatientProvisionsTask(..)
         )
+import Pages.WellChildActivity.Model exposing (NutritionAssesmentTask(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
@@ -690,6 +691,7 @@ type TranslationId
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
     | NutritionAssesment NutritionAssesment
+    | NutritionAssesmentTask NutritionAssesmentTask
     | NutritionCaringOption CaringOption
     | NutritionFeedingSignQuestion NutritionFeedingSign
     | NutritionFoodSecuritySignQuestion NutritionFoodSecuritySign
@@ -5153,6 +5155,53 @@ translationSet trans =
                 NoNutritionAssesment ->
                     { english = "None"
                     , kinyarwanda = Nothing
+                    }
+
+        NutritionAssesmentTask task ->
+            case task of
+                TaskHeight ->
+                    { english = "Height"
+                    , kinyarwanda = Just "Uburebure"
+                    }
+
+                TaskMuac ->
+                    { english = "MUAC"
+                    , kinyarwanda = Just "Ikizigira cy'akaboko"
+                    }
+
+                TaskNutrition ->
+                    { english = "Nutrition"
+                    , kinyarwanda = Just "Imirire"
+                    }
+
+                TaskPhoto ->
+                    { english = "Photo"
+                    , kinyarwanda = Just "Ifoto"
+                    }
+
+                TaskWeight ->
+                    { english = "Weight"
+                    , kinyarwanda = Just "Ibiro"
+                    }
+
+                TaskContributingFactors ->
+                    { english = "Contributing Factors"
+                    , kinyarwanda = Just "Impamvu zateye uburwayi"
+                    }
+
+                TaskHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
+                    }
+
+                TaskFollowUp ->
+                    { english = "Follow Up"
+                    , kinyarwanda = Just "Gukurikirana umurwayi"
+                    }
+
+                TaskSendToHC ->
+                    { english = "Send to Health Center"
+                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
         NutritionCaringOption option ->

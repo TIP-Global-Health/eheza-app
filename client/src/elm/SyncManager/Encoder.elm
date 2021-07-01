@@ -106,6 +106,11 @@ encodeIndexDbQueryUploadAuthorityResultRecord dbVersion record =
                                 Backend.Measurement.Encoder.encodePrenatalPhoto
                                 identifier_
 
+                        BackendAuthorityWellChildPhoto identifier_ ->
+                            doEncode
+                                Backend.Measurement.Encoder.encodeWellChildPhoto
+                                identifier_
+
                         _ ->
                             SyncManager.Utils.encodeBackendAuthorityEntity entity
             in

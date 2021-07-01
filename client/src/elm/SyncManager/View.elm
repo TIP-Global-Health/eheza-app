@@ -606,11 +606,38 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityWeight identifier ->
                 viewMeasurement identifier "Weight"
 
+            BackendAuthorityWellChildContributingFactors identifier ->
+                viewMeasurement identifier "Well Child Contributing Factors"
+
             BackendAuthorityWellChildECD identifier ->
                 viewMeasurement identifier "Well Child ECD"
 
             BackendAuthorityWellChildEncounter identifier ->
-                text ("WellChildEncounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+                text ("Well Child Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
+            BackendAuthorityWellChildFollowUp identifier ->
+                viewMeasurement identifier "Well Child Follow Up"
+
+            BackendAuthorityWellChildHealthEducation identifier ->
+                viewMeasurement identifier "Well Child Health Education"
+
+            BackendAuthorityWellChildHeight identifier ->
+                viewMeasurement identifier "Well Child Height"
+
+            BackendAuthorityWellChildMuac identifier ->
+                viewMeasurement identifier "Well Child Muac"
+
+            BackendAuthorityWellChildNutrition identifier ->
+                viewMeasurement identifier "Well Child Nutrition"
+
+            BackendAuthorityWellChildPhoto identifier ->
+                viewMeasurement identifier "Well Child Photo"
+
+            BackendAuthorityWellChildSendToHC identifier ->
+                viewMeasurement identifier "Well Child Send to HC"
+
+            BackendAuthorityWellChildWeight identifier ->
+                viewMeasurement identifier "Well Child Weight"
         ]
 
 

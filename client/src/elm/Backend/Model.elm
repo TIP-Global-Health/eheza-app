@@ -419,5 +419,14 @@ type Revision
     | VillageRevision VillageId Village
     | VitalsRevision VitalsId Vitals
     | WeightRevision WeightId Weight
+    | WellChildContributingFactorsRevision WellChildContributingFactorsId WellChildContributingFactors
     | WellChildECDRevision WellChildECDId WellChildECD
     | WellChildEncounterRevision WellChildEncounterId WellChildEncounter
+    | WellChildFollowUpRevision WellChildFollowUpId WellChildFollowUp
+    | WellChildHealthEducationRevision WellChildHealthEducationId WellChildHealthEducation
+    | WellChildHeightRevision WellChildHeightId WellChildHeight
+    | WellChildMuacRevision WellChildMuacId WellChildMuac
+    | WellChildNutritionRevision WellChildNutritionId WellChildNutrition
+    | WellChildPhotoRevision WellChildPhotoId WellChildPhoto
+    | WellChildSendToHCRevision WellChildSendToHCId WellChildSendToHC
+    | WellChildWeightRevision WellChildWeightId WellChildWeight

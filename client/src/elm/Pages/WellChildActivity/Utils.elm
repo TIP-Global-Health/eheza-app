@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (WellChildEncounterId)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
@@ -12,15 +13,78 @@ import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (..)
+import Measurement.Utils exposing (..)
 import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskCompleted)
 import Pages.WellChildActivity.Model exposing (..)
 import Pages.WellChildEncounter.Model exposing (AssembledData)
 import RemoteData exposing (RemoteData(..))
+import ZScore.Model exposing (Kilograms(..))
+import ZScore.Utils exposing (zScoreWeightForAge)
 
 
-expectActivity : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
-expectActivity currentDate child assembled db activity =
-    -- For now, we show all activities without any conditions.
+generateNutritionAssesment : NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> List NutritionAssesment
+generateNutritionAssesment currentDate zscores db assembled =
+    let
+        measurements =
+            assembled.measurements
+
+        muacValue =
+            Maybe.map (Tuple.second >> .value) measurements.muac
+
+        nutritionValue =
+            Maybe.map (Tuple.second >> .value) measurements.nutrition
+
+        weightValue =
+            Maybe.map
+                (Tuple.second
+                    >> .value
+                    >> weightValueFunc
+                )
+                measurements.weight
+
+        weightValueFunc =
+            \(WeightInKg kg) -> kg
+    in
+    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembled.participant.person muacValue weightValue nutritionValue db
+
+
+activityCompleted : NominalDate -> ZScore.Model.Model -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
+activityCompleted currentDate zscores data db activity =
+    let
+        measurements =
+            data.measurements
+
+        activityExpected =
+            expectActivity currentDate data db
+    in
+    case activity of
+        WellChildNutritionAssessment ->
+            let
+                ( mandatory, optional ) =
+                    partitionNutritionAssessmentTasks
+            in
+            if mandatoryNutritionAssesmentTasksCompleted currentDate zscores data db then
+                let
+                    nonEmptyAssessment =
+                        generateNutritionAssesment currentDate zscores db data
+                            |> List.isEmpty
+                            |> not
+                in
+                if nonEmptyAssessment then
+                    List.all (nutritionAssessmentTaskCompleted currentDate zscores data db) (optional ++ nutritionAssessmentNextStepsTasks)
+
+                else
+                    List.all (nutritionAssessmentTaskCompleted currentDate zscores data db) optional
+
+            else
+                False
+
+        WellChildECD ->
+            (not <| activityExpected WellChildECD) || isJust measurements.ecd
+
+
+expectActivity : NominalDate -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
+expectActivity currentDate assembled db activity =
     case activity of
         WellChildECD ->
             ageInMonths currentDate assembled.person
@@ -38,24 +102,98 @@ expectActivity currentDate child assembled db activity =
                 |> Maybe.withDefault False
 
         _ ->
-            False
+            True
 
 
-activityCompleted : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
-activityCompleted currentDate child data db activity =
+nutritionAssessmentTaskCompleted : NominalDate -> ZScore.Model.Model -> AssembledData -> ModelIndexedDb -> NutritionAssesmentTask -> Bool
+nutritionAssessmentTaskCompleted currentDate zscores data db task =
     let
         measurements =
             data.measurements
 
-        activityExpected =
-            expectActivity currentDate child data db
+        taskExpected =
+            expectNutritionAssessmentTask currentDate zscores data db
     in
-    case activity of
-        WellChildNutritionAssessment ->
-            (not <| activityExpected WellChildNutritionAssessment) || False
+    case task of
+        TaskHeight ->
+            (not <| taskExpected TaskHeight) || isJust measurements.height
 
-        WellChildECD ->
-            (not <| activityExpected WellChildECD) || isJust measurements.ecd
+        TaskMuac ->
+            (not <| taskExpected TaskMuac) || isJust measurements.muac
+
+        TaskNutrition ->
+            (not <| taskExpected TaskNutrition) || isJust measurements.nutrition
+
+        TaskPhoto ->
+            (not <| taskExpected TaskPhoto) || isJust measurements.photo
+
+        TaskWeight ->
+            (not <| taskExpected TaskWeight) || isJust measurements.weight
+
+        TaskContributingFactors ->
+            (not <| taskExpected TaskContributingFactors) || isJust measurements.contributingFactors
+
+        TaskHealthEducation ->
+            (not <| taskExpected TaskHealthEducation) || isJust measurements.healthEducation
+
+        TaskFollowUp ->
+            (not <| taskExpected TaskFollowUp) || isJust measurements.followUp
+
+        TaskSendToHC ->
+            (not <| taskExpected TaskContributingFactors) || isJust measurements.sendToHC
+
+
+expectNutritionAssessmentTask : NominalDate -> ZScore.Model.Model -> AssembledData -> ModelIndexedDb -> NutritionAssesmentTask -> Bool
+expectNutritionAssessmentTask currentDate zscores data db task =
+    case task of
+        -- Show for children that are at least 6 month old.
+        TaskMuac ->
+            ageInMonths currentDate data.person
+                |> Maybe.map (\ageMonths -> ageMonths > 5)
+                |> Maybe.withDefault False
+
+        TaskContributingFactors ->
+            if mandatoryNutritionAssesmentTasksCompleted currentDate zscores data db then
+                -- Any assesment require Next Steps tasks.
+                generateNutritionAssesment currentDate zscores db data
+                    |> List.isEmpty
+                    |> not
+
+            else
+                False
+
+        TaskHealthEducation ->
+            expectNutritionAssessmentTask currentDate zscores data db TaskContributingFactors
+
+        TaskFollowUp ->
+            expectNutritionAssessmentTask currentDate zscores data db TaskContributingFactors
+
+        TaskSendToHC ->
+            expectNutritionAssessmentTask currentDate zscores data db TaskContributingFactors
+
+        -- View any other task.
+        _ ->
+            True
+
+
+mandatoryNutritionAssesmentTasksCompleted : NominalDate -> ZScore.Model.Model -> AssembledData -> ModelIndexedDb -> Bool
+mandatoryNutritionAssesmentTasksCompleted currentDate zscores data db =
+    Tuple.first partitionNutritionAssessmentTasks
+        |> List.filter (not << nutritionAssessmentTaskCompleted currentDate zscores data db)
+        |> List.isEmpty
+
+
+{-| List of activities that need to be completed, in order to
+decide if to show Next Steps activity, or not.
+-}
+partitionNutritionAssessmentTasks : ( List NutritionAssesmentTask, List NutritionAssesmentTask )
+partitionNutritionAssessmentTasks =
+    ( [ TaskHeight, TaskMuac, TaskNutrition, TaskWeight ], [ TaskPhoto ] )
+
+
+nutritionAssessmentNextStepsTasks : List NutritionAssesmentTask
+nutritionAssessmentNextStepsTasks =
+    [ TaskContributingFactors, TaskHealthEducation, TaskFollowUp, TaskSendToHC ]
 
 
 fromWellChildECDValue : Maybe (EverySet ECDSign) -> WellChildECDForm
@@ -177,6 +315,139 @@ toWellChildECDValue form =
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoECDSigns)
+
+
+nutritionAssessmentTasksCompletedFromTotal : WellChildMeasurements -> NutritionAssessmentData -> NutritionAssesmentTask -> ( Int, Int )
+nutritionAssessmentTasksCompletedFromTotal measurements data task =
+    case task of
+        TaskHeight ->
+            let
+                form =
+                    measurements.height
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> heightFormWithDefault data.heightForm
+            in
+            ( taskCompleted form.height
+            , 1
+            )
+
+        TaskMuac ->
+            let
+                form =
+                    measurements.muac
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> muacFormWithDefault data.muacForm
+            in
+            ( taskCompleted form.muac
+            , 1
+            )
+
+        TaskNutrition ->
+            let
+                form =
+                    measurements.nutrition
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> nutritionFormWithDefault data.nutritionForm
+            in
+            ( taskCompleted form.signs
+            , 1
+            )
+
+        TaskPhoto ->
+            ( if isNothing data.photoForm.url && isNothing measurements.photo then
+                0
+
+              else
+                1
+            , 1
+            )
+
+        TaskWeight ->
+            let
+                form =
+                    measurements.weight
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> weightFormWithDefault data.weightForm
+            in
+            ( taskCompleted form.weight
+            , 1
+            )
+
+        TaskContributingFactors ->
+            let
+                form =
+                    measurements.contributingFactors
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> contributingFactorsFormWithDefault data.contributingFactorsForm
+            in
+            ( taskCompleted form.signs
+            , 1
+            )
+
+        TaskHealthEducation ->
+            let
+                form =
+                    measurements.healthEducation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> healthEducationFormWithDefault data.healthEducationForm
+
+                ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
+                    form.educationForDiagnosis
+                        |> Maybe.map
+                            (\providedHealthEducation ->
+                                if not providedHealthEducation then
+                                    if isJust form.reasonForNotProvidingHealthEducation then
+                                        ( 1, 1 )
+
+                                    else
+                                        ( 0, 1 )
+
+                                else
+                                    ( 0, 0 )
+                            )
+                        |> Maybe.withDefault ( 0, 0 )
+            in
+            ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
+            , reasonForProvidingEducationCompleted + 1
+            )
+
+        TaskFollowUp ->
+            let
+                form =
+                    measurements.followUp
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> followUpFormWithDefault data.followUpForm
+            in
+            ( taskCompleted form.option
+            , 1
+            )
+
+        TaskSendToHC ->
+            let
+                form =
+                    measurements.sendToHC
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> sendToHCFormWithDefault data.sendToHCForm
+
+                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+                    form.referToHealthCenter
+                        |> Maybe.map
+                            (\sentToHC ->
+                                if not sentToHC then
+                                    if isJust form.reasonForNotSendingToHC then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+            in
+            ( reasonForNotSentActive + taskCompleted form.handReferralForm
+            , reasonForNotSentCompleted + 1
+            )
 
 
 generateCompletedECDSigns : AssembledData -> List ECDSign

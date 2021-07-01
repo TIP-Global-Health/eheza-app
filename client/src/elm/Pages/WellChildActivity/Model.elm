@@ -2,24 +2,55 @@ module Pages.WellChildActivity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
 import Pages.Page exposing (Page)
 
 
 type Msg
     = SetActivePage Page
+    | SetWarningPopupState (List NutritionAssesment)
+    | NoOp
     | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
     | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
+      -- NUTRITION ASSESMENT
+    | SetActiveNutritionAssesmentTask NutritionAssesmentTask
+    | SetHeight String
+    | SaveHeight PersonId (Maybe ( WellChildHeightId, WellChildHeight )) (Maybe NutritionAssesmentTask)
+    | SetMuac String
+    | SaveMuac PersonId (Maybe ( WellChildMuacId, WellChildMuac )) (Maybe NutritionAssesmentTask)
+    | SetNutritionSign ChildNutritionSign
+    | SaveNutrition PersonId (Maybe ( WellChildNutritionId, WellChildNutrition )) (Maybe NutritionAssesmentTask)
+    | DropZoneComplete DropZoneFile
+    | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl (Maybe NutritionAssesmentTask)
+    | SetWeight String
+    | SaveWeight PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssesmentTask)
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SaveSendToHC PersonId (Maybe ( WellChildSendToHCId, WellChildSendToHC )) (Maybe NutritionAssesmentTask)
+    | SetProvidedEducationForDiagnosis Bool
+    | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
+    | SaveHealthEducation PersonId (Maybe ( WellChildHealthEducationId, WellChildHealthEducation )) (Maybe NutritionAssesmentTask)
+    | SetContributingFactorsSign ContributingFactorsSign
+    | SaveContributingFactors PersonId (Maybe ( WellChildContributingFactorsId, WellChildContributingFactors )) (Maybe NutritionAssesmentTask)
+    | SetFollowUpOption FollowUpOption
+    | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssesment) (Maybe NutritionAssesmentTask)
 
 
 type alias Model =
     { ecdForm : WellChildECDForm
+    , nutritionAssessmentData : NutritionAssessmentData
+    , warningPopupState : List NutritionAssesment
     }
 
 
 emptyModel : Model
 emptyModel =
-    { ecdForm = emptyWellChildECDForm }
+    { ecdForm = emptyWellChildECDForm
+    , nutritionAssessmentData = emptyNutritionAssessmentData
+    , warningPopupState = []
+    }
 
 
 type alias WellChildECDForm =
@@ -91,3 +122,58 @@ emptyWellChildECDForm =
     , shareWithOtherChildren = Nothing
     , countToTen = Nothing
     }
+
+
+type alias NutritionAssessmentData =
+    { heightForm : HeightForm
+    , muacForm : MuacForm
+    , nutritionForm : NutritionForm
+    , photoForm : PhotoForm
+    , weightForm : WeightForm
+    , contributingFactorsForm : ContributingFactorsForm
+    , healthEducationForm : HealthEducationForm
+    , followUpForm : FollowUpForm
+    , sendToHCForm : SendToHCForm
+    , activeTask : Maybe NutritionAssesmentTask
+    }
+
+
+emptyNutritionAssessmentData : NutritionAssessmentData
+emptyNutritionAssessmentData =
+    { heightForm = emptyHeightForm
+    , muacForm = emptyMuacForm
+    , nutritionForm = emptyNutritionForm
+    , photoForm = emptyPhotoForm
+    , weightForm = emptyWeightForm
+    , contributingFactorsForm = emptyContributingFactorsForm
+    , healthEducationForm = emptyHealthEducationForm
+    , followUpForm = emptyFollowUpForm
+    , sendToHCForm = emptySendToHCForm
+    , activeTask = Nothing
+    }
+
+
+type NutritionAssesmentTask
+    = TaskHeight
+    | TaskMuac
+    | TaskNutrition
+    | TaskPhoto
+    | TaskWeight
+    | TaskContributingFactors
+    | TaskHealthEducation
+    | TaskFollowUp
+    | TaskSendToHC
+
+
+allNutritionAssesmentTasks : List NutritionAssesmentTask
+allNutritionAssesmentTasks =
+    [ TaskHeight
+    , TaskMuac
+    , TaskNutrition
+    , TaskPhoto
+    , TaskWeight
+    , TaskContributingFactors
+    , TaskHealthEducation
+    , TaskFollowUp
+    , TaskSendToHC
+    ]

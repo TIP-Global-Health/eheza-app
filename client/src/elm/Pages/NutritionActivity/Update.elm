@@ -9,14 +9,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Utils
-    exposing
-        ( contributingFactorsFormWithDefault
-        , toContributingFactorsValueWithDefault
-        , toFollowUpValueWithDefault
-        , toHealthEducationValueWithDefault
-        , toSendToHCValueWithDefault
-        )
+import Measurement.Utils exposing (..)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))

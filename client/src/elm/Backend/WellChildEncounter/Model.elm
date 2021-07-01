@@ -30,6 +30,15 @@ to peform the updates indicated by the `Msg` type below.
 type alias Model =
     { closeWellChildEncounter : WebData ()
     , saveECD : WebData ()
+    , saveHeight : WebData ()
+    , saveMuac : WebData ()
+    , saveNutrition : WebData ()
+    , savePhoto : WebData ()
+    , saveWeight : WebData ()
+    , saveContributingFactors : WebData ()
+    , saveHealthEducation : WebData ()
+    , saveFollowUp : WebData ()
+    , saveSendToHC : WebData ()
     }
 
 
@@ -37,6 +46,15 @@ emptyModel : Model
 emptyModel =
     { closeWellChildEncounter = NotAsked
     , saveECD = NotAsked
+    , saveHeight = NotAsked
+    , saveMuac = NotAsked
+    , saveNutrition = NotAsked
+    , savePhoto = NotAsked
+    , saveWeight = NotAsked
+    , saveContributingFactors = NotAsked
+    , saveHealthEducation = NotAsked
+    , saveFollowUp = NotAsked
+    , saveSendToHC = NotAsked
     }
 
 
@@ -45,3 +63,21 @@ type Msg
     | HandleClosedWellChildEncounter (WebData ())
     | SaveECD PersonId (Maybe WellChildECDId) (EverySet ECDSign)
     | HandleSavedECD (WebData ())
+    | SaveHeight PersonId (Maybe WellChildHeightId) HeightInCm
+    | HandleSavedHeight (WebData ())
+    | SaveMuac PersonId (Maybe WellChildMuacId) MuacInCm
+    | HandleSavedMuac (WebData ())
+    | SaveNutrition PersonId (Maybe WellChildNutritionId) (EverySet ChildNutritionSign)
+    | HandleSavedNutrition (WebData ())
+    | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl
+    | HandleSavedPhoto (WebData ())
+    | SaveWeight PersonId (Maybe WellChildWeightId) WeightInKg
+    | HandleSavedWeight (WebData ())
+    | SaveContributingFactors PersonId (Maybe WellChildContributingFactorsId) (EverySet ContributingFactorsSign)
+    | HandleSavedContributingFactors (WebData ())
+    | SaveHealthEducation PersonId (Maybe WellChildHealthEducationId) HealthEducationValue
+    | HandleSavedHealthEducation (WebData ())
+    | SaveFollowUp PersonId (Maybe WellChildFollowUpId) FollowUpValue
+    | HandleSavedFollowUp (WebData ())
+    | SaveSendToHC PersonId (Maybe WellChildSendToHCId) SendToHCValue
+    | HandleSavedSendToHC (WebData ())
