@@ -737,7 +737,7 @@ update currentDate id db msg model =
                         |> (\data -> { data | barcodeScanForm = updatedForm })
             in
             ( { model | laboratoryData = updatedData }
-            , App.Ports.bindDropZoneForTesseract ()
+            , Cmd.none
             , []
             )
 

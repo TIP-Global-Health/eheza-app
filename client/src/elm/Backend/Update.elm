@@ -1104,7 +1104,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 [ BarcodeScanRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnose data.participantId data.encounterId
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
