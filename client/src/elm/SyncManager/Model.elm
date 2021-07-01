@@ -129,6 +129,7 @@ type BackendAuthorityEntity
     | BackendAuthorityTreatmentReview (BackendEntity TreatmentReview)
     | BackendAuthorityVitals (BackendEntity Vitals)
     | BackendAuthorityWeight (BackendEntity Weight)
+    | BackendAuthorityWellChildECD (BackendEntity WellChildECD)
     | BackendAuthorityWellChildEncounter (BackendEntity WellChildEncounter)
 
 

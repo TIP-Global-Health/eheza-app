@@ -493,6 +493,10 @@ h3.ui.header {
   background-image: url(#{$img-path}icon-nutritionassessment-white.svg);
 }
 
+.icon-task-ecd {
+  background-image: url(#{$img-path}icon-ecd.svg);
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {

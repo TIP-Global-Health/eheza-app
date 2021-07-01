@@ -29,15 +29,19 @@ to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
     { closeWellChildEncounter : WebData ()
+    , saveECD : WebData ()
     }
 
 
 emptyModel : Model
 emptyModel =
     { closeWellChildEncounter = NotAsked
+    , saveECD = NotAsked
     }
 
 
 type Msg
     = CloseWellChildEncounter
     | HandleClosedWellChildEncounter (WebData ())
+    | SaveECD PersonId (Maybe WellChildECDId) (EverySet ECDSign)
+    | HandleSavedECD (WebData ())

@@ -1216,6 +1216,55 @@ type alias AcuteIllnessFollowUp =
 
 
 
+-- WELL CHILD MEASUREMENTS
+
+
+type alias WellChildECD =
+    WellChildMeasurement (EverySet ECDSign)
+
+
+type ECDSign
+    = -- 6 to 9 months.
+      RespontToSoundWithSound
+    | TurnHeadWhenCalled
+    | SitWithoutSupport
+    | SmileBack
+    | RollTummyToBack
+    | ReachForToys
+      -- 9 to 15 months.
+    | UseSimpleGestures
+    | StandOnTheirOwn
+    | CopyDuringPlay
+    | SayMamaDada
+    | CanHoldSmallObjects
+      -- 15 to 18 months.
+    | LooksWhenPointedAt
+    | UseSingleWords
+    | WalkWithoutHelp
+    | PlayPretend
+    | PointToThingsOfInterest
+      -- 18 to 24 months.
+    | UseShortPhrases
+    | InterestedInOtherChildren
+    | FollowSimpleInstructions
+    | KickBall
+    | PointAtNamedObjects
+      -- 24 to 36 months.
+    | DressThemselves
+    | WashHandsGoToToiled
+    | KnowsColorsAndNumbers
+    | UseMediumPhrases
+    | PlayMakeBelieve
+      -- 36 to 48 months.
+    | FollowThreeStepInstructions
+    | StandOnOneFootFiveSeconds
+    | UseLongPhrases
+    | ShareWithOtherChildren
+    | CountToTen
+    | NoECDSigns
+
+
+
 -- LISTS OF MEASUREMENTS
 
 
@@ -1412,7 +1461,8 @@ type alias HomeVisitMeasurements =
 
 
 type alias WellChildMeasurements =
-    {}
+    { ecd : Maybe ( WellChildECDId, WellChildECD )
+    }
 
 
 {-| This is like `ChildMeasurementList`, except that it just covers one

@@ -34,3 +34,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | closeWellChildEncounter = data }
             , Cmd.none
             )
+
+        SaveECD personId valueId value ->
+            ( { model | saveECD = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildECDEndpoint HandleSavedECD
+            )
+
+        HandleSavedECD data ->
+            ( { model | saveECD = data }
+            , Cmd.none
+            )

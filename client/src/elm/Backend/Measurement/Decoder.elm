@@ -175,6 +175,7 @@ decodeHomeVisitMeasurements =
 decodeWellChildMeasurements : Decoder WellChildMeasurements
 decodeWellChildMeasurements =
     succeed WellChildMeasurements
+        |> optional "well_child_ecd" (decodeHead decodeWellChildECD) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -2733,3 +2734,119 @@ postProcessNutritionAssesment assesmentFromString nutritionSign =
                         assesmentFromString
             )
         |> Maybe.withDefault assesmentFromString
+
+
+decodeWellChildECD : Decoder WellChildECD
+decodeWellChildECD =
+    decodeEverySet decodeECDSign
+        |> field "ecd_signs"
+        |> decodeWellChildMeasurement
+
+
+decodeECDSign : Decoder ECDSign
+decodeECDSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "respont-to-sound-with-sound" ->
+                        succeed RespontToSoundWithSound
+
+                    "turn-head-when-called" ->
+                        succeed TurnHeadWhenCalled
+
+                    "sit-without-support" ->
+                        succeed SitWithoutSupport
+
+                    "smile-back" ->
+                        succeed SmileBack
+
+                    "roll-tummy-to-back" ->
+                        succeed RollTummyToBack
+
+                    "reach-for-toys" ->
+                        succeed ReachForToys
+
+                    "use-simple-gestures" ->
+                        succeed UseSimpleGestures
+
+                    "stand-on-their-own" ->
+                        succeed StandOnTheirOwn
+
+                    "copy-during-play" ->
+                        succeed CopyDuringPlay
+
+                    "say-mama-dada" ->
+                        succeed SayMamaDada
+
+                    "can-hold-small-objects" ->
+                        succeed CanHoldSmallObjects
+
+                    "looks-when-pointed-at" ->
+                        succeed LooksWhenPointedAt
+
+                    "use-single-words" ->
+                        succeed UseSingleWords
+
+                    "walk-without-help" ->
+                        succeed WalkWithoutHelp
+
+                    "play-pretend" ->
+                        succeed PlayPretend
+
+                    "point-to-things-of-interest" ->
+                        succeed PointToThingsOfInterest
+
+                    "use-short-phrases" ->
+                        succeed UseShortPhrases
+
+                    "interested-in-other-children" ->
+                        succeed InterestedInOtherChildren
+
+                    "follow-simple-instructions" ->
+                        succeed FollowSimpleInstructions
+
+                    "kick-ball" ->
+                        succeed KickBall
+
+                    "point-at-named-objects" ->
+                        succeed PointAtNamedObjects
+
+                    "dress-themselves" ->
+                        succeed DressThemselves
+
+                    "wash-hands-go-to-toiled" ->
+                        succeed WashHandsGoToToiled
+
+                    "knows-colors-and-numbers" ->
+                        succeed KnowsColorsAndNumbers
+
+                    "use-medium-phrases" ->
+                        succeed UseMediumPhrases
+
+                    "play-make-believe" ->
+                        succeed PlayMakeBelieve
+
+                    "follow-three-step-instructions" ->
+                        succeed FollowThreeStepInstructions
+
+                    "stand-on-one-foot-five-seconds" ->
+                        succeed StandOnOneFootFiveSeconds
+
+                    "use-long-phrases" ->
+                        succeed UseLongPhrases
+
+                    "share-with-other-children" ->
+                        succeed ShareWithOtherChildren
+
+                    "count-to-ten" ->
+                        succeed CountToTen
+
+                    "none" ->
+                        succeed NoECDSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized ECDSign"
+            )

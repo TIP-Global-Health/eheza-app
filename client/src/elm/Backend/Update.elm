@@ -18,7 +18,13 @@ import Backend.HomeVisitEncounter.Update
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantExtraData(..))
 import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model exposing (ChildMeasurements, HistoricalMeasurements, Measurements)
-import Backend.Measurement.Utils exposing (mapChildMeasurementsAtOfflineSession, mapMeasurementData, splitChildMeasurements, splitMotherMeasurements)
+import Backend.Measurement.Utils
+    exposing
+        ( mapChildMeasurementsAtOfflineSession
+        , mapMeasurementData
+        , splitChildMeasurements
+        , splitMotherMeasurements
+        )
 import Backend.Model exposing (..)
 import Backend.NutritionActivity.Model
 import Backend.NutritionEncounter.Model exposing (emptyNutritionEncounter)
@@ -45,6 +51,7 @@ import Backend.Utils
         , mapMotherMeasurements
         , mapNutritionMeasurements
         , mapPrenatalMeasurements
+        , mapWellChildMeasurements
         , sw
         )
 import Backend.Village.Utils exposing (getVillageClinicId)
@@ -2933,6 +2940,14 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
                 (\measurements -> { measurements | weights = Dict.insert uuid data measurements.weights })
                 model
             , True
+            )
+
+        WellChildECDRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ecd = Just ( uuid, data ) })
+                model
+            , recalc
             )
 
         WellChildEncounterRevision uuid data ->

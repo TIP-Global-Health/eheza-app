@@ -19,6 +19,14 @@ function hedley_well_child_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function hedley_well_child_node_info() {
   $items = array(
+    'well_child_ecd' => array(
+      'name' => t('Well Child ECD'),
+      'base' => 'node_content',
+      'description' => t('Early Childhood Development'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'well_child_encounter' => array(
       'name' => t('Well Child Encounter'),
       'base' => 'node_content',

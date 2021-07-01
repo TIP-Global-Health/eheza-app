@@ -731,6 +731,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeWeight
                             BackendAuthorityWeight
 
+                    "well_child_ecd" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildECD
+                            BackendAuthorityWellChildECD
+
                     "well_child_encounter" ->
                         doDecode
                             Backend.WellChildEncounter.Decoder.decodeWellChildEncounter

@@ -9,6 +9,9 @@ encodeActivityAsString activity =
         WellChildNutritionAssessment ->
             "well-child-nutrition-assessment"
 
+        WellChildECD ->
+            "well-child-ecd"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -17,6 +20,9 @@ decodeActivityFromString s =
     case s of
         "well-child-nutrition-assessment" ->
             Just WellChildNutritionAssessment
+
+        "well-child-ecd" ->
+            Just WellChildECD
 
         _ ->
             Nothing
@@ -38,7 +44,10 @@ getActivityIcon activity =
         WellChildNutritionAssessment ->
             "nutrition-assessment"
 
+        WellChildECD ->
+            "ecd"
+
 
 getAllActivities : List WellChildActivity
 getAllActivities =
-    [ WellChildNutritionAssessment ]
+    [ WellChildNutritionAssessment, WellChildECD ]

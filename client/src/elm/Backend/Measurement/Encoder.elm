@@ -2427,3 +2427,117 @@ encodeReasonForNotProvidingHealthEducation reason =
 
             NoReasonForNotProvidingHealthEducation ->
                 "none"
+
+
+encodeWellChildECD : WellChildECD -> List ( String, Value )
+encodeWellChildECD =
+    encodeWellChildMeasurement encodeWellChildECDValue
+
+
+encodeWellChildECDValue : EverySet ECDSign -> List ( String, Value )
+encodeWellChildECDValue value =
+    [ ( "ecd_signs", encodeEverySet encodeECDSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "well_child_ecd" )
+    ]
+
+
+encodeECDSign : ECDSign -> Value
+encodeECDSign sign =
+    string <|
+        case sign of
+            RespontToSoundWithSound ->
+                "respont-to-sound-with-sound"
+
+            TurnHeadWhenCalled ->
+                "turn-head-when-called"
+
+            SitWithoutSupport ->
+                "sit-without-support"
+
+            SmileBack ->
+                "smile-back"
+
+            RollTummyToBack ->
+                "roll-tummy-to-back"
+
+            ReachForToys ->
+                "reach-for-toys"
+
+            UseSimpleGestures ->
+                "use-simple-gestures"
+
+            StandOnTheirOwn ->
+                "stand-on-their-own"
+
+            CopyDuringPlay ->
+                "copy-during-play"
+
+            SayMamaDada ->
+                "say-mama-dada"
+
+            CanHoldSmallObjects ->
+                "can-hold-small-objects"
+
+            LooksWhenPointedAt ->
+                "looks-when-pointed-at"
+
+            UseSingleWords ->
+                "use-single-words"
+
+            WalkWithoutHelp ->
+                "walk-without-help"
+
+            PlayPretend ->
+                "play-pretend"
+
+            PointToThingsOfInterest ->
+                "point-to-things-of-interest"
+
+            UseShortPhrases ->
+                "use-short-phrases"
+
+            InterestedInOtherChildren ->
+                "interested-in-other-children"
+
+            FollowSimpleInstructions ->
+                "follow-simple-instructions"
+
+            KickBall ->
+                "kick-ball"
+
+            PointAtNamedObjects ->
+                "point-at-named-objects"
+
+            DressThemselves ->
+                "dress-themselves"
+
+            WashHandsGoToToiled ->
+                "wash-hands-go-to-toiled"
+
+            KnowsColorsAndNumbers ->
+                "knows-colors-and-numbers"
+
+            UseMediumPhrases ->
+                "use-medium-phrases"
+
+            PlayMakeBelieve ->
+                "play-make-believe"
+
+            FollowThreeStepInstructions ->
+                "follow-three-step-instructions"
+
+            StandOnOneFootFiveSeconds ->
+                "stand-on-one-foot-five-seconds"
+
+            UseLongPhrases ->
+                "use-long-phrases"
+
+            ShareWithOtherChildren ->
+                "share-with-other-children"
+
+            CountToTen ->
+                "count-to-ten"
+
+            NoECDSigns ->
+                "none"
