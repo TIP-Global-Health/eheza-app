@@ -8004,7 +8004,7 @@ translateDashboard trans =
 
         FeversByCause ->
             { english = "Fevers by Cause"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Impamvu zateye umuriro"
             }
 
         FeverCause cause ->
@@ -8043,17 +8043,17 @@ translateDashboard trans =
             case filter of
                 Stunting ->
                     { english = "Stunting"
-                    , kinyarwanda = Just "Abagwingiye"
+                    , kinyarwanda = Just "igwingira"
                     }
 
                 Underweight ->
                     { english = "Underweight"
-                    , kinyarwanda = Just "Abafite ibiro bidahagije"
+                    , kinyarwanda = Just "ibiro bidahagije"
                     }
 
                 Wasting ->
                     { english = "Wasting"
-                    , kinyarwanda = Just "Abananutse Bikabije"
+                    , kinyarwanda = Just "Kunanuka Bikabije"
                     }
 
                 Dashboard.MUAC ->
@@ -8100,7 +8100,7 @@ translateDashboard trans =
 
         Filters ->
             { english = "Filters"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Guhitamo"
             }
 
         GirlsFilterLabel ->
@@ -8130,12 +8130,12 @@ translateDashboard trans =
 
         IncidenceOf ->
             { english = "Incidence of"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'abana bashya bafite"
             }
 
         LastUpdated ->
             { english = "Last updated"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ivugurura riheruka"
             }
 
         LoadingDataGeneral ->
@@ -8207,7 +8207,7 @@ translateDashboard trans =
             case period of
                 Dashboard.OneYear ->
                     { english = "from last year"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Guhera umwaka ushize"
                     }
 
                 Dashboard.ThisMonth ->
@@ -8301,7 +8301,7 @@ translateDashboard trans =
 
         TotalBeneficiaries ->
             { english = "Total Beneficiaries"
-            , kinyarwanda = Just "Umubare wose w'"
+            , kinyarwanda = Just "Umubare w'abana bose bafite"
             }
 
         TotalMalnourished ->
