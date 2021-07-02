@@ -239,6 +239,7 @@ type Dashboard
     | NewBeneficiaries
     | NewbornsInCare
     | NewCasesLabel
+    | NewCasesPerMonth
     | NewPregnancy
     | NoDataGeneral
     | NoDataForPeriod
@@ -8166,6 +8167,11 @@ translateDashboard trans =
         NewCasesLabel ->
             { english = "New Cases"
             , kinyarwanda = Nothing
+            }
+
+        NewCasesPerMonth ->
+            { english = "New cases per month"
+            , kinyarwanda = Just "Abashya bagaragaye mu kwezi"
             }
 
         NewPregnancy ->
