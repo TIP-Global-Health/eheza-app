@@ -983,7 +983,7 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                             )
 
                         LaboratoryBarcodeScan ->
-                            ( "laboratory-barcode-photo"
+                            ( "laboratory-barcode"
                             , isJust measurements.barcodeScan
                             )
 
@@ -1119,73 +1119,12 @@ viewMalariaTestingForm language currentDate person form =
 viewBarcodeScanForm : Language -> NominalDate -> BarcodeScanForm -> Html Msg
 viewBarcodeScanForm language currentDate form =
     let
-        barcodeValue =
-            form.barcode
-                |> Maybe.map
-                    (\barcode ->
-                        p [ class "lot-number-label" ]
-                            [ text <| translate language Translate.LotNumber
-                            , text ": "
-                            , text barcode
-                            ]
-                    )
-                |> Maybe.withDefault emptyNode
-
-        barcodeCorrectSection =
-            if isJust form.barcode then
-                [ viewQuestionLabel language Translate.BarcodeScanCorrectQuestion
-                , viewBoolInput
-                    language
-                    form.scanCorrect
-                    SetScanCorrect
-                    "scan-correct"
-                    Nothing
-                ]
-
-            else
-                []
-
-        barcodeInputSection =
-            if form.scanCorrect == Just False then
-                [ viewLabel language Translate.BarcodeScanSetCorrectLabel
-                , viewTextInput language form.barcode SetBarcode "barcode-input"
-                ]
-
-            else
-                []
-
-        formContent =
-            if form.scanState == Loading then
-                div [ class "spinner" ] [ spinner ]
-                    |> keyed "spinner"
-
-            else
-                keyedDivKeyed "content"
-                    [ class "content" ]
-                    [ p [ class "helper" ] [ text <| translate language Translate.BarcodeScanHelper ++ "." ]
-                        |> keyed "help"
-                    , div
-                        [ id "dropzone"
-                        , class "dropzone"
-                        , on "dropzonesending" (Json.Decode.map DropZoneSending (Json.Decode.succeed ()))
-                        , on "dropzonecomplete" (Json.Decode.map DropZoneComplete decodeDropZoneText)
-                        ]
-                        [ div
-                            [ class "dz-message"
-                            , attribute "data-dz-message" ""
-                            ]
-                            [ span [] [ text <| translate language Translate.DropzoneDefaultMessage ] ]
-                        ]
-                        |> keyed "dropzone"
-                    , barcodeValue
-                        :: (barcodeCorrectSection ++ barcodeInputSection)
-                        |> div [ class "section-lot-number" ]
-                        |> keyed "lot-number-section"
-                    ]
+        barcodeUppercase =
+            Maybe.map String.toUpper form.barcode
     in
-    div [ class "ui form laboratory barcode-photo" ]
-        [ divKeyed [ class "ui full segment photo" ]
-            [ formContent ]
+    div [ class "ui form laboratory barcode" ]
+        [ viewLabel language Translate.BarcodeScanSetCorrectLabel
+        , viewTextInput language barcodeUppercase SetBarcode "barcode-input"
         ]
 
 

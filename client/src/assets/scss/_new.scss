@@ -878,37 +878,17 @@ div.page-activity.acute-illness {
       }
     }
 
-    .ui.form.laboratory.barcode-photo {
+    .ui.form.laboratory.barcode {
 
-      .helper {
-        margin-bottom: 35px;
-        text-align: center;
-      }
+      .form-input.barcode-input {
+        margin-bottom: 5px;
+        margin-top: 20px;
 
-      .spinner {
-        text-align: center;
-      }
-
-      .section-lot-number {
-
-        .lot-number-label {
-          color: $color-light-blue;
-          font-size: 26px;
-          font-weight: bold;
-          margin-top: 45px;
+        input,
+        input:focus {
+          border: 2px solid $color-gray;
           text-align: center;
-        }
-
-        .form-input.barcode-input {
-          margin-bottom: 5px;
-          margin-top: 20px;
-
-          input,
-          input:focus {
-            border: 2px solid $color-gray;
-            text-align: center;
-            width: 350px;
-          }
+          width: 350px;
         }
       }
     }

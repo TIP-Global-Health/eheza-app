@@ -44,9 +44,6 @@ type Msg
     | SetRapidTestResult String
     | SetIsPregnant Bool
     | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
-    | DropZoneComplete String
-    | DropZoneSending ()
-    | SetScanCorrect Bool
     | SetBarcode String
     | SaveBarcodeScan PersonId (Maybe ( BarcodeScanId, BarcodeScan ))
       -- EXPOSURE Msgs
@@ -249,7 +246,7 @@ type alias LaboratoryData =
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { malariaTestingForm = MalariaTestingForm Nothing Nothing
-    , barcodeScanForm = BarcodeScanForm Nothing Nothing NotAsked
+    , barcodeScanForm = BarcodeScanForm Nothing
     , activeTask = LaboratoryMalariaTesting
     }
 
@@ -267,8 +264,6 @@ type alias MalariaTestingForm =
 
 type alias BarcodeScanForm =
     { barcode : Maybe String
-    , scanCorrect : Maybe Bool
-    , scanState : WebData ()
     }
 
 
