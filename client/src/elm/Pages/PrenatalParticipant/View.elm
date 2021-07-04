@@ -40,7 +40,7 @@ view language currentDate selectedHealthCenter id isChw db model =
     in
     div
         [ class "wrap wrap-alt-2 page-participant prenatal" ]
-        [ viewHeader language id
+        [ viewHeader language id isChw
         , div
             [ class "ui full segment" ]
             [ viewWebData language (viewPrenatalActions language currentDate selectedHealthCenter id isChw db model) identity prenatalSessions
@@ -48,13 +48,13 @@ view language currentDate selectedHealthCenter id isChw db model =
         ]
 
 
-viewHeader : Language -> PersonId -> Html Msg
-viewHeader language id =
+viewHeader : Language -> PersonId -> Bool -> Html Msg
+viewHeader language id isChw =
     div
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language <| Translate.IndividualEncounterLabel AntenatalEncounter ]
+            [ text <| translate language <| Translate.IndividualEncounterLabel AntenatalEncounter isChw ]
         , a
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| IndividualEncounterParticipantsPage AntenatalEncounter
@@ -138,7 +138,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
                 []
 
         label =
-            p [ class "label-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter ]
+            p [ class "label-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter isChw ]
 
         hasNurseEncounter =
             not <| List.isEmpty nurseEncounters

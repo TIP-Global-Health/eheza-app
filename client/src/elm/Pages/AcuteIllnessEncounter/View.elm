@@ -185,7 +185,7 @@ viewHeader language data =
 
         label =
             if isFirstEncounter then
-                Translate.IndividualEncounterLabel Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                Translate.IndividualEncounterLabel Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter True
                     |> translate language
                     |> text
                     |> List.singleton

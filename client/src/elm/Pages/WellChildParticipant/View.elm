@@ -31,7 +31,7 @@ view language currentDate selectedHealthCenter id isChw db =
     in
     div
         [ class "wrap wrap-alt-2 page-participant well-child" ]
-        [ viewHeader language id
+        [ viewHeader language id isChw
         , div
             [ class "ui full segment" ]
             [ viewWebData language (viewActions language currentDate selectedHealthCenter id isChw db) identity sessions
@@ -39,8 +39,8 @@ view language currentDate selectedHealthCenter id isChw db =
         ]
 
 
-viewHeader : Language -> PersonId -> Html App.Model.Msg
-viewHeader language id =
+viewHeader : Language -> PersonId -> Bool -> Html App.Model.Msg
+viewHeader language id isChw =
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -49,6 +49,7 @@ viewHeader language id =
                 translate language <|
                     Translate.IndividualEncounterLabel
                         Backend.IndividualEncounterParticipant.Model.WellChildEncounter
+                        isChw
             ]
         , a
             [ class "link-back"
@@ -79,6 +80,7 @@ viewActions language currentDate selectedHealthCenter id isChw db sessions =
                 translate language <|
                     Translate.IndividualEncounterSelectVisit
                         Backend.IndividualEncounterParticipant.Model.WellChildEncounter
+                        isChw
             ]
         , viewWellChildAction language currentDate selectedHealthCenter id isChw db sessions
         ]
@@ -184,6 +186,7 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                 translate language <|
                     Translate.IndividualEncounterLabel
                         Backend.IndividualEncounterParticipant.Model.WellChildEncounter
+                        isChw
             ]
         , div [ class "icon-back" ] []
         ]

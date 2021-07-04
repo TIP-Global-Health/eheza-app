@@ -31,7 +31,7 @@ view language currentDate selectedHealthCenter id isChw db =
     in
     div
         [ class "wrap wrap-alt-2 page-participant nutrition" ]
-        [ viewHeader language id
+        [ viewHeader language id isChw
         , div
             [ class "ui full segment" ]
             [ viewWebData language (viewActions language currentDate selectedHealthCenter id isChw db) identity sessions
@@ -39,8 +39,8 @@ view language currentDate selectedHealthCenter id isChw db =
         ]
 
 
-viewHeader : Language -> PersonId -> Html App.Model.Msg
-viewHeader language id =
+viewHeader : Language -> PersonId -> Bool -> Html App.Model.Msg
+viewHeader language id isChw =
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -49,6 +49,7 @@ viewHeader language id =
                 translate language <|
                     Translate.IndividualEncounterLabel
                         Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+                        isChw
             ]
         , a
             [ class "link-back"
@@ -77,7 +78,7 @@ viewActions language currentDate selectedHealthCenter id isChw db sessions =
         -- Only CHW are allowed to conduct home visits.
         homeVisitAction =
             if isChw then
-                viewHomeVisitAction language currentDate selectedHealthCenter id db sessions
+                viewHomeVisitAction language currentDate selectedHealthCenter id isChw db sessions
 
             else
                 emptyNode
@@ -88,8 +89,9 @@ viewActions language currentDate selectedHealthCenter id isChw db sessions =
                 translate language <|
                     Translate.IndividualEncounterSelectVisit
                         Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+                        isChw
             ]
-        , viewNutritionAction language currentDate selectedHealthCenter id db sessions
+        , viewNutritionAction language currentDate selectedHealthCenter id isChw db sessions
         , homeVisitAction
         ]
 
@@ -99,10 +101,11 @@ viewNutritionAction :
     -> NominalDate
     -> HealthCenterId
     -> PersonId
+    -> Bool
     -> ModelIndexedDb
     -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant
     -> Html App.Model.Msg
-viewNutritionAction language currentDate selectedHealthCenter id db sessions =
+viewNutritionAction language currentDate selectedHealthCenter id isChw db sessions =
     let
         -- Person nutrition session.
         maybeSessionId =
@@ -186,6 +189,7 @@ viewNutritionAction language currentDate selectedHealthCenter id db sessions =
                 translate language <|
                     Translate.IndividualEncounterLabel
                         Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+                        isChw
             ]
         , div [ class "icon-back" ] []
         ]
@@ -196,10 +200,11 @@ viewHomeVisitAction :
     -> NominalDate
     -> HealthCenterId
     -> PersonId
+    -> Bool
     -> ModelIndexedDb
     -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant
     -> Html App.Model.Msg
-viewHomeVisitAction language currentDate selectedHealthCenter id db sessions =
+viewHomeVisitAction language currentDate selectedHealthCenter id isChw db sessions =
     let
         -- Person Home Visit session.
         maybeSessionId =
@@ -283,6 +288,7 @@ viewHomeVisitAction language currentDate selectedHealthCenter id db sessions =
                 translate language <|
                     Translate.IndividualEncounterLabel
                         Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter
+                        isChw
             ]
         , div [ class "icon-back" ] []
         ]
