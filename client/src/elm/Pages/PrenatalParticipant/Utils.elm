@@ -7,12 +7,12 @@ import Maybe.Extra exposing (isJust)
 
 
 {-| Preganancy is considered 'active' if it does not have it's end
-date set, and it's EDD date is not set, or, EDD date is less than
+date and outcome set, or it's EDD date is not set, or, EDD date is less than
 3 month overdue.
 -}
 isPregnancyActive : NominalDate -> IndividualEncounterParticipant -> Bool
 isPregnancyActive currentDate session =
-    if isJust session.endDate then
+    if isJust session.endDate && isJust session.outcome then
         False
 
     else
