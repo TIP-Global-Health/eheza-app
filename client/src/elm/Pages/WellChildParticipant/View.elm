@@ -151,7 +151,7 @@ viewWellChildAction language currentDate selectedHealthCenter id db sessions =
                         -- If participant does not exist, create it.
                         |> Maybe.withDefault
                             [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.WellChildEncounter selectedHealthCenter
-                                |> Backend.Model.PostIndividualSession Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
+                                |> Backend.Model.PostIndividualSession (Backend.IndividualEncounterParticipant.Model.WellChildData PediatricCare)
                                 |> App.Model.MsgIndexedDb
                                 |> onClick
                             ]
