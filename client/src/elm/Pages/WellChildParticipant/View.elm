@@ -108,11 +108,7 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                 |> List.head
                 |> Maybe.map Tuple.first
 
-        -- Resolve active encounter for person. There should not be more than one.
-        -- We also want to know if there's an encounter that was completed today,
-        -- (started and ended on the same day), as we do not want to allow creating new encounter
-        -- at same day, previous one has ended.
-        ( maybeActiveEncounterId, encounterWasCompletedToday ) =
+        ( maybeActiveEncounterId, disableAction ) =
             maybeSessionId
                 |> Maybe.map
                     (\sessionId ->
@@ -120,18 +116,39 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.map
                                 (\dict ->
-                                    ( Dict.toList dict
-                                        |> List.filter (Tuple.second >> isDailyEncounterActive currentDate)
-                                        |> List.head
-                                        |> Maybe.map Tuple.first
-                                    , Dict.toList dict
-                                        |> List.filter
+                                    let
+                                        ( pediatricCareEncounetrs, newbornEncounters ) =
+                                            Dict.toList dict
+                                                |> List.partition (Tuple.second >> .encounterType >> (==) PediatricCare)
+
+                                        -- Resolve active encounter for person. There should not be more than one.
+                                        resolveActiveEncounter encounters =
+                                            List.filter (Tuple.second >> isDailyEncounterActive currentDate) encounters
+                                                |> List.head
+                                                |> Maybe.map Tuple.first
+                                    in
+                                    if isChw then
+                                        ( resolveActiveEncounter newbornEncounters
+                                        , -- There can be only one newborn exam encounter.
+                                          -- We will not to allow create new / edit existing action, if
+                                          -- we already have one encounter, and it is not active from today.
+                                          List.head newbornEncounters
+                                            |> Maybe.map (Tuple.second >> isDailyEncounterActive currentDate >> not)
+                                            |> Maybe.withDefault False
+                                        )
+
+                                    else
+                                        ( resolveActiveEncounter pediatricCareEncounetrs
+                                        , -- We will not to allow create new / edit existing action, if
+                                          -- there was pediatric care encounter completed today.
+                                          List.filter
                                             (\( _, encounter ) ->
                                                 encounter.startDate == currentDate && encounter.endDate == Just currentDate
                                             )
-                                        |> List.isEmpty
-                                        |> not
-                                    )
+                                            pediatricCareEncounetrs
+                                            |> List.isEmpty
+                                            |> not
+                                        )
                                 )
                             |> RemoteData.withDefault ( Nothing, False )
                     )
@@ -145,7 +162,7 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                         |> Maybe.map
                             -- If participant exists, create new encounter for it.
                             (\sessionId ->
-                                [ Backend.WellChildEncounter.Model.emptyWellChildEncounter sessionId currentDate encounterType (Just selectedHealthCenter)
+                                [ Backend.WellChildEncounter.Model.emptyWellChildEncounter sessionId currentDate newEncounterType (Just selectedHealthCenter)
                                     |> Backend.Model.PostWellChildEncounter
                                     |> App.Model.MsgIndexedDb
                                     |> onClick
@@ -154,13 +171,13 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                         -- If participant does not exist, create it.
                         |> Maybe.withDefault
                             [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.WellChildEncounter selectedHealthCenter
-                                |> Backend.Model.PostIndividualSession (Backend.IndividualEncounterParticipant.Model.WellChildData encounterType)
+                                |> Backend.Model.PostIndividualSession (Backend.IndividualEncounterParticipant.Model.WellChildData newEncounterType)
                                 |> App.Model.MsgIndexedDb
                                 |> onClick
                             ]
                     )
 
-        encounterType =
+        newEncounterType =
             if isChw then
                 NewbornExam
 
@@ -177,7 +194,7 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
     div
         (classList
             [ ( "ui primary button", True )
-            , ( "disabled", encounterWasCompletedToday )
+            , ( "disabled", disableAction )
             ]
             :: action
         )
