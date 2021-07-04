@@ -676,7 +676,7 @@ function hedley_well_child_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -732,7 +732,7 @@ function hedley_well_child_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -776,7 +776,7 @@ function hedley_well_child_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 5,
     ),
   );
 
@@ -816,7 +816,45 @@ function hedley_well_child_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 1,
+      'weight' => 4,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-well_child_encounter-field_well_child_encounter_type'.
+  $field_instances['node-well_child_encounter-field_well_child_encounter_type'] = array(
+    'bundle' => 'well_child_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 4,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_well_child_encounter_type',
+    'label' => 'Well Child Encounter type',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 3,
     ),
   );
 
@@ -3747,6 +3785,7 @@ function hedley_well_child_field_default_field_instances() {
   t('UUID');
   t('Weight');
   t('Well Child Encounter');
+  t('Well Child Encounter type');
   t('ZScore Age');
   t('ZScore BMI');
   t('ZScore Length');
