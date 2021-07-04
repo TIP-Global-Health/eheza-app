@@ -338,9 +338,8 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
-    | BarcodeScanCorrectQuestion
     | BarcodeScanHelper
-    | BarcodeScanSetCorrectLabel
+    | BarcodeScanEnterLotNumber
     | BeginNewEncounter
     | BloodPressure
     | BloodPressureElevatedOcassions
@@ -594,7 +593,6 @@ type TranslationId
     | LmpRangeHeader
     | LmpRange LmpRange
     | LoginPhrase LoginPhrase
-    | LotNumber
     | Low
     | LowRiskCase
     | Lungs
@@ -1974,19 +1972,14 @@ translationSet trans =
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
-        BarcodeScanCorrectQuestion ->
-            { english = "Is the barcode correct"
-            , kinyarwanda = Just "Kodi yanditse neza"
-            }
-
         BarcodeScanHelper ->
             { english = "Take a picture of the barcode on the RDT package"
             , kinyarwanda = Just "Fata ifoto ya kodi iri ku gapaki k'igikoresho gipima malariya cya TDR"
             }
 
-        BarcodeScanSetCorrectLabel ->
-            { english = "Enter barcode"
-            , kinyarwanda = Just "Andika Kodi"
+        BarcodeScanEnterLotNumber ->
+            { english = "Enter the Lot number"
+            , kinyarwanda = Nothing
             }
 
         BeginNewEncounter ->
@@ -3953,8 +3946,8 @@ translationSet trans =
                     }
 
                 LaboratoryBarcodeScan ->
-                    { english = "Photo of Barcode"
-                    , kinyarwanda = Just "Ifoto ya kodi ndangamuti"
+                    { english = "RDT Scan"
+                    , kinyarwanda = Just "Ifoto ya kodi iri ku gikoresho gipima Malariya"
                     }
 
         LastChecked ->
@@ -4069,11 +4062,6 @@ translationSet trans =
 
         LoginPhrase phrase ->
             translateLoginPhrase phrase
-
-        LotNumber ->
-            { english = "Lot No"
-            , kinyarwanda = Nothing
-            }
 
         Low ->
             { english = "Low"

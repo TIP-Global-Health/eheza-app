@@ -30,7 +30,6 @@ import Backend.Measurement.Model
         , MedicationNonAdministrationReason(..)
         , MedicationNonAdministrationSign(..)
         , MuacInCm(..)
-        , PhotoUrl(..)
         , ReasonForNotIsolating(..)
         , ReasonForNotProvidingHealthEducation(..)
         , ReasonForNotSendingToHC(..)

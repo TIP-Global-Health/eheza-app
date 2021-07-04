@@ -19,14 +19,13 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, isPersonAFertileWoman)
 import EverySet
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
+import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Decoder exposing (decodeDropZoneText)
 import Measurement.Model exposing (HealthEducationForm, SendToHCForm)
 import Measurement.Utils exposing (getInputConstraintsMuac, healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Measurement.View exposing (renderDatePart, viewMuacIndication, viewSendToHCForm)
@@ -59,7 +58,7 @@ import Pages.Utils
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (spinner, viewModal)
+import Utils.Html exposing (viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewWebData)
 
@@ -1123,7 +1122,7 @@ viewBarcodeScanForm language currentDate form =
             Maybe.map String.toUpper form.barcode
     in
     div [ class "ui form laboratory barcode" ]
-        [ viewLabel language Translate.BarcodeScanSetCorrectLabel
+        [ viewLabel language Translate.BarcodeScanEnterLotNumber
         , viewTextInput language barcodeUppercase SetBarcode "barcode-input"
         ]
 
