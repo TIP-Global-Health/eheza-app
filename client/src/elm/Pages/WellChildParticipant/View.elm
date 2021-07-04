@@ -7,7 +7,7 @@ import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
+import Backend.WellChildEncounter.Model exposing (WellChildEncounter, WellChildEncounterType(..))
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
@@ -142,7 +142,7 @@ viewWellChildAction language currentDate selectedHealthCenter id db sessions =
                         |> Maybe.map
                             -- If participant exists, create new encounter for it.
                             (\sessionId ->
-                                [ Backend.WellChildEncounter.Model.emptyWellChildEncounter sessionId currentDate (Just selectedHealthCenter)
+                                [ Backend.WellChildEncounter.Model.emptyWellChildEncounter sessionId currentDate PediatricCare (Just selectedHealthCenter)
                                     |> Backend.Model.PostWellChildEncounter
                                     |> App.Model.MsgIndexedDb
                                     |> onClick

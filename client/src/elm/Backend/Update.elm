@@ -2076,10 +2076,15 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                     ]
 
                                 WellChildEncounter ->
-                                    [ emptyWellChildEncounter sessionId currentDate healthCenterId
-                                        |> Backend.Model.PostWellChildEncounter
-                                        |> App.Model.MsgIndexedDb
-                                    ]
+                                    case extraData of
+                                        WellChildData wellChildEncounterType ->
+                                            [ emptyWellChildEncounter sessionId currentDate wellChildEncounterType healthCenterId
+                                                |> Backend.Model.PostWellChildEncounter
+                                                |> App.Model.MsgIndexedDb
+                                            ]
+
+                                        _ ->
+                                            []
 
                                 InmmunizationEncounter ->
                                     []

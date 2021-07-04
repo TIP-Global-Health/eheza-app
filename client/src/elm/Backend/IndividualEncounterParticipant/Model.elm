@@ -2,6 +2,7 @@ module Backend.IndividualEncounterParticipant.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
+import Backend.WellChildEncounter.Model exposing (WellChildEncounterType)
 import Date exposing (Date)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -29,6 +30,7 @@ emptyIndividualEncounterParticipant currentDate personId type_ healthCenterId =
 
 type IndividualParticipantExtraData
     = AntenatalData PrenatalEncounterType
+    | WellChildData WellChildEncounterType
     | NoIndividualParticipantExtraData
 
 
