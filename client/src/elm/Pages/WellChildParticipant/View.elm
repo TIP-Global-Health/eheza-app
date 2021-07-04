@@ -80,7 +80,7 @@ viewActions language currentDate selectedHealthCenter id isChw db sessions =
                     Translate.IndividualEncounterSelectVisit
                         Backend.IndividualEncounterParticipant.Model.WellChildEncounter
             ]
-        , viewWellChildAction language currentDate selectedHealthCenter id db sessions
+        , viewWellChildAction language currentDate selectedHealthCenter id isChw db sessions
         ]
 
 
@@ -89,10 +89,11 @@ viewWellChildAction :
     -> NominalDate
     -> HealthCenterId
     -> PersonId
+    -> Bool
     -> ModelIndexedDb
     -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant
     -> Html App.Model.Msg
-viewWellChildAction language currentDate selectedHealthCenter id db sessions =
+viewWellChildAction language currentDate selectedHealthCenter id isChw db sessions =
     let
         -- Person Well Child participant.
         maybeSessionId =
@@ -142,7 +143,7 @@ viewWellChildAction language currentDate selectedHealthCenter id db sessions =
                         |> Maybe.map
                             -- If participant exists, create new encounter for it.
                             (\sessionId ->
-                                [ Backend.WellChildEncounter.Model.emptyWellChildEncounter sessionId currentDate PediatricCare (Just selectedHealthCenter)
+                                [ Backend.WellChildEncounter.Model.emptyWellChildEncounter sessionId currentDate encounterType (Just selectedHealthCenter)
                                     |> Backend.Model.PostWellChildEncounter
                                     |> App.Model.MsgIndexedDb
                                     |> onClick
@@ -151,11 +152,18 @@ viewWellChildAction language currentDate selectedHealthCenter id db sessions =
                         -- If participant does not exist, create it.
                         |> Maybe.withDefault
                             [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.WellChildEncounter selectedHealthCenter
-                                |> Backend.Model.PostIndividualSession (Backend.IndividualEncounterParticipant.Model.WellChildData PediatricCare)
+                                |> Backend.Model.PostIndividualSession (Backend.IndividualEncounterParticipant.Model.WellChildData encounterType)
                                 |> App.Model.MsgIndexedDb
                                 |> onClick
                             ]
                     )
+
+        encounterType =
+            if isChw then
+                NewbornExam
+
+            else
+                PediatricCare
 
         navigateToEncounterAction id_ =
             [ Pages.Page.WellChildEncounterPage id_

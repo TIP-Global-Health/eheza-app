@@ -3366,6 +3366,7 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw after id =
                     Pages.WellChildActivity.Utils.mandatoryNutritionAssesmentTasksCompleted
                         currentDate
                         zscores
+                        isChw
                         assembledAfter
                         after
             in

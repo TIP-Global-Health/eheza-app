@@ -58,23 +58,23 @@ import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> WellChildActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores id activity db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores id isChw activity db model =
     let
         data =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate zscores id activity db model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate zscores id isChw activity db model) identity data
 
 
-viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> WellChildActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate zscores id activity db model data =
+viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate zscores id isChw activity db model data =
     let
         header =
             viewHeader language id activity
 
         content =
-            viewContent language currentDate zscores id activity db model data
+            viewContent language currentDate zscores id isChw activity db model data
     in
     div [ class "page-activity well-child" ]
         [ header
@@ -104,19 +104,19 @@ viewHeader language id activity =
         ]
 
 
-viewContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> WellChildActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate zscores id activity db model assembled =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate zscores id isChw activity db model assembled =
     ((viewPersonDetails language currentDate assembled.person Nothing |> div [ class "item" ])
-        :: viewActivity language currentDate zscores id activity assembled db model
+        :: viewActivity language currentDate zscores id isChw activity assembled db model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewActivity : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> WellChildActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate zscores id activity assembled db model =
+viewActivity : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate zscores id isChw activity assembled db model =
     case activity of
         WellChildNutritionAssessment ->
-            viewNutritionAssessmenContent language currentDate zscores id assembled db model.nutritionAssessmentData
+            viewNutritionAssessmenContent language currentDate zscores id isChw assembled db model.nutritionAssessmentData
 
         WellChildECD ->
             viewECDContent language currentDate assembled model.ecdForm
@@ -127,11 +127,12 @@ viewNutritionAssessmenContent :
     -> NominalDate
     -> ZScore.Model.Model
     -> WellChildEncounterId
+    -> Bool
     -> AssembledData
     -> ModelIndexedDb
     -> NutritionAssessmentData
     -> List (Html Msg)
-viewNutritionAssessmenContent language currentDate zscores id assembled db data =
+viewNutritionAssessmenContent language currentDate zscores id isChw assembled db data =
     let
         personId =
             assembled.participant.person
@@ -144,7 +145,7 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
 
         tasks =
             allNutritionAssesmentTasks
-                |> List.filter (expectNutritionAssessmentTask currentDate zscores assembled db)
+                |> List.filter (expectNutritionAssessmentTask currentDate zscores isChw assembled db)
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
