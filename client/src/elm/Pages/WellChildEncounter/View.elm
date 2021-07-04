@@ -65,7 +65,7 @@ viewHeader language data =
             ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| NutritionParticipantPage data.participant.person
+            , onClick <| SetActivePage <| UserPage <| WellChildParticipantPage data.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []
