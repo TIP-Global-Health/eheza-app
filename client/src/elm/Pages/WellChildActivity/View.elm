@@ -55,7 +55,6 @@ import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
-import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
 
 view : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> WellChildActivity -> ModelIndexedDb -> Model -> Html Msg
