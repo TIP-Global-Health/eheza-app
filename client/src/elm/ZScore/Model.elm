@@ -38,6 +38,7 @@ type alias Model =
     , weightForAge : WebData WeightForAgeTables
     , weightForHeight : WebData WeightForHeightTables
     , weightForLength : WebData WeightForLengthTables
+    , headCircumferenceForAge : WebData HeadCircumferenceForAgeTables
     }
 
 
@@ -48,6 +49,7 @@ emptyModel =
     , weightForAge = NotAsked
     , weightForHeight = NotAsked
     , weightForLength = NotAsked
+    , headCircumferenceForAge = NotAsked
     }
 
 
@@ -61,11 +63,13 @@ type Msg
     | FetchWeightForAgeTables
     | FetchWeightForHeightTables
     | FetchWeightForLengthTables
+    | FetchHeadCircumferenceForAgeTables
     | HandleBmiForAgeTables (WebData BmiForAgeTables)
     | HandleLengthHeightForAgeTables (WebData LengthHeightForAgeTables)
     | HandleWeightForAgeTables (WebData WeightForAgeTables)
     | HandleWeightForHeightTables (WebData WeightForHeightTables)
     | HandleWeightForLengthTables (WebData WeightForLengthTables)
+    | HandleHeadCircumferenceForAgeTables (WebData HeadCircumferenceForAgeTables)
 
 
 {-| For now, just make ZScore an alias for a Float ... we could do fancier
@@ -146,6 +150,10 @@ type alias WeightForLengthTables =
 
 type alias WeightForHeightTables =
     MaleAndFemale (AllDict Height (ZScoreEntry Kilograms) Int)
+
+
+type alias HeadCircumferenceForAgeTables =
+    MaleAndFemale (AllDict Days (ZScoreEntry Centimetres) Int)
 
 
 type alias MaleAndFemale a =

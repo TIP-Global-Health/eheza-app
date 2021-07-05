@@ -48,6 +48,11 @@ weightForLengthPath =
     "assets/z-score/wflanthro.json"
 
 
+headCircumferenceForAgePath : String
+headCircumferenceForAgePath =
+    "assets/z-score/hcanthro.json"
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -59,6 +64,7 @@ update msg model =
                     , FetchWeightForAgeTables
                     , FetchWeightForHeightTables
                     , FetchWeightForLengthTables
+                    , FetchHeadCircumferenceForAgeTables
                     ]
 
         FetchBmiForAgeTables ->
@@ -106,6 +112,15 @@ update msg model =
             else
                 ( model, Cmd.none )
 
+        FetchHeadCircumferenceForAgeTables ->
+            if isNotAsked model.headCircumferenceForAge then
+                ( { model | headCircumferenceForAge = Loading }
+                , fetchForAgeByDays headCircumferenceForAgePath Centimetres HandleHeadCircumferenceForAgeTables
+                )
+
+            else
+                ( model, Cmd.none )
+
         HandleBmiForAgeTables data ->
             ( { model | bmiForAge = data }
             , Cmd.none
@@ -128,6 +143,11 @@ update msg model =
 
         HandleWeightForLengthTables data ->
             ( { model | weightForLength = data }
+            , Cmd.none
+            )
+
+        HandleHeadCircumferenceForAgeTables data ->
+            ( { model | headCircumferenceForAge = data }
             , Cmd.none
             )
 
@@ -164,6 +184,15 @@ fetchForAge paths wrapper tagger =
             )
         |> RemoteData.asCmd
         |> Cmd.map tagger
+
+
+fetchForAgeByDays : String -> (Float -> Centimetres) -> (WebData (MaleAndFemale (AllDict Days (ZScoreEntry Centimetres) Int)) -> Msg) -> Cmd Msg
+fetchForAgeByDays path wrapper tagCmd =
+    get path
+        |> withExpect (expectJson (decodeForAge Days (\(Days x) -> x) wrapper))
+        |> toTask
+        |> RemoteData.asCmd
+        |> Cmd.map tagCmd
 
 
 {-| Fetch JSON data keyed by a "length" field which is in centimetres
