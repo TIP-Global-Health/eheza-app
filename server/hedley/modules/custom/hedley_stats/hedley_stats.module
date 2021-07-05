@@ -647,56 +647,6 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   return $values;
 }
 
-
-function bla($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
-  $query = hedley_stats_get_base_query($health_center_id, 'pmtct_participant');
-
-  $field_names = [
-    'field_person',
-    'field_adult',
-    'field_clinic',
-  ];
-
-  foreach ($field_names as $field_name) {
-    hedley_general_join_field_to_query($query, 'node', $field_name);
-  }
-
-  hedley_general_join_field_to_query($query, 'node', 'field_group_type', TRUE, 'field_clinic.field_clinic_target_id');
-
-  $date = hedley_stats_get_period($period);
-  // We want to get all participants that graduate within, or after
-  // defined period.
-  $query->condition('field_expected.field_expected_value2', $date['start'], '>');
-
-  $result = $query
-    ->execute()
-    ->fetchAllAssoc('nid');
-
-  $items = [];
-  foreach (hedley_stats_get_all_clinic_types() as $clinic_type) {
-    $items[$clinic_type] = [];
-  }
-
-  foreach ($result as $row) {
-    $clinic_type = $row->field_group_type;
-    $child_wrapper = entity_metadata_wrapper('node', $row->field_person);
-    $adult_wrapper = entity_metadata_wrapper('node', $row->field_adult);
-
-    $items[$clinic_type][] = [
-      'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
-      'id' => $child_wrapper->getIdentifier(),
-      'name' => $child_wrapper->label(),
-      'birth_date' => hedley_stats_convert_timestamp_to_nominal($child_wrapper->field_birth_date->value()),
-      'gender' => $child_wrapper->field_gender->value(),
-      'mother_name' => $adult_wrapper->label(),
-      'phone_number' => $adult_wrapper->field_phone_number->value(),
-      'graduation_date' => date_format(date_create($row->field_expected_field_expected_value2), 'Y-m-d'),
-    ];
-  }
-
-  dpm($items);
-}
-
 /**
  * Returns active participants for HC (per clinic type), during provided period.
  *
@@ -1547,35 +1497,34 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period = FA
   $query = db_select('node', 'node');
   $query->fields('node', ['nid', 'type', 'created']);
 
+  $encounter_types = [
+    'acute_illness_encounter',
+    'nutrition_encounter',
+    'prenatal_encounter',
+  ];
+  $participant_types = [
+    'individual_participant',
+    'pmtct_participant',
+  ];
+
+  // If we're dealing with encounter, creation date is
+  // resolved using 'field_scheduled_date'.
+  if (in_array($node_type, $encounter_types)) {
+    $date_field = 'field_scheduled_date';
+    hedley_general_join_field_to_query($query, 'node', $date_field, FALSE, NULL, NULL, TRUE);
+  }
+  // If we're dealing with individual participant, creation date is
+  // resolved using 'field_expected'.
+  elseif (in_array($node_type, $participant_types)) {
+    $date_field = 'field_expected';
+    hedley_general_join_field_to_query($query, 'node', $date_field, FALSE, NULL, NULL, TRUE);
+  }
+  // Dealing with measurements.
   // For all measurement nodes, creation date is
   // resolved using 'field_date_measured'.
-  $date_field = 'field_date_measured';
-
-  // Entities other than measurements are always
-  // resolved usingsingle node type.
-  if (!is_array($node_type)) {
-    $encounter_types = [
-      'acute_illness_encounter',
-      'nutrition_encounter',
-      'prenatal_encounter',
-    ];
-    $participant_types = [
-      'individual_participant',
-      'pmtct_participant',
-    ];
-
-    // If we're dealing with encounter, creation date is
-    // resolved using 'field_scheduled_date'.
-    if (in_array($node_type, $encounter_types)) {
-      $date_field = 'field_scheduled_date';
-      hedley_general_join_field_to_query($query, 'node', $date_field);
-    }
-    // If we're dealing with individual participant, creation date is
-    // resolved using 'field_expected'.
-    elseif (in_array($node_type, $participant_types)) {
-      $date_field = 'field_expected';
-      hedley_general_join_field_to_query($query, 'node', $date_field, FALSE, NULL, NULL, TRUE);
-    }
+  else {
+    $date_field = 'field_date_measured';
+    hedley_general_join_field_to_query($query, 'node', $date_field);
   }
 
   // All nodes have the Health center info under `field_shards`.

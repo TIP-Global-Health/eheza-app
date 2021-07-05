@@ -60,7 +60,7 @@ decodeCaseManagementDataForYear =
 decodeCaseManagement : Decoder CaseManagement
 decodeCaseManagement =
     succeed CaseManagement
-        |> required "id" int
+        |> required "id" decodeInt
         |> required "name" string
         |> required "birth_date" decodeYYYYMMDD
         |> required "gender" decodeGender
@@ -149,7 +149,7 @@ decodeChildrenBeneficiariesData =
 decodeChildrenBeneficiariesStats : Decoder ChildrenBeneficiariesStats
 decodeChildrenBeneficiariesStats =
     succeed ChildrenBeneficiariesStats
-        |> required "id" int
+        |> required "id" decodeInt
         |> required "gender" decodeGender
         |> required "birth_date" decodeYYYYMMDD
         |> required "created" decodeYYYYMMDD

@@ -64,7 +64,7 @@ emptyModel =
 
 
 type alias DashboardStats =
-    { caseManagement : CaseManagementData
+    { caseManagement : CaseManagementPast2Years
     , childrenBeneficiaries : List ChildrenBeneficiariesStats
     , completedPrograms : List ParticipantStats
     , familyPlanning : List FamilyPlanningStats
@@ -74,6 +74,12 @@ type alias DashboardStats =
 
     -- UTC Date and time on which statistics were generated.
     , timestamp : String
+    }
+
+
+type alias CaseManagementPast2Years =
+    { thisYear : List CaseManagement
+    , lastYear : List CaseManagement
     }
 
 

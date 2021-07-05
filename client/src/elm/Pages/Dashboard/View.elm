@@ -647,14 +647,11 @@ viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
             monthBeforeStats =
                 filterStatsWithinPeriod currentDate modelWithLastMonth stats
 
-            currentPeriodCaseManagement =
-                applyProgramTypeAndResidentsFilters stats.villagesWithResidents currentPeriodStats.caseManagement.thisYear model
-
             malnourishedCurrentMonth =
-                mapMalnorishedByMonth displayedMonth currentPeriodCaseManagement
+                mapMalnorishedByMonth displayedMonth currentPeriodStats.caseManagement.thisYear
 
             malnourishedPreviousMonth =
-                mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodCaseManagement
+                mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodStats.caseManagement.thisYear
         in
         [ div [ class "ui equal width grid" ]
             [ viewMalnourishedCards language malnourishedCurrentMonth malnourishedPreviousMonth
@@ -769,7 +766,7 @@ viewCaseManagementPage language currentDate stats db model =
                                 { name = caseNutrition.name, nutrition = nutrition } :: accum
                             )
                             []
-                            (applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.caseManagement.thisYear model)
+                            stats.caseManagement.thisYear
                             |> List.filter (.nutrition >> List.all (Tuple.second >> .class >> (==) Backend.Dashboard.Model.Good) >> not)
 
                     _ ->
@@ -793,7 +790,7 @@ viewCaseManagementPage language currentDate stats db model =
                                         accum
                             )
                             []
-                            (applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.caseManagement.thisYear model)
+                            stats.caseManagement.thisYear
                             |> List.filter
                                 (.nutrition
                                     >> List.any
@@ -1234,18 +1231,12 @@ viewNutritionPage language currentDate isChw nurse stats db model =
                 |> List.indexedMap (\index empty -> ( index + 1, empty ))
                 |> Dict.fromList
 
-        caseManagementsThisYear =
-            applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.caseManagement.thisYear model
-
-        caseManagementsLastYear =
-            applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.caseManagement.lastYear model
-
         caseNutritionTotalsThisYear =
-            caseManagementsThisYear
+            stats.caseManagement.thisYear
                 |> List.map (.nutrition >> generateCaseNutritionTotals)
 
         caseNutritionTotalsLastYear =
-            caseManagementsLastYear
+            stats.caseManagement.lastYear
                 |> List.map (.nutrition >> generateCaseNutritionTotals)
 
         totalsGraphData =
@@ -1254,7 +1245,7 @@ viewNutritionPage language currentDate isChw nurse stats db model =
                 |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
 
         newCasesGraphData =
-            caseManagementsThisYear
+            stats.caseManagement.thisYear
                 |> List.map (.nutrition >> generateCaseNutritionNewCases currentDate)
                 |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
                 |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear

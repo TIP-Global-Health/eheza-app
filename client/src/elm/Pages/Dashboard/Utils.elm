@@ -87,14 +87,20 @@ generateAssembledData healthCenterId stats db model =
     }
 
 
-generateFilteredPrenatalData : DashboardStatsRaw -> Model -> List PrenatalDataItem
-generateFilteredPrenatalData stats model =
-    model.selectedVillageFilter
-        |> Maybe.andThen
-            (\villageId -> Dict.get villageId stats.villagesWithResidents)
-        |> Maybe.map
-            (\residents -> List.filter (\item -> List.member item.identifier residents) stats.prenatalData)
-        |> Maybe.withDefault []
+generateFilteredDashboardStats : DashboardStatsRaw -> Model -> DashboardStats
+generateFilteredDashboardStats stats model =
+    { caseManagement =
+        { thisYear = applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.caseManagement.thisYear model
+        , lastYear = applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.caseManagement.lastYear model
+        }
+    , childrenBeneficiaries = applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.childrenBeneficiaries model
+    , completedPrograms = stats.completedPrograms
+    , familyPlanning = stats.familyPlanning
+    , missedSessions = stats.missedSessions
+    , totalEncounters = stats.totalEncounters
+    , villagesWithResidents = stats.villagesWithResidents
+    , timestamp = stats.timestamp
+    }
 
 
 generateFilteredAcuteIllnessData : DashboardStatsRaw -> Model -> List AcuteIllnessDataItem
@@ -107,17 +113,14 @@ generateFilteredAcuteIllnessData stats model =
         |> Maybe.withDefault []
 
 
-generateFilteredDashboardStats : DashboardStatsRaw -> Model -> DashboardStats
-generateFilteredDashboardStats stats model =
-    { caseManagement = stats.caseManagement
-    , childrenBeneficiaries = applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.childrenBeneficiaries model
-    , completedPrograms = stats.completedPrograms
-    , familyPlanning = stats.familyPlanning
-    , missedSessions = stats.missedSessions
-    , totalEncounters = stats.totalEncounters
-    , villagesWithResidents = stats.villagesWithResidents
-    , timestamp = stats.timestamp
-    }
+generateFilteredPrenatalData : DashboardStatsRaw -> Model -> List PrenatalDataItem
+generateFilteredPrenatalData stats model =
+    model.selectedVillageFilter
+        |> Maybe.andThen
+            (\villageId -> Dict.get villageId stats.villagesWithResidents)
+        |> Maybe.map
+            (\residents -> List.filter (\item -> List.member item.identifier residents) stats.prenatalData)
+        |> Maybe.withDefault []
 
 
 applyProgramTypeAndResidentsFilters :
