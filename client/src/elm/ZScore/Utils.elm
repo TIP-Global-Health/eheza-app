@@ -3,6 +3,7 @@ module ZScore.Utils exposing
     , valueForZScore
     , viewZScore
     , zScoreBmiForAge
+    , zScoreHeadCircumferenceForAge
     , zScoreLengthHeightForAge
     , zScoreWeightForAge
     , zScoreWeightForHeight
@@ -75,6 +76,13 @@ zScoreWeightForAge model age gender kg =
     model.weightForAge
         |> RemoteData.toMaybe
         |> Maybe.andThen (zScoreForAge Clamp (\(Kilograms x) -> x) Kilograms age gender kg)
+
+
+zScoreHeadCircumferenceForAge : Model -> Days -> Gender -> Centimetres -> Maybe ZScore
+zScoreHeadCircumferenceForAge model age gender cm =
+    model.headCircumferenceForAge
+        |> RemoteData.toMaybe
+        |> Maybe.andThen (selectGender gender >> zScoreForDays NoClamp (\(Centimetres x) -> x) age cm)
 
 
 zScoreForAge : Clamp -> (value -> Float) -> (Float -> value) -> Days -> Gender -> value -> MaleAndFemale (ByDaysAndMonths value) -> Maybe ZScore
