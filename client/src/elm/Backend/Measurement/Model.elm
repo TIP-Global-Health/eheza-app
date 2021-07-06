@@ -1264,7 +1264,7 @@ type alias WellChildHeadCircumference =
 
 
 type alias HeadCircumferenceValue =
-    { headCircumference : EverySet HeadCircumferenceInCm
+    { headCircumference : HeadCircumferenceInCm
     , notes : EverySet MeasurementNote
     }
 
@@ -1527,7 +1527,7 @@ type alias WellChildMeasurements =
     , healthEducation : Maybe ( WellChildHealthEducationId, WellChildHealthEducation )
     , followUp : Maybe ( WellChildFollowUpId, WellChildFollowUp )
     , sendToHC : Maybe ( WellChildSendToHCId, WellChildSendToHC )
-    , headCircumference : Maybe ( HeadCircumferenceId, HeadCircumference )
+    , headCircumference : Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )
     }
 
 
