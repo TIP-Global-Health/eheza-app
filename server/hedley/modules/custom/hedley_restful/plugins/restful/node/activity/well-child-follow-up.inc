@@ -11,7 +11,7 @@ $plugin = array(
   'name' => 'well-child-follow-up',
   'entity_type' => 'node',
   'bundle' => 'well_child_follow_up',
-  'description' => t('Exports the WellChild FollowUp bundle.'),
+  'description' => t('Exports the Well Child Follow Up bundle.'),
   'class' => 'HedleyRestfulWellChildFollowUp',
   'authentication_types' => TRUE,
 );
