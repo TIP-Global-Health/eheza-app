@@ -55,6 +55,7 @@ features[field_instance][] = node-well_child_head_circumference-field_person
 features[field_instance][] = node-well_child_head_circumference-field_shards
 features[field_instance][] = node-well_child_head_circumference-field_uuid
 features[field_instance][] = node-well_child_head_circumference-field_well_child_encounter
+features[field_instance][] = node-well_child_head_circumference-field_zscore_age
 features[field_instance][] = node-well_child_health_education-field_date_measured
 features[field_instance][] = node-well_child_health_education-field_health_education_signs
 features[field_instance][] = node-well_child_health_education-field_nurse
