@@ -8017,7 +8017,7 @@ translateDashboard trans =
 
                 FeverCauseMalaria ->
                     { english = "Malaria"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Malariya"
                     }
 
                 FeverCauseRespiratory ->
@@ -8027,12 +8027,12 @@ translateDashboard trans =
 
                 FeverCauseGI ->
                     { english = "Gastrointeritis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara yo mu nda"
                     }
 
                 FeverCauseUnknown ->
                     { english = "Unknown"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibizwi"
                     }
 
         FeverOfUnknownOrigin ->
