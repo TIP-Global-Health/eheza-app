@@ -133,6 +133,7 @@ type BackendAuthorityEntity
     | BackendAuthorityWellChildECD (BackendEntity WellChildECD)
     | BackendAuthorityWellChildEncounter (BackendEntity WellChildEncounter)
     | BackendAuthorityWellChildFollowUp (BackendEntity WellChildFollowUp)
+    | BackendAuthorityWellChildHeadCircumference (BackendEntity WellChildHeadCircumference)
     | BackendAuthorityWellChildHealthEducation (BackendEntity WellChildHealthEducation)
     | BackendAuthorityWellChildHeight (BackendEntity WellChildHeight)
     | BackendAuthorityWellChildMuac (BackendEntity WellChildMuac)

@@ -751,6 +751,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeWellChildFollowUp
                             BackendAuthorityWellChildFollowUp
 
+                    "well_child_head_circumference" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildHeadCircumference
+                            BackendAuthorityWellChildHeadCircumference
+
                     "well_child_health_education" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildHealthEducation
