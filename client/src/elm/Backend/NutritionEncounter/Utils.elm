@@ -4,7 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
+import Backend.Measurement.Utils exposing (headCircumferenceValueFunc, heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (..)
 import Backend.Person.Model exposing (Person)
@@ -251,11 +251,11 @@ generateIndividualWellChildMeasurementsForChild childId db =
         |> Maybe.withDefault []
 
 
-resolveAllHeightMuacWeightMeasurementsForChild :
+resolvePreviousMeasurementsSetForChild :
     PersonId
     -> ModelIndexedDb
-    -> ( List ( NominalDate, Float ), List ( NominalDate, Float ), List ( NominalDate, Float ) )
-resolveAllHeightMuacWeightMeasurementsForChild childId db =
+    -> PreviousMeasurementsSet
+resolvePreviousMeasurementsSetForChild childId db =
     let
         individualNutritionMeasurements =
             generateIndividualNutritionMeasurementsForChild childId db
@@ -280,6 +280,9 @@ resolveAllHeightMuacWeightMeasurementsForChild childId db =
 
         wellChildWeights =
             resolveIndividualWellChildValues individualWellChildMeasurements .weight weightValueFunc
+
+        wellChildHeadCircumferences =
+            resolveIndividualWellChildValues individualWellChildMeasurements .headCircumference (.headCircumference >> headCircumferenceValueFunc)
 
         groupMeasurements =
             Dict.get childId db.childMeasurements
@@ -313,10 +316,11 @@ resolveAllHeightMuacWeightMeasurementsForChild childId db =
                     )
                 |> Maybe.withDefault []
     in
-    ( nutritionHeights ++ wellChildHeights ++ groupHeights |> List.sortWith sortTuplesByDateDesc
-    , nutritionMuacs ++ wellChildMuacs ++ groupMuacs |> List.sortWith sortTuplesByDateDesc
-    , nutritionWeights ++ wellChildWeights ++ groupWeights |> List.sortWith sortTuplesByDateDesc
-    )
+    { heights = nutritionHeights ++ wellChildHeights ++ groupHeights |> List.sortWith sortTuplesByDateDesc
+    , muacs = nutritionMuacs ++ wellChildMuacs ++ groupMuacs |> List.sortWith sortTuplesByDateDesc
+    , weights = nutritionWeights ++ wellChildWeights ++ groupWeights |> List.sortWith sortTuplesByDateDesc
+    , headCircumferences = wellChildHeadCircumferences
+    }
 
 
 resolvePreviousValuesSetForChild :
@@ -325,16 +329,17 @@ resolvePreviousValuesSetForChild :
     -> PreviousValuesSet
 resolvePreviousValuesSetForChild childId db =
     let
-        ( heights, muacs, weights ) =
-            resolveAllHeightMuacWeightMeasurementsForChild childId db
+        previousMeasurementsSet =
+            resolvePreviousMeasurementsSetForChild childId db
 
         getLatestValue =
             List.head >> Maybe.map Tuple.second
     in
     PreviousValuesSet
-        (getLatestValue heights)
-        (getLatestValue muacs)
-        (getLatestValue weights)
+        (getLatestValue previousMeasurementsSet.heights)
+        (getLatestValue previousMeasurementsSet.muacs)
+        (getLatestValue previousMeasurementsSet.weights)
+        (getLatestValue previousMeasurementsSet.headCircumferences)
 
 
 resolveAllWeightMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, Float )

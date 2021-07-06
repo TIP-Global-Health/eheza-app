@@ -1630,4 +1630,13 @@ type alias PreviousValuesSet =
     { height : Maybe Float
     , muac : Maybe Float
     , weight : Maybe Float
+    , headCircumference : Maybe Float
+    }
+
+
+type alias PreviousMeasurementsSet =
+    { heights : List ( NominalDate, Float )
+    , muacs : List ( NominalDate, Float )
+    , weights : List ( NominalDate, Float )
+    , headCircumferences : List ( NominalDate, Float )
     }
