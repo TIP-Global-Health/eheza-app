@@ -157,6 +157,11 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                             , isJust measurements.height
                             )
 
+                        TaskHeadCircumference ->
+                            ( "head-circumference"
+                            , isJust measurements.headCircumference
+                            )
+
                         TaskMuac ->
                             ( "muac"
                             , isJust measurements.muac
@@ -236,6 +241,14 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                         |> Maybe.map (Tuple.second >> .value)
                         |> heightFormWithDefault data.heightForm
                         |> viewHeightForm language currentDate zscores assembled.person previousValuesSet.height SetHeight
+
+                Just TaskHeadCircumference ->
+                    -- @todo
+                    -- measurements.headCircumference
+                    --     |> Maybe.map (Tuple.second >> .value)
+                    --     |> headCircumferenceFormWithDefault data.heightForm
+                    --     |> viewHeadCircumferenceForm language currentDate zscores assembled.person previousValuesSet.height SetHeadCircumference
+                    []
 
                 Just TaskMuac ->
                     measurements.muac
@@ -349,6 +362,9 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                                 case task of
                                     TaskHeight ->
                                         SaveHeight personId measurements.height nextTask
+
+                                    TaskHeadCircumference ->
+                                        SaveHeadCircumference personId measurements.headCircumference nextTask
 
                                     TaskMuac ->
                                         SaveMuac personId measurements.muac nextTask

@@ -5164,6 +5164,11 @@ translationSet trans =
                     , kinyarwanda = Just "Uburebure"
                     }
 
+                TaskHeadCircumference ->
+                    { english = "Head Circumference"
+                    , kinyarwanda = Nothing
+                    }
+
                 TaskMuac ->
                     { english = "MUAC"
                     , kinyarwanda = Just "Ikizigira cy'akaboko"

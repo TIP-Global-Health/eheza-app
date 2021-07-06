@@ -116,6 +116,9 @@ nutritionAssessmentTaskCompleted currentDate zscores data db task =
         TaskHeight ->
             (not <| taskExpected TaskHeight) || isJust measurements.height
 
+        TaskHeadCircumference ->
+            (not <| taskExpected TaskHeight) || isJust measurements.headCircumference
+
         TaskMuac ->
             (not <| taskExpected TaskMuac) || isJust measurements.muac
 
@@ -186,7 +189,7 @@ decide if to show Next Steps activity, or not.
 -}
 partitionNutritionAssessmentTasks : ( List NutritionAssesmentTask, List NutritionAssesmentTask )
 partitionNutritionAssessmentTasks =
-    ( [ TaskHeight, TaskMuac, TaskNutrition, TaskWeight ], [ TaskPhoto ] )
+    ( [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ], [ TaskPhoto ] )
 
 
 nutritionAssessmentNextStepsTasks : List NutritionAssesmentTask
@@ -326,6 +329,18 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
                         |> heightFormWithDefault data.heightForm
             in
             ( taskCompleted form.height
+            , 1
+            )
+
+        TaskHeadCircumference ->
+            -- @todo:
+            -- let
+            --     form =
+            --         measurements.headCircumference
+            --             |> Maybe.map (Tuple.second >> .value)
+            --             |> headCircumferenceWithDefault data.heightForm
+            -- in
+            ( 0
             , 1
             )
 

@@ -158,6 +158,36 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
+        SaveHeadCircumference personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                extraMsgs =
+                    generateExtraMsgs nextTask_
+
+                appMsgs =
+                    -- @todo
+                    -- model.nutritionAssessmentData.headCircumferenceForm
+                    --     |> toHeadCircumferenceValueWithDefault measurement
+                    --     |> Maybe.map
+                    --         (Backend.WellChildEncounter.Model.SaveHeadCircumference personId measurementId
+                    --             >> Backend.Model.MsgWellChildEncounter id
+                    --             >> App.Model.MsgIndexedDb
+                    --             >> List.singleton
+                    --         )
+                    --     |> Maybe.withDefault []
+                    []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
         SetMuac string ->
             let
                 updatedForm =
