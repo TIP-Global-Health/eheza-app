@@ -175,6 +175,34 @@ update currentDate id db msg model =
             , []
             )
 
+        ToggleHeadCircumferenceNotTaken ->
+            let
+                form =
+                    model.nutritionAssessmentData.headCircumferenceForm
+
+                notTaken =
+                    Maybe.map not form.measurementNotTaken
+                        |> Maybe.withDefault True
+
+                headCircumference =
+                    if notTaken then
+                        Just 0
+
+                    else
+                        Nothing
+
+                updatedForm =
+                    { form | headCircumference = headCircumference, headCircumferenceDirty = isJust headCircumference, measurementNotTaken = Just notTaken }
+
+                updatedData =
+                    model.nutritionAssessmentData
+                        |> (\data -> { data | headCircumferenceForm = updatedForm })
+            in
+            ( { model | nutritionAssessmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveHeadCircumference personId saved nextTask_ ->
             let
                 measurementId =

@@ -451,33 +451,56 @@ viewHeadCircumferenceForm language currentDate zscores person previousValue form
                     )
                 |> Maybe.map viewZScore
                 |> Maybe.withDefault (translate language Translate.NotAvailable)
+
+        inputSection =
+            if measurementNotTakenChecked then
+                []
+
+            else
+                [ div [ class "ui grid" ]
+                    [ div [ class "eleven wide column" ]
+                        [ viewMeasurementInput
+                            language
+                            form.headCircumference
+                            SetHeadCircumference
+                            "head-circumference"
+                            Translate.CentimeterShorthand
+                        ]
+                    , div
+                        [ class "five wide column" ]
+                        [ showMaybe <|
+                            Maybe.map2 (viewMeasurementFloatDiff language Translate.CentimeterShorthand)
+                                form.headCircumference
+                                previousValue
+                        ]
+                    ]
+                , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
+                , div [ class "ui large header z-score age" ]
+                    [ text <| translate language Translate.ZScoreHeadCircumferenceForAge
+                    , span [ class "sub header" ]
+                        [ text zScoreText ]
+                    ]
+                ]
+
+        measurementNotTakenChecked =
+            form.measurementNotTaken == Just True
     in
-    [ div [ class "ui form height" ]
+    [ div [ class "ui form head-circumference" ] <|
         [ viewLabel language <| Translate.NutritionAssesmentTask TaskHeadCircumference
         , p [ class "activity-helper" ] [ text <| translate language Translate.HeadCircumferenceHelper ]
-        , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
-                [ viewMeasurementInput
-                    language
-                    form.headCircumference
-                    SetHeadCircumference
-                    "head-circumference"
-                    Translate.CentimeterShorthand
-                ]
-            , div
-                [ class "five wide column" ]
-                [ showMaybe <|
-                    Maybe.map2 (viewMeasurementFloatDiff language Translate.CentimeterShorthand)
-                        form.headCircumference
-                        previousValue
-                ]
-            ]
-        , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
         ]
-    , div [ class "ui large header z-score age" ]
-        [ text <| translate language Translate.ZScoreHeadCircumferenceForAge
-        , span [ class "sub header" ]
-            [ text zScoreText ]
+            ++ inputSection
+    , div
+        [ class "ui checkbox activity"
+        , onClick ToggleHeadCircumferenceNotTaken
+        ]
+        [ input
+            [ type_ "checkbox"
+            , checked measurementNotTakenChecked
+            , classList [ ( "checked", measurementNotTakenChecked ) ]
+            ]
+            []
+        , label [] [ text <| translate language Translate.HeadCircumferenceNotTakenLabel ]
         ]
     ]
 

@@ -535,6 +535,7 @@ type TranslationId
     | HCResponseQuestion
     | HCResponsePeriodQuestion
     | HeadCircumferenceHelper
+    | HeadCircumferenceNotTakenLabel
     | HeadHair
     | HealthCenter
     | HealthCenterDetermined
@@ -3669,6 +3670,11 @@ translationSet trans =
 
         HeadCircumferenceHelper ->
             { english = "Using a tape measure, wrap the tape around the widest possible circumference; above the ears and midway between the eyebrows and the hairline to the occipital prominence on the back of the head."
+            , kinyarwanda = Nothing
+            }
+
+        HeadCircumferenceNotTakenLabel ->
+            { english = "Please check if the head circumference was not taken today"
             , kinyarwanda = Nothing
             }
 
