@@ -128,6 +128,7 @@ var tableForType = {
     well_child_ecd: 'shards',
     well_child_encounter: 'shards',
     well_child_follow_up: 'shards',
+    well_child_head_circumference: 'shards',
     well_child_health_education: 'shards',
     well_child_height: 'shards',
     well_child_muac: 'shards',
