@@ -2540,3 +2540,33 @@ encodeECDSign sign =
 
             NoECDSigns ->
                 "none"
+
+
+encodeWellChildHeadCircumference : WellChildHeadCircumference -> List ( String, Value )
+encodeWellChildHeadCircumference =
+    encodeWellChildMeasurement encodeHeadCircumferenceValue
+
+
+encodeHeadCircumferenceValue : HeadCircumferenceValue -> List ( String, Value )
+encodeHeadCircumferenceValue value =
+    [ ( "head_circumference", encodeHeadCircumferenceInCm value.headCircumference )
+    , ( "measurement_notes", encodeEverySet encodeMeasurementNote value.notes )
+    , ( "deleted", bool False )
+    , ( "type", string "well_child_head_circumference" )
+    ]
+
+
+encodeHeadCircumferenceInCm : HeadCircumferenceInCm -> Value
+encodeHeadCircumferenceInCm (HeadCircumferenceInCm cm) =
+    float cm
+
+
+encodeMeasurementNote : MeasurementNote -> Value
+encodeMeasurementNote note =
+    string <|
+        case note of
+            NoteNotTaken ->
+                "not-taken"
+
+            NoMeasurementNotes ->
+                "none"
