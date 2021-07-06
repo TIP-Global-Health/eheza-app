@@ -185,6 +185,7 @@ type NutritionAssesmentTask
 allNutritionAssesmentTasks : List NutritionAssesmentTask
 allNutritionAssesmentTasks =
     [ TaskHeight
+    , TaskHeadCircumference
     , TaskMuac
     , TaskNutrition
     , TaskPhoto
