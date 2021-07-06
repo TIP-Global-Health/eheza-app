@@ -15,7 +15,14 @@ class HedleyRestfulWellChildHeadCircumference extends HedleyRestfulWellChildActi
    */
   protected $fields = [
     'field_head_circumference',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $multiFields = [
     'field_measurement_notes',
   ];
+
 
 }

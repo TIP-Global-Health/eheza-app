@@ -32,6 +32,7 @@ define('HEDLEY_ACTIVITY_SYMPTOMS_GENERAL_CONTENT_TYPE', 'symptoms_general');
 define('HEDLEY_ACTIVITY_CALL_114_CONTENT_TYPE', 'call_114');
 define('HEDLEY_ACTIVITY_ISOLATION_CONTENT_TYPE', 'isolation');
 define('HEDLEY_ACTIVITY_DANGER_SIGNS_CONTENT_TYPE', 'danger_signs');
+define('HEDLEY_ACTIVITY_WELL_CHILD_HEAD_CIRCUMFERENCE_CONTENT_TYPE', 'well_child_head_circumference');
 
 
 const HEDLEY_ACTIVITY_HEIGHT_BUNDLES = [
@@ -140,6 +141,7 @@ function hedley_activity_handle_child_zscores($nid) {
   $offset = 0;
 
   $bundles = array_merge(HEDLEY_ACTIVITY_HEIGHT_BUNDLES, HEDLEY_ACTIVITY_WEIGHT_BUNDLES);
+  $bundles[] = HEDLEY_ACTIVITY_WELL_CHILD_HEAD_CIRCUMFERENCE_CONTENT_TYPE;
 
   $base_query = new EntityFieldQuery();
   $base_query
@@ -188,6 +190,8 @@ function hedley_activity_handle_child_zscores($nid) {
  */
 function hedley_activity_node_presave($node) {
   $bundles = array_merge(HEDLEY_ACTIVITY_HEIGHT_BUNDLES, HEDLEY_ACTIVITY_WEIGHT_BUNDLES);
+  $bundles[] = HEDLEY_ACTIVITY_WELL_CHILD_HEAD_CIRCUMFERENCE_CONTENT_TYPE;
+
   if (!in_array($node->type, $bundles)) {
     return;
   }
@@ -212,42 +216,47 @@ function hedley_activity_node_presave($node) {
     return;
   }
 
-  if (in_array($node->type, HEDLEY_ACTIVITY_WEIGHT_BUNDLES)) {
-    $zscore_for_age = hedley_zscore_weight_for_age($days, $gender, $wrapper->field_weight->value());
-    $wrapper->field_zscore_age->set($zscore_for_age);
+  if ($node->type == HEDLEY_ACTIVITY_WELL_CHILD_HEAD_CIRCUMFERENCE_CONTENT_TYPE) {
+    $zscore = hedley_zscore_head_circumference_for_age($days, $gender, $wrapper->field_head_circumference->value());
+    $wrapper->field_zscore_age->set($zscore);
+    return;
+  }
 
-    $child_id = $wrapper->field_person->getIdentifier();
-    $height_id = hedley_activity_node_by_peer_in_session($wrapper, $child_id);
+  // We know it's weight.
+  $zscore_for_age = hedley_zscore_weight_for_age($days, $gender, $wrapper->field_weight->value());
+  $wrapper->field_zscore_age->set($zscore_for_age);
 
-    if (empty($height_id)) {
-      // No height yet, so no zscore_length or BMI.
-      $wrapper->field_zscore_length->set(NULL);
-      $wrapper->field_zscore_bmi->set(NULL);
-      $wrapper->field_bmi->set(NULL);
+  $child_id = $wrapper->field_person->getIdentifier();
+  $height_id = hedley_activity_node_by_peer_in_session($wrapper, $child_id);
+
+  if (empty($height_id)) {
+    // No height yet, so no zscore_length or BMI.
+    $wrapper->field_zscore_length->set(NULL);
+    $wrapper->field_zscore_bmi->set(NULL);
+    $wrapper->field_bmi->set(NULL);
+  }
+  else {
+    $height = entity_metadata_wrapper('node', $height_id);
+    $cm = $height->field_height->value();
+    $kg = $wrapper->field_weight->value();
+
+    // For children older than two, we actually measure height rather than
+    // length. So, we need to use the weight-for-height tables, rather than
+    // weight-or-length. But we store the result in the same field.
+    if ($days > (365 * 2)) {
+      $zscore_for_length = hedley_zscore_weight_for_height($cm, $gender, $kg);
     }
     else {
-      $height = entity_metadata_wrapper('node', $height_id);
-      $cm = $height->field_height->value();
-      $kg = $wrapper->field_weight->value();
-
-      // For children older than two, we actually measure height rather than
-      // length. So, we need to use the weight-for-height tables, rather than
-      // weight-or-length. But we store the result in the same field.
-      if ($days > (365 * 2)) {
-        $zscore_for_length = hedley_zscore_weight_for_height($cm, $gender, $kg);
-      }
-      else {
-        $zscore_for_length = hedley_zscore_weight_for_length($cm, $gender, $kg);
-      }
-
-      // The formula is (kg / meters squared).
-      $bmi = $kg / pow($cm / 100, 2);
-      $zscore_bmi_for_age = hedley_zscore_bmi_for_age($days, $gender, $bmi);
-
-      $wrapper->field_zscore_length->set($zscore_for_length);
-      $wrapper->field_zscore_bmi->set($zscore_bmi_for_age);
-      $wrapper->field_bmi->set($bmi);
+      $zscore_for_length = hedley_zscore_weight_for_length($cm, $gender, $kg);
     }
+
+    // The formula is (kg / meters squared).
+    $bmi = $kg / pow($cm / 100, 2);
+    $zscore_bmi_for_age = hedley_zscore_bmi_for_age($days, $gender, $bmi);
+
+    $wrapper->field_zscore_length->set($zscore_for_length);
+    $wrapper->field_zscore_bmi->set($zscore_bmi_for_age);
+    $wrapper->field_bmi->set($bmi);
   }
 }
 
