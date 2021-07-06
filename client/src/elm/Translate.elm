@@ -534,6 +534,7 @@ type TranslationId
     | HCRecommendation HCRecommendation
     | HCResponseQuestion
     | HCResponsePeriodQuestion
+    | HeadCircumferenceHelper
     | HeadHair
     | HealthCenter
     | HealthCenterDetermined
@@ -980,6 +981,7 @@ type TranslationId
     | Yes
     | YouAreNotAnAdmin
     | YourGroupEncounterHasBeenSaved
+    | ZScoreHeadCircumferenceForAge
     | ZScoreHeightForAge
     | ZScoreMuacForAge
     | ZScoreWeightForAge
@@ -3663,6 +3665,11 @@ translationSet trans =
         HCResponsePeriodQuestion ->
             { english = "How long did it take the Health Center to respond"
             , kinyarwanda = Just "Byatwaye igihe kingana gute ngo ikigo nderabuzima gisubize"
+            }
+
+        HeadCircumferenceHelper ->
+            { english = "Using a tape measure, wrap the tape around the widest possible circumference; above the ears and midway between the eyebrows and the hairline to the occipital prominence on the back of the head."
+            , kinyarwanda = Nothing
             }
 
         HeadHair ->
@@ -7680,6 +7687,11 @@ translationSet trans =
 
         YourGroupEncounterHasBeenSaved ->
             { english = "Your Group Encounter has been saved."
+            , kinyarwanda = Nothing
+            }
+
+        ZScoreHeadCircumferenceForAge ->
+            { english = "Z-Score Head Circumference for Age: "
             , kinyarwanda = Nothing
             }
 

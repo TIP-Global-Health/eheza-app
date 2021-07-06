@@ -17,6 +17,7 @@ type Msg
     | SetActiveNutritionAssesmentTask NutritionAssesmentTask
     | SetHeight String
     | SaveHeight PersonId (Maybe ( WellChildHeightId, WellChildHeight )) (Maybe NutritionAssesmentTask)
+    | SetHeadCircumference String
     | SaveHeadCircumference PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssesmentTask)
     | SetMuac String
     | SaveMuac PersonId (Maybe ( WellChildMuacId, WellChildMuac )) (Maybe NutritionAssesmentTask)

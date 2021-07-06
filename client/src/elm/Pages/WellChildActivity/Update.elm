@@ -158,6 +158,23 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
+        SetHeadCircumference string ->
+            let
+                updatedForm =
+                    model.nutritionAssessmentData.headCircumferenceForm
+                        |> (\form ->
+                                { form | headCircumference = String.toFloat string, headCircumferenceDirty = True, measurementNotTaken = Just False }
+                           )
+
+                updatedData =
+                    model.nutritionAssessmentData
+                        |> (\data -> { data | headCircumferenceForm = updatedForm })
+            in
+            ( { model | nutritionAssessmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveHeadCircumference personId saved nextTask_ ->
             let
                 measurementId =
@@ -170,17 +187,15 @@ update currentDate id db msg model =
                     generateExtraMsgs nextTask_
 
                 appMsgs =
-                    -- @todo
-                    -- model.nutritionAssessmentData.headCircumferenceForm
-                    --     |> toHeadCircumferenceValueWithDefault measurement
-                    --     |> Maybe.map
-                    --         (Backend.WellChildEncounter.Model.SaveHeadCircumference personId measurementId
-                    --             >> Backend.Model.MsgWellChildEncounter id
-                    --             >> App.Model.MsgIndexedDb
-                    --             >> List.singleton
-                    --         )
-                    --     |> Maybe.withDefault []
-                    []
+                    model.nutritionAssessmentData.headCircumferenceForm
+                        |> toHeadCircumferenceValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveHeadCircumference personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
