@@ -66,6 +66,23 @@ function hedley_well_child_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_head_circumference'.
+  $field_bases['field_head_circumference'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_head_circumference',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
+  );
+
   // Exported field_base: 'field_well_child_encounter'.
   $field_bases['field_well_child_encounter'] = array(
     'active' => 1,

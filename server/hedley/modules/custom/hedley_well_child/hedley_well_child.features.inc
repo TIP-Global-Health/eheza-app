@@ -51,6 +51,14 @@ function hedley_well_child_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'well_child_head_circumference' => array(
+      'name' => t('Well Child Head Circumference'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'well_child_health_education' => array(
       'name' => t('Well Child Health Education'),
       'base' => 'node_content',
