@@ -1259,6 +1259,25 @@ type alias WellChildFollowUp =
     WellChildMeasurement FollowUpValue
 
 
+type alias WellChildHeadCircumference =
+    WellChildMeasurement HeadCircumferenceValue
+
+
+type alias HeadCircumferenceValue =
+    { headCircumference : EverySet HeadCircumferenceInCm
+    , notes : EverySet MeasurementNote
+    }
+
+
+type HeadCircumferenceInCm
+    = HeadCircumferenceInCm Float
+
+
+type MeasurementNote
+    = NoteNotTaken
+    | NoMeasurementNotes
+
+
 type ECDSign
     = -- 6 to 9 months.
       RespontToSoundWithSound
@@ -1508,6 +1527,7 @@ type alias WellChildMeasurements =
     , healthEducation : Maybe ( WellChildHealthEducationId, WellChildHealthEducation )
     , followUp : Maybe ( WellChildFollowUpId, WellChildFollowUp )
     , sendToHC : Maybe ( WellChildSendToHCId, WellChildSendToHC )
+    , headCircumference : Maybe ( HeadCircumferenceId, HeadCircumference )
     }
 
 
