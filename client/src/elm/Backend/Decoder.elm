@@ -308,6 +308,9 @@ decodeRevision =
                         decodeWithUuid WellChildFollowUpRevision decodeWellChildFollowUp
 
                     "well_child_health_education" ->
+                        decodeWithUuid WellChildHeadCircumferenceRevision decodeWellChildHeadCircumference
+
+                    "well_child_health_education" ->
                         decodeWithUuid WellChildHealthEducationRevision decodeWellChildHealthEducation
 
                     "well_child_height" ->
