@@ -3,7 +3,7 @@ module Pages.WellChildActivity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (WellChildEncounterId)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (weightValueFunc)
+import Backend.Measurement.Utils exposing (headCircumferenceValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
@@ -15,7 +15,7 @@ import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
-import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskCompleted)
+import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskCompleted, valueConsideringIsDirtyField)
 import Pages.WellChildActivity.Model exposing (..)
 import Pages.WellChildEncounter.Model exposing (AssembledData)
 import RemoteData exposing (RemoteData(..))
@@ -316,6 +316,48 @@ toWellChildECDValue form =
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoECDSigns)
+
+
+fromHeadCircumferenceValue : Maybe HeadCircumferenceValue -> HeadCircumferenceForm
+fromHeadCircumferenceValue saved =
+    { headCircumference = Maybe.map (.headCircumference >> headCircumferenceValueFunc) saved
+    , headCircumferenceDirty = False
+    , measurementNotTaken = Maybe.andThen (.notes >> EverySet.member NoteNotTaken >> Just) saved
+    }
+
+
+headCircumferenceFormWithDefault : HeadCircumferenceForm -> Maybe HeadCircumferenceValue -> HeadCircumferenceForm
+headCircumferenceFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { headCircumference = valueConsideringIsDirtyField form.headCircumferenceDirty form.headCircumference (headCircumferenceValueFunc value.headCircumference)
+                , headCircumferenceDirty = form.headCircumferenceDirty
+                , measurementNotTaken = or form.measurementNotTaken (EverySet.member NoteNotTaken value.notes |> Just)
+                }
+            )
+
+
+toHeadCircumferenceValueWithDefault : Maybe HeadCircumferenceValue -> HeadCircumferenceForm -> Maybe HeadCircumferenceValue
+toHeadCircumferenceValueWithDefault saved form =
+    headCircumferenceFormWithDefault form saved
+        |> toHeadCircumferenceValue
+
+
+toHeadCircumferenceValue : HeadCircumferenceForm -> Maybe HeadCircumferenceValue
+toHeadCircumferenceValue form =
+    let
+        headCircumference =
+            Maybe.map (\cm -> HeadCircumferenceInCm cm) form.headCircumference
+
+        notes =
+            [ Maybe.map (ifTrue NoteNotTaken) form.measurementNotTaken ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMeasurementNotes)
+    in
+    Maybe.map HeadCircumferenceValue headCircumference
+        |> andMap notes
 
 
 nutritionAssessmentTasksCompletedFromTotal : WellChildMeasurements -> NutritionAssessmentData -> NutritionAssesmentTask -> ( Int, Int )

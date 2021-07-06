@@ -127,7 +127,7 @@ emptyWellChildECDForm =
 
 type alias NutritionAssessmentData =
     { heightForm : HeightForm
-    , headCircumferenceForm : WellChildHeadCircumferenceForm
+    , headCircumferenceForm : HeadCircumferenceForm
     , muacForm : MuacForm
     , nutritionForm : NutritionForm
     , photoForm : PhotoForm
@@ -143,7 +143,7 @@ type alias NutritionAssessmentData =
 emptyNutritionAssessmentData : NutritionAssessmentData
 emptyNutritionAssessmentData =
     { heightForm = emptyHeightForm
-    , headCircumferenceForm = emptyWellChildHeadCircumferenceForm
+    , headCircumferenceForm = emptyHeadCircumferenceForm
     , muacForm = emptyMuacForm
     , nutritionForm = emptyNutritionForm
     , photoForm = emptyPhotoForm
@@ -156,15 +156,16 @@ emptyNutritionAssessmentData =
     }
 
 
-type alias WellChildHeadCircumferenceForm =
+type alias HeadCircumferenceForm =
     { headCircumference : Maybe Float
-    , measurementTaken : Maybe Bool
+    , headCircumferenceDirty : Bool
+    , measurementNotTaken : Maybe Bool
     }
 
 
-emptyWellChildHeadCircumferenceForm : WellChildHeadCircumferenceForm
-emptyWellChildHeadCircumferenceForm =
-    WellChildHeadCircumferenceForm Nothing Nothing
+emptyHeadCircumferenceForm : HeadCircumferenceForm
+emptyHeadCircumferenceForm =
+    HeadCircumferenceForm Nothing False Nothing
 
 
 type NutritionAssesmentTask

@@ -509,3 +509,8 @@ muacValueFunc =
 weightValueFunc : WeightInKg -> Float
 weightValueFunc =
     \(WeightInKg kg) -> kg
+
+
+headCircumferenceValueFunc : HeadCircumferenceInCm -> Float
+headCircumferenceValueFunc =
+    \(HeadCircumferenceInCm cm) -> cm
