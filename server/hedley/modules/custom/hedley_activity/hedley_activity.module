@@ -13,12 +13,16 @@ define('HEDLEY_ACTIVITY_FAMILY_PLANNING_CONTENT_TYPE', 'family_planning');
 define('HEDLEY_ACTIVITY_PHOTO_CONTENT_TYPE', 'photo');
 define('HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE', 'height');
 define('HEDLEY_ACTIVITY_NUTRITION_HEIGHT_CONTENT_TYPE', 'nutrition_height');
+define('HEDLEY_ACTIVITY_WELL_CHILD_HEIGHT_CONTENT_TYPE', 'well_child_height');
 define('HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE', 'muac');
 define('HEDLEY_ACTIVITY_NUTRITION_MUAC_CONTENT_TYPE', 'nutrition_muac');
+define('HEDLEY_ACTIVITY_WELL_CHILD_MUAC_CONTENT_TYPE', 'well_child_muac');
 define('HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE', 'nutrition');
 define('HEDLEY_ACTIVITY_NUTRITION_NUTRITION_CONTENT_TYPE', 'nutrition_nutrition');
+define('HEDLEY_ACTIVITY_WELL_CHILD_NUTRITION_CONTENT_TYPE', 'well_child_nutrition');
 define('HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE', 'weight');
 define('HEDLEY_ACTIVITY_NUTRITION_WEIGHT_CONTENT_TYPE', 'nutrition_weight');
+define('HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE', 'well_child_weight');
 define('HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE', 'individual_participant');
 define('HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE', 'prenatal_encounter');
 define('HEDLEY_ACTIVITY_ACUTE_ILLNESS_ENCOUNTER_CONTENT_TYPE', 'acute_illness_encounter');
@@ -33,21 +37,25 @@ define('HEDLEY_ACTIVITY_DANGER_SIGNS_CONTENT_TYPE', 'danger_signs');
 const HEDLEY_ACTIVITY_HEIGHT_BUNDLES = [
   HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE,
   HEDLEY_ACTIVITY_NUTRITION_HEIGHT_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_WELL_CHILD_HEIGHT_CONTENT_TYPE,
 ];
 
 const HEDLEY_ACTIVITY_NUTRITION_BUNDLES = [
   HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE,
   HEDLEY_ACTIVITY_NUTRITION_NUTRITION_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_WELL_CHILD_NUTRITION_CONTENT_TYPE,
 ];
 
 const HEDLEY_ACTIVITY_MUAC_BUNDLES = [
   HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE,
   HEDLEY_ACTIVITY_NUTRITION_MUAC_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_WELL_CHILD_MUAC_CONTENT_TYPE,
 ];
 
 const HEDLEY_ACTIVITY_WEIGHT_BUNDLES = [
   HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE,
   HEDLEY_ACTIVITY_NUTRITION_WEIGHT_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE,
 ];
 
 /**
@@ -91,10 +99,8 @@ function hedley_activity_node_update($node) {
     return;
   }
 
-  if (in_array($node->type, HEDLEY_ACTIVITY_HEIGHT_BUNDLES)) {
-    hedley_activity_handle_height($node->nid);
-    return;
-  }
+  // It's not a person, so it's a height.
+  hedley_activity_handle_height($node->nid);
 }
 
 /**
@@ -273,6 +279,11 @@ function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper
       $target_bundle = 'nutrition_weight';
       break;
 
+    case 'well_child_height':
+      $session_field = 'field_well_child_encounter';
+      $target_bundle = 'well_child_weight';
+      break;
+
     case 'weight':
       $session_field = 'field_session';
       $target_bundle = 'height';
@@ -281,6 +292,11 @@ function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper
     case 'nutrition_weight':
       $session_field = 'field_nutrition_encounter';
       $target_bundle = 'nutrition_height';
+      break;
+
+    case 'well_child_weight':
+      $session_field = 'field_well_child_encounter';
+      $target_bundle = 'well_child_height';
       break;
 
     default:
