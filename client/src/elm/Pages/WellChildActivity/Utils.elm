@@ -375,14 +375,13 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
             )
 
         TaskHeadCircumference ->
-            -- @todo:
-            -- let
-            --     form =
-            --         measurements.headCircumference
-            --             |> Maybe.map (Tuple.second >> .value)
-            --             |> headCircumferenceWithDefault data.heightForm
-            -- in
-            ( 0
+            let
+                form =
+                    measurements.headCircumference
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> headCircumferenceFormWithDefault data.headCircumferenceForm
+            in
+            ( taskCompleted form.headCircumference
             , 1
             )
 
