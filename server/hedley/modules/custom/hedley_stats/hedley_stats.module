@@ -648,11 +648,12 @@ function hedley_stats_get_prenatal_data($health_center_id) {
 }
 
 /**
- * Returns active participants for HC (per clinic type), during provided period.
+ * Returns active participants for HC, during provided period.
+ *
+ * Data includes both groups and individual participants.
  *
  * @param int $health_center_id
  *   The Health center node ID.
- *
  * @param string $period
  *   The period to calculate. By default it is for one year.
  *
@@ -667,6 +668,29 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
     return $cache_data;
   }
 
+  $items = hedley_stats_get_children_beneficiaries_group_stats($health_center_id, $period);
+  $items['individual'] = hedley_stats_get_children_beneficiaries_individual_stats($health_center_id);
+
+  // Store in cache.
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES, $health_center_id, $period, $items);
+
+  return $items;
+}
+
+/**
+ * Returns active participants for HC (per clinic type), during provided period.
+ *
+ * @param int $health_center_id
+ *   The Health center node ID.
+ * @param string $period
+ *   The period to calculate. By default it is for one year.
+ *
+ * @return array
+ *   Array with the participants details grouped by clinic type.
+ *
+ * @throws \Exception
+ */
+function hedley_stats_get_children_beneficiaries_group_stats($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
   $query = hedley_stats_get_base_query($health_center_id, 'pmtct_participant');
 
   $field_names = [
@@ -698,13 +722,21 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
   foreach ($result as $row) {
     $clinic_type = $row->field_group_type;
     $child_wrapper = entity_metadata_wrapper('node', $row->field_person);
+    $birth_date = $child_wrapper->field_birth_date->value();
+
+    if (empty($birth_date)) {
+      // Child got no birthdate set. We can't process
+      // it's data on client, so we skip it.
+      continue;
+    }
+
     $adult_wrapper = entity_metadata_wrapper('node', $row->field_adult);
 
     $items[$clinic_type][] = [
       'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
       'id' => $child_wrapper->getIdentifier(),
       'name' => $child_wrapper->label(),
-      'birth_date' => hedley_stats_convert_timestamp_to_nominal($child_wrapper->field_birth_date->value()),
+      'birth_date' => hedley_stats_convert_timestamp_to_nominal($birth_date),
       'gender' => $child_wrapper->field_gender->value(),
       'mother_name' => $adult_wrapper->label(),
       'phone_number' => $adult_wrapper->field_phone_number->value(),
@@ -712,11 +744,65 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
     ];
   }
 
-  // @todo: populate
-  $items['individual'] = [];
+  return $items;
+}
 
-  // Store in cache.
-  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES, $health_center_id, $period, $items);
+/**
+ * Returns active nutrition participants for HC.
+ *
+ * @param int $health_center_id
+ *   The Health center node ID.
+ *
+ * @return array
+ *   Array with the participants details.
+ *
+ * @throws \Exception
+ */
+function hedley_stats_get_children_beneficiaries_individual_stats($health_center_id) {
+  $query = hedley_stats_get_base_query($health_center_id, 'individual_participant');
+
+  $field_names = [
+    'field_person',
+    'field_encounter_type',
+  ];
+
+  foreach ($field_names as $field_name) {
+    hedley_general_join_field_to_query($query, 'node', $field_name);
+  }
+
+  $query->condition('field_encounter_type.field_encounter_type_value', 'nutrition');
+
+  $result = $query
+    ->execute()
+    ->fetchAll();
+
+  $items = [];
+  foreach ($result as $row) {
+    $child_wrapper = entity_metadata_wrapper('node', $row->field_person);
+    $birth_date = $child_wrapper->field_birth_date->value();
+
+    if (empty($birth_date)) {
+      // Child got no birthdate set. We can't process
+      // it's data on client, so we skip it.
+      continue;
+    }
+
+    // Child graduates at age of 13.
+    $graduation_date = strtotime('+13 years', $birth_date);
+
+    $items[] = [
+      'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
+      'id' => $child_wrapper->getIdentifier(),
+      'name' => $child_wrapper->label(),
+      'birth_date' => hedley_stats_convert_timestamp_to_nominal($birth_date),
+      'gender' => $child_wrapper->field_gender->value(),
+      'graduation_date' => hedley_stats_convert_timestamp_to_nominal($graduation_date),
+      // No need to provide mother details, because we do not present
+      // it anywhere, when it comes to individual participants data.
+      'mother_name' => '',
+      'phone_number' => '',
+    ];
+  }
 
   return $items;
 }
