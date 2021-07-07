@@ -1,6 +1,6 @@
 module Backend.Measurement.Test exposing (all)
 
-import Backend.Measurement.Model exposing (MuacInCm(..), ColorAlertIndication(..))
+import Backend.Measurement.Model exposing (ColorAlertIndication(..), MuacInCm(..))
 import Backend.Measurement.Utils exposing (muacIndication)
 import Expect
 import Json.Decode exposing (decodeString)

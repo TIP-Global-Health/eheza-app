@@ -391,6 +391,7 @@ type TranslationId
     | Dashboard Dashboard
     | ClinicalProgressReport
     | CloseAcuteIllnessLabel
+    | ColorAlertIndication ColorAlertIndication
     | CompleteHCReferralForm
     | CompletedHCReferralForm
     | Contacted114
@@ -652,7 +653,6 @@ type TranslationId
     | Mothers
     | MUAC
     | MuacHelper
-    | ColorAlertIndication ColorAlertIndication
     | MyAccount
     | MyRelatedBy MyRelatedBy
     | MyRelatedByQuestion MyRelatedBy
@@ -2321,6 +2321,23 @@ translationSet trans =
             { english = "or Close an Acute Illness"
             , kinyarwanda = Just "Cyangwa Ufunge Indwara ifatiyeho iheruka kuvurwa"
             }
+
+        ColorAlertIndication indication ->
+            case indication of
+                ColorAlertRed ->
+                    { english = "Red"
+                    , kinyarwanda = Just "Umutuku"
+                    }
+
+                ColorAlertYellow ->
+                    { english = "Yellow"
+                    , kinyarwanda = Just "Umuhondo"
+                    }
+
+                ColorAlertGreen ->
+                    { english = "Green"
+                    , kinyarwanda = Just "Icyatsi"
+                    }
 
         CompleteHCReferralForm ->
             { english = "Complete a health center referral form"
@@ -4774,23 +4791,6 @@ translationSet trans =
             { english = "Make sure to measure at the center of the baby’s upper arm."
             , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe gupima ikizigira cy'akaboko"
             }
-
-        ColorAlertIndication indication ->
-            case indication of
-                ColorAlertRed ->
-                    { english = "Red"
-                    , kinyarwanda = Just "Umutuku"
-                    }
-
-                ColorAlertYellow ->
-                    { english = "Yellow"
-                    , kinyarwanda = Just "Umuhondo"
-                    }
-
-                ColorAlertGreen ->
-                    { english = "Green"
-                    , kinyarwanda = Just "Icyatsi"
-                    }
 
         MyAccount ->
             { english = "My Account"
