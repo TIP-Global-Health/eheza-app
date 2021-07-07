@@ -24,5 +24,4 @@ class HedleyRestfulWellChildHeadCircumference extends HedleyRestfulWellChildActi
     'field_measurement_notes',
   ];
 
-
 }
