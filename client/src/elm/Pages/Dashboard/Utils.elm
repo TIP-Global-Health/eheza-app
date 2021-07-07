@@ -125,16 +125,32 @@ countAcuteIllnessAssesments encounters =
     List.length encounters
 
 
-countAcuteIllnessCasesByHCReferrals : List AcuteIllnessEncounterDataItem -> ( Int, Int )
-countAcuteIllnessCasesByHCReferrals encounters =
+countAcuteIllnessDiagnosedCases : List AcuteIllnessEncounterDataItem -> Int
+countAcuteIllnessDiagnosedCases encounters =
+    List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis) encounters
+        |> List.length
+
+
+countAcuteIllnessCasesByTreatmentApproach : List AcuteIllnessEncounterDataItem -> ( Int, Int )
+countAcuteIllnessCasesByTreatmentApproach encounters =
     let
-        ( sentToHC, managedLocally ) =
+        diagnosedEncounters =
             List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis) encounters
-                |> List.partition wasSentToHCByDiagnosis
+
+        sentToHC =
+            List.filter wasSentToHCByDiagnosis diagnosedEncounters
+
+        managedAtHome =
+            List.filter wasManagedAtHomeByDiagnosis diagnosedEncounters
     in
-    ( List.length sentToHC, List.length managedLocally )
+    ( List.length sentToHC, List.length managedAtHome )
 
 
+{-| There's a difference betweeen non Covid and Covid cases, when making
+a decision if to send patient to health center.
+Covid case has a specific set of parameters, while non Covid has a simple logic -
+only those that Yes answered to quesiton about patien being refered to HC.
+-}
 wasSentToHCByDiagnosis : AcuteIllnessEncounterDataItem -> Bool
 wasSentToHCByDiagnosis encounter =
     case encounter.diagnosis of
@@ -150,8 +166,34 @@ wasSentToHCByDiagnosis encounter =
             in
             sentToHCBy114 || sentToHCByHC
 
+        -- All others, but it must exclude NoAcuteIllnessDiagnosis - invoking function
+        -- should be taking care of this.
         _ ->
+            -- All that were refered sent to HC.
             EverySet.member ReferToHealthCenter encounter.sendToHCSigns
+
+
+{-| There's a difference betweeen non Covid and Covid cases, when making
+a decision if to manage illness at home.
+Covid case has a specific set of parameters, while non Covid has a simple logic -
+if patient was not sent to HC, then it was managed at home.
+-}
+wasManagedAtHomeByDiagnosis : AcuteIllnessEncounterDataItem -> Bool
+wasManagedAtHomeByDiagnosis encounter =
+    case encounter.diagnosis of
+        DiagnosisCovid19 ->
+            -- HC was contacted, and it suggested home isolation
+            -- or CHW monitoring.
+            EverySet.member ContactedHealthCenter encounter.hcContactSigns
+                && (EverySet.member HomeIsolation encounter.hcRecommendation
+                        || EverySet.member ChwMonitoring encounter.hcRecommendation
+                   )
+
+        -- All others, but it must exclude NoAcuteIllnessDiagnosis - invoking function
+        -- should be taking care of this.
+        _ ->
+            -- All that were not refered to HC are managed at home.
+            not <| wasSentToHCByDiagnosis encounter
 
 
 countAcuteIllnessCasesByPossibleDiagnosises : List AcuteIllnessDiagnosis -> Bool -> List AcuteIllnessEncounterDataItem -> Int
@@ -203,18 +245,10 @@ countDiagnosedWithCovidSentToHC encounters =
 
 countDiagnosedWithCovidManagedAtHome : List AcuteIllnessEncounterDataItem -> Int
 countDiagnosedWithCovidManagedAtHome encounters =
-    List.filter
-        (\encounter ->
-            -- Encounter which has produced Covid19 diagnosis,
-            -- HC was contacted, and it suggested home isolation
-            -- or CHW monitoring.
-            (encounter.diagnosis == DiagnosisCovid19)
-                && EverySet.member ContactedHealthCenter encounter.hcContactSigns
-                && (EverySet.member HomeIsolation encounter.hcRecommendation
-                        || EverySet.member ChwMonitoring encounter.hcRecommendation
-                   )
-        )
-        encounters
+    -- Encounter which has produced Covid19 diagnosis,
+    -- and it was decided to manage illness at home.
+    List.filter (.diagnosis >> (==) DiagnosisCovid19) encounters
+        |> List.filter wasManagedAtHomeByDiagnosis
         |> List.length
 
 

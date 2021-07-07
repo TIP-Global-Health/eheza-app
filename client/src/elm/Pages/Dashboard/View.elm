@@ -189,8 +189,8 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
         encountersForSelectedMonth =
             getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
 
-        ( sentToHC, managedLocally ) =
-            countAcuteIllnessCasesByHCReferrals encountersForSelectedMonth
+        diagnosedCases =
+            countAcuteIllnessDiagnosedCases encountersForSelectedMonth
 
         -- Prenatal
         currentlyPregnant =
@@ -210,7 +210,7 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
     , monthSelector language selectedDate model
     , div [ class "ui grid" ]
         [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt <| sentToHC + managedLocally)
+            [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt diagnosedCases)
             , chwCard language (Translate.Dashboard Translate.MothersInANC) (String.fromInt currentlyPregnant)
             , chwCard language (Translate.Dashboard Translate.NewbornsInCare) (String.fromInt totalNewborn)
             ]
@@ -1051,7 +1051,7 @@ viewAcuteIllnessOverviewPage language encounters model =
             countAcuteIllnessAssesments encounters
 
         ( sentToHC, managedLocally ) =
-            countAcuteIllnessCasesByHCReferrals encounters
+            countAcuteIllnessCasesByTreatmentApproach encounters
 
         undeterminedCases =
             countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisUndeterminedMoreEvaluationNeeded ] False encounters
