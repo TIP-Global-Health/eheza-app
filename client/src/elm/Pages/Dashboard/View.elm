@@ -1979,12 +1979,26 @@ viewMonthlyChart language currentDate chartType filterType data currentFilter =
         caption =
             case chartType of
                 MonthlyChartTotals ->
-                    div [ class "title left floated column" ] [ text <| translate language (Translate.Dashboard Translate.TotalBeneficiaries) ++ " " ++ toString currentFilter ++ " (%)" ]
+                    div [ class "title left floated column" ]
+                        [ text <|
+                            translate language (Translate.Dashboard Translate.TotalBeneficiaries)
+                                ++ " "
+                                ++ translate language (Translate.Dashboard <| Translate.Filter currentFilter)
+                                ++ " (%)"
+                        ]
 
                 MonthlyChartIncidence ->
                     div [ class "title left floated column" ]
-                        [ div [] [ text <| translate language (Translate.Dashboard Translate.IncidenceOf) ++ " " ++ toString currentFilter ++ " (%)" ]
-                        , div [ class "helper" ] [ text "(New cases per month)" ]
+                        [ div []
+                            [ text <|
+                                translate language (Translate.Dashboard Translate.IncidenceOf)
+                                    ++ " "
+                                    ++ translate language (Translate.Dashboard <| Translate.Filter currentFilter)
+                                    ++ " (%)"
+                            ]
+                        , div [ class "helper" ]
+                            [ text <| "(" ++ translate language (Translate.Dashboard Translate.NewCasesPerMonth) ++ ")"
+                            ]
                         ]
 
         chartData =
