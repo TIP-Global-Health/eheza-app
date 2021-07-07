@@ -17,16 +17,25 @@ import Restful.Endpoint exposing (EntityUuid)
 {-| Given a MUAC in cm, classify according to the measurement tool shown
 at <https://github.com/Gizra/ihangane/issues/282>
 -}
-muacIndication : MuacInCm -> MuacIndication
+muacIndication : MuacInCm -> ColorAlertIndication
 muacIndication (MuacInCm value) =
     if value <= 11.5 then
-        MuacRed
+        ColorAlertRed
 
     else if value <= 12.5 then
-        MuacYellow
+        ColorAlertYellow
 
     else
-        MuacGreen
+        ColorAlertGreen
+
+
+headCircumferenceIndication : HeadCircumferenceInCm -> ColorAlertIndication
+headCircumferenceIndication (HeadCircumferenceInCm value) =
+    if value <= -3 || value >= 3 then
+        ColorAlertRed
+
+    else
+        ColorAlertGreen
 
 
 {-| Given the data, do we have a current value? May be the value

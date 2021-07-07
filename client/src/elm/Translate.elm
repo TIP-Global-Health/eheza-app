@@ -652,7 +652,7 @@ type TranslationId
     | Mothers
     | MUAC
     | MuacHelper
-    | MuacIndication MuacIndication
+    | ColorAlertIndication ColorAlertIndication
     | MyAccount
     | MyRelatedBy MyRelatedBy
     | MyRelatedByQuestion MyRelatedBy
@@ -4775,20 +4775,20 @@ translationSet trans =
             , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe gupima ikizigira cy'akaboko"
             }
 
-        MuacIndication indication ->
+        ColorAlertIndication indication ->
             case indication of
-                MuacRed ->
-                    { english = "red"
+                ColorAlertRed ->
+                    { english = "Red"
                     , kinyarwanda = Just "Umutuku"
                     }
 
-                MuacYellow ->
-                    { english = "yellow"
+                ColorAlertYellow ->
+                    { english = "Yellow"
                     , kinyarwanda = Just "Umuhondo"
                     }
 
-                MuacGreen ->
-                    { english = "green"
+                ColorAlertGreen ->
+                    { english = "Green"
                     , kinyarwanda = Just "Icyatsi"
                     }
 

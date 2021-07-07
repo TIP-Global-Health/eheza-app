@@ -9,7 +9,6 @@ import Backend.Measurement.Model
         , FollowUpOption(..)
         , HeightInCm(..)
         , MuacInCm(..)
-        , MuacIndication(..)
         , NutritionAssesment(..)
         , NutritionMeasurement
         , NutritionMeasurements

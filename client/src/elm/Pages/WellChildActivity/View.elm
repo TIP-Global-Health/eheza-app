@@ -4,6 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (headCircumferenceIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend, resolvePreviousValuesSetForChild)
 import Backend.Person.Model exposing (Person)
@@ -23,11 +24,11 @@ import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
         ( renderDatePart
+        , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewFollowUpForm
         , viewHealthEducationForm
         , viewMeasurementFloatDiff
-        , viewMuacIndication
         , viewSendToHCForm
         , zScoreForHeightOrLength
         )
@@ -439,7 +440,7 @@ viewHeadCircumferenceForm language currentDate zscores person previousValue form
                 (\birthDate -> diffDays birthDate currentDate)
                 person.birthDate
 
-        zScoreText =
+        zScoreValue =
             form.headCircumference
                 |> Maybe.andThen
                     (\headCircumference ->
@@ -449,7 +450,9 @@ viewHeadCircumferenceForm language currentDate zscores person previousValue form
                             )
                             maybeAgeInDays
                     )
-                |> Maybe.map viewZScore
+
+        zScoreText =
+            Maybe.map viewZScore zScoreValue
                 |> Maybe.withDefault (translate language Translate.NotAvailable)
 
         inputSection =
@@ -469,9 +472,7 @@ viewHeadCircumferenceForm language currentDate zscores person previousValue form
                     , div
                         [ class "five wide column" ]
                         [ showMaybe <|
-                            Maybe.map2 (viewMeasurementFloatDiff language Translate.CentimeterShorthand)
-                                form.headCircumference
-                                previousValue
+                            Maybe.map (HeadCircumferenceInCm >> headCircumferenceIndication >> viewColorAlertIndication language) zScoreValue
                         ]
                     ]
                 , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand

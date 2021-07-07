@@ -7,7 +7,7 @@ module Measurement.View exposing
     , viewHealthEducationForm
     , viewMeasurementFloatDiff
     , viewMother
-    , viewMuacIndication
+    , viewColorAlertIndication
     , viewSendToHCForm
     , zScoreForHeightOrLength
     )
@@ -166,7 +166,7 @@ muacFormConfig =
     , inputValue = .muac
     , storedValue = .value >> muacValueFunc
     , dateMeasured = .dateMeasured
-    , viewIndication = Just <| \language val -> viewMuacIndication language (muacIndication (MuacInCm val))
+    , viewIndication = Just <| \language val -> viewColorAlertIndication language (muacIndication (MuacInCm val))
     , updateMsg = UpdateMuac
     , saveMsg = \id value -> SendOutMsgChild <| SaveMuac id (MuacInCm value)
     }
@@ -398,27 +398,27 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         ]
 
 
-muacColor : MuacIndication -> Attribute any
+muacColor : ColorAlertIndication -> Attribute any
 muacColor muac =
     class <|
         case muac of
-            MuacRed ->
+            ColorAlertRed ->
                 "label-red"
 
-            MuacYellow ->
+            ColorAlertYellow ->
                 "label-yellow"
 
-            MuacGreen ->
+            ColorAlertGreen ->
                 "label-green"
 
 
-viewMuacIndication : Language -> MuacIndication -> Html any
-viewMuacIndication language muac =
+viewColorAlertIndication : Language -> ColorAlertIndication -> Html any
+viewColorAlertIndication language muac =
     p
         [ muacColor muac
         , class "label-form"
         ]
-        [ translate language (Translate.MuacIndication muac)
+        [ translate language (Translate.ColorAlertIndication muac)
             |> String.toUpper
             |> text
         ]

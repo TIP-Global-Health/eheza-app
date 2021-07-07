@@ -474,12 +474,12 @@ zScoreWeightForAgeSevere zScore =
 
 muacSevere : MuacInCm -> Bool
 muacSevere muac =
-    muacIndication muac == MuacRed
+    muacIndication muac == ColorAlertRed
 
 
 muacModerate : MuacInCm -> Bool
 muacModerate muac =
-    muacIndication muac == MuacYellow
+    muacIndication muac == ColorAlertYellow
 
 
 nutritionAssesmentForBackend : List NutritionAssesment -> EverySet NutritionAssesment

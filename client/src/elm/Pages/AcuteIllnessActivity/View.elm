@@ -35,7 +35,7 @@ import Measurement.Utils
         , nutritionFormWithDefault
         , sendToHCFormWithDefault
         )
-import Measurement.View exposing (renderDatePart, viewMuacIndication, viewSendToHCForm)
+import Measurement.View exposing (renderDatePart, viewColorAlertIndication, viewSendToHCForm)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
@@ -902,7 +902,7 @@ viewMuacForm language currentDate assembled form_ =
             , div
                 [ class "five wide column" ]
                 [ showMaybe <|
-                    Maybe.map (MuacInCm >> muacIndication >> viewMuacIndication language) form.muac
+                    Maybe.map (MuacInCm >> muacIndication >> viewColorAlertIndication language) form.muac
                 ]
             ]
         , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand

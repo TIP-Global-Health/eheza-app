@@ -13,6 +13,7 @@ import Backend.Measurement.Model
         , AcuteIllnessVitalsValue
         , Call114Sign(..)
         , ChildNutritionSign(..)
+        , ColorAlertIndication(..)
         , ExposureSign(..)
         , HCContactSign(..)
         , HCContactValue
@@ -23,7 +24,6 @@ import Backend.Measurement.Model
         , MedicationDistributionSign(..)
         , MedicationNonAdministrationReason(..)
         , MedicationNonAdministrationSign(..)
-        , MuacIndication(..)
         , ReasonForNotIsolating(..)
         , Recommendation114(..)
         , RecommendationSite(..)
@@ -524,7 +524,7 @@ muacRedOnSubsequentVisit measurements =
             (Tuple.second
                 >> .value
                 >> muacIndication
-                >> (==) MuacRed
+                >> (==) ColorAlertRed
             )
         |> Maybe.withDefault False
 

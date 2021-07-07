@@ -36,11 +36,11 @@ import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
         ( renderDatePart
+        , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewFollowUpForm
         , viewHealthEducationForm
         , viewMeasurementFloatDiff
-        , viewMuacIndication
         , viewSendToHCForm
         , zScoreForHeightOrLength
         )
@@ -373,7 +373,7 @@ viewMuacForm language currentDate person previousValue setMuacMsg form =
             , div
                 [ class "five wide column" ]
                 [ showMaybe <|
-                    Maybe.map (MuacInCm >> muacIndication >> viewMuacIndication language) form.muac
+                    Maybe.map (MuacInCm >> muacIndication >> viewColorAlertIndication language) form.muac
                 ]
             ]
         , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
