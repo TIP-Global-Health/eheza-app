@@ -334,28 +334,30 @@ viewActiveIllness language currentDate selectedHealthCenter db viewMode sessionI
                         >> Maybe.map .diagnosis
                     )
     in
-    case mDiagnosis of
-        Nothing ->
-            Nothing
+    Maybe.andThen
+        (\diagnosis ->
+            if diagnosis == DiagnosisFeverOfUnknownOrigin then
+                -- Do not show illness if diagnosis is
+                -- fever of unknown origin.
+                Nothing
 
-        Just NoAcuteIllnessDiagnosis ->
-            Nothing
+            else
+                sessionEncounters
+                    |> Maybe.andThen
+                        (\encounters ->
+                            case viewMode of
+                                -- No need to view illnesses for this view mode.
+                                ManageIllnesses ->
+                                    Nothing
 
-        Just diagnosis ->
-            sessionEncounters
-                |> Maybe.andThen
-                    (\encounters ->
-                        case viewMode of
-                            -- No need to view illnesses for this view mode.
-                            ManageIllnesses ->
-                                Nothing
+                                ManageParticipants ->
+                                    viewActiveIllnessForManagement language currentDate selectedHealthCenter sessionId encounters diagnosis
 
-                            ManageParticipants ->
-                                viewActiveIllnessForManagement language currentDate selectedHealthCenter sessionId encounters diagnosis
-
-                            RecordOutcome ->
-                                viewActiveIllnessForOutcome language currentDate sessionId encounters diagnosis
-                    )
+                                RecordOutcome ->
+                                    viewActiveIllnessForOutcome language currentDate sessionId encounters diagnosis
+                        )
+        )
+        mDiagnosis
 
 
 viewActiveIllnessForManagement :
