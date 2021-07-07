@@ -8044,12 +8044,12 @@ translateDashboard trans =
             case filter of
                 Stunting ->
                     { english = "Stunting"
-                    , kinyarwanda = Just "igwingira"
+                    , kinyarwanda = Just "Igwingira"
                     }
 
                 Underweight ->
                     { english = "Underweight"
-                    , kinyarwanda = Just "ibiro bidahagije"
+                    , kinyarwanda = Just "Ibiro bidahagije"
                     }
 
                 Wasting ->
