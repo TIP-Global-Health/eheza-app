@@ -24,13 +24,6 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 
 
-{-| To void a cycle in dependency, we just define the zScore here.
-Added a comment in the main definition to point to this one.
--}
-type alias ZScore =
-    Float
-
-
 type alias AssembledData =
     { stats : DashboardStats
     , acuteIllnessData : List AcuteIllnessDataItem
@@ -39,9 +32,16 @@ type alias AssembledData =
     }
 
 
-type alias DashboardStats =
+{-| To void a cycle in dependency, we just define the zScore here.
+Added a comment in the main definition to point to this one.
+-}
+type alias ZScore =
+    Float
+
+
+type alias DashboardStatsRaw =
     { caseManagement : CaseManagementData
-    , childrenBeneficiaries : List ChildrenBeneficiariesStats
+    , childrenBeneficiaries : ChildrenBeneficiariesData
     , completedPrograms : List ParticipantStats
     , familyPlanning : List FamilyPlanningStats
     , missedSessions : List ParticipantStats
@@ -58,10 +58,10 @@ type alias DashboardStats =
     }
 
 
-emptyModel : DashboardStats
+emptyModel : DashboardStatsRaw
 emptyModel =
     { caseManagement = CaseManagementData Dict.empty Dict.empty
-    , childrenBeneficiaries = []
+    , childrenBeneficiaries = Dict.empty
     , completedPrograms = []
     , familyPlanning = []
     , missedSessions = []
@@ -71,6 +71,26 @@ emptyModel =
     , villagesWithResidents = Dict.empty
     , timestamp = ""
     , cacheHash = ""
+    }
+
+
+type alias DashboardStats =
+    { caseManagement : CaseManagementPast2Years
+    , childrenBeneficiaries : List ChildrenBeneficiariesStats
+    , completedPrograms : List ParticipantStats
+    , familyPlanning : List FamilyPlanningStats
+    , missedSessions : List ParticipantStats
+    , totalEncounters : TotalEncountersData
+    , villagesWithResidents : Dict VillageId (List PersonIdentifier)
+
+    -- UTC Date and time on which statistics were generated.
+    , timestamp : String
+    }
+
+
+type alias CaseManagementPast2Years =
+    { thisYear : List CaseManagement
+    , lastYear : List CaseManagement
     }
 
 
@@ -111,8 +131,13 @@ type alias CaseNutritionTotal =
     }
 
 
+type alias ChildrenBeneficiariesData =
+    Dict ProgramType (List ChildrenBeneficiariesStats)
+
+
 type alias ChildrenBeneficiariesStats =
-    { gender : Gender
+    { identifier : PersonIdentifier
+    , gender : Gender
     , birthDate : NominalDate
     , memberSince : NominalDate
     , name : String

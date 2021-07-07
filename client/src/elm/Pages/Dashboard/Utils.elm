@@ -2,7 +2,18 @@ module Pages.Dashboard.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
-import Backend.Dashboard.Model exposing (AcuteIllnessDataItem, AcuteIllnessEncounterDataItem, AssembledData, DashboardStats, PrenatalDataItem)
+import Backend.Dashboard.Model
+    exposing
+        ( AcuteIllnessDataItem
+        , AcuteIllnessEncounterDataItem
+        , AssembledData
+        , ChildrenBeneficiariesStats
+        , DashboardStats
+        , DashboardStatsRaw
+        , PersonIdentifier
+        , PrenatalDataItem
+        , ProgramType(..)
+        )
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..))
 import Backend.Measurement.Model
@@ -20,7 +31,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra exposing (isNothing)
+import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Dashboard.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (filterVillageResidents, generateAcuteIllnessFollowUps, generateNutritionFollowUps, generatePrenatalFollowUps)
 import Pages.GlobalCaseManagement.View exposing (generateAcuteIllnessFollowUpEntries, generateNutritionFollowUpEntries, generatePrenatalFollowUpEntries)
@@ -75,20 +86,46 @@ filterProgramTypeFromString string =
             Nothing
 
 
-generateAssembledData : HealthCenterId -> Maybe VillageId -> DashboardStats -> ModelIndexedDb -> AssembledData
-generateAssembledData healthCenterId villageId stats db =
-    { stats = stats
-    , acuteIllnessData = generateFilteredAcuteIllnessData villageId stats
-    , prenatalData = generateFilteredPrenatalData villageId stats
+generateAssembledData : HealthCenterId -> DashboardStatsRaw -> ModelIndexedDb -> Model -> AssembledData
+generateAssembledData healthCenterId stats db model =
+    { stats = generateFilteredDashboardStats stats model
+    , acuteIllnessData = generateFilteredAcuteIllnessData stats model
+    , prenatalData = generateFilteredPrenatalData stats model
     , caseManagementData =
         Dict.get healthCenterId db.followUpMeasurements
             |> Maybe.andThen RemoteData.toMaybe
     }
 
 
-generateFilteredPrenatalData : Maybe VillageId -> DashboardStats -> List PrenatalDataItem
-generateFilteredPrenatalData maybeVillageId stats =
-    maybeVillageId
+generateFilteredDashboardStats : DashboardStatsRaw -> Model -> DashboardStats
+generateFilteredDashboardStats stats model =
+    { caseManagement =
+        { thisYear = applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.caseManagement.thisYear model
+        , lastYear = applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.caseManagement.lastYear model
+        }
+    , childrenBeneficiaries = applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.childrenBeneficiaries model
+    , completedPrograms = stats.completedPrograms
+    , familyPlanning = stats.familyPlanning
+    , missedSessions = stats.missedSessions
+    , totalEncounters = stats.totalEncounters
+    , villagesWithResidents = stats.villagesWithResidents
+    , timestamp = stats.timestamp
+    }
+
+
+generateFilteredAcuteIllnessData : DashboardStatsRaw -> Model -> List AcuteIllnessDataItem
+generateFilteredAcuteIllnessData stats model =
+    model.selectedVillageFilter
+        |> Maybe.andThen
+            (\villageId -> Dict.get villageId stats.villagesWithResidents)
+        |> Maybe.map
+            (\residents -> List.filter (\item -> List.member item.identifier residents) stats.acuteIllnessData)
+        |> Maybe.withDefault []
+
+
+generateFilteredPrenatalData : DashboardStatsRaw -> Model -> List PrenatalDataItem
+generateFilteredPrenatalData stats model =
+    model.selectedVillageFilter
         |> Maybe.andThen
             (\villageId -> Dict.get villageId stats.villagesWithResidents)
         |> Maybe.map
@@ -96,14 +133,94 @@ generateFilteredPrenatalData maybeVillageId stats =
         |> Maybe.withDefault []
 
 
-generateFilteredAcuteIllnessData : Maybe VillageId -> DashboardStats -> List AcuteIllnessDataItem
-generateFilteredAcuteIllnessData maybeVillageId stats =
-    maybeVillageId
-        |> Maybe.andThen
-            (\villageId -> Dict.get villageId stats.villagesWithResidents)
-        |> Maybe.map
-            (\residents -> List.filter (\item -> List.member item.identifier residents) stats.acuteIllnessData)
-        |> Maybe.withDefault []
+applyProgramTypeAndResidentsFilters :
+    Dict VillageId (List PersonIdentifier)
+    -> Dict ProgramType (List { a | identifier : PersonIdentifier })
+    -> Model
+    -> List { a | identifier : PersonIdentifier }
+applyProgramTypeAndResidentsFilters villagesWithResidents dict model =
+    case model.programTypeFilter of
+        FilterAllPrograms ->
+            let
+                achi =
+                    Dict.get ProgramAchi dict
+                        |> Maybe.withDefault []
+
+                fbf =
+                    Dict.get ProgramFbf dict
+                        |> Maybe.withDefault []
+
+                pmtct =
+                    Dict.get ProgramPmtct dict
+                        |> Maybe.withDefault []
+
+                sorwathe =
+                    Dict.get ProgramSorwathe dict
+                        |> Maybe.withDefault []
+
+                individual =
+                    Dict.get ProgramIndividual dict
+                        |> Maybe.withDefault []
+            in
+            achi ++ fbf ++ pmtct ++ sorwathe ++ individual
+
+        FilterProgramAchi ->
+            Dict.get ProgramAchi dict
+                |> Maybe.withDefault []
+
+        FilterProgramFbf ->
+            Dict.get ProgramFbf dict
+                |> Maybe.withDefault []
+
+        FilterProgramPmtct ->
+            Dict.get ProgramPmtct dict
+                |> Maybe.withDefault []
+
+        FilterProgramSorwathe ->
+            Dict.get ProgramSorwathe dict
+                |> Maybe.withDefault []
+
+        FilterProgramCommunity ->
+            let
+                villageResidents =
+                    model.selectedVillageFilter
+                        |> Maybe.andThen (\village -> Dict.get village villagesWithResidents)
+                        |> Maybe.withDefault []
+
+                villageFilterFunc caseManagement =
+                    if isJust model.selectedVillageFilter then
+                        List.member caseManagement.identifier villageResidents
+
+                    else
+                        -- Do not filter by village, if village is not selected.
+                        True
+
+                achi =
+                    Dict.get ProgramAchi dict
+                        |> Maybe.withDefault []
+                        |> List.filter villageFilterFunc
+
+                fbf =
+                    Dict.get ProgramFbf dict
+                        |> Maybe.withDefault []
+                        |> List.filter villageFilterFunc
+
+                pmtct =
+                    Dict.get ProgramPmtct dict
+                        |> Maybe.withDefault []
+                        |> List.filter villageFilterFunc
+
+                sorwathe =
+                    Dict.get ProgramSorwathe dict
+                        |> Maybe.withDefault []
+                        |> List.filter villageFilterFunc
+
+                individual =
+                    Dict.get ProgramIndividual dict
+                        |> Maybe.withDefault []
+                        |> List.filter villageFilterFunc
+            in
+            achi ++ fbf ++ pmtct ++ sorwathe ++ individual
 
 
 
@@ -649,3 +766,9 @@ withinSelectedMonth selectedDate date =
 getSelectedDate : NominalDate -> Model -> NominalDate
 getSelectedDate currentDate model =
     Date.add Date.Months (-1 * model.monthGap) currentDate
+
+
+childrenBeneficiariesByProgramType : ProgramType -> Dict ProgramType (List ChildrenBeneficiariesStats) -> List ChildrenBeneficiariesStats
+childrenBeneficiariesByProgramType programType childrenBeneficiaries =
+    Dict.get programType childrenBeneficiaries
+        |> Maybe.withDefault []
