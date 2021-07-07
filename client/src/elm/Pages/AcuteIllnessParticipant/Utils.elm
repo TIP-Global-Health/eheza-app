@@ -6,10 +6,9 @@ import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isNothing)
 
 
-{-| Preganancy is considered 'active' if it does not have it's end
-date set, and it's EDD date is not set, or, EDD date is less than
-3 month overdue.
+{-| Illness is considered 'active' if it does not have it's end
+date or outcome set.
 -}
 isAcuteIllnessActive : NominalDate -> IndividualEncounterParticipant -> Bool
 isAcuteIllnessActive currentDate session =
-    isNothing session.endDate
+    isNothing session.endDate || isNothing session.outcome
