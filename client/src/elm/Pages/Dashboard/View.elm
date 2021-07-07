@@ -474,12 +474,20 @@ generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats model =
 
                             totalBeneficiaries =
                                 stats.childrenBeneficiaries
-                                    |> List.filter
+                                    |> List.filterMap
                                         (\child ->
-                                            (Date.compare child.memberSince maxJoinDate == LT)
-                                                && (Date.compare minGraduationDate child.graduationDate == LT)
+                                            if
+                                                (Date.compare child.memberSince maxJoinDate == LT)
+                                                    && (Date.compare minGraduationDate child.graduationDate == LT)
+                                            then
+                                                Just child.identifier
+
+                                            else
+                                                Nothing
                                         )
-                                    |> List.length
+                                    -- We want to get unique participants.
+                                    |> EverySet.fromList
+                                    |> EverySet.size
                         in
                         ( month, totalBeneficiaries )
                     )
