@@ -1,4 +1,4 @@
-module Backend.Dashboard.Decoder exposing (decodeDashboardStats)
+module Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis)
@@ -19,11 +19,11 @@ import Restful.Endpoint exposing (decodeEntityUuid, toEntityUuid)
 import Utils.Json exposing (decodeEverySet)
 
 
-decodeDashboardStats : Decoder DashboardStats
-decodeDashboardStats =
-    succeed DashboardStats
+decodeDashboardStatsRaw : Decoder DashboardStatsRaw
+decodeDashboardStatsRaw =
+    succeed DashboardStatsRaw
         |> required "case_management" decodeCaseManagementData
-        |> required "children_beneficiaries" (list decodePeopleStats)
+        |> required "children_beneficiaries" decodeChildrenBeneficiariesData
         |> required "completed_program" (list decodeParticipantStats)
         |> required "family_planning" (list decodeFamilyPlanningStats)
         |> required "missed_sessions" (list decodeParticipantStats)
@@ -60,7 +60,7 @@ decodeCaseManagementDataForYear =
 decodeCaseManagement : Decoder CaseManagement
 decodeCaseManagement =
     succeed CaseManagement
-        |> required "id" int
+        |> required "id" decodeInt
         |> required "name" string
         |> required "birth_date" decodeYYYYMMDD
         |> required "gender" decodeGender
@@ -131,11 +131,27 @@ decodeBeneficiaries =
         |> required "moderate_nutrition" decodeInt
 
 
-decodePeopleStats : Decoder ChildrenBeneficiariesStats
-decodePeopleStats =
+decodeChildrenBeneficiariesData : Decoder (Dict ProgramType (List ChildrenBeneficiariesStats))
+decodeChildrenBeneficiariesData =
+    dict (list decodeChildrenBeneficiariesStats)
+        |> andThen
+            (\dict ->
+                LegacyDict.toList dict
+                    |> List.map
+                        (\( k, v ) ->
+                            ( programTypeFromString k, v )
+                        )
+                    |> Dict.fromList
+                    |> succeed
+            )
+
+
+decodeChildrenBeneficiariesStats : Decoder ChildrenBeneficiariesStats
+decodeChildrenBeneficiariesStats =
     succeed ChildrenBeneficiariesStats
-        |> required "field_gender" decodeGender
-        |> required "field_birth_date" decodeYYYYMMDD
+        |> required "id" decodeInt
+        |> required "gender" decodeGender
+        |> required "birth_date" decodeYYYYMMDD
         |> required "created" decodeYYYYMMDD
         |> required "name" string
         |> required "mother_name" string
