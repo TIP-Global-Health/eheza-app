@@ -118,5 +118,42 @@ function hedley_well_child_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
+  // Exported field_base: 'field_well_child_symptoms'.
+  $field_bases['field_well_child_symptoms'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_well_child_symptoms',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'breathing-problems' => 'Breathing Problems',
+        'convulsions' => 'Convulsions',
+        'lethargy-or-unresponsiveness' => 'Lethargy Or Unresponsiveness',
+        'diarrhea' => 'Diarrhea',
+        'vomiting' => 'Vomiting',
+        'umbilical-cord-redness' => 'Umbilical Cord Redness',
+        'stiff-neck-or-bulging-fontanelle' => 'Stiff Neck Or Bulging Fontanelle',
+        'severe-edema' => 'Severe Edema',
+        'palmoplantar-pallor' => 'Palmoplantar Pallor',
+        'history-of-fever' => 'History Of Fever',
+        'baby-tires-quickly-when-feeding' => 'Baby Tires Quickly When Feeding',
+        'coughing-or-tearing-while-feeding' => 'Coughing Or Tearing While Feeding',
+        'rigid-muscles-or-jaw-clenching' => 'Rigid Muscles Or Jaw Clenching Preventing Feeding',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   return $field_bases;
 }
