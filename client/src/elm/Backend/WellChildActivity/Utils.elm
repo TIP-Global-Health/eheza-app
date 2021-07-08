@@ -6,6 +6,9 @@ import Backend.WellChildActivity.Model exposing (..)
 encodeActivityAsString : WellChildActivity -> String
 encodeActivityAsString activity =
     case activity of
+        WellChildDangerSigns ->
+            "well-child-danger-signs"
+
         WellChildNutritionAssessment ->
             "well-child-nutrition-assessment"
 
@@ -24,6 +27,9 @@ decodeActivityFromString s =
         "well-child-ecd" ->
             Just WellChildECD
 
+        "well-child-danger-signs" ->
+            Just WellChildDangerSigns
+
         _ ->
             Nothing
 
@@ -41,6 +47,9 @@ defaultActivity =
 getActivityIcon : WellChildActivity -> String
 getActivityIcon activity =
     case activity of
+        WellChildDangerSigns ->
+            "danger-signs"
+
         WellChildNutritionAssessment ->
             "nutrition-assessment"
 
@@ -50,4 +59,4 @@ getActivityIcon activity =
 
 getAllActivities : List WellChildActivity
 getAllActivities =
-    [ WellChildNutritionAssessment, WellChildECD ]
+    [ WellChildDangerSigns, WellChildNutritionAssessment, WellChildECD ]

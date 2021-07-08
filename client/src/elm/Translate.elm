@@ -7624,6 +7624,11 @@ translationSet trans =
 
         WellChildActivityTitle activity ->
             case activity of
+                WellChildDangerSigns ->
+                    { english = "Danger Signs"
+                    , kinyarwanda = Just "Ibimenyetso Mpuruza"
+                    }
+
                 WellChildNutritionAssessment ->
                     { english = "Nutrition Assesmen"
                     , kinyarwanda = Nothing

@@ -56,6 +56,10 @@ activityCompleted currentDate zscores data db activity =
             expectActivity currentDate data db
     in
     case activity of
+        WellChildDangerSigns ->
+            (not <| activityExpected WellChildDangerSigns)
+                || (isJust measurements.symptomsReview && isJust measurements.vitals)
+
         WellChildNutritionAssessment ->
             let
                 ( mandatory, optional ) =

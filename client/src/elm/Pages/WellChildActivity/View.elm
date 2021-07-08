@@ -119,6 +119,11 @@ viewContent language currentDate zscores id activity db model assembled =
 viewActivity : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> WellChildActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
 viewActivity language currentDate zscores id activity assembled db model =
     case activity of
+        WellChildDangerSigns ->
+            -- @todo
+            -- viewDangerSignsContent language currentDate assembled model.dangerSigns
+            []
+
         WellChildNutritionAssessment ->
             viewNutritionAssessmenContent language currentDate zscores id assembled db model.nutritionAssessmentData
 
