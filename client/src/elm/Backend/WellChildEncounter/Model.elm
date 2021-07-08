@@ -29,7 +29,8 @@ to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
     { closeWellChildEncounter : WebData ()
-    , saveECD : WebData ()
+    , saveSymptomsReview : WebData ()
+    , saveVitals : WebData ()
     , saveHeight : WebData ()
     , saveMuac : WebData ()
     , saveNutrition : WebData ()
@@ -40,13 +41,15 @@ type alias Model =
     , saveFollowUp : WebData ()
     , saveSendToHC : WebData ()
     , saveHeadCircumference : WebData ()
+    , saveECD : WebData ()
     }
 
 
 emptyModel : Model
 emptyModel =
     { closeWellChildEncounter = NotAsked
-    , saveECD = NotAsked
+    , saveSymptomsReview = NotAsked
+    , saveVitals = NotAsked
     , saveHeight = NotAsked
     , saveMuac = NotAsked
     , saveNutrition = NotAsked
@@ -57,14 +60,17 @@ emptyModel =
     , saveFollowUp = NotAsked
     , saveSendToHC = NotAsked
     , saveHeadCircumference = NotAsked
+    , saveECD = NotAsked
     }
 
 
 type Msg
     = CloseWellChildEncounter
     | HandleClosedWellChildEncounter (WebData ())
-    | SaveECD PersonId (Maybe WellChildECDId) (EverySet ECDSign)
-    | HandleSavedECD (WebData ())
+    | SaveSymptomsReview PersonId (Maybe WellChildSymptomsReviewId) (EverySet WellChildSymptom)
+    | HandleSavedSymptomsReview (WebData ())
+    | SaveVitals PersonId (Maybe WellChildVitalsId) BasicVitalsValue
+    | HandleSavedVitals (WebData ())
     | SaveHeight PersonId (Maybe WellChildHeightId) HeightInCm
     | HandleSavedHeight (WebData ())
     | SaveMuac PersonId (Maybe WellChildMuacId) MuacInCm
@@ -85,3 +91,5 @@ type Msg
     | HandleSavedSendToHC (WebData ())
     | SaveHeadCircumference PersonId (Maybe WellChildHeadCircumferenceId) HeadCircumferenceValue
     | HandleSavedHeadCircumference (WebData ())
+    | SaveECD PersonId (Maybe WellChildECDId) (EverySet ECDSign)
+    | HandleSavedECD (WebData ())

@@ -30,18 +30,23 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                         )
                     )
 
-        HandleClosedWellChildEncounter data ->
-            ( { model | closeWellChildEncounter = data }
+        SaveSymptomsReview personId valueId value ->
+            ( { model | saveSymptomsReview = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildSymptomsReviewEndpoint HandleSavedSymptomsReview
+            )
+
+        HandleSavedSymptomsReview data ->
+            ( { model | saveSymptomsReview = data }
             , Cmd.none
             )
 
-        SaveECD personId valueId value ->
-            ( { model | saveECD = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildECDEndpoint HandleSavedECD
+        SaveVitals personId valueId value ->
+            ( { model | saveVitals = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildVitalsEndpoint HandleSavedVitals
             )
 
-        HandleSavedECD data ->
-            ( { model | saveECD = data }
+        HandleSavedVitals data ->
+            ( { model | saveVitals = data }
             , Cmd.none
             )
 
@@ -142,5 +147,20 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         HandleSavedHeadCircumference data ->
             ( { model | saveHeadCircumference = data }
+            , Cmd.none
+            )
+
+        HandleClosedWellChildEncounter data ->
+            ( { model | closeWellChildEncounter = data }
+            , Cmd.none
+            )
+
+        SaveECD personId valueId value ->
+            ( { model | saveECD = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildECDEndpoint HandleSavedECD
+            )
+
+        HandleSavedECD data ->
+            ( { model | saveECD = data }
             , Cmd.none
             )
