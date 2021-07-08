@@ -1216,8 +1216,56 @@ type alias AcuteIllnessFollowUp =
 -- WELL CHILD MEASUREMENTS
 
 
-type alias WellChildECD =
-    WellChildMeasurement (EverySet ECDSign)
+type alias WellChildSymptomsReview =
+    WellChildMeasurement (EverySet WellChildSymptom)
+
+
+type WellChildSymptom
+    = SymptomBreathingProblems
+    | SymptomConvulsions
+    | SymptomLethargyOrUnresponsiveness
+    | SymptomDiarrhea
+    | SymptomVomiting
+    | SymptomUmbilicalCordRedness
+    | SymptomStiffNeckOrBulgingFontanelle
+    | SymptomSevereEdema
+    | SymptomPalmoplantarPallor
+    | SymptomHistoryOfFever
+    | SymptomBabyTiresQuicklyWhenFeeding
+    | SymptomCoughingOrTearingWhileFeeding
+    | SymptomRigidMusclesOrJawClenchingPreventingFeeding
+    | NoWellChildSymptoms
+
+
+
+-- breathing-problems|Breathing Problems
+-- convulsions|Convulsions
+-- lethargy-or-unresponsiveness|Lethargy Or Unresponsiveness
+-- diarrhea|Diarrhea
+-- vomiting|Vomiting
+-- umbilical-cord-redness|Umbilical Cord Redness
+-- stiff-neck-or-bulging-fontanelle|Stiff Neck Or Bulging Fontanelle
+-- severe-edema|Severe Edema
+-- palmoplantar-pallor|Palmoplantar Pallor
+-- history-of-fever|History Of Fever
+-- baby-tires-quickly-when-feeding|Baby Tires Quickly When Feeding
+-- coughing-or-tearing-while-feeding|Coughing Or Tearing While Feeding
+-- rigid-muscles-or-jaw-clenching|Rigid Muscles Or Jaw Clenching Preventing Feeding
+-- none|None
+-- symptom-breathing-problems
+-- symptom-convulsions
+-- symptom-lethargy-or-unresponsiveness
+-- symptom-diarrhea
+-- symptom-vomiting
+-- symptom-umbilical-cord-redness
+-- symptom-stiff-neck-or-bulging-fontanelle
+-- symptom-severe-edema
+-- symptom-palmoplantar-pallor
+-- symptom-history-of-fever
+-- symptom-baby-tires-quickly-when-feeding
+-- symptom-coughing-or-tearing-while-feeding
+-- symptom-rigid-muscles-or-jaw-clenching
+-- none
 
 
 type alias WellChildHeight =
@@ -1273,6 +1321,10 @@ type HeadCircumferenceInCm
 type MeasurementNote
     = NoteNotTaken
     | NoMeasurementNotes
+
+
+type alias WellChildECD =
+    WellChildMeasurement (EverySet ECDSign)
 
 
 type ECDSign
