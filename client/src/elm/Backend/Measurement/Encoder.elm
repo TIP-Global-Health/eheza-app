@@ -1340,15 +1340,15 @@ encodeSymptomsGIDerivedSigns sign =
 
 encodeAcuteIllnessVitals : AcuteIllnessVitals -> List ( String, Value )
 encodeAcuteIllnessVitals =
-    encodeAcuteIllnessMeasurement encodeBasicVitalsValue
+    encodeAcuteIllnessMeasurement (encodeBasicVitalsValueWithType "acute_illness_vitals")
 
 
-encodeBasicVitalsValue : BasicVitalsValue -> List ( String, Value )
-encodeBasicVitalsValue value =
+encodeBasicVitalsValueWithType : String -> BasicVitalsValue -> List ( String, Value )
+encodeBasicVitalsValueWithType type_ value =
     [ ( "respiratory_rate", int value.respiratoryRate )
     , ( "body_temperature", float value.bodyTemperature )
     , ( "deleted", bool False )
-    , ( "type", string "acute_illness_vitals" )
+    , ( "type", string type_ )
     ]
 
 
@@ -2426,6 +2426,71 @@ encodeReasonForNotProvidingHealthEducation reason =
 
             NoReasonForNotProvidingHealthEducation ->
                 "none"
+
+
+encodeWellChildSymptomsReview : WellChildSymptomsReview -> List ( String, Value )
+encodeWellChildSymptomsReview =
+    encodeWellChildMeasurement encodeWellChilSymptomsReviewValue
+
+
+encodeWellChilSymptomsReviewValue : EverySet WellChildSymptom -> List ( String, Value )
+encodeWellChilSymptomsReviewValue value =
+    [ ( "well_child_symptoms", encodeEverySet encodeWellChildSymptom value )
+    , ( "deleted", bool False )
+    , ( "type", string "well_child_symptoms_review" )
+    ]
+
+
+encodeWellChildSymptom : WellChildSymptom -> Value
+encodeWellChildSymptom symptom =
+    string <|
+        case symptom of
+            SymptomBreathingProblems ->
+                "symptom-breathing-problems"
+
+            SymptomConvulsions ->
+                "symptom-convulsions"
+
+            SymptomLethargyOrUnresponsiveness ->
+                "symptom-lethargy-or-unresponsiveness"
+
+            SymptomDiarrhea ->
+                "symptom-diarrhea"
+
+            SymptomVomiting ->
+                "symptom-vomiting"
+
+            SymptomUmbilicalCordRedness ->
+                "symptom-umbilical-cord-redness"
+
+            SymptomStiffNeckOrBulgingFontanelle ->
+                "symptom-stiff-neck-or-bulging-fontanelle"
+
+            SymptomSevereEdema ->
+                "symptom-severe-edema"
+
+            SymptomPalmoplantarPallor ->
+                "symptom-palmoplantar-pallor"
+
+            SymptomHistoryOfFever ->
+                "symptom-history-of-fever"
+
+            SymptomBabyTiresQuicklyWhenFeeding ->
+                "symptom-baby-tires-quickly-when-feeding"
+
+            SymptomCoughingOrTearingWhileFeeding ->
+                "symptom-coughing-or-tearing-while-feeding"
+
+            SymptomRigidMusclesOrJawClenchingPreventingFeeding ->
+                "symptom-rigid-muscles-or-jaw-clenching"
+
+            NoWellChildSymptoms ->
+                "none"
+
+
+encodeWellChildVitals : WellChildVitals -> List ( String, Value )
+encodeWellChildVitals =
+    encodeWellChildMeasurement (encodeBasicVitalsValueWithType "well_child_vitals")
 
 
 encodeWellChildECD : WellChildECD -> List ( String, Value )
