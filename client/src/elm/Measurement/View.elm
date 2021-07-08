@@ -2,12 +2,12 @@ module Measurement.View exposing
     ( renderDatePart
     , viewActionTakenLabel
     , viewChild
+    , viewColorAlertIndication
     , viewContributingFactorsForm
     , viewFollowUpForm
     , viewHealthEducationForm
     , viewMeasurementFloatDiff
     , viewMother
-    , viewColorAlertIndication
     , viewSendToHCForm
     , zScoreForHeightOrLength
     )
