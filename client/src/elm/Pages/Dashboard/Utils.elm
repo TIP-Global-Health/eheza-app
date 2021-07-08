@@ -7,12 +7,17 @@ import Backend.Dashboard.Model
         ( AcuteIllnessDataItem
         , AcuteIllnessEncounterDataItem
         , AssembledData
+        , CaseManagement
         , ChildrenBeneficiariesStats
         , DashboardStats
         , DashboardStatsRaw
+        , NutritionStatus(..)
+        , NutritionValue
+        , Periods
         , PersonIdentifier
         , PrenatalDataItem
         , ProgramType(..)
+        , TotalEncountersData
         )
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..))
@@ -100,10 +105,21 @@ generateAssembledData healthCenterId stats db model =
 generateFilteredDashboardStats : DashboardStatsRaw -> Model -> DashboardStats
 generateFilteredDashboardStats stats model =
     { caseManagement =
-        { thisYear = applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.caseManagement.thisYear model
-        , lastYear = applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.caseManagement.lastYear model
+        { thisYear =
+            applyProgramTypeAndResidentsFilters stats.villagesWithResidents
+                model.programTypeFilter
+                model.selectedVillageFilter
+                stats.caseManagement.thisYear
+                |> caseManagementMergeDuplicates
+        , lastYear =
+            applyProgramTypeAndResidentsFilters
+                stats.villagesWithResidents
+                model.programTypeFilter
+                model.selectedVillageFilter
+                stats.caseManagement.lastYear
+                |> caseManagementMergeDuplicates
         }
-    , childrenBeneficiaries = applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.childrenBeneficiaries model
+    , childrenBeneficiaries = applyProgramTypeAndResidentsFilters stats.villagesWithResidents model.programTypeFilter model.selectedVillageFilter stats.childrenBeneficiaries
     , completedPrograms = stats.completedPrograms
     , familyPlanning = stats.familyPlanning
     , missedSessions = stats.missedSessions
@@ -135,11 +151,12 @@ generateFilteredPrenatalData stats model =
 
 applyProgramTypeAndResidentsFilters :
     Dict VillageId (List PersonIdentifier)
+    -> FilterProgramType
+    -> Maybe VillageId
     -> Dict ProgramType (List { a | identifier : PersonIdentifier })
-    -> Model
     -> List { a | identifier : PersonIdentifier }
-applyProgramTypeAndResidentsFilters villagesWithResidents dict model =
-    case model.programTypeFilter of
+applyProgramTypeAndResidentsFilters villagesWithResidents programTypeFilter selectedVillageFilter dict =
+    case programTypeFilter of
         FilterAllPrograms ->
             let
                 achi =
@@ -158,11 +175,15 @@ applyProgramTypeAndResidentsFilters villagesWithResidents dict model =
                     Dict.get ProgramSorwathe dict
                         |> Maybe.withDefault []
 
+                chw =
+                    Dict.get ProgramChw dict
+                        |> Maybe.withDefault []
+
                 individual =
                     Dict.get ProgramIndividual dict
                         |> Maybe.withDefault []
             in
-            achi ++ fbf ++ pmtct ++ sorwathe ++ individual
+            achi ++ fbf ++ pmtct ++ sorwathe ++ chw ++ individual
 
         FilterProgramAchi ->
             Dict.get ProgramAchi dict
@@ -181,46 +202,195 @@ applyProgramTypeAndResidentsFilters villagesWithResidents dict model =
                 |> Maybe.withDefault []
 
         FilterProgramCommunity ->
-            let
-                villageResidents =
-                    model.selectedVillageFilter
-                        |> Maybe.andThen (\village -> Dict.get village villagesWithResidents)
-                        |> Maybe.withDefault []
+            selectedVillageFilter
+                |> Maybe.map
+                    (\selectedVillage ->
+                        let
+                            villageResidents =
+                                Dict.get selectedVillage villagesWithResidents
+                                    |> Maybe.withDefault []
+                        in
+                        applyProgramTypeAndResidentsFilters villagesWithResidents FilterAllPrograms selectedVillageFilter dict
+                            |> List.filter (\item -> List.member item.identifier villageResidents)
+                    )
+                |> Maybe.withDefault []
 
-                villageFilterFunc caseManagement =
-                    if isJust model.selectedVillageFilter then
-                        List.member caseManagement.identifier villageResidents
+
+mergeNutritionValueDicts : Dict Int NutritionValue -> Dict Int NutritionValue -> Dict Int NutritionValue
+mergeNutritionValueDicts dict1 dict2 =
+    Dict.merge
+        (\key nutritionCase -> Dict.insert key nutritionCase)
+        (\key nutritionCase1 nutritionCase2 -> Dict.insert key (mergeNutritionValues nutritionCase1 nutritionCase2))
+        (\key nutritionCase -> Dict.insert key nutritionCase)
+        dict1
+        dict2
+        Dict.empty
+
+
+caseManagementMergeDuplicates : List CaseManagement -> List CaseManagement
+caseManagementMergeDuplicates cases =
+    List.foldl
+        (\candidate accum ->
+            Dict.get candidate.identifier accum
+                |> Maybe.map
+                    (\current ->
+                        let
+                            mergedNutrition =
+                                { stunting = mergeNutritionValueDicts candidate.nutrition.stunting candidate.nutrition.stunting
+                                , underweight = mergeNutritionValueDicts candidate.nutrition.underweight candidate.nutrition.underweight
+                                , wasting = mergeNutritionValueDicts candidate.nutrition.wasting candidate.nutrition.wasting
+                                , muac = mergeNutritionValueDicts candidate.nutrition.muac candidate.nutrition.muac
+                                , nutritionSigns = mergeNutritionValueDicts candidate.nutrition.nutritionSigns candidate.nutrition.nutritionSigns
+                                }
+
+                            merged =
+                                { current | nutrition = mergedNutrition }
+                        in
+                        Dict.insert current.identifier merged accum
+                    )
+                |> Maybe.withDefault (Dict.insert candidate.identifier candidate accum)
+        )
+        Dict.empty
+        cases
+        |> Dict.values
+
+
+mergeNutritionValues : NutritionValue -> NutritionValue -> NutritionValue
+mergeNutritionValues first second =
+    case compareNutritionStatus first.class second.class of
+        GT ->
+            first
+
+        EQ ->
+            let
+                firstValue =
+                    String.toFloat first.value
+
+                secondValue =
+                    String.toFloat second.value
+            in
+            case ( firstValue, secondValue ) of
+                ( Just value1, Just value2 ) ->
+                    if compare value1 value2 == GT then
+                        first
 
                     else
-                        -- Do not filter by village, if village is not selected.
-                        True
+                        second
 
+                ( Just value1, Nothing ) ->
+                    first
+
+                ( Nothing, Just value2 ) ->
+                    second
+
+                ( Nothing, Nothing ) ->
+                    second
+
+        LT ->
+            second
+
+
+compareNutritionStatus : NutritionStatus -> NutritionStatus -> Order
+compareNutritionStatus first second =
+    let
+        numericValue status =
+            case status of
+                Backend.Dashboard.Model.Neutral ->
+                    0
+
+                Backend.Dashboard.Model.Good ->
+                    1
+
+                Backend.Dashboard.Model.Moderate ->
+                    2
+
+                Backend.Dashboard.Model.Severe ->
+                    3
+    in
+    compare (numericValue first) (numericValue second)
+
+
+generateTotalEncounters : TotalEncountersData -> Model -> Periods
+generateTotalEncounters data model =
+    let
+        ( dict, programTypeFilter ) =
+            case model.selectedVillageFilter of
+                Just village ->
+                    ( Dict.get village data.villages
+                        |> Maybe.withDefault Dict.empty
+                    , FilterAllPrograms
+                    )
+
+                -- When village is not selected, we show global data.
+                Nothing ->
+                    ( data.global, model.programTypeFilter )
+    in
+    generateTotalEncountersFromPeriodsDict programTypeFilter dict
+
+
+generateTotalEncountersFromPeriodsDict : FilterProgramType -> Dict ProgramType Periods -> Periods
+generateTotalEncountersFromPeriodsDict programTypeFilter dict =
+    let
+        emptyPeriods =
+            Periods 0 0
+    in
+    case programTypeFilter of
+        FilterAllPrograms ->
+            let
                 achi =
                     Dict.get ProgramAchi dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
+                        |> Maybe.withDefault emptyPeriods
 
                 fbf =
                     Dict.get ProgramFbf dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
+                        |> Maybe.withDefault emptyPeriods
 
                 pmtct =
                     Dict.get ProgramPmtct dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
+                        |> Maybe.withDefault emptyPeriods
 
                 sorwathe =
                     Dict.get ProgramSorwathe dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
+                        |> Maybe.withDefault emptyPeriods
+
+                chw =
+                    Dict.get ProgramChw dict
+                        |> Maybe.withDefault emptyPeriods
 
                 individual =
                     Dict.get ProgramIndividual dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
+                        |> Maybe.withDefault emptyPeriods
+
+                sumPeriods p1 p2 =
+                    Periods (p1.lastYear + p2.lastYear) (p1.thisYear + p2.thisYear)
             in
-            achi ++ fbf ++ pmtct ++ sorwathe ++ individual
+            sumPeriods achi fbf
+                |> sumPeriods pmtct
+                |> sumPeriods sorwathe
+                |> sumPeriods chw
+                |> sumPeriods individual
+
+        FilterProgramAchi ->
+            Dict.get ProgramAchi dict
+                |> Maybe.withDefault emptyPeriods
+
+        FilterProgramFbf ->
+            Dict.get ProgramFbf dict
+                |> Maybe.withDefault emptyPeriods
+
+        FilterProgramPmtct ->
+            Dict.get ProgramPmtct dict
+                |> Maybe.withDefault emptyPeriods
+
+        FilterProgramSorwathe ->
+            Dict.get ProgramSorwathe dict
+                |> Maybe.withDefault emptyPeriods
+
+        FilterProgramCommunity ->
+            -- This type requires village to be selected, and when it is,
+            -- generateTotalEncounters() will invoke this function with
+            -- FilterAllPrograms for village data.
+            emptyPeriods
 
 
 

@@ -223,6 +223,7 @@ type ProgramType
     | ProgramIndividual
     | ProgramPmtct
     | ProgramSorwathe
+    | ProgramChw
     | ProgramUnknown
 
 

@@ -217,6 +217,9 @@ programTypeToString programType =
         ProgramSorwathe ->
             "sorwathe"
 
+        ProgramChw ->
+            "chw"
+
         ProgramUnknown ->
             "unknown"
 

@@ -266,6 +266,9 @@ programTypeFromString string =
         "sorwathe" ->
             ProgramSorwathe
 
+        "chw" ->
+            ProgramChw
+
         _ ->
             ProgramUnknown
 
