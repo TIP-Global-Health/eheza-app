@@ -1340,11 +1340,11 @@ encodeSymptomsGIDerivedSigns sign =
 
 encodeAcuteIllnessVitals : AcuteIllnessVitals -> List ( String, Value )
 encodeAcuteIllnessVitals =
-    encodeAcuteIllnessMeasurement encodeAcuteIllnessVitalsValue
+    encodeAcuteIllnessMeasurement encodeBasicVitalsValue
 
 
-encodeAcuteIllnessVitalsValue : AcuteIllnessVitalsValue -> List ( String, Value )
-encodeAcuteIllnessVitalsValue value =
+encodeBasicVitalsValue : BasicVitalsValue -> List ( String, Value )
+encodeBasicVitalsValue value =
     [ ( "respiratory_rate", int value.respiratoryRate )
     , ( "body_temperature", float value.bodyTemperature )
     , ( "deleted", bool False )

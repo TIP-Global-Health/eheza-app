@@ -10,7 +10,7 @@ import Backend.Measurement.Model
         , AcuteIllnessDangerSign(..)
         , AcuteIllnessMeasurement
         , AcuteIllnessMeasurements
-        , AcuteIllnessVitalsValue
+        , BasicVitalsValue
         , AdverseEvent(..)
         , Call114Sign(..)
         , Call114Value
@@ -804,7 +804,7 @@ toSymptomsGIValueWithDefault saved form =
     }
 
 
-fromVitalsValue : Maybe AcuteIllnessVitalsValue -> VitalsForm
+fromVitalsValue : Maybe BasicVitalsValue -> VitalsForm
 fromVitalsValue saved =
     { respiratoryRate = Maybe.map .respiratoryRate saved
     , respiratoryRateDirty = False
@@ -813,7 +813,7 @@ fromVitalsValue saved =
     }
 
 
-vitalsFormWithDefault : VitalsForm -> Maybe AcuteIllnessVitalsValue -> VitalsForm
+vitalsFormWithDefault : VitalsForm -> Maybe BasicVitalsValue -> VitalsForm
 vitalsFormWithDefault form saved =
     saved
         |> unwrap
@@ -827,15 +827,15 @@ vitalsFormWithDefault form saved =
             )
 
 
-toVitalsValueWithDefault : Maybe AcuteIllnessVitalsValue -> VitalsForm -> Maybe AcuteIllnessVitalsValue
+toVitalsValueWithDefault : Maybe BasicVitalsValue -> VitalsForm -> Maybe BasicVitalsValue
 toVitalsValueWithDefault saved form =
     vitalsFormWithDefault form saved
         |> toVitalsValue
 
 
-toVitalsValue : VitalsForm -> Maybe AcuteIllnessVitalsValue
+toVitalsValue : VitalsForm -> Maybe BasicVitalsValue
 toVitalsValue form =
-    Maybe.map AcuteIllnessVitalsValue form.respiratoryRate
+    Maybe.map BasicVitalsValue form.respiratoryRate
         |> andMap form.bodyTemperature
 
 

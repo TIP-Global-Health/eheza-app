@@ -885,14 +885,14 @@ type alias SymptomsGI =
     AcuteIllnessMeasurement SymptomsGIValue
 
 
-type alias AcuteIllnessVitalsValue =
+type alias BasicVitalsValue =
     { respiratoryRate : Int
     , bodyTemperature : Float
     }
 
 
 type alias AcuteIllnessVitals =
-    AcuteIllnessMeasurement AcuteIllnessVitalsValue
+    AcuteIllnessMeasurement BasicVitalsValue
 
 
 type AcuteFindingsGeneralSign
@@ -1237,6 +1237,10 @@ type WellChildSymptom
     | NoWellChildSymptoms
 
 
+type alias WellChildVitals =
+    WellChildMeasurement BasicVitalsValue
+
+
 
 -- breathing-problems|Breathing Problems
 -- convulsions|Convulsions
@@ -1565,8 +1569,11 @@ type alias HomeVisitMeasurements =
     }
 
 
+{-| A set of Well Child measurements that correspond to the same Well Child encounter.
+-}
 type alias WellChildMeasurements =
-    { ecd : Maybe ( WellChildECDId, WellChildECD )
+    { symptomsReview : Maybe ( WellChildSymptomsReview, WellChildSymptomsReview )
+    , vitals : Maybe ( WellChildVitalsId, WellChildVitals )
     , height : Maybe ( WellChildHeightId, WellChildHeight )
     , muac : Maybe ( WellChildMuacId, WellChildMuac )
     , nutrition : Maybe ( WellChildNutritionId, WellChildNutrition )
@@ -1577,6 +1584,7 @@ type alias WellChildMeasurements =
     , followUp : Maybe ( WellChildFollowUpId, WellChildFollowUp )
     , sendToHC : Maybe ( WellChildSendToHCId, WellChildSendToHC )
     , headCircumference : Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )
+    , ecd : Maybe ( WellChildECDId, WellChildECD )
     }
 
 

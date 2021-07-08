@@ -1841,7 +1841,7 @@ decodeSymptomsGIDerivedSign =
 
 decodeAcuteIllnessVitals : Decoder AcuteIllnessVitals
 decodeAcuteIllnessVitals =
-    succeed AcuteIllnessVitalsValue
+    succeed BasicVitalsValue
         |> required "respiratory_rate" decodeInt
         |> required "body_temperature" decodeFloat
         |> decodeAcuteIllnessMeasurement
