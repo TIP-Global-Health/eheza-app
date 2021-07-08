@@ -639,6 +639,12 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityWellChildSendToHC identifier ->
                 viewMeasurement identifier "Well Child Send to HC"
 
+            BackendAuthorityWellChildSymptomsReview identifier ->
+                viewMeasurement identifier "Well Child Symptoms Review"
+
+            BackendAuthorityWellChildVitals identifier ->
+                viewMeasurement identifier "Well Child Vitals"
+
             BackendAuthorityWellChildWeight identifier ->
                 viewMeasurement identifier "Well Child Weight"
         ]
