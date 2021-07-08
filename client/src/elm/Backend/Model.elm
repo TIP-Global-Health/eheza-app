@@ -430,4 +430,6 @@ type Revision
     | WellChildNutritionRevision WellChildNutritionId WellChildNutrition
     | WellChildPhotoRevision WellChildPhotoId WellChildPhoto
     | WellChildSendToHCRevision WellChildSendToHCId WellChildSendToHC
+    | WellChildSymptomsReviewRevision WellChildSymptomsReviewId WellChildSymptomsReview
+    | WellChildVitalsRevision WellChildVitalsId WellChildVitals
     | WellChildWeightRevision WellChildWeightId WellChildWeight

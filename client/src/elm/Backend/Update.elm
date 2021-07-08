@@ -3109,6 +3109,22 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        WellChildSymptomsReviewRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomsReview = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildVitalsRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildWeightRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
