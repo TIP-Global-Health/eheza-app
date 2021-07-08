@@ -330,3 +330,16 @@ type alias WeightForm =
 emptyWeightForm : WeightForm
 emptyWeightForm =
     WeightForm Nothing False
+
+
+type alias BasicVitalsForm =
+    { respiratoryRate : Maybe Int
+    , respiratoryRateDirty : Bool
+    , bodyTemperature : Maybe Float
+    , bodyTemperatureDirty : Bool
+    }
+
+
+emptyBasicVitalsForm : BasicVitalsForm
+emptyBasicVitalsForm =
+    BasicVitalsForm Nothing False Nothing False

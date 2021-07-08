@@ -26,7 +26,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (HealthEducationForm, MuacForm, NutritionForm, SendToHCForm)
+import Measurement.Model exposing (BasicVitalsForm, HealthEducationForm, MuacForm, NutritionForm, SendToHCForm)
 import Measurement.Utils
     exposing
         ( getInputConstraintsMuac
@@ -34,6 +34,7 @@ import Measurement.Utils
         , muacFormWithDefault
         , nutritionFormWithDefault
         , sendToHCFormWithDefault
+        , vitalsBasicFormWithDefault
         )
 import Measurement.View exposing (renderDatePart, viewColorAlertIndication, viewSendToHCForm)
 import Pages.AcuteIllnessActivity.Model exposing (..)
@@ -704,8 +705,8 @@ viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter 
                 PhysicalExamVitals ->
                     measurements.vitals
                         |> Maybe.map (Tuple.second >> .value)
-                        |> vitalsFormWithDefault data.vitalsForm
-                        |> viewVitalsForm language currentDate assembled
+                        |> vitalsBasicFormWithDefault data.vitalsForm
+                        |> viewBasicVitalsForm language currentDate assembled
 
                 PhysicalExamMuac ->
                     measurements.muac
@@ -792,8 +793,8 @@ viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter 
     ]
 
 
-viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
-viewVitalsForm language currentDate assembled form_ =
+viewBasicVitalsForm : Language -> NominalDate -> AssembledData -> BasicVitalsForm -> Html Msg
+viewBasicVitalsForm language currentDate assembled form_ =
     let
         measurements =
             assembled.measurements
@@ -801,7 +802,7 @@ viewVitalsForm language currentDate assembled form_ =
         form =
             measurements.vitals
                 |> Maybe.map (Tuple.second >> .value)
-                |> vitalsFormWithDefault form_
+                |> vitalsBasicFormWithDefault form_
 
         respiratoryRatePreviousValue =
             resolvePreviousValue assembled .vitals .respiratoryRate

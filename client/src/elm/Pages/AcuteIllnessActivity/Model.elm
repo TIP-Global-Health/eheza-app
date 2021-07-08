@@ -179,7 +179,7 @@ type alias SymptomsGIForm =
 
 
 type alias PhysicalExamData =
-    { vitalsForm : VitalsForm
+    { vitalsForm : BasicVitalsForm
     , acuteFindingsForm : AcuteFindingsForm
     , muacForm : MuacForm
     , nutritionForm : NutritionForm
@@ -189,7 +189,7 @@ type alias PhysicalExamData =
 
 emptyPhysicalExamData : PhysicalExamData
 emptyPhysicalExamData =
-    { vitalsForm = VitalsForm Nothing False Nothing False
+    { vitalsForm = emptyBasicVitalsForm
     , acuteFindingsForm = AcuteFindingsForm Nothing Nothing
     , muacForm = emptyMuacForm
     , nutritionForm = emptyNutritionForm
@@ -202,14 +202,6 @@ type PhysicalExamTask
     | PhysicalExamMuac
     | PhysicalExamAcuteFindings
     | PhysicalExamNutrition
-
-
-type alias VitalsForm =
-    { respiratoryRate : Maybe Int
-    , respiratoryRateDirty : Bool
-    , bodyTemperature : Maybe Float
-    , bodyTemperatureDirty : Bool
-    }
 
 
 type alias AcuteFindingsForm =

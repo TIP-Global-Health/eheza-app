@@ -10,8 +10,8 @@ import Backend.Measurement.Model
         , AcuteIllnessDangerSign(..)
         , AcuteIllnessMeasurement
         , AcuteIllnessMeasurements
-        , BasicVitalsValue
         , AdverseEvent(..)
+        , BasicVitalsValue
         , Call114Sign(..)
         , Call114Value
         , ChildNutritionSign(..)
@@ -60,6 +60,7 @@ import Measurement.Utils
         , muacFormWithDefault
         , nutritionFormWithDefault
         , sendToHCFormWithDefault
+        , vitalsBasicFormWithDefault
         )
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
@@ -197,7 +198,7 @@ physicalExamTasksCompletedFromTotal measurements data task =
                 form =
                     measurements.vitals
                         |> Maybe.map (Tuple.second >> .value)
-                        |> vitalsFormWithDefault data.vitalsForm
+                        |> vitalsBasicFormWithDefault data.vitalsForm
             in
             ( taskCompleted form.respiratoryRate + taskCompleted form.bodyTemperature
             , 2
@@ -802,41 +803,6 @@ toSymptomsGIValueWithDefault saved form =
     { signs = formWithDefault.signs
     , derivedSigns = derivedSigns
     }
-
-
-fromVitalsValue : Maybe BasicVitalsValue -> VitalsForm
-fromVitalsValue saved =
-    { respiratoryRate = Maybe.map .respiratoryRate saved
-    , respiratoryRateDirty = False
-    , bodyTemperature = Maybe.map .bodyTemperature saved
-    , bodyTemperatureDirty = False
-    }
-
-
-vitalsFormWithDefault : VitalsForm -> Maybe BasicVitalsValue -> VitalsForm
-vitalsFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { respiratoryRate = valueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
-                , respiratoryRateDirty = form.respiratoryRateDirty
-                , bodyTemperature = valueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
-                , bodyTemperatureDirty = form.bodyTemperatureDirty
-                }
-            )
-
-
-toVitalsValueWithDefault : Maybe BasicVitalsValue -> VitalsForm -> Maybe BasicVitalsValue
-toVitalsValueWithDefault saved form =
-    vitalsFormWithDefault form saved
-        |> toVitalsValue
-
-
-toVitalsValue : VitalsForm -> Maybe BasicVitalsValue
-toVitalsValue form =
-    Maybe.map BasicVitalsValue form.respiratoryRate
-        |> andMap form.bodyTemperature
 
 
 fromAcuteFindingsValue : Maybe AcuteFindingsValue -> AcuteFindingsForm

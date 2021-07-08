@@ -120,27 +120,37 @@ viewActivity : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncount
 viewActivity language currentDate zscores id activity assembled db model =
     case activity of
         WellChildDangerSigns ->
-            -- @todo
-            -- viewDangerSignsContent language currentDate assembled model.dangerSigns
-            []
+            viewDangerSignsContent language
+                currentDate
+                assembled
+                model.dangerSignsData
 
         WellChildNutritionAssessment ->
-            viewNutritionAssessmenContent language currentDate zscores id assembled db model.nutritionAssessmentData
+            viewNutritionAssessmenContent language currentDate zscores assembled db model.nutritionAssessmentData
 
         WellChildECD ->
             viewECDContent language currentDate assembled model.ecdForm
+
+
+viewDangerSignsContent :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> DangerSignsData
+    -> List (Html Msg)
+viewDangerSignsContent language currentDate assembled dangerSigns =
+    []
 
 
 viewNutritionAssessmenContent :
     Language
     -> NominalDate
     -> ZScore.Model.Model
-    -> WellChildEncounterId
     -> AssembledData
     -> ModelIndexedDb
     -> NutritionAssessmentData
     -> List (Html Msg)
-viewNutritionAssessmenContent language currentDate zscores id assembled db data =
+viewNutritionAssessmenContent language currentDate zscores assembled db data =
     let
         personId =
             assembled.participant.person
