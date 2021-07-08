@@ -877,3 +877,19 @@ type alias WellChildHeadCircumferenceId =
 
 type WellChildHeadCircumferenceUuidType
     = WellChildHeadCircumferenceUuidType
+
+
+type alias WellChildSymptomsReviewId =
+    EntityUuid WellChildSymptomsReviewUuidType
+
+
+type WellChildSymptomsReviewUuidType
+    = WellChildSymptomsReviewUuidType
+
+
+type alias WellChildVitalsId =
+    EntityUuid WellChildVitalsUuidType
+
+
+type WellChildVitalsUuidType
+    = WellChildVitalsUuidType
