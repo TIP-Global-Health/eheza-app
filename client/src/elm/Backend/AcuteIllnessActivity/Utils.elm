@@ -1,4 +1,4 @@
-module Backend.AcuteIllnessActivity.Utils exposing (decodeActivityFromString, defaultActivity, encodeActivityAsString, getActivityIcon, getAllActivities)
+module Backend.AcuteIllnessActivity.Utils exposing (decodeActivityFromString, encodeActivityAsString, getActivityIcon, getAllActivities)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -77,13 +77,6 @@ decodeActivityFromString s =
 
         _ ->
             Nothing
-
-
-{-| An activity type to use if we need to start somewhere.
--}
-defaultActivity : AcuteIllnessActivity
-defaultActivity =
-    AcuteIllnessSymptoms
 
 
 {-| Returns a string representing an icon for the activity, for use in a
