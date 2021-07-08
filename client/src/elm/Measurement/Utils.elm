@@ -538,8 +538,8 @@ fromBasicVitalsForm saved =
     }
 
 
-vitalsBasicFormWithDefault : BasicVitalsForm -> Maybe BasicVitalsValue -> BasicVitalsForm
-vitalsBasicFormWithDefault form saved =
+basicVitalsFormWithDefault : BasicVitalsForm -> Maybe BasicVitalsValue -> BasicVitalsForm
+basicVitalsFormWithDefault form saved =
     saved
         |> unwrap
             form
@@ -554,7 +554,7 @@ vitalsBasicFormWithDefault form saved =
 
 toBasicVitalsValueWithDefault : Maybe BasicVitalsValue -> BasicVitalsForm -> Maybe BasicVitalsValue
 toBasicVitalsValueWithDefault saved form =
-    vitalsBasicFormWithDefault form saved
+    basicVitalsFormWithDefault form saved
         |> toBasicVitalsValue
 
 

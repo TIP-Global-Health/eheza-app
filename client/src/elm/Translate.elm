@@ -971,6 +971,7 @@ type TranslationId
     | Weight
     | WelcomeUser String
     | WellChildActivityTitle WellChildActivity
+    | WellChildDangerSignsTask Pages.WellChildActivity.Model.DangerSignsTask
     | WhatDoYouWantToDo
     | WhatType
     | WhatWasTheirResponse
@@ -7636,6 +7637,18 @@ translationSet trans =
 
                 WellChildECD ->
                     { english = "ECD"
+                    , kinyarwanda = Nothing
+                    }
+
+        WellChildDangerSignsTask task ->
+            case task of
+                Pages.WellChildActivity.Model.TaskSymptomsReview ->
+                    { english = "Symptoms Review"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskVitals ->
+                    { english = "Vitals"
                     , kinyarwanda = Nothing
                     }
 

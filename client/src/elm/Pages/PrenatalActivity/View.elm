@@ -1,4 +1,4 @@
-module Pages.PrenatalActivity.View exposing (view, viewConditionalAlert)
+module Pages.PrenatalActivity.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -36,9 +36,11 @@ import Pages.Utils
         , taskCompleted
         , taskListCompleted
         , tasksBarId
+        , viewAlert
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
+        , viewConditionalAlert
         , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
@@ -2812,49 +2814,6 @@ viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId 
         ]
 
 
-{-| The idea here is that we get lists for red alert conditions, and yellow
-alert conditions. If any of red conditions matches, we present red alert.
-If any of yellow conditions matches, we present yellow alert.
-Otherwise, no alret is needed.
-
-Note that conditions are list of lists, so all conditions in inner list
-need to match, for a condition in outer list to match.
-We need this for range conditions. For example, number between 5 and 8.
-
--}
-viewConditionalAlert : Maybe a -> List (List (a -> Bool)) -> List (List (a -> Bool)) -> Html any
-viewConditionalAlert maybeActual redConditions yellowConditions =
-    maybeActual
-        |> Maybe.map
-            (\actual ->
-                if
-                    List.any
-                        (\conditions ->
-                            List.all
-                                (\condition ->
-                                    condition actual
-                                )
-                                conditions
-                        )
-                        redConditions
-                then
-                    viewAlert "red"
-
-                else if
-                    List.any
-                        (\conditions ->
-                            List.all (\condition -> condition actual) conditions
-                        )
-                        yellowConditions
-                then
-                    viewAlert "yellow"
-
-                else
-                    emptyNode
-            )
-        |> Maybe.withDefault emptyNode
-
-
 viewWarning : Language -> Maybe String -> Html any
 viewWarning language maybeMessage =
     maybeMessage
@@ -2864,12 +2823,3 @@ viewWarning language maybeMessage =
                 div [ class "five wide column" ]
                     [ text message ]
             )
-
-
-viewAlert : String -> Html any
-viewAlert color =
-    let
-        icon =
-            "assets/images/alert-" ++ color ++ ".png"
-    in
-    img [ src icon ] []

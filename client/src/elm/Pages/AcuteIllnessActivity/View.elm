@@ -29,21 +29,21 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (BasicVitalsForm, HealthEducationForm, MuacForm, NutritionForm, SendToHCForm)
 import Measurement.Utils
     exposing
-        ( getInputConstraintsMuac
+        ( basicVitalsFormWithDefault
+        , getInputConstraintsMuac
         , healthEducationFormWithDefault
         , muacFormWithDefault
         , nutritionFormWithDefault
         , sendToHCFormWithDefault
-        , vitalsBasicFormWithDefault
         )
-import Measurement.View exposing (renderDatePart, viewColorAlertIndication, viewSendToHCForm)
+import Measurement.View exposing (renderDatePart, viewBasicVitalsForm, viewColorAlertIndication, viewSendToHCForm)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.AcuteIllnessEncounter.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.View exposing (viewPersonDetailsWithAlert, warningPopup)
+import Pages.NutritionActivity.View exposing (viewMuacForm)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalActivity.View exposing (viewConditionalAlert)
 import Pages.Utils
     exposing
         ( isTaskCompleted
@@ -703,28 +703,46 @@ viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter 
         viewForm =
             case data.activeTask of
                 PhysicalExamVitals ->
+                    let
+                        previousRespiratoryRate =
+                            resolvePreviousValue assembled .vitals .respiratoryRate
+                                |> Maybe.map toFloat
+
+                        previousBodyTemperature =
+                            resolvePreviousValue assembled .vitals .bodyTemperature
+                    in
                     measurements.vitals
                         |> Maybe.map (Tuple.second >> .value)
-                        |> vitalsBasicFormWithDefault data.vitalsForm
-                        |> viewBasicVitalsForm language currentDate assembled
+                        |> basicVitalsFormWithDefault data.vitalsForm
+                        |> viewBasicVitalsForm language
+                            currentDate
+                            assembled.person
+                            previousRespiratoryRate
+                            previousBodyTemperature
+                            SetVitalsResporatoryRate
+                            SetVitalsBodyTemperature
 
                 PhysicalExamMuac ->
+                    let
+                        previousValue =
+                            resolvePreviousValue assembled .muac muacValueFunc
+                    in
                     measurements.muac
                         |> Maybe.map (Tuple.second >> .value)
                         |> muacFormWithDefault data.muacForm
-                        |> viewMuacForm language currentDate assembled
+                        |> viewMuacForm language currentDate assembled.person previousValue SetMuac
 
                 PhysicalExamAcuteFindings ->
                     measurements.acuteFindings
                         |> Maybe.map (Tuple.second >> .value)
                         |> acuteFindingsFormWithDefault data.acuteFindingsForm
-                        |> viewAcuteFindingsForm language currentDate measurements
+                        |> viewAcuteFindingsForm language currentDate
 
                 PhysicalExamNutrition ->
                     measurements.nutrition
                         |> Maybe.map (Tuple.second >> .value)
                         |> nutritionFormWithDefault data.nutritionForm
-                        |> viewNutritionForm language currentDate measurements
+                        |> viewNutritionForm language currentDate
 
         getNextTask currentTask =
             case currentTask of
@@ -785,140 +803,15 @@ viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter 
         ]
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ]
-            [ viewForm
-            , actions
-            ]
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
         ]
     ]
 
 
-viewBasicVitalsForm : Language -> NominalDate -> AssembledData -> BasicVitalsForm -> Html Msg
-viewBasicVitalsForm language currentDate assembled form_ =
-    let
-        measurements =
-            assembled.measurements
-
-        form =
-            measurements.vitals
-                |> Maybe.map (Tuple.second >> .value)
-                |> vitalsBasicFormWithDefault form_
-
-        respiratoryRatePreviousValue =
-            resolvePreviousValue assembled .vitals .respiratoryRate
-                |> Maybe.map toFloat
-
-        bodyTemperaturePreviousValue =
-            resolvePreviousValue assembled .vitals .bodyTemperature
-
-        respiratoryRateAlert =
-            ageInMonths currentDate assembled.person
-                |> Maybe.map
-                    (\ageMonths ->
-                        let
-                            ( redCondition, yellowCondition ) =
-                                if ageMonths < 12 then
-                                    ( [ [ (>) 12 ], [ (<=) 50 ] ]
-                                    , []
-                                    )
-
-                                else if ageMonths < 60 then
-                                    ( [ [ (>) 12 ], [ (<=) 40 ] ]
-                                    , []
-                                    )
-
-                                else
-                                    ( [ [ (>) 12 ], [ (<) 30 ] ]
-                                    , [ [ (<=) 21, (>=) 30 ] ]
-                                    )
-                        in
-                        viewConditionalAlert form.respiratoryRate redCondition yellowCondition
-                    )
-                |> Maybe.withDefault emptyNode
-    in
-    div [ class "ui form physical-exam vitals" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.RespiratoryRate ]
-            , div [ class "four wide column" ]
-                [ respiratoryRateAlert ]
-            ]
-        , viewMeasurementInput
-            language
-            (Maybe.map toFloat form.respiratoryRate)
-            SetVitalsResporatoryRate
-            "respiratory-rate"
-            Translate.BpmUnitLabel
-        , viewPreviousMeasurement language respiratoryRatePreviousValue Translate.BpmUnitLabel
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.BodyTemperature ]
-            , div [ class "four wide column" ]
-                [ viewConditionalAlert form.bodyTemperature
-                    [ [ (>) 35 ], [ (<=) 37.5 ] ]
-                    []
-                ]
-            ]
-        , viewMeasurementInput
-            language
-            form.bodyTemperature
-            SetVitalsBodyTemperature
-            "body-temperature"
-            Translate.Celsius
-        , viewPreviousMeasurement language bodyTemperaturePreviousValue Translate.Celsius
-        ]
-
-
-viewMuacForm : Language -> NominalDate -> AssembledData -> MuacForm -> Html Msg
-viewMuacForm language currentDate assembled form_ =
-    let
-        measurements =
-            assembled.measurements
-
-        form =
-            measurements.muac
-                |> Maybe.map (Tuple.second >> .value)
-                |> muacFormWithDefault form_
-
-        constraints =
-            getInputConstraintsMuac
-
-        previousValue =
-            resolvePreviousValue assembled .muac muacValueFunc
-    in
-    div [ class "ui form physical-exam muac" ]
-        [ viewLabel language Translate.MUAC
-        , p [ class "activity-helper" ] [ text <| translate language Translate.MuacHelper ]
-        , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
-        , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
-                [ viewMeasurementInput
-                    language
-                    form.muac
-                    SetMuac
-                    "muac"
-                    Translate.CentimeterShorthand
-                ]
-            , div
-                [ class "five wide column" ]
-                [ showMaybe <|
-                    Maybe.map (MuacInCm >> muacIndication >> viewColorAlertIndication language) form.muac
-                ]
-            ]
-        , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
-        ]
-
-
-viewAcuteFindingsForm : Language -> NominalDate -> AcuteIllnessMeasurements -> AcuteFindingsForm -> Html Msg
-viewAcuteFindingsForm language currentDate measurements form_ =
-    let
-        form =
-            measurements.acuteFindings
-                |> Maybe.map (Tuple.second >> .value)
-                |> acuteFindingsFormWithDefault form_
-    in
-    div [ class "ui form physical-exam acute-findings" ]
+viewAcuteFindingsForm : Language -> NominalDate -> AcuteFindingsForm -> List (Html Msg)
+viewAcuteFindingsForm language currentDate form =
+    [ div [ class "ui form physical-exam acute-findings" ]
         [ viewQuestionLabel language Translate.PatientExhibitAnyFindings
         , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
         , viewCheckBoxMultipleSelectInput language
@@ -938,17 +831,12 @@ viewAcuteFindingsForm language currentDate measurements form_ =
             SetAcuteFindingsRespiratorySign
             Translate.AcuteFindingsRespiratorySign
         ]
+    ]
 
 
-viewNutritionForm : Language -> NominalDate -> AcuteIllnessMeasurements -> NutritionForm -> Html Msg
-viewNutritionForm language currentDate measurements form_ =
-    let
-        form =
-            measurements.nutrition
-                |> Maybe.map (Tuple.second >> .value)
-                |> nutritionFormWithDefault form_
-    in
-    div [ class "ui form physical-exam nutrition" ]
+viewNutritionForm : Language -> NominalDate -> NutritionForm -> List (Html Msg)
+viewNutritionForm language currentDate form =
+    [ div [ class "ui form physical-exam nutrition" ]
         [ p [] [ text <| translate language Translate.NutritionHelper ]
         , viewLabel language Translate.SelectAllSigns
         , viewCheckBoxMultipleSelectInput language
@@ -959,6 +847,7 @@ viewNutritionForm language currentDate measurements form_ =
             SetNutritionSign
             Translate.ChildNutritionSignLabel
         ]
+    ]
 
 
 viewAcuteIllnessLaboratory : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, Person, AcuteIllnessMeasurements ) -> LaboratoryData -> List (Html Msg)

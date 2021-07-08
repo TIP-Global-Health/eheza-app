@@ -60,7 +60,7 @@ import Measurement.Utils
         , muacFormWithDefault
         , nutritionFormWithDefault
         , sendToHCFormWithDefault
-        , vitalsBasicFormWithDefault
+        , basicVitalsFormWithDefault
         )
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
@@ -198,7 +198,7 @@ physicalExamTasksCompletedFromTotal measurements data task =
                 form =
                     measurements.vitals
                         |> Maybe.map (Tuple.second >> .value)
-                        |> vitalsBasicFormWithDefault data.vitalsForm
+                        |> basicVitalsFormWithDefault data.vitalsForm
             in
             ( taskCompleted form.respiratoryRate + taskCompleted form.bodyTemperature
             , 2

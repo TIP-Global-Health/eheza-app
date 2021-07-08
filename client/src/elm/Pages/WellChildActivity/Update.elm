@@ -37,9 +37,14 @@ import Result exposing (Result)
 update : NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id db msg model =
     let
-        generateExtraMsgs nextTask =
+        generateNutritionAssesmentMsgs nextTask =
             nextTask
                 |> Maybe.map (\task -> [ SetActiveNutritionAssesmentTask task ])
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
+
+        generateDangerSignsMsgs nextTask =
+            nextTask
+                |> Maybe.map (\task -> [ SetActiveDangerSignsTask task ])
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
     in
     case msg of
@@ -58,17 +63,18 @@ update currentDate id db msg model =
             , []
             )
 
-        SetECDBoolInput formUpdateFunc value ->
+        SetActiveDangerSignsTask task ->
             let
-                updatedForm =
-                    formUpdateFunc value model.ecdForm
+                updatedData =
+                    model.dangerSignsData
+                        |> (\data -> { data | activeTask = Just task })
             in
-            ( { model | ecdForm = updatedForm }
+            ( { model | dangerSignsData = updatedData }
             , Cmd.none
             , []
             )
 
-        SaveECD personId saved ->
+        SaveSymptomsReview personId saved nextTask_ ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -76,23 +82,87 @@ update currentDate id db msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
+                extraMsgs =
+                    generateDangerSignsMsgs nextTask_
+
                 appMsgs =
-                    model.ecdForm
-                        |> toWellChildECDValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                [ Backend.WellChildEncounter.Model.SaveECD personId measurementId value
-                                    |> Backend.Model.MsgWellChildEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
-                                ]
+                    model.dangerSignsData.symptomsReviewForm
+                        |> toSymptomsReviewValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveSymptomsReview personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetVitalsResporatoryRate value ->
+            let
+                updatedForm =
+                    model.dangerSignsData.vitalsForm
+                        |> (\form ->
+                                { form | respiratoryRate = String.toInt value, respiratoryRateDirty = True }
+                           )
+
+                updatedData =
+                    model.dangerSignsData
+                        |> (\data -> { data | vitalsForm = updatedForm })
+            in
+            ( { model | dangerSignsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetVitalsBodyTemperature value ->
+            let
+                updatedForm =
+                    model.dangerSignsData.vitalsForm
+                        |> (\form ->
+                                { form | bodyTemperature = String.toFloat value, bodyTemperatureDirty = True }
+                           )
+
+                updatedData =
+                    model.dangerSignsData
+                        |> (\data -> { data | vitalsForm = updatedForm })
+            in
+            ( { model | dangerSignsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveVitals personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                extraMsgs =
+                    generateDangerSignsMsgs nextTask_
+
+                appMsgs =
+                    model.dangerSignsData.vitalsForm
+                        |> toBasicVitalsValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveVitals personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
 
         SetActiveNutritionAssesmentTask task ->
             let
@@ -139,7 +209,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateExtraMsgs nextTask_
+                    generateNutritionAssesmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.heightForm
@@ -212,7 +282,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateExtraMsgs nextTask_
+                    generateNutritionAssesmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.headCircumferenceForm
@@ -257,7 +327,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateExtraMsgs nextTask_
+                    generateNutritionAssesmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.muacForm
@@ -314,7 +384,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateExtraMsgs nextTask_
+                    generateNutritionAssesmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.nutritionForm
@@ -351,7 +421,7 @@ update currentDate id db msg model =
         SavePhoto personId maybePhotoId url nextTask_ ->
             let
                 extraMsgs =
-                    generateExtraMsgs nextTask_
+                    generateNutritionAssesmentMsgs nextTask_
 
                 appMsgs =
                     Backend.WellChildEncounter.Model.SavePhoto personId maybePhotoId url
@@ -395,7 +465,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateExtraMsgs nextTask_
+                    generateNutritionAssesmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.weightForm
@@ -474,7 +544,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateExtraMsgs nextTask_
+                    generateNutritionAssesmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.sendToHCForm
@@ -536,7 +606,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateExtraMsgs nextTask_
+                    generateNutritionAssesmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.healthEducationForm
@@ -593,7 +663,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateExtraMsgs nextTask_
+                    generateNutritionAssesmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.contributingFactorsForm
@@ -638,7 +708,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateExtraMsgs nextTask_
+                    generateNutritionAssesmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.followUpForm
@@ -657,3 +727,39 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetECDBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.ecdForm
+            in
+            ( { model | ecdForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveECD personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.ecdForm
+                        |> toWellChildECDValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.WellChildEncounter.Model.SaveECD personId measurementId value
+                                    |> Backend.Model.MsgWellChildEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )

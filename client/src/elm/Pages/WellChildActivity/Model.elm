@@ -11,8 +11,12 @@ type Msg
     = SetActivePage Page
     | SetWarningPopupState (List NutritionAssesment)
     | NoOp
-    | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
-    | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
+      -- DANGER SIGNS
+    | SetActiveDangerSignsTask DangerSignsTask
+    | SaveSymptomsReview PersonId (Maybe ( WellChildSymptomsReviewId, WellChildSymptomsReview )) (Maybe DangerSignsTask)
+    | SetVitalsResporatoryRate String
+    | SetVitalsBodyTemperature String
+    | SaveVitals PersonId (Maybe ( WellChildVitalsId, WellChildVitals )) (Maybe DangerSignsTask)
       -- NUTRITION ASSESMENT
     | SetActiveNutritionAssesmentTask NutritionAssesmentTask
     | SetHeight String
@@ -39,6 +43,9 @@ type Msg
     | SaveContributingFactors PersonId (Maybe ( WellChildContributingFactorsId, WellChildContributingFactors )) (Maybe NutritionAssesmentTask)
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssesment) (Maybe NutritionAssesmentTask)
+      -- ECD
+    | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
+    | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
 
 
 type alias Model =
