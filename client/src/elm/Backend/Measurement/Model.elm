@@ -1572,7 +1572,7 @@ type alias HomeVisitMeasurements =
 {-| A set of Well Child measurements that correspond to the same Well Child encounter.
 -}
 type alias WellChildMeasurements =
-    { symptomsReview : Maybe ( WellChildSymptomsReview, WellChildSymptomsReview )
+    { symptomsReview : Maybe ( WellChildSymptomsReviewId, WellChildSymptomsReview )
     , vitals : Maybe ( WellChildVitalsId, WellChildVitals )
     , height : Maybe ( WellChildHeightId, WellChildHeight )
     , muac : Maybe ( WellChildMuacId, WellChildMuac )
