@@ -33,3 +33,9 @@ update msg model =
 
         SetWarningPopupState isShown ->
             ( { model | showPopup = isShown }, Cmd.none, [] )
+
+        NavigateToAcuteIllnessParticipantPage childId ->
+            ( { model | showPopup = False }
+            , Cmd.none
+            , [ App.Model.SetActivePage (UserPage (AcuteIllnessParticipantPage childId)) ]
+            )

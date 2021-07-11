@@ -20,6 +20,7 @@ type Msg
     | SetActivePage Page
     | SetSelectedTab Tab
     | SetWarningPopupState Bool
+    | NavigateToAcuteIllnessParticipantPage PersonId
 
 
 type Tab
