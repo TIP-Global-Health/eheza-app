@@ -186,6 +186,7 @@ decodeWellChildMeasurements =
         |> optional "well_child_health_education" (decodeHead decodeWellChildHealthEducation) Nothing
         |> optional "well_child_follow_up" (decodeHead decodeWellChildFollowUp) Nothing
         |> optional "well_child_send_to_hc" (decodeHead decodeWellChildSendToHC) Nothing
+        |> optional "well_child_head_circumference" (decodeHead decodeWellChildHeadCircumference) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -2914,4 +2915,35 @@ decodeECDSign =
                         fail <|
                             sign
                                 ++ " is not a recognized ECDSign"
+            )
+
+
+decodeWellChildHeadCircumference : Decoder WellChildHeadCircumference
+decodeWellChildHeadCircumference =
+    decodeWellChildMeasurement decodeHeadCircumferenceValue
+
+
+decodeHeadCircumferenceValue : Decoder HeadCircumferenceValue
+decodeHeadCircumferenceValue =
+    succeed HeadCircumferenceValue
+        |> required "head_circumference" (map HeadCircumferenceInCm decodeFloat)
+        |> required "measurement_notes" (decodeEverySet decodeMeasurementNote)
+
+
+decodeMeasurementNote : Decoder MeasurementNote
+decodeMeasurementNote =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "not-taken" ->
+                        succeed NoteNotTaken
+
+                    "none" ->
+                        succeed NoMeasurementNotes
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized MeasurementNote"
             )

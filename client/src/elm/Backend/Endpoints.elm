@@ -801,3 +801,9 @@ wellChildHealthEducationEndpoint : ReadWriteEndPoint Error WellChildHealthEducat
 wellChildHealthEducationEndpoint =
     swEndpoint "nodes/well_child_health_education" decodeWellChildHealthEducation
         |> withValueEncoder (object << encodeWellChildHealthEducation)
+
+
+wellChildHeadCircumferenceEndpoint : ReadWriteEndPoint Error WellChildHeadCircumferenceId WellChildHeadCircumference WellChildHeadCircumference ()
+wellChildHeadCircumferenceEndpoint =
+    swEndpoint "nodes/well_child_head_circumference" decodeWellChildHeadCircumference
+        |> withValueEncoder (object << encodeWellChildHeadCircumference)

@@ -723,16 +723,16 @@ classForIndication indication =
             "positive"
 
 
-muacIndicationToIndication : MuacIndication -> Indication
+muacIndicationToIndication : ColorAlertIndication -> Indication
 muacIndicationToIndication muacIndication =
     case muacIndication of
-        MuacRed ->
+        ColorAlertRed ->
             Negative
 
-        MuacYellow ->
+        ColorAlertYellow ->
             Warning
 
-        MuacGreen ->
+        ColorAlertGreen ->
             Positive
 
 

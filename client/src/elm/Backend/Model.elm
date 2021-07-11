@@ -423,6 +423,7 @@ type Revision
     | WellChildECDRevision WellChildECDId WellChildECD
     | WellChildEncounterRevision WellChildEncounterId WellChildEncounter
     | WellChildFollowUpRevision WellChildFollowUpId WellChildFollowUp
+    | WellChildHeadCircumferenceRevision WellChildHeadCircumferenceId WellChildHeadCircumference
     | WellChildHealthEducationRevision WellChildHealthEducationId WellChildHealthEducation
     | WellChildHeightRevision WellChildHeightId WellChildHeight
     | WellChildMuacRevision WellChildMuacId WellChildMuac

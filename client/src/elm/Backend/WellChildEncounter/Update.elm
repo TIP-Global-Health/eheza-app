@@ -134,3 +134,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveSendToHC = data }
             , Cmd.none
             )
+
+        SaveHeadCircumference personId valueId value ->
+            ( { model | saveHeadCircumference = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildHeadCircumferenceEndpoint HandleSavedHeadCircumference
+            )
+
+        HandleSavedHeadCircumference data ->
+            ( { model | saveHeadCircumference = data }
+            , Cmd.none
+            )

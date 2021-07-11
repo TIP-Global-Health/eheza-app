@@ -17,6 +17,9 @@ type Msg
     | SetActiveNutritionAssesmentTask NutritionAssesmentTask
     | SetHeight String
     | SaveHeight PersonId (Maybe ( WellChildHeightId, WellChildHeight )) (Maybe NutritionAssesmentTask)
+    | SetHeadCircumference String
+    | ToggleHeadCircumferenceNotTaken
+    | SaveHeadCircumference PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssesmentTask)
     | SetMuac String
     | SaveMuac PersonId (Maybe ( WellChildMuacId, WellChildMuac )) (Maybe NutritionAssesmentTask)
     | SetNutritionSign ChildNutritionSign
@@ -126,6 +129,7 @@ emptyWellChildECDForm =
 
 type alias NutritionAssessmentData =
     { heightForm : HeightForm
+    , headCircumferenceForm : HeadCircumferenceForm
     , muacForm : MuacForm
     , nutritionForm : NutritionForm
     , photoForm : PhotoForm
@@ -141,6 +145,7 @@ type alias NutritionAssessmentData =
 emptyNutritionAssessmentData : NutritionAssessmentData
 emptyNutritionAssessmentData =
     { heightForm = emptyHeightForm
+    , headCircumferenceForm = emptyHeadCircumferenceForm
     , muacForm = emptyMuacForm
     , nutritionForm = emptyNutritionForm
     , photoForm = emptyPhotoForm
@@ -153,8 +158,21 @@ emptyNutritionAssessmentData =
     }
 
 
+type alias HeadCircumferenceForm =
+    { headCircumference : Maybe Float
+    , headCircumferenceDirty : Bool
+    , measurementNotTaken : Maybe Bool
+    }
+
+
+emptyHeadCircumferenceForm : HeadCircumferenceForm
+emptyHeadCircumferenceForm =
+    HeadCircumferenceForm Nothing False Nothing
+
+
 type NutritionAssesmentTask
     = TaskHeight
+    | TaskHeadCircumference
     | TaskMuac
     | TaskNutrition
     | TaskPhoto
@@ -168,6 +186,7 @@ type NutritionAssesmentTask
 allNutritionAssesmentTasks : List NutritionAssesmentTask
 allNutritionAssesmentTasks =
     [ TaskHeight
+    , TaskHeadCircumference
     , TaskMuac
     , TaskNutrition
     , TaskPhoto

@@ -391,6 +391,7 @@ type TranslationId
     | Dashboard Dashboard
     | ClinicalProgressReport
     | CloseAcuteIllnessLabel
+    | ColorAlertIndication ColorAlertIndication
     | CompleteHCReferralForm
     | CompletedHCReferralForm
     | Contacted114
@@ -534,6 +535,8 @@ type TranslationId
     | HCRecommendation HCRecommendation
     | HCResponseQuestion
     | HCResponsePeriodQuestion
+    | HeadCircumferenceHelper
+    | HeadCircumferenceNotTakenLabel
     | HeadHair
     | HealthCenter
     | HealthCenterDetermined
@@ -650,7 +653,6 @@ type TranslationId
     | Mothers
     | MUAC
     | MuacHelper
-    | MuacIndication MuacIndication
     | MyAccount
     | MyRelatedBy MyRelatedBy
     | MyRelatedByQuestion MyRelatedBy
@@ -980,6 +982,7 @@ type TranslationId
     | Yes
     | YouAreNotAnAdmin
     | YourGroupEncounterHasBeenSaved
+    | ZScoreHeadCircumferenceForAge
     | ZScoreHeightForAge
     | ZScoreMuacForAge
     | ZScoreWeightForAge
@@ -2318,6 +2321,23 @@ translationSet trans =
             { english = "or Close an Acute Illness"
             , kinyarwanda = Just "Cyangwa Ufunge Indwara ifatiyeho iheruka kuvurwa"
             }
+
+        ColorAlertIndication indication ->
+            case indication of
+                ColorAlertRed ->
+                    { english = "Red"
+                    , kinyarwanda = Just "Umutuku"
+                    }
+
+                ColorAlertYellow ->
+                    { english = "Yellow"
+                    , kinyarwanda = Just "Umuhondo"
+                    }
+
+                ColorAlertGreen ->
+                    { english = "Green"
+                    , kinyarwanda = Just "Icyatsi"
+                    }
 
         CompleteHCReferralForm ->
             { english = "Complete a health center referral form"
@@ -3665,6 +3685,16 @@ translationSet trans =
             , kinyarwanda = Just "Byatwaye igihe kingana gute ngo ikigo nderabuzima gisubize"
             }
 
+        HeadCircumferenceHelper ->
+            { english = "Using a tape measure, wrap the tape around the widest possible circumference; above the ears and midway between the eyebrows and the hairline to the occipital prominence on the back of the head."
+            , kinyarwanda = Nothing
+            }
+
+        HeadCircumferenceNotTakenLabel ->
+            { english = "Please check if the head circumference was not taken today"
+            , kinyarwanda = Nothing
+            }
+
         HeadHair ->
             { english = "Head/Hair"
             , kinyarwanda = Just "Umutwe/Umusatsi"
@@ -4762,23 +4792,6 @@ translationSet trans =
             , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe gupima ikizigira cy'akaboko"
             }
 
-        MuacIndication indication ->
-            case indication of
-                MuacRed ->
-                    { english = "red"
-                    , kinyarwanda = Just "Umutuku"
-                    }
-
-                MuacYellow ->
-                    { english = "yellow"
-                    , kinyarwanda = Just "Umuhondo"
-                    }
-
-                MuacGreen ->
-                    { english = "green"
-                    , kinyarwanda = Just "Icyatsi"
-                    }
-
         MyAccount ->
             { english = "My Account"
             , kinyarwanda = Just "Konti yanjye"
@@ -5162,6 +5175,11 @@ translationSet trans =
                 TaskHeight ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"
+                    }
+
+                TaskHeadCircumference ->
+                    { english = "Head Circumference"
+                    , kinyarwanda = Nothing
                     }
 
                 TaskMuac ->
@@ -7675,6 +7693,11 @@ translationSet trans =
 
         YourGroupEncounterHasBeenSaved ->
             { english = "Your Group Encounter has been saved."
+            , kinyarwanda = Nothing
+            }
+
+        ZScoreHeadCircumferenceForAge ->
+            { english = "Z-Score Head Circumference for Age: "
             , kinyarwanda = Nothing
             }
 

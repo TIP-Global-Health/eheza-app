@@ -116,6 +116,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'well_child_contributing_factors' => 'well-child-contributing-factors',
   'well_child_ecd' => 'well-child-ecd',
   'well_child_follow_up' => 'well-child-follow-up',
+  'well_child_head_circumference' => 'well-child-head-circumference',
   'well_child_health_education' => 'well-child-health-education',
   'well_child_height' => 'well-child-height',
   'well_child_muac' => 'well-child-muac',

@@ -869,3 +869,11 @@ type alias WellChildFollowUpId =
 
 type WellChildFollowUpIdUuidType
     = WellChildFollowUpIdUuidType
+
+
+type alias WellChildHeadCircumferenceId =
+    EntityUuid WellChildHeadCircumferenceUuidType
+
+
+type WellChildHeadCircumferenceUuidType
+    = WellChildHeadCircumferenceUuidType

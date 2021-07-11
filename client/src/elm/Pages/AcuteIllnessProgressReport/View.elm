@@ -679,13 +679,13 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                         let
                             muacColor =
                                 case muacIndication (MuacInCm muac_) of
-                                    MuacRed ->
+                                    ColorAlertRed ->
                                         "red"
 
-                                    MuacYellow ->
+                                    ColorAlertYellow ->
                                         "yellow"
 
-                                    MuacGreen ->
+                                    ColorAlertGreen ->
                                         "green"
                         in
                         td [ class muacColor ] [ text <| String.fromFloat muac_ ]

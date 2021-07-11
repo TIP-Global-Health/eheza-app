@@ -2125,6 +2125,20 @@ input::placeholder {
   }
 }
 
+.icon-head-circumference {
+  .active &:after {
+    background-image: url(#{$img-path}icon-head-circumference-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-head-circumference-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-head-circumference-gray.svg);
+  }
+}
+
 // Lists
 
 .ui.list {

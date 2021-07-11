@@ -4,13 +4,15 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (headCircumferenceIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend, resolvePreviousValuesSetForChild)
+import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import EverySet
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -22,11 +24,11 @@ import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
         ( renderDatePart
+        , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewFollowUpForm
         , viewHealthEducationForm
         , viewMeasurementFloatDiff
-        , viewMuacIndication
         , viewSendToHCForm
         , zScoreForHeightOrLength
         )
@@ -44,6 +46,7 @@ import Pages.Utils
         , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
+        , viewPreviousMeasurement
         , viewQuestionLabel
         )
 import Pages.WellChildActivity.Model exposing (..)
@@ -53,9 +56,10 @@ import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
+import Utils.NominalDate exposing (diffDays)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
-import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
+import ZScore.Utils exposing (viewZScore, zScoreHeadCircumferenceForAge)
 
 
 view : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> WellChildActivity -> ModelIndexedDb -> Model -> Html Msg
@@ -158,6 +162,11 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                             , isJust measurements.height
                             )
 
+                        TaskHeadCircumference ->
+                            ( "head-circumference"
+                            , isJust measurements.headCircumference
+                            )
+
                         TaskMuac ->
                             ( "muac"
                             , isJust measurements.muac
@@ -237,6 +246,12 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                         |> Maybe.map (Tuple.second >> .value)
                         |> heightFormWithDefault data.heightForm
                         |> viewHeightForm language currentDate zscores assembled.person previousValuesSet.height SetHeight
+
+                Just TaskHeadCircumference ->
+                    measurements.headCircumference
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> headCircumferenceFormWithDefault data.headCircumferenceForm
+                        |> viewHeadCircumferenceForm language currentDate zscores assembled.person previousValuesSet.headCircumference
 
                 Just TaskMuac ->
                     measurements.muac
@@ -351,6 +366,9 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
                                     TaskHeight ->
                                         SaveHeight personId measurements.height nextTask
 
+                                    TaskHeadCircumference ->
+                                        SaveHeadCircumference personId measurements.headCircumference nextTask
+
                                     TaskMuac ->
                                         SaveMuac personId measurements.muac nextTask
 
@@ -403,6 +421,87 @@ viewNutritionAssessmenContent language currentDate zscores id assembled db data 
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             (viewForm ++ [ actions ])
+        ]
+    ]
+
+
+viewHeadCircumferenceForm :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Person
+    -> Maybe Float
+    -> HeadCircumferenceForm
+    -> List (Html Msg)
+viewHeadCircumferenceForm language currentDate zscores person previousValue form =
+    let
+        maybeAgeInDays =
+            Maybe.map
+                (\birthDate -> diffDays birthDate currentDate)
+                person.birthDate
+
+        zScoreValue =
+            form.headCircumference
+                |> Maybe.andThen
+                    (\headCircumference ->
+                        Maybe.andThen
+                            (\ageInDays ->
+                                zScoreHeadCircumferenceForAge zscores ageInDays person.gender (Centimetres headCircumference)
+                            )
+                            maybeAgeInDays
+                    )
+
+        zScoreText =
+            Maybe.map viewZScore zScoreValue
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
+
+        inputSection =
+            if measurementNotTakenChecked then
+                []
+
+            else
+                [ div [ class "ui grid" ]
+                    [ div [ class "eleven wide column" ]
+                        [ viewMeasurementInput
+                            language
+                            form.headCircumference
+                            SetHeadCircumference
+                            "head-circumference"
+                            Translate.CentimeterShorthand
+                        ]
+                    , div
+                        [ class "five wide column" ]
+                        [ showMaybe <|
+                            Maybe.map (HeadCircumferenceInCm >> headCircumferenceIndication >> viewColorAlertIndication language) zScoreValue
+                        ]
+                    ]
+                , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
+                , div [ class "ui large header z-score age" ]
+                    [ text <| translate language Translate.ZScoreHeadCircumferenceForAge
+                    , span [ class "sub header" ]
+                        [ text zScoreText ]
+                    ]
+                ]
+
+        measurementNotTakenChecked =
+            form.measurementNotTaken == Just True
+    in
+    [ div [ class "ui form head-circumference" ] <|
+        [ viewLabel language <| Translate.NutritionAssesmentTask TaskHeadCircumference
+        , p [ class "activity-helper" ] [ text <| translate language Translate.HeadCircumferenceHelper ]
+        ]
+            ++ inputSection
+    , div
+        [ class "ui checkbox activity"
+        , onClick ToggleHeadCircumferenceNotTaken
+        ]
+        [ input
+            [ type_ "checkbox"
+            , checked measurementNotTakenChecked
+            , classList [ ( "checked", measurementNotTakenChecked ) ]
+            ]
+            []
+        , label [] [ text <| translate language Translate.HeadCircumferenceNotTakenLabel ]
         ]
     ]
 

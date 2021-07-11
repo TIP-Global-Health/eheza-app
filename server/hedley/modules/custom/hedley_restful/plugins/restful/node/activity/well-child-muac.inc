@@ -11,7 +11,7 @@ $plugin = array(
   'name' => 'well-child-muac',
   'entity_type' => 'node',
   'bundle' => 'well_child_muac',
-  'description' => t('Exports the WellChild MUAC bundle.'),
+  'description' => t('Exports the Well Child MUAC bundle.'),
   'class' => 'HedleyRestfulWellChildMuac',
   'authentication_types' => TRUE,
 );

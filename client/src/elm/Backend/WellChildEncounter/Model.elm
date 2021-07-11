@@ -39,6 +39,7 @@ type alias Model =
     , saveHealthEducation : WebData ()
     , saveFollowUp : WebData ()
     , saveSendToHC : WebData ()
+    , saveHeadCircumference : WebData ()
     }
 
 
@@ -55,6 +56,7 @@ emptyModel =
     , saveHealthEducation = NotAsked
     , saveFollowUp = NotAsked
     , saveSendToHC = NotAsked
+    , saveHeadCircumference = NotAsked
     }
 
 
@@ -81,3 +83,5 @@ type Msg
     | HandleSavedFollowUp (WebData ())
     | SaveSendToHC PersonId (Maybe WellChildSendToHCId) SendToHCValue
     | HandleSavedSendToHC (WebData ())
+    | SaveHeadCircumference PersonId (Maybe WellChildHeadCircumferenceId) HeadCircumferenceValue
+    | HandleSavedHeadCircumference (WebData ())

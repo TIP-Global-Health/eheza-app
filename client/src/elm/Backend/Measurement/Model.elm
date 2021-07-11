@@ -85,13 +85,10 @@ type alias Muac =
     GroupMeasurement MuacInCm
 
 
-{-| An interpretation of a MUAC, according to the measurement
-tool referenced at <https://github.com/Gizra/ihangane/issues/282>
--}
-type MuacIndication
-    = MuacGreen
-    | MuacRed
-    | MuacYellow
+type ColorAlertIndication
+    = ColorAlertGreen
+    | ColorAlertRed
+    | ColorAlertYellow
 
 
 type HeightInCm
@@ -1259,6 +1256,25 @@ type alias WellChildFollowUp =
     WellChildMeasurement FollowUpValue
 
 
+type alias WellChildHeadCircumference =
+    WellChildMeasurement HeadCircumferenceValue
+
+
+type alias HeadCircumferenceValue =
+    { headCircumference : HeadCircumferenceInCm
+    , notes : EverySet MeasurementNote
+    }
+
+
+type HeadCircumferenceInCm
+    = HeadCircumferenceInCm Float
+
+
+type MeasurementNote
+    = NoteNotTaken
+    | NoMeasurementNotes
+
+
 type ECDSign
     = -- 6 to 9 months.
       RespontToSoundWithSound
@@ -1508,6 +1524,7 @@ type alias WellChildMeasurements =
     , healthEducation : Maybe ( WellChildHealthEducationId, WellChildHealthEducation )
     , followUp : Maybe ( WellChildFollowUpId, WellChildFollowUp )
     , sendToHC : Maybe ( WellChildSendToHCId, WellChildSendToHC )
+    , headCircumference : Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )
     }
 
 
@@ -1610,4 +1627,13 @@ type alias PreviousValuesSet =
     { height : Maybe Float
     , muac : Maybe Float
     , weight : Maybe Float
+    , headCircumference : Maybe Float
+    }
+
+
+type alias PreviousMeasurementsSet =
+    { heights : List ( NominalDate, Float )
+    , muacs : List ( NominalDate, Float )
+    , weights : List ( NominalDate, Float )
+    , headCircumferences : List ( NominalDate, Float )
     }
