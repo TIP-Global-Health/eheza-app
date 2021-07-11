@@ -30,3 +30,6 @@ update msg model =
 
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, [] )
+
+        SetWarningPopupState isShown ->
+            ( { model | showPopup = isShown }, Cmd.none, [] )

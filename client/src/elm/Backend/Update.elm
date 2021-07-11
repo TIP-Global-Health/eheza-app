@@ -17,7 +17,7 @@ import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.HomeVisitEncounter.Update
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantExtraData(..))
 import Backend.IndividualEncounterParticipant.Update
-import Backend.Measurement.Model exposing (ChildMeasurements, HistoricalMeasurements, Measurements)
+import Backend.Measurement.Model exposing (ChildMeasurements, HistoricalMeasurements, Measurements, WellChildSymptom(..))
 import Backend.Measurement.Utils
     exposing
         ( mapChildMeasurementsAtOfflineSession
@@ -59,6 +59,7 @@ import Backend.WellChildActivity.Model
 import Backend.WellChildEncounter.Model exposing (emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
 import Date exposing (Unit(..))
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
@@ -92,6 +93,7 @@ import Pages.Relationship.Model
 import Pages.Session.Model
 import Pages.WellChildActivity.Model
 import Pages.WellChildActivity.Utils
+import Pages.WellChildEncounter.Model
 import Pages.WellChildEncounter.Utils
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyBackendUrl, toCmd, toTask, withoutDecoder)
@@ -941,11 +943,6 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                     else
                         let
-                            person =
-                                Dict.get participantId model.people
-                                    |> Maybe.withDefault NotAsked
-                                    |> RemoteData.toMaybe
-
                             ( newModel, _ ) =
                                 List.foldl (handleRevision healthCenterId) ( model, False ) revisions
 
@@ -1008,11 +1005,6 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                     else
                         let
-                            person =
-                                Dict.get participantId model.people
-                                    |> Maybe.withDefault NotAsked
-                                    |> RemoteData.toMaybe
-
                             ( newModel, _ ) =
                                 List.foldl (handleRevision healthCenterId) ( model, False ) revisions
 
@@ -1029,11 +1021,6 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                     else
                         let
-                            person =
-                                Dict.get participantId model.people
-                                    |> Maybe.withDefault NotAsked
-                                    |> RemoteData.toMaybe
-
                             ( newModel, _ ) =
                                 List.foldl (handleRevision healthCenterId) ( model, False ) revisions
 
@@ -1043,6 +1030,54 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                     |> Maybe.withDefault []
                         in
                         ( newModel, extraMsgs )
+
+                processWellChildSymptomsReviewRevision participantId encounterId value =
+                    if downloadingContent then
+                        []
+
+                    else
+                        let
+                            raiseAlert =
+                                EverySet.isEmpty value || value == EverySet.singleton NoWellChildSymptoms
+                        in
+                        if raiseAlert then
+                            generateWellChildDangerSignsAlertMsgs currentDate encounterId
+
+                        else
+                            []
+
+                processWellChildVitalsRevision participantId encounterId value =
+                    if downloadingContent then
+                        []
+
+                    else
+                        let
+                            bodyTemperatureAlert =
+                                value.bodyTemperature < 35 || value.bodyTemperature >= 37.5
+
+                            respiratoryRateAlert =
+                                (value.respiratoryRate < 12)
+                                    || (value.respiratoryRate > 49)
+                                    || (Dict.get participantId model.people
+                                            |> Maybe.withDefault NotAsked
+                                            |> RemoteData.toMaybe
+                                            |> Maybe.andThen (ageInMonths currentDate)
+                                            |> Maybe.map
+                                                (\ageMonths ->
+                                                    if ageMonths < 60 then
+                                                        value.respiratoryRate > 39
+
+                                                    else
+                                                        value.respiratoryRate > 30
+                                                )
+                                            |> Maybe.withDefault False
+                                       )
+                        in
+                        if bodyTemperatureAlert || bodyTemperatureAlert then
+                            generateWellChildDangerSignsAlertMsgs currentDate encounterId
+
+                        else
+                            []
             in
             case revisions of
                 -- Special handling for a single attendance revision, which means
@@ -1487,7 +1522,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                             processRevisionAndAssessWellChild data.participantId data.encounterId
 
                         _ =
-                            Debug.log "data" data
+                            Debug.log "value" data.value
                     in
                     ( newModel
                     , Cmd.none
@@ -1498,6 +1533,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessWellChild data.participantId data.encounterId
+
+                        _ =
+                            Debug.log "value" data.value
                     in
                     ( newModel
                     , Cmd.none
@@ -3623,6 +3661,23 @@ generateAcuteIllnessAssesmentCompletedMsgs currentDate after id =
                 else
                     [ App.Model.SetActivePage (UserPage (AcuteIllnessOutcomePage data.encounter.participant)) ]
             )
+        |> Maybe.withDefault []
+
+
+generateWellChildDangerSignsAlertMsgs : NominalDate -> Maybe WellChildEncounterId -> List App.Model.Msg
+generateWellChildDangerSignsAlertMsgs currentDate maybeId =
+    Maybe.map
+        (\id ->
+            [ -- Navigate to Well Child encouner page, because that's where we show alert popup.
+              App.Model.SetActivePage (UserPage (WellChildEncounterPage id))
+
+            -- Show warning popup with new assesment.
+            , Pages.WellChildEncounter.Model.SetWarningPopupState True
+                |> App.Model.MsgPageWellChildEncounter id
+                |> App.Model.MsgLoggedIn
+            ]
+        )
+        maybeId
         |> Maybe.withDefault []
 
 

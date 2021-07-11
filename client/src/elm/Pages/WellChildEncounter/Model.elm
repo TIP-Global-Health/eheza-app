@@ -11,6 +11,7 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { selectedTab : Tab
+    , showPopup : Bool
     }
 
 
@@ -18,6 +19,7 @@ type Msg
     = CloseEncounter WellChildEncounterId
     | SetActivePage Page
     | SetSelectedTab Tab
+    | SetWarningPopupState Bool
 
 
 type Tab
@@ -28,6 +30,7 @@ type Tab
 emptyModel : Model
 emptyModel =
     { selectedTab = Pending
+    , showPopup = False
     }
 
 
