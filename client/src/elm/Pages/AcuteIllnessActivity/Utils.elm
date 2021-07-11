@@ -56,11 +56,11 @@ import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Utils
     exposing
-        ( healthEducationFormWithDefault
+        ( basicVitalsFormWithDefault
+        , healthEducationFormWithDefault
         , muacFormWithDefault
         , nutritionFormWithDefault
         , sendToHCFormWithDefault
-        , basicVitalsFormWithDefault
         )
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
