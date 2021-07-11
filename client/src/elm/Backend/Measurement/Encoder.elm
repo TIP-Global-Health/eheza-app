@@ -2446,43 +2446,46 @@ encodeWellChildSymptom symptom =
     string <|
         case symptom of
             SymptomBreathingProblems ->
-                "symptom-breathing-problems"
+                "breathing-problems"
 
             SymptomConvulsions ->
-                "symptom-convulsions"
+                "convulsions"
 
             SymptomLethargyOrUnresponsiveness ->
-                "symptom-lethargy-or-unresponsiveness"
+                "lethargy-or-unresponsiveness"
 
             SymptomDiarrhea ->
-                "symptom-diarrhea"
+                "diarrhea"
 
             SymptomVomiting ->
-                "symptom-vomiting"
+                "vomiting"
 
             SymptomUmbilicalCordRedness ->
-                "symptom-umbilical-cord-redness"
+                "umbilical-cord-redness"
 
             SymptomStiffNeckOrBulgingFontanelle ->
-                "symptom-stiff-neck-or-bulging-fontanelle"
+                "stiff-neck-or-bulging-fontanelle"
 
             SymptomSevereEdema ->
-                "symptom-severe-edema"
+                "severe-edema"
 
             SymptomPalmoplantarPallor ->
-                "symptom-palmoplantar-pallor"
+                "palmoplantar-pallor"
 
             SymptomHistoryOfFever ->
-                "symptom-history-of-fever"
+                "history-of-fever"
 
             SymptomBabyTiresQuicklyWhenFeeding ->
-                "symptom-baby-tires-quickly-when-feeding"
+                "baby-tires-quickly-when-feeding"
 
             SymptomCoughingOrTearingWhileFeeding ->
-                "symptom-coughing-or-tearing-while-feeding"
+                "coughing-or-tearing-while-feeding"
 
             SymptomRigidMusclesOrJawClenchingPreventingFeeding ->
-                "symptom-rigid-muscles-or-jaw-clenching"
+                "rigid-muscles-or-jaw-clenching"
+
+            ExcessiveSweatingWhenFeeding ->
+                "excessive-sweating-when-feeding"
 
             NoWellChildSymptoms ->
                 "none"

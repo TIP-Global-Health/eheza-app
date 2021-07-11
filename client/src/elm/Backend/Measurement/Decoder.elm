@@ -2826,44 +2826,47 @@ decodeWellChildSymptom =
         |> andThen
             (\sign ->
                 case sign of
-                    "symptom-breathing-problems" ->
+                    "breathing-problems" ->
                         succeed SymptomBreathingProblems
 
-                    "symptom-convulsions" ->
+                    "convulsions" ->
                         succeed SymptomConvulsions
 
-                    "symptom-lethargy-or-unresponsiveness" ->
+                    "lethargy-or-unresponsiveness" ->
                         succeed SymptomLethargyOrUnresponsiveness
 
-                    "symptom-diarrhea" ->
+                    "diarrhea" ->
                         succeed SymptomDiarrhea
 
-                    "symptom-vomiting" ->
+                    "vomiting" ->
                         succeed SymptomVomiting
 
-                    "symptom-umbilical-cord-redness" ->
+                    "umbilical-cord-redness" ->
                         succeed SymptomUmbilicalCordRedness
 
-                    "symptom-stiff-neck-or-bulging-fontanelle" ->
+                    "stiff-neck-or-bulging-fontanelle" ->
                         succeed SymptomStiffNeckOrBulgingFontanelle
 
-                    "symptom-severe-edema" ->
+                    "severe-edema" ->
                         succeed SymptomSevereEdema
 
-                    "symptom-palmoplantar-pallor" ->
+                    "palmoplantar-pallor" ->
                         succeed SymptomPalmoplantarPallor
 
-                    "symptom-history-of-fever" ->
+                    "history-of-fever" ->
                         succeed SymptomHistoryOfFever
 
-                    "symptom-baby-tires-quickly-when-feeding" ->
+                    "baby-tires-quickly-when-feeding" ->
                         succeed SymptomBabyTiresQuicklyWhenFeeding
 
-                    "symptom-coughing-or-tearing-while-feeding" ->
+                    "coughing-or-tearing-while-feeding" ->
                         succeed SymptomCoughingOrTearingWhileFeeding
 
-                    "symptom-rigid-muscles-or-jaw-clenching" ->
+                    "rigid-muscles-or-jaw-clenching" ->
                         succeed SymptomRigidMusclesOrJawClenchingPreventingFeeding
+
+                    "excessive-sweating-when-feeding" ->
+                        succeed ExcessiveSweatingWhenFeeding
 
                     "none" ->
                         succeed NoWellChildSymptoms

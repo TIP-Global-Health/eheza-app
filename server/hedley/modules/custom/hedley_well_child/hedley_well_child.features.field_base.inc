@@ -147,6 +147,7 @@ function hedley_well_child_field_default_field_bases() {
         'baby-tires-quickly-when-feeding' => 'Baby Tires Quickly When Feeding',
         'coughing-or-tearing-while-feeding' => 'Coughing Or Tearing While Feeding',
         'rigid-muscles-or-jaw-clenching' => 'Rigid Muscles Or Jaw Clenching Preventing Feeding',
+        'excessive-sweating-when-feeding' => 'Excessive Sweating When Feeding',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

@@ -43,6 +43,7 @@ import Pages.Utils
         , taskCompletedWithException
         , tasksBarId
         , viewBoolInput
+        , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewLabel
@@ -256,8 +257,10 @@ viewDangerSignsContent language currentDate assembled data =
                     )
                 |> Maybe.withDefault emptyNode
     in
-    [ div [ class "ui four column grid" ] <|
-        List.map viewTask tasks
+    [ div [ class "ui task segment blue" ]
+        [ div [ class "ui four column grid" ] <|
+            List.map viewTask tasks
+        ]
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
@@ -268,11 +271,31 @@ viewDangerSignsContent language currentDate assembled data =
 
 viewSymptomsReviewForm : Language -> NominalDate -> Person -> SymptomsReviewForm -> List (Html Msg)
 viewSymptomsReviewForm language currentDate person form =
-    []
-
-
-viewVitalsForm language currentDate person form =
-    []
+    [ div [ class "ui form symptoms-review" ]
+        [ viewLabel language Translate.SelectAllSigns
+        , viewCheckBoxMultipleSelectInput language
+            [ SymptomBreathingProblems
+            , SymptomConvulsions
+            , SymptomLethargyOrUnresponsiveness
+            , SymptomDiarrhea
+            , SymptomVomiting
+            , SymptomUmbilicalCordRedness
+            , SymptomStiffNeckOrBulgingFontanelle
+            , SymptomSevereEdema
+            , SymptomPalmoplantarPallor
+            , SymptomHistoryOfFever
+            , SymptomBabyTiresQuicklyWhenFeeding
+            , SymptomCoughingOrTearingWhileFeeding
+            , SymptomRigidMusclesOrJawClenchingPreventingFeeding
+            , ExcessiveSweatingWhenFeeding
+            ]
+            []
+            (form.symptoms |> Maybe.withDefault [])
+            (Just NoWellChildSymptoms)
+            SetSymptom
+            Translate.WellChildSymptom
+        ]
+    ]
 
 
 viewNutritionAssessmenContent :

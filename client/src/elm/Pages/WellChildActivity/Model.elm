@@ -13,6 +13,7 @@ type Msg
     | NoOp
       -- DANGER SIGNS
     | SetActiveDangerSignsTask DangerSignsTask
+    | SetSymptom WellChildSymptom
     | SaveSymptomsReview PersonId (Maybe ( WellChildSymptomsReviewId, WellChildSymptomsReview )) (Maybe DangerSignsTask)
     | SetVitalsResporatoryRate String
     | SetVitalsBodyTemperature String

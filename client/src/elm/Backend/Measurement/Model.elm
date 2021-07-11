@@ -1234,6 +1234,7 @@ type WellChildSymptom
     | SymptomBabyTiresQuicklyWhenFeeding
     | SymptomCoughingOrTearingWhileFeeding
     | SymptomRigidMusclesOrJawClenchingPreventingFeeding
+    | ExcessiveSweatingWhenFeeding
     | NoWellChildSymptoms
 
 

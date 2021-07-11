@@ -37,6 +37,17 @@ import Result exposing (Result)
 update : NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id db msg model =
     let
+        resolveFormWithDefaults getMeasurementFunc formWithDefaultsFunc form =
+            Dict.get id db.wellChildMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (getMeasurementFunc
+                        >> Maybe.map (Tuple.second >> .value)
+                        >> formWithDefaultsFunc form
+                    )
+                |> Maybe.withDefault form
+
         generateNutritionAssesmentMsgs nextTask =
             nextTask
                 |> Maybe.map (\task -> [ SetActiveNutritionAssesmentTask task ])
@@ -68,6 +79,27 @@ update currentDate id db msg model =
                 updatedData =
                     model.dangerSignsData
                         |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | dangerSignsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetSymptom symptom ->
+            let
+                form =
+                    resolveFormWithDefaults .symptomsReview symptomsReviewFormWithDefault model.dangerSignsData.symptomsReviewForm
+
+                updatedForm =
+                    setMultiSelectInputValue .symptoms
+                        (\symptoms -> { form | symptoms = symptoms })
+                        NoWellChildSymptoms
+                        symptom
+                        form
+
+                updatedData =
+                    model.dangerSignsData
+                        |> (\data -> { data | symptomsReviewForm = updatedForm })
             in
             ( { model | dangerSignsData = updatedData }
             , Cmd.none
