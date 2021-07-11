@@ -159,7 +159,7 @@ viewDangerSignsContent language currentDate assembled data =
                 ( iconClass, isCompleted ) =
                     case task of
                         TaskSymptomsReview ->
-                            ( "symptoms-review"
+                            ( "symptoms"
                             , isJust measurements.symptomsReview
                             )
 

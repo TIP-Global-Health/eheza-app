@@ -2139,6 +2139,20 @@ input::placeholder {
   }
 }
 
+.icon-symptoms {
+  .active &:after {
+    background-image: url(#{$img-path}icon-symptoms-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-symptoms-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-symptoms-gray.svg);
+  }
+}
+
 // Lists
 
 .ui.list {
