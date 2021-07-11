@@ -94,10 +94,10 @@ warningPopup language showPopup =
                 ]
         in
         Just <|
-            div [ class "ui active modal diagnosis-popup" ]
+            div [ class "ui active modal danger-signs-popup" ]
                 [ div [ class "content" ]
                     [ div [ class "popup-heading-wrapper" ] warningHeading
-                    , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
+                    , div [ class "popup-action" ] [ text <| translate language Translate.WarningSignsOfAcuteIllness ]
                     ]
                 , div
                     [ class "actions" ]

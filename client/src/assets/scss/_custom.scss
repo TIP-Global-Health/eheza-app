@@ -1196,7 +1196,8 @@ input::placeholder {
   }
 
   &.diagnosis-popup,
-  &.open-pregnancy-popup {
+  &.open-pregnancy-popup,
+  &.danger-signs-popup {
     border-top: 15px solid $color-red-alert;
     margin-left: -300px;
     width: 600px;
@@ -1280,6 +1281,14 @@ input::placeholder {
         background-color: $color-primary;
       }
     }
+  }
+
+  &.danger-signs-popup .content .popup-action {
+    font-size: 26px;
+    font-weight: bold;
+    margin-top: 40px;
+    padding: 0;
+    text-transform: none;
   }
 
   &.prenatal-follow-up-popup {
