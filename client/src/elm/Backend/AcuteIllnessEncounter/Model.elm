@@ -1,4 +1,4 @@
-module Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter, Model, Msg(..), emptyAcuteIllnessEncounter, emptyModel)
+module Backend.AcuteIllnessEncounter.Model exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -13,17 +13,19 @@ type alias AcuteIllnessEncounter =
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , sequenceNumber : Int
+    , encounterType : AcuteIllnessEncounterType
     , diagnosis : AcuteIllnessDiagnosis
     , shard : Maybe HealthCenterId
     }
 
 
-emptyAcuteIllnessEncounter : IndividualEncounterParticipantId -> NominalDate -> Int -> Maybe HealthCenterId -> AcuteIllnessEncounter
-emptyAcuteIllnessEncounter participant startDate sequenceNumber shard =
+emptyAcuteIllnessEncounter : IndividualEncounterParticipantId -> NominalDate -> Int -> AcuteIllnessEncounterType -> Maybe HealthCenterId -> AcuteIllnessEncounter
+emptyAcuteIllnessEncounter participant startDate sequenceNumber encounterType shard =
     { participant = participant
     , startDate = startDate
     , sequenceNumber = sequenceNumber
     , endDate = Nothing
+    , encounterType = encounterType
     , diagnosis = NoAcuteIllnessDiagnosis
     , shard = shard
     }
@@ -81,6 +83,11 @@ emptyModel =
     , saveHealthEducation = NotAsked
     , saveFollowUp = NotAsked
     }
+
+
+type AcuteIllnessEncounterType
+    = AcuteIllnessEncounterNurse
+    | AcuteIllnessEncounterCHW
 
 
 type AcuteIllnessDiagnosis

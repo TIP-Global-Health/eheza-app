@@ -2047,10 +2047,15 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         (\( sessionId, _ ) ->
                             case encounterType of
                                 AcuteIllnessEncounter ->
-                                    [ emptyAcuteIllnessEncounter sessionId currentDate 1 healthCenterId
-                                        |> Backend.Model.PostAcuteIllnessEncounter
-                                        |> App.Model.MsgIndexedDb
-                                    ]
+                                    case extraData of
+                                        AcuteIllnessData acuteIllnessEncounterType ->
+                                            [ emptyAcuteIllnessEncounter sessionId currentDate 1 acuteIllnessEncounterType healthCenterId
+                                                |> Backend.Model.PostAcuteIllnessEncounter
+                                                |> App.Model.MsgIndexedDb
+                                            ]
+
+                                        _ ->
+                                            []
 
                                 AntenatalEncounter ->
                                     case extraData of

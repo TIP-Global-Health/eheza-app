@@ -407,7 +407,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get id loggedInModel.acuteIllnessParticipantPages
                                     |> Maybe.withDefault Pages.AcuteIllnessParticipant.Model.emptyModel
                         in
-                        Pages.AcuteIllnessParticipant.View.view model.language currentDate healthCenterId id model.indexedDb page_
+                        Pages.AcuteIllnessParticipant.View.view model.language currentDate healthCenterId id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessParticipant id)
                             |> flexPageWrapper model
 
