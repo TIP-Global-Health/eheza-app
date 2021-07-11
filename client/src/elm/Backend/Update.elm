@@ -1037,14 +1037,14 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                     else
                         let
-                            raiseAlert =
+                            noSymptoms =
                                 EverySet.isEmpty value || value == EverySet.singleton NoWellChildSymptoms
                         in
-                        if raiseAlert then
-                            generateWellChildDangerSignsAlertMsgs currentDate encounterId
+                        if noSymptoms then
+                            []
 
                         else
-                            []
+                            generateWellChildDangerSignsAlertMsgs currentDate encounterId
 
                 processWellChildVitalsRevision participantId encounterId value =
                     if downloadingContent then
@@ -1518,11 +1518,11 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                 [ WellChildSymptomsReviewRevision uuid data ] ->
                     let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessWellChild data.participantId data.encounterId
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
 
-                        _ =
-                            Debug.log "value" data.value
+                        extraMsgs =
+                            processWellChildSymptomsReviewRevision data.participantId data.encounterId data.value
                     in
                     ( newModel
                     , Cmd.none
@@ -1531,11 +1531,11 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                 [ WellChildVitalsRevision uuid data ] ->
                     let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessWellChild data.participantId data.encounterId
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
 
-                        _ =
-                            Debug.log "value" data.value
+                        extraMsgs =
+                            processWellChildVitalsRevision data.participantId data.encounterId data.value
                     in
                     ( newModel
                     , Cmd.none

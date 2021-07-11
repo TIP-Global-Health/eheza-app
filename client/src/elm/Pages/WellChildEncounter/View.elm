@@ -22,7 +22,7 @@ import Pages.WellChildEncounter.Model exposing (..)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (tabItem)
+import Utils.Html exposing (tabItem, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
@@ -49,6 +49,9 @@ viewHeaderAndContent language currentDate zscores id db model data =
     div [ class "page-encounter home-visit" ]
         [ header
         , content
+        , viewModal <|
+            warningPopup language
+                model.showPopup
         ]
 
 
@@ -79,6 +82,35 @@ viewContent language currentDate zscores id db model data =
         :: viewMainPageContent language currentDate zscores id db data model
     )
         |> div [ class "ui unstackable items" ]
+
+
+warningPopup : Language -> Bool -> Maybe (Html Msg)
+warningPopup language showPopup =
+    if showPopup then
+        let
+            warningHeading =
+                [ img [ src "assets/images/exclamation-red.png" ] []
+                , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
+                ]
+        in
+        Just <|
+            div [ class "ui active modal diagnosis-popup" ]
+                [ div [ class "content" ]
+                    [ div [ class "popup-heading-wrapper" ] warningHeading
+                    , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
+                    ]
+                , div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick <| SetWarningPopupState False
+                        ]
+                        [ text <| translate language Translate.Continue ]
+                    ]
+                ]
+
+    else
+        Nothing
 
 
 viewMainPageContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
