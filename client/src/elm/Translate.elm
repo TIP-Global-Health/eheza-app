@@ -4005,7 +4005,7 @@ translationSet trans =
                         }
 
                     else
-                        { english = ""Standard Pediatric Visit Encounter"
+                        { english = "Standard Pediatric Visit Encounter"
                         , kinyarwanda = Nothing
                         }
 
