@@ -176,7 +176,8 @@ decodeHomeVisitMeasurements =
 decodeWellChildMeasurements : Decoder WellChildMeasurements
 decodeWellChildMeasurements =
     succeed WellChildMeasurements
-        |> optional "well_child_ecd" (decodeHead decodeWellChildECD) Nothing
+        |> optional "well_child_symptoms_review" (decodeHead decodeWellChildSymptomsReview) Nothing
+        |> optional "well_child_vitals" (decodeHead decodeWellChildVitals) Nothing
         |> optional "well_child_height" (decodeHead decodeWellChildHeight) Nothing
         |> optional "well_child_muac" (decodeHead decodeWellChildMuac) Nothing
         |> optional "well_child_nutrition" (decodeHead decodeWellChildNutrition) Nothing
@@ -187,6 +188,7 @@ decodeWellChildMeasurements =
         |> optional "well_child_follow_up" (decodeHead decodeWellChildFollowUp) Nothing
         |> optional "well_child_send_to_hc" (decodeHead decodeWellChildSendToHC) Nothing
         |> optional "well_child_head_circumference" (decodeHead decodeWellChildHeadCircumference) Nothing
+        |> optional "well_child_ecd" (decodeHead decodeWellChildECD) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1841,10 +1843,19 @@ decodeSymptomsGIDerivedSign =
 
 decodeAcuteIllnessVitals : Decoder AcuteIllnessVitals
 decodeAcuteIllnessVitals =
-    succeed AcuteIllnessVitalsValue
+    decodeAcuteIllnessMeasurement decodeBasicVitalsValue
+
+
+decodeWellChildVitals : Decoder WellChildVitals
+decodeWellChildVitals =
+    decodeWellChildMeasurement decodeBasicVitalsValue
+
+
+decodeBasicVitalsValue : Decoder BasicVitalsValue
+decodeBasicVitalsValue =
+    succeed BasicVitalsValue
         |> required "respiratory_rate" decodeInt
         |> required "body_temperature" decodeFloat
-        |> decodeAcuteIllnessMeasurement
 
 
 decodeAcuteFindings : Decoder AcuteFindings
@@ -2800,6 +2811,71 @@ postProcessNutritionAssesment assesmentFromString nutritionSign =
                         assesmentFromString
             )
         |> Maybe.withDefault assesmentFromString
+
+
+decodeWellChildSymptomsReview : Decoder WellChildSymptomsReview
+decodeWellChildSymptomsReview =
+    decodeEverySet decodeWellChildSymptom
+        |> field "well_child_symptoms"
+        |> decodeWellChildMeasurement
+
+
+decodeWellChildSymptom : Decoder WellChildSymptom
+decodeWellChildSymptom =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "breathing-problems" ->
+                        succeed SymptomBreathingProblems
+
+                    "convulsions" ->
+                        succeed SymptomConvulsions
+
+                    "lethargy-or-unresponsiveness" ->
+                        succeed SymptomLethargyOrUnresponsiveness
+
+                    "diarrhea" ->
+                        succeed SymptomDiarrhea
+
+                    "vomiting" ->
+                        succeed SymptomVomiting
+
+                    "umbilical-cord-redness" ->
+                        succeed SymptomUmbilicalCordRedness
+
+                    "stiff-neck-or-bulging-fontanelle" ->
+                        succeed SymptomStiffNeckOrBulgingFontanelle
+
+                    "severe-edema" ->
+                        succeed SymptomSevereEdema
+
+                    "palmoplantar-pallor" ->
+                        succeed SymptomPalmoplantarPallor
+
+                    "history-of-fever" ->
+                        succeed SymptomHistoryOfFever
+
+                    "baby-tires-quickly-when-feeding" ->
+                        succeed SymptomBabyTiresQuicklyWhenFeeding
+
+                    "coughing-or-tearing-while-feeding" ->
+                        succeed SymptomCoughingOrTearingWhileFeeding
+
+                    "rigid-muscles-or-jaw-clenching" ->
+                        succeed SymptomRigidMusclesOrJawClenchingPreventingFeeding
+
+                    "excessive-sweating-when-feeding" ->
+                        succeed ExcessiveSweatingWhenFeeding
+
+                    "none" ->
+                        succeed NoWellChildSymptoms
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized WellChildSymptom"
+            )
 
 
 decodeWellChildECD : Decoder WellChildECD

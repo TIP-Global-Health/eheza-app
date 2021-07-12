@@ -493,6 +493,58 @@ viewEndEncounterDialog language heading message confirmAction cancelAction =
         ]
 
 
+{-| The idea here is that we get lists for red alert conditions, and yellow
+alert conditions. If any of red conditions matches, we present red alert.
+If any of yellow conditions matches, we present yellow alert.
+Otherwise, no alret is needed.
+
+Note that conditions are list of lists, so all conditions in inner list
+need to match, for a condition in outer list to match.
+We need this for range conditions. For example, number between 5 and 8.
+
+-}
+viewConditionalAlert : Maybe a -> List (List (a -> Bool)) -> List (List (a -> Bool)) -> Html any
+viewConditionalAlert maybeActual redConditions yellowConditions =
+    maybeActual
+        |> Maybe.map
+            (\actual ->
+                if
+                    List.any
+                        (\conditions ->
+                            List.all
+                                (\condition ->
+                                    condition actual
+                                )
+                                conditions
+                        )
+                        redConditions
+                then
+                    viewAlert "red"
+
+                else if
+                    List.any
+                        (\conditions ->
+                            List.all (\condition -> condition actual) conditions
+                        )
+                        yellowConditions
+                then
+                    viewAlert "yellow"
+
+                else
+                    emptyNode
+            )
+        |> Maybe.withDefault emptyNode
+
+
+viewAlert : String -> Html any
+viewAlert color =
+    let
+        icon =
+            "assets/images/alert-" ++ color ++ ".png"
+    in
+    img [ src icon ] []
+
+
 taskCompleted : Maybe a -> Int
 taskCompleted maybe =
     if isJust maybe then

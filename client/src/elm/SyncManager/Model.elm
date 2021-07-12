@@ -140,6 +140,8 @@ type BackendAuthorityEntity
     | BackendAuthorityWellChildNutrition (BackendEntity WellChildNutrition)
     | BackendAuthorityWellChildPhoto (BackendEntity WellChildPhoto)
     | BackendAuthorityWellChildSendToHC (BackendEntity WellChildSendToHC)
+    | BackendAuthorityWellChildSymptomsReview (BackendEntity WellChildSymptomsReview)
+    | BackendAuthorityWellChildVitals (BackendEntity WellChildVitals)
     | BackendAuthorityWellChildWeight (BackendEntity WellChildWeight)
 
 

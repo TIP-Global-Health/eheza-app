@@ -33,6 +33,7 @@ import Measurement.Utils
     exposing
         ( muacFormWithDefault
         , nutritionFormWithDefault
+        , toBasicVitalsValueWithDefault
         , toHealthEducationValueWithDefault
         , toMuacValueWithDefault
         , toNutritionValueWithDefault
@@ -452,7 +453,7 @@ update currentDate id db msg model =
 
                 appMsgs =
                     model.physicalExamData.vitalsForm
-                        |> toVitalsValueWithDefault measurement
+                        |> toBasicVitalsValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->

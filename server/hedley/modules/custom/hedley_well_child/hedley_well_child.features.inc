@@ -107,6 +107,22 @@ function hedley_well_child_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'well_child_symptoms_review' => array(
+      'name' => t('Well Child Symptoms Review'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'well_child_vitals' => array(
+      'name' => t('Well Child Vitals'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'well_child_weight' => array(
       'name' => t('Well Child Weight'),
       'base' => 'node_content',
