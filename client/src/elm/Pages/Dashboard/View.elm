@@ -11,6 +11,7 @@ import Backend.Dashboard.Model
         , CaseManagementData
         , CaseNutrition
         , CaseNutritionTotal
+        , ChildrenBeneficiariesData
         , DashboardStats
         , Nutrition
         , NutritionValue
@@ -112,7 +113,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                     (\stats ->
                         let
                             assembled =
-                                generateAssembledData healthCenterId model.selectedVillageFilter stats db
+                                generateAssembledData healthCenterId stats db model
 
                             ( pageContent, pageClass ) =
                                 case page of
@@ -124,10 +125,10 @@ view language page currentDate healthCenterId isChw nurse model db =
                                     NursePage nurseDashboardPage ->
                                         case nurseDashboardPage of
                                             StatsPage ->
-                                                ( viewStatsPage language currentDate False nurse stats healthCenterId db model, "stats" )
+                                                ( viewStatsPage language currentDate False nurse assembled.stats healthCenterId db model, "stats" )
 
                                             CaseManagementPage ->
-                                                ( viewCaseManagementPage language currentDate stats db model, "case" )
+                                                ( viewCaseManagementPage language currentDate assembled.stats db model, "case" )
 
                                     ChwPage chwDashboardPage ->
                                         case chwDashboardPage of
@@ -135,7 +136,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                                                 ( viewAcuteIllnessPage language currentDate acuteIllnessPage assembled db model, "acute-illness" )
 
                                             NutritionPage ->
-                                                ( viewNutritionPage language currentDate True nurse stats db model, "nutrition" )
+                                                ( viewNutritionPage language currentDate True nurse assembled.stats db model, "nutrition" )
 
                                             AntenatalPage ->
                                                 ( viewAntenatalPage language currentDate assembled db model, "prenatal" )
@@ -143,9 +144,9 @@ view language page currentDate healthCenterId isChw nurse model db =
                         div [ class <| "dashboard " ++ pageClass ] <|
                             [ viewFiltersPane language page db model ]
                                 ++ pageContent
-                                ++ [ viewCustomModal language isChw nurse stats db model
+                                ++ [ viewCustomModal language isChw nurse assembled.stats db model
                                    , div [ class "timestamp" ]
-                                        [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
+                                        [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ assembled.stats.timestamp ++ " UTC" ]
                                    ]
                     )
                 |> Maybe.withDefault spinner
@@ -189,8 +190,8 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
         encountersForSelectedMonth =
             getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
 
-        ( sentToHC, managedLocally ) =
-            countAcuteIllnessCasesByHCReferrals encountersForSelectedMonth
+        diagnosedCases =
+            countAcuteIllnessDiagnosedCases encountersForSelectedMonth
 
         -- Prenatal
         currentlyPregnant =
@@ -213,7 +214,7 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
     , monthSelector language selectedDate model
     , div [ class "ui grid" ]
         [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt <| sentToHC + managedLocally)
+            [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt diagnosedCases)
             , chwCard language (Translate.Dashboard Translate.MothersInANC) (String.fromInt currentlyPregnant)
             , chwCard language (Translate.Dashboard Translate.NewbornsInCare) (String.fromInt totalNewborn)
             ]
@@ -227,186 +228,6 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
             ]
         ]
     ]
-
-
-caseManagementApplyBreakdownFilters : Dict VillageId (List PersonIdentifier) -> Dict ProgramType (List CaseManagement) -> Model -> List CaseManagement
-caseManagementApplyBreakdownFilters villagesWithResidents dict model =
-    case model.programTypeFilter of
-        FilterAllPrograms ->
-            let
-                achi =
-                    Dict.get ProgramAchi dict
-                        |> Maybe.withDefault []
-
-                fbf =
-                    Dict.get ProgramFbf dict
-                        |> Maybe.withDefault []
-
-                pmtct =
-                    Dict.get ProgramPmtct dict
-                        |> Maybe.withDefault []
-
-                sorwathe =
-                    Dict.get ProgramSorwathe dict
-                        |> Maybe.withDefault []
-
-                individual =
-                    Dict.get ProgramIndividual dict
-                        |> Maybe.withDefault []
-            in
-            achi ++ fbf ++ pmtct ++ sorwathe ++ individual
-
-        FilterProgramAchi ->
-            Dict.get ProgramAchi dict
-                |> Maybe.withDefault []
-
-        FilterProgramFbf ->
-            Dict.get ProgramFbf dict
-                |> Maybe.withDefault []
-
-        FilterProgramPmtct ->
-            Dict.get ProgramPmtct dict
-                |> Maybe.withDefault []
-
-        FilterProgramSorwathe ->
-            Dict.get ProgramSorwathe dict
-                |> Maybe.withDefault []
-
-        FilterProgramCommunity ->
-            let
-                villageResidents =
-                    model.selectedVillageFilter
-                        |> Maybe.andThen (\village -> Dict.get village villagesWithResidents)
-                        |> Maybe.withDefault []
-
-                villageFilterFunc caseManagement =
-                    if isJust model.selectedVillageFilter then
-                        List.member caseManagement.identifier villageResidents
-
-                    else
-                        -- Do not filter by village, if village is not selected.
-                        True
-
-                achi =
-                    Dict.get ProgramAchi dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
-
-                fbf =
-                    Dict.get ProgramFbf dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
-
-                pmtct =
-                    Dict.get ProgramPmtct dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
-
-                sorwathe =
-                    Dict.get ProgramSorwathe dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
-
-                individual =
-                    Dict.get ProgramIndividual dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
-            in
-            achi ++ fbf ++ pmtct ++ sorwathe ++ individual
-
-
-totalEncountersApplyBreakdownFilters : TotalEncountersData -> Model -> Periods
-totalEncountersApplyBreakdownFilters data model =
-    let
-        emptyPeriods =
-            Periods 0 0
-    in
-    case model.programTypeFilter of
-        FilterAllPrograms ->
-            let
-                achi =
-                    Dict.get ProgramAchi data.global
-                        |> Maybe.withDefault emptyPeriods
-
-                fbf =
-                    Dict.get ProgramFbf data.global
-                        |> Maybe.withDefault emptyPeriods
-
-                pmtct =
-                    Dict.get ProgramPmtct data.global
-                        |> Maybe.withDefault emptyPeriods
-
-                sorwathe =
-                    Dict.get ProgramSorwathe data.global
-                        |> Maybe.withDefault emptyPeriods
-
-                individual =
-                    Dict.get ProgramIndividual data.global
-                        |> Maybe.withDefault emptyPeriods
-
-                sumPeriods p1 p2 =
-                    Periods (p1.lastYear + p2.lastYear) (p1.thisYear + p2.thisYear)
-            in
-            sumPeriods achi fbf
-                |> sumPeriods pmtct
-                |> sumPeriods sorwathe
-                |> sumPeriods individual
-
-        FilterProgramAchi ->
-            Dict.get ProgramAchi data.global
-                |> Maybe.withDefault emptyPeriods
-
-        FilterProgramFbf ->
-            Dict.get ProgramFbf data.global
-                |> Maybe.withDefault emptyPeriods
-
-        FilterProgramPmtct ->
-            Dict.get ProgramPmtct data.global
-                |> Maybe.withDefault emptyPeriods
-
-        FilterProgramSorwathe ->
-            Dict.get ProgramSorwathe data.global
-                |> Maybe.withDefault emptyPeriods
-
-        FilterProgramCommunity ->
-            let
-                dict =
-                    case model.selectedVillageFilter of
-                        Just village ->
-                            Dict.get village data.villages
-                                |> Maybe.withDefault Dict.empty
-
-                        -- When village is not selected, we show global data.
-                        Nothing ->
-                            data.global
-
-                achi =
-                    Dict.get ProgramAchi dict
-                        |> Maybe.withDefault emptyPeriods
-
-                fbf =
-                    Dict.get ProgramFbf dict
-                        |> Maybe.withDefault emptyPeriods
-
-                pmtct =
-                    Dict.get ProgramPmtct dict
-                        |> Maybe.withDefault emptyPeriods
-
-                sorwathe =
-                    Dict.get ProgramSorwathe dict
-                        |> Maybe.withDefault emptyPeriods
-
-                individual =
-                    Dict.get ProgramIndividual dict
-                        |> Maybe.withDefault emptyPeriods
-
-                sumPeriods p1 p2 =
-                    Periods (p1.lastYear + p2.lastYear) (p1.thisYear + p2.thisYear)
-            in
-            sumPeriods achi fbf
-                |> sumPeriods pmtct
-                |> sumPeriods sorwathe
-                |> sumPeriods individual
 
 
 applyTotalBeneficiariesDenomination : Dict Int Int -> Dict Int TotalBeneficiaries -> Dict Int TotalBeneficiaries
@@ -439,8 +260,12 @@ applyTotalBeneficiariesDenomination beneficiariesPerMonthsDict totalBeneficiarie
             )
 
 
-generateTotalBeneficiariesMonthlyDuringPastYear : NominalDate -> DashboardStats -> Dict Int Int
-generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats =
+generateTotalBeneficiariesMonthlyDuringPastYear :
+    NominalDate
+    -> DashboardStats
+    -> Model
+    -> Dict Int Int
+generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats model =
     let
         currentMonth =
             Date.month currentDate
@@ -468,12 +293,20 @@ generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats =
 
                             totalBeneficiaries =
                                 stats.childrenBeneficiaries
-                                    |> List.filter
+                                    |> List.filterMap
                                         (\child ->
-                                            (Date.compare child.memberSince maxJoinDate == LT)
-                                                && (Date.compare minGraduationDate child.graduationDate == LT)
+                                            if
+                                                (Date.compare child.memberSince maxJoinDate == LT)
+                                                    && (Date.compare minGraduationDate child.graduationDate == LT)
+                                            then
+                                                Just child.identifier
+
+                                            else
+                                                Nothing
                                         )
-                                    |> List.length
+                                    -- We want to get unique participants.
+                                    |> EverySet.fromList
+                                    |> EverySet.size
                         in
                         ( month, totalBeneficiaries )
                     )
@@ -641,14 +474,11 @@ viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
             monthBeforeStats =
                 filterStatsWithinPeriod currentDate modelWithLastMonth stats
 
-            currentPeriodCaseManagement =
-                caseManagementApplyBreakdownFilters stats.villagesWithResidents currentPeriodStats.caseManagement.thisYear model
-
             malnourishedCurrentMonth =
-                mapMalnorishedByMonth displayedMonth currentPeriodCaseManagement
+                mapMalnorishedByMonth displayedMonth currentPeriodStats.caseManagement.thisYear
 
             malnourishedPreviousMonth =
-                mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodCaseManagement
+                mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodStats.caseManagement.thisYear
         in
         [ div [ class "ui equal width grid" ]
             [ viewMalnourishedCards language malnourishedCurrentMonth malnourishedPreviousMonth
@@ -656,7 +486,6 @@ viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
             ]
         , viewBeneficiariesTable language currentDate stats currentPeriodStats malnourishedCurrentMonth model
         , viewFamilyPlanning language currentPeriodStats
-        , viewCustomModal language isChw nurse stats db model
         ]
 
 
@@ -764,7 +593,7 @@ viewCaseManagementPage language currentDate stats db model =
                                 { name = caseNutrition.name, nutrition = nutrition } :: accum
                             )
                             []
-                            (caseManagementApplyBreakdownFilters stats.villagesWithResidents stats.caseManagement.thisYear model)
+                            stats.caseManagement.thisYear
                             |> List.filter (.nutrition >> List.all (Tuple.second >> .class >> (==) Backend.Dashboard.Model.Good) >> not)
 
                     _ ->
@@ -788,7 +617,7 @@ viewCaseManagementPage language currentDate stats db model =
                                         accum
                             )
                             []
-                            (caseManagementApplyBreakdownFilters stats.villagesWithResidents stats.caseManagement.thisYear model)
+                            stats.caseManagement.thisYear
                             |> List.filter
                                 (.nutrition
                                     >> List.any
@@ -1057,7 +886,7 @@ viewAcuteIllnessOverviewPage language encounters model =
             countAcuteIllnessAssesments encounters
 
         ( sentToHC, managedLocally ) =
-            countAcuteIllnessCasesByHCReferrals encounters
+            countAcuteIllnessCasesByTreatmentApproach encounters
 
         undeterminedCases =
             countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisUndeterminedMoreEvaluationNeeded ] False encounters
@@ -1225,25 +1054,19 @@ viewNutritionPage language currentDate isChw nurse stats db model =
             filterStatsWithinPeriod currentDate model stats
 
         totalBeneficiariesMonthlyDuringPastYear =
-            generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats
+            generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats model
 
         emptyTotalBeneficiariesDict =
             List.repeat 12 emptyTotalBeneficiaries
                 |> List.indexedMap (\index empty -> ( index + 1, empty ))
                 |> Dict.fromList
 
-        caseManagementsThisYear =
-            caseManagementApplyBreakdownFilters stats.villagesWithResidents stats.caseManagement.thisYear model
-
-        caseManagementsLastYear =
-            caseManagementApplyBreakdownFilters stats.villagesWithResidents stats.caseManagement.lastYear model
-
         caseNutritionTotalsThisYear =
-            caseManagementsThisYear
+            stats.caseManagement.thisYear
                 |> List.map (.nutrition >> generateCaseNutritionTotals)
 
         caseNutritionTotalsLastYear =
-            caseManagementsLastYear
+            stats.caseManagement.lastYear
                 |> List.map (.nutrition >> generateCaseNutritionTotals)
 
         totalsGraphData =
@@ -1252,7 +1075,7 @@ viewNutritionPage language currentDate isChw nurse stats db model =
                 |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
 
         newCasesGraphData =
-            caseManagementsThisYear
+            stats.caseManagement.thisYear
                 |> List.map (.nutrition >> generateCaseNutritionNewCases currentDate)
                 |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
                 |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
@@ -1272,7 +1095,7 @@ viewNutritionPage language currentDate isChw nurse stats db model =
             [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
             ]
         , div [ class "eight wide column" ]
-            [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+            [ generateTotalEncounters currentPeriodStats.totalEncounters model
                 |> viewTotalEncounters language
             ]
         , div [ class "sixteen wide column" ]
@@ -1978,12 +1801,26 @@ viewMonthlyChart language currentDate chartType filterType data currentFilter =
         caption =
             case chartType of
                 MonthlyChartTotals ->
-                    div [ class "title left floated column" ] [ text <| translate language (Translate.Dashboard Translate.TotalBeneficiaries) ++ " " ++ toString currentFilter ++ " (%)" ]
+                    div [ class "title left floated column" ]
+                        [ text <|
+                            translate language (Translate.Dashboard Translate.TotalBeneficiaries)
+                                ++ " "
+                                ++ translate language (Translate.Dashboard <| Translate.Filter currentFilter)
+                                ++ " (%)"
+                        ]
 
                 MonthlyChartIncidence ->
                     div [ class "title left floated column" ]
-                        [ div [] [ text <| translate language (Translate.Dashboard Translate.IncidenceOf) ++ " " ++ toString currentFilter ++ " (%)" ]
-                        , div [ class "helper" ] [ text "(New cases per month)" ]
+                        [ div []
+                            [ text <|
+                                translate language (Translate.Dashboard Translate.IncidenceOf)
+                                    ++ " "
+                                    ++ translate language (Translate.Dashboard <| Translate.Filter currentFilter)
+                                    ++ " (%)"
+                            ]
+                        , div [ class "helper" ]
+                            [ text <| "(" ++ translate language (Translate.Dashboard Translate.NewCasesPerMonth) ++ ")"
+                            ]
                         ]
 
         chartData =

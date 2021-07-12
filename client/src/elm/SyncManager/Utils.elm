@@ -858,7 +858,7 @@ encodeBackendAuthorityEntity entity =
             encode Backend.Measurement.Encoder.encodeDangerSigns identifier
 
         BackendAuthorityDashboardStats identifier ->
-            encode Backend.Dashboard.Encoder.encodeDashboardStats identifier
+            encode Backend.Dashboard.Encoder.encodeDashboardStatsRaw identifier
 
         BackendAuthorityExposure identifier ->
             encode Backend.Measurement.Encoder.encodeExposure identifier
