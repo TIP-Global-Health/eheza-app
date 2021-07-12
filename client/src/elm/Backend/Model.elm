@@ -21,7 +21,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.Clinic.Model exposing (Clinic, ClinicType)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
-import Backend.Dashboard.Model exposing (DashboardStats)
+import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
@@ -140,7 +140,7 @@ type alias ModelIndexedDb =
     , postWellChildEncounter : Dict IndividualEncounterParticipantId (WebData ( WellChildEncounterId, WellChildEncounter ))
 
     -- Dashboard Statistics.
-    , computedDashboard : Dict HealthCenterId DashboardStats
+    , computedDashboard : Dict HealthCenterId DashboardStatsRaw
     , computedDashboardLastFetched : Time.Posix
     }
 
@@ -255,7 +255,7 @@ type MsgIndexedDb
     | HandleFetchedAcuteIllnessEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
     | HandleFetchedAcuteIllnessMeasurements AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
     | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
-    | HandleFetchedComputedDashboard HealthCenterId (WebData (Dict HealthCenterId DashboardStats))
+    | HandleFetchedComputedDashboard HealthCenterId (WebData (Dict HealthCenterId DashboardStatsRaw))
     | HandleFetchedChildrenMeasurements (WebData (Dict PersonId ChildMeasurementList))
     | HandleFetchedClinics (WebData (Dict ClinicId Clinic))
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
@@ -353,7 +353,7 @@ type Revision
     | CounselingSessionRevision CounselingSessionId CounselingSession
     | CounselingTopicRevision CounselingTopicId CounselingTopic
     | DangerSignsRevision DangerSignsId DangerSigns
-    | DashboardStatsRevision HealthCenterId DashboardStats
+    | DashboardStatsRevision HealthCenterId DashboardStatsRaw
     | ExposureRevision ExposureId Exposure
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | FollowUpRevision FollowUpId FollowUp

@@ -688,7 +688,7 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
 
                     "statistics" ->
                         doDecode
-                            Backend.Dashboard.Decoder.decodeDashboardStats
+                            Backend.Dashboard.Decoder.decodeDashboardStatsRaw
                             BackendAuthorityDashboardStats
 
                     "symptoms_general" ->

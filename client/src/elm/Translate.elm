@@ -241,6 +241,7 @@ type Dashboard
     | NewBeneficiaries
     | NewbornsInCare
     | NewCasesLabel
+    | NewCasesPerMonth
     | NewPregnancy
     | NoDataGeneral
     | NoDataForPeriod
@@ -8313,7 +8314,7 @@ translateDashboard trans =
 
         FeversByCause ->
             { english = "Fevers by Cause"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Impamvu zateye umuriro"
             }
 
         FeverCause cause ->
@@ -8325,7 +8326,7 @@ translateDashboard trans =
 
                 FeverCauseMalaria ->
                     { english = "Malaria"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Malariya"
                     }
 
                 FeverCauseRespiratory ->
@@ -8335,12 +8336,12 @@ translateDashboard trans =
 
                 FeverCauseGI ->
                     { english = "Gastrointeritis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara yo mu nda"
                     }
 
                 FeverCauseUnknown ->
                     { english = "Unknown"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibizwi"
                     }
 
         FeverOfUnknownOrigin ->
@@ -8352,17 +8353,17 @@ translateDashboard trans =
             case filter of
                 Stunting ->
                     { english = "Stunting"
-                    , kinyarwanda = Just "Abagwingiye"
+                    , kinyarwanda = Just "Igwingira"
                     }
 
                 Underweight ->
                     { english = "Underweight"
-                    , kinyarwanda = Just "Abafite ibiro bidahagije"
+                    , kinyarwanda = Just "Ibiro bidahagije"
                     }
 
                 Wasting ->
                     { english = "Wasting"
-                    , kinyarwanda = Just "Abananutse Bikabije"
+                    , kinyarwanda = Just "Kunanuka Bikabije"
                     }
 
                 Dashboard.MUAC ->
@@ -8409,7 +8410,7 @@ translateDashboard trans =
 
         Filters ->
             { english = "Filters"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Guhitamo"
             }
 
         GirlsFilterLabel ->
@@ -8439,12 +8440,12 @@ translateDashboard trans =
 
         IncidenceOf ->
             { english = "Incidence of"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'abana bashya bafite"
             }
 
         LastUpdated ->
             { english = "Last updated"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ivugurura riheruka"
             }
 
         LoadingDataGeneral ->
@@ -8475,6 +8476,11 @@ translateDashboard trans =
         NewCasesLabel ->
             { english = "New Cases"
             , kinyarwanda = Nothing
+            }
+
+        NewCasesPerMonth ->
+            { english = "New cases per month"
+            , kinyarwanda = Just "Abashya bagaragaye mu kwezi"
             }
 
         NewPregnancy ->
@@ -8516,7 +8522,7 @@ translateDashboard trans =
             case period of
                 Dashboard.OneYear ->
                     { english = "from last year"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Guhera umwaka ushize"
                     }
 
                 Dashboard.ThisMonth ->
@@ -8610,7 +8616,7 @@ translateDashboard trans =
 
         TotalBeneficiaries ->
             { english = "Total Beneficiaries"
-            , kinyarwanda = Just "Umubare wose w'"
+            , kinyarwanda = Just "Umubare w'abana bose bafite"
             }
 
         TotalMalnourished ->
