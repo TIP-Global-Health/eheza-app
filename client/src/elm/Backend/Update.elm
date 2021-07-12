@@ -3671,8 +3671,8 @@ generateWellChildDangerSignsAlertMsgs currentDate maybeId =
             [ -- Navigate to Well Child encouner page, because that's where we show alert popup.
               App.Model.SetActivePage (UserPage (WellChildEncounterPage id))
 
-            -- Show warning popup with new assesment.
-            , Pages.WellChildEncounter.Model.SetWarningPopupState True
+            -- Show danger signs alert popup.
+            , Pages.WellChildEncounter.Model.ShowWarningPopup True
                 |> App.Model.MsgPageWellChildEncounter id
                 |> App.Model.MsgLoggedIn
             ]

@@ -52,6 +52,7 @@ viewHeaderAndContent language currentDate zscores id db model data =
         , viewModal <|
             warningPopup language
                 data.participant.person
+                id
                 model.showPopup
         ]
 
@@ -85,8 +86,8 @@ viewContent language currentDate zscores id db model data =
         |> div [ class "ui unstackable items" ]
 
 
-warningPopup : Language -> PersonId -> Bool -> Maybe (Html Msg)
-warningPopup language childId showPopup =
+warningPopup : Language -> PersonId -> WellChildEncounterId -> Bool -> Maybe (Html Msg)
+warningPopup language childId encounterId showPopup =
     if showPopup then
         let
             warningHeading =
@@ -102,11 +103,18 @@ warningPopup language childId showPopup =
                     ]
                 , div
                     [ class "actions" ]
-                    [ button
-                        [ class "ui primary fluid button"
-                        , onClick <| NavigateToAcuteIllnessParticipantPage childId
+                    [ div [ class "two ui buttons" ]
+                        [ button
+                            [ class "ui fluid button"
+                            , onClick <| ShowWarningPopup False
+                            ]
+                            [ text <| translate language Translate.Cancel ]
+                        , button
+                            [ class "ui primary fluid button"
+                            , onClick <| NavigateToAcuteIllnessParticipantPage childId encounterId
+                            ]
+                            [ text <| translate language Translate.Continue ]
                         ]
-                        [ text <| translate language Translate.Continue ]
                     ]
                 ]
 

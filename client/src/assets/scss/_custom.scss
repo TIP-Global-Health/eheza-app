@@ -1283,12 +1283,19 @@ input::placeholder {
     }
   }
 
-  &.danger-signs-popup .content .popup-action {
-    font-size: 26px;
-    font-weight: bold;
-    margin-top: 40px;
-    padding: 0;
-    text-transform: none;
+  &.danger-signs-popup {
+
+    .content .popup-action {
+      font-size: 26px;
+      font-weight: bold;
+      margin-top: 40px;
+      padding: 0;
+      text-transform: none;
+    }
+
+    .actions .primary.button {
+      background: $color-red-alert;
+    }
   }
 
   &.prenatal-follow-up-popup {

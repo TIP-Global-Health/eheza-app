@@ -19,8 +19,8 @@ type Msg
     = CloseEncounter WellChildEncounterId
     | SetActivePage Page
     | SetSelectedTab Tab
-    | SetWarningPopupState Bool
-    | NavigateToAcuteIllnessParticipantPage PersonId
+    | ShowWarningPopup Bool
+    | NavigateToAcuteIllnessParticipantPage PersonId WellChildEncounterId
 
 
 type Tab
