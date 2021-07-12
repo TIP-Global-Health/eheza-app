@@ -466,7 +466,11 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
       'id' => $row->field_person,
       // Field for 'created' is added at hedley_stats_get_base_query().
       'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
-      'date_concluded' => !empty($row->field_date_concluded) ? date_format(date_create($row->field_date_concluded), 'Y-m-d') : NULL,
+      // We use the 'end date' of expected fields here, because the
+      // 'date concluded' field is not set when illness is resolved.
+      // While we could do that for illness, 'date concluded' field was meant
+      // to capture the date when pregnancy has ended - some date in past.
+      'date_concluded' => !empty($row->field_expected_field_expected_value2) ? date_format(date_create($row->field_date_concluded), 'Y-m-d') : NULL,
       'outcome' => $row->field_outcome,
       'encounters' => [],
     ];
