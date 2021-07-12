@@ -967,6 +967,7 @@ type TranslationId
     | ViewProgressReport
     | Village
     | Warning
+    | WarningSignsOfAcuteIllness
     | WasFbfDistirbuted Activity
     | WeekSinglePlural Int
     | Weight
@@ -7590,6 +7591,11 @@ translationSet trans =
         Warning ->
             { english = "Warning"
             , kinyarwanda = Just "Impuruza"
+            }
+
+        WarningSignsOfAcuteIllness ->
+            { english = "Child shows signs of acute illness. Please begin an “Acute Illness” encounter immediately."
+            , kinyarwanda = Nothing
             }
 
         WasFbfDistirbuted activity ->
