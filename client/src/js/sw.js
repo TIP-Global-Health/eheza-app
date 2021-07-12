@@ -135,6 +135,8 @@ var tableForType = {
     well_child_nutrition: 'shards',
     well_child_photo: 'shards',
     well_child_send_to_hc: 'shards',
+    well_child_symptoms_review: 'shards',
+    well_child_vitals: 'shards',
     well_child_weight: 'shards'
 };
 

@@ -972,6 +972,8 @@ type TranslationId
     | Weight
     | WelcomeUser String
     | WellChildActivityTitle WellChildActivity
+    | WellChildDangerSignsTask Pages.WellChildActivity.Model.DangerSignsTask
+    | WellChildSymptom WellChildSymptom
     | WhatDoYouWantToDo
     | WhatType
     | WhatWasTheirResponse
@@ -7625,6 +7627,11 @@ translationSet trans =
 
         WellChildActivityTitle activity ->
             case activity of
+                WellChildDangerSigns ->
+                    { english = "Danger Signs"
+                    , kinyarwanda = Just "Ibimenyetso Mpuruza"
+                    }
+
                 WellChildNutritionAssessment ->
                     { english = "Nutrition Assesmen"
                     , kinyarwanda = Nothing
@@ -7632,6 +7639,95 @@ translationSet trans =
 
                 WellChildECD ->
                     { english = "ECD"
+                    , kinyarwanda = Nothing
+                    }
+
+        WellChildDangerSignsTask task ->
+            case task of
+                Pages.WellChildActivity.Model.TaskSymptomsReview ->
+                    { english = "Symptoms Review"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskVitals ->
+                    { english = "Vitals"
+                    , kinyarwanda = Nothing
+                    }
+
+        WellChildSymptom symptom ->
+            case symptom of
+                SymptomBreathingProblems ->
+                    { english = "Breathing problems"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomConvulsions ->
+                    { english = "Convulsions"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomLethargyOrUnresponsiveness ->
+                    { english = "Lethargy or unresponsiveness"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomDiarrhea ->
+                    { english = "Diarrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomVomiting ->
+                    { english = "Vomiting"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomUmbilicalCordRedness ->
+                    { english = "Umbilical Cord Redness"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomStiffNeckOrBulgingFontanelle ->
+                    { english = "Stiff neck or bulging fontanelle"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomSevereEdema ->
+                    { english = "Severe Edema"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomPalmoplantarPallor ->
+                    { english = "Palmoplantar pallor"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomHistoryOfFever ->
+                    { english = "History of fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomBabyTiresQuicklyWhenFeeding ->
+                    { english = "Baby tires quickly when feeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomCoughingOrTearingWhileFeeding ->
+                    { english = "Coughing/tearing while feeding (<6 months)"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomRigidMusclesOrJawClenchingPreventingFeeding ->
+                    { english = "Rigid muscles/jaw clenching that prevents feeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                ExcessiveSweatingWhenFeeding ->
+                    { english = "Excessive sweating when feeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoWellChildSymptoms ->
+                    { english = "None of these"
                     , kinyarwanda = Nothing
                     }
 

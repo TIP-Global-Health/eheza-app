@@ -328,6 +328,12 @@ decodeRevision =
                     "well_child_send_to_hc" ->
                         decodeWithUuid WellChildSendToHCRevision decodeWellChildSendToHC
 
+                    "well_child_symptoms_review" ->
+                        decodeWithUuid WellChildSymptomsReviewRevision decodeWellChildSymptomsReview
+
+                    "well_child_vitals" ->
+                        decodeWithUuid WellChildVitalsRevision decodeWellChildVitals
+
                     "well_child_weight" ->
                         decodeWithUuid WellChildWeightRevision decodeWellChildWeight
 

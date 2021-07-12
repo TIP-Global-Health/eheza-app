@@ -123,6 +123,8 @@ const HEDLEY_RESTFUL_SHARDED = [
   'well_child_nutrition' => 'well-child-nutrition',
   'well_child_photo' => 'well-child-photo',
   'well_child_send_to_hc' => 'well-child-send-to-hc',
+  'well_child_symptoms_review' => 'well-child-symptoms-review',
+  'well_child_vitals' => 'well-child-vitals',
   'well_child_weight' => 'well-child-weight',
 ];
 

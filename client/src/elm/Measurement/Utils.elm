@@ -527,3 +527,38 @@ toSendToHCValue form =
 allNextStepsTasks : List NextStepsTask
 allNextStepsTasks =
     [ NextStepContributingFactors, NextStepsHealthEducation, NextStepsSendToHC, NextStepFollowUp ]
+
+
+fromBasicVitalsForm : Maybe BasicVitalsValue -> BasicVitalsForm
+fromBasicVitalsForm saved =
+    { respiratoryRate = Maybe.map .respiratoryRate saved
+    , respiratoryRateDirty = False
+    , bodyTemperature = Maybe.map .bodyTemperature saved
+    , bodyTemperatureDirty = False
+    }
+
+
+basicVitalsFormWithDefault : BasicVitalsForm -> Maybe BasicVitalsValue -> BasicVitalsForm
+basicVitalsFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { respiratoryRate = valueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
+                , respiratoryRateDirty = form.respiratoryRateDirty
+                , bodyTemperature = valueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
+                , bodyTemperatureDirty = form.bodyTemperatureDirty
+                }
+            )
+
+
+toBasicVitalsValueWithDefault : Maybe BasicVitalsValue -> BasicVitalsForm -> Maybe BasicVitalsValue
+toBasicVitalsValueWithDefault saved form =
+    basicVitalsFormWithDefault form saved
+        |> toBasicVitalsValue
+
+
+toBasicVitalsValue : BasicVitalsForm -> Maybe BasicVitalsValue
+toBasicVitalsValue form =
+    Maybe.map BasicVitalsValue form.respiratoryRate
+        |> andMap form.bodyTemperature

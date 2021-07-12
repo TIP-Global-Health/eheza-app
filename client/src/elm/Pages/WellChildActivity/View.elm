@@ -24,6 +24,7 @@ import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
         ( renderDatePart
+        , viewBasicVitalsForm
         , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewFollowUpForm
@@ -42,6 +43,7 @@ import Pages.Utils
         , taskCompletedWithException
         , tasksBarId
         , viewBoolInput
+        , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewLabel
@@ -119,23 +121,192 @@ viewContent language currentDate zscores id activity db model assembled =
 viewActivity : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> WellChildActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
 viewActivity language currentDate zscores id activity assembled db model =
     case activity of
+        WellChildDangerSigns ->
+            viewDangerSignsContent language currentDate assembled model.dangerSignsData
+
         WellChildNutritionAssessment ->
-            viewNutritionAssessmenContent language currentDate zscores id assembled db model.nutritionAssessmentData
+            viewNutritionAssessmenContent language currentDate zscores assembled db model.nutritionAssessmentData
 
         WellChildECD ->
             viewECDContent language currentDate assembled model.ecdForm
+
+
+viewDangerSignsContent :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> DangerSignsData
+    -> List (Html Msg)
+viewDangerSignsContent language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            [ TaskSymptomsReview, TaskVitals ]
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        TaskSymptomsReview ->
+                            ( "symptoms"
+                            , isJust measurements.symptomsReview
+                            )
+
+                        TaskVitals ->
+                            ( "vitals"
+                            , isJust measurements.vitals
+                            )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveDangerSignsTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.WellChildDangerSignsTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map (\task -> ( task, dangerSignsTasksCompletedFromTotal measurements data task ))
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just TaskSymptomsReview ->
+                    measurements.symptomsReview
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> symptomsReviewFormWithDefault data.symptomsReviewForm
+                        |> viewSymptomsReviewForm language currentDate assembled.person
+
+                Just TaskVitals ->
+                    let
+                        previousRespiratoryRate =
+                            resolvePreviousValue assembled .vitals .respiratoryRate
+                                |> Maybe.map toFloat
+
+                        previousBodyTemperature =
+                            resolvePreviousValue assembled .vitals .bodyTemperature
+                    in
+                    measurements.vitals
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> basicVitalsFormWithDefault data.vitalsForm
+                        |> viewBasicVitalsForm language
+                            currentDate
+                            assembled.person
+                            previousRespiratoryRate
+                            previousBodyTemperature
+                            SetVitalsResporatoryRate
+                            SetVitalsBodyTemperature
+
+                Nothing ->
+                    []
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                case task of
+                                    TaskSymptomsReview ->
+                                        SaveSymptomsReview personId measurements.symptomsReview nextTask
+
+                                    TaskVitals ->
+                                        SaveVitals personId measurements.vitals nextTask
+
+                            disabled =
+                                tasksCompleted /= totalTasks
+                        in
+                        viewAction language saveMsg disabled
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue" ]
+        [ div [ class "ui four column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
+        ]
+    ]
+
+
+viewSymptomsReviewForm : Language -> NominalDate -> Person -> SymptomsReviewForm -> List (Html Msg)
+viewSymptomsReviewForm language currentDate person form =
+    [ div [ class "ui form symptoms-review" ]
+        [ viewLabel language Translate.SelectAllSigns
+        , viewCheckBoxMultipleSelectInput language
+            [ SymptomBreathingProblems
+            , SymptomConvulsions
+            , SymptomLethargyOrUnresponsiveness
+            , SymptomDiarrhea
+            , SymptomVomiting
+            , SymptomUmbilicalCordRedness
+            , SymptomStiffNeckOrBulgingFontanelle
+            , SymptomSevereEdema
+            , SymptomPalmoplantarPallor
+            , SymptomHistoryOfFever
+            , SymptomBabyTiresQuicklyWhenFeeding
+            , SymptomCoughingOrTearingWhileFeeding
+            , SymptomRigidMusclesOrJawClenchingPreventingFeeding
+            , ExcessiveSweatingWhenFeeding
+            ]
+            []
+            (form.symptoms |> Maybe.withDefault [])
+            (Just NoWellChildSymptoms)
+            SetSymptom
+            Translate.WellChildSymptom
+        ]
+    ]
 
 
 viewNutritionAssessmenContent :
     Language
     -> NominalDate
     -> ZScore.Model.Model
-    -> WellChildEncounterId
     -> AssembledData
     -> ModelIndexedDb
     -> NutritionAssessmentData
     -> List (Html Msg)
-viewNutritionAssessmenContent language currentDate zscores id assembled db data =
+viewNutritionAssessmenContent language currentDate zscores assembled db data =
     let
         personId =
             assembled.participant.person

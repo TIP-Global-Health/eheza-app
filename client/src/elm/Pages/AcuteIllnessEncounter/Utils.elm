@@ -10,7 +10,7 @@ import Backend.Measurement.Model
         , AcuteFindingsRespiratorySign(..)
         , AcuteIllnessDangerSign(..)
         , AcuteIllnessMeasurements
-        , AcuteIllnessVitalsValue
+        , BasicVitalsValue
         , Call114Sign(..)
         , ChildNutritionSign(..)
         , ColorAlertIndication(..)

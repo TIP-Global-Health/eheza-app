@@ -807,3 +807,15 @@ wellChildHeadCircumferenceEndpoint : ReadWriteEndPoint Error WellChildHeadCircum
 wellChildHeadCircumferenceEndpoint =
     swEndpoint "nodes/well_child_head_circumference" decodeWellChildHeadCircumference
         |> withValueEncoder (object << encodeWellChildHeadCircumference)
+
+
+wellChildSymptomsReviewEndpoint : ReadWriteEndPoint Error WellChildSymptomsReviewId WellChildSymptomsReview WellChildSymptomsReview ()
+wellChildSymptomsReviewEndpoint =
+    swEndpoint "nodes/well_child_symptoms_review" decodeWellChildSymptomsReview
+        |> withValueEncoder (object << encodeWellChildSymptomsReview)
+
+
+wellChildVitalsEndpoint : ReadWriteEndPoint Error WellChildVitalsId WellChildVitals WellChildVitals ()
+wellChildVitalsEndpoint =
+    swEndpoint "nodes/well_child_vitals" decodeWellChildVitals
+        |> withValueEncoder (object << encodeWellChildVitals)

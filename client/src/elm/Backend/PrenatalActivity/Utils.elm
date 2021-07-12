@@ -1,6 +1,5 @@
 module Backend.PrenatalActivity.Utils exposing
     ( decodeActivityFromString
-    , defaultActivity
     , encodeActivityAsString
     , generateHighRiskAlertData
     , generateHighSeverityAlertData
@@ -120,13 +119,6 @@ decodeActivityFromString s =
 
         _ ->
             Nothing
-
-
-{-| An activity type to use if we need to start somewhere.
--}
-defaultActivity : PrenatalActivity
-defaultActivity =
-    PregnancyDating
 
 
 {-| Returns a string representing an icon for the activity, for use in a

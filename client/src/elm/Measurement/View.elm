@@ -1,6 +1,7 @@
 module Measurement.View exposing
     ( renderDatePart
     , viewActionTakenLabel
+    , viewBasicVitalsForm
     , viewChild
     , viewColorAlertIndication
     , viewContributingFactorsForm
@@ -27,6 +28,7 @@ import Backend.Measurement.Utils exposing (currentValues, heightValueFunc, mapMe
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
 import Backend.Person.Model exposing (Gender, Person)
+import Backend.Person.Utils exposing (ageInMonths)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -46,6 +48,7 @@ import Pages.Utils
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
+        , viewConditionalAlert
         , viewLabel
         , viewMeasurementInput
         , viewPhotoThumbFromPhotoUrl
@@ -1188,6 +1191,78 @@ viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotS
             ++ sendToHCSection
             ++ handReferralFormSection
             ++ accompanyToHCSection
+
+
+viewBasicVitalsForm :
+    Language
+    -> NominalDate
+    -> Person
+    -> Maybe Float
+    -> Maybe Float
+    -> (String -> msg)
+    -> (String -> msg)
+    -> BasicVitalsForm
+    -> List (Html msg)
+viewBasicVitalsForm language currentDate person previousRespiratoryRate previousBodyTemperature setResporatoryRateMsg setBodyTemperatureMsg form =
+    let
+        respiratoryRateAlert =
+            ageInMonths currentDate person
+                |> Maybe.map
+                    (\ageMonths ->
+                        let
+                            ( redCondition, yellowCondition ) =
+                                if ageMonths < 12 then
+                                    ( [ [ (>) 12 ], [ (<=) 50 ] ]
+                                    , []
+                                    )
+
+                                else if ageMonths < 60 then
+                                    ( [ [ (>) 12 ], [ (<=) 40 ] ]
+                                    , []
+                                    )
+
+                                else
+                                    ( [ [ (>) 12 ], [ (<) 30 ] ]
+                                    , [ [ (<=) 21, (>=) 30 ] ]
+                                    )
+                        in
+                        viewConditionalAlert form.respiratoryRate redCondition yellowCondition
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui form vitals" ]
+        [ div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.RespiratoryRate ]
+            , div [ class "four wide column" ]
+                [ respiratoryRateAlert ]
+            ]
+        , viewMeasurementInput
+            language
+            (Maybe.map toFloat form.respiratoryRate)
+            setResporatoryRateMsg
+            "respiratory-rate"
+            Translate.BpmUnitLabel
+        , Pages.Utils.viewPreviousMeasurement language previousRespiratoryRate Translate.BpmUnitLabel
+        , div [ class "separator" ] []
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.BodyTemperature ]
+            , div [ class "four wide column" ]
+                [ viewConditionalAlert form.bodyTemperature
+                    [ [ (>) 35 ], [ (<=) 37.5 ] ]
+                    []
+                ]
+            ]
+        , viewMeasurementInput
+            language
+            form.bodyTemperature
+            setBodyTemperatureMsg
+            "body-temperature"
+            Translate.Celsius
+        , Pages.Utils.viewPreviousMeasurement language previousBodyTemperature Translate.Celsius
+        ]
+    ]
 
 
 viewActionTakenLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
