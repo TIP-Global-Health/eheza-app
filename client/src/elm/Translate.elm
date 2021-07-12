@@ -3071,7 +3071,7 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = "Well Child"
+                    { english = "Standard Pediatric Visit"
                     , kinyarwanda = Nothing
                     }
 
@@ -3169,7 +3169,7 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = "Well Child Follow Up"
+                    { english = "Standard Pediatric Visit Follow Up"
                     , kinyarwanda = Nothing
                     }
 
@@ -3967,7 +3967,7 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = "First Well Child Encounter"
+                    { english = "First Standard Pediatric Visit Encounter"
                     , kinyarwanda = Nothing
                     }
 
@@ -3999,7 +3999,7 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = "Well Child Encounter"
+                    { english = "Standard Pediatric Visit Encounter"
                     , kinyarwanda = Nothing
                     }
 
@@ -4031,7 +4031,7 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = "Select Well Child Visit"
+                    { english = "Select Standard Pediatric Visit"
                     , kinyarwanda = Nothing
                     }
 
@@ -4063,7 +4063,7 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = "Subsequent Well Child"
+                    { english = "Subsequent Standard Pediatric Visit"
                     , kinyarwanda = Nothing
                     }
 
@@ -4095,7 +4095,7 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = "Well Child Care"
+                    { english = "Standard Pediatric Visit"
                     , kinyarwanda = Nothing
                     }
 
@@ -7990,7 +7990,7 @@ translateActivePage page =
                             }
 
                         WellChildEncounter ->
-                            { english = "Well Child Participant"
+                            { english = "Standard Pediatric Visit Participant"
                             , kinyarwanda = Nothing
                             }
 
@@ -8117,17 +8117,17 @@ translateActivePage page =
                     }
 
                 WellChildParticipantPage _ ->
-                    { english = "Well Child Encounter"
+                    { english = "Standard Pediatric Visit Encounter"
                     , kinyarwanda = Nothing
                     }
 
                 WellChildEncounterPage _ ->
-                    { english = "Well Child Encounter"
-                    , kinyarwanda = Just "Gusura abarwayi mu rugo"
+                    { english = "Standard Pediatric Visit Encounter"
+                    , kinyarwanda = Nothing
                     }
 
                 WellChildActivityPage _ _ ->
-                    { english = "Well Child Activity"
+                    { english = "Standard Pediatric Visit Activity"
                     , kinyarwanda = Nothing
                     }
 
