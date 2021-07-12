@@ -675,8 +675,9 @@ countResolvedGICasesForSelectedMonth selectedDate itemsList =
 
                 Just dateConcluded ->
                     -- Illness that was resolved at selected month,
-                    -- and had a GI diagnosis.
+                    -- has outcome set, and had a GI diagnosis.
                     withinSelectedMonth selectedDate dateConcluded
+                        && isJust item.outcome
                         && List.member item.diagnosis
                             [ DiagnosisGastrointestinalInfectionComplicated
                             , DiagnosisGastrointestinalInfectionUncomplicated
