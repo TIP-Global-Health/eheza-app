@@ -241,6 +241,7 @@ type Dashboard
     | NewBeneficiaries
     | NewbornsInCare
     | NewCasesLabel
+    | NewCasesPerMonth
     | NewPregnancy
     | NoDataGeneral
     | NoDataForPeriod
@@ -391,6 +392,7 @@ type TranslationId
     | Dashboard Dashboard
     | ClinicalProgressReport
     | CloseAcuteIllnessLabel
+    | ColorAlertIndication ColorAlertIndication
     | CompleteHCReferralForm
     | CompletedHCReferralForm
     | Contacted114
@@ -534,6 +536,8 @@ type TranslationId
     | HCRecommendation HCRecommendation
     | HCResponseQuestion
     | HCResponsePeriodQuestion
+    | HeadCircumferenceHelper
+    | HeadCircumferenceNotTakenLabel
     | HeadHair
     | HealthCenter
     | HealthCenterDetermined
@@ -650,7 +654,6 @@ type TranslationId
     | Mothers
     | MUAC
     | MuacHelper
-    | MuacIndication MuacIndication
     | MyAccount
     | MyRelatedBy MyRelatedBy
     | MyRelatedByQuestion MyRelatedBy
@@ -964,11 +967,14 @@ type TranslationId
     | ViewProgressReport
     | Village
     | Warning
+    | WarningSignsOfAcuteIllness
     | WasFbfDistirbuted Activity
     | WeekSinglePlural Int
     | Weight
     | WelcomeUser String
     | WellChildActivityTitle WellChildActivity
+    | WellChildDangerSignsTask Pages.WellChildActivity.Model.DangerSignsTask
+    | WellChildSymptom WellChildSymptom
     | WhatDoYouWantToDo
     | WhatType
     | WhatWasTheirResponse
@@ -980,6 +986,7 @@ type TranslationId
     | Yes
     | YouAreNotAnAdmin
     | YourGroupEncounterHasBeenSaved
+    | ZScoreHeadCircumferenceForAge
     | ZScoreHeightForAge
     | ZScoreMuacForAge
     | ZScoreWeightForAge
@@ -2319,6 +2326,23 @@ translationSet trans =
             , kinyarwanda = Just "Cyangwa Ufunge Indwara ifatiyeho iheruka kuvurwa"
             }
 
+        ColorAlertIndication indication ->
+            case indication of
+                ColorAlertRed ->
+                    { english = "Red"
+                    , kinyarwanda = Just "Umutuku"
+                    }
+
+                ColorAlertYellow ->
+                    { english = "Yellow"
+                    , kinyarwanda = Just "Umuhondo"
+                    }
+
+                ColorAlertGreen ->
+                    { english = "Green"
+                    , kinyarwanda = Just "Icyatsi"
+                    }
+
         CompleteHCReferralForm ->
             { english = "Complete a health center referral form"
             , kinyarwanda = Just "Uzuza urupapuro rwo kohereza umurwayi ku kigo Nderabuzima."
@@ -3047,7 +3071,7 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = "Well Child"
+                    { english = "Standard Pediatric Visit"
                     , kinyarwanda = Nothing
                     }
 
@@ -3145,7 +3169,7 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = "Well Child Follow Up"
+                    { english = "Standard Pediatric Visit Follow Up"
                     , kinyarwanda = Nothing
                     }
 
@@ -3665,6 +3689,16 @@ translationSet trans =
             , kinyarwanda = Just "Byatwaye igihe kingana gute ngo ikigo nderabuzima gisubize"
             }
 
+        HeadCircumferenceHelper ->
+            { english = "Using a tape measure, wrap the tape around the widest possible circumference; above the ears and midway between the eyebrows and the hairline to the occipital prominence on the back of the head."
+            , kinyarwanda = Nothing
+            }
+
+        HeadCircumferenceNotTakenLabel ->
+            { english = "Please check if the head circumference was not taken today"
+            , kinyarwanda = Nothing
+            }
+
         HeadHair ->
             { english = "Head/Hair"
             , kinyarwanda = Just "Umutwe/Umusatsi"
@@ -3933,7 +3967,7 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = "First Well Child Encounter"
+                    { english = "First Standard Pediatric Visit Encounter"
                     , kinyarwanda = Nothing
                     }
 
@@ -3971,7 +4005,7 @@ translationSet trans =
                         }
 
                     else
-                        { english = "Well Child Encounter"
+                        { english = ""Standard Pediatric Visit Encounter"
                         , kinyarwanda = Nothing
                         }
 
@@ -4009,7 +4043,7 @@ translationSet trans =
                         }
 
                     else
-                        { english = "Select Well Child Visit"
+                        { english = "Select Standard Pediatric Visit"
                         , kinyarwanda = Nothing
                         }
 
@@ -4041,7 +4075,7 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = "Subsequent Well Child"
+                    { english = "Subsequent Standard Pediatric Visit"
                     , kinyarwanda = Nothing
                     }
 
@@ -4079,7 +4113,7 @@ translationSet trans =
                         }
 
                     else
-                        { english = "Well Child Care"
+                        { english = "Standard Pediatric Visit"
                         , kinyarwanda = Nothing
                         }
 
@@ -4780,23 +4814,6 @@ translationSet trans =
             , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe gupima ikizigira cy'akaboko"
             }
 
-        MuacIndication indication ->
-            case indication of
-                MuacRed ->
-                    { english = "red"
-                    , kinyarwanda = Just "Umutuku"
-                    }
-
-                MuacYellow ->
-                    { english = "yellow"
-                    , kinyarwanda = Just "Umuhondo"
-                    }
-
-                MuacGreen ->
-                    { english = "green"
-                    , kinyarwanda = Just "Icyatsi"
-                    }
-
         MyAccount ->
             { english = "My Account"
             , kinyarwanda = Just "Konti yanjye"
@@ -5180,6 +5197,11 @@ translationSet trans =
                 TaskHeight ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"
+                    }
+
+                TaskHeadCircumference ->
+                    { english = "Head Circumference"
+                    , kinyarwanda = Nothing
                     }
 
                 TaskMuac ->
@@ -7589,6 +7611,11 @@ translationSet trans =
             , kinyarwanda = Just "Impuruza"
             }
 
+        WarningSignsOfAcuteIllness ->
+            { english = "Child shows signs of acute illness. Please begin an “Acute Illness” encounter immediately."
+            , kinyarwanda = Nothing
+            }
+
         WasFbfDistirbuted activity ->
             case activity of
                 ChildActivity _ ->
@@ -7624,6 +7651,11 @@ translationSet trans =
 
         WellChildActivityTitle activity ->
             case activity of
+                WellChildDangerSigns ->
+                    { english = "Danger Signs"
+                    , kinyarwanda = Just "Ibimenyetso Mpuruza"
+                    }
+
                 WellChildNutritionAssessment ->
                     { english = "Nutrition Assesmen"
                     , kinyarwanda = Nothing
@@ -7631,6 +7663,95 @@ translationSet trans =
 
                 WellChildECD ->
                     { english = "ECD"
+                    , kinyarwanda = Nothing
+                    }
+
+        WellChildDangerSignsTask task ->
+            case task of
+                Pages.WellChildActivity.Model.TaskSymptomsReview ->
+                    { english = "Symptoms Review"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskVitals ->
+                    { english = "Vitals"
+                    , kinyarwanda = Nothing
+                    }
+
+        WellChildSymptom symptom ->
+            case symptom of
+                SymptomBreathingProblems ->
+                    { english = "Breathing problems"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomConvulsions ->
+                    { english = "Convulsions"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomLethargyOrUnresponsiveness ->
+                    { english = "Lethargy or unresponsiveness"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomDiarrhea ->
+                    { english = "Diarrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomVomiting ->
+                    { english = "Vomiting"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomUmbilicalCordRedness ->
+                    { english = "Umbilical Cord Redness"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomStiffNeckOrBulgingFontanelle ->
+                    { english = "Stiff neck or bulging fontanelle"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomSevereEdema ->
+                    { english = "Severe Edema"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomPalmoplantarPallor ->
+                    { english = "Palmoplantar pallor"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomHistoryOfFever ->
+                    { english = "History of fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomBabyTiresQuicklyWhenFeeding ->
+                    { english = "Baby tires quickly when feeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomCoughingOrTearingWhileFeeding ->
+                    { english = "Coughing/tearing while feeding (<6 months)"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomRigidMusclesOrJawClenchingPreventingFeeding ->
+                    { english = "Rigid muscles/jaw clenching that prevents feeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                ExcessiveSweatingWhenFeeding ->
+                    { english = "Excessive sweating when feeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoWellChildSymptoms ->
+                    { english = "None of these"
                     , kinyarwanda = Nothing
                     }
 
@@ -7693,6 +7814,11 @@ translationSet trans =
 
         YourGroupEncounterHasBeenSaved ->
             { english = "Your Group Encounter has been saved."
+            , kinyarwanda = Nothing
+            }
+
+        ZScoreHeadCircumferenceForAge ->
+            { english = "Z-Score Head Circumference for Age: "
             , kinyarwanda = Nothing
             }
 
@@ -7882,7 +8008,7 @@ translateActivePage page =
                             }
 
                         WellChildEncounter ->
-                            { english = "Well Child Participant"
+                            { english = "Standard Pediatric Visit Participant"
                             , kinyarwanda = Nothing
                             }
 
@@ -8009,17 +8135,17 @@ translateActivePage page =
                     }
 
                 WellChildParticipantPage _ ->
-                    { english = "Well Child Encounter"
+                    { english = "Standard Pediatric Visit Encounter"
                     , kinyarwanda = Nothing
                     }
 
                 WellChildEncounterPage _ ->
-                    { english = "Well Child Encounter"
-                    , kinyarwanda = Just "Gusura abarwayi mu rugo"
+                    { english = "Standard Pediatric Visit Encounter"
+                    , kinyarwanda = Nothing
                     }
 
                 WellChildActivityPage _ _ ->
-                    { english = "Well Child Activity"
+                    { english = "Standard Pediatric Visit Activity"
                     , kinyarwanda = Nothing
                     }
 
@@ -8308,7 +8434,7 @@ translateDashboard trans =
 
         FeversByCause ->
             { english = "Fevers by Cause"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Impamvu zateye umuriro"
             }
 
         FeverCause cause ->
@@ -8320,7 +8446,7 @@ translateDashboard trans =
 
                 FeverCauseMalaria ->
                     { english = "Malaria"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Malariya"
                     }
 
                 FeverCauseRespiratory ->
@@ -8330,12 +8456,12 @@ translateDashboard trans =
 
                 FeverCauseGI ->
                     { english = "Gastrointeritis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara yo mu nda"
                     }
 
                 FeverCauseUnknown ->
                     { english = "Unknown"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibizwi"
                     }
 
         FeverOfUnknownOrigin ->
@@ -8347,17 +8473,17 @@ translateDashboard trans =
             case filter of
                 Stunting ->
                     { english = "Stunting"
-                    , kinyarwanda = Just "Abagwingiye"
+                    , kinyarwanda = Just "Igwingira"
                     }
 
                 Underweight ->
                     { english = "Underweight"
-                    , kinyarwanda = Just "Abafite ibiro bidahagije"
+                    , kinyarwanda = Just "Ibiro bidahagije"
                     }
 
                 Wasting ->
                     { english = "Wasting"
-                    , kinyarwanda = Just "Abananutse Bikabije"
+                    , kinyarwanda = Just "Kunanuka Bikabije"
                     }
 
                 Dashboard.MUAC ->
@@ -8404,7 +8530,7 @@ translateDashboard trans =
 
         Filters ->
             { english = "Filters"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Guhitamo"
             }
 
         GirlsFilterLabel ->
@@ -8434,12 +8560,12 @@ translateDashboard trans =
 
         IncidenceOf ->
             { english = "Incidence of"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'abana bashya bafite"
             }
 
         LastUpdated ->
             { english = "Last updated"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ivugurura riheruka"
             }
 
         LoadingDataGeneral ->
@@ -8470,6 +8596,11 @@ translateDashboard trans =
         NewCasesLabel ->
             { english = "New Cases"
             , kinyarwanda = Nothing
+            }
+
+        NewCasesPerMonth ->
+            { english = "New cases per month"
+            , kinyarwanda = Just "Abashya bagaragaye mu kwezi"
             }
 
         NewPregnancy ->
@@ -8511,7 +8642,7 @@ translateDashboard trans =
             case period of
                 Dashboard.OneYear ->
                     { english = "from last year"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Guhera umwaka ushize"
                     }
 
                 Dashboard.ThisMonth ->
@@ -8605,7 +8736,7 @@ translateDashboard trans =
 
         TotalBeneficiaries ->
             { english = "Total Beneficiaries"
-            , kinyarwanda = Just "Umubare wose w'"
+            , kinyarwanda = Just "Umubare w'abana bose bafite"
             }
 
         TotalMalnourished ->

@@ -11,7 +11,7 @@ $plugin = array(
   'name' => 'well-child-contributing-factors',
   'entity_type' => 'node',
   'bundle' => 'well_child_contributing_factors',
-  'description' => t('Exports the WellChildContributingFactors bundle.'),
+  'description' => t('Exports the Well Child Contributing Factors bundle.'),
   'class' => 'HedleyRestfulWellChildContributingFactors',
   'authentication_types' => TRUE,
 );

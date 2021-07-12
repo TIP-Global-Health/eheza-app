@@ -4,13 +4,15 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (headCircumferenceIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend, resolvePreviousValuesSetForChild)
+import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import EverySet
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -22,11 +24,12 @@ import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
         ( renderDatePart
+        , viewBasicVitalsForm
+        , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewFollowUpForm
         , viewHealthEducationForm
         , viewMeasurementFloatDiff
-        , viewMuacIndication
         , viewSendToHCForm
         , zScoreForHeightOrLength
         )
@@ -40,10 +43,12 @@ import Pages.Utils
         , taskCompletedWithException
         , tasksBarId
         , viewBoolInput
+        , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
+        , viewPreviousMeasurement
         , viewQuestionLabel
         )
 import Pages.WellChildActivity.Model exposing (..)
@@ -53,9 +58,10 @@ import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
+import Utils.NominalDate exposing (diffDays)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
-import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
+import ZScore.Utils exposing (viewZScore, zScoreHeadCircumferenceForAge)
 
 
 view : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> Html Msg
@@ -115,11 +121,181 @@ viewContent language currentDate zscores id isChw activity db model assembled =
 viewActivity : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
 viewActivity language currentDate zscores id isChw activity assembled db model =
     case activity of
+        WellChildDangerSigns ->
+            viewDangerSignsContent language currentDate assembled model.dangerSignsData
+
         WellChildNutritionAssessment ->
-            viewNutritionAssessmenContent language currentDate zscores id isChw assembled db model.nutritionAssessmentData
+            viewNutritionAssessmenContent language currentDate zscores assembled db model.nutritionAssessmentData
 
         WellChildECD ->
             viewECDContent language currentDate assembled model.ecdForm
+
+
+viewDangerSignsContent :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> DangerSignsData
+    -> List (Html Msg)
+viewDangerSignsContent language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            [ TaskSymptomsReview, TaskVitals ]
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        TaskSymptomsReview ->
+                            ( "symptoms"
+                            , isJust measurements.symptomsReview
+                            )
+
+                        TaskVitals ->
+                            ( "vitals"
+                            , isJust measurements.vitals
+                            )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveDangerSignsTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.WellChildDangerSignsTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map (\task -> ( task, dangerSignsTasksCompletedFromTotal measurements data task ))
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just TaskSymptomsReview ->
+                    measurements.symptomsReview
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> symptomsReviewFormWithDefault data.symptomsReviewForm
+                        |> viewSymptomsReviewForm language currentDate assembled.person
+
+                Just TaskVitals ->
+                    let
+                        previousRespiratoryRate =
+                            resolvePreviousValue assembled .vitals .respiratoryRate
+                                |> Maybe.map toFloat
+
+                        previousBodyTemperature =
+                            resolvePreviousValue assembled .vitals .bodyTemperature
+                    in
+                    measurements.vitals
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> basicVitalsFormWithDefault data.vitalsForm
+                        |> viewBasicVitalsForm language
+                            currentDate
+                            assembled.person
+                            previousRespiratoryRate
+                            previousBodyTemperature
+                            SetVitalsResporatoryRate
+                            SetVitalsBodyTemperature
+
+                Nothing ->
+                    []
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                case task of
+                                    TaskSymptomsReview ->
+                                        SaveSymptomsReview personId measurements.symptomsReview nextTask
+
+                                    TaskVitals ->
+                                        SaveVitals personId measurements.vitals nextTask
+
+                            disabled =
+                                tasksCompleted /= totalTasks
+                        in
+                        viewAction language saveMsg disabled
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue" ]
+        [ div [ class "ui four column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
+        ]
+    ]
+
+
+viewSymptomsReviewForm : Language -> NominalDate -> Person -> SymptomsReviewForm -> List (Html Msg)
+viewSymptomsReviewForm language currentDate person form =
+    [ div [ class "ui form symptoms-review" ]
+        [ viewLabel language Translate.SelectAllSigns
+        , viewCheckBoxMultipleSelectInput language
+            [ SymptomBreathingProblems
+            , SymptomConvulsions
+            , SymptomLethargyOrUnresponsiveness
+            , SymptomDiarrhea
+            , SymptomVomiting
+            , SymptomUmbilicalCordRedness
+            , SymptomStiffNeckOrBulgingFontanelle
+            , SymptomSevereEdema
+            , SymptomPalmoplantarPallor
+            , SymptomHistoryOfFever
+            , SymptomBabyTiresQuicklyWhenFeeding
+            , SymptomCoughingOrTearingWhileFeeding
+            , SymptomRigidMusclesOrJawClenchingPreventingFeeding
+            , ExcessiveSweatingWhenFeeding
+            ]
+            []
+            (form.symptoms |> Maybe.withDefault [])
+            (Just NoWellChildSymptoms)
+            SetSymptom
+            Translate.WellChildSymptom
+        ]
+    ]
 
 
 viewNutritionAssessmenContent :
@@ -157,6 +333,11 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                         TaskHeight ->
                             ( "height"
                             , isJust measurements.height
+                            )
+
+                        TaskHeadCircumference ->
+                            ( "head-circumference"
+                            , isJust measurements.headCircumference
                             )
 
                         TaskMuac ->
@@ -238,6 +419,12 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                         |> Maybe.map (Tuple.second >> .value)
                         |> heightFormWithDefault data.heightForm
                         |> viewHeightForm language currentDate zscores assembled.person previousValuesSet.height SetHeight
+
+                Just TaskHeadCircumference ->
+                    measurements.headCircumference
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> headCircumferenceFormWithDefault data.headCircumferenceForm
+                        |> viewHeadCircumferenceForm language currentDate zscores assembled.person previousValuesSet.headCircumference
 
                 Just TaskMuac ->
                     measurements.muac
@@ -352,6 +539,9 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                                     TaskHeight ->
                                         SaveHeight personId measurements.height nextTask
 
+                                    TaskHeadCircumference ->
+                                        SaveHeadCircumference personId measurements.headCircumference nextTask
+
                                     TaskMuac ->
                                         SaveMuac personId measurements.muac nextTask
 
@@ -404,6 +594,87 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             (viewForm ++ [ actions ])
+        ]
+    ]
+
+
+viewHeadCircumferenceForm :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Person
+    -> Maybe Float
+    -> HeadCircumferenceForm
+    -> List (Html Msg)
+viewHeadCircumferenceForm language currentDate zscores person previousValue form =
+    let
+        maybeAgeInDays =
+            Maybe.map
+                (\birthDate -> diffDays birthDate currentDate)
+                person.birthDate
+
+        zScoreValue =
+            form.headCircumference
+                |> Maybe.andThen
+                    (\headCircumference ->
+                        Maybe.andThen
+                            (\ageInDays ->
+                                zScoreHeadCircumferenceForAge zscores ageInDays person.gender (Centimetres headCircumference)
+                            )
+                            maybeAgeInDays
+                    )
+
+        zScoreText =
+            Maybe.map viewZScore zScoreValue
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
+
+        inputSection =
+            if measurementNotTakenChecked then
+                []
+
+            else
+                [ div [ class "ui grid" ]
+                    [ div [ class "eleven wide column" ]
+                        [ viewMeasurementInput
+                            language
+                            form.headCircumference
+                            SetHeadCircumference
+                            "head-circumference"
+                            Translate.CentimeterShorthand
+                        ]
+                    , div
+                        [ class "five wide column" ]
+                        [ showMaybe <|
+                            Maybe.map (HeadCircumferenceInCm >> headCircumferenceIndication >> viewColorAlertIndication language) zScoreValue
+                        ]
+                    ]
+                , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
+                , div [ class "ui large header z-score age" ]
+                    [ text <| translate language Translate.ZScoreHeadCircumferenceForAge
+                    , span [ class "sub header" ]
+                        [ text zScoreText ]
+                    ]
+                ]
+
+        measurementNotTakenChecked =
+            form.measurementNotTaken == Just True
+    in
+    [ div [ class "ui form head-circumference" ] <|
+        [ viewLabel language <| Translate.NutritionAssesmentTask TaskHeadCircumference
+        , p [ class "activity-helper" ] [ text <| translate language Translate.HeadCircumferenceHelper ]
+        ]
+            ++ inputSection
+    , div
+        [ class "ui checkbox activity"
+        , onClick ToggleHeadCircumferenceNotTaken
+        ]
+        [ input
+            [ type_ "checkbox"
+            , checked measurementNotTakenChecked
+            , classList [ ( "checked", measurementNotTakenChecked ) ]
+            ]
+            []
+        , label [] [ text <| translate language Translate.HeadCircumferenceNotTakenLabel ]
         ]
     ]
 

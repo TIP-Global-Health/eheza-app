@@ -624,6 +624,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityWellChildFollowUp identifier ->
             getIdentifier identifier "well_child_follow_up"
 
+        BackendAuthorityWellChildHeadCircumference identifier ->
+            getIdentifier identifier "well_child_head_circumference"
+
         BackendAuthorityWellChildHealthEducation identifier ->
             getIdentifier identifier "well_child_health_education"
 
@@ -641,6 +644,12 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityWellChildSendToHC identifier ->
             getIdentifier identifier "well_child_send_to_hc"
+
+        BackendAuthorityWellChildSymptomsReview identifier ->
+            getIdentifier identifier "well_child_symptoms_review"
+
+        BackendAuthorityWellChildVitals identifier ->
+            getIdentifier identifier "well_child_vitals"
 
         BackendAuthorityWellChildWeight identifier ->
             getIdentifier identifier "well_child_weight"
@@ -892,7 +901,7 @@ encodeBackendAuthorityEntity entity =
             encode Backend.Measurement.Encoder.encodeDangerSigns identifier
 
         BackendAuthorityDashboardStats identifier ->
-            encode Backend.Dashboard.Encoder.encodeDashboardStats identifier
+            encode Backend.Dashboard.Encoder.encodeDashboardStatsRaw identifier
 
         BackendAuthorityExposure identifier ->
             encode Backend.Measurement.Encoder.encodeExposure identifier
@@ -1092,6 +1101,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityWellChildFollowUp identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildFollowUp identifier
 
+        BackendAuthorityWellChildHeadCircumference identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildHeadCircumference identifier
+
         BackendAuthorityWellChildHealthEducation identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildHealthEducation identifier
 
@@ -1109,6 +1121,12 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityWellChildSendToHC identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildSendToHC identifier
+
+        BackendAuthorityWellChildSymptomsReview identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildSymptomsReview identifier
+
+        BackendAuthorityWellChildVitals identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildVitals identifier
 
         BackendAuthorityWellChildWeight identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildWeight identifier
@@ -1523,6 +1541,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityWellChildFollowUp identifier ->
             WellChildFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityWellChildHeadCircumference identifier ->
+            WellChildHeadCircumferenceRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityWellChildHealthEducation identifier ->
             WellChildHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1540,6 +1561,12 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWellChildSendToHC identifier ->
             WellChildSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildSymptomsReview identifier ->
+            WellChildSymptomsReviewRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildVitals identifier ->
+            WellChildVitalsRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityWellChildWeight identifier ->
             WellChildWeightRevision (toEntityUuid identifier.uuid) identifier.entity

@@ -418,7 +418,7 @@ h3.ui.header {
 }
 
 .icon-task-symptoms {
-  background-image: url(#{$img-path}icon-symptoms.svg);
+  background-image: url(#{$img-path}icon-symptoms-white.svg);
   background-size: 78px 78px;
 }
 
@@ -1196,7 +1196,8 @@ input::placeholder {
   }
 
   &.diagnosis-popup,
-  &.open-pregnancy-popup {
+  &.open-pregnancy-popup,
+  &.danger-signs-popup {
     border-top: 15px solid $color-red-alert;
     margin-left: -300px;
     width: 600px;
@@ -1279,6 +1280,21 @@ input::placeholder {
       .button {
         background-color: $color-primary;
       }
+    }
+  }
+
+  &.danger-signs-popup {
+
+    .content .popup-action {
+      font-size: 26px;
+      font-weight: bold;
+      margin-top: 40px;
+      padding: 0;
+      text-transform: none;
+    }
+
+    .actions .primary.button {
+      background: $color-red-alert;
     }
   }
 
@@ -1472,9 +1488,9 @@ input::placeholder {
     border-style: solid;
     border-width: 2px;
     display: block;
-    height: 90px;
+    height: 110px;
     margin: 0 auto 10px;
-    width: 90px;
+    width: 110px;
 
     &:after {
       background-position: center center;
@@ -2122,6 +2138,34 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-newborn-gray.svg);
+  }
+}
+
+.icon-head-circumference {
+  .active &:after {
+    background-image: url(#{$img-path}icon-head-circumference-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-head-circumference-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-head-circumference-gray.svg);
+  }
+}
+
+.icon-symptoms {
+  .active &:after {
+    background-image: url(#{$img-path}icon-symptoms-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-symptoms-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-symptoms-gray.svg);
   }
 }
 

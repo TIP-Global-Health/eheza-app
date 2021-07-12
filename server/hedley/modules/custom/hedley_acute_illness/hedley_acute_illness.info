@@ -25,6 +25,7 @@ features[field_base][] = field_abdominal_pain_period
 features[field_base][] = field_acute_illness_danger_signs
 features[field_base][] = field_acute_illness_encounter
 features[field_base][] = field_adverse_events
+features[field_base][] = field_ai_encounter_type
 features[field_base][] = field_ambulance_arrival_time
 features[field_base][] = field_blood_in_sputum_period
 features[field_base][] = field_bloody_diarrhea_period

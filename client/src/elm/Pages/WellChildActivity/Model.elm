@@ -11,12 +11,20 @@ type Msg
     = SetActivePage Page
     | SetWarningPopupState (List NutritionAssesment)
     | NoOp
-    | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
-    | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
+      -- DANGER SIGNS
+    | SetActiveDangerSignsTask DangerSignsTask
+    | SetSymptom WellChildSymptom
+    | SaveSymptomsReview PersonId (Maybe ( WellChildSymptomsReviewId, WellChildSymptomsReview )) (Maybe DangerSignsTask)
+    | SetVitalsResporatoryRate String
+    | SetVitalsBodyTemperature String
+    | SaveVitals PersonId (Maybe ( WellChildVitalsId, WellChildVitals )) (Maybe DangerSignsTask)
       -- NUTRITION ASSESMENT
     | SetActiveNutritionAssesmentTask NutritionAssesmentTask
     | SetHeight String
     | SaveHeight PersonId (Maybe ( WellChildHeightId, WellChildHeight )) (Maybe NutritionAssesmentTask)
+    | SetHeadCircumference String
+    | ToggleHeadCircumferenceNotTaken
+    | SaveHeadCircumference PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssesmentTask)
     | SetMuac String
     | SaveMuac PersonId (Maybe ( WellChildMuacId, WellChildMuac )) (Maybe NutritionAssesmentTask)
     | SetNutritionSign ChildNutritionSign
@@ -36,21 +44,127 @@ type Msg
     | SaveContributingFactors PersonId (Maybe ( WellChildContributingFactorsId, WellChildContributingFactors )) (Maybe NutritionAssesmentTask)
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssesment) (Maybe NutritionAssesmentTask)
+      -- ECD
+    | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
+    | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
 
 
 type alias Model =
-    { ecdForm : WellChildECDForm
+    { dangerSignsData : DangerSignsData
     , nutritionAssessmentData : NutritionAssessmentData
+    , ecdForm : WellChildECDForm
     , warningPopupState : List NutritionAssesment
     }
 
 
 emptyModel : Model
 emptyModel =
-    { ecdForm = emptyWellChildECDForm
+    { dangerSignsData = emptyDangerSignsData
     , nutritionAssessmentData = emptyNutritionAssessmentData
+    , ecdForm = emptyWellChildECDForm
     , warningPopupState = []
     }
+
+
+type alias DangerSignsData =
+    { symptomsReviewForm : SymptomsReviewForm
+    , vitalsForm : BasicVitalsForm
+    , activeTask : Maybe DangerSignsTask
+    }
+
+
+emptyDangerSignsData : DangerSignsData
+emptyDangerSignsData =
+    { symptomsReviewForm = emptySymptomsReviewForm
+    , vitalsForm = emptyBasicVitalsForm
+    , activeTask = Nothing
+    }
+
+
+type alias SymptomsReviewForm =
+    { symptoms : Maybe (List WellChildSymptom)
+    }
+
+
+emptySymptomsReviewForm : SymptomsReviewForm
+emptySymptomsReviewForm =
+    SymptomsReviewForm Nothing
+
+
+type DangerSignsTask
+    = TaskSymptomsReview
+    | TaskVitals
+
+
+type alias NutritionAssessmentData =
+    { heightForm : HeightForm
+    , headCircumferenceForm : HeadCircumferenceForm
+    , muacForm : MuacForm
+    , nutritionForm : NutritionForm
+    , photoForm : PhotoForm
+    , weightForm : WeightForm
+    , contributingFactorsForm : ContributingFactorsForm
+    , healthEducationForm : HealthEducationForm
+    , followUpForm : FollowUpForm
+    , sendToHCForm : SendToHCForm
+    , activeTask : Maybe NutritionAssesmentTask
+    }
+
+
+emptyNutritionAssessmentData : NutritionAssessmentData
+emptyNutritionAssessmentData =
+    { heightForm = emptyHeightForm
+    , headCircumferenceForm = emptyHeadCircumferenceForm
+    , muacForm = emptyMuacForm
+    , nutritionForm = emptyNutritionForm
+    , photoForm = emptyPhotoForm
+    , weightForm = emptyWeightForm
+    , contributingFactorsForm = emptyContributingFactorsForm
+    , healthEducationForm = emptyHealthEducationForm
+    , followUpForm = emptyFollowUpForm
+    , sendToHCForm = emptySendToHCForm
+    , activeTask = Nothing
+    }
+
+
+type alias HeadCircumferenceForm =
+    { headCircumference : Maybe Float
+    , headCircumferenceDirty : Bool
+    , measurementNotTaken : Maybe Bool
+    }
+
+
+emptyHeadCircumferenceForm : HeadCircumferenceForm
+emptyHeadCircumferenceForm =
+    HeadCircumferenceForm Nothing False Nothing
+
+
+type NutritionAssesmentTask
+    = TaskHeight
+    | TaskHeadCircumference
+    | TaskMuac
+    | TaskNutrition
+    | TaskPhoto
+    | TaskWeight
+    | TaskContributingFactors
+    | TaskHealthEducation
+    | TaskFollowUp
+    | TaskSendToHC
+
+
+allNutritionAssesmentTasks : List NutritionAssesmentTask
+allNutritionAssesmentTasks =
+    [ TaskHeight
+    , TaskHeadCircumference
+    , TaskMuac
+    , TaskNutrition
+    , TaskPhoto
+    , TaskWeight
+    , TaskContributingFactors
+    , TaskHealthEducation
+    , TaskFollowUp
+    , TaskSendToHC
+    ]
 
 
 type alias WellChildECDForm =
@@ -122,58 +236,3 @@ emptyWellChildECDForm =
     , shareWithOtherChildren = Nothing
     , countToTen = Nothing
     }
-
-
-type alias NutritionAssessmentData =
-    { heightForm : HeightForm
-    , muacForm : MuacForm
-    , nutritionForm : NutritionForm
-    , photoForm : PhotoForm
-    , weightForm : WeightForm
-    , contributingFactorsForm : ContributingFactorsForm
-    , healthEducationForm : HealthEducationForm
-    , followUpForm : FollowUpForm
-    , sendToHCForm : SendToHCForm
-    , activeTask : Maybe NutritionAssesmentTask
-    }
-
-
-emptyNutritionAssessmentData : NutritionAssessmentData
-emptyNutritionAssessmentData =
-    { heightForm = emptyHeightForm
-    , muacForm = emptyMuacForm
-    , nutritionForm = emptyNutritionForm
-    , photoForm = emptyPhotoForm
-    , weightForm = emptyWeightForm
-    , contributingFactorsForm = emptyContributingFactorsForm
-    , healthEducationForm = emptyHealthEducationForm
-    , followUpForm = emptyFollowUpForm
-    , sendToHCForm = emptySendToHCForm
-    , activeTask = Nothing
-    }
-
-
-type NutritionAssesmentTask
-    = TaskHeight
-    | TaskMuac
-    | TaskNutrition
-    | TaskPhoto
-    | TaskWeight
-    | TaskContributingFactors
-    | TaskHealthEducation
-    | TaskFollowUp
-    | TaskSendToHC
-
-
-allNutritionAssesmentTasks : List NutritionAssesmentTask
-allNutritionAssesmentTasks =
-    [ TaskHeight
-    , TaskMuac
-    , TaskNutrition
-    , TaskPhoto
-    , TaskWeight
-    , TaskContributingFactors
-    , TaskHealthEducation
-    , TaskFollowUp
-    , TaskSendToHC
-    ]

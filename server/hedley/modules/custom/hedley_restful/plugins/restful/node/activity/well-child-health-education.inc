@@ -11,7 +11,7 @@ $plugin = array(
   'name' => 'well-child-health-education',
   'entity_type' => 'node',
   'bundle' => 'well_child_health_education',
-  'description' => t('Exports the WellChild Health Education bundle.'),
+  'description' => t('Exports the Well Child Health Education bundle.'),
   'class' => 'HedleyRestfulWellChildHealthEducation',
   'authentication_types' => TRUE,
 );

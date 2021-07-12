@@ -22,7 +22,7 @@ import Pages.WellChildEncounter.Model exposing (..)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (tabItem)
+import Utils.Html exposing (tabItem, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
@@ -49,6 +49,11 @@ viewHeaderAndContent language currentDate zscores id isChw db model data =
     div [ class "page-encounter home-visit" ]
         [ header
         , content
+        , viewModal <|
+            warningPopup language
+                data.participant.person
+                id
+                model.showPopup
         ]
 
 
@@ -80,6 +85,42 @@ viewContent language currentDate zscores id isChw db model data =
         :: viewMainPageContent language currentDate zscores id isChw db data model
     )
         |> div [ class "ui unstackable items" ]
+
+
+warningPopup : Language -> PersonId -> WellChildEncounterId -> Bool -> Maybe (Html Msg)
+warningPopup language childId encounterId showPopup =
+    if showPopup then
+        let
+            warningHeading =
+                [ img [ src "assets/images/exclamation-red.png" ] []
+                , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
+                ]
+        in
+        Just <|
+            div [ class "ui active modal danger-signs-popup" ]
+                [ div [ class "content" ]
+                    [ div [ class "popup-heading-wrapper" ] warningHeading
+                    , div [ class "popup-action" ] [ text <| translate language Translate.WarningSignsOfAcuteIllness ]
+                    ]
+                , div
+                    [ class "actions" ]
+                    [ div [ class "two ui buttons" ]
+                        [ button
+                            [ class "ui fluid button"
+                            , onClick <| ShowWarningPopup False
+                            ]
+                            [ text <| translate language Translate.Cancel ]
+                        , button
+                            [ class "ui primary fluid button"
+                            , onClick <| NavigateToAcuteIllnessParticipantPage childId encounterId
+                            ]
+                            [ text <| translate language Translate.Continue ]
+                        ]
+                    ]
+                ]
+
+    else
+        Nothing
 
 
 viewMainPageContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)

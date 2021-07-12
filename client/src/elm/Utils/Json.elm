@@ -4,6 +4,7 @@ module Utils.Json exposing
     , decodeError
     , decodeEverySet
     , decodeNullAsEmptyArray
+    , decodeWithDefault
     , encodeIfExists
     )
 
@@ -64,6 +65,11 @@ turns it into an `EverySet`.
 decodeEverySet : Decoder a -> Decoder (EverySet a)
 decodeEverySet =
     map EverySet.fromList << list
+
+
+decodeWithDefault : a -> Decoder a -> Decoder a
+decodeWithDefault default decoder =
+    oneOf [ decoder, succeed default ]
 
 
 encodeIfExists : String -> Maybe a -> (a -> Value) -> List ( String, Value )

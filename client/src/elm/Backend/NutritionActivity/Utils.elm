@@ -65,13 +65,6 @@ decodeActivityFromString s =
             Nothing
 
 
-{-| An activity type to use if we need to start somewhere.
--}
-defaultActivity : NutritionActivity
-defaultActivity =
-    Muac
-
-
 {-| Returns a string representing an icon for the activity, for use in a
 "class" attribute.
 -}

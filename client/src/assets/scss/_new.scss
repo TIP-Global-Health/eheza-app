@@ -1425,6 +1425,30 @@ div.page-activity.home-visit {
   }
 }
 
+div.page-activity.well-child {
+
+  .ui.full.segment {
+
+    .full.content {
+
+      @include next-steps;
+
+      .ui.checkbox.activity {
+        margin-top: 30px;
+
+        label {
+          padding-left: 40px;
+        }
+
+        label:before,
+        label:after {
+          left: 0;
+        }
+      }
+    }
+  }
+}
+
 div.page-outcome {
 
   .tasks-count {

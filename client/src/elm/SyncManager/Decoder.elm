@@ -688,7 +688,7 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
 
                     "statistics" ->
                         doDecode
-                            Backend.Dashboard.Decoder.decodeDashboardStats
+                            Backend.Dashboard.Decoder.decodeDashboardStatsRaw
                             BackendAuthorityDashboardStats
 
                     "symptoms_general" ->
@@ -751,6 +751,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeWellChildFollowUp
                             BackendAuthorityWellChildFollowUp
 
+                    "well_child_head_circumference" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildHeadCircumference
+                            BackendAuthorityWellChildHeadCircumference
+
                     "well_child_health_education" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildHealthEducation
@@ -780,6 +785,16 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildSendToHC
                             BackendAuthorityWellChildSendToHC
+
+                    "well_child_symptoms_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildSymptomsReview
+                            BackendAuthorityWellChildSymptomsReview
+
+                    "well_child_vitals" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildVitals
+                            BackendAuthorityWellChildVitals
 
                     "well_child_weight" ->
                         doDecode

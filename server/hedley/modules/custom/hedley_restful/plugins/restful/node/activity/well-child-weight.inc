@@ -11,7 +11,7 @@ $plugin = array(
   'name' => 'well-child-weight',
   'entity_type' => 'node',
   'bundle' => 'well_child_weight',
-  'description' => t('Exports the WellChild Weight bundle.'),
+  'description' => t('Exports the Well Child Weight bundle.'),
   'class' => 'HedleyRestfulWellChildWeight',
   'authentication_types' => TRUE,
 );

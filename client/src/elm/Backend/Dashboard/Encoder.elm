@@ -1,4 +1,4 @@
-module Backend.Dashboard.Encoder exposing (encodeDashboardStats)
+module Backend.Dashboard.Encoder exposing (encodeDashboardStatsRaw)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis)
@@ -22,10 +22,10 @@ import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (fromEntityUuid)
 
 
-encodeDashboardStats : DashboardStats -> List ( String, Value )
-encodeDashboardStats stats =
+encodeDashboardStatsRaw : DashboardStatsRaw -> List ( String, Value )
+encodeDashboardStatsRaw stats =
     [ encodeCasesManagementData stats.caseManagement
-    , encodeChildrenBeneficiaries stats.childrenBeneficiaries
+    , encodeChildrenBeneficiariesData stats.childrenBeneficiaries
     , encodeCompletedPrograms stats.completedPrograms
     , encodeFamilyPlanning stats.familyPlanning
     , encodeMissedSessions stats.missedSessions
@@ -108,16 +108,24 @@ encodeNutritionStatus status =
                 "severe_nutrition"
 
 
-encodeChildrenBeneficiaries : List ChildrenBeneficiariesStats -> ( String, Value )
-encodeChildrenBeneficiaries statsList =
-    ( "children_beneficiaries", list (encodeChildrenBeneficiariesStats >> object) statsList )
+encodeChildrenBeneficiariesData : Dict ProgramType (List ChildrenBeneficiariesStats) -> ( String, Value )
+encodeChildrenBeneficiariesData dict =
+    ( "children_beneficiaries"
+    , Dict.toList dict
+        |> List.map
+            (\( programType, casesList ) ->
+                ( programTypeToString programType, list (encodeChildrenBeneficiariesStats >> object) casesList )
+            )
+        |> object
+    )
 
 
 encodeChildrenBeneficiariesStats : ChildrenBeneficiariesStats -> List ( String, Value )
 encodeChildrenBeneficiariesStats stats =
-    [ ( "name", string stats.name )
-    , ( "field_gender", encodeGender stats.gender )
-    , ( "field_birth_date", encodeYYYYMMDD stats.birthDate )
+    [ ( "id", int stats.identifier )
+    , ( "name", string stats.name )
+    , ( "gender", encodeGender stats.gender )
+    , ( "birth_date", encodeYYYYMMDD stats.birthDate )
     , ( "created", encodeYYYYMMDD stats.memberSince )
     , ( "mother_name", string stats.motherName )
     , ( "phone_number", maybe string stats.phoneNumber )

@@ -3,7 +3,7 @@ module Pages.WellChildActivity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (WellChildEncounterId)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (weightValueFunc)
+import Backend.Measurement.Utils exposing (headCircumferenceValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
@@ -15,7 +15,7 @@ import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
-import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskCompleted)
+import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskCompleted, valueConsideringIsDirtyField)
 import Pages.WellChildActivity.Model exposing (..)
 import Pages.WellChildEncounter.Model exposing (AssembledData)
 import RemoteData exposing (RemoteData(..))
@@ -56,6 +56,10 @@ activityCompleted currentDate zscores isChw data db activity =
             expectActivity currentDate data db
     in
     case activity of
+        WellChildDangerSigns ->
+            (not <| activityExpected WellChildDangerSigns)
+                || (isJust measurements.symptomsReview && isJust measurements.vitals)
+
         WellChildNutritionAssessment ->
             let
                 ( mandatory, optional ) =
@@ -115,6 +119,9 @@ nutritionAssessmentTaskCompleted currentDate zscores isChw data db task =
     case task of
         TaskHeight ->
             (not <| taskExpected TaskHeight) || isJust measurements.height
+
+        TaskHeadCircumference ->
+            (not <| taskExpected TaskHeight) || isJust measurements.headCircumference
 
         TaskMuac ->
             (not <| taskExpected TaskMuac) || isJust measurements.muac
@@ -188,15 +195,41 @@ decide if to show Next Steps activity, or not.
 partitionNutritionAssessmentTasks : Bool -> ( List NutritionAssesmentTask, List NutritionAssesmentTask )
 partitionNutritionAssessmentTasks isChw =
     if isChw then
-        ( [ TaskMuac, TaskNutrition, TaskWeight ], [ TaskHeight, TaskPhoto ] )
+        ( [ TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ], [ TaskHeight, TaskPhoto ] )
 
     else
-        ( [ TaskHeight, TaskMuac, TaskNutrition, TaskWeight ], [ TaskPhoto ] )
+        ( [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ], [ TaskPhoto ] )
 
 
 nutritionAssessmentNextStepsTasks : List NutritionAssesmentTask
 nutritionAssessmentNextStepsTasks =
     [ TaskContributingFactors, TaskHealthEducation, TaskFollowUp, TaskSendToHC ]
+
+
+fromSymptomsReviewValue : Maybe (EverySet WellChildSymptom) -> SymptomsReviewForm
+fromSymptomsReviewValue saved =
+    { symptoms = Maybe.map EverySet.toList saved }
+
+
+symptomsReviewFormWithDefault : SymptomsReviewForm -> Maybe (EverySet WellChildSymptom) -> SymptomsReviewForm
+symptomsReviewFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { symptoms = or form.symptoms (EverySet.toList value |> Just) }
+            )
+
+
+toSymptomsReviewValueWithDefault : Maybe (EverySet WellChildSymptom) -> SymptomsReviewForm -> Maybe (EverySet WellChildSymptom)
+toSymptomsReviewValueWithDefault saved form =
+    symptomsReviewFormWithDefault form saved
+        |> toSymptomsReviewValue
+
+
+toSymptomsReviewValue : SymptomsReviewForm -> Maybe (EverySet WellChildSymptom)
+toSymptomsReviewValue form =
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoWellChildSymptoms) form.symptoms
 
 
 fromWellChildECDValue : Maybe (EverySet ECDSign) -> WellChildECDForm
@@ -320,6 +353,74 @@ toWellChildECDValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoECDSigns)
 
 
+fromHeadCircumferenceValue : Maybe HeadCircumferenceValue -> HeadCircumferenceForm
+fromHeadCircumferenceValue saved =
+    { headCircumference = Maybe.map (.headCircumference >> headCircumferenceValueFunc) saved
+    , headCircumferenceDirty = False
+    , measurementNotTaken = Maybe.andThen (.notes >> EverySet.member NoteNotTaken >> Just) saved
+    }
+
+
+headCircumferenceFormWithDefault : HeadCircumferenceForm -> Maybe HeadCircumferenceValue -> HeadCircumferenceForm
+headCircumferenceFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { headCircumference = valueConsideringIsDirtyField form.headCircumferenceDirty form.headCircumference (headCircumferenceValueFunc value.headCircumference)
+                , headCircumferenceDirty = form.headCircumferenceDirty
+                , measurementNotTaken = or form.measurementNotTaken (EverySet.member NoteNotTaken value.notes |> Just)
+                }
+            )
+
+
+toHeadCircumferenceValueWithDefault : Maybe HeadCircumferenceValue -> HeadCircumferenceForm -> Maybe HeadCircumferenceValue
+toHeadCircumferenceValueWithDefault saved form =
+    headCircumferenceFormWithDefault form saved
+        |> toHeadCircumferenceValue
+
+
+toHeadCircumferenceValue : HeadCircumferenceForm -> Maybe HeadCircumferenceValue
+toHeadCircumferenceValue form =
+    let
+        headCircumference =
+            Maybe.map (\cm -> HeadCircumferenceInCm cm) form.headCircumference
+
+        notes =
+            [ Maybe.map (ifTrue NoteNotTaken) form.measurementNotTaken ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMeasurementNotes)
+    in
+    Maybe.map HeadCircumferenceValue headCircumference
+        |> andMap notes
+
+
+dangerSignsTasksCompletedFromTotal : WellChildMeasurements -> DangerSignsData -> DangerSignsTask -> ( Int, Int )
+dangerSignsTasksCompletedFromTotal measurements data task =
+    case task of
+        TaskSymptomsReview ->
+            let
+                form =
+                    measurements.symptomsReview
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> symptomsReviewFormWithDefault data.symptomsReviewForm
+            in
+            ( taskCompleted form.symptoms
+            , 1
+            )
+
+        TaskVitals ->
+            let
+                form =
+                    measurements.vitals
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> basicVitalsFormWithDefault data.vitalsForm
+            in
+            ( taskCompleted form.respiratoryRate + taskCompleted form.bodyTemperature
+            , 2
+            )
+
+
 nutritionAssessmentTasksCompletedFromTotal : WellChildMeasurements -> NutritionAssessmentData -> NutritionAssesmentTask -> ( Int, Int )
 nutritionAssessmentTasksCompletedFromTotal measurements data task =
     case task of
@@ -331,6 +432,17 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
                         |> heightFormWithDefault data.heightForm
             in
             ( taskCompleted form.height
+            , 1
+            )
+
+        TaskHeadCircumference ->
+            let
+                form =
+                    measurements.headCircumference
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> headCircumferenceFormWithDefault data.headCircumferenceForm
+            in
+            ( taskCompleted form.headCircumference
             , 1
             )
 
@@ -573,3 +685,20 @@ ecdSigns36to47 =
     , ShareWithOtherChildren
     , CountToTen
     ]
+
+
+
+-- HELPER FUNCTIONS
+
+
+resolvePreviousValue : AssembledData -> (WellChildMeasurements -> Maybe ( id, WellChildMeasurement a )) -> (a -> b) -> Maybe b
+resolvePreviousValue assembled measurementFunc valueFunc =
+    assembled.previousMeasurementsWithDates
+        |> List.filterMap
+            (Tuple.second
+                >> Tuple.second
+                >> measurementFunc
+                >> Maybe.map (Tuple.second >> .value >> valueFunc)
+            )
+        |> List.reverse
+        |> List.head

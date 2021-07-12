@@ -869,3 +869,27 @@ type alias WellChildFollowUpId =
 
 type WellChildFollowUpIdUuidType
     = WellChildFollowUpIdUuidType
+
+
+type alias WellChildHeadCircumferenceId =
+    EntityUuid WellChildHeadCircumferenceUuidType
+
+
+type WellChildHeadCircumferenceUuidType
+    = WellChildHeadCircumferenceUuidType
+
+
+type alias WellChildSymptomsReviewId =
+    EntityUuid WellChildSymptomsReviewUuidType
+
+
+type WellChildSymptomsReviewUuidType
+    = WellChildSymptomsReviewUuidType
+
+
+type alias WellChildVitalsId =
+    EntityUuid WellChildVitalsUuidType
+
+
+type WellChildVitalsUuidType
+    = WellChildVitalsUuidType

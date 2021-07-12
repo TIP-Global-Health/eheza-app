@@ -5,6 +5,7 @@ import App.Ports
 import Backend.Model
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model
+import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.WellChildEncounter.Model exposing (..)
 
@@ -30,3 +31,20 @@ update msg model =
 
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, [] )
+
+        ShowWarningPopup isShown ->
+            ( { model | showPopup = isShown }, Cmd.none, [] )
+
+        NavigateToAcuteIllnessParticipantPage childId encounterId ->
+            let
+                extraMsgs =
+                    [ SetActivePage (UserPage (AcuteIllnessParticipantPage childId))
+                    , ShowWarningPopup False
+                    , CloseEncounter encounterId
+                    ]
+            in
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra update extraMsgs

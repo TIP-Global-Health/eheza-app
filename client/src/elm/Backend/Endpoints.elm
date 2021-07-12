@@ -9,8 +9,8 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Counseling.Encoder exposing (encodeCounselingSchedule, encodeCounselingTopic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
-import Backend.Dashboard.Decoder exposing (decodeDashboardStats)
-import Backend.Dashboard.Model exposing (DashboardStats)
+import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
+import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
 import Backend.HealthCenter.Model exposing (HealthCenter)
@@ -110,9 +110,9 @@ encodeRelationshipParams params =
         ]
 
 
-computedDashboardEndpoint : ReadOnlyEndPoint Error HealthCenterId DashboardStats ()
+computedDashboardEndpoint : ReadOnlyEndPoint Error HealthCenterId DashboardStatsRaw ()
 computedDashboardEndpoint =
-    swEndpoint "statistics" decodeDashboardStats
+    swEndpoint "statistics" decodeDashboardStatsRaw
 
 
 healthCenterEndpoint : ReadOnlyEndPoint Error HealthCenterId HealthCenter ()
@@ -801,3 +801,21 @@ wellChildHealthEducationEndpoint : ReadWriteEndPoint Error WellChildHealthEducat
 wellChildHealthEducationEndpoint =
     swEndpoint "nodes/well_child_health_education" decodeWellChildHealthEducation
         |> withValueEncoder (object << encodeWellChildHealthEducation)
+
+
+wellChildHeadCircumferenceEndpoint : ReadWriteEndPoint Error WellChildHeadCircumferenceId WellChildHeadCircumference WellChildHeadCircumference ()
+wellChildHeadCircumferenceEndpoint =
+    swEndpoint "nodes/well_child_head_circumference" decodeWellChildHeadCircumference
+        |> withValueEncoder (object << encodeWellChildHeadCircumference)
+
+
+wellChildSymptomsReviewEndpoint : ReadWriteEndPoint Error WellChildSymptomsReviewId WellChildSymptomsReview WellChildSymptomsReview ()
+wellChildSymptomsReviewEndpoint =
+    swEndpoint "nodes/well_child_symptoms_review" decodeWellChildSymptomsReview
+        |> withValueEncoder (object << encodeWellChildSymptomsReview)
+
+
+wellChildVitalsEndpoint : ReadWriteEndPoint Error WellChildVitalsId WellChildVitals WellChildVitals ()
+wellChildVitalsEndpoint =
+    swEndpoint "nodes/well_child_vitals" decodeWellChildVitals
+        |> withValueEncoder (object << encodeWellChildVitals)

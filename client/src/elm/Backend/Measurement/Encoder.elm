@@ -1340,15 +1340,15 @@ encodeSymptomsGIDerivedSigns sign =
 
 encodeAcuteIllnessVitals : AcuteIllnessVitals -> List ( String, Value )
 encodeAcuteIllnessVitals =
-    encodeAcuteIllnessMeasurement encodeAcuteIllnessVitalsValue
+    encodeAcuteIllnessMeasurement (encodeBasicVitalsValueWithType "acute_illness_vitals")
 
 
-encodeAcuteIllnessVitalsValue : AcuteIllnessVitalsValue -> List ( String, Value )
-encodeAcuteIllnessVitalsValue value =
+encodeBasicVitalsValueWithType : String -> BasicVitalsValue -> List ( String, Value )
+encodeBasicVitalsValueWithType type_ value =
     [ ( "respiratory_rate", int value.respiratoryRate )
     , ( "body_temperature", float value.bodyTemperature )
     , ( "deleted", bool False )
-    , ( "type", string "acute_illness_vitals" )
+    , ( "type", string type_ )
     ]
 
 
@@ -2428,6 +2428,74 @@ encodeReasonForNotProvidingHealthEducation reason =
                 "none"
 
 
+encodeWellChildSymptomsReview : WellChildSymptomsReview -> List ( String, Value )
+encodeWellChildSymptomsReview =
+    encodeWellChildMeasurement encodeWellChilSymptomsReviewValue
+
+
+encodeWellChilSymptomsReviewValue : EverySet WellChildSymptom -> List ( String, Value )
+encodeWellChilSymptomsReviewValue value =
+    [ ( "well_child_symptoms", encodeEverySet encodeWellChildSymptom value )
+    , ( "deleted", bool False )
+    , ( "type", string "well_child_symptoms_review" )
+    ]
+
+
+encodeWellChildSymptom : WellChildSymptom -> Value
+encodeWellChildSymptom symptom =
+    string <|
+        case symptom of
+            SymptomBreathingProblems ->
+                "breathing-problems"
+
+            SymptomConvulsions ->
+                "convulsions"
+
+            SymptomLethargyOrUnresponsiveness ->
+                "lethargy-or-unresponsiveness"
+
+            SymptomDiarrhea ->
+                "diarrhea"
+
+            SymptomVomiting ->
+                "vomiting"
+
+            SymptomUmbilicalCordRedness ->
+                "umbilical-cord-redness"
+
+            SymptomStiffNeckOrBulgingFontanelle ->
+                "stiff-neck-or-bulging-fontanelle"
+
+            SymptomSevereEdema ->
+                "severe-edema"
+
+            SymptomPalmoplantarPallor ->
+                "palmoplantar-pallor"
+
+            SymptomHistoryOfFever ->
+                "history-of-fever"
+
+            SymptomBabyTiresQuicklyWhenFeeding ->
+                "baby-tires-quickly-when-feeding"
+
+            SymptomCoughingOrTearingWhileFeeding ->
+                "coughing-or-tearing-while-feeding"
+
+            SymptomRigidMusclesOrJawClenchingPreventingFeeding ->
+                "rigid-muscles-or-jaw-clenching"
+
+            ExcessiveSweatingWhenFeeding ->
+                "excessive-sweating-when-feeding"
+
+            NoWellChildSymptoms ->
+                "none"
+
+
+encodeWellChildVitals : WellChildVitals -> List ( String, Value )
+encodeWellChildVitals =
+    encodeWellChildMeasurement (encodeBasicVitalsValueWithType "well_child_vitals")
+
+
 encodeWellChildECD : WellChildECD -> List ( String, Value )
 encodeWellChildECD =
     encodeWellChildMeasurement encodeWellChildECDValue
@@ -2539,4 +2607,34 @@ encodeECDSign sign =
                 "count-to-ten"
 
             NoECDSigns ->
+                "none"
+
+
+encodeWellChildHeadCircumference : WellChildHeadCircumference -> List ( String, Value )
+encodeWellChildHeadCircumference =
+    encodeWellChildMeasurement encodeHeadCircumferenceValue
+
+
+encodeHeadCircumferenceValue : HeadCircumferenceValue -> List ( String, Value )
+encodeHeadCircumferenceValue value =
+    [ ( "head_circumference", encodeHeadCircumferenceInCm value.headCircumference )
+    , ( "measurement_notes", encodeEverySet encodeMeasurementNote value.notes )
+    , ( "deleted", bool False )
+    , ( "type", string "well_child_head_circumference" )
+    ]
+
+
+encodeHeadCircumferenceInCm : HeadCircumferenceInCm -> Value
+encodeHeadCircumferenceInCm (HeadCircumferenceInCm cm) =
+    float cm
+
+
+encodeMeasurementNote : MeasurementNote -> Value
+encodeMeasurementNote note =
+    string <|
+        case note of
+            NoteNotTaken ->
+                "not-taken"
+
+            NoMeasurementNotes ->
                 "none"

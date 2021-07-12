@@ -51,6 +51,14 @@ function hedley_well_child_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'well_child_head_circumference' => array(
+      'name' => t('Well Child Head Circumference'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'well_child_health_education' => array(
       'name' => t('Well Child Health Education'),
       'base' => 'node_content',
@@ -93,6 +101,22 @@ function hedley_well_child_node_info() {
     ),
     'well_child_send_to_hc' => array(
       'name' => t('Well Child Send to HC'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'well_child_symptoms_review' => array(
+      'name' => t('Well Child Symptoms Review'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'well_child_vitals' => array(
+      'name' => t('Well Child Vitals'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

@@ -11,7 +11,7 @@ $plugin = array(
   'name' => 'well-child-photo',
   'entity_type' => 'node',
   'bundle' => 'well_child_photo',
-  'description' => t('Exports the WellChild Photo bundle.'),
+  'description' => t('Exports the Well Child Photo bundle.'),
   'class' => 'HedleyRestfulWellChildPhoto',
   'authentication_types' => TRUE,
 );

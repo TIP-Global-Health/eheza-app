@@ -11,7 +11,7 @@ $plugin = array(
   'name' => 'well-child-height',
   'entity_type' => 'node',
   'bundle' => 'well_child_height',
-  'description' => t('Exports the WellChild Height bundle.'),
+  'description' => t('Exports the Well Child Height bundle.'),
   'class' => 'HedleyRestfulWellChildHeight',
   'authentication_types' => TRUE,
 );

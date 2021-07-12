@@ -36,11 +36,11 @@ import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
         ( renderDatePart
+        , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewFollowUpForm
         , viewHealthEducationForm
         , viewMeasurementFloatDiff
-        , viewMuacIndication
         , viewSendToHCForm
         , zScoreForHeightOrLength
         )
@@ -373,7 +373,7 @@ viewMuacForm language currentDate person previousValue setMuacMsg form =
             , div
                 [ class "five wide column" ]
                 [ showMaybe <|
-                    Maybe.map (MuacInCm >> muacIndication >> viewMuacIndication language) form.muac
+                    Maybe.map (MuacInCm >> muacIndication >> viewColorAlertIndication language) form.muac
                 ]
             ]
         , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
@@ -460,18 +460,20 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
             taskCompleted displayPhoto
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
-    , div [ class "full content" ] <|
-        viewPhotoForm language currentDate displayPhoto DropZoneComplete
-    , div [ class "actions" ]
-        [ button
-            ([ classList
-                [ ( "ui fluid primary button", True )
-                , ( "disabled", isDisabled )
-                ]
-             ]
-                ++ saveMsg
-            )
-            [ text <| translate language Translate.Save ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            viewPhotoForm language currentDate displayPhoto DropZoneComplete
+        , div [ class "actions" ]
+            [ button
+                ([ classList
+                    [ ( "ui fluid primary button", True )
+                    , ( "disabled", isDisabled )
+                    ]
+                 ]
+                    ++ saveMsg
+                )
+                [ text <| translate language Translate.Save ]
+            ]
         ]
     ]
 
@@ -482,34 +484,31 @@ viewPhotoForm language currentDate displayPhoto dropZoneCompleteMsg =
         activity =
             Photo
     in
-    [ divKeyed [ class "ui full segment photo" ]
-        [ keyedDivKeyed "content"
-            [ class "content" ]
-            [ p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
-                |> keyed "help"
-            , keyedDivKeyed "grid"
-                [ class "ui grid" ]
-                [ Maybe.map viewPhotoThumbFromPhotoUrl displayPhoto
-                    |> showMaybe
-                    |> List.singleton
-                    |> div [ class "eight wide column" ]
-                    |> keyed "thumbnail"
-                , div
-                    [ id "dropzone"
-                    , class "eight wide column dropzone"
-                    , on "dropzonecomplete" (Json.Decode.map dropZoneCompleteMsg decodeDropZoneFile)
-                    ]
-                    [ div
-                        [ class "dz-message"
-                        , attribute "data-dz-message" ""
-                        ]
-                        [ span
-                            []
-                            [ text <| translate language Translate.DropzoneDefaultMessage ]
-                        ]
-                    ]
-                    |> keyed "dropzone"
+    [ divKeyed [ class "content" ]
+        [ p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+            |> keyed "help"
+        , keyedDivKeyed "grid"
+            [ class "ui grid" ]
+            [ Maybe.map viewPhotoThumbFromPhotoUrl displayPhoto
+                |> showMaybe
+                |> List.singleton
+                |> div [ class "eight wide column" ]
+                |> keyed "thumbnail"
+            , div
+                [ id "dropzone"
+                , class "eight wide column dropzone"
+                , on "dropzonecomplete" (Json.Decode.map dropZoneCompleteMsg decodeDropZoneFile)
                 ]
+                [ div
+                    [ class "dz-message"
+                    , attribute "data-dz-message" ""
+                    ]
+                    [ span
+                        []
+                        [ text <| translate language Translate.DropzoneDefaultMessage ]
+                    ]
+                ]
+                |> keyed "dropzone"
             ]
         ]
     ]

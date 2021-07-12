@@ -11,6 +11,7 @@ import Backend.Dashboard.Model
         , CaseManagementData
         , CaseNutrition
         , CaseNutritionTotal
+        , ChildrenBeneficiariesData
         , DashboardStats
         , Nutrition
         , NutritionValue
@@ -112,7 +113,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                     (\stats ->
                         let
                             assembled =
-                                generateAssembledData healthCenterId model.selectedVillageFilter stats db
+                                generateAssembledData healthCenterId stats db model
 
                             ( pageContent, pageClass ) =
                                 case page of
@@ -124,10 +125,10 @@ view language page currentDate healthCenterId isChw nurse model db =
                                     NursePage nurseDashboardPage ->
                                         case nurseDashboardPage of
                                             StatsPage ->
-                                                ( viewStatsPage language currentDate False nurse stats healthCenterId db model, "stats" )
+                                                ( viewStatsPage language currentDate False nurse assembled.stats healthCenterId db model, "stats" )
 
                                             CaseManagementPage ->
-                                                ( viewCaseManagementPage language currentDate stats db model, "case" )
+                                                ( viewCaseManagementPage language currentDate assembled.stats db model, "case" )
 
                                     ChwPage chwDashboardPage ->
                                         case chwDashboardPage of
@@ -135,7 +136,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                                                 ( viewAcuteIllnessPage language currentDate acuteIllnessPage assembled db model, "acute-illness" )
 
                                             NutritionPage ->
-                                                ( viewNutritionPage language currentDate True nurse stats db model, "nutrition" )
+                                                ( viewNutritionPage language currentDate True nurse assembled.stats db model, "nutrition" )
 
                                             AntenatalPage ->
                                                 ( viewAntenatalPage language currentDate assembled db model, "prenatal" )
@@ -143,9 +144,9 @@ view language page currentDate healthCenterId isChw nurse model db =
                         div [ class <| "dashboard " ++ pageClass ] <|
                             [ viewFiltersPane language page db model ]
                                 ++ pageContent
-                                ++ [ viewCustomModal language isChw nurse stats db model
+                                ++ [ viewCustomModal language isChw nurse assembled.stats db model
                                    , div [ class "timestamp" ]
-                                        [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ stats.timestamp ++ " UTC" ]
+                                        [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ assembled.stats.timestamp ++ " UTC" ]
                                    ]
                     )
                 |> Maybe.withDefault spinner
@@ -226,8 +227,12 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
     ]
 
 
-caseManagementApplyBreakdownFilters : Dict VillageId (List PersonIdentifier) -> Dict ProgramType (List CaseManagement) -> Model -> List CaseManagement
-caseManagementApplyBreakdownFilters villagesWithResidents dict model =
+applyProgramTypeAndResidentsFilters :
+    Dict VillageId (List PersonIdentifier)
+    -> Dict ProgramType (List { a | identifier : PersonIdentifier })
+    -> Model
+    -> List { a | identifier : PersonIdentifier }
+applyProgramTypeAndResidentsFilters villagesWithResidents dict model =
     case model.programTypeFilter of
         FilterAllPrograms ->
             let
@@ -436,8 +441,12 @@ applyTotalBeneficiariesDenomination beneficiariesPerMonthsDict totalBeneficiarie
             )
 
 
-generateTotalBeneficiariesMonthlyDuringPastYear : NominalDate -> DashboardStats -> Dict Int Int
-generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats =
+generateTotalBeneficiariesMonthlyDuringPastYear :
+    NominalDate
+    -> DashboardStats
+    -> Model
+    -> Dict Int Int
+generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats model =
     let
         currentMonth =
             Date.month currentDate
@@ -465,12 +474,20 @@ generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats =
 
                             totalBeneficiaries =
                                 stats.childrenBeneficiaries
-                                    |> List.filter
+                                    |> List.filterMap
                                         (\child ->
-                                            (Date.compare child.memberSince maxJoinDate == LT)
-                                                && (Date.compare minGraduationDate child.graduationDate == LT)
+                                            if
+                                                (Date.compare child.memberSince maxJoinDate == LT)
+                                                    && (Date.compare minGraduationDate child.graduationDate == LT)
+                                            then
+                                                Just child.identifier
+
+                                            else
+                                                Nothing
                                         )
-                                    |> List.length
+                                    -- We want to get unique participants.
+                                    |> EverySet.fromList
+                                    |> EverySet.size
                         in
                         ( month, totalBeneficiaries )
                     )
@@ -638,14 +655,11 @@ viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
             monthBeforeStats =
                 filterStatsWithinPeriod currentDate modelWithLastMonth stats
 
-            currentPeriodCaseManagement =
-                caseManagementApplyBreakdownFilters stats.villagesWithResidents currentPeriodStats.caseManagement.thisYear model
-
             malnourishedCurrentMonth =
-                mapMalnorishedByMonth displayedMonth currentPeriodCaseManagement
+                mapMalnorishedByMonth displayedMonth currentPeriodStats.caseManagement.thisYear
 
             malnourishedPreviousMonth =
-                mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodCaseManagement
+                mapMalnorishedByMonth (resolvePreviousMonth displayedMonth) currentPeriodStats.caseManagement.thisYear
         in
         [ div [ class "ui equal width grid" ]
             [ viewMalnourishedCards language malnourishedCurrentMonth malnourishedPreviousMonth
@@ -653,7 +667,6 @@ viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
             ]
         , viewBeneficiariesTable language currentDate stats currentPeriodStats malnourishedCurrentMonth model
         , viewFamilyPlanning language currentPeriodStats
-        , viewCustomModal language isChw nurse stats db model
         ]
 
 
@@ -761,7 +774,7 @@ viewCaseManagementPage language currentDate stats db model =
                                 { name = caseNutrition.name, nutrition = nutrition } :: accum
                             )
                             []
-                            (caseManagementApplyBreakdownFilters stats.villagesWithResidents stats.caseManagement.thisYear model)
+                            stats.caseManagement.thisYear
                             |> List.filter (.nutrition >> List.all (Tuple.second >> .class >> (==) Backend.Dashboard.Model.Good) >> not)
 
                     _ ->
@@ -785,7 +798,7 @@ viewCaseManagementPage language currentDate stats db model =
                                         accum
                             )
                             []
-                            (caseManagementApplyBreakdownFilters stats.villagesWithResidents stats.caseManagement.thisYear model)
+                            stats.caseManagement.thisYear
                             |> List.filter
                                 (.nutrition
                                     >> List.any
@@ -1219,25 +1232,19 @@ viewNutritionPage language currentDate isChw nurse stats db model =
             filterStatsWithinPeriod currentDate model stats
 
         totalBeneficiariesMonthlyDuringPastYear =
-            generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats
+            generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats model
 
         emptyTotalBeneficiariesDict =
             List.repeat 12 emptyTotalBeneficiaries
                 |> List.indexedMap (\index empty -> ( index + 1, empty ))
                 |> Dict.fromList
 
-        caseManagementsThisYear =
-            caseManagementApplyBreakdownFilters stats.villagesWithResidents stats.caseManagement.thisYear model
-
-        caseManagementsLastYear =
-            caseManagementApplyBreakdownFilters stats.villagesWithResidents stats.caseManagement.lastYear model
-
         caseNutritionTotalsThisYear =
-            caseManagementsThisYear
+            stats.caseManagement.thisYear
                 |> List.map (.nutrition >> generateCaseNutritionTotals)
 
         caseNutritionTotalsLastYear =
-            caseManagementsLastYear
+            stats.caseManagement.lastYear
                 |> List.map (.nutrition >> generateCaseNutritionTotals)
 
         totalsGraphData =
@@ -1246,7 +1253,7 @@ viewNutritionPage language currentDate isChw nurse stats db model =
                 |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
 
         newCasesGraphData =
-            caseManagementsThisYear
+            stats.caseManagement.thisYear
                 |> List.map (.nutrition >> generateCaseNutritionNewCases currentDate)
                 |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
                 |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
@@ -1972,12 +1979,26 @@ viewMonthlyChart language currentDate chartType filterType data currentFilter =
         caption =
             case chartType of
                 MonthlyChartTotals ->
-                    div [ class "title left floated column" ] [ text <| translate language (Translate.Dashboard Translate.TotalBeneficiaries) ++ " " ++ toString currentFilter ++ " (%)" ]
+                    div [ class "title left floated column" ]
+                        [ text <|
+                            translate language (Translate.Dashboard Translate.TotalBeneficiaries)
+                                ++ " "
+                                ++ translate language (Translate.Dashboard <| Translate.Filter currentFilter)
+                                ++ " (%)"
+                        ]
 
                 MonthlyChartIncidence ->
                     div [ class "title left floated column" ]
-                        [ div [] [ text <| translate language (Translate.Dashboard Translate.IncidenceOf) ++ " " ++ toString currentFilter ++ " (%)" ]
-                        , div [ class "helper" ] [ text "(New cases per month)" ]
+                        [ div []
+                            [ text <|
+                                translate language (Translate.Dashboard Translate.IncidenceOf)
+                                    ++ " "
+                                    ++ translate language (Translate.Dashboard <| Translate.Filter currentFilter)
+                                    ++ " (%)"
+                            ]
+                        , div [ class "helper" ]
+                            [ text <| "(" ++ translate language (Translate.Dashboard Translate.NewCasesPerMonth) ++ ")"
+                            ]
                         ]
 
         chartData =

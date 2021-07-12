@@ -66,6 +66,23 @@ function hedley_well_child_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_head_circumference'.
+  $field_bases['field_head_circumference'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_head_circumference',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
+  );
+
   // Exported field_base: 'field_well_child_encounter'.
   $field_bases['field_well_child_encounter'] = array(
     'active' => 1,
@@ -119,6 +136,44 @@ function hedley_well_child_field_default_field_bases() {
       'allowed_values' => array(
         'pediatric-care' => 'Pediatric care',
         'newborn-exam' => 'Newborn exam',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );        
+  
+  // Exported field_base: 'field_well_child_symptoms'.
+  $field_bases['field_well_child_symptoms'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_well_child_symptoms',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'breathing-problems' => 'Breathing Problems',
+        'convulsions' => 'Convulsions',
+        'lethargy-or-unresponsiveness' => 'Lethargy Or Unresponsiveness',
+        'diarrhea' => 'Diarrhea',
+        'vomiting' => 'Vomiting',
+        'umbilical-cord-redness' => 'Umbilical Cord Redness',
+        'stiff-neck-or-bulging-fontanelle' => 'Stiff Neck Or Bulging Fontanelle',
+        'severe-edema' => 'Severe Edema',
+        'palmoplantar-pallor' => 'Palmoplantar Pallor',
+        'history-of-fever' => 'History Of Fever',
+        'baby-tires-quickly-when-feeding' => 'Baby Tires Quickly When Feeding',
+        'coughing-or-tearing-while-feeding' => 'Coughing Or Tearing While Feeding',
+        'rigid-muscles-or-jaw-clenching' => 'Rigid Muscles Or Jaw Clenching Preventing Feeding',
+        'excessive-sweating-when-feeding' => 'Excessive Sweating When Feeding',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),

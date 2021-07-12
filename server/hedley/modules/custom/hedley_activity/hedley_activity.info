@@ -57,6 +57,7 @@ features[field_base][] = field_last_menstrual_period
 features[field_base][] = field_legs
 features[field_base][] = field_live_children
 features[field_base][] = field_lungs
+features[field_base][] = field_measurement_notes
 features[field_base][] = field_medical_history
 features[field_base][] = field_medication
 features[field_base][] = field_muac

@@ -51,6 +51,16 @@ function hedley_well_child_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create well_child_head_circumference content'.
+  $permissions['create well_child_head_circumference content'] = array(
+    'name' => 'create well_child_head_circumference content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create well_child_health_education content'.
   $permissions['create well_child_health_education content'] = array(
     'name' => 'create well_child_health_education content',
@@ -111,6 +121,26 @@ function hedley_well_child_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create well_child_symptoms_review content'.
+  $permissions['create well_child_symptoms_review content'] = array(
+    'name' => 'create well_child_symptoms_review content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create well_child_vitals content'.
+  $permissions['create well_child_vitals content'] = array(
+    'name' => 'create well_child_vitals content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create well_child_weight content'.
   $permissions['create well_child_weight content'] = array(
     'name' => 'create well_child_weight content',
@@ -151,6 +181,15 @@ function hedley_well_child_user_default_permissions() {
   // Exported permission: 'delete any well_child_follow_up content'.
   $permissions['delete any well_child_follow_up content'] = array(
     'name' => 'delete any well_child_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any well_child_head_circumference content'.
+  $permissions['delete any well_child_head_circumference content'] = array(
+    'name' => 'delete any well_child_head_circumference content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -211,6 +250,24 @@ function hedley_well_child_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any well_child_symptoms_review content'.
+  $permissions['delete any well_child_symptoms_review content'] = array(
+    'name' => 'delete any well_child_symptoms_review content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any well_child_vitals content'.
+  $permissions['delete any well_child_vitals content'] = array(
+    'name' => 'delete any well_child_vitals content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any well_child_weight content'.
   $permissions['delete any well_child_weight content'] = array(
     'name' => 'delete any well_child_weight content',
@@ -250,6 +307,15 @@ function hedley_well_child_user_default_permissions() {
   // Exported permission: 'delete own well_child_follow_up content'.
   $permissions['delete own well_child_follow_up content'] = array(
     'name' => 'delete own well_child_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own well_child_head_circumference content'.
+  $permissions['delete own well_child_head_circumference content'] = array(
+    'name' => 'delete own well_child_head_circumference content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -310,6 +376,24 @@ function hedley_well_child_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own well_child_symptoms_review content'.
+  $permissions['delete own well_child_symptoms_review content'] = array(
+    'name' => 'delete own well_child_symptoms_review content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own well_child_vitals content'.
+  $permissions['delete own well_child_vitals content'] = array(
+    'name' => 'delete own well_child_vitals content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own well_child_weight content'.
   $permissions['delete own well_child_weight content'] = array(
     'name' => 'delete own well_child_weight content',
@@ -352,6 +436,16 @@ function hedley_well_child_user_default_permissions() {
   // Exported permission: 'edit any well_child_follow_up content'.
   $permissions['edit any well_child_follow_up content'] = array(
     'name' => 'edit any well_child_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any well_child_head_circumference content'.
+  $permissions['edit any well_child_head_circumference content'] = array(
+    'name' => 'edit any well_child_head_circumference content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -419,6 +513,26 @@ function hedley_well_child_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any well_child_symptoms_review content'.
+  $permissions['edit any well_child_symptoms_review content'] = array(
+    'name' => 'edit any well_child_symptoms_review content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any well_child_vitals content'.
+  $permissions['edit any well_child_vitals content'] = array(
+    'name' => 'edit any well_child_vitals content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any well_child_weight content'.
   $permissions['edit any well_child_weight content'] = array(
     'name' => 'edit any well_child_weight content',
@@ -462,6 +576,16 @@ function hedley_well_child_user_default_permissions() {
   // Exported permission: 'edit own well_child_follow_up content'.
   $permissions['edit own well_child_follow_up content'] = array(
     'name' => 'edit own well_child_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own well_child_head_circumference content'.
+  $permissions['edit own well_child_head_circumference content'] = array(
+    'name' => 'edit own well_child_head_circumference content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -522,6 +646,26 @@ function hedley_well_child_user_default_permissions() {
   // Exported permission: 'edit own well_child_send_to_hc content'.
   $permissions['edit own well_child_send_to_hc content'] = array(
     'name' => 'edit own well_child_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own well_child_symptoms_review content'.
+  $permissions['edit own well_child_symptoms_review content'] = array(
+    'name' => 'edit own well_child_symptoms_review content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own well_child_vitals content'.
+  $permissions['edit own well_child_vitals content'] = array(
+    'name' => 'edit own well_child_vitals content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

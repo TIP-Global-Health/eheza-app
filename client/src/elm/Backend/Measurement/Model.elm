@@ -85,13 +85,10 @@ type alias Muac =
     GroupMeasurement MuacInCm
 
 
-{-| An interpretation of a MUAC, according to the measurement
-tool referenced at <https://github.com/Gizra/ihangane/issues/282>
--}
-type MuacIndication
-    = MuacGreen
-    | MuacRed
-    | MuacYellow
+type ColorAlertIndication
+    = ColorAlertGreen
+    | ColorAlertRed
+    | ColorAlertYellow
 
 
 type HeightInCm
@@ -888,14 +885,14 @@ type alias SymptomsGI =
     AcuteIllnessMeasurement SymptomsGIValue
 
 
-type alias AcuteIllnessVitalsValue =
+type alias BasicVitalsValue =
     { respiratoryRate : Int
     , bodyTemperature : Float
     }
 
 
 type alias AcuteIllnessVitals =
-    AcuteIllnessMeasurement AcuteIllnessVitalsValue
+    AcuteIllnessMeasurement BasicVitalsValue
 
 
 type AcuteFindingsGeneralSign
@@ -1219,8 +1216,30 @@ type alias AcuteIllnessFollowUp =
 -- WELL CHILD MEASUREMENTS
 
 
-type alias WellChildECD =
-    WellChildMeasurement (EverySet ECDSign)
+type alias WellChildSymptomsReview =
+    WellChildMeasurement (EverySet WellChildSymptom)
+
+
+type WellChildSymptom
+    = SymptomBreathingProblems
+    | SymptomConvulsions
+    | SymptomLethargyOrUnresponsiveness
+    | SymptomDiarrhea
+    | SymptomVomiting
+    | SymptomUmbilicalCordRedness
+    | SymptomStiffNeckOrBulgingFontanelle
+    | SymptomSevereEdema
+    | SymptomPalmoplantarPallor
+    | SymptomHistoryOfFever
+    | SymptomBabyTiresQuicklyWhenFeeding
+    | SymptomCoughingOrTearingWhileFeeding
+    | SymptomRigidMusclesOrJawClenchingPreventingFeeding
+    | ExcessiveSweatingWhenFeeding
+    | NoWellChildSymptoms
+
+
+type alias WellChildVitals =
+    WellChildMeasurement BasicVitalsValue
 
 
 type alias WellChildHeight =
@@ -1257,6 +1276,29 @@ type alias WellChildContributingFactors =
 
 type alias WellChildFollowUp =
     WellChildMeasurement FollowUpValue
+
+
+type alias WellChildHeadCircumference =
+    WellChildMeasurement HeadCircumferenceValue
+
+
+type alias HeadCircumferenceValue =
+    { headCircumference : HeadCircumferenceInCm
+    , notes : EverySet MeasurementNote
+    }
+
+
+type HeadCircumferenceInCm
+    = HeadCircumferenceInCm Float
+
+
+type MeasurementNote
+    = NoteNotTaken
+    | NoMeasurementNotes
+
+
+type alias WellChildECD =
+    WellChildMeasurement (EverySet ECDSign)
 
 
 type ECDSign
@@ -1497,8 +1539,11 @@ type alias HomeVisitMeasurements =
     }
 
 
+{-| A set of Well Child measurements that correspond to the same Well Child encounter.
+-}
 type alias WellChildMeasurements =
-    { ecd : Maybe ( WellChildECDId, WellChildECD )
+    { symptomsReview : Maybe ( WellChildSymptomsReviewId, WellChildSymptomsReview )
+    , vitals : Maybe ( WellChildVitalsId, WellChildVitals )
     , height : Maybe ( WellChildHeightId, WellChildHeight )
     , muac : Maybe ( WellChildMuacId, WellChildMuac )
     , nutrition : Maybe ( WellChildNutritionId, WellChildNutrition )
@@ -1508,6 +1553,8 @@ type alias WellChildMeasurements =
     , healthEducation : Maybe ( WellChildHealthEducationId, WellChildHealthEducation )
     , followUp : Maybe ( WellChildFollowUpId, WellChildFollowUp )
     , sendToHC : Maybe ( WellChildSendToHCId, WellChildSendToHC )
+    , headCircumference : Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )
+    , ecd : Maybe ( WellChildECDId, WellChildECD )
     }
 
 
@@ -1610,4 +1657,13 @@ type alias PreviousValuesSet =
     { height : Maybe Float
     , muac : Maybe Float
     , weight : Maybe Float
+    , headCircumference : Maybe Float
+    }
+
+
+type alias PreviousMeasurementsSet =
+    { heights : List ( NominalDate, Float )
+    , muacs : List ( NominalDate, Float )
+    , weights : List ( NominalDate, Float )
+    , headCircumferences : List ( NominalDate, Float )
     }
