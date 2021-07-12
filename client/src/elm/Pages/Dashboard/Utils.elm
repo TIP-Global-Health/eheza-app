@@ -950,14 +950,14 @@ withinSelectedMonth selectedDate date =
 getSelectedDate : NominalDate -> Model -> NominalDate
 getSelectedDate currentDate model =
     Date.add Date.Months (-1 * model.monthGap) currentDate
-    
-   
+
+
 childrenBeneficiariesByProgramType : ProgramType -> Dict ProgramType (List ChildrenBeneficiariesStats) -> List ChildrenBeneficiariesStats
 childrenBeneficiariesByProgramType programType childrenBeneficiaries =
     Dict.get programType childrenBeneficiaries
         |> Maybe.withDefault []
-        
+
+
 filterByLimitDate : NominalDate -> Dict id { a | dateMeasured : NominalDate } -> Dict id { a | dateMeasured : NominalDate }
 filterByLimitDate limitDate followUps =
     Dict.filter (\_ followUp -> Date.compare followUp.dateMeasured limitDate == LT) followUps
-    

@@ -260,6 +260,8 @@ viewNutritionPane : Language -> NominalDate -> Dict PersonId NutritionFollowUpIt
 viewNutritionPane language currentDate itemsDict db model =
     let
         limitDate =
+            -- Set limit date for tomorrow, so that we
+            -- load all available follow ups.
             Date.add Days 1 currentDate
 
         entries =
@@ -384,6 +386,8 @@ viewAcuteIllnessPane :
 viewAcuteIllnessPane language currentDate itemsDict db model =
     let
         limitDate =
+            -- Set limit date for tomorrow, so that we
+            -- load all available follow ups.
             Date.add Days 1 currentDate
 
         entries =
@@ -520,6 +524,8 @@ viewPrenatalPane :
 viewPrenatalPane language currentDate itemsDict db model =
     let
         limitDate =
+            -- Set limit date for tomorrow, so that we
+            -- load all available follow ups.
             Date.add Days 1 currentDate
 
         entries =
