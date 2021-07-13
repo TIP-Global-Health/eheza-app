@@ -12,6 +12,6 @@ $plugin = array(
   'entity_type' => 'node',
   'bundle' => 'well_child_encounter',
   'description' => t('Exports the Well Child Encounter bundle.'),
-  'class' => 'HedleyRestfulIndividualEncounter',
+  'class' => 'HedleyRestfulWellChildEncounter',
   'authentication_types' => TRUE,
 );

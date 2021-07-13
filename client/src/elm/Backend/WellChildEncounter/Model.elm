@@ -11,17 +11,24 @@ type alias WellChildEncounter =
     { participant : IndividualEncounterParticipantId
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , encounterType : WellChildEncounterType
     , shard : Maybe HealthCenterId
     }
 
 
-emptyWellChildEncounter : IndividualEncounterParticipantId -> NominalDate -> Maybe HealthCenterId -> WellChildEncounter
-emptyWellChildEncounter participant startDate shard =
+emptyWellChildEncounter : IndividualEncounterParticipantId -> NominalDate -> WellChildEncounterType -> Maybe HealthCenterId -> WellChildEncounter
+emptyWellChildEncounter participant startDate encounterType shard =
     { participant = participant
     , startDate = startDate
     , endDate = Nothing
+    , encounterType = encounterType
     , shard = shard
     }
+
+
+type WellChildEncounterType
+    = PediatricCare
+    | NewbornExam
 
 
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress

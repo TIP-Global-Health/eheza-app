@@ -40,7 +40,7 @@ viewHeaderAndContent : Language -> NominalDate -> HomeVisitEncounterId -> Bool -
 viewHeaderAndContent language currentDate id isChw db model data =
     let
         header =
-            viewHeader language data
+            viewHeader language isChw data
 
         content =
             viewContent language currentDate id isChw db model data
@@ -51,8 +51,8 @@ viewHeaderAndContent language currentDate id isChw db model data =
         ]
 
 
-viewHeader : Language -> AssembledData -> Html Msg
-viewHeader language data =
+viewHeader : Language -> Bool -> AssembledData -> Html Msg
+viewHeader language isChw data =
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -61,6 +61,7 @@ viewHeader language data =
                 translate language <|
                     Translate.IndividualEncounterLabel
                         Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter
+                        isChw
             ]
         , a
             [ class "link-back"

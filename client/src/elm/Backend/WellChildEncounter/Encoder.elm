@@ -19,7 +19,19 @@ encodeWellChildEncounter session =
             ]
       )
     , ( "individual_participant", encodeEntityUuid session.participant )
+    , ( "well_child_encounter_type", encodeWellChildEncounterType session.encounterType )
     , ( "deleted", bool False )
     , ( "type", string "well_child_encounter" )
     ]
         ++ encodeIfExists "shard" session.shard encodeEntityUuid
+
+
+encodeWellChildEncounterType : WellChildEncounterType -> Value
+encodeWellChildEncounterType encounterType =
+    string <|
+        case encounterType of
+            PediatricCare ->
+                "pediatric-care"
+
+            NewbornExam ->
+                "newborn-exam"

@@ -570,10 +570,10 @@ type TranslationId
     | IncompleteCervixPreviousPregnancy
     | IndividualEncounter
     | IndividualEncounterFirstVisit IndividualEncounterType
-    | IndividualEncounterLabel IndividualEncounterType
-    | IndividualEncounterSelectVisit IndividualEncounterType
+    | IndividualEncounterLabel IndividualEncounterType Bool
+    | IndividualEncounterSelectVisit IndividualEncounterType Bool
     | IndividualEncounterSubsequentVisit IndividualEncounterType
-    | IndividualEncounterType IndividualEncounterType
+    | IndividualEncounterType IndividualEncounterType Bool
     | IndividualEncounterTypes
     | InitialResultsDisplay InitialResultsDisplay
     | IntractableVomiting Bool
@@ -3977,7 +3977,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        IndividualEncounterLabel encounterType ->
+        IndividualEncounterLabel encounterType isChw ->
             case encounterType of
                 AcuteIllnessEncounter ->
                     { english = "Acute Illness Encounter"
@@ -4005,11 +4005,17 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = "Standard Pediatric Visit Encounter"
-                    , kinyarwanda = Nothing
-                    }
+                    if isChw then
+                        { english = "Newborn Exam"
+                        , kinyarwanda = Nothing
+                        }
 
-        IndividualEncounterSelectVisit encounterType ->
+                    else
+                        { english = "Standard Pediatric Visit Encounter"
+                        , kinyarwanda = Nothing
+                        }
+
+        IndividualEncounterSelectVisit encounterType isChw ->
             case encounterType of
                 AcuteIllnessEncounter ->
                     { english = "Select Acute Illness Visit"
@@ -4037,9 +4043,15 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = "Select Standard Pediatric Visit"
-                    , kinyarwanda = Nothing
-                    }
+                    if isChw then
+                        { english = "Select Newborn Exam Visit"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Select Standard Pediatric Visit"
+                        , kinyarwanda = Nothing
+                        }
 
         IndividualEncounterSubsequentVisit encounterType ->
             case encounterType of
@@ -4073,7 +4085,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        IndividualEncounterType encounterType ->
+        IndividualEncounterType encounterType isChw ->
             case encounterType of
                 AcuteIllnessEncounter ->
                     { english = "Acute Illness"
@@ -4101,9 +4113,15 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = "Standard Pediatric Visit"
-                    , kinyarwanda = Nothing
-                    }
+                    if isChw then
+                        { english = "Newborn Exam"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Standard Pediatric Visit"
+                        , kinyarwanda = Nothing
+                        }
 
         IndividualEncounterTypes ->
             { english = "Individual Encounter Types"

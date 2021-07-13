@@ -59,7 +59,7 @@ viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> Bool ->
 viewHeaderAndContent language currentDate id isChw model data =
     let
         header =
-            viewHeader language data
+            viewHeader language isChw data
 
         content =
             viewContent language currentDate isChw data model
@@ -72,13 +72,13 @@ viewHeaderAndContent language currentDate id isChw model data =
         ]
 
 
-viewHeader : Language -> AssembledData -> Html Msg
-viewHeader language data =
+viewHeader : Language -> Bool -> AssembledData -> Html Msg
+viewHeader language isChw data =
     div
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language <| Translate.IndividualEncounterLabel AntenatalEncounter ]
+            [ text <| translate language <| Translate.IndividualEncounterLabel AntenatalEncounter isChw ]
         , a
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage data.participant.person

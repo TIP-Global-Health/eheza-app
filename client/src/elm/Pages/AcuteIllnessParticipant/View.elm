@@ -47,14 +47,14 @@ viewHeader language model =
         ( labelTransId, action ) =
             case model.viewMode of
                 ManageIllnesses ->
-                    ( Translate.IndividualEncounterLabel Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                    ( Translate.IndividualEncounterLabel Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter True
                     , SetActivePage <|
                         UserPage <|
                             IndividualEncounterParticipantsPage Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
                     )
 
                 ManageParticipants ->
-                    ( Translate.IndividualEncounterLabel Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                    ( Translate.IndividualEncounterLabel Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter True
                     , SetViewMode ManageIllnesses
                     )
 
@@ -174,7 +174,7 @@ viewManageIllnessesContent language currentDate selectedHealthCenter id isChw db
                 AcuteIllnessEncounterNurse
 
         createIllnessNavigateToEncounterSection =
-            [ viewLabel language "select-visit" <| Translate.IndividualEncounterSelectVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+            [ viewLabel language "select-visit" <| Translate.IndividualEncounterSelectVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter True
             , viewButton language
                 createIllnessNavigateToEncounterAction
                 Translate.AcuteIllnessNew
@@ -282,7 +282,7 @@ viewManageParticipantsContent language currentDate selectedHealthCenter id isChw
     in
     if List.isEmpty activeIllnesses then
         div []
-            [ viewLabel language "select-visit" <| Translate.IndividualEncounterSelectVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+            [ viewLabel language "select-visit" <| Translate.IndividualEncounterSelectVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter True
             , createIllnessNavigateToEncounterButton
             ]
 

@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
-import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isPersonAFertileWoman, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isNewborn, isPersonAFertileWoman, isPersonAnAdult)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -117,9 +117,16 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                         |> Maybe.withDefault False
 
                 WellChildEncounter ->
-                    isPersonAnAdult currentDate person
-                        |> Maybe.map not
-                        |> Maybe.withDefault False
+                    if isChw then
+                        -- CHW can run only Newborn exam, which is
+                        -- performed for children up to 2 months old.
+                        isNewborn currentDate person
+                            |> Maybe.withDefault False
+
+                    else
+                        isPersonAnAdult currentDate person
+                            |> Maybe.map not
+                            |> Maybe.withDefault False
 
                 _ ->
                     False
