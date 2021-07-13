@@ -1079,7 +1079,7 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
             []
 
 
-viewNonAdministrationReason : Language -> TranslationId -> String -> Maybe NominalDate -> MedicationNonAdministrationReason -> Html any
+viewNonAdministrationReason : Language -> TranslationId -> String -> Maybe NominalDate -> AdministrationNote -> Html any
 viewNonAdministrationReason language medicineTranslationId iconClass maybeDate reason =
     let
         message =
@@ -1088,7 +1088,7 @@ viewNonAdministrationReason language medicineTranslationId iconClass maybeDate r
                 , text " "
                 , text <| translate language <| Translate.RecommendedButNotGivenDueTo
                 , text ": "
-                , text <| translate language <| Translate.MedicationNonAdministrationReason reason
+                , text <| translate language <| Translate.AdministrationNote reason
                 ]
                     ++ renderDatePart language maybeDate
     in

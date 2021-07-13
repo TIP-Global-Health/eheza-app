@@ -2164,29 +2164,29 @@ decodeMedicationNonAdministrationSign =
                         |> Maybe.map
                             (\prefix ->
                                 let
-                                    medicationNonAdministrationReason =
+                                    administrationNote =
                                         List.tail parts
                                             |> Maybe.map (List.intersperse "-" >> String.concat)
-                                            |> Maybe.andThen medicationNonAdministrationReasonFromString
+                                            |> Maybe.andThen administrationNoteFromString
                                 in
                                 case prefix of
                                     "amoxicillin" ->
-                                        medicationNonAdministrationReason
+                                        administrationNote
                                             |> Maybe.map (MedicationAmoxicillin >> succeed)
                                             |> Maybe.withDefault failure
 
                                     "coartem" ->
-                                        medicationNonAdministrationReason
+                                        administrationNote
                                             |> Maybe.map (MedicationCoartem >> succeed)
                                             |> Maybe.withDefault failure
 
                                     "ors" ->
-                                        medicationNonAdministrationReason
+                                        administrationNote
                                             |> Maybe.map (MedicationORS >> succeed)
                                             |> Maybe.withDefault failure
 
                                     "zinc" ->
-                                        medicationNonAdministrationReason
+                                        administrationNote
                                             |> Maybe.map (MedicationZinc >> succeed)
                                             |> Maybe.withDefault failure
 

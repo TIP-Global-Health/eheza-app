@@ -1087,19 +1087,21 @@ type MedicationDistributionSign
     | NoMedicationDistributionSigns
 
 
-type MedicationNonAdministrationReason
+type AdministrationNote
     = NonAdministrationLackOfStock
     | NonAdministrationKnownAllergy
     | NonAdministrationPatientDeclined
     | NonAdministrationPatientUnableToAfford
     | NonAdministrationOther
+    | AdministeredToday
+    | AdministeredPreviously
 
 
 type MedicationNonAdministrationSign
-    = MedicationAmoxicillin MedicationNonAdministrationReason
-    | MedicationCoartem MedicationNonAdministrationReason
-    | MedicationORS MedicationNonAdministrationReason
-    | MedicationZinc MedicationNonAdministrationReason
+    = MedicationAmoxicillin AdministrationNote
+    | MedicationCoartem AdministrationNote
+    | MedicationORS AdministrationNote
+    | MedicationZinc AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 
@@ -1342,6 +1344,85 @@ type ECDSign
     | NoECDSigns
 
 
+type alias WellChildImmunisation =
+    WellChildMeasurement ImmunisationValue
+
+
+type alias ImmunisationValue =
+    { suggestedVaccines : List SuggestedVaccine
+    , vacinationNotes : List VacinationNote
+    , bcgVaccinationDate : Maybe NominalDate
+    , opvVaccinationDate : Maybe NominalDate
+    , dtpVaccinationDate : Maybe NominalDate
+    , pcv13VaccinationDate : Maybe NominalDate
+    , rotarixVaccinationDate : Maybe NominalDate
+    , ipvVaccinationDate : Maybe NominalDate
+    , mrVaccinationDate : Maybe NominalDate
+    , hpvVaccinationDate : Maybe NominalDate
+    }
+
+
+type alias SuggestedVaccine =
+    { type_ : VaccineType
+    , dose : VaccineDose
+    }
+
+
+type alias VacinationNote =
+    { type_ : VaccineType
+    , note : AdministrationNote
+    }
+
+
+type VaccineType
+    = VaccineBCG
+    | VaccineOPV
+    | VaccineDTP
+    | VaccinePCV13
+    | VaccineRotarix
+    | VaccineIPV
+    | VaccineMR
+    | VaccineHPV
+
+
+type VaccineDose
+    = VaccineDoseFirst
+    | VaccineDoseSecond
+    | VaccineDoseThird
+    | VaccineDoseFourth
+
+
+type alias WellChildMebendezole =
+    WellChildMeasurement AdministrationNote
+
+
+type alias WellChildVitaminA =
+    WellChildMeasurement AdministrationNote
+
+
+type alias WellChildPregnancySummary =
+    WellChildMeasurement PregnancySummaryValue
+
+
+type alias PregnancySummaryValue =
+    { expectedDateConcluded : NominalDate
+    , dateConcluded : NominalDate
+    , apgarsOneMinute : Int
+    , apgarsFiveMinutes : Int
+    , deliveryComplications : EverySet DeliveryComplication
+    }
+
+
+type DeliveryComplication
+    = ComplicationGestationalDiabetes
+    | ComplicationEmergencyCSection
+    | ComplicationPreclampsia
+    | ComplicationMaternalHemmorhage
+    | ComplicationHiv
+    | ComplicationMaternalDeath
+    | NoDeliveryComplications
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -1554,7 +1635,11 @@ type alias WellChildMeasurements =
     , followUp : Maybe ( WellChildFollowUpId, WellChildFollowUp )
     , sendToHC : Maybe ( WellChildSendToHCId, WellChildSendToHC )
     , headCircumference : Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )
+    , immunisation : Maybe ( WellChildImmunisationId, WellChildImmunisation )
     , ecd : Maybe ( WellChildECDId, WellChildECD )
+    , mebendezole : Maybe ( WellChildMebendezoleId, WellChildMebendezole )
+    , pregnancySummary : Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary )
+    , vitaminA : Maybe ( WellChildVitaminAId, WellChildVitaminA )
     }
 
 

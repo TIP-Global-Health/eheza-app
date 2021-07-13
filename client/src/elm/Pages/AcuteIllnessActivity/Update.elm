@@ -1393,7 +1393,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SetMedicationDistributionMedicationNonAdministrationReason currentValue medication reason ->
+        SetMedicationDistributionAdministrationNote currentValue medication reason ->
             let
                 form =
                     model.nextStepsData.medicationDistributionForm

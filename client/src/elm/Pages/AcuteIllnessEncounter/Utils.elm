@@ -22,7 +22,7 @@ import Backend.Measurement.Model
         , IsolationValue
         , MalariaRapidTestResult(..)
         , MedicationDistributionSign(..)
-        , MedicationNonAdministrationReason(..)
+        , AdministrationNote(..)
         , MedicationNonAdministrationSign(..)
         , ReasonForNotIsolating(..)
         , Recommendation114(..)
@@ -322,7 +322,7 @@ sendToHCDueToMedicationNonAdministration measurements =
         |> not
 
 
-resolveMedicationsNonAdministrationReasons : AcuteIllnessMeasurements -> List ( MedicationDistributionSign, MedicationNonAdministrationReason )
+resolveMedicationsNonAdministrationReasons : AcuteIllnessMeasurements -> List ( MedicationDistributionSign, AdministrationNote )
 resolveMedicationsNonAdministrationReasons measurements =
     let
         nonAdministrationSigns =

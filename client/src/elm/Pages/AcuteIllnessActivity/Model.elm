@@ -76,7 +76,7 @@ type Msg
     | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC )) (Maybe NextStepsTask)
     | SetReasonForNotSendingToHC ReasonForNotSendingToHC
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
-    | SetMedicationDistributionMedicationNonAdministrationReason (Maybe MedicationNonAdministrationReason) MedicationDistributionSign MedicationNonAdministrationReason
+    | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution )) (Maybe NextStepsTask)
     | SetProvidedEducationForDiagnosis Bool
     | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation )) (Maybe NextStepsTask)

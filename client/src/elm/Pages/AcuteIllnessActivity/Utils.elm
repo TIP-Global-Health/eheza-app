@@ -27,7 +27,7 @@ import Backend.Measurement.Model
         , MalariaRapidTestResult(..)
         , MedicationDistributionSign(..)
         , MedicationDistributionValue
-        , MedicationNonAdministrationReason(..)
+        , AdministrationNote(..)
         , MedicationNonAdministrationSign(..)
         , MuacInCm(..)
         , ReasonForNotIsolating(..)
@@ -1330,9 +1330,9 @@ resolveAmoxicillinDosage currentDate person =
 
 
 getCurrentReasonForMedicaitonNonAdministration :
-    (MedicationNonAdministrationReason -> MedicationNonAdministrationSign)
+    (AdministrationNote -> MedicationNonAdministrationSign)
     -> MedicationDistributionForm
-    -> Maybe MedicationNonAdministrationReason
+    -> Maybe AdministrationNote
 getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form =
     let
         nonAdministrationSigns =
@@ -1350,7 +1350,7 @@ getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form =
         |> List.head
 
 
-nonAdministrationReasonToSign : MedicationDistributionSign -> MedicationNonAdministrationReason -> MedicationNonAdministrationSign
+nonAdministrationReasonToSign : MedicationDistributionSign -> AdministrationNote -> MedicationNonAdministrationSign
 nonAdministrationReasonToSign sign reason =
     case sign of
         Amoxicillin ->

@@ -264,8 +264,8 @@ getCurrentAndPrevious sessionId =
         }
 
 
-medicationNonAdministrationReasonFromString : String -> Maybe MedicationNonAdministrationReason
-medicationNonAdministrationReasonFromString reason =
+administrationNoteFromString : String -> Maybe AdministrationNote
+administrationNoteFromString reason =
     case reason of
         "lack-of-stock" ->
             Just NonAdministrationLackOfStock
@@ -282,12 +282,18 @@ medicationNonAdministrationReasonFromString reason =
         "other" ->
             Just NonAdministrationOther
 
+        "administered-today" ->
+            Just AdministeredToday
+
+        "administered-previously" ->
+            Just AdministeredPreviously
+
         _ ->
             Nothing
 
 
-medicationNonAdministrationReasonToString : MedicationNonAdministrationReason -> String
-medicationNonAdministrationReasonToString reason =
+administrationNoteToString : AdministrationNote -> String
+administrationNoteToString reason =
     case reason of
         NonAdministrationLackOfStock ->
             "lack-of-stock"
@@ -303,6 +309,12 @@ medicationNonAdministrationReasonToString reason =
 
         NonAdministrationOther ->
             "other"
+
+        AdministeredToday ->
+            "administered-today"
+
+        AdministeredPreviously ->
+            "administered-previously"
 
 
 mapChildMeasurementsAtOfflineSession : PersonId -> (ChildMeasurements -> ChildMeasurements) -> OfflineSession -> OfflineSession

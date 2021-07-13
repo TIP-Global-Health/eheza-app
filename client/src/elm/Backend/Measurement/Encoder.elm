@@ -1919,16 +1919,16 @@ encodeMedicationNonAdministrationSign sign =
     string <|
         case sign of
             MedicationAmoxicillin reason ->
-                "amoxicillin-" ++ medicationNonAdministrationReasonToString reason
+                "amoxicillin-" ++ administrationNoteToString reason
 
             MedicationCoartem reason ->
-                "coartem-" ++ medicationNonAdministrationReasonToString reason
+                "coartem-" ++ administrationNoteToString reason
 
             MedicationORS reason ->
-                "ors-" ++ medicationNonAdministrationReasonToString reason
+                "ors-" ++ administrationNoteToString reason
 
             MedicationZinc reason ->
-                "zinc-" ++ medicationNonAdministrationReasonToString reason
+                "zinc-" ++ administrationNoteToString reason
 
             NoMedicationNonAdministrationSigns ->
                 "none"
