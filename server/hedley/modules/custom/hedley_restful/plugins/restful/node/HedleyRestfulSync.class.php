@@ -449,6 +449,14 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'date_concluded',
           'expected_date_concluded',
           'appointment_confirmation',
+          'bcg_vaccination_date',
+          'opv_vaccination_date',
+          'dtp_vaccination_date',
+          'pcv13_vaccination_date',
+          'rotarix_vaccination_date',
+          'ipv_vaccination_date',
+          'mr_vaccination_date',
+          'hpv_vaccination_date',
         ];
 
         $data = [];
