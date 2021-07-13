@@ -893,3 +893,35 @@ type alias WellChildVitalsId =
 
 type WellChildVitalsUuidType
     = WellChildVitalsUuidType
+
+
+type alias WellChildImmunisationId =
+    EntityUuid WellChildImmunisationUuidType
+
+
+type WellChildImmunisationUuidType
+    = WellChildImmunisationUuidType
+
+
+type alias WellChildMebendezoleId =
+    EntityUuid WellChildMebendezoleUuidType
+
+
+type WellChildMebendezoleUuidType
+    = WellChildMebendezoleUuidType
+
+
+type alias WellChildPregnancySummaryId =
+    EntityUuid WellChildPregnancySummaryUuidType
+
+
+type WellChildPregnancySummaryUuidType
+    = WellChildPregnancySummaryUuidType
+
+
+type alias WellChildVitaminAId =
+    EntityUuid WellChildVitaminAUuidType
+
+
+type WellChildVitaminAUuidType
+    = WellChildVitaminAUuidType
