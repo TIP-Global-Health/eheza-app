@@ -113,7 +113,7 @@ warningPopup language childId encounterId showPopup =
                             [ class "ui primary fluid button"
                             , onClick <| NavigateToAcuteIllnessParticipantPage childId encounterId
                             ]
-                            [ text <| translate language Translate.Continue ]
+                            [ text <| translate language Translate.CloseAndContinue ]
                         ]
                     ]
                 ]

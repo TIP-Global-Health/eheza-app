@@ -392,6 +392,7 @@ type TranslationId
     | Dashboard Dashboard
     | ClinicalProgressReport
     | CloseAcuteIllnessLabel
+    | CloseAndContinue
     | ColorAlertIndication ColorAlertIndication
     | CompleteHCReferralForm
     | CompletedHCReferralForm
@@ -2324,6 +2325,11 @@ translationSet trans =
         CloseAcuteIllnessLabel ->
             { english = "or Close an Acute Illness"
             , kinyarwanda = Just "Cyangwa Ufunge Indwara ifatiyeho iheruka kuvurwa"
+            }
+
+        CloseAndContinue ->
+            { english = "Close & Continue"
+            , kinyarwanda = Nothing
             }
 
         ColorAlertIndication indication ->
@@ -7594,7 +7600,7 @@ translationSet trans =
             }
 
         WarningSignsOfAcuteIllness ->
-            { english = "Child shows signs of acute illness. Please begin an “Acute Illness” encounter immediately."
+            { english = "Child shows signs of acute illness. Please close this encounter and continue in an “Acute Illness” encounter immediately."
             , kinyarwanda = Nothing
             }
 
