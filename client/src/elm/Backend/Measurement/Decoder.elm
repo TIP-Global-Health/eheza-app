@@ -2141,6 +2141,9 @@ decodeMedicationDistributionSign =
                     "lemon-juice-or-honey" ->
                         succeed LemonJuiceOrHoney
 
+                    "albendazole" ->
+                        succeed Albendazole
+
                     "mebendezole" ->
                         succeed Mebendezole
 

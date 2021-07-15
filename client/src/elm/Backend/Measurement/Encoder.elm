@@ -1910,6 +1910,9 @@ encondeMedicationDistributionSign sign =
             LemonJuiceOrHoney ->
                 "lemon-juice-or-honey"
 
+            Albendazole ->
+                "albendazole"
+
             Mebendezole ->
                 "mebendezole"
 

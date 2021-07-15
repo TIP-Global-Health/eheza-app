@@ -49,6 +49,9 @@ type Msg
     | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
       -- MEDICATION
     | SetActiveMedicationTask MedicationTask
+    | SetAlbendazoleAdministered Bool
+    | SetAlbendazoleReasonForNonAdministration AdministrationNote
+    | SaveAlbendazole PersonId (Maybe ( WellChildAlbendazoleId, WellChildAlbendazole )) (Maybe MedicationTask)
     | SetMebendezoleAdministered Bool
     | SetMebendezoleReasonForNonAdministration AdministrationNote
     | SaveMebendezole PersonId (Maybe ( WellChildMebendezoleId, WellChildMebendezole )) (Maybe MedicationTask)
@@ -249,7 +252,8 @@ emptyWellChildECDForm =
 
 
 type alias MedicationData =
-    { mebendezoleForm : MedicationAdministrationForm
+    { albendazoleForm : MedicationAdministrationForm
+    , mebendezoleForm : MedicationAdministrationForm
     , vitaminAForm : MedicationAdministrationForm
     , activeTask : Maybe MedicationTask
     }
@@ -257,7 +261,8 @@ type alias MedicationData =
 
 emptyMedicationData : MedicationData
 emptyMedicationData =
-    { mebendezoleForm = emptyMedicationAdministrationForm
+    { albendazoleForm = emptyMedicationAdministrationForm
+    , mebendezoleForm = emptyMedicationAdministrationForm
     , vitaminAForm = emptyMedicationAdministrationForm
     , activeTask = Nothing
     }
@@ -275,5 +280,6 @@ emptyMedicationAdministrationForm =
 
 
 type MedicationTask
-    = TaskMebendezole
+    = TaskAlbendazole
+    | TaskMebendezole
     | TaskVitaminA

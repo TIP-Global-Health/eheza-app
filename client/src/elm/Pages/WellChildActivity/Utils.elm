@@ -712,6 +712,12 @@ medicationTasksCompletedFromTotal measurements data task =
             )
     in
     case task of
+        TaskAlbendazole ->
+            measurements.albendazole
+                |> Maybe.map (Tuple.second >> .value)
+                |> medicationAdministrationFormWithDefault data.albendazoleForm
+                |> processMedicationAdministrationTask
+
         TaskMebendezole ->
             measurements.mebendezole
                 |> Maybe.map (Tuple.second >> .value)
@@ -771,6 +777,11 @@ toAdministrationNote form =
                 else
                     form.reasonForNonAdministration
             )
+
+
+resolveAlbendazoleDosage : NominalDate -> Person -> Maybe String
+resolveAlbendazoleDosage currentDate person =
+    Just "400 mg"
 
 
 resolveMebendezoleDosage : NominalDate -> Person -> Maybe String

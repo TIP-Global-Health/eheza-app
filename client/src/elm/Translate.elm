@@ -310,6 +310,7 @@ type TranslationId
     | Admin
     | Administer
     | AdministerMebendezoleHelper
+    | AdministerAlbendazoleHelper
     | AdministeVitaminAHelper
     | Administered
     | AdministeredMedicationQuestion
@@ -1446,6 +1447,11 @@ translationSet trans =
 
         AdministerMebendezoleHelper ->
             { english = "Give the child one tablet by mouth"
+            , kinyarwanda = Nothing
+            }
+
+        AdministerAlbendazoleHelper ->
+            { english = "One tablet by mouth"
             , kinyarwanda = Nothing
             }
 
@@ -4623,6 +4629,11 @@ translationSet trans =
                     , kinyarwanda = Just "Umutobe w'indimu n'ubuki"
                     }
 
+                Albendazole ->
+                    { english = "Albendazole"
+                    , kinyarwanda = Nothing
+                    }
+
                 Mebendezole ->
                     { english = "Mebendezole"
                     , kinyarwanda = Nothing
@@ -7724,6 +7735,11 @@ translationSet trans =
 
         WellChildMedicationTask task ->
             case task of
+                Pages.WellChildActivity.Model.TaskAlbendazole ->
+                    { english = "Albendazole"
+                    , kinyarwanda = Nothing
+                    }
+
                 Pages.WellChildActivity.Model.TaskMebendezole ->
                     { english = "Mebendezole"
                     , kinyarwanda = Nothing

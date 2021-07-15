@@ -1048,7 +1048,7 @@ viewMedicationContent language currentDate assembled data =
             assembled.measurements
 
         tasks =
-            [ TaskMebendezole, TaskVitaminA ]
+            [ TaskAlbendazole, TaskMebendezole, TaskVitaminA ]
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -1057,6 +1057,11 @@ viewMedicationContent language currentDate assembled data =
             let
                 ( iconClass, isCompleted ) =
                     case task of
+                        TaskAlbendazole ->
+                            ( "albendazole"
+                            , isJust measurements.albendazole
+                            )
+
                         TaskMebendezole ->
                             ( "mebendezole"
                             , isJust measurements.mebendezole
@@ -1098,6 +1103,22 @@ viewMedicationContent language currentDate assembled data =
 
         viewForm =
             case activeTask of
+                Just TaskAlbendazole ->
+                    let
+                        config =
+                            { medication = Albendazole
+                            , setMedicationAdministeredMsg = SetAlbendazoleAdministered
+                            , setReasonForNonAdministration = SetAlbendazoleReasonForNonAdministration
+                            , resolveDosageFunc = resolveAlbendazoleDosage
+                            , helper = Translate.AdministerAlbendazoleHelper
+                            , icon = "icon-pills"
+                            }
+                    in
+                    measurements.albendazole
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> medicationAdministrationFormWithDefault data.albendazoleForm
+                        |> viewMedicationAdministrationForm language currentDate assembled config
+
                 Just TaskMebendezole ->
                     let
                         config =
@@ -1151,6 +1172,9 @@ viewMedicationContent language currentDate assembled data =
                         let
                             saveMsg =
                                 case task of
+                                    TaskAlbendazole ->
+                                        SaveAlbendazole personId measurements.albendazole nextTask
+
                                     TaskMebendezole ->
                                         SaveMebendezole personId measurements.mebendezole nextTask
 

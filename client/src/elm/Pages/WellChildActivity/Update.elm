@@ -812,6 +812,64 @@ update currentDate id db msg model =
             , []
             )
 
+        SetAlbendazoleAdministered value ->
+            let
+                updatedForm =
+                    model.medicationData.albendazoleForm
+                        |> (\form -> { form | medicationAdministered = Just value, reasonForNonAdministration = Nothing })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | albendazoleForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetAlbendazoleReasonForNonAdministration value ->
+            let
+                updatedForm =
+                    model.medicationData.albendazoleForm
+                        |> (\form -> { form | reasonForNonAdministration = Just value })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | albendazoleForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveAlbendazole personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                extraMsgs =
+                    generateMedicationMsgs nextTask_
+
+                appMsgs =
+                    model.medicationData.albendazoleForm
+                        |> toAdministrationNoteWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveAlbendazole personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
         SetMebendezoleAdministered value ->
             let
                 updatedForm =
