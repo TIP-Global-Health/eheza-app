@@ -10,6 +10,7 @@ import Backend.Measurement.Model
         , AcuteFindingsRespiratorySign(..)
         , AcuteIllnessDangerSign(..)
         , AcuteIllnessMeasurements
+        , AdministrationNote(..)
         , BasicVitalsValue
         , Call114Sign(..)
         , ChildNutritionSign(..)
@@ -22,7 +23,6 @@ import Backend.Measurement.Model
         , IsolationValue
         , MalariaRapidTestResult(..)
         , MedicationDistributionSign(..)
-        , AdministrationNote(..)
         , MedicationNonAdministrationSign(..)
         , ReasonForNotIsolating(..)
         , Recommendation114(..)
