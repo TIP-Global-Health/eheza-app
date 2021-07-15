@@ -113,6 +113,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'treatment_ongoing' => 'treatment-ongoing',
   'vitals' => 'vitals',
   'weight' => 'weights',
+  'well_child_albendazole' => 'well-child-albendazole',
   'well_child_contributing_factors' => 'well-child-contributing-factors',
   'well_child_ecd' => 'well-child-ecd',
   'well_child_follow_up' => 'well-child-follow-up',
