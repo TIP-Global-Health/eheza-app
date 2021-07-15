@@ -925,3 +925,11 @@ type alias WellChildVitaminAId =
 
 type WellChildVitaminAUuidType
     = WellChildVitaminAUuidType
+
+
+type alias WellChildAlbendazoleId =
+    EntityUuid WellChildAlbendazoleUuidType
+
+
+type WellChildAlbendazoleUuidType
+    = WellChildAlbendazoleUuidType
