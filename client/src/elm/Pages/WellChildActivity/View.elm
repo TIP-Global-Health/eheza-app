@@ -1109,9 +1109,8 @@ viewMedicationContent language currentDate assembled data =
                             { medication = Albendazole
                             , setMedicationAdministeredMsg = SetAlbendazoleAdministered
                             , setReasonForNonAdministration = SetAlbendazoleReasonForNonAdministration
-                            , resolveDosageFunc = resolveAlbendazoleDosage
+                            , resolveDosageAndIconFunc = resolveAlbendazoleDosageAndIcon
                             , helper = Translate.AdministerAlbendazoleHelper
-                            , icon = "icon-pills"
                             }
                     in
                     measurements.albendazole
@@ -1125,9 +1124,8 @@ viewMedicationContent language currentDate assembled data =
                             { medication = Mebendezole
                             , setMedicationAdministeredMsg = SetMebendezoleAdministered
                             , setReasonForNonAdministration = SetMebendezoleReasonForNonAdministration
-                            , resolveDosageFunc = resolveMebendezoleDosage
+                            , resolveDosageAndIconFunc = resolveMebendezoleDosageAndIcon
                             , helper = Translate.AdministerMebendezoleHelper
-                            , icon = "icon-pills"
                             }
                     in
                     measurements.mebendezole
@@ -1141,11 +1139,8 @@ viewMedicationContent language currentDate assembled data =
                             { medication = VitaminA
                             , setMedicationAdministeredMsg = SetVitaminAAdministered
                             , setReasonForNonAdministration = SetVitaminAReasonForNonAdministration
-                            , resolveDosageFunc = resolveVitaminADosage
+                            , resolveDosageAndIconFunc = resolveVitaminADosageAndIcon
                             , helper = Translate.AdministeVitaminAHelper
-
-                            -- @todo; change to icon-drops
-                            , icon = "icon-pills"
                             }
                     in
                     measurements.vitaminA
@@ -1200,15 +1195,24 @@ viewMedicationContent language currentDate assembled data =
     ]
 
 
+type alias MedicationAdministrationFormConfig =
+    { medication : MedicationDistributionSign
+    , setMedicationAdministeredMsg : Bool -> Msg
+    , setReasonForNonAdministration : AdministrationNote -> Msg
+    , resolveDosageAndIconFunc : NominalDate -> Person -> Maybe ( String, String )
+    , helper : TranslationId
+    }
+
+
 viewMedicationAdministrationForm : Language -> NominalDate -> AssembledData -> MedicationAdministrationFormConfig -> MedicationAdministrationForm -> List (Html Msg)
 viewMedicationAdministrationForm language currentDate assembled config form =
     let
         instructions =
-            config.resolveDosageFunc currentDate assembled.person
+            config.resolveDosageAndIconFunc currentDate assembled.person
                 |> Maybe.map
-                    (\dosage ->
+                    (\( dosage, icon ) ->
                         div [ class "instructions" ]
-                            [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign config.medication) config.icon dosage
+                            [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign config.medication) icon dosage
                             , div [ class "prescription" ] [ text <| translate language config.helper ++ "." ]
                             ]
                     )
@@ -1245,16 +1249,6 @@ viewMedicationAdministrationForm language currentDate assembled config form =
         ]
             ++ questions
     ]
-
-
-type alias MedicationAdministrationFormConfig =
-    { medication : MedicationDistributionSign
-    , setMedicationAdministeredMsg : Bool -> Msg
-    , setReasonForNonAdministration : AdministrationNote -> Msg
-    , resolveDosageFunc : NominalDate -> Person -> Maybe String
-    , helper : TranslationId
-    , icon : String
-    }
 
 
 viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> String -> Html any

@@ -779,26 +779,26 @@ toAdministrationNote form =
             )
 
 
-resolveAlbendazoleDosage : NominalDate -> Person -> Maybe String
-resolveAlbendazoleDosage currentDate person =
-    Just "400 mg"
+resolveAlbendazoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
+resolveAlbendazoleDosageAndIcon currentDate person =
+    Just ( "500 mg", "icon-pills" )
 
 
-resolveMebendezoleDosage : NominalDate -> Person -> Maybe String
-resolveMebendezoleDosage currentDate person =
-    Just "500 mg"
+resolveMebendezoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
+resolveMebendezoleDosageAndIcon currentDate person =
+    Just ( "500 mg", "icon-pills" )
 
 
-resolveVitaminADosage : NominalDate -> Person -> Maybe String
-resolveVitaminADosage currentDate person =
+resolveVitaminADosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
+resolveVitaminADosageAndIcon currentDate person =
     ageInMonths currentDate person
         |> Maybe.map
             (\ageMonths ->
                 if ageMonths < 18 then
-                    "100,000 IU"
+                    ( "100,000 IU", "icon-capsule blue" )
 
                 else
-                    "200,000 IU"
+                    ( "200,000 IU", "icon-capsule red" )
             )
 
 

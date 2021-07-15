@@ -72,6 +72,22 @@
           height: 36px;
           width: 52px;
         }
+
+        &.icon-capsule {
+          height: 36px;
+          margin-right: 5px;
+          width: 50px;
+        }
+
+        &.icon-capsule.red {
+          background: url(#{$img-path}icon-capsule-red.svg) center center no-repeat;
+          background-size: 36px 50px;
+        }
+
+        &.icon-capsule.blue {
+          background: url(#{$img-path}icon-capsule-blue.svg) center center no-repeat;
+          background-size: 36px 50px;
+        }
       }
     }
 
