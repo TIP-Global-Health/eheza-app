@@ -136,12 +136,16 @@ type BackendAuthorityEntity
     | BackendAuthorityWellChildHeadCircumference (BackendEntity WellChildHeadCircumference)
     | BackendAuthorityWellChildHealthEducation (BackendEntity WellChildHealthEducation)
     | BackendAuthorityWellChildHeight (BackendEntity WellChildHeight)
+    | BackendAuthorityWellChildImmunisation (BackendEntity WellChildImmunisation)
+    | BackendAuthorityWellChildMebendezole (BackendEntity WellChildMebendezole)
     | BackendAuthorityWellChildMuac (BackendEntity WellChildMuac)
     | BackendAuthorityWellChildNutrition (BackendEntity WellChildNutrition)
     | BackendAuthorityWellChildPhoto (BackendEntity WellChildPhoto)
+    | BackendAuthorityWellChildPregnancySummary (BackendEntity WellChildPregnancySummary)
     | BackendAuthorityWellChildSendToHC (BackendEntity WellChildSendToHC)
     | BackendAuthorityWellChildSymptomsReview (BackendEntity WellChildSymptomsReview)
     | BackendAuthorityWellChildVitals (BackendEntity WellChildVitals)
+    | BackendAuthorityWellChildVitaminA (BackendEntity WellChildVitaminA)
     | BackendAuthorityWellChildWeight (BackendEntity WellChildWeight)
 
 

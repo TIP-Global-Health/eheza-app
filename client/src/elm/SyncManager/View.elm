@@ -627,6 +627,12 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityWellChildHeight identifier ->
                 viewMeasurement identifier "Well Child Height"
 
+            BackendAuthorityWellChildImmunisation identifier ->
+                viewMeasurement identifier "Well Child Immunisation"
+
+            BackendAuthorityWellChildMebendezole identifier ->
+                viewMeasurement identifier "Well Child Mebendezole"
+
             BackendAuthorityWellChildMuac identifier ->
                 viewMeasurement identifier "Well Child Muac"
 
@@ -636,6 +642,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityWellChildPhoto identifier ->
                 viewMeasurement identifier "Well Child Photo"
 
+            BackendAuthorityWellChildPregnancySummary identifier ->
+                viewMeasurement identifier "Well Child PregnancySummary"
+
             BackendAuthorityWellChildSendToHC identifier ->
                 viewMeasurement identifier "Well Child Send to HC"
 
@@ -644,6 +653,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityWellChildVitals identifier ->
                 viewMeasurement identifier "Well Child Vitals"
+
+            BackendAuthorityWellChildVitaminA identifier ->
+                viewMeasurement identifier "Well Child VitaminA"
 
             BackendAuthorityWellChildWeight identifier ->
                 viewMeasurement identifier "Well Child Weight"
