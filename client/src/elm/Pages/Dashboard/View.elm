@@ -200,9 +200,12 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
         totalNewborn =
             countNewbornForSelectedMonth selectedDate assembled.prenatalData
 
+        limitDate =
+            Date.ceiling Date.Month selectedDate
+
         -- Case Management
         ( totalNutritionFollowUps, totalAcuteIllnessFollowUps, totalPrenatalFollowUps ) =
-            Maybe.map2 (getFollowUpsTotals language currentDate db)
+            Maybe.map2 (getFollowUpsTotals language currentDate limitDate db)
                 model.selectedVillageFilter
                 assembled.caseManagementData
                 |> Maybe.withDefault ( 0, 0, 0 )
@@ -847,8 +850,11 @@ viewAcuteIllnessPage language currentDate activePage assembled db model =
         encountersForSelectedMonth =
             getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
 
+        limitDate =
+            Date.ceiling Date.Month selectedDate
+
         ( managedCovid, managedMalaria, managedGI ) =
-            Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate db)
+            Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db)
                 model.selectedVillageFilter
                 assembled.caseManagementData
                 |> Maybe.withDefault ( 0, 0, 0 )
