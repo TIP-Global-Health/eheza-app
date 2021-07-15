@@ -2174,6 +2174,20 @@ input::placeholder {
   }
 }
 
+.icon-mebendezole {
+  .active &:after {
+    background-image: url(#{$img-path}icon-mebendezole-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-mebendezole-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-mebendezole-gray.svg);
+  }
+}
+
 // Lists
 
 .ui.list {
