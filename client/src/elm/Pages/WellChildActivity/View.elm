@@ -128,7 +128,7 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
             viewNutritionAssessmenContent language currentDate zscores id isChw assembled db model.nutritionAssessmentData
 
         WellChildECD ->
-            viewECDContent language currentDate assembled model.ecdForm
+            viewECDForm language currentDate assembled model.ecdForm
 
         WellChildMedication ->
             viewMedicationContent language currentDate assembled model.medicationData
@@ -682,8 +682,8 @@ viewHeadCircumferenceForm language currentDate zscores person previousValue form
     ]
 
 
-viewECDContent : Language -> NominalDate -> AssembledData -> WellChildECDForm -> List (Html Msg)
-viewECDContent language currentDate assembled ecdForm =
+viewECDForm : Language -> NominalDate -> AssembledData -> WellChildECDForm -> List (Html Msg)
+viewECDForm language currentDate assembled ecdForm =
     ageInMonths currentDate assembled.person
         |> Maybe.map
             (\ageMonths ->
@@ -1029,13 +1029,132 @@ ecdFormInputsAndTasks language currentDate assembled ageMonths ecdForm =
     )
 
 
-viewMedicaitonContent :
+viewMedicationContent :
     Language
     -> NominalDate
     -> AssembledData
     -> MedicaitonData
     -> List (Html Msg)
-viewMedicaitonContent language currentDate assembled data =
+viewMedicationContent language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            [ TaskMebendezole, TaskVitaminA ]
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        TaskMebendezole ->
+                            ( "mebendezole"
+                            , isJust measurements.mebendezole
+                            )
+
+                        TaskVitaminA ->
+                            ( "treatment"
+                            , isJust measurements.vitaminA
+                            )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveMedicationTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.WellChildMedicationTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map (\task -> ( task, dangerSignsTasksCompletedFromTotal measurements data task ))
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just TaskMebendezole ->
+                    measurements.mebendezoleForm
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> medicaitonAdministrationFormWithDefault data.mebendezole
+                        |> viewmebendezoleForm language currentDate assembled.person
+
+                Just TaskVitaminA ->
+                    measurements.vitaminAForm
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> medicaitonAdministrationFormWithDefault data.vitaminA
+                        |> viewVitaminAForm language currentDate assembled.person
+
+                Nothing ->
+                    []
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                case task of
+                                    TaskMebendezole ->
+                                        SaveMebendezole personId measurements.mebendezole nextTask
+
+                                    TaskVitaminA ->
+                                        SaveVitaminA personId measurements.vitaminA nextTask
+
+                            disabled =
+                                tasksCompleted /= totalTasks
+                        in
+                        viewAction language saveMsg disabled
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue" ]
+        [ div [ class "ui four column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
+        ]
+    ]
+
+
+viewmMedicaitonAdministrationForm : Language -> NominalDate -> AssembledData -> MedicaitonAdministrationForm -> List (Html Msg)
+viewmMedicaitonAdministrationForm language currentDate assembled form =
     []
 
 

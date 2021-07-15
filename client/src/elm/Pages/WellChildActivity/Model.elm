@@ -47,12 +47,17 @@ type Msg
       -- ECD
     | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
     | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
+      -- MEDICATION
+    | SetActiveMedicationTask MedicationTask
+    | SaveMebendezole PersonId (Maybe ( WellChildMebendezoleId, WellChildMebendezole ))
+    | SaveVitaminA PersonId (Maybe ( WellChildVitaminAId, WellChildVitaminA ))
 
 
 type alias Model =
     { dangerSignsData : DangerSignsData
     , nutritionAssessmentData : NutritionAssessmentData
     , ecdForm : WellChildECDForm
+    , medicationData : MedicaitonData
     , warningPopupState : List NutritionAssesment
     }
 
@@ -62,6 +67,7 @@ emptyModel =
     { dangerSignsData = emptyDangerSignsData
     , nutritionAssessmentData = emptyNutritionAssessmentData
     , ecdForm = emptyWellChildECDForm
+    , medicationData = emptyMedicaitonData
     , warningPopupState = []
     }
 
@@ -236,3 +242,34 @@ emptyWellChildECDForm =
     , shareWithOtherChildren = Nothing
     , countToTen = Nothing
     }
+
+
+type alias MedicaitonData =
+    { mebendezoleForm : MedicaitonAdministrationForm
+    , vitaminAForm : MedicaitonAdministrationForm
+    , activeTask : Maybe MedicationTask
+    }
+
+
+emptyMedicaitonData : MedicaitonData
+emptyMedicaitonData =
+    { mebendezoleForm = emptyMedicaitonAdministrationForm
+    , vitaminAForm = emptyMedicaitonAdministrationForm
+    , activeTask = Nothing
+    }
+
+
+type alias MedicaitonAdministrationForm =
+    { medicationAdministered : Maybe Bool
+    , reasonsForNonAdministration : Maybe AdministrationNote
+    }
+
+
+emptyMedicaitonAdministrationForm : MedicaitonAdministrationForm
+emptyMedicaitonAdministrationForm =
+    MedicaitonAdministrationForm Nothing Nothing
+
+
+type MedicationTask
+    = TaskMebendezole
+    | TaskVitaminA

@@ -975,6 +975,7 @@ type TranslationId
     | WelcomeUser String
     | WellChildActivityTitle WellChildActivity
     | WellChildDangerSignsTask Pages.WellChildActivity.Model.DangerSignsTask
+    | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
     | WellChildSymptom WellChildSymptom
     | WhatDoYouWantToDo
     | WhatType
@@ -7696,6 +7697,18 @@ translationSet trans =
 
                 Pages.WellChildActivity.Model.TaskVitals ->
                     { english = "Vitals"
+                    , kinyarwanda = Nothing
+                    }
+
+        WellChildMedicationTask task ->
+            case task of
+                Pages.WellChildActivity.Model.TaskMebendezole ->
+                    { english = "Mebendezole"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskVitaminA ->
+                    { english = "Vitamin A"
                     , kinyarwanda = Nothing
                     }
 

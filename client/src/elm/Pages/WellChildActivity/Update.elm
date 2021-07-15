@@ -57,6 +57,11 @@ update currentDate id db msg model =
             nextTask
                 |> Maybe.map (\task -> [ SetActiveDangerSignsTask task ])
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
+
+        generateMedicaitonMsgs nextTask =
+            nextTask
+                |> Maybe.map (\task -> [ SetActiveMedicaitonTask task ])
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
     in
     case msg of
         SetActivePage page ->
@@ -795,3 +800,68 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetActiveMedicationTask task ->
+            let
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveMebendezole personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                extraMsgs =
+                    generateMedicaitonMsgs nextTask_
+
+                appMsgs =
+                    model.ecdForm
+                        |> toWellChildMedicationAdministrationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveMebendezole personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SaveVitaminA personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                extraMsgs =
+                    generateMedicaitonMsgs nextTask_
+
+                appMsgs =
+                    model.ecdForm
+                        |> toWellChildMedicationAdministrationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveVitaminA personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs

@@ -695,6 +695,36 @@ ecdSigns36to47 =
     ]
 
 
+medicaitonTasksCompletedFromTotal : WellChildMeasurements -> MedicaitonData -> MedicationTask -> ( Int, Int )
+medicaitonTasksCompletedFromTotal measurements data task =
+    let
+        processMedicaitonAdministrationTask form =
+            let
+                ( nonAdministrationCompleted, nonAdministrationActive ) =
+                    if form.medicationAdministered == Just False then
+                        ( taskCompleted form.reasonsForNonAdministration, 1 )
+
+                    else
+                        ( 0, 0 )
+            in
+            ( taskCompleted form.medicationAdministered + nonAdministrationCompleted
+            , 1 + nonAdministrationActive
+            )
+    in
+    case task of
+        TaskMebendezole ->
+            measurements.mebendezole
+                |> Maybe.map (Tuple.second >> .value)
+                |> medicaitonAdministrationFormWithDefault data.mebendezoleForm
+                |> processMedicaitonAdministrationTask
+
+        TaskVitaminA ->
+            measurements.vitals
+                |> Maybe.map (Tuple.second >> .value)
+                |> basicVitalsFormWithDefault data.vitalsForm
+                |> processMedicaitonAdministrationTask
+
+
 
 -- HELPER FUNCTIONS
 

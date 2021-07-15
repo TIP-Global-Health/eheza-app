@@ -55,6 +55,9 @@ getActivityIcon activity =
         WellChildECD ->
             "ecd"
 
+        WellChildMedication ->
+            "medication"
+
 
 getAllActivities : List WellChildActivity
 getAllActivities =
