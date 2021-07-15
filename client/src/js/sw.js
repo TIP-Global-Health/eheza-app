@@ -124,6 +124,7 @@ var tableForType = {
     village: 'nodes',
     vitals: 'shards',
     weight: 'shards',
+    well_child_albendazole: 'shards',
     well_child_contributing_factors: 'shards',
     well_child_ecd: 'shards',
     well_child_encounter: 'shards',
