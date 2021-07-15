@@ -13,7 +13,7 @@ class HedleyRestfulWellChildMebendezole extends HedleyRestfulWellChildActivityBa
   /**
    * {@inheritdoc}
    */
-  protected $multiFields = [
+  protected $fields = [
     'field_administration_note',
   ];
 

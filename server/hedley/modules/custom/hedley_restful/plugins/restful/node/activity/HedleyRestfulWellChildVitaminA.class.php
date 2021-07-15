@@ -13,7 +13,7 @@ class HedleyRestfulWellChildVitaminA extends HedleyRestfulWellChildActivityBase 
   /**
    * {@inheritdoc}
    */
-  protected $multiFields = [
+  protected $fields = [
     'field_administration_note',
   ];
 

@@ -86,6 +86,7 @@ function hedley_well_child_user_default_permissions() {
     'name' => 'create well_child_immunisation content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -95,6 +96,7 @@ function hedley_well_child_user_default_permissions() {
     'name' => 'create well_child_mebendezole content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -419,7 +421,6 @@ function hedley_well_child_user_default_permissions() {
     'name' => 'delete own well_child_immunisation content',
     'roles' => array(
       'administrator' => 'administrator',
-      'sync' => 'sync',
     ),
     'module' => 'node',
   );
