@@ -29,7 +29,7 @@ class HedleyRestfulWellChildPregnancySummary extends HedleyRestfulWellChildActiv
    */
   protected $dateFields = [
     'field_expected_date_concluded',
-    'field_date_concluded'
+    'field_date_concluded',
   ];
 
 }

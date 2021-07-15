@@ -18,6 +18,9 @@ class HedleyRestfulWellChildImmunisation extends HedleyRestfulWellChildActivityB
     'field_vaccination_notes',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected $fields = [
     'field_bcg_vaccination_date',
     'field_opv_vaccination_date',
