@@ -535,3 +535,97 @@ weightValueFunc =
 headCircumferenceValueFunc : HeadCircumferenceInCm -> Float
 headCircumferenceValueFunc =
     \(HeadCircumferenceInCm cm) -> cm
+
+
+vaccineTypeFromString : String -> Maybe VaccineType
+vaccineTypeFromString type_ =
+    case type_ of
+        "bcg" ->
+            Just VaccineBCG
+
+        "opv" ->
+            Just VaccineOPV
+
+        "dtp" ->
+            Just VaccineDTP
+
+        "pcv13" ->
+            Just VaccinePCV13
+
+        "rotarix" ->
+            Just VaccineRotarix
+
+        "ipv" ->
+            Just VaccineIPV
+
+        "mr" ->
+            Just VaccineMR
+
+        "hpv" ->
+            Just VaccineHPV
+
+        _ ->
+            Nothing
+
+
+vaccineTypeToString : VaccineType -> String
+vaccineTypeToString type_ =
+    case type_ of
+        VaccineBCG ->
+            "bcg"
+
+        VaccineOPV ->
+            "opv"
+
+        VaccineDTP ->
+            "dtp"
+
+        VaccinePCV13 ->
+            "pcv13"
+
+        VaccineRotarix ->
+            "rotarix"
+
+        VaccineIPV ->
+            "ipv"
+
+        VaccineMR ->
+            "mr"
+
+        VaccineHPV ->
+            "hpv"
+
+
+vaccineDoseFromString : String -> Maybe VaccineDose
+vaccineDoseFromString dose =
+    case dose of
+        "1" ->
+            Just VaccineDoseFirst
+
+        "2" ->
+            Just VaccineDoseSecond
+
+        "3" ->
+            Just VaccineDoseThird
+
+        "4" ->
+            Just VaccineDoseFourth
+
+        _ ->
+            Nothing
+
+
+vaccineDoseToString : VaccineDose -> String
+vaccineDoseToString dose =
+    case dose of
+        VaccineDoseFirst ->
+            "1"
+
+        VaccineDoseSecond ->
+            "2"
+
+        VaccineDoseThird ->
+            "3"
+
+        VaccineDoseFourth ->
+            "4"

@@ -3110,37 +3110,6 @@ decodeVaccineType =
             )
 
 
-vaccineTypeFromString : String -> Maybe VaccineType
-vaccineTypeFromString type_ =
-    case type_ of
-        "bcg" ->
-            Just VaccineBCG
-
-        "opv" ->
-            Just VaccineOPV
-
-        "dtp" ->
-            Just VaccineDTP
-
-        "pcv13" ->
-            Just VaccinePCV13
-
-        "rotarix" ->
-            Just VaccineRotarix
-
-        "ipv" ->
-            Just VaccineIPV
-
-        "mr" ->
-            Just VaccineMR
-
-        "hpv" ->
-            Just VaccineHPV
-
-        _ ->
-            Nothing
-
-
 decodeVaccineDose : Decoder VaccineDose
 decodeVaccineDose =
     string
@@ -3150,25 +3119,6 @@ decodeVaccineDose =
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| dose ++ " is not a recognized VaccineDose")
             )
-
-
-vaccineDoseFromString : String -> Maybe VaccineDose
-vaccineDoseFromString dose =
-    case dose of
-        "1" ->
-            Just VaccineDoseFirst
-
-        "2" ->
-            Just VaccineDoseSecond
-
-        "3" ->
-            Just VaccineDoseThird
-
-        "4" ->
-            Just VaccineDoseFourth
-
-        _ ->
-            Nothing
 
 
 decodeWellChildMebendezole : Decoder WellChildMebendezole

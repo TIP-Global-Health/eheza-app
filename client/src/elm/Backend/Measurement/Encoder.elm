@@ -2638,3 +2638,99 @@ encodeMeasurementNote note =
 
             NoMeasurementNotes ->
                 "none"
+
+
+encodeWellChildImmunisation : WellChildImmunisation -> List ( String, Value )
+encodeWellChildImmunisation =
+    encodeWellChildMeasurement encodeImmunisationValue
+
+
+encodeImmunisationValue : ImmunisationValue -> List ( String, Value )
+encodeImmunisationValue value =
+    [ ( "suggested_vaccines", list encodeSuggestedVaccine value.suggestedVaccines )
+    , ( "vaccination_notes", list encodeVacinationNote value.vacinationNotes )
+    , ( "field_opv_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.opvVaccinationDate )
+    , ( "field_bcg_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.bcgVaccinationDate )
+    , ( "field_pcv13_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.pcv13VaccinationDate )
+    , ( "field_dtp_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.dtpVaccinationDate )
+    , ( "field_rotarix_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.rotarixVaccinationDate )
+    , ( "field_ipv_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.ipvVaccinationDate )
+    , ( "field_mr_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.mrVaccinationDate )
+    , ( "field_hpv_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.hpvVaccinationDate )
+    , ( "deleted", bool False )
+    , ( "type", string "well_child_immunisation" )
+    ]
+
+
+encodeSuggestedVaccine : SuggestedVaccine -> Value
+encodeSuggestedVaccine suggestedVaccine =
+    vaccineTypeToString suggestedVaccine.type_ ++ "-" ++ vaccineDoseToString suggestedVaccine.dose |> string
+
+
+encodeVacinationNote : VacinationNote -> Value
+encodeVacinationNote vacinationNote =
+    vaccineTypeToString vacinationNote.type_ ++ "-" ++ administrationNoteToString vacinationNote.note |> string
+
+
+encodeWellChildMebendezole : AdministrationNote -> List ( String, Value )
+encodeWellChildMebendezole note =
+    [ ( "administration_note", encodeAdministrationNote note )
+    , ( "deleted", bool False )
+    , ( "type", string "well_child_mebendezole" )
+    ]
+
+
+encodeWellChildVitaminA : AdministrationNote -> List ( String, Value )
+encodeWellChildVitaminA note =
+    [ ( "administration_note", encodeAdministrationNote note )
+    , ( "deleted", bool False )
+    , ( "type", string "well_child_vitamin_a" )
+    ]
+
+
+encodeAdministrationNote : AdministrationNote -> Value
+encodeAdministrationNote note =
+    administrationNoteToString note |> string
+
+
+encodeWellChildPregnancySummary : WellChildPregnancySummary -> List ( String, Value )
+encodeWellChildPregnancySummary =
+    encodeWellChildMeasurement encodePregnancySummaryValue
+
+
+encodePregnancySummaryValue : PregnancySummaryValue -> List ( String, Value )
+encodePregnancySummaryValue value =
+    [ ( "field_expected_date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.expectedDateConcluded )
+    , ( "field_date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.dateConcluded )
+    , ( "field_apgars_one_minute", int value.apgarsOneMinute )
+    , ( "field_apgars_five_minutes", int value.apgarsFiveMinutes )
+    , ( "field_delivery_complications", encodeEverySet encodeDeliveryComplication value.deliveryComplications )
+    , ( "deleted", bool False )
+    , ( "type", string "well_child_pregnancy_summary" )
+    ]
+
+
+encodeDeliveryComplication : DeliveryComplication -> Value
+encodeDeliveryComplication complication =
+    string <|
+        case complication of
+            ComplicationGestationalDiabetes ->
+                "gestational-diabetes"
+
+            ComplicationEmergencyCSection ->
+                "emergency-c-section"
+
+            ComplicationPreclampsia ->
+                "preclampsia"
+
+            ComplicationMaternalHemmorhage ->
+                "maternal-hemmorhage"
+
+            ComplicationHiv ->
+                "hiv"
+
+            ComplicationMaternalDeath ->
+                "maternal-death"
+
+            NoDeliveryComplications ->
+                "none"
