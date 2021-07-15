@@ -612,6 +612,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityWeight identifier ->
             getIdentifier identifier "weight"
 
+        BackendAuthorityWellChildAlbendazole identifier ->
+            getIdentifier identifier "well_child_albendazole"
+
         BackendAuthorityWellChildContributingFactors identifier ->
             getIdentifier identifier "well_child_contributing_factors"
 
@@ -1101,6 +1104,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityWeight identifier ->
             encode Backend.Measurement.Encoder.encodeWeight identifier
 
+        BackendAuthorityWellChildAlbendazole identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildAlbendazole identifier
+
         BackendAuthorityWellChildContributingFactors identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildContributingFactors identifier
 
@@ -1552,6 +1558,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWeight identifier ->
             WeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildAlbendazole identifier ->
+            WellChildAlbendazoleRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityWellChildContributingFactors identifier ->
             WellChildContributingFactorsRevision (toEntityUuid identifier.uuid) identifier.entity

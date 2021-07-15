@@ -129,6 +129,7 @@ type BackendAuthorityEntity
     | BackendAuthorityTreatmentReview (BackendEntity TreatmentReview)
     | BackendAuthorityVitals (BackendEntity Vitals)
     | BackendAuthorityWeight (BackendEntity Weight)
+    | BackendAuthorityWellChildAlbendazole (BackendEntity WellChildAlbendazole)
     | BackendAuthorityWellChildContributingFactors (BackendEntity WellChildContributingFactors)
     | BackendAuthorityWellChildECD (BackendEntity WellChildECD)
     | BackendAuthorityWellChildEncounter (BackendEntity WellChildEncounter)

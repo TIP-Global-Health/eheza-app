@@ -606,6 +606,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityWeight identifier ->
                 viewMeasurement identifier "Weight"
 
+            BackendAuthorityWellChildAlbendazole identifier ->
+                viewMeasurement identifier "Well Child Albendazole"
+
             BackendAuthorityWellChildContributingFactors identifier ->
                 viewMeasurement identifier "Well Child Contributing Factors"
 
