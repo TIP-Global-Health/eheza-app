@@ -2672,16 +2672,26 @@ encodeVacinationNote vacinationNote =
     vaccineTypeToString vacinationNote.type_ ++ "-" ++ administrationNoteToString vacinationNote.note |> string
 
 
-encodeWellChildMebendezole : AdministrationNote -> List ( String, Value )
-encodeWellChildMebendezole note =
+encodeWellChildMebendezole : WellChildMebendezole -> List ( String, Value )
+encodeWellChildMebendezole =
+    encodeWellChildMeasurement encodeWellChildMebendezoleValue
+
+
+encodeWellChildMebendezoleValue : AdministrationNote -> List ( String, Value )
+encodeWellChildMebendezoleValue note =
     [ ( "administration_note", encodeAdministrationNote note )
     , ( "deleted", bool False )
     , ( "type", string "well_child_mebendezole" )
     ]
 
 
-encodeWellChildVitaminA : AdministrationNote -> List ( String, Value )
-encodeWellChildVitaminA note =
+encodeWellChildVitaminA : WellChildVitaminA -> List ( String, Value )
+encodeWellChildVitaminA =
+    encodeWellChildMeasurement encodeWellChildVitaminAValue
+
+
+encodeWellChildVitaminAValue : AdministrationNote -> List ( String, Value )
+encodeWellChildVitaminAValue note =
     [ ( "administration_note", encodeAdministrationNote note )
     , ( "deleted", bool False )
     , ( "type", string "well_child_vitamin_a" )
