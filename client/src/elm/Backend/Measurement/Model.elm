@@ -1400,6 +1400,10 @@ type alias WellChildVitaminA =
     WellChildMeasurement AdministrationNote
 
 
+type alias WellChildAlbendazole =
+    WellChildMeasurement AdministrationNote
+
+
 type alias WellChildPregnancySummary =
     WellChildMeasurement PregnancySummaryValue
 
@@ -1637,6 +1641,7 @@ type alias WellChildMeasurements =
     , headCircumference : Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )
     , immunisation : Maybe ( WellChildImmunisationId, WellChildImmunisation )
     , ecd : Maybe ( WellChildECDId, WellChildECD )
+    , albendazole : Maybe ( WellChildAlbendazoleId, WellChildAlbendazole )
     , mebendezole : Maybe ( WellChildMebendezoleId, WellChildMebendezole )
     , pregnancySummary : Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary )
     , vitaminA : Maybe ( WellChildVitaminAId, WellChildVitaminA )
