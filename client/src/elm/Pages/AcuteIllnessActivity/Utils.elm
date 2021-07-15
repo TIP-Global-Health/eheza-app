@@ -489,7 +489,7 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                                 form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
 
                             valueSet =
-                                getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form
+                                getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
                                     |> isJust
                         in
                         if valueSet then
@@ -1329,11 +1329,11 @@ resolveAmoxicillinDosage currentDate person =
             )
 
 
-getCurrentReasonForMedicaitonNonAdministration :
+getCurrentReasonForMedicationNonAdministration :
     (AdministrationNote -> MedicationNonAdministrationSign)
     -> MedicationDistributionForm
     -> Maybe AdministrationNote
-getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form =
+getCurrentReasonForMedicationNonAdministration reasonToSignFunc form =
     let
         nonAdministrationSigns =
             form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty

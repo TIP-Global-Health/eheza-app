@@ -695,14 +695,14 @@ ecdSigns36to47 =
     ]
 
 
-medicaitonTasksCompletedFromTotal : WellChildMeasurements -> MedicaitonData -> MedicationTask -> ( Int, Int )
-medicaitonTasksCompletedFromTotal measurements data task =
+medicationTasksCompletedFromTotal : WellChildMeasurements -> MedicationData -> MedicationTask -> ( Int, Int )
+medicationTasksCompletedFromTotal measurements data task =
     let
-        processMedicaitonAdministrationTask form =
+        processMedicationAdministrationTask form =
             let
                 ( nonAdministrationCompleted, nonAdministrationActive ) =
                     if form.medicationAdministered == Just False then
-                        ( taskCompleted form.reasonsForNonAdministration, 1 )
+                        ( taskCompleted form.reasonForNonAdministration, 1 )
 
                     else
                         ( 0, 0 )
@@ -715,14 +715,62 @@ medicaitonTasksCompletedFromTotal measurements data task =
         TaskMebendezole ->
             measurements.mebendezole
                 |> Maybe.map (Tuple.second >> .value)
-                |> medicaitonAdministrationFormWithDefault data.mebendezoleForm
-                |> processMedicaitonAdministrationTask
+                |> medicationAdministrationFormWithDefault data.mebendezoleForm
+                |> processMedicationAdministrationTask
 
         TaskVitaminA ->
-            measurements.vitals
+            measurements.vitaminA
                 |> Maybe.map (Tuple.second >> .value)
-                |> basicVitalsFormWithDefault data.vitalsForm
-                |> processMedicaitonAdministrationTask
+                |> medicationAdministrationFormWithDefault data.vitaminAForm
+                |> processMedicationAdministrationTask
+
+
+fromAdministrationNote : Maybe AdministrationNote -> MedicationAdministrationForm
+fromAdministrationNote saved =
+    Maybe.map
+        (\administrationNote ->
+            let
+                ( medicationAdministered, reasonForNonAdministration ) =
+                    if administrationNote == AdministeredToday then
+                        ( Just True, Nothing )
+
+                    else
+                        ( Just False, Just administrationNote )
+            in
+            MedicationAdministrationForm medicationAdministered reasonForNonAdministration
+        )
+        saved
+        |> Maybe.withDefault emptyMedicationAdministrationForm
+
+
+medicationAdministrationFormWithDefault : MedicationAdministrationForm -> Maybe AdministrationNote -> MedicationAdministrationForm
+medicationAdministrationFormWithDefault form saved =
+    let
+        fromSavedForm =
+            fromAdministrationNote saved
+    in
+    { medicationAdministered = or form.medicationAdministered fromSavedForm.medicationAdministered
+    , reasonForNonAdministration = or form.reasonForNonAdministration fromSavedForm.reasonForNonAdministration
+    }
+
+
+toAdministrationNoteWithDefault : Maybe AdministrationNote -> MedicationAdministrationForm -> Maybe AdministrationNote
+toAdministrationNoteWithDefault saved form =
+    medicationAdministrationFormWithDefault form saved
+        |> toAdministrationNote
+
+
+toAdministrationNote : MedicationAdministrationForm -> Maybe AdministrationNote
+toAdministrationNote form =
+    form.medicationAdministered
+        |> Maybe.andThen
+            (\medicationAdministered ->
+                if medicationAdministered then
+                    Just AdministeredToday
+
+                else
+                    form.reasonForNonAdministration
+            )
 
 
 

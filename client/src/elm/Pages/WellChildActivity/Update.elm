@@ -58,9 +58,9 @@ update currentDate id db msg model =
                 |> Maybe.map (\task -> [ SetActiveDangerSignsTask task ])
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
 
-        generateMedicaitonMsgs nextTask =
+        generateMedicationMsgs nextTask =
             nextTask
-                |> Maybe.map (\task -> [ SetActiveMedicaitonTask task ])
+                |> Maybe.map (\task -> [ SetActiveMedicationTask task ])
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
     in
     case msg of
@@ -821,15 +821,16 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateMedicaitonMsgs nextTask_
+                    generateMedicationMsgs nextTask_
 
                 appMsgs =
-                    model.ecdForm
-                        |> toWellChildMedicationAdministrationValueWithDefault measurement
+                    model.medicationData.mebendezoleForm
+                        |> toAdministrationNoteWithDefault measurement
                         |> Maybe.map
                             (Backend.WellChildEncounter.Model.SaveMebendezole personId measurementId
                                 >> Backend.Model.MsgWellChildEncounter id
                                 >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
                         |> Maybe.withDefault []
             in
@@ -848,15 +849,16 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateMedicaitonMsgs nextTask_
+                    generateMedicationMsgs nextTask_
 
                 appMsgs =
-                    model.ecdForm
-                        |> toWellChildMedicationAdministrationValueWithDefault measurement
+                    model.medicationData.vitaminAForm
+                        |> toAdministrationNoteWithDefault measurement
                         |> Maybe.map
                             (Backend.WellChildEncounter.Model.SaveVitaminA personId measurementId
                                 >> Backend.Model.MsgWellChildEncounter id
                                 >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
                         |> Maybe.withDefault []
             in

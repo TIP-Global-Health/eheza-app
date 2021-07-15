@@ -49,15 +49,15 @@ type Msg
     | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
       -- MEDICATION
     | SetActiveMedicationTask MedicationTask
-    | SaveMebendezole PersonId (Maybe ( WellChildMebendezoleId, WellChildMebendezole ))
-    | SaveVitaminA PersonId (Maybe ( WellChildVitaminAId, WellChildVitaminA ))
+    | SaveMebendezole PersonId (Maybe ( WellChildMebendezoleId, WellChildMebendezole )) (Maybe MedicationTask)
+    | SaveVitaminA PersonId (Maybe ( WellChildVitaminAId, WellChildVitaminA )) (Maybe MedicationTask)
 
 
 type alias Model =
     { dangerSignsData : DangerSignsData
     , nutritionAssessmentData : NutritionAssessmentData
     , ecdForm : WellChildECDForm
-    , medicationData : MedicaitonData
+    , medicationData : MedicationData
     , warningPopupState : List NutritionAssesment
     }
 
@@ -67,7 +67,7 @@ emptyModel =
     { dangerSignsData = emptyDangerSignsData
     , nutritionAssessmentData = emptyNutritionAssessmentData
     , ecdForm = emptyWellChildECDForm
-    , medicationData = emptyMedicaitonData
+    , medicationData = emptyMedicationData
     , warningPopupState = []
     }
 
@@ -244,30 +244,30 @@ emptyWellChildECDForm =
     }
 
 
-type alias MedicaitonData =
-    { mebendezoleForm : MedicaitonAdministrationForm
-    , vitaminAForm : MedicaitonAdministrationForm
+type alias MedicationData =
+    { mebendezoleForm : MedicationAdministrationForm
+    , vitaminAForm : MedicationAdministrationForm
     , activeTask : Maybe MedicationTask
     }
 
 
-emptyMedicaitonData : MedicaitonData
-emptyMedicaitonData =
-    { mebendezoleForm = emptyMedicaitonAdministrationForm
-    , vitaminAForm = emptyMedicaitonAdministrationForm
+emptyMedicationData : MedicationData
+emptyMedicationData =
+    { mebendezoleForm = emptyMedicationAdministrationForm
+    , vitaminAForm = emptyMedicationAdministrationForm
     , activeTask = Nothing
     }
 
 
-type alias MedicaitonAdministrationForm =
+type alias MedicationAdministrationForm =
     { medicationAdministered : Maybe Bool
-    , reasonsForNonAdministration : Maybe AdministrationNote
+    , reasonForNonAdministration : Maybe AdministrationNote
     }
 
 
-emptyMedicaitonAdministrationForm : MedicaitonAdministrationForm
-emptyMedicaitonAdministrationForm =
-    MedicaitonAdministrationForm Nothing Nothing
+emptyMedicationAdministrationForm : MedicationAdministrationForm
+emptyMedicationAdministrationForm =
+    MedicationAdministrationForm Nothing Nothing
 
 
 type MedicationTask

@@ -1033,7 +1033,7 @@ viewMedicationContent :
     Language
     -> NominalDate
     -> AssembledData
-    -> MedicaitonData
+    -> MedicationData
     -> List (Html Msg)
 viewMedicationContent language currentDate assembled data =
     let
@@ -1087,7 +1087,7 @@ viewMedicationContent language currentDate assembled data =
 
         tasksCompletedFromTotalDict =
             tasks
-                |> List.map (\task -> ( task, dangerSignsTasksCompletedFromTotal measurements data task ))
+                |> List.map (\task -> ( task, medicationTasksCompletedFromTotal measurements data task ))
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -1098,16 +1098,16 @@ viewMedicationContent language currentDate assembled data =
         viewForm =
             case activeTask of
                 Just TaskMebendezole ->
-                    measurements.mebendezoleForm
+                    measurements.mebendezole
                         |> Maybe.map (Tuple.second >> .value)
-                        |> medicaitonAdministrationFormWithDefault data.mebendezole
-                        |> viewmebendezoleForm language currentDate assembled.person
+                        |> medicationAdministrationFormWithDefault data.mebendezoleForm
+                        |> viewmMedicationAdministrationForm language currentDate assembled
 
                 Just TaskVitaminA ->
-                    measurements.vitaminAForm
+                    measurements.vitaminA
                         |> Maybe.map (Tuple.second >> .value)
-                        |> medicaitonAdministrationFormWithDefault data.vitaminA
-                        |> viewVitaminAForm language currentDate assembled.person
+                        |> medicationAdministrationFormWithDefault data.vitaminAForm
+                        |> viewmMedicationAdministrationForm language currentDate assembled
 
                 Nothing ->
                     []
@@ -1153,8 +1153,8 @@ viewMedicationContent language currentDate assembled data =
     ]
 
 
-viewmMedicaitonAdministrationForm : Language -> NominalDate -> AssembledData -> MedicaitonAdministrationForm -> List (Html Msg)
-viewmMedicaitonAdministrationForm language currentDate assembled form =
+viewmMedicationAdministrationForm : Language -> NominalDate -> AssembledData -> MedicationAdministrationForm -> List (Html Msg)
+viewmMedicationAdministrationForm language currentDate assembled form =
     []
 
 

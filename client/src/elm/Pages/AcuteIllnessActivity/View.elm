@@ -1937,7 +1937,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                             form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
 
                         currentValue =
-                            getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form
+                            getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
                     in
                     [ viewQuestionLabel language Translate.WhyNot
                     , viewCheckBoxSelectInput language
@@ -1954,7 +1954,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                         form_.nonAdministrationSigns
                             |> Maybe.andThen
                                 (\nonAdministrationSigns ->
-                                    getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form_
+                                    getCurrentReasonForMedicationNonAdministration reasonToSignFunc form_
                                         |> Maybe.map
                                             (\reason ->
                                                 Just <| EverySet.remove (nonAdministrationReasonToSign medication reason) nonAdministrationSigns
