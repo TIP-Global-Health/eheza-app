@@ -819,3 +819,27 @@ wellChildVitalsEndpoint : ReadWriteEndPoint Error WellChildVitalsId WellChildVit
 wellChildVitalsEndpoint =
     swEndpoint "nodes/well_child_vitals" decodeWellChildVitals
         |> withValueEncoder (object << encodeWellChildVitals)
+
+
+wellChildImmunisationEndpoint : ReadWriteEndPoint Error WellChildImmunisationId WellChildImmunisation WellChildImmunisation ()
+wellChildImmunisationEndpoint =
+    swEndpoint "nodes/well_child_immunisation" decodeWellChildImmunisation
+        |> withValueEncoder (object << encodeWellChildImmunisation)
+
+
+wellChildMebendezoleEndpoint : ReadWriteEndPoint Error WellChildMebendezoleId WellChildMebendezole WellChildMebendezole ()
+wellChildMebendezoleEndpoint =
+    swEndpoint "nodes/well_child_mebendezole" decodeWellChildMebendezole
+        |> withValueEncoder (object << encodeWellChildMebendezole)
+
+
+wellChildVitaminAEndpoint : ReadWriteEndPoint Error WellChildVitaminAId WellChildVitaminA WellChildVitaminA ()
+wellChildVitaminAEndpoint =
+    swEndpoint "nodes/well_child_vitamin_a" decodeWellChildVitaminA
+        |> withValueEncoder (object << encodeWellChildVitaminA)
+
+
+wellChildPregnancySummaryEndpoint : ReadWriteEndPoint Error WellChildPregnancySummaryId WellChildPregnancySummary WellChildPregnancySummary ()
+wellChildPregnancySummaryEndpoint =
+    swEndpoint "nodes/well_child_pregnancy_summary" decodeWellChildPregnancySummary
+        |> withValueEncoder (object << encodeWellChildPregnancySummary)
