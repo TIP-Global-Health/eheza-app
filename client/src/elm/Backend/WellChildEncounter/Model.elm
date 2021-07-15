@@ -51,6 +51,7 @@ type alias Model =
     , saveSendToHC : WebData ()
     , saveImmunisation : WebData ()
     , saveECD : WebData ()
+    , saveAlbendazole : WebData ()
     , saveMebendezole : WebData ()
     , saveVitaminA : WebData ()
     }
@@ -74,6 +75,7 @@ emptyModel =
     , saveSendToHC = NotAsked
     , saveImmunisation = NotAsked
     , saveECD = NotAsked
+    , saveAlbendazole = NotAsked
     , saveMebendezole = NotAsked
     , saveVitaminA = NotAsked
     }
@@ -112,6 +114,8 @@ type Msg
     | SaveImmunisation PersonId (Maybe WellChildImmunisationId) ImmunisationValue
     | HandleSavedImmunisation (WebData ())
     | HandleSavedECD (WebData ())
+    | SaveAlbendazole PersonId (Maybe WellChildAlbendazoleId) AdministrationNote
+    | HandleSavedAlbendazole (WebData ())
     | SaveMebendezole PersonId (Maybe WellChildMebendezoleId) AdministrationNote
     | HandleSavedMebendezole (WebData ())
     | SaveVitaminA PersonId (Maybe WellChildVitaminAId) AdministrationNote

@@ -185,6 +185,16 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
+        SaveAlbendazole personId valueId value ->
+            ( { model | saveAlbendazole = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildAlbendazoleEndpoint HandleSavedAlbendazole
+            )
+
+        HandleSavedAlbendazole data ->
+            ( { model | saveAlbendazole = data }
+            , Cmd.none
+            )
+
         SaveMebendezole personId valueId value ->
             ( { model | saveMebendezole = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildMebendezoleEndpoint HandleSavedMebendezole
