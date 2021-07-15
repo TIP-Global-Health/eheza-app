@@ -3088,6 +3088,14 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             , True
             )
 
+        WellChildAlbendazoleRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | albendazole = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildContributingFactorsRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId

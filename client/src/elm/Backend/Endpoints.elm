@@ -827,6 +827,12 @@ wellChildImmunisationEndpoint =
         |> withValueEncoder (object << encodeWellChildImmunisation)
 
 
+wellChildAlbendazoleEndpoint : ReadWriteEndPoint Error WellChildAlbendazoleId WellChildAlbendazole WellChildAlbendazole ()
+wellChildAlbendazoleEndpoint =
+    swEndpoint "nodes/well_child_albendazole" decodeWellChildAlbendazole
+        |> withValueEncoder (object << encodeWellChildAlbendazole)
+
+
 wellChildMebendezoleEndpoint : ReadWriteEndPoint Error WellChildMebendezoleId WellChildMebendezole WellChildMebendezole ()
 wellChildMebendezoleEndpoint =
     swEndpoint "nodes/well_child_mebendezole" decodeWellChildMebendezole

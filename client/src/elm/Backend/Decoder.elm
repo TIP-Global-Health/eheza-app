@@ -295,6 +295,9 @@ decodeRevision =
                     "weight" ->
                         decodeWithUuid WeightRevision decodeWeight
 
+                    "well_child_albendazole" ->
+                        decodeWithUuid WellChildAlbendazoleRevision decodeWellChildAlbendazole
+
                     "well_child_contributing_factors" ->
                         decodeWithUuid WellChildContributingFactorsRevision decodeWellChildContributingFactors
 

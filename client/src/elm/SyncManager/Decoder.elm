@@ -731,6 +731,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeWeight
                             BackendAuthorityWeight
 
+                    "well_child_albendazole" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildAlbendazole
+                            BackendAuthorityWellChildAlbendazole
+
                     "well_child_contributing_factors" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildContributingFactors

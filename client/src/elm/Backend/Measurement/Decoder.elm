@@ -190,6 +190,7 @@ decodeWellChildMeasurements =
         |> optional "well_child_head_circumference" (decodeHead decodeWellChildHeadCircumference) Nothing
         |> optional "well_child_immunisation" (decodeHead decodeWellChildImmunisation) Nothing
         |> optional "well_child_ecd" (decodeHead decodeWellChildECD) Nothing
+        |> optional "well_child_albendazole" (decodeHead decodeWellChildAlbendazole) Nothing
         |> optional "well_child_mebendezole" (decodeHead decodeWellChildMebendezole) Nothing
         |> optional "well_child_pregnancy_summary" (decodeHead decodeWellChildPregnancySummary) Nothing
         |> optional "well_child_vitamin_a" (decodeHead decodeWellChildVitaminA) Nothing
@@ -3125,6 +3126,18 @@ decodeVaccineDose =
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| dose ++ " is not a recognized VaccineDose")
             )
+
+
+decodeWellChildAlbendazole : Decoder WellChildAlbendazole
+decodeWellChildAlbendazole =
+    string
+        |> andThen
+            (\note ->
+                administrationNoteFromString note
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| note ++ " is not a recognized AdministrationNote")
+            )
+        |> decodeWellChildMeasurement
 
 
 decodeWellChildMebendezole : Decoder WellChildMebendezole
