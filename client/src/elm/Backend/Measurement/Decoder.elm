@@ -3130,13 +3130,8 @@ decodeVaccineDose =
 
 decodeWellChildAlbendazole : Decoder WellChildAlbendazole
 decodeWellChildAlbendazole =
-    string
-        |> andThen
-            (\note ->
-                administrationNoteFromString note
-                    |> Maybe.map succeed
-                    |> Maybe.withDefault (fail <| note ++ " is not a recognized AdministrationNote")
-            )
+    decodeAdministrationNote
+        |> field "administration_note"
         |> decodeWellChildMeasurement
 
 
