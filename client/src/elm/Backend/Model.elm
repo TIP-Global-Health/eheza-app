@@ -419,6 +419,7 @@ type Revision
     | VillageRevision VillageId Village
     | VitalsRevision VitalsId Vitals
     | WeightRevision WeightId Weight
+    | WellChildAlbendazoleRevision WellChildAlbendazoleId WellChildAlbendazole
     | WellChildContributingFactorsRevision WellChildContributingFactorsId WellChildContributingFactors
     | WellChildECDRevision WellChildECDId WellChildECD
     | WellChildEncounterRevision WellChildEncounterId WellChildEncounter
