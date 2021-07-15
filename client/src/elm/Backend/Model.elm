@@ -426,10 +426,14 @@ type Revision
     | WellChildHeadCircumferenceRevision WellChildHeadCircumferenceId WellChildHeadCircumference
     | WellChildHealthEducationRevision WellChildHealthEducationId WellChildHealthEducation
     | WellChildHeightRevision WellChildHeightId WellChildHeight
+    | WellChildImmunisationRevision WellChildImmunisationId WellChildImmunisation
+    | WellChildMebendezoleRevision WellChildMebendezoleId WellChildMebendezole
     | WellChildMuacRevision WellChildMuacId WellChildMuac
     | WellChildNutritionRevision WellChildNutritionId WellChildNutrition
     | WellChildPhotoRevision WellChildPhotoId WellChildPhoto
+    | WellChildPregnancySummaryRevision WellChildPregnancySummaryId WellChildPregnancySummary
     | WellChildSendToHCRevision WellChildSendToHCId WellChildSendToHC
     | WellChildSymptomsReviewRevision WellChildSymptomsReviewId WellChildSymptomsReview
     | WellChildVitalsRevision WellChildVitalsId WellChildVitals
+    | WellChildVitaminARevision WellChildVitaminAId WellChildVitaminA
     | WellChildWeightRevision WellChildWeightId WellChildWeight
