@@ -84,6 +84,10 @@ activityCompleted currentDate zscores isChw data db activity =
         WellChildECD ->
             (not <| activityExpected WellChildECD) || isJust measurements.ecd
 
+        WellChildMedication ->
+            (not <| activityExpected WellChildMedication)
+                || (isJust measurements.mebendezole && isJust measurements.vitaminA)
+
 
 expectActivity : NominalDate -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
 expectActivity currentDate assembled db activity =
@@ -102,6 +106,10 @@ expectActivity currentDate assembled db activity =
                             |> not
                     )
                 |> Maybe.withDefault False
+
+        WellChildMedication ->
+            -- @todo
+            True
 
         _ ->
             True

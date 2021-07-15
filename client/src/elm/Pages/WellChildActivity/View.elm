@@ -130,6 +130,9 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
         WellChildECD ->
             viewECDContent language currentDate assembled model.ecdForm
 
+        WellChildMedication ->
+            viewMedicationContent language currentDate assembled model.medicationData
+
 
 viewDangerSignsContent :
     Language
@@ -1024,6 +1027,16 @@ ecdFormInputsAndTasks language currentDate assembled ageMonths ecdForm =
     ( List.map Tuple.first expected |> List.concat
     , List.map Tuple.second expected
     )
+
+
+viewMedicaitonContent :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> MedicaitonData
+    -> List (Html Msg)
+viewMedicaitonContent language currentDate assembled data =
+    []
 
 
 viewAction : Language -> Msg -> Bool -> Html Msg
