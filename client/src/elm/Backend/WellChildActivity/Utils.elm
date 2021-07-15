@@ -61,4 +61,4 @@ getActivityIcon activity =
 
 getAllActivities : List WellChildActivity
 getAllActivities =
-    [ WellChildDangerSigns, WellChildNutritionAssessment, WellChildECD ]
+    [ WellChildDangerSigns, WellChildNutritionAssessment, WellChildECD, WellChildMedication ]

@@ -49,7 +49,11 @@ type Msg
     | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
       -- MEDICATION
     | SetActiveMedicationTask MedicationTask
+    | SetMebendezoleAdministered Bool
+    | SetMebendezoleReasonForNonAdministration AdministrationNote
     | SaveMebendezole PersonId (Maybe ( WellChildMebendezoleId, WellChildMebendezole )) (Maybe MedicationTask)
+    | SetVitaminAAdministered Bool
+    | SetVitaminAReasonForNonAdministration AdministrationNote
     | SaveVitaminA PersonId (Maybe ( WellChildVitaminAId, WellChildVitaminA )) (Maybe MedicationTask)
 
 

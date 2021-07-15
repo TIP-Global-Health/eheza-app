@@ -4611,6 +4611,16 @@ translationSet trans =
                     , kinyarwanda = Just "Umutobe w'indimu n'ubuki"
                     }
 
+                Mebendezole ->
+                    { english = "Mebendezole"
+                    , kinyarwanda = Nothing
+                    }
+
+                VitaminA ->
+                    { english = "Vitamin A"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoMedicationDistributionSigns ->
                     { english = ""
                     , kinyarwanda = Nothing

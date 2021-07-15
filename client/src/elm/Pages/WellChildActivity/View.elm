@@ -33,6 +33,7 @@ import Measurement.View
         , viewSendToHCForm
         , zScoreForHeightOrLength
         )
+import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
 import Pages.NutritionActivity.View exposing (viewHeightForm, viewMuacForm, viewNutritionForm, viewPhotoForm, viewWeightForm, warningPopup)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
@@ -1062,7 +1063,7 @@ viewMedicationContent language currentDate assembled data =
                             )
 
                         TaskVitaminA ->
-                            ( "treatment"
+                            ( "treatment-review"
                             , isJust measurements.vitaminA
                             )
 
@@ -1098,16 +1099,36 @@ viewMedicationContent language currentDate assembled data =
         viewForm =
             case activeTask of
                 Just TaskMebendezole ->
+                    let
+                        config =
+                            { medication = Mebendezole
+                            , setMedicationAdministeredMsg = SetMebendezoleAdministered
+                            , setReasonForNonAdministration = SetMebendezoleReasonForNonAdministration
+                            , resolveDosageFunc = resolveMebendezoleDosage
+                            , icon = "icon-pills"
+                            }
+                    in
                     measurements.mebendezole
                         |> Maybe.map (Tuple.second >> .value)
                         |> medicationAdministrationFormWithDefault data.mebendezoleForm
-                        |> viewmMedicationAdministrationForm language currentDate assembled
+                        |> viewMedicationAdministrationForm language currentDate assembled config
 
                 Just TaskVitaminA ->
+                    let
+                        config =
+                            { medication = VitaminA
+                            , setMedicationAdministeredMsg = SetVitaminAAdministered
+                            , setReasonForNonAdministration = SetVitaminAReasonForNonAdministration
+                            , resolveDosageFunc = resolveVitaminADosage
+
+                            -- @todo; change to icon-drops
+                            , icon = "icon-pills"
+                            }
+                    in
                     measurements.vitaminA
                         |> Maybe.map (Tuple.second >> .value)
                         |> medicationAdministrationFormWithDefault data.vitaminAForm
-                        |> viewmMedicationAdministrationForm language currentDate assembled
+                        |> viewMedicationAdministrationForm language currentDate assembled config
 
                 Nothing ->
                     []
@@ -1153,9 +1174,64 @@ viewMedicationContent language currentDate assembled data =
     ]
 
 
-viewmMedicationAdministrationForm : Language -> NominalDate -> AssembledData -> MedicationAdministrationForm -> List (Html Msg)
-viewmMedicationAdministrationForm language currentDate assembled form =
-    []
+type alias MedicationAdministrationFormConfig =
+    { medication : MedicationDistributionSign
+    , setMedicationAdministeredMsg : Bool -> Msg
+    , setReasonForNonAdministration : AdministrationNote -> Msg
+    , resolveDosageFunc : NominalDate -> Person -> Maybe String
+    , icon : String
+    }
+
+
+viewMedicationAdministrationForm : Language -> NominalDate -> AssembledData -> MedicationAdministrationFormConfig -> MedicationAdministrationForm -> List (Html Msg)
+viewMedicationAdministrationForm language currentDate assembled config form =
+    let
+        instructions =
+            config.resolveDosageFunc currentDate assembled.person
+                |> Maybe.map
+                    (\dosage ->
+                        div [ class "instructions" ]
+                            [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign config.medication) config.icon dosage
+
+                            -- , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 3)
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+
+        questions =
+            [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign config.medication)
+            , viewBoolInput
+                language
+                form.medicationAdministered
+                config.setMedicationAdministeredMsg
+                ""
+                Nothing
+            ]
+                ++ (if form.medicationAdministered == Just False then
+                        [ viewQuestionLabel language Translate.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
+                            [ NonAdministrationPatientDeclined, NonAdministrationOther ]
+                            form.reasonForNonAdministration
+                            config.setReasonForNonAdministration
+                            Translate.AdministrationNote
+                        ]
+
+                    else
+                        []
+                   )
+    in
+    [ div [ class "ui form medication-administration" ] <|
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , instructions
+        ]
+            ++ questions
+    ]
+
+
+viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> String -> Html any
+viewAdministeredMedicationLabel language administerTranslationId medicineTranslationId iconClass dosage =
+    viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId iconClass dosage Nothing
 
 
 viewAction : Language -> Msg -> Bool -> Html Msg

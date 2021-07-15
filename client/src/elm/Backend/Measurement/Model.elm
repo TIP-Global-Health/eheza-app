@@ -1084,6 +1084,8 @@ type MedicationDistributionSign
     | ORS
     | Zinc
     | LemonJuiceOrHoney
+    | Mebendezole
+    | VitaminA
     | NoMedicationDistributionSigns
 
 

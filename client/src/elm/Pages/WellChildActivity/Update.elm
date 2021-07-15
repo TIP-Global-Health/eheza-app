@@ -812,6 +812,36 @@ update currentDate id db msg model =
             , []
             )
 
+        SetMebendezoleAdministered value ->
+            let
+                updatedForm =
+                    model.medicationData.mebendezoleForm
+                        |> (\form -> { form | medicationAdministered = Just value, reasonForNonAdministration = Nothing })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | mebendezoleForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMebendezoleReasonForNonAdministration value ->
+            let
+                updatedForm =
+                    model.medicationData.mebendezoleForm
+                        |> (\form -> { form | reasonForNonAdministration = Just value })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | mebendezoleForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveMebendezole personId saved nextTask_ ->
             let
                 measurementId =
@@ -839,6 +869,36 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetVitaminAAdministered value ->
+            let
+                updatedForm =
+                    model.medicationData.vitaminAForm
+                        |> (\form -> { form | medicationAdministered = Just value, reasonForNonAdministration = Nothing })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | vitaminAForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetVitaminAReasonForNonAdministration value ->
+            let
+                updatedForm =
+                    model.medicationData.vitaminAForm
+                        |> (\form -> { form | reasonForNonAdministration = Just value })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | vitaminAForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SaveVitaminA personId saved nextTask_ ->
             let

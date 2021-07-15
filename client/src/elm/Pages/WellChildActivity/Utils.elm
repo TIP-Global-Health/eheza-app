@@ -773,6 +773,24 @@ toAdministrationNote form =
             )
 
 
+resolveMebendezoleDosage : NominalDate -> Person -> Maybe String
+resolveMebendezoleDosage currentDate person =
+    Just "500 mg"
+
+
+resolveVitaminADosage : NominalDate -> Person -> Maybe String
+resolveVitaminADosage currentDate person =
+    ageInMonths currentDate person
+        |> Maybe.map
+            (\ageMonths ->
+                if ageMonths < 18 then
+                    "100,000 IU"
+
+                else
+                    "200,000 IU"
+            )
+
+
 
 -- HELPER FUNCTIONS
 

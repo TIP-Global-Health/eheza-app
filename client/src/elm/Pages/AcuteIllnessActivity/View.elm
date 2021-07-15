@@ -1,6 +1,8 @@
 module Pages.AcuteIllnessActivity.View exposing
     ( view
+    , viewAdministeredMedicationCustomLabel
     , viewAdministeredMedicationLabel
+    , viewAdministeredMedicationQuestion
     , viewHCRecommendation
     , viewHealthEducationLabel
     , viewOralSolutionPrescription
@@ -1918,17 +1920,6 @@ viewCall114Form language currentDate measurements form =
 viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> MedicationDistributionForm -> Html Msg
 viewMedicationDistributionForm language currentDate person diagnosis form =
     let
-        viewAdministeredMedicationQuestion medicineTranslationId =
-            div [ class "label" ]
-                [ text <|
-                    translate language Translate.AdministeredMedicationQuestion
-                        ++ " "
-                        ++ translate language medicineTranslationId
-                        ++ " "
-                        ++ translate language Translate.ToThePatient
-                        ++ "?"
-                ]
-
         ( instructions, questions ) =
             let
                 viewDerivedQuestion medication reasonToSignFunc =
@@ -1988,7 +1979,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                                     ]
                             )
                         |> Maybe.withDefault emptyNode
-                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Coartem)
+                    , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Coartem)
                       , viewBoolInput
                             language
                             form.coartem
@@ -2035,7 +2026,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                         (resolveORSDosage currentDate person)
                         (resolveZincDosage currentDate person)
                         |> Maybe.withDefault emptyNode
-                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign ORS)
+                    , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign ORS)
                       , viewBoolInput
                             language
                             form.ors
@@ -2044,7 +2035,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                             Nothing
                       ]
                         ++ orsDerivedQuestion
-                        ++ [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Zinc)
+                        ++ [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Zinc)
                            , viewBoolInput
                                 language
                                 form.zinc
@@ -2062,7 +2053,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                     in
                     ( div [ class "instructions simple-cough-and-cold" ]
                         [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign LemonJuiceOrHoney) "icon-pills" Nothing ]
-                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign LemonJuiceOrHoney)
+                    , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign LemonJuiceOrHoney)
                       , viewBoolInput
                             language
                             form.lemonJuiceOrHoney
@@ -2094,7 +2085,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                                     ]
                             )
                         |> Maybe.withDefault emptyNode
-                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Amoxicillin)
+                    , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Amoxicillin)
                       , viewBoolInput
                             language
                             form.amoxicillin
@@ -2115,8 +2106,26 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
             ++ questions
 
 
+viewAdministeredMedicationQuestion : Language -> TranslationId -> Html any
+viewAdministeredMedicationQuestion language medicineTranslationId =
+    div [ class "label" ]
+        [ text <|
+            translate language Translate.AdministeredMedicationQuestion
+                ++ " "
+                ++ translate language medicineTranslationId
+                ++ " "
+                ++ translate language Translate.ToThePatient
+                ++ "?"
+        ]
+
+
 viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> Maybe NominalDate -> Html any
 viewAdministeredMedicationLabel language administerTranslationId medicineTranslationId iconClass maybeDate =
+    viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId iconClass ":" maybeDate
+
+
+viewAdministeredMedicationCustomLabel : Language -> TranslationId -> TranslationId -> String -> String -> Maybe NominalDate -> Html any
+viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId iconClass suffix maybeDate =
     let
         message =
             div [] <|
@@ -2125,7 +2134,7 @@ viewAdministeredMedicationLabel language administerTranslationId medicineTransla
                 , span [ class "medicine" ] [ text <| translate language medicineTranslationId ]
                 ]
                     ++ renderDatePart language maybeDate
-                    ++ [ text ":" ]
+                    ++ [ text <| " " ++ suffix ]
     in
     div [ class "header icon-label" ] <|
         [ i [ class iconClass ] []

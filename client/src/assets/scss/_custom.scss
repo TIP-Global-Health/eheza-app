@@ -497,6 +497,11 @@ h3.ui.header {
   background-image: url(#{$img-path}icon-ecd.svg);
 }
 
+.icon-task-medication {
+  background-image: url(#{$img-path}icon-medication-white.svg);
+  background-size: 152px 152px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {
