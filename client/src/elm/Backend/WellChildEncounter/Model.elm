@@ -36,9 +36,11 @@ to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
     { closeWellChildEncounter : WebData ()
+    , savePregnancySummary : WebData ()
     , saveSymptomsReview : WebData ()
     , saveVitals : WebData ()
     , saveHeight : WebData ()
+    , saveHeadCircumference : WebData ()
     , saveMuac : WebData ()
     , saveNutrition : WebData ()
     , savePhoto : WebData ()
@@ -47,17 +49,21 @@ type alias Model =
     , saveHealthEducation : WebData ()
     , saveFollowUp : WebData ()
     , saveSendToHC : WebData ()
-    , saveHeadCircumference : WebData ()
+    , saveImmunisation : WebData ()
     , saveECD : WebData ()
+    , saveMebendezole : WebData ()
+    , saveVitaminA : WebData ()
     }
 
 
 emptyModel : Model
 emptyModel =
     { closeWellChildEncounter = NotAsked
+    , savePregnancySummary = NotAsked
     , saveSymptomsReview = NotAsked
     , saveVitals = NotAsked
     , saveHeight = NotAsked
+    , saveHeadCircumference = NotAsked
     , saveMuac = NotAsked
     , saveNutrition = NotAsked
     , savePhoto = NotAsked
@@ -66,19 +72,25 @@ emptyModel =
     , saveHealthEducation = NotAsked
     , saveFollowUp = NotAsked
     , saveSendToHC = NotAsked
-    , saveHeadCircumference = NotAsked
+    , saveImmunisation = NotAsked
     , saveECD = NotAsked
+    , saveMebendezole = NotAsked
+    , saveVitaminA = NotAsked
     }
 
 
 type Msg
     = CloseWellChildEncounter
     | HandleClosedWellChildEncounter (WebData ())
+    | SavePregnancySummary PersonId (Maybe WellChildPregnancySummaryId) PregnancySummaryValue
+    | HandleSavedPregnancySummary (WebData ())
     | SaveSymptomsReview PersonId (Maybe WellChildSymptomsReviewId) (EverySet WellChildSymptom)
     | HandleSavedSymptomsReview (WebData ())
     | SaveVitals PersonId (Maybe WellChildVitalsId) BasicVitalsValue
     | HandleSavedVitals (WebData ())
     | SaveHeight PersonId (Maybe WellChildHeightId) HeightInCm
+    | SaveHeadCircumference PersonId (Maybe WellChildHeadCircumferenceId) HeadCircumferenceValue
+    | HandleSavedHeadCircumference (WebData ())
     | HandleSavedHeight (WebData ())
     | SaveMuac PersonId (Maybe WellChildMuacId) MuacInCm
     | HandleSavedMuac (WebData ())
@@ -96,7 +108,11 @@ type Msg
     | HandleSavedFollowUp (WebData ())
     | SaveSendToHC PersonId (Maybe WellChildSendToHCId) SendToHCValue
     | HandleSavedSendToHC (WebData ())
-    | SaveHeadCircumference PersonId (Maybe WellChildHeadCircumferenceId) HeadCircumferenceValue
-    | HandleSavedHeadCircumference (WebData ())
     | SaveECD PersonId (Maybe WellChildECDId) (EverySet ECDSign)
+    | SaveImmunisation PersonId (Maybe WellChildImmunisationId) ImmunisationValue
+    | HandleSavedImmunisation (WebData ())
     | HandleSavedECD (WebData ())
+    | SaveMebendezole PersonId (Maybe WellChildMebendezoleId) AdministrationNote
+    | HandleSavedMebendezole (WebData ())
+    | SaveVitaminA PersonId (Maybe WellChildVitaminAId) AdministrationNote
+    | HandleSavedVitaminA (WebData ())
