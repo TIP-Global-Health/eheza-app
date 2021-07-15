@@ -17,6 +17,9 @@ class HedleyRestfulWellChildPregnancySummary extends HedleyRestfulWellChildActiv
     'field_delivery_complications',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected $fields = [
     'field_apgars_one_minute',
     'field_apgars_five_minutes',
