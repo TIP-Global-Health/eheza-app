@@ -1105,6 +1105,7 @@ viewMedicationContent language currentDate assembled data =
                             , setMedicationAdministeredMsg = SetMebendezoleAdministered
                             , setReasonForNonAdministration = SetMebendezoleReasonForNonAdministration
                             , resolveDosageFunc = resolveMebendezoleDosage
+                            , helper = Translate.AdministerMebendezoleHelper
                             , icon = "icon-pills"
                             }
                     in
@@ -1120,6 +1121,7 @@ viewMedicationContent language currentDate assembled data =
                             , setMedicationAdministeredMsg = SetVitaminAAdministered
                             , setReasonForNonAdministration = SetVitaminAReasonForNonAdministration
                             , resolveDosageFunc = resolveVitaminADosage
+                            , helper = Translate.AdministeVitaminAHelper
 
                             -- @todo; change to icon-drops
                             , icon = "icon-pills"
@@ -1174,15 +1176,6 @@ viewMedicationContent language currentDate assembled data =
     ]
 
 
-type alias MedicationAdministrationFormConfig =
-    { medication : MedicationDistributionSign
-    , setMedicationAdministeredMsg : Bool -> Msg
-    , setReasonForNonAdministration : AdministrationNote -> Msg
-    , resolveDosageFunc : NominalDate -> Person -> Maybe String
-    , icon : String
-    }
-
-
 viewMedicationAdministrationForm : Language -> NominalDate -> AssembledData -> MedicationAdministrationFormConfig -> MedicationAdministrationForm -> List (Html Msg)
 viewMedicationAdministrationForm language currentDate assembled config form =
     let
@@ -1192,8 +1185,7 @@ viewMedicationAdministrationForm language currentDate assembled config form =
                     (\dosage ->
                         div [ class "instructions" ]
                             [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign config.medication) config.icon dosage
-
-                            -- , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 3)
+                            , div [ class "prescription" ] [ text <| translate language config.helper ++ "." ]
                             ]
                     )
                 |> Maybe.withDefault emptyNode
@@ -1207,19 +1199,21 @@ viewMedicationAdministrationForm language currentDate assembled config form =
                 ""
                 Nothing
             ]
-                ++ (if form.medicationAdministered == Just False then
-                        [ viewQuestionLabel language Translate.WhyNot
-                        , viewCheckBoxSelectInput language
-                            [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
-                            [ NonAdministrationPatientDeclined, NonAdministrationOther ]
-                            form.reasonForNonAdministration
-                            config.setReasonForNonAdministration
-                            Translate.AdministrationNote
-                        ]
+                ++ derrivedQuestion
 
-                    else
-                        []
-                   )
+        derrivedQuestion =
+            if form.medicationAdministered == Just False then
+                [ viewQuestionLabel language Translate.WhyNot
+                , viewCheckBoxSelectInput language
+                    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
+                    [ NonAdministrationPatientDeclined, NonAdministrationOther ]
+                    form.reasonForNonAdministration
+                    config.setReasonForNonAdministration
+                    Translate.AdministrationNote
+                ]
+
+            else
+                []
     in
     [ div [ class "ui form medication-administration" ] <|
         [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
@@ -1227,6 +1221,16 @@ viewMedicationAdministrationForm language currentDate assembled config form =
         ]
             ++ questions
     ]
+
+
+type alias MedicationAdministrationFormConfig =
+    { medication : MedicationDistributionSign
+    , setMedicationAdministeredMsg : Bool -> Msg
+    , setReasonForNonAdministration : AdministrationNote -> Msg
+    , resolveDosageFunc : NominalDate -> Person -> Maybe String
+    , helper : TranslationId
+    , icon : String
+    }
 
 
 viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> String -> Html any

@@ -309,6 +309,8 @@ type TranslationId
     | AddToGroup
     | Admin
     | Administer
+    | AdministerMebendezoleHelper
+    | AdministeVitaminAHelper
     | Administered
     | AdministeredMedicationQuestion
     | AddressInformation
@@ -1440,6 +1442,16 @@ translationSet trans =
         Administer ->
             { english = "Administer"
             , kinyarwanda = Just "Tanga umuti"
+            }
+
+        AdministerMebendezoleHelper ->
+            { english = "Give the child one tablet by mouth"
+            , kinyarwanda = Nothing
+            }
+
+        AdministeVitaminAHelper ->
+            { english = "Put the correct number of drops directly into the mouth of the child"
+            , kinyarwanda = Nothing
             }
 
         Administered ->
