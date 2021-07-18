@@ -470,6 +470,7 @@ type TranslationId
     | DeviceStatus
     | Diabetes
     | Diagnosis
+    | DifferenceBetweenDates
     | Disabled
     | DistributionNotice DistributionNotice
     | District
@@ -655,6 +656,7 @@ type TranslationId
     | ModeratelyUnderweight
     | Month
     | MonthAbbrev
+    | MonthSinglePlural Int
     | MonthsOld
     | Mother
     | MotherDemographicInformation
@@ -2887,6 +2889,11 @@ translationSet trans =
             , kinyarwanda = Just "Uburwayi bwabonetse"
             }
 
+        DifferenceBetweenDates ->
+            { english = "Difference between dates"
+            , kinyarwanda = Nothing
+            }
+
         Disabled ->
             { english = "Disabled"
             , kinyarwanda = Nothing
@@ -4876,6 +4883,17 @@ translationSet trans =
             { english = "mo"
             , kinyarwanda = Just "am"
             }
+
+        MonthSinglePlural value ->
+            if value == 1 then
+                { english = "1 Month"
+                , kinyarwanda = Just "Ukwezi 1"
+                }
+
+            else
+                { english = String.fromInt value ++ " Months"
+                , kinyarwanda = Just <| "Amezi" ++ String.fromInt value
+                }
 
         MonthsOld ->
             { english = "months old"

@@ -94,9 +94,9 @@ emptyModel =
 
 
 type alias PregnancySummaryForm =
-    { expectedDateConcluded : Maybe NominalDate
+    { expectedDateConcluded : Maybe Date
     , isExpectedDateConcludedSelectorOpen : Bool
-    , dateConcluded : Maybe NominalDate
+    , dateConcluded : Maybe Date
     , isDateConcludedSelectorOpen : Bool
     , apgarsOneMinute : Maybe Int
     , apgarsFiveMinutes : Maybe Int

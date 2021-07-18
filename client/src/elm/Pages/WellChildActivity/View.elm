@@ -183,6 +183,51 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                 currentDate
                 form.dateConcluded
 
+        viewDatesDiff =
+            Maybe.map2
+                (\expected actual ->
+                    let
+                        diffMonths =
+                            Date.diff Months expected actual
+
+                        expectedAdjustedMonths =
+                            Date.add Months diffMonths expected
+
+                        diffWeeks =
+                            Date.diff Weeks expectedAdjustedMonths actual
+
+                        diffDays =
+                            Date.diff Days (Date.add Weeks diffWeeks expectedAdjustedMonths) actual
+
+                        parts =
+                            [ ( diffMonths, Translate.MonthSinglePlural ), ( diffWeeks, Translate.WeekSinglePlural ), ( diffDays, Translate.DaySinglePlural ) ]
+                                |> List.filter (Tuple.first >> (/=) 0)
+
+                        viewPart ( value, transId ) =
+                            translate language <| transId (abs value)
+
+                        viewDiff =
+                            case parts of
+                                [ single ] ->
+                                    viewPart single
+
+                                [ first, second ] ->
+                                    viewPart first ++ " " ++ translate language Translate.And ++ " " ++ viewPart second
+
+                                [ first, second, third ] ->
+                                    viewPart first ++ ", " ++ viewPart second ++ " " ++ translate language Translate.And ++ " " ++ viewPart third
+
+                                _ ->
+                                    viewPart ( 0, Translate.DaySinglePlural )
+                    in
+                    [ viewLabel language Translate.DifferenceBetweenDates
+                    , div [ class "form-input" ] [ text viewDiff ]
+                    ]
+                )
+                form.expectedDateConcluded
+                form.dateConcluded
+                |> Maybe.withDefault []
+
         apgarsOptions fromValue =
             option
                 [ value ""
@@ -243,20 +288,22 @@ viewPregnancySummaryForm language currentDate assembled form_ =
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form pregnancySummary" ] <|
+            [ div [ class "ui form pregnancy-dating" ] <|
                 [ viewQuestionLabel language Translate.DateConcludedEstimatedQuestion
                 , div [ class "form-input date" ]
                     [ expectedDateConcludedInput ]
                 , viewQuestionLabel language Translate.DateConcludedActualQuestion
                 , div [ class "form-input date" ]
                     [ dateConcludedInput ]
-                , viewQuestionLabel language Translate.ChildOneMinuteApgarsQuestion
-                , apgarsOneMinuteInput
-                , viewQuestionLabel language Translate.ChildFiveMinutesApgarsQuestion
-                , apgarsFiveMinutesInput
-                , viewQuestionLabel language Translate.DeliveryComplicationsPresentQuestion
-                , deliveryComplicationsPresentInput
                 ]
+                    ++ viewDatesDiff
+                    ++ [ viewQuestionLabel language Translate.ChildOneMinuteApgarsQuestion
+                       , apgarsOneMinuteInput
+                       , viewQuestionLabel language Translate.ChildFiveMinutesApgarsQuestion
+                       , apgarsFiveMinutesInput
+                       , viewQuestionLabel language Translate.DeliveryComplicationsPresentQuestion
+                       , deliveryComplicationsPresentInput
+                       ]
                     ++ deliveryComplicationsSection
             ]
         , viewAction language (SavePregnancySummary assembled.participant.person assembled.measurements.pregnancySummary) disabled

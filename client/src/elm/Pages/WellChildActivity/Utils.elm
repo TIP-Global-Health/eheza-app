@@ -162,9 +162,9 @@ pregnancySummaryFormWithDefault form saved =
                             EverySet.toList value.deliveryComplications
                 in
                 { expectedDateConcluded = or form.expectedDateConcluded (Just value.expectedDateConcluded)
-                , isExpectedDateConcludedSelectorOpen = False
+                , isExpectedDateConcludedSelectorOpen = form.isExpectedDateConcludedSelectorOpen
                 , dateConcluded = or form.dateConcluded (Just value.dateConcluded)
-                , isDateConcludedSelectorOpen = False
+                , isDateConcludedSelectorOpen = form.isDateConcludedSelectorOpen
                 , apgarsOneMinute = or form.apgarsOneMinute (Just value.apgarsOneMinute)
                 , apgarsFiveMinutes = or form.apgarsFiveMinutes (Just value.apgarsFiveMinutes)
                 , deliveryComplicationsPresent = or form.deliveryComplicationsPresent (complicationsPresent deliveryComplications |> Just)
