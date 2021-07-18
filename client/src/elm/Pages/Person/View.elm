@@ -581,6 +581,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , birthDateSelectorFrom =
                                 if isChw then
                                     Date.add Months -2 today
+                                        |> Date.add Days 1
 
                                 else
                                     Date.add Years -13 today

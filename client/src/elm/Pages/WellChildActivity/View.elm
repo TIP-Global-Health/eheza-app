@@ -170,8 +170,8 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                 ToggleExpectedDateConcluded
                 SetExpectedDateConcluded
                 form.isExpectedDateConcludedSelectorOpen
-                (Date.add Days -92 currentDate)
-                (Date.add Days 123 currentDate)
+                (Date.add Months -3 currentDate)
+                (Date.add Months 4 currentDate)
                 form.expectedDateConcluded
 
         dateConcludedInput =
@@ -179,7 +179,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                 ToggleDateConcluded
                 SetDateConcluded
                 form.isDateConcludedSelectorOpen
-                (Date.add Days -62 currentDate)
+                (Date.add Months -2 currentDate)
                 currentDate
                 form.dateConcluded
 

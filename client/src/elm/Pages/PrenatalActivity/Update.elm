@@ -152,13 +152,13 @@ update currentDate id db msg model =
                 ( lmpDate, isDateSelectorOpen ) =
                     case range of
                         Just OneMonth ->
-                            ( Date.add Days -31 today |> Just, True )
+                            ( Date.add Months -1 today |> Just, True )
 
                         Just ThreeMonth ->
-                            ( Date.add Days -92 today |> Just, True )
+                            ( Date.add Months -3 today |> Just, True )
 
                         Just SixMonth ->
-                            ( Date.add Days -184 today |> Just, True )
+                            ( Date.add Months -6 today |> Just, True )
 
                         Nothing ->
                             ( Nothing, False )
