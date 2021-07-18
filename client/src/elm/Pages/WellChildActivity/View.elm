@@ -133,6 +133,10 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
         WellChildNutritionAssessment ->
             viewNutritionAssessmenContent language currentDate zscores id isChw assembled db model.nutritionAssessmentData
 
+        WellChildImmunisation ->
+            -- @todo
+            []
+
         WellChildECD ->
             viewECDForm language currentDate assembled model.ecdForm
 

@@ -7,3 +7,4 @@ type WellChildActivity
     | WellChildECD
     | WellChildMedication
     | WellChildPregnancySummary
+    | WellChildImmunisation
