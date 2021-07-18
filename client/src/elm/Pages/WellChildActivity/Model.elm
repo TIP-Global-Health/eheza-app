@@ -57,6 +57,10 @@ type Msg
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssesment) (Maybe NutritionAssesmentTask)
       -- IMMUNISATION
+    | SetImmunisationBoolInput (Bool -> ImmunisationForm -> ImmunisationForm) Bool
+    | SetImmunisationAdministrationNoteInput (AdministrationNote -> ImmunisationForm -> ImmunisationForm) AdministrationNote
+    | SetImmunisationDateInput (Date -> ImmunisationForm -> ImmunisationForm) Date
+    | ToggleImmunisationDateSelectorInput (ImmunisationForm -> ImmunisationForm)
     | SaveImmunisation PersonId (Maybe ( WellChildImmunisationId, WellChildImmunisation ))
       -- ECD
     | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
@@ -248,6 +252,14 @@ type alias ImmunisationForm =
     , ipvVaccinationDate : Maybe NominalDate
     , mrVaccinationDate : Maybe NominalDate
     , hpvVaccinationDate : Maybe NominalDate
+    , bcgVaccinationDateSelectorOpen : Bool
+    , opvVaccinationDateSelectorOpen : Bool
+    , dtpVaccinationDateSelectorOpen : Bool
+    , pcv13VaccinationDateSelectorOpen : Bool
+    , rotarixVaccinationDateSelectorOpen : Bool
+    , ipvVaccinationDateSelectorOpen : Bool
+    , mrVaccinationDateSelectorOpen : Bool
+    , hpvVaccinationDateSelectorOpen : Bool
     }
 
 
@@ -277,6 +289,14 @@ emptyImmunisationForm =
     , ipvVaccinationDate = Nothing
     , mrVaccinationDate = Nothing
     , hpvVaccinationDate = Nothing
+    , bcgVaccinationDateSelectorOpen = False
+    , opvVaccinationDateSelectorOpen = False
+    , dtpVaccinationDateSelectorOpen = False
+    , pcv13VaccinationDateSelectorOpen = False
+    , rotarixVaccinationDateSelectorOpen = False
+    , ipvVaccinationDateSelectorOpen = False
+    , mrVaccinationDateSelectorOpen = False
+    , hpvVaccinationDateSelectorOpen = False
     }
 
 

@@ -885,6 +885,46 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
+        SetImmunisationBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.immunisationForm
+            in
+            ( { model | immunisationForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetImmunisationAdministrationNoteInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.immunisationForm
+            in
+            ( { model | immunisationForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetImmunisationDateInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.immunisationForm
+            in
+            ( { model | immunisationForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        ToggleImmunisationDateSelectorInput formUpdateFunc ->
+            let
+                updatedForm =
+                    formUpdateFunc model.immunisationForm
+            in
+            ( { model | immunisationForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
         SaveImmunisation personId saved ->
             let
                 measurementId =

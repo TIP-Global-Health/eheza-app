@@ -134,8 +134,7 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
             viewNutritionAssessmenContent language currentDate zscores id isChw assembled db model.nutritionAssessmentData
 
         WellChildImmunisation ->
-            -- @todo
-            []
+            viewImmunisationForm language currentDate assembled model.immunisationForm
 
         WellChildECD ->
             viewECDForm language currentDate assembled model.ecdForm
@@ -859,6 +858,105 @@ viewHeadCircumferenceForm language currentDate zscores person previousValue form
             ]
             []
         , label [] [ text <| translate language Translate.HeadCircumferenceNotTakenLabel ]
+        ]
+    ]
+
+
+viewImmunisationForm : Language -> NominalDate -> AssembledData -> ImmunisationForm -> List (Html Msg)
+viewImmunisationForm language currentDate assembled immunisationForm =
+    let
+        form =
+            -- @todo
+            -- assembled.measurements.immunisation
+            --     |> Maybe.map (Tuple.second >> .value)
+            --     |> pregnancySummaryFormWithDefault form_
+            immunisationForm
+
+        ( tasksCompleted, totalTasks ) =
+            ( 0
+            , 1
+            )
+
+        bcgVaccinationGivenInput =
+            viewBoolInput
+                language
+                form.bcgVaccinationGiven
+                (SetImmunisationBoolInput
+                    (\value form_ ->
+                        { form_
+                            | bcgVaccinationGiven = Just value
+                            , bcgVaccinationNote = Nothing
+                            , bcgVaccinationDate = Nothing
+                        }
+                    )
+                )
+                ""
+                Nothing
+
+        bcgVaccinationDerrivedInputs =
+            if form.bcgVaccinationGiven == Just False then
+                let
+                    bcgVaccinationDateInput =
+                        if form.bcgVaccinationNote == Just AdministeredPreviously then
+                            [ div [ class "form-input date" ]
+                                [ DateSelector.SelectorDropdown.view
+                                    (ToggleImmunisationDateSelectorInput
+                                        (\form_ -> { form_ | bcgVaccinationDateSelectorOpen = not form_.bcgVaccinationDateSelectorOpen })
+                                    )
+                                    (SetImmunisationDateInput (\value form_ -> { form_ | bcgVaccinationDate = Just value }))
+                                    form.bcgVaccinationDateSelectorOpen
+                                    (Date.add Months -6 currentDate)
+                                    (Date.add Days -1 currentDate)
+                                    form.bcgVaccinationDate
+                                ]
+                            ]
+
+                        else
+                            []
+                in
+                [ viewQuestionLabel language Translate.WhyNot
+                , viewCheckBoxSelectInput language
+                    [ AdministeredPreviously, NonAdministrationLackOfStock, NonAdministrationPatientDeclined ]
+                    [ NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford, NonAdministrationOther ]
+                    form.bcgVaccinationNote
+                    (SetImmunisationAdministrationNoteInput
+                        (\value form_ -> { form_ | bcgVaccinationNote = Just value, bcgVaccinationDate = Nothing })
+                    )
+                    Translate.AdministrationNote
+                ]
+                    ++ bcgVaccinationDateInput
+
+            else
+                []
+
+        disabled =
+            tasksCompleted /= totalTasks
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form pregnancy-dating" ] <|
+                bcgVaccinationGivenInput
+                    :: bcgVaccinationDerrivedInputs
+
+            -- [ viewQuestionLabel language Translate.DateConcludedEstimatedQuestion
+            -- , div [ class "form-input date" ]
+            --     [ expectedDateConcludedInput ]
+            -- , viewQuestionLabel language Translate.DateConcludedActualQuestion
+            -- , div [ class "form-input date" ]
+            --     [ dateConcludedInput ]
+            -- ]
+            --     ++ viewDatesDiff
+            --     ++ [ viewQuestionLabel language Translate.ChildOneMinuteApgarsQuestion
+            --        , apgarsOneMinuteInput
+            --        , viewQuestionLabel language Translate.ChildFiveMinutesApgarsQuestion
+            --        , apgarsFiveMinutesInput
+            --        , viewQuestionLabel language Translate.DeliveryComplicationsPresentQuestion
+            --        , deliveryComplicationsPresentInput
+            --        ]
+            --     ++ deliveryComplicationsSection
+            ]
+        , viewAction language (SavePregnancySummary assembled.participant.person assembled.measurements.pregnancySummary) disabled
         ]
     ]
 
