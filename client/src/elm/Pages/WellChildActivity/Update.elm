@@ -79,6 +79,34 @@ update currentDate id db msg model =
             , []
             )
 
+        SavePregnancySummary personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    -- @ todo
+                    -- model.pregnancySummaryForm
+                    --     |> toPregnancySummaryValueWithDefault measurement
+                    --     |> Maybe.map
+                    --         (\value ->
+                    --             [ Backend.WellChildEncounter.Model.SavePregnancySummary personId measurementId value
+                    --                 |> Backend.Model.MsgWellChildEncounter id
+                    --                 |> App.Model.MsgIndexedDb
+                    --             , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
+                    --             ]
+                    --         )
+                    --     |> Maybe.withDefault []
+                    []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
         SetActiveDangerSignsTask task ->
             let
                 updatedData =

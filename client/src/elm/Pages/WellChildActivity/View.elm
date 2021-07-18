@@ -122,6 +122,10 @@ viewContent language currentDate zscores id isChw activity db model assembled =
 viewActivity : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
 viewActivity language currentDate zscores id isChw activity assembled db model =
     case activity of
+        WellChildPregnancySummary ->
+            -- @tood
+            []
+
         WellChildDangerSigns ->
             viewDangerSignsContent language currentDate assembled model.dangerSignsData
 
@@ -134,9 +138,39 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
         WellChildMedication ->
             viewMedicationContent language currentDate isChw assembled model.medicationData
 
-        WellChildPregnancySummary ->
-            -- @tood
-            []
+
+viewPregnancySummaryForm : Language -> NominalDate -> AssembledData -> PregnancySummaryForm -> List (Html Msg)
+viewPregnancySummaryForm language currentDate assembled form =
+    let
+        ( deliveryComplicationsCompleted, deliveryComplicationsActive ) =
+            if form.deliveryComplicaitonsPresent == Just True then
+                ( taskCompleted form.deliveryComplicaitons, 1 )
+
+            else
+                ( 0, 0 )
+
+        ( tasksCompleted, totalTasks ) =
+            ( taskCompleted form.expectedDateConcluded
+                + taskCompleted form.dateConcluded
+                + taskCompleted form.apgarsOneMinute
+                + taskCompleted form.apgarsFiveMinutes
+                + taskCompleted form.deliveryComplicaitonsPresent
+                + deliveryComplicationsCompleted
+            , 5 + deliveryComplicationsActive
+            )
+
+        disabled =
+            tasksCompleted /= totalTasks
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [-- div [ class "ui form pregnancySummary" ]
+             --     inputs
+            ]
+        , viewAction language (SavePregnancySummary assembled.participant.person assembled.measurements.pregnancySummary) disabled
+        ]
+    ]
 
 
 viewDangerSignsContent :

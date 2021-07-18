@@ -3,6 +3,7 @@ module Pages.WellChildActivity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (..)
 import Pages.Page exposing (Page)
 
@@ -11,6 +12,8 @@ type Msg
     = SetActivePage Page
     | SetWarningPopupState (List NutritionAssesment)
     | NoOp
+      -- PREGNANCY SUMMARY
+    | SavePregnancySummary PersonId (Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary ))
       -- DANGER SIGNS
     | SetActiveDangerSignsTask DangerSignsTask
     | SetSymptom WellChildSymptom
@@ -61,7 +64,8 @@ type Msg
 
 
 type alias Model =
-    { dangerSignsData : DangerSignsData
+    { pregnancySummaryForm : PregnancySummaryForm
+    , dangerSignsData : DangerSignsData
     , nutritionAssessmentData : NutritionAssessmentData
     , ecdForm : WellChildECDForm
     , medicationData : MedicationData
@@ -71,11 +75,33 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { dangerSignsData = emptyDangerSignsData
+    { pregnancySummaryForm = emptyPregnancySummaryForm
+    , dangerSignsData = emptyDangerSignsData
     , nutritionAssessmentData = emptyNutritionAssessmentData
     , ecdForm = emptyWellChildECDForm
     , medicationData = emptyMedicationData
     , warningPopupState = []
+    }
+
+
+type alias PregnancySummaryForm =
+    { expectedDateConcluded : Maybe NominalDate
+    , dateConcluded : Maybe NominalDate
+    , apgarsOneMinute : Maybe Int
+    , apgarsFiveMinutes : Maybe Int
+    , deliveryComplicaitonsPresent : Maybe Bool
+    , deliveryComplicaitons : Maybe (List DeliveryComplication)
+    }
+
+
+emptyPregnancySummaryForm : PregnancySummaryForm
+emptyPregnancySummaryForm =
+    { expectedDateConcluded = Nothing
+    , dateConcluded = Nothing
+    , apgarsOneMinute = Nothing
+    , apgarsFiveMinutes = Nothing
+    , deliveryComplicaitonsPresent = Nothing
+    , deliveryComplicaitons = Nothing
     }
 
 
