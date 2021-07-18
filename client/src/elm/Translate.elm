@@ -4892,7 +4892,7 @@ translationSet trans =
 
             else
                 { english = String.fromInt value ++ " Months"
-                , kinyarwanda = Just <| "Amezi" ++ String.fromInt value
+                , kinyarwanda = Just <| "Amezi " ++ String.fromInt value
                 }
 
         MonthsOld ->
