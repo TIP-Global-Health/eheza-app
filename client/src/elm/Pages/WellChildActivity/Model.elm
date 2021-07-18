@@ -283,3 +283,8 @@ type MedicationTask
     = TaskAlbendazole
     | TaskMebendezole
     | TaskVitaminA
+
+
+allMedicationTasks : List MedicationTask
+allMedicationTasks =
+    [ TaskAlbendazole, TaskMebendezole, TaskVitaminA ]

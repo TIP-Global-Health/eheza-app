@@ -47,13 +47,13 @@ generateNutritionAssesment currentDate zscores db assembled =
 
 
 activityCompleted : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
-activityCompleted currentDate zscores isChw data db activity =
+activityCompleted currentDate zscores isChw assembled db activity =
     let
         measurements =
-            data.measurements
+            assembled.measurements
 
         activityExpected =
-            expectActivity currentDate data db
+            expectActivity currentDate isChw assembled db
     in
     case activity of
         WellChildDangerSigns ->
@@ -65,18 +65,18 @@ activityCompleted currentDate zscores isChw data db activity =
                 ( mandatory, optional ) =
                     partitionNutritionAssessmentTasks isChw
             in
-            if mandatoryNutritionAssesmentTasksCompleted currentDate zscores isChw data db then
+            if mandatoryNutritionAssesmentTasksCompleted currentDate zscores isChw assembled db then
                 let
                     nonEmptyAssessment =
-                        generateNutritionAssesment currentDate zscores db data
+                        generateNutritionAssesment currentDate zscores db assembled
                             |> List.isEmpty
                             |> not
                 in
                 if nonEmptyAssessment then
-                    List.all (nutritionAssessmentTaskCompleted currentDate zscores isChw data db) (optional ++ nutritionAssessmentNextStepsTasks)
+                    List.all (nutritionAssessmentTaskCompleted currentDate zscores isChw assembled db) (optional ++ nutritionAssessmentNextStepsTasks)
 
                 else
-                    List.all (nutritionAssessmentTaskCompleted currentDate zscores isChw data db) optional
+                    List.all (nutritionAssessmentTaskCompleted currentDate zscores isChw assembled db) optional
 
             else
                 False
@@ -89,8 +89,8 @@ activityCompleted currentDate zscores isChw data db activity =
                 || (isJust measurements.mebendezole && isJust measurements.vitaminA)
 
 
-expectActivity : NominalDate -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
-expectActivity currentDate assembled db activity =
+expectActivity : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
+expectActivity currentDate isChw assembled db activity =
     case activity of
         WellChildECD ->
             ageInMonths currentDate assembled.person
@@ -108,8 +108,10 @@ expectActivity currentDate assembled db activity =
                 |> Maybe.withDefault False
 
         WellChildMedication ->
-            -- @todo
-            True
+            allMedicationTasks
+                |> List.filter (expectMedicationTask currentDate isChw assembled)
+                |> List.isEmpty
+                |> not
 
         _ ->
             True
@@ -693,6 +695,27 @@ ecdSigns36to47 =
     , ShareWithOtherChildren
     , CountToTen
     ]
+
+
+expectMedicationTask : NominalDate -> Bool -> AssembledData -> MedicationTask -> Bool
+expectMedicationTask currentDate isChw data task =
+    ageInMonths currentDate data.person
+        |> Maybe.map
+            (\ageMonths ->
+                case task of
+                    -- 6 years to 12 years.
+                    TaskAlbendazole ->
+                        ageMonths >= 60 && ageMonths < 120
+
+                    -- 1 year to 6 years.
+                    TaskMebendezole ->
+                        ageMonths >= 12 && ageMonths < 60
+
+                    -- 6 months to 6 years.
+                    TaskVitaminA ->
+                        ageMonths >= 6 && ageMonths < 60
+            )
+        |> Maybe.withDefault False
 
 
 medicationTasksCompletedFromTotal : WellChildMeasurements -> MedicationData -> MedicationTask -> ( Int, Int )
