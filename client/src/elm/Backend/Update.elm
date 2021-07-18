@@ -1965,9 +1965,18 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                     NutritionEncounter ->
                                                         NutritionParticipantPage personId
 
-                                                    _ ->
-                                                        -- This will change as we add support for
-                                                        -- new encounter types.
+                                                    WellChildEncounter ->
+                                                        WellChildParticipantPage personId
+
+                                                    -- We do not have a direct access to Home Visit
+                                                    -- encounter, since it resides under Nutrition menu.
+                                                    -- Providing 'default' page, to satisfy compiler.
+                                                    HomeVisitEncounter ->
+                                                        IndividualEncounterTypesPage
+
+                                                    -- Note yet implemented. Providing 'default'
+                                                    -- page, to satisfy compiler.
+                                                    InmmunizationEncounter ->
                                                         IndividualEncounterTypesPage
                                         in
                                         ( [ resetFormMsg, navigationMsg nextPage ]
