@@ -502,6 +502,11 @@ h3.ui.header {
   background-size: 152px 152px;
 }
 
+.icon-task-immunisation {
+  background-image: url(#{$img-path}icon-immunisation.svg);
+  background-size: 152px 152px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {
