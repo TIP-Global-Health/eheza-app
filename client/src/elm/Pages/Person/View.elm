@@ -574,9 +574,30 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , title = Translate.People
                             }
 
-                        -- This will be redefined after we add support for more
-                        -- individual encounter types.
-                        _ ->
+                        WellChildEncounter ->
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage WellChildEncounter)
+                            , expectedAge = ExpectChild
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -13 today
+                            , birthDateSelectorTo = today
+                            , title = Translate.People
+                            }
+
+                        -- We do not have a direct access to Home Visit
+                        -- encounter, since it resides under Nutrition menu.
+                        -- Providing 'default' values, to satisfy compiler.
+                        HomeVisitEncounter ->
+                            { goBackPage = PinCodePage
+                            , expectedAge = ExpectAdultOrChild
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -60 today
+                            , birthDateSelectorTo = today
+                            , title = Translate.People
+                            }
+
+                        -- Note yet implemented. Providing 'default'
+                        -- values, to satisfy compiler.
+                        InmmunizationEncounter ->
                             { goBackPage = PinCodePage
                             , expectedAge = ExpectAdultOrChild
                             , expectedGender = ExpectMaleOrFemale
