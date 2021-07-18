@@ -11,6 +11,8 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
+import Date exposing (Unit(..))
+import DateSelector.SelectorDropdown
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -123,8 +125,7 @@ viewActivity : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncount
 viewActivity language currentDate zscores id isChw activity assembled db model =
     case activity of
         WellChildPregnancySummary ->
-            -- @tood
-            []
+            viewPregnancySummaryForm language currentDate assembled model.pregnancySummaryForm
 
         WellChildDangerSigns ->
             viewDangerSignsContent language currentDate assembled model.dangerSignsData
@@ -143,8 +144,8 @@ viewPregnancySummaryForm : Language -> NominalDate -> AssembledData -> Pregnancy
 viewPregnancySummaryForm language currentDate assembled form =
     let
         ( deliveryComplicationsCompleted, deliveryComplicationsActive ) =
-            if form.deliveryComplicaitonsPresent == Just True then
-                ( taskCompleted form.deliveryComplicaitons, 1 )
+            if form.deliveryComplicationsPresent == Just True then
+                ( taskCompleted form.deliveryComplications, 1 )
 
             else
                 ( 0, 0 )
@@ -154,10 +155,82 @@ viewPregnancySummaryForm language currentDate assembled form =
                 + taskCompleted form.dateConcluded
                 + taskCompleted form.apgarsOneMinute
                 + taskCompleted form.apgarsFiveMinutes
-                + taskCompleted form.deliveryComplicaitonsPresent
+                + taskCompleted form.deliveryComplicationsPresent
                 + deliveryComplicationsCompleted
             , 5 + deliveryComplicationsActive
             )
+
+        expectedDateConcludedInput =
+            DateSelector.SelectorDropdown.view
+                ToggleExpectedDateConcluded
+                SetExpectedDateConcluded
+                form.isExpectedDateConcludedSelectorOpen
+                (Date.add Days -92 currentDate)
+                (Date.add Days 123 currentDate)
+                form.expectedDateConcluded
+
+        dateConcludedInput =
+            DateSelector.SelectorDropdown.view
+                ToggleDateConcluded
+                SetDateConcluded
+                form.isDateConcludedSelectorOpen
+                (Date.add Days -62 currentDate)
+                currentDate
+                form.dateConcluded
+
+        apgarsOptions fromValue =
+            option
+                [ value ""
+                , selected (fromValue == Nothing)
+                ]
+                [ text "" ]
+                :: (List.repeat 11 ""
+                        |> List.indexedMap
+                            (\index _ ->
+                                option
+                                    [ value <| String.fromInt index
+                                    , selected <| fromValue == Just index
+                                    ]
+                                    [ text <| String.fromInt index ]
+                            )
+                   )
+
+        apgarsOneMinuteInput =
+            apgarsOptions form.apgarsOneMinute
+                |> select
+                    [ class "form-input apgars"
+                    , onInput SetApgarsOneMinute
+                    ]
+
+        apgarsFiveMinutesInput =
+            apgarsOptions form.apgarsFiveMinutes
+                |> select
+                    [ class "form-input apgars"
+                    , onInput SetApgarsFiveMinutes
+                    ]
+
+        deliveryComplicationsPresentInput =
+            viewBoolInput
+                language
+                form.deliveryComplicationsPresent
+                SetDeliveryComplicationsPresent
+                ""
+                Nothing
+
+        deliveryComplicationsSection =
+            if form.deliveryComplicationsPresent == Just True then
+                [ viewLabel language Translate.DeliveryComplicationsSelectionLabel
+                , viewCheckBoxMultipleSelectInput language
+                    [ ComplicationGestationalDiabetes, ComplicationEmergencyCSection, ComplicationPreclampsia ]
+                    [ ComplicationMaternalHemmorhage, ComplicationHiv, ComplicationMaternalDeath ]
+                    (form.deliveryComplications |> Maybe.withDefault [])
+                    Nothing
+                    SetDeliveryComplication
+                    Translate.DeliveryComplication
+                ]
+
+            else
+                []
 
         disabled =
             tasksCompleted /= totalTasks
@@ -165,8 +238,21 @@ viewPregnancySummaryForm language currentDate assembled form =
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [-- div [ class "ui form pregnancySummary" ]
-             --     inputs
+            [ div [ class "ui form pregnancySummary" ] <|
+                [ viewQuestionLabel language Translate.DateConcludedEstimatedQuestion
+                , div [ class "form-input date" ]
+                    [ expectedDateConcludedInput ]
+                , viewQuestionLabel language Translate.DateConcludedActualQuestion
+                , div [ class "form-input date" ]
+                    [ dateConcludedInput ]
+                , viewQuestionLabel language Translate.ChildOneMinuteApgarsQuestion
+                , apgarsOneMinuteInput
+                , viewQuestionLabel language Translate.ChildFiveMinutesApgarsQuestion
+                , apgarsFiveMinutesInput
+                , viewQuestionLabel language Translate.DeliveryComplicationsPresentQuestion
+                , deliveryComplicationsPresentInput
+                ]
+                    ++ deliveryComplicationsSection
             ]
         , viewAction language (SavePregnancySummary assembled.participant.person assembled.measurements.pregnancySummary) disabled
         ]

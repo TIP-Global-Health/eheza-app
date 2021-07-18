@@ -2,6 +2,7 @@ module Pages.WellChildActivity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Date exposing (Date)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (..)
@@ -13,6 +14,14 @@ type Msg
     | SetWarningPopupState (List NutritionAssesment)
     | NoOp
       -- PREGNANCY SUMMARY
+    | SetExpectedDateConcluded Date
+    | ToggleExpectedDateConcluded
+    | SetDateConcluded Date
+    | ToggleDateConcluded
+    | SetApgarsOneMinute String
+    | SetApgarsFiveMinutes String
+    | SetDeliveryComplicationsPresent Bool
+    | SetDeliveryComplication DeliveryComplication
     | SavePregnancySummary PersonId (Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary ))
       -- DANGER SIGNS
     | SetActiveDangerSignsTask DangerSignsTask
@@ -86,22 +95,26 @@ emptyModel =
 
 type alias PregnancySummaryForm =
     { expectedDateConcluded : Maybe NominalDate
+    , isExpectedDateConcludedSelectorOpen : Bool
     , dateConcluded : Maybe NominalDate
+    , isDateConcludedSelectorOpen : Bool
     , apgarsOneMinute : Maybe Int
     , apgarsFiveMinutes : Maybe Int
-    , deliveryComplicaitonsPresent : Maybe Bool
-    , deliveryComplicaitons : Maybe (List DeliveryComplication)
+    , deliveryComplicationsPresent : Maybe Bool
+    , deliveryComplications : Maybe (List DeliveryComplication)
     }
 
 
 emptyPregnancySummaryForm : PregnancySummaryForm
 emptyPregnancySummaryForm =
     { expectedDateConcluded = Nothing
+    , isExpectedDateConcludedSelectorOpen = False
     , dateConcluded = Nothing
+    , isDateConcludedSelectorOpen = False
     , apgarsOneMinute = Nothing
     , apgarsFiveMinutes = Nothing
-    , deliveryComplicaitonsPresent = Nothing
-    , deliveryComplicaitons = Nothing
+    , deliveryComplicationsPresent = Nothing
+    , deliveryComplications = Nothing
     }
 
 

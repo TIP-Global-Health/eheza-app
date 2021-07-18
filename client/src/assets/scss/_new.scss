@@ -1449,6 +1449,27 @@ div.page-activity.well-child {
 
       @include next-steps;
 
+      .form-input {
+        margin-bottom: 30px;
+
+        .dropdown {
+          width: 50%;
+
+          input {
+            background: $color-white;
+            border: 2px solid $color-light-gray;
+            padding: 10px;
+          }
+        }
+
+        &.apgars {
+          background: $color-white;
+          border: 2px solid $color-light-gray;
+          padding: 5px;
+          width: 50%;
+        }
+      }
+
       .ui.checkbox.activity {
         margin-top: 30px;
 
@@ -1564,24 +1585,6 @@ div.page-outcome.pregnancy {
       }
     }
 
-  }
-}
-
-// Acute Illness Outcome page
-div.page-outcome.pregnancy {
-
-  .ui.full.segment {
-
-    .form-input {
-      margin-bottom: 30px;
-
-      &.pregnancy-outcome {
-        background: $color-white;
-        border: 2px solid $color-light-gray;
-        padding: 5px;
-        width: 73%;
-      }
-    }
   }
 }
 

@@ -90,13 +90,20 @@ activityCompleted currentDate zscores isChw assembled db activity =
 
         WellChildPregnancySummary ->
             (not <| activityExpected WellChildPregnancySummary)
-                || -- @todo
-                   True
+                || isJust measurements.pregnancySummary
 
 
 expectActivity : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
 expectActivity currentDate isChw assembled db activity =
     case activity of
+        WellChildPregnancySummary ->
+            ageInMonths currentDate assembled.person
+                |> Maybe.map
+                    (\ageMonths ->
+                        isChw && ageMonths < 2
+                    )
+                |> Maybe.withDefault False
+
         WellChildECD ->
             ageInMonths currentDate assembled.person
                 |> Maybe.map
@@ -117,10 +124,6 @@ expectActivity currentDate isChw assembled db activity =
                 |> List.filter (expectMedicationTask currentDate isChw assembled)
                 |> List.isEmpty
                 |> not
-
-        WellChildPregnancySummary ->
-            -- @todo
-            True
 
         _ ->
             True

@@ -385,6 +385,8 @@ type TranslationId
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildNutritionSignReport ChildNutritionSign
     | ChildOf
+    | ChildOneMinuteApgarsQuestion
+    | ChildFiveMinutesApgarsQuestion
     | Children
     | ChildrenNames
     | ChildrenNationalId
@@ -421,7 +423,6 @@ type TranslationId
     | ConditionImprovingQuestion
     | ConfirmationRequired
     | ConfirmDeleteTrainingGroupEncounters
-    | ConfirmRegisterParticipant
     | Connected
     | ContactExposure
     | ContactInformation
@@ -437,24 +438,29 @@ type TranslationId
     | CreateRelationship
     | CreateTrainingGroupEncounters
     | ChwDashboardLabel
-    | DeleteTrainingGroupEncounters
-    | DashboardLabel
     | CurrentlyPregnant
     | DangerSign DangerSign
     | DangerSignsLabel
     | DangerSignsHelper
     | DangerSignsTask DangerSignsTask
+    | DateConcludedActualQuestion
+    | DateConcludedEstimatedQuestion
     | DateOfLastAssessment
     | DatePregnancyConcluded
+    | DashboardLabel
+    | DateOfBirth
     | Day
     | DayAbbrev
     | DaySinglePlural Int
-    | DateOfBirth
     | Days
     | DaysAbbrev
     | DaysPresent
     | DaysSinglePlural Int
     | Delete
+    | DeleteTrainingGroupEncounters
+    | DeliveryComplication DeliveryComplication
+    | DeliveryComplicationsPresentQuestion
+    | DeliveryComplicationsSelectionLabel
     | DeliveryLocation
     | DeliveryOutcome
     | DemographicInformation
@@ -2291,6 +2297,16 @@ translationSet trans =
             , kinyarwanda = Just "Umwana wa"
             }
 
+        ChildOneMinuteApgarsQuestion ->
+            { english = "What are the child’s 1 minute apgars"
+            , kinyarwanda = Nothing
+            }
+
+        ChildFiveMinutesApgarsQuestion ->
+            { english = "What are the child’s 5 minute apgars"
+            , kinyarwanda = Nothing
+            }
+
         Clear ->
             { english = "Clear"
             , kinyarwanda = Just "Gukuraho"
@@ -2507,8 +2523,50 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        ConfirmRegisterParticipant ->
-            { english = "Are you sure you want to save this participant's data?"
+        DeliveryComplication complication ->
+            case complication of
+                ComplicationGestationalDiabetes ->
+                    { english = "Gestational Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComplicationEmergencyCSection ->
+                    { english = "Emergency C-Section"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComplicationPreclampsia ->
+                    { english = "Preclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComplicationMaternalHemmorhage ->
+                    { english = "Maternal Hemmorhage"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComplicationHiv ->
+                    { english = "HIV"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComplicationMaternalDeath ->
+                    { english = "Maternal Death"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoDeliveryComplications ->
+                    { english = "None of these"
+                    , kinyarwanda = Nothing
+                    }
+
+        DeliveryComplicationsPresentQuestion ->
+            { english = "Were there any complications with the delivery"
+            , kinyarwanda = Nothing
+            }
+
+        DeliveryComplicationsSelectionLabel ->
+            { english = "Which of the following were present"
             , kinyarwanda = Nothing
             }
 
@@ -2711,6 +2769,16 @@ translationSet trans =
                     { english = "Review Danger Signs"
                     , kinyarwanda = Just "Kureba ibimenyetso mpuruza"
                     }
+
+        DateConcludedActualQuestion ->
+            { english = "What was the actual delivery date for the child"
+            , kinyarwanda = Nothing
+            }
+
+        DateConcludedEstimatedQuestion ->
+            { english = "What was the estimated due date for the child"
+            , kinyarwanda = Nothing
+            }
 
         DateOfLastAssessment ->
             { english = "Date of last Assessment"
