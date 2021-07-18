@@ -334,7 +334,7 @@ decodeRevision =
                     "well_child_photo" ->
                         decodeWithUuid WellChildPhotoRevision decodeWellChildPhoto
 
-                    "well_child_pregancy_summary" ->
+                    "well_child_pregnancy_summary" ->
                         decodeWithUuid WellChildPregnancySummaryRevision decodeWellChildPregnancySummary
 
                     "well_child_send_to_hc" ->

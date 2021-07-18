@@ -796,7 +796,7 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeWellChildPhoto
                             BackendAuthorityWellChildPhoto
 
-                    "well_child_pregancy_summary" ->
+                    "well_child_pregnancy_summary" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildPregnancySummary
                             BackendAuthorityWellChildPregnancySummary

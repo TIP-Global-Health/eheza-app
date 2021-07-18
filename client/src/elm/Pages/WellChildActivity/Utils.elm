@@ -157,7 +157,11 @@ pregnancySummaryFormWithDefault form saved =
             (\value ->
                 let
                     deliveryComplications =
-                        EverySet.toList value.deliveryComplications
+                        if form.deliveryComplicationsPresent == Just False then
+                            [ NoDeliveryComplications ]
+
+                        else
+                            EverySet.toList value.deliveryComplications
                 in
                 { expectedDateConcluded = or form.expectedDateConcluded (Just value.expectedDateConcluded)
                 , isExpectedDateConcludedSelectorOpen = False

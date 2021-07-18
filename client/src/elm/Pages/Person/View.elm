@@ -578,7 +578,12 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage WellChildEncounter)
                             , expectedAge = ExpectChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -13 today
+                            , birthDateSelectorFrom =
+                                if isChw then
+                                    Date.add Months -2 today
+
+                                else
+                                    Date.add Years -13 today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }

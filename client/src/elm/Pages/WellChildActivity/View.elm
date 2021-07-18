@@ -141,8 +141,13 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
 
 
 viewPregnancySummaryForm : Language -> NominalDate -> AssembledData -> PregnancySummaryForm -> List (Html Msg)
-viewPregnancySummaryForm language currentDate assembled form =
+viewPregnancySummaryForm language currentDate assembled form_ =
     let
+        form =
+            assembled.measurements.pregnancySummary
+                |> Maybe.map (Tuple.second >> .value)
+                |> pregnancySummaryFormWithDefault form_
+
         ( deliveryComplicationsCompleted, deliveryComplicationsActive ) =
             if form.deliveryComplicationsPresent == Just True then
                 ( taskCompleted form.deliveryComplications, 1 )

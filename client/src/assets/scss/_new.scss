@@ -1452,19 +1452,45 @@ div.page-activity.well-child {
       .form-input {
         margin-bottom: 30px;
 
-        .dropdown {
+
+        &.date {
+          height: 2em;
           width: 50%;
 
-          input {
-            background: $color-white;
-            border: 2px solid $color-light-gray;
-            padding: 10px;
+          .dropdown,
+          .dropdown-open {
+            width: 100%;
+
+            .dropdown--button-container {
+              background: $color-white;
+              border: 2px solid $color-light-gray;
+
+              input {
+                border: 0;
+                color: $color-text;
+                padding: 5px;
+              }
+            }
           }
+
+
         }
+
+        // .dropdown {
+        //   width: 50%;
+        //
+        //   input {
+        //     background: $color-white;
+        //     border: 2px solid $color-light-gray;
+        //     color: $color-text;
+        //     padding: 10px;
+        //   }
+        // }
 
         &.apgars {
           background: $color-white;
           border: 2px solid $color-light-gray;
+          color: $color-text;
           padding: 5px;
           width: 50%;
         }
