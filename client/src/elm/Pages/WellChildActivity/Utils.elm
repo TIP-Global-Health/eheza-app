@@ -99,9 +99,7 @@ expectActivity currentDate isChw assembled db activity =
         WellChildPregnancySummary ->
             ageInMonths currentDate assembled.person
                 |> Maybe.map
-                    (\ageMonths ->
-                        isChw && ageMonths < 2
-                    )
+                    (\ageMonths -> ageMonths < 2)
                 |> Maybe.withDefault False
 
         WellChildECD ->

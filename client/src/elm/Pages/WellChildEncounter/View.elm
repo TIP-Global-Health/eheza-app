@@ -127,7 +127,7 @@ viewMainPageContent : Language -> NominalDate -> ZScore.Model.Model -> WellChild
 viewMainPageContent language currentDate zscores id isChw db data model =
     let
         ( completedActivities, pendingActivities ) =
-            getAllActivities
+            getAllActivities isChw
                 |> List.filter (expectActivity currentDate isChw data db)
                 |> List.partition (activityCompleted currentDate zscores isChw data db)
 

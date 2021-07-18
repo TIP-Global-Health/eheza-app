@@ -68,6 +68,10 @@ getActivityIcon activity =
             "history"
 
 
-getAllActivities : List WellChildActivity
-getAllActivities =
-    [ WellChildPregnancySummary, WellChildDangerSigns, WellChildNutritionAssessment, WellChildECD, WellChildMedication ]
+getAllActivities : Bool -> List WellChildActivity
+getAllActivities isChw =
+    if isChw then
+        [ WellChildPregnancySummary, WellChildNutritionAssessment ]
+
+    else
+        [ WellChildDangerSigns, WellChildNutritionAssessment, WellChildECD, WellChildMedication ]
