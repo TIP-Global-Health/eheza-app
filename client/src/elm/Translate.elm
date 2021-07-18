@@ -7721,6 +7721,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                WellChildPregnancySummary ->
+                    { english = "History"
+                    , kinyarwanda = Nothing
+                    }
+
         WellChildDangerSignsTask task ->
             case task of
                 Pages.WellChildActivity.Model.TaskSymptomsReview ->

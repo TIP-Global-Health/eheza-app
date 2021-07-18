@@ -88,6 +88,11 @@ activityCompleted currentDate zscores isChw assembled db activity =
             (not <| activityExpected WellChildMedication)
                 || (isJust measurements.mebendezole && isJust measurements.vitaminA)
 
+        WellChildPregnancySummary ->
+            (not <| activityExpected WellChildPregnancySummary)
+                || -- @todo
+                   True
+
 
 expectActivity : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
 expectActivity currentDate isChw assembled db activity =
@@ -112,6 +117,10 @@ expectActivity currentDate isChw assembled db activity =
                 |> List.filter (expectMedicationTask currentDate isChw assembled)
                 |> List.isEmpty
                 |> not
+
+        WellChildPregnancySummary ->
+            -- @todo
+            True
 
         _ ->
             True

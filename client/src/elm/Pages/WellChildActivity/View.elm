@@ -134,6 +134,10 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
         WellChildMedication ->
             viewMedicationContent language currentDate isChw assembled model.medicationData
 
+        WellChildPregnancySummary ->
+            -- @tood
+            []
+
 
 viewDangerSignsContent :
     Language
