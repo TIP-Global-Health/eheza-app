@@ -885,6 +885,34 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
+        SaveImmunisation personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    -- @todo
+                    -- model.immunisationForm
+                    --     |> toImmunizationValueWithDefault measurement
+                    --     |> unwrap
+                    --         []
+                    --         (\value ->
+                    --             [ Backend.WellChildEncounter.Model.SaveImmunization personId measurementId value
+                    --                 |> Backend.Model.MsgWellChildEncounter id
+                    --                 |> App.Model.MsgIndexedDb
+                    --             , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
+                    --             ]
+                    --         )
+                    []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
         SetECDBoolInput formUpdateFunc value ->
             let
                 updatedForm =

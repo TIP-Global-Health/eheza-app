@@ -56,6 +56,8 @@ type Msg
     | SaveContributingFactors PersonId (Maybe ( WellChildContributingFactorsId, WellChildContributingFactors )) (Maybe NutritionAssesmentTask)
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssesment) (Maybe NutritionAssesmentTask)
+      -- IMMUNISATION
+    | SaveImmunisation PersonId (Maybe ( WellChildImmunisationId, WellChildImmunisation ))
       -- ECD
     | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
     | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
@@ -76,6 +78,7 @@ type alias Model =
     { pregnancySummaryForm : PregnancySummaryForm
     , dangerSignsData : DangerSignsData
     , nutritionAssessmentData : NutritionAssessmentData
+    , immunisationForm : ImmunisationForm
     , ecdForm : WellChildECDForm
     , medicationData : MedicationData
     , warningPopupState : List NutritionAssesment
@@ -87,6 +90,7 @@ emptyModel =
     { pregnancySummaryForm = emptyPregnancySummaryForm
     , dangerSignsData = emptyDangerSignsData
     , nutritionAssessmentData = emptyNutritionAssessmentData
+    , immunisationForm = emptyImmunisationForm
     , ecdForm = emptyWellChildECDForm
     , medicationData = emptyMedicationData
     , warningPopupState = []
@@ -217,6 +221,63 @@ allNutritionAssesmentTasks =
     , TaskFollowUp
     , TaskSendToHC
     ]
+
+
+type alias ImmunisationForm =
+    { bcgVaccinationGiven : Maybe Bool
+    , opvVaccinationGiven : Maybe Bool
+    , dtpVaccinationGiven : Maybe Bool
+    , pcv13VaccinationGiven : Maybe Bool
+    , rotarixVaccinationGiven : Maybe Bool
+    , ipvVaccinationGiven : Maybe Bool
+    , mrVaccinationGiven : Maybe Bool
+    , hpvVaccinationGiven : Maybe Bool
+    , bcgVaccinationNote : Maybe AdministrationNote
+    , opvVaccinationNote : Maybe AdministrationNote
+    , dtpVaccinationNote : Maybe AdministrationNote
+    , pcv13VaccinationNote : Maybe AdministrationNote
+    , rotarixVaccinationNote : Maybe AdministrationNote
+    , ipvVaccinationNote : Maybe AdministrationNote
+    , mrVaccinationNote : Maybe AdministrationNote
+    , hpvVaccinationNote : Maybe AdministrationNote
+    , bcgVaccinationDate : Maybe NominalDate
+    , opvVaccinationDate : Maybe NominalDate
+    , dtpVaccinationDate : Maybe NominalDate
+    , pcv13VaccinationDate : Maybe NominalDate
+    , rotarixVaccinationDate : Maybe NominalDate
+    , ipvVaccinationDate : Maybe NominalDate
+    , mrVaccinationDate : Maybe NominalDate
+    , hpvVaccinationDate : Maybe NominalDate
+    }
+
+
+emptyImmunisationForm : ImmunisationForm
+emptyImmunisationForm =
+    { bcgVaccinationGiven = Nothing
+    , opvVaccinationGiven = Nothing
+    , dtpVaccinationGiven = Nothing
+    , pcv13VaccinationGiven = Nothing
+    , rotarixVaccinationGiven = Nothing
+    , ipvVaccinationGiven = Nothing
+    , mrVaccinationGiven = Nothing
+    , hpvVaccinationGiven = Nothing
+    , bcgVaccinationNote = Nothing
+    , opvVaccinationNote = Nothing
+    , dtpVaccinationNote = Nothing
+    , pcv13VaccinationNote = Nothing
+    , rotarixVaccinationNote = Nothing
+    , ipvVaccinationNote = Nothing
+    , mrVaccinationNote = Nothing
+    , hpvVaccinationNote = Nothing
+    , bcgVaccinationDate = Nothing
+    , opvVaccinationDate = Nothing
+    , dtpVaccinationDate = Nothing
+    , pcv13VaccinationDate = Nothing
+    , rotarixVaccinationDate = Nothing
+    , ipvVaccinationDate = Nothing
+    , mrVaccinationDate = Nothing
+    , hpvVaccinationDate = Nothing
+    }
 
 
 type alias WellChildECDForm =
