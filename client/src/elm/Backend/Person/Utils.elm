@@ -144,6 +144,12 @@ initiatorFromUrlFragmemt s =
         "nutrition" ->
             IndividualEncounterOrigin NutritionEncounter |> Just
 
+        "home-visit" ->
+            IndividualEncounterOrigin WellChildEncounter |> Just
+
+        "well-child" ->
+            IndividualEncounterOrigin WellChildEncounter |> Just
+
         _ ->
             if String.startsWith "session" s then
                 String.dropLeft (String.length "session-") s
