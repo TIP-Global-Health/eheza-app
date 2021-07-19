@@ -909,24 +909,8 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form immunisation" ] inputs
-
-            -- [ viewQuestionLabel language Translate.DateConcludedEstimatedQuestion
-            -- , div [ class "form-input date" ]
-            --     [ expectedDateConcludedInput ]
-            -- , viewQuestionLabel language Translate.DateConcludedActualQuestion
-            -- , div [ class "form-input date" ]
-            --     [ dateConcludedInput ]
-            -- ]
-            --     ++ viewDatesDiff
-            --     ++ [ viewQuestionLabel language Translate.ChildOneMinuteApgarsQuestion
-            --        , apgarsOneMinuteInput
-            --        , viewQuestionLabel language Translate.ChildFiveMinutesApgarsQuestion
-            --        , apgarsFiveMinutesInput
-            --        , viewQuestionLabel language Translate.DeliveryComplicationsPresentQuestion
-            --        , deliveryComplicationsPresentInput
-            --        ]
-            --     ++ deliveryComplicationsSection
+            [ div [ class "ui form immunisation" ]
+                inputs
             ]
         , viewAction language (SavePregnancySummary assembled.participant.person assembled.measurements.pregnancySummary) disabled
         ]
@@ -961,7 +945,8 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
                     ( vaccinationDateInput, dateTask ) =
                         if config.getVaccinationNoteFunc form == Just AdministeredPreviously then
                             ( [ div [ class "form-input date previous" ]
-                                    [ DateSelector.SelectorDropdown.view
+                                    [ viewLabel language Translate.SelectDate
+                                    , DateSelector.SelectorDropdown.view
                                         (ToggleImmunisationDateSelectorInput config.toggleDateSelectorFunc)
                                         (SetImmunisationDateInput config.setDateInputFunc)
                                         (config.getVaccinationDateSelectorOpenFunc form)

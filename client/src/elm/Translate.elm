@@ -873,6 +873,7 @@ type TranslationId
     | SelectAllSigns
     | SelectPostpartumChildDangerSigns
     | SelectDangerSigns
+    | SelectDate
     | SelectPostpartumMotherDangerSigns
     | SelectedProgram
     | SelectedVillage
@@ -7023,6 +7024,11 @@ translationSet trans =
         SelectDangerSigns ->
             { english = "Please select one or more of the danger signs the patient is experiencing"
             , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umubyeyi yaba afite"
+            }
+
+        SelectDate ->
+            { english = "Select Date"
+            , kinyarwanda = Nothing
             }
 
         SelectPostpartumMotherDangerSigns ->
