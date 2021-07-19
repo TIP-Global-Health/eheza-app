@@ -973,6 +973,7 @@ type TranslationId
     | UpdateError
     | Uploading
     | UterineMyoma
+    | VaccineDoseGivenQuestion VaccineType VaccineDose Bool
     | ValidationErrors
     | Version
     | View
@@ -7715,6 +7716,75 @@ translationSet trans =
             { english = "Uterine Myoma"
             , kinyarwanda = Just "Ibibyimba byo mu mura/Nyababyeyi"
             }
+
+        VaccineDoseGivenQuestion vaccineType dose isChw ->
+            let
+                doseNumber =
+                    case dose of
+                        VaccineDoseFirst ->
+                            "1"
+
+                        VaccineDoseSecond ->
+                            "2"
+
+                        VaccineDoseThird ->
+                            "3"
+
+                        VaccineDoseFourth ->
+                            "4"
+            in
+            case vaccineType of
+                VaccineBCG ->
+                    if isChw then
+                        { english = "Did the child recieve the BCG Bacilius Calmette - Guérin (BCG) at birth"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Did the child receive the BCG Bacilius Calmette - Guérin (BCG) - Dose " ++ doseNumber ++ " of 1 today"
+                        , kinyarwanda = Nothing
+                        }
+
+                VaccineOPV ->
+                    if isChw then
+                        { english = "Did the child recieve the Oral Polio Vaccine (OPV) at birth"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Did the child receive the Oral Polio Vaccine (OPV) - Dose " ++ doseNumber ++ " of 4 today"
+                        , kinyarwanda = Nothing
+                        }
+
+                VaccineDTP ->
+                    { english = "Did the child receive the DTP - HepB - Hib Vaccine - Dose " ++ doseNumber ++ " of 2 today"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccinePCV13 ->
+                    { english = "Did the child receive the Pneumoccocal Vaccine (PCV 13) - Dose " ++ doseNumber ++ " of 3 today"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineRotarix ->
+                    { english = "Did the child receive the Rotavirus (Rotarix) Vaccine - Dose " ++ doseNumber ++ " of 2 today"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineIPV ->
+                    { english = "Did the child receive the  Inactivated Polio Vaccine - Dose " ++ doseNumber ++ " of 1 today"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineMR ->
+                    { english = "Did the child receive the Measles - Rubella Vaccine - Dose " ++ doseNumber ++ " of 2 today"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineHPV ->
+                    { english = "Did the child receive the HPV Vaccine - Dose " ++ doseNumber ++ " of 2 today"
+                    , kinyarwanda = Nothing
+                    }
 
         ValidationErrors ->
             { english = "Validation Errors"

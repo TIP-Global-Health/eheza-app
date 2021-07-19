@@ -1473,6 +1473,11 @@ div.page-activity.well-child {
           }
         }
 
+        &.date.previous {
+          margin-left: 20px;
+          width: 60%;
+        }
+
         &.apgars {
           background: $color-white;
           border: 2px solid $color-light-gray;
@@ -1480,6 +1485,12 @@ div.page-activity.well-child {
           padding: 5px;
           width: 50%;
         }
+
+      }
+
+      .why-not {
+        margin-bottom: 30px;
+        margin-left: 20px;
       }
 
       .ui.checkbox.activity {
