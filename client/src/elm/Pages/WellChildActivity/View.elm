@@ -866,11 +866,9 @@ viewImmunisationForm : Language -> NominalDate -> Bool -> AssembledData -> Immun
 viewImmunisationForm language currentDate isChw assembled immunisationForm =
     let
         form =
-            -- @todo
-            -- assembled.measurements.immunisation
-            --     |> Maybe.map (Tuple.second >> .value)
-            --     |> pregnancySummaryFormWithDefault form_
-            immunisationForm
+            assembled.measurements.immunisation
+                |> Maybe.map (Tuple.second >> .value)
+                |> immunisationFormWithDefault immunisationForm
 
         ( tasksCompleted, totalTasks ) =
             ( (List.map taskCompleted vaccinationGivenTasks |> List.sum)
@@ -912,7 +910,7 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
             [ div [ class "ui form immunisation" ]
                 inputs
             ]
-        , viewAction language (SavePregnancySummary assembled.participant.person assembled.measurements.pregnancySummary) disabled
+        , viewAction language (SaveImmunisation assembled.participant.person (Dict.fromList suggestedVaccines) assembled.measurements.immunisation) disabled
         ]
     ]
 

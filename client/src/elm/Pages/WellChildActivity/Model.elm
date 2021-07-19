@@ -62,7 +62,7 @@ type Msg
     | SetImmunisationAdministrationNoteInput (AdministrationNote -> ImmunisationForm -> ImmunisationForm) AdministrationNote
     | SetImmunisationDateInput (Date -> ImmunisationForm -> ImmunisationForm) Date
     | ToggleImmunisationDateSelectorInput (ImmunisationForm -> ImmunisationForm)
-    | SaveImmunisation PersonId (Maybe ( WellChildImmunisationId, WellChildImmunisation ))
+    | SaveImmunisation PersonId (Dict VaccineType VaccineDose) (Maybe ( WellChildImmunisationId, WellChildImmunisation ))
       -- ECD
     | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
     | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))

@@ -925,7 +925,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveImmunisation personId saved ->
+        SaveImmunisation personId suggestedVaccines saved ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -934,19 +934,18 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 appMsgs =
-                    -- @todo
-                    -- model.immunisationForm
-                    --     |> toImmunizationValueWithDefault measurement
-                    --     |> unwrap
-                    --         []
-                    --         (\value ->
-                    --             [ Backend.WellChildEncounter.Model.SaveImmunization personId measurementId value
-                    --                 |> Backend.Model.MsgWellChildEncounter id
-                    --                 |> App.Model.MsgIndexedDb
-                    --             , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
-                    --             ]
-                    --         )
-                    []
+                    model.immunisationForm
+                        |> (\form -> { form | suggestedVaccines = suggestedVaccines })
+                        |> toImmunisationValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.WellChildEncounter.Model.SaveImmunisation personId measurementId value
+                                    |> Backend.Model.MsgWellChildEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
+                                ]
+                            )
             in
             ( model
             , Cmd.none
