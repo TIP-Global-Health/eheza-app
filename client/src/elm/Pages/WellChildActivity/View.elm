@@ -985,7 +985,15 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
                             let
                                 ( vaccinationDate, vaccinationNote ) =
                                     if value == True then
-                                        ( Just currentDate, Just AdministeredToday )
+                                        ( if isChw then
+                                            assembled.person.birthDate
+                                                |> Maybe.withDefault currentDate
+                                                |> Just
+
+                                          else
+                                            Just currentDate
+                                        , Just AdministeredToday
+                                        )
 
                                     else
                                         ( Nothing, Nothing )
@@ -1010,7 +1018,15 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
                             let
                                 ( vaccinationDate, vaccinationNote ) =
                                     if value == True then
-                                        ( Just currentDate, Just AdministeredToday )
+                                        ( if isChw then
+                                            assembled.person.birthDate
+                                                |> Maybe.withDefault currentDate
+                                                |> Just
+
+                                          else
+                                            Just currentDate
+                                        , Just AdministeredToday
+                                        )
 
                                     else
                                         ( Nothing, Nothing )
