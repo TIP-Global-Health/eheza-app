@@ -2905,8 +2905,8 @@ decodeECDSign =
         |> andThen
             (\sign ->
                 case sign of
-                    "respont-to-sound-with-sound" ->
-                        succeed RespontToSoundWithSound
+                    "respond-to-sound-with-sound" ->
+                        succeed RespondToSoundWithSound
 
                     "turn-head-when-called" ->
                         succeed TurnHeadWhenCalled
@@ -3047,8 +3047,8 @@ decodeWellChildImmunisation =
 decodeImmunisationValue : Decoder ImmunisationValue
 decodeImmunisationValue =
     succeed ImmunisationValue
-        |> required "suggested_vaccines" (list decodeSuggestedVaccine)
-        |> required "vaccination_notes" (list decodeVacinationNote)
+        |> required "suggested_vaccines" (map Dict.fromList (list decodeSuggestedVaccine))
+        |> required "vaccination_notes" (map Dict.fromList (list decodeVacinationNote))
         |> required "bcg_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
         |> required "opv_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
         |> required "dtp_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
@@ -3059,7 +3059,7 @@ decodeImmunisationValue =
         |> required "hpv_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
 
 
-decodeSuggestedVaccine : Decoder SuggestedVaccine
+decodeSuggestedVaccine : Decoder ( VaccineType, VaccineDose )
 decodeSuggestedVaccine =
     string
         |> andThen
@@ -3077,14 +3077,14 @@ decodeSuggestedVaccine =
                             |> Maybe.map (List.intersperse "-" >> String.concat)
                             |> Maybe.andThen vaccineDoseFromString
                 in
-                Maybe.map2 (\first second -> SuggestedVaccine first second |> succeed)
+                Maybe.map2 (\first second -> ( first, second ) |> succeed)
                     type_
                     dose
                     |> Maybe.withDefault (fail <| suggestedVaccine ++ " is not a recognized SuggestedVaccine")
             )
 
 
-decodeVacinationNote : Decoder VacinationNote
+decodeVacinationNote : Decoder ( VaccineType, AdministrationNote )
 decodeVacinationNote =
     string
         |> andThen
@@ -3102,7 +3102,7 @@ decodeVacinationNote =
                             |> Maybe.map (List.intersperse "-" >> String.concat)
                             |> Maybe.andThen administrationNoteFromString
                 in
-                Maybe.map2 (\first second -> VacinationNote first second |> succeed)
+                Maybe.map2 (\first second -> ( first, second ) |> succeed)
                     type_
                     note
                     |> Maybe.withDefault (fail <| vacinationNote ++ " is not a recognized VacinationNote")

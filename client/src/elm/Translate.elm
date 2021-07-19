@@ -2943,7 +2943,7 @@ translationSet trans =
 
         ECDSignQuestion sign ->
             case sign of
-                RespontToSoundWithSound ->
+                RespondToSoundWithSound ->
                     { english = "Does the child respond to sound by making sound"
                     , kinyarwanda = Nothing
                     }

@@ -2522,8 +2522,8 @@ encodeECDSign : ECDSign -> Value
 encodeECDSign sign =
     string <|
         case sign of
-            RespontToSoundWithSound ->
-                "respont-to-sound-with-sound"
+            RespondToSoundWithSound ->
+                "respond-to-sound-with-sound"
 
             TurnHeadWhenCalled ->
                 "turn-head-when-called"
@@ -2656,8 +2656,8 @@ encodeWellChildImmunisation =
 
 encodeImmunisationValue : ImmunisationValue -> List ( String, Value )
 encodeImmunisationValue value =
-    [ ( "suggested_vaccines", list encodeSuggestedVaccine value.suggestedVaccines )
-    , ( "vaccination_notes", list encodeVacinationNote value.vacinationNotes )
+    [ ( "suggested_vaccines", list encodeSuggestedVaccine (Dict.toList value.suggestedVaccines) )
+    , ( "vaccination_notes", list encodeVacinationNote (Dict.toList value.vacinationNotes) )
     , ( "opv_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.opvVaccinationDate )
     , ( "bcg_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.bcgVaccinationDate )
     , ( "pcv13_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.pcv13VaccinationDate )
@@ -2671,14 +2671,14 @@ encodeImmunisationValue value =
     ]
 
 
-encodeSuggestedVaccine : SuggestedVaccine -> Value
-encodeSuggestedVaccine suggestedVaccine =
-    vaccineTypeToString suggestedVaccine.type_ ++ "-" ++ vaccineDoseToString suggestedVaccine.dose |> string
+encodeSuggestedVaccine : ( VaccineType, VaccineDose ) -> Value
+encodeSuggestedVaccine ( type_, dose ) =
+    vaccineTypeToString type_ ++ "-" ++ vaccineDoseToString dose |> string
 
 
-encodeVacinationNote : VacinationNote -> Value
-encodeVacinationNote vacinationNote =
-    vaccineTypeToString vacinationNote.type_ ++ "-" ++ administrationNoteToString vacinationNote.note |> string
+encodeVacinationNote : ( VaccineType, AdministrationNote ) -> Value
+encodeVacinationNote ( type_, note ) =
+    vaccineTypeToString type_ ++ "-" ++ administrationNoteToString note |> string
 
 
 encodeWellChildAlbendazole : WellChildAlbendazole -> List ( String, Value )
