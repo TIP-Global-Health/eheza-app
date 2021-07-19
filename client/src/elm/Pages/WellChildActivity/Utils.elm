@@ -889,6 +889,246 @@ allVaccineTypes isChw =
         ]
 
 
+fromImmunisationValue : Maybe ImmunisationValue -> ImmunisationForm
+fromImmunisationValue saved =
+    let
+        suggestedVaccines =
+            Maybe.map .suggestedVaccines saved
+                |> Maybe.withDefault Dict.empty
+
+        vacinationNotes =
+            Maybe.map .vacinationNotes saved
+
+        vaccineGiven administrationNote =
+            Maybe.map ((==) AdministeredToday) administrationNote
+
+        resolveAdministrationNote vaccineType =
+            Maybe.andThen (Dict.get vaccineType) vacinationNotes
+
+        bcgVaccinationNote =
+            resolveAdministrationNote VaccineBCG
+
+        opvVaccinationNote =
+            resolveAdministrationNote VaccineOPV
+
+        dtpVaccinationNote =
+            resolveAdministrationNote VaccineDTP
+
+        pcv13VaccinationNote =
+            resolveAdministrationNote VaccinePCV13
+
+        rotarixVaccinationNote =
+            resolveAdministrationNote VaccineRotarix
+
+        ipvVaccinationNote =
+            resolveAdministrationNote VaccineIPV
+
+        mrVaccinationNote =
+            resolveAdministrationNote VaccineMR
+
+        hpvVaccinationNote =
+            resolveAdministrationNote VaccineHPV
+    in
+    { suggestedVaccines = suggestedVaccines
+    , bcgVaccinationGiven = vaccineGiven bcgVaccinationNote
+    , opvVaccinationGiven = vaccineGiven opvVaccinationNote
+    , dtpVaccinationGiven = vaccineGiven dtpVaccinationNote
+    , pcv13VaccinationGiven = vaccineGiven pcv13VaccinationNote
+    , rotarixVaccinationGiven = vaccineGiven rotarixVaccinationNote
+    , ipvVaccinationGiven = vaccineGiven ipvVaccinationNote
+    , mrVaccinationGiven = vaccineGiven mrVaccinationNote
+    , hpvVaccinationGiven = vaccineGiven hpvVaccinationNote
+    , bcgVaccinationNote = bcgVaccinationNote
+    , opvVaccinationNote = opvVaccinationNote
+    , dtpVaccinationNote = dtpVaccinationNote
+    , pcv13VaccinationNote = pcv13VaccinationNote
+    , rotarixVaccinationNote = rotarixVaccinationNote
+    , ipvVaccinationNote = ipvVaccinationNote
+    , mrVaccinationNote = mrVaccinationNote
+    , hpvVaccinationNote = hpvVaccinationNote
+    , bcgVaccinationDate = Maybe.andThen .bcgVaccinationDate saved
+    , opvVaccinationDate = Maybe.andThen .opvVaccinationDate saved
+    , dtpVaccinationDate = Maybe.andThen .dtpVaccinationDate saved
+    , pcv13VaccinationDate = Maybe.andThen .pcv13VaccinationDate saved
+    , rotarixVaccinationDate = Maybe.andThen .rotarixVaccinationDate saved
+    , ipvVaccinationDate = Maybe.andThen .ipvVaccinationDate saved
+    , mrVaccinationDate = Maybe.andThen .mrVaccinationDate saved
+    , hpvVaccinationDate = Maybe.andThen .hpvVaccinationDate saved
+    , bcgVaccinationDateSelectorOpen = False
+    , opvVaccinationDateSelectorOpen = False
+    , dtpVaccinationDateSelectorOpen = False
+    , pcv13VaccinationDateSelectorOpen = False
+    , rotarixVaccinationDateSelectorOpen = False
+    , ipvVaccinationDateSelectorOpen = False
+    , mrVaccinationDateSelectorOpen = False
+    , hpvVaccinationDateSelectorOpen = False
+    }
+
+
+immunisationFormWithDefault : ImmunisationForm -> Maybe ImmunisationValue -> ImmunisationForm
+immunisationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    vaccineGiven administrationNote =
+                        Maybe.map ((==) AdministeredToday) administrationNote
+
+                    resolveAdministrationNote vaccineType =
+                        Dict.get vaccineType value.vacinationNotes
+
+                    bcgVaccinationNote =
+                        resolveAdministrationNote VaccineBCG
+
+                    opvVaccinationNote =
+                        resolveAdministrationNote VaccineOPV
+
+                    dtpVaccinationNote =
+                        resolveAdministrationNote VaccineDTP
+
+                    pcv13VaccinationNote =
+                        resolveAdministrationNote VaccinePCV13
+
+                    rotarixVaccinationNote =
+                        resolveAdministrationNote VaccineRotarix
+
+                    ipvVaccinationNote =
+                        resolveAdministrationNote VaccineIPV
+
+                    mrVaccinationNote =
+                        resolveAdministrationNote VaccineMR
+
+                    hpvVaccinationNote =
+                        resolveAdministrationNote VaccineHPV
+                in
+                { suggestedVaccines = form.suggestedVaccines
+                , bcgVaccinationGiven = or form.bcgVaccinationGiven (vaccineGiven bcgVaccinationNote)
+                , opvVaccinationGiven = or form.opvVaccinationGiven (vaccineGiven opvVaccinationNote)
+                , dtpVaccinationGiven = or form.dtpVaccinationGiven (vaccineGiven dtpVaccinationNote)
+                , pcv13VaccinationGiven = or form.pcv13VaccinationGiven (vaccineGiven pcv13VaccinationNote)
+                , rotarixVaccinationGiven = or form.rotarixVaccinationGiven (vaccineGiven rotarixVaccinationNote)
+                , ipvVaccinationGiven = or form.ipvVaccinationGiven (vaccineGiven ipvVaccinationNote)
+                , mrVaccinationGiven = or form.mrVaccinationGiven (vaccineGiven mrVaccinationNote)
+                , hpvVaccinationGiven = or form.hpvVaccinationGiven (vaccineGiven hpvVaccinationNote)
+                , bcgVaccinationNote = or form.bcgVaccinationNote bcgVaccinationNote
+                , opvVaccinationNote = or form.opvVaccinationNote opvVaccinationNote
+                , dtpVaccinationNote = or form.dtpVaccinationNote dtpVaccinationNote
+                , pcv13VaccinationNote = or form.pcv13VaccinationNote pcv13VaccinationNote
+                , rotarixVaccinationNote = or form.rotarixVaccinationNote rotarixVaccinationNote
+                , ipvVaccinationNote = or form.ipvVaccinationNote ipvVaccinationNote
+                , mrVaccinationNote = or form.mrVaccinationNote mrVaccinationNote
+                , hpvVaccinationNote = or form.hpvVaccinationNote hpvVaccinationNote
+                , bcgVaccinationDate = or form.bcgVaccinationDate value.bcgVaccinationDate
+                , opvVaccinationDate = or form.opvVaccinationDate value.opvVaccinationDate
+                , dtpVaccinationDate = or form.dtpVaccinationDate value.dtpVaccinationDate
+                , pcv13VaccinationDate = or form.pcv13VaccinationDate value.pcv13VaccinationDate
+                , rotarixVaccinationDate = or form.rotarixVaccinationDate value.rotarixVaccinationDate
+                , ipvVaccinationDate = or form.ipvVaccinationDate value.ipvVaccinationDate
+                , mrVaccinationDate = or form.mrVaccinationDate value.mrVaccinationDate
+                , hpvVaccinationDate = or form.hpvVaccinationDate value.hpvVaccinationDate
+                , bcgVaccinationDateSelectorOpen = form.bcgVaccinationDateSelectorOpen
+                , opvVaccinationDateSelectorOpen = form.opvVaccinationDateSelectorOpen
+                , dtpVaccinationDateSelectorOpen = form.dtpVaccinationDateSelectorOpen
+                , pcv13VaccinationDateSelectorOpen = form.pcv13VaccinationDateSelectorOpen
+                , rotarixVaccinationDateSelectorOpen = form.rotarixVaccinationDateSelectorOpen
+                , ipvVaccinationDateSelectorOpen = form.ipvVaccinationDateSelectorOpen
+                , mrVaccinationDateSelectorOpen = form.mrVaccinationDateSelectorOpen
+                , hpvVaccinationDateSelectorOpen = form.hpvVaccinationDateSelectorOpen
+                }
+            )
+
+
+toImmunisationValueWithDefault : Maybe ImmunisationValue -> ImmunisationForm -> Maybe ImmunisationValue
+toImmunisationValueWithDefault saved form =
+    immunisationFormWithDefault form saved
+        |> toImmunisationValue
+
+
+toImmunisationValue : ImmunisationForm -> Maybe ImmunisationValue
+toImmunisationValue form =
+    let
+        vacinationNotes =
+            allVaccineTypes False
+                |> List.filterMap
+                    (\vaccineType ->
+                        vaccineAdministrationNote vaccineType
+                            |> Maybe.map (\note -> ( vaccineType, note ))
+                    )
+                |> Dict.fromList
+
+        vaccineAdministrationNote vaccineType =
+            case vaccineType of
+                VaccineBCG ->
+                    if form.bcgVaccinationGiven == Just True then
+                        Just AdministeredToday
+
+                    else
+                        form.bcgVaccinationNote
+
+                VaccineOPV ->
+                    if form.opvVaccinationGiven == Just True then
+                        Just AdministeredToday
+
+                    else
+                        form.opvVaccinationNote
+
+                VaccineDTP ->
+                    if form.dtpVaccinationGiven == Just True then
+                        Just AdministeredToday
+
+                    else
+                        form.dtpVaccinationNote
+
+                VaccinePCV13 ->
+                    if form.pcv13VaccinationGiven == Just True then
+                        Just AdministeredToday
+
+                    else
+                        form.pcv13VaccinationNote
+
+                VaccineRotarix ->
+                    if form.rotarixVaccinationGiven == Just True then
+                        Just AdministeredToday
+
+                    else
+                        form.rotarixVaccinationNote
+
+                VaccineIPV ->
+                    if form.ipvVaccinationGiven == Just True then
+                        Just AdministeredToday
+
+                    else
+                        form.ipvVaccinationNote
+
+                VaccineMR ->
+                    if form.mrVaccinationGiven == Just True then
+                        Just AdministeredToday
+
+                    else
+                        form.mrVaccinationNote
+
+                VaccineHPV ->
+                    if form.hpvVaccinationGiven == Just True then
+                        Just AdministeredToday
+
+                    else
+                        form.hpvVaccinationNote
+    in
+    Just <|
+        ImmunisationValue
+            form.suggestedVaccines
+            vacinationNotes
+            form.bcgVaccinationDate
+            form.opvVaccinationDate
+            form.dtpVaccinationDate
+            form.pcv13VaccinationDate
+            form.rotarixVaccinationDate
+            form.ipvVaccinationDate
+            form.mrVaccinationDate
+            form.hpvVaccinationDate
+
+
 generateCompletedECDSigns : AssembledData -> List ECDSign
 generateCompletedECDSigns assembled =
     assembled.previousMeasurementsWithDates

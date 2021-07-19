@@ -1,5 +1,6 @@
 module Pages.WellChildActivity.Model exposing (..)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
@@ -228,7 +229,8 @@ allNutritionAssesmentTasks =
 
 
 type alias ImmunisationForm =
-    { bcgVaccinationGiven : Maybe Bool
+    { suggestedVaccines : Dict VaccineType VaccineDose
+    , bcgVaccinationGiven : Maybe Bool
     , opvVaccinationGiven : Maybe Bool
     , dtpVaccinationGiven : Maybe Bool
     , pcv13VaccinationGiven : Maybe Bool
@@ -265,7 +267,8 @@ type alias ImmunisationForm =
 
 emptyImmunisationForm : ImmunisationForm
 emptyImmunisationForm =
-    { bcgVaccinationGiven = Nothing
+    { suggestedVaccines = Dict.empty
+    , bcgVaccinationGiven = Nothing
     , opvVaccinationGiven = Nothing
     , dtpVaccinationGiven = Nothing
     , pcv13VaccinationGiven = Nothing
